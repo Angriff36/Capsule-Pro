@@ -3,7 +3,7 @@
   "naming": "snake_case",
   "metadataOutput": "manifest-prisma-store-metadata.generated.ts",
   "registryOutput": "prisma-store-registry.generated.ts",
-  "metadataImportPath": "./manifest-prisma-store-metadata.generated.js",
+  "metadataImportPath": "./manifest-prisma-store-metadata.generated",
   "storeImportPath": "@angriff36/manifest/stores/prisma-generic",
   "accessorNames": {
     "EventImportWorkflow": "eventImport",

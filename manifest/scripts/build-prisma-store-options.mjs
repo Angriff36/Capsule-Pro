@@ -46,7 +46,11 @@ const options = {
   naming: prismaOptions.naming ?? "snake_case",
   metadataOutput: "manifest-prisma-store-metadata.generated.ts",
   registryOutput: "prisma-store-registry.generated.ts",
-  metadataImportPath: "./manifest-prisma-store-metadata.generated.js",
+  // Extensionless: the runtime package resolves with moduleResolution "Bundler",
+  // and a ".js" specifier breaks Next.js (webpack AND turbopack) when the
+  // dispatcher bundles these files through the src/generated junction —
+  // every governed command 500s in api dev. Repo rule: no .js extensions.
+  metadataImportPath: "./manifest-prisma-store-metadata.generated",
   storeImportPath: "@angriff36/manifest/stores/prisma-generic",
   accessorNames,
   tableMappings: prismaOptions.tableMappings ?? {},

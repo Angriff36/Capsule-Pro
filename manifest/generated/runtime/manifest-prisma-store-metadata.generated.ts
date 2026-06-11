@@ -3,6 +3,385 @@
 
 import type { PrismaModelMetadata } from '@angriff36/manifest/stores/prisma-generic';
 export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
+  "AiEventSetupSession": {
+    "accessor": "ai_event_setup_sessions",
+    "dbName": "ai_event_setup_sessions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "user_id",
+        "irName": "userId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "original_input",
+        "irName": "originalInput",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_title",
+        "irName": "parsedTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_event_type",
+        "irName": "parsedEventType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_event_date",
+        "irName": "parsedEventDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_guest_count",
+        "irName": "parsedGuestCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_venue_name",
+        "irName": "parsedVenueName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_venue_address",
+        "irName": "parsedVenueAddress",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_notes",
+        "irName": "parsedNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_tags",
+        "irName": "parsedTags",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "missing_fields",
+        "irName": "missingFields",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suggestions",
+        "irName": "suggestions",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_event_id",
+        "irName": "createdEventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "KnowledgeBaseEntry": {
+    "accessor": "knowledge_base_entries",
+    "dbName": "knowledge_base_entries",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "content",
+        "irName": "content",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tags",
+        "irName": "tags",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "author_id",
+        "irName": "authorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "published_at",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "view_count",
+        "irName": "viewCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
   "AdminChatParticipant": {
     "accessor": "admin_chat_participants",
     "dbName": "admin_chat_participants",
@@ -272,239 +651,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ],
     "requiresTenantConnect": true
-  },
-  "AiEventSetupSession": {
-    "accessor": "ai_event_setup_sessions",
-    "dbName": "ai_event_setup_sessions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "user_id",
-        "irName": "userId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "original_input",
-        "irName": "originalInput",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_title",
-        "irName": "parsedTitle",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_event_type",
-        "irName": "parsedEventType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_event_date",
-        "irName": "parsedEventDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_guest_count",
-        "irName": "parsedGuestCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_venue_name",
-        "irName": "parsedVenueName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_venue_address",
-        "irName": "parsedVenueAddress",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_notes",
-        "irName": "parsedNotes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "parsed_tags",
-        "irName": "parsedTags",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "confidence",
-        "irName": "confidence",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "missing_fields",
-        "irName": "missingFields",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "suggestions",
-        "irName": "suggestions",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_event_id",
-        "irName": "createdEventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
   },
   "AlertsConfig": {
     "accessor": "alerts_configs",
@@ -820,162 +966,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "ApiKey": {
-    "accessor": "api_keys",
-    "dbName": "api_keys",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "key_prefix",
-        "irName": "keyPrefix",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "hashed_key",
-        "irName": "hashedKey",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scopes",
-        "irName": "scopes",
-        "type": "String",
-        "isEnum": false,
-        "isList": true,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_used_at",
-        "irName": "lastUsedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expires_at",
-        "irName": "expiresAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "revoked_at",
-        "irName": "revokedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_by_user_id",
-        "irName": "createdByUserId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
   "BankAccount": {
     "accessor": "employeeBankAccount",
     "dbName": "bank_accounts",
@@ -1154,1106 +1144,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "BattleBoard": {
-    "accessor": "battle_boards",
-    "dbName": "battle_boards",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_name",
-        "irName": "boardName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_type",
-        "irName": "boardType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "schema_version",
-        "irName": "schemaVersion",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_data",
-        "irName": "boardData",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "document_url",
-        "irName": "documentUrl",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "source_document_type",
-        "irName": "sourceDocumentType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "document_imported_at",
-        "irName": "documentImportedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_template",
-        "irName": "isTemplate",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tags",
-        "irName": "tags",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dish_count",
-        "irName": "dishCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_date",
-        "irName": "eventDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "guest_count",
-        "irName": "guestCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_name",
-        "irName": "venueName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_address",
-        "irName": "venueAddress",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "inherited_context",
-        "irName": "inheritedContext",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Budget": {
-    "accessor": "budgets",
-    "dbName": "budgets",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "fiscal_year",
-        "irName": "fiscalYear",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_amount",
-        "irName": "totalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "allocated_amount",
-        "irName": "allocatedAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "spent_amount",
-        "irName": "spentAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "category",
-        "irName": "category",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "department_id",
-        "irName": "departmentId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "locked_at",
-        "irName": "lockedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "BulkOrderRule": {
-    "accessor": "bulk_order_rules",
-    "dbName": "bulk_order_rules",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "catalog_entry_id",
-        "irName": "catalogEntryId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rule_name",
-        "irName": "ruleName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "minimum_quantity",
-        "irName": "minimumQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rule_type",
-        "irName": "ruleType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "threshold_quantity",
-        "irName": "thresholdQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "action",
-        "irName": "action",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discount_percent",
-        "irName": "discountPercent",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "free_item_quantity",
-        "irName": "freeItemQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "shipping_included",
-        "irName": "shippingIncluded",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_from",
-        "irName": "effectiveFrom",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_to",
-        "irName": "effectiveTo",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
-  "CateringOrder": {
-    "accessor": "catering_orders",
-    "dbName": "catering_orders",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "versionProperty": "version",
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "order_number",
-        "irName": "orderNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "customer_id",
-        "irName": "customerId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "order_status",
-        "irName": "orderStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "order_date",
-        "irName": "orderDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "delivery_date",
-        "irName": "deliveryDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "delivery_time",
-        "irName": "deliveryTime",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subtotal_amount",
-        "irName": "subtotalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_amount",
-        "irName": "taxAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discount_amount",
-        "irName": "discountAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "service_charge_amount",
-        "irName": "serviceChargeAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_amount",
-        "irName": "totalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deposit_required",
-        "irName": "depositRequired",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deposit_amount",
-        "irName": "depositAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deposit_paid",
-        "irName": "depositPaid",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deposit_paid_at",
-        "irName": "depositPaidAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "delivered_at",
-        "irName": "deliveredAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "prep_started_at",
-        "irName": "prepStartedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_name",
-        "irName": "venueName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_address",
-        "irName": "venueAddress",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_city",
-        "irName": "venueCity",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_state",
-        "irName": "venueState",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_zip",
-        "irName": "venueZip",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_contact_name",
-        "irName": "venueContactName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_contact_phone",
-        "irName": "venueContactPhone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "guest_count",
-        "irName": "guestCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "special_instructions",
-        "irName": "specialInstructions",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dietary_restrictions",
-        "irName": "dietaryRestrictions",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "staff_required",
-        "irName": "staffRequired",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "staff_assigned",
-        "irName": "staffAssigned",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
   "ChartOfAccount": {
     "accessor": "chart_of_accounts",
     "dbName": "chart_of_accounts",
@@ -2350,2539 +1240,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "ClientInteraction": {
-    "accessor": "client_interactions",
-    "dbName": "client_interactions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_id",
-        "irName": "leadId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "employee_id",
-        "irName": "employeeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "interaction_type",
-        "irName": "interactionType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "interaction_date",
-        "irName": "interactionDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subject",
-        "irName": "subject",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "follow_up_date",
-        "irName": "followUpDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "follow_up_completed",
-        "irName": "followUpCompleted",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "escalated_at",
-        "irName": "escalatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "escalated_to",
-        "irName": "escalatedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "correlation_id",
-        "irName": "correlationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Client": {
-    "accessor": "clients",
-    "dbName": "clients",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_type",
-        "irName": "clientType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "company_name",
-        "irName": "companyName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "first_name",
-        "irName": "firstName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_name",
-        "irName": "lastName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "email",
-        "irName": "email",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "website",
-        "irName": "website",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "address_line1",
-        "irName": "addressLine1",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "address_line2",
-        "irName": "addressLine2",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "city",
-        "irName": "city",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "state_province",
-        "irName": "stateProvince",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "postal_code",
-        "irName": "postalCode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "country_code",
-        "irName": "countryCode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "default_payment_terms",
-        "irName": "defaultPaymentTerms",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_exempt",
-        "irName": "taxExempt",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_id",
-        "irName": "taxId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tags",
-        "irName": "tags",
-        "type": "String",
-        "isEnum": false,
-        "isList": true,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "source",
-        "irName": "source",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "ClientContact": {
-    "accessor": "client_contacts",
-    "dbName": "client_contacts",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "first_name",
-        "irName": "firstName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_name",
-        "irName": "lastName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "email",
-        "irName": "email",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone_mobile",
-        "irName": "phoneMobile",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_primary",
-        "irName": "isPrimary",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_billing_contact",
-        "irName": "isBillingContact",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "ClientPreference": {
-    "accessor": "client_preferences",
-    "dbName": "client_preferences",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "preference_type",
-        "irName": "preferenceType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "preference_key",
-        "irName": "preferenceKey",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "preference_value",
-        "irName": "preferenceValue",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CollectionCase": {
-    "accessor": "collection_cases",
-    "dbName": "collection_cases",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "invoice_id",
-        "irName": "invoiceId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "invoice_number",
-        "irName": "invoiceNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_name",
-        "irName": "clientName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "original_amount",
-        "irName": "originalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "outstanding_amount",
-        "irName": "outstandingAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "collected_amount",
-        "irName": "collectedAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dunning_stage",
-        "irName": "dunningStage",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "days_overdue",
-        "irName": "daysOverdue",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "aging_bucket",
-        "irName": "agingBucket",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_at",
-        "irName": "assignedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "has_payment_plan",
-        "irName": "hasPaymentPlan",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payment_plan_id",
-        "irName": "paymentPlanId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "next_payment_due",
-        "irName": "nextPaymentDue",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_disputed",
-        "irName": "isDisputed",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dispute_reason",
-        "irName": "disputeReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dispute_resolved_at",
-        "irName": "disputeResolvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_escalated_to_legal",
-        "irName": "isEscalatedToLegal",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "legal_case_number",
-        "irName": "legalCaseNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "legal_firm",
-        "irName": "legalFirm",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "internal_notes",
-        "irName": "internalNotes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_activity_at",
-        "irName": "lastActivityAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved_at",
-        "irName": "resolvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "closed_at",
-        "irName": "closedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CollectionAction": {
-    "accessor": "collection_actions",
-    "dbName": "collection_actions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "case_id",
-        "irName": "caseId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "action_type",
-        "irName": "actionType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "direction",
-        "irName": "direction",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contacted_by",
-        "irName": "contactedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contact_name",
-        "irName": "contactName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contact_method",
-        "irName": "contactMethod",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subject",
-        "irName": "subject",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "outcome",
-        "irName": "outcome",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "next_action_date",
-        "irName": "nextActionDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "promise_amount",
-        "irName": "promiseAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "promise_date",
-        "irName": "promiseDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_for",
-        "irName": "scheduledFor",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CollectionPaymentPlan": {
-    "accessor": "collection_payment_plans",
-    "dbName": "collection_payment_plans",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "case_id",
-        "irName": "caseId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_amount",
-        "irName": "totalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "installment_amount",
-        "irName": "installmentAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "installment_count",
-        "irName": "installmentCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_installments",
-        "irName": "completedInstallments",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "start_date",
-        "irName": "startDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_date",
-        "irName": "endDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "frequency",
-        "irName": "frequency",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "next_payment_date",
-        "irName": "nextPaymentDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "defaulted_at",
-        "irName": "defaultedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CommandBoard": {
-    "accessor": "command_boards",
-    "dbName": "command_boards",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_template",
-        "irName": "isTemplate",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tags",
-        "irName": "tags",
-        "type": "String",
-        "isEnum": false,
-        "isList": true,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "auto_populate",
-        "irName": "autoPopulate",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scope",
-        "irName": "scope",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CommandBoardCard": {
-    "accessor": "command_board_cards",
-    "dbName": "command_board_cards",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_id",
-        "irName": "boardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "content",
-        "irName": "content",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_type",
-        "irName": "cardType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "position_x",
-        "irName": "positionX",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "position_y",
-        "irName": "positionY",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "width",
-        "irName": "width",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "height",
-        "irName": "height",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "z_index",
-        "irName": "zIndex",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "color",
-        "irName": "color",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "group_id",
-        "irName": "groupId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_id",
-        "irName": "entityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_type",
-        "irName": "entityType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "version",
-        "irName": "version",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CommandBoardGroup": {
-    "accessor": "command_board_groups",
-    "dbName": "command_board_groups",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_id",
-        "irName": "boardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "color",
-        "irName": "color",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "collapsed",
-        "irName": "collapsed",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "position_x",
-        "irName": "positionX",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "position_y",
-        "irName": "positionY",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "width",
-        "irName": "width",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "height",
-        "irName": "height",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "z_index",
-        "irName": "zIndex",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CommandBoardConnection": {
-    "accessor": "command_board_connections",
-    "dbName": "command_board_connections",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_id",
-        "irName": "boardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "from_card_id",
-        "irName": "fromCardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "to_card_id",
-        "irName": "toCardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "relationship_type",
-        "irName": "relationshipType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "label",
-        "irName": "label",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "visible",
-        "irName": "visible",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CommandBoardLayout": {
-    "accessor": "command_board_layouts",
-    "dbName": "command_board_layouts",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "board_id",
-        "irName": "boardId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "user_id",
-        "irName": "userId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "viewport",
-        "irName": "viewport",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "visible_cards",
-        "irName": "visibleCards",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "grid_size",
-        "irName": "gridSize",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "show_grid",
-        "irName": "showGrid",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "snap_to_grid",
-        "irName": "snapToGrid",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -6122,1329 +2479,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "CycleCountSession": {
-    "accessor": "cycle_count_sessions",
-    "dbName": "cycle_count_sessions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "session_id",
-        "irName": "sessionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "session_name",
-        "irName": "sessionName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "count_type",
-        "irName": "countType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_date",
-        "irName": "scheduledDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "started_at",
-        "irName": "startedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "finalized_at",
-        "irName": "finalizedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_items",
-        "irName": "totalItems",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "counted_items",
-        "irName": "countedItems",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_variance",
-        "irName": "totalVariance",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "variance_percentage",
-        "irName": "variancePercentage",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_by_id",
-        "irName": "createdById",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by_id",
-        "irName": "approvedById",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "CycleCountRecord": {
-    "accessor": "cycle_count_records",
-    "dbName": "cycle_count_records",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "session_id",
-        "irName": "sessionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_id",
-        "irName": "itemId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_number",
-        "irName": "itemNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_name",
-        "irName": "itemName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "storage_location_id",
-        "irName": "storageLocationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expected_quantity",
-        "irName": "expectedQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "counted_quantity",
-        "irName": "countedQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "variance",
-        "irName": "variance",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "variance_pct",
-        "irName": "variancePct",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "count_date",
-        "irName": "countDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "counted_by_id",
-        "irName": "countedById",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "barcode",
-        "irName": "barcode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_verified",
-        "irName": "isVerified",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "verified_by_id",
-        "irName": "verifiedById",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "verified_at",
-        "irName": "verifiedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sync_status",
-        "irName": "syncStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "offline_id",
-        "irName": "offlineId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "VarianceReport": {
-    "accessor": "variance_reports",
-    "dbName": "variance_reports",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "session_id",
-        "irName": "sessionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "report_type",
-        "irName": "reportType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_id",
-        "irName": "itemId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_number",
-        "irName": "itemNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_name",
-        "irName": "itemName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expected_quantity",
-        "irName": "expectedQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "counted_quantity",
-        "irName": "countedQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "variance",
-        "irName": "variance",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "variance_pct",
-        "irName": "variancePct",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "accuracy_score",
-        "irName": "accuracyScore",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "adjustment_type",
-        "irName": "adjustmentType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "adjustment_amount",
-        "irName": "adjustmentAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "adjustment_date",
-        "irName": "adjustmentDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejected_at",
-        "irName": "rejectedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejected_by",
-        "irName": "rejectedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejection_reason",
-        "irName": "rejectionReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "root_cause",
-        "irName": "rootCause",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolution_notes",
-        "irName": "resolutionNotes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved_by_id",
-        "irName": "resolvedById",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved_at",
-        "irName": "resolvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "generated_at",
-        "irName": "generatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Deal": {
-    "accessor": "deals",
-    "dbName": "deals",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_id",
-        "irName": "leadId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "value",
-        "irName": "value",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "currency",
-        "irName": "currency",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "stage",
-        "irName": "stage",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "probability",
-        "irName": "probability",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expected_close_date",
-        "irName": "expectedCloseDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_close_date",
-        "irName": "actualCloseDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "Dish": {
-    "accessor": "dishes",
-    "dbName": "dishes",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recipe_id",
-        "irName": "recipeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "category",
-        "irName": "category",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "service_style",
-        "irName": "serviceStyle",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "default_container_id",
-        "irName": "defaultContainerId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "presentation_image_url",
-        "irName": "presentationImageUrl",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "min_prep_lead_days",
-        "irName": "minPrepLeadDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "max_prep_lead_days",
-        "irName": "maxPrepLeadDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "portion_size_description",
-        "irName": "portionSizeDescription",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "dietary_tags",
-        "irName": "dietaryTags",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "allergens",
-        "irName": "allergens",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "price_per_person",
-        "irName": "pricePerPerson",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "cost_per_person",
-        "irName": "costPerPerson",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_seasonal",
-        "irName": "isSeasonal",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "season_label",
-        "irName": "seasonLabel",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "season_start_month",
-        "irName": "seasonStartMonth",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "season_end_month",
-        "irName": "seasonEndMonth",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_eighty_six",
-        "irName": "isEightySix",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "eighty_six_reason",
-        "irName": "eightySixReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "eighty_six_at",
-        "irName": "eightySixAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
   "DocumentVersion": {
     "accessor": "document_versions",
     "dbName": "document_versions",
@@ -8272,16 +3306,16 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "Equipment": {
-    "accessor": "equipments",
-    "dbName": "equipment",
+  "ClientInteraction": {
+    "accessor": "client_interactions",
+    "dbName": "client_interactions",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
       "id"
     ],
     "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -8306,34 +3340,100 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "location_id",
-        "irName": "locationId",
+        "name": "client_id",
+        "irName": "clientId",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_id",
+        "irName": "leadId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employee_id",
+        "irName": "employeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "interaction_type",
+        "irName": "interactionType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "interaction_date",
+        "irName": "interactionDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "name",
-        "irName": "name",
+        "name": "subject",
+        "irName": "subject",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "follow_up_date",
+        "irName": "followUpDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "type",
-        "irName": "type",
-        "type": "String",
+        "name": "follow_up_completed",
+        "irName": "followUpCompleted",
+        "type": "Boolean",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
@@ -8344,14 +3444,138 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "type": "String",
         "isEnum": false,
         "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_at",
+        "irName": "escalatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_to",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correlation_id",
+        "irName": "correlationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Client": {
+    "accessor": "clients",
+    "dbName": "clients",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "serial_number",
-        "irName": "serialNumber",
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_type",
+        "irName": "clientType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "company_name",
+        "irName": "companyName",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8361,8 +3585,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "manufacturer",
-        "irName": "manufacturer",
+        "name": "first_name",
+        "irName": "firstName",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8372,8 +3596,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "model",
-        "irName": "model",
+        "name": "last_name",
+        "irName": "lastName",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8383,53 +3607,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "purchase_date",
-        "irName": "purchaseDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "warranty_expiry",
-        "irName": "warrantyExpiry",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_maintenance_date",
-        "irName": "lastMaintenanceDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "next_maintenance_date",
-        "irName": "nextMaintenanceDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "maintenance_interval_days",
-        "irName": "maintenanceIntervalDays",
-        "type": "Int",
+        "name": "email",
+        "irName": "email",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -8438,9 +3618,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "usage_hours",
-        "irName": "usageHours",
-        "type": "Int",
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -8449,9 +3629,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "max_usage_hours",
-        "irName": "maxUsageHours",
-        "type": "Int",
+        "name": "website",
+        "irName": "website",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -8460,8 +3640,96 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "condition",
-        "irName": "condition",
+        "name": "address_line1",
+        "irName": "addressLine1",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "address_line2",
+        "irName": "addressLine2",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "city",
+        "irName": "city",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "state_province",
+        "irName": "stateProvince",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "postal_code",
+        "irName": "postalCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "country_code",
+        "irName": "countryCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "default_payment_terms",
+        "irName": "defaultPaymentTerms",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_exempt",
+        "irName": "taxExempt",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_id",
+        "irName": "taxId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8482,9 +3750,1591 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
+        "name": "tags",
+        "irName": "tags",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source",
+        "irName": "source",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "is_active",
         "irName": "isActive",
         "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "ClientContact": {
+    "accessor": "client_contacts",
+    "dbName": "client_contacts",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "first_name",
+        "irName": "firstName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_name",
+        "irName": "lastName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "email",
+        "irName": "email",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "phone_mobile",
+        "irName": "phoneMobile",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_primary",
+        "irName": "isPrimary",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_billing_contact",
+        "irName": "isBillingContact",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "ClientPreference": {
+    "accessor": "client_preferences",
+    "dbName": "client_preferences",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "preference_type",
+        "irName": "preferenceType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "preference_key",
+        "irName": "preferenceKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "preference_value",
+        "irName": "preferenceValue",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Deal": {
+    "accessor": "deals",
+    "dbName": "deals",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_id",
+        "irName": "leadId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "value",
+        "irName": "value",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currency",
+        "irName": "currency",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "stage",
+        "irName": "stage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "probability",
+        "irName": "probability",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expected_close_date",
+        "irName": "expectedCloseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_close_date",
+        "irName": "actualCloseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "Lead": {
+    "accessor": "leads",
+    "dbName": "leads",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source",
+        "irName": "source",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "company_name",
+        "irName": "companyName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contact_name",
+        "irName": "contactName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contact_email",
+        "irName": "contactEmail",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contact_phone",
+        "irName": "contactPhone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_type",
+        "irName": "eventType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_date",
+        "irName": "eventDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_guests",
+        "irName": "estimatedGuests",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_value",
+        "irName": "estimatedValue",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "converted_to_client_id",
+        "irName": "convertedToClientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "converted_at",
+        "irName": "convertedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Proposal": {
+    "accessor": "proposals",
+    "dbName": "proposals",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "proposal_number",
+        "irName": "proposalNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_id",
+        "irName": "leadId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_date",
+        "irName": "eventDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_type",
+        "irName": "eventType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "guest_count",
+        "irName": "guestCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_name",
+        "irName": "venueName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_address",
+        "irName": "venueAddress",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subtotal",
+        "irName": "subtotal",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_rate",
+        "irName": "taxRate",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_amount",
+        "irName": "taxAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discount_amount",
+        "irName": "discountAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total",
+        "irName": "total",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "valid_until",
+        "irName": "validUntil",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sent_at",
+        "irName": "sentAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "viewed_at",
+        "irName": "viewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accepted_at",
+        "irName": "acceptedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejected_at",
+        "irName": "rejectedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "terms_and_conditions",
+        "irName": "termsAndConditions",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "line_item_count",
+        "irName": "lineItemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "public_token",
+        "irName": "publicToken",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "ProposalLineItem": {
+    "accessor": "proposal_line_items",
+    "dbName": "proposal_line_items",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "proposal_id",
+        "irName": "proposalId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_type",
+        "irName": "itemType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quantity",
+        "irName": "quantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_of_measure",
+        "irName": "unitOfMeasure",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_price",
+        "irName": "unitPrice",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total",
+        "irName": "total",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_price",
+        "irName": "totalPrice",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sort_order",
+        "irName": "sortOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "BattleBoard": {
+    "accessor": "battle_boards",
+    "dbName": "battle_boards",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_name",
+        "irName": "boardName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_type",
+        "irName": "boardType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schema_version",
+        "irName": "schemaVersion",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_data",
+        "irName": "boardData",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "document_url",
+        "irName": "documentUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source_document_type",
+        "irName": "sourceDocumentType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "document_imported_at",
+        "irName": "documentImportedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_template",
+        "irName": "isTemplate",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tags",
+        "irName": "tags",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dish_count",
+        "irName": "dishCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_date",
+        "irName": "eventDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "guest_count",
+        "irName": "guestCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_name",
+        "irName": "venueName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_address",
+        "irName": "venueAddress",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inherited_context",
+        "irName": "inheritedContext",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -8517,16 +5367,17 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "MaintenanceWorkOrder": {
-    "accessor": "maintenance_work_orders",
-    "dbName": "maintenance_work_orders",
+  "CateringOrder": {
+    "accessor": "catering_orders",
+    "dbName": "catering_orders",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
       "id"
     ],
     "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
+    "versionProperty": "version",
     "fields": [
       {
         "name": "id",
@@ -8551,52 +5402,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "work_order_number",
-        "irName": "workOrderNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "area_id",
-        "irName": "areaId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment_id",
-        "irName": "equipmentId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment_name",
-        "irName": "equipmentName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
+        "name": "order_number",
+        "irName": "orderNumber",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8606,8 +5413,374 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "type",
-        "irName": "type",
+        "name": "customer_id",
+        "irName": "customerId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "order_status",
+        "irName": "orderStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "order_date",
+        "irName": "orderDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delivery_date",
+        "irName": "deliveryDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delivery_time",
+        "irName": "deliveryTime",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subtotal_amount",
+        "irName": "subtotalAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_amount",
+        "irName": "taxAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discount_amount",
+        "irName": "discountAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "service_charge_amount",
+        "irName": "serviceChargeAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_amount",
+        "irName": "totalAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_required",
+        "irName": "depositRequired",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_amount",
+        "irName": "depositAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_paid",
+        "irName": "depositPaid",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_paid_at",
+        "irName": "depositPaidAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delivered_at",
+        "irName": "deliveredAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prep_started_at",
+        "irName": "prepStartedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_name",
+        "irName": "venueName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_address",
+        "irName": "venueAddress",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_city",
+        "irName": "venueCity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_state",
+        "irName": "venueState",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_zip",
+        "irName": "venueZip",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_contact_name",
+        "irName": "venueContactName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_contact_phone",
+        "irName": "venueContactPhone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "guest_count",
+        "irName": "guestCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "special_instructions",
+        "irName": "specialInstructions",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dietary_restrictions",
+        "irName": "dietaryRestrictions",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "staff_required",
+        "irName": "staffRequired",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "staff_assigned",
+        "irName": "staffAssigned",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CommandBoard": {
+    "accessor": "command_boards",
+    "dbName": "command_boards",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8617,23 +5790,34 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "priority",
-        "irName": "priority",
+        "name": "tenant_id",
+        "irName": "tenantId",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
+        "name": "name",
+        "irName": "name",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
@@ -8650,8 +5834,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "reported_by",
-        "irName": "reportedBy",
+        "name": "status",
+        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8661,8 +5845,41 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "assigned_to",
-        "irName": "assignedTo",
+        "name": "is_template",
+        "irName": "isTemplate",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tags",
+        "irName": "tags",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "auto_populate",
+        "irName": "autoPopulate",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scope",
+        "irName": "scope",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8672,8 +5889,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "scheduled_date",
-        "irName": "scheduledDate",
+        "name": "deleted_at",
+        "irName": "deletedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -8683,8 +5900,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "completed_date",
-        "irName": "completedDate",
+        "name": "created_at",
+        "irName": "createdAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -8694,8 +5911,110 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "estimated_cost",
-        "irName": "estimatedCost",
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CommandBoardCard": {
+    "accessor": "command_board_cards",
+    "dbName": "command_board_cards",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_id",
+        "irName": "boardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "content",
+        "irName": "content",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_type",
+        "irName": "cardType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "position_x",
+        "irName": "positionX",
         "type": "Decimal",
         "isEnum": false,
         "isList": false,
@@ -8705,8 +6024,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "actual_cost",
-        "irName": "actualCost",
+        "name": "position_y",
+        "irName": "positionY",
         "type": "Decimal",
         "isEnum": false,
         "isList": false,
@@ -8716,8 +6035,41 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "parts_used",
-        "irName": "partsUsed",
+        "name": "width",
+        "irName": "width",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "height",
+        "irName": "height",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "z_index",
+        "irName": "zIndex",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "color",
+        "irName": "color",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8727,8 +6079,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "vendor_id",
-        "irName": "vendorId",
+        "name": "metadata",
+        "irName": "metadata",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -8738,13 +6090,517 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "notes",
-        "irName": "notes",
+        "name": "group_id",
+        "irName": "groupId",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
         "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_id",
+        "irName": "entityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_type",
+        "irName": "entityType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CommandBoardGroup": {
+    "accessor": "command_board_groups",
+    "dbName": "command_board_groups",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_id",
+        "irName": "boardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "color",
+        "irName": "color",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "collapsed",
+        "irName": "collapsed",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "position_x",
+        "irName": "positionX",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "position_y",
+        "irName": "positionY",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "width",
+        "irName": "width",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "height",
+        "irName": "height",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "z_index",
+        "irName": "zIndex",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CommandBoardConnection": {
+    "accessor": "command_board_connections",
+    "dbName": "command_board_connections",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_id",
+        "irName": "boardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "from_card_id",
+        "irName": "fromCardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "to_card_id",
+        "irName": "toCardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "relationship_type",
+        "irName": "relationshipType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "label",
+        "irName": "label",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "visible",
+        "irName": "visible",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CommandBoardLayout": {
+    "accessor": "command_board_layouts",
+    "dbName": "command_board_layouts",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "board_id",
+        "irName": "boardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "user_id",
+        "irName": "userId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "viewport",
+        "irName": "viewport",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "visible_cards",
+        "irName": "visibleCards",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "grid_size",
+        "irName": "gridSize",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "show_grid",
+        "irName": "showGrid",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "snap_to_grid",
+        "irName": "snapToGrid",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -13028,9 +10884,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "Facility": {
-    "accessor": "facilities",
-    "dbName": "facilities",
+  "Budget": {
+    "accessor": "budgets",
+    "dbName": "budgets",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -13046,7 +10902,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -13073,240 +10929,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "code",
-        "irName": "code",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "facility_type",
-        "irName": "facilityType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "address_line1",
-        "irName": "addressLine1",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "address_line2",
-        "irName": "addressLine2",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "city",
-        "irName": "city",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "state",
-        "irName": "state",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "postal_code",
-        "irName": "postalCode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "country",
-        "irName": "country",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "FacilityArea": {
-    "accessor": "facility_areas",
-    "dbName": "facility_areas",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_id",
-        "irName": "venueId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "code",
-        "irName": "code",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "area_type",
-        "irName": "areaType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "floor",
-        "irName": "floor",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "description",
         "irName": "description",
         "type": "String",
@@ -13318,8 +10940,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "square_feet",
-        "irName": "squareFeet",
+        "name": "fiscal_year",
+        "irName": "fiscalYear",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_amount",
+        "irName": "totalAmount",
         "type": "Decimal",
         "isEnum": false,
         "isList": false,
@@ -13329,154 +10962,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "FacilityAsset": {
-    "accessor": "facility_assets",
-    "dbName": "facility_assets",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "facility_id",
-        "irName": "facilityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "area_id",
-        "irName": "areaId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "asset_type",
-        "irName": "assetType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "asset_class",
-        "irName": "assetClass",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "purchase_date",
-        "irName": "purchaseDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "purchase_price",
-        "irName": "purchasePrice",
+        "name": "allocated_amount",
+        "irName": "allocatedAmount",
         "type": "Decimal",
         "isEnum": false,
         "isList": false,
@@ -13486,399 +10973,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "current_value",
-        "irName": "currentValue",
+        "name": "spent_amount",
+        "irName": "spentAmount",
         "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "depreciation_rate",
-        "irName": "depreciationRate",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "serial_number",
-        "irName": "serialNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "manufacturer",
-        "irName": "manufacturer",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "model",
-        "irName": "model",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "warranty_expiry",
-        "irName": "warrantyExpiry",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_maintenance_at",
-        "irName": "lastMaintenanceAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "next_maintenance_at",
-        "irName": "nextMaintenanceAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "FacilitySchedule": {
-    "accessor": "facility_schedules",
-    "dbName": "facility_schedules",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "facility_id",
-        "irName": "facilityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "area_id",
-        "irName": "areaId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "schedule_type",
-        "irName": "scheduleType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "start_date",
-        "irName": "startDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_date",
-        "irName": "endDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "FacilityWorkOrder": {
-    "accessor": "facility_work_orders",
-    "dbName": "facility_work_orders",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "facility_id",
-        "irName": "facilityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "area_id",
-        "irName": "areaId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "asset_id",
-        "irName": "assetId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -13909,8 +11006,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "requested_by",
-        "irName": "requestedBy",
+        "name": "department_id",
+        "irName": "departmentId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -13920,8 +11017,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "assigned_to",
-        "irName": "assignedTo",
+        "name": "approved_by",
+        "irName": "approvedBy",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -13931,30 +11028,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "estimated_cost",
-        "irName": "estimatedCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_cost",
-        "irName": "actualCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_date",
-        "irName": "scheduledDate",
+        "name": "approved_at",
+        "irName": "approvedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -13964,24 +11039,13 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "completed_date",
-        "irName": "completedDate",
+        "name": "locked_at",
+        "irName": "lockedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -14009,9 +11073,1844 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "Ingredient": {
-    "accessor": "ingredients",
-    "dbName": "ingredients",
+  "CollectionCase": {
+    "accessor": "collection_cases",
+    "dbName": "collection_cases",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invoice_id",
+        "irName": "invoiceId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invoice_number",
+        "irName": "invoiceNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_name",
+        "irName": "clientName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "original_amount",
+        "irName": "originalAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "outstanding_amount",
+        "irName": "outstandingAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "collected_amount",
+        "irName": "collectedAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dunning_stage",
+        "irName": "dunningStage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "days_overdue",
+        "irName": "daysOverdue",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "aging_bucket",
+        "irName": "agingBucket",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_at",
+        "irName": "assignedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "has_payment_plan",
+        "irName": "hasPaymentPlan",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payment_plan_id",
+        "irName": "paymentPlanId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "next_payment_due",
+        "irName": "nextPaymentDue",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_disputed",
+        "irName": "isDisputed",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dispute_reason",
+        "irName": "disputeReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dispute_resolved_at",
+        "irName": "disputeResolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_escalated_to_legal",
+        "irName": "isEscalatedToLegal",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "legal_case_number",
+        "irName": "legalCaseNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "legal_firm",
+        "irName": "legalFirm",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "internal_notes",
+        "irName": "internalNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_activity_at",
+        "irName": "lastActivityAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved_at",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "closed_at",
+        "irName": "closedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CollectionAction": {
+    "accessor": "collection_actions",
+    "dbName": "collection_actions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "case_id",
+        "irName": "caseId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "action_type",
+        "irName": "actionType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "direction",
+        "irName": "direction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contacted_by",
+        "irName": "contactedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contact_name",
+        "irName": "contactName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contact_method",
+        "irName": "contactMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subject",
+        "irName": "subject",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "outcome",
+        "irName": "outcome",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "next_action_date",
+        "irName": "nextActionDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promise_amount",
+        "irName": "promiseAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promise_date",
+        "irName": "promiseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_for",
+        "irName": "scheduledFor",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CollectionPaymentPlan": {
+    "accessor": "collection_payment_plans",
+    "dbName": "collection_payment_plans",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "case_id",
+        "irName": "caseId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_amount",
+        "irName": "totalAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "installment_amount",
+        "irName": "installmentAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "installment_count",
+        "irName": "installmentCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_installments",
+        "irName": "completedInstallments",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "start_date",
+        "irName": "startDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "end_date",
+        "irName": "endDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "frequency",
+        "irName": "frequency",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "next_payment_date",
+        "irName": "nextPaymentDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "defaulted_at",
+        "irName": "defaultedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Invoice": {
+    "accessor": "invoices",
+    "dbName": "invoices",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "versionProperty": "version",
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invoice_number",
+        "irName": "invoiceNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subtotal",
+        "irName": "subtotal",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_amount",
+        "irName": "taxAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discount_amount",
+        "irName": "discountAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total",
+        "irName": "total",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "amount_paid",
+        "irName": "amountPaid",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "amount_due",
+        "irName": "amountDue",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payment_terms",
+        "irName": "paymentTerms",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "due_date",
+        "irName": "dueDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "paid_at",
+        "irName": "paidAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_percentage",
+        "irName": "depositPercentage",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_required",
+        "irName": "depositRequired",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deposit_paid",
+        "irName": "depositPaid",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "issued_at",
+        "irName": "issuedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sent_at",
+        "irName": "sentAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "viewed_at",
+        "irName": "viewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "overdue_since",
+        "irName": "overdueSince",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reminder_count",
+        "irName": "reminderCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_reminder_at",
+        "irName": "lastReminderAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quick_books_id",
+        "irName": "quickBooksId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "goodshuffle_id",
+        "irName": "goodshuffleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "external_sync_status",
+        "irName": "externalSyncStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "internal_notes",
+        "irName": "internalNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "line_items",
+        "irName": "lineItems",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PaymentMethod": {
+    "accessor": "payment_methods",
+    "dbName": "payment_methods",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "external_method_id",
+        "irName": "externalMethodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_last_four",
+        "irName": "cardLastFour",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_network",
+        "irName": "cardNetwork",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_expiry_month",
+        "irName": "cardExpiryMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_expiry_year",
+        "irName": "cardExpiryYear",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "card_holder_name",
+        "irName": "cardHolderName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bank_account_last_four",
+        "irName": "bankAccountLastFour",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bank_account_type",
+        "irName": "bankAccountType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bank_routing_number",
+        "irName": "bankRoutingNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "wallet_provider",
+        "irName": "walletProvider",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "wallet_email",
+        "irName": "walletEmail",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_default",
+        "irName": "isDefault",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraud_flagged",
+        "irName": "fraudFlagged",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verified_at",
+        "irName": "verifiedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verification_method",
+        "irName": "verificationMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "nickname",
+        "irName": "nickname",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expires_at",
+        "irName": "expiresAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Payment": {
+    "accessor": "payments",
+    "dbName": "payments",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "versionProperty": "version",
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "amount",
+        "irName": "amount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currency",
+        "irName": "currency",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "method_type",
+        "irName": "methodType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invoice_id",
+        "irName": "invoiceId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "gateway_transaction_id",
+        "irName": "gatewayTransactionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "gateway_payment_method_id",
+        "irName": "gatewayPaymentMethodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "processor",
+        "irName": "processor",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "processor_response_code",
+        "irName": "processorResponseCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "processor_response_message",
+        "irName": "processorResponseMessage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "processed_at",
+        "irName": "processedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "refunded_at",
+        "irName": "refundedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "chargeback_at",
+        "irName": "chargebackAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraud_status",
+        "irName": "fraudStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraud_score",
+        "irName": "fraudScore",
+        "type": "Float",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reviewed_at",
+        "irName": "reviewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reviewed_by",
+        "irName": "reviewedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "external_reference",
+        "irName": "externalReference",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PricingTier": {
+    "accessor": "pricing_tiers",
+    "dbName": "pricing_tiers",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -14043,8 +12942,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "name",
-        "irName": "name",
+        "name": "catalog_entry_id",
+        "irName": "catalogEntryId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -14054,8 +12953,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "category",
-        "irName": "category",
+        "name": "tier_name",
+        "irName": "tierName",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -14065,8 +12964,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "default_unit_id",
-        "irName": "defaultUnitId",
+        "name": "min_quantity",
+        "irName": "minQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "max_quantity",
+        "irName": "maxQuantity",
         "type": "Int",
         "isEnum": false,
         "isList": false,
@@ -14076,8 +12986,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "density_g_per_ml",
-        "irName": "densityGPerMl",
+        "name": "unit_cost",
+        "irName": "unitCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discount_percent",
+        "irName": "discountPercent",
         "type": "Decimal",
         "isEnum": false,
         "isList": false,
@@ -14087,8 +13008,230 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "shelf_life_days",
-        "irName": "shelfLifeDays",
+        "name": "effective_from",
+        "irName": "effectiveFrom",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_to",
+        "irName": "effectiveTo",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "RevenueRecognitionSchedule": {
+    "accessor": "revenue_recognition_schedules",
+    "dbName": "revenue_recognition_schedules",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invoice_id",
+        "irName": "invoiceId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contract_id",
+        "irName": "contractId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "client_id",
+        "irName": "clientId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_amount",
+        "irName": "totalAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recognized_amount",
+        "irName": "recognizedAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "remaining_amount",
+        "irName": "remainingAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "method",
+        "irName": "method",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "start_date",
+        "irName": "startDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "end_date",
+        "irName": "endDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recognition_period",
+        "irName": "recognitionPeriod",
         "type": "Int",
         "isEnum": false,
         "isList": false,
@@ -14098,8 +13241,52 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "storage_instructions",
-        "irName": "storageInstructions",
+        "name": "service_start_date",
+        "irName": "serviceStartDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "service_end_date",
+        "irName": "serviceEndDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_milestones",
+        "irName": "totalMilestones",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_milestones",
+        "irName": "completedMilestones",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -14109,8 +13296,377 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "allergens",
-        "irName": "allergens",
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "RevenueRecognitionLine": {
+    "accessor": "revenue_recognition_lines",
+    "dbName": "revenue_recognition_lines",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schedule_id",
+        "irName": "scheduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sequence",
+        "irName": "sequence",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "amount",
+        "irName": "amount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recognized_amount",
+        "irName": "recognizedAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "due_date",
+        "irName": "dueDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recognized_at",
+        "irName": "recognizedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "milestone_id",
+        "irName": "milestoneId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "milestone_name",
+        "irName": "milestoneName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "milestone_description",
+        "irName": "milestoneDescription",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "SmsAutomationRule": {
+    "accessor": "sms_automation_rules",
+    "dbName": "sms_automation_rules",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_type",
+        "irName": "triggerType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_config",
+        "irName": "triggerConfig",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "template_id",
+        "irName": "templateId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "custom_message",
+        "irName": "customMessage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipient_type",
+        "irName": "recipientType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipient_config",
+        "irName": "recipientConfig",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -14131,9 +13687,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "inventory_item_id",
-        "irName": "inventoryItemId",
-        "type": "String",
+        "name": "priority",
+        "irName": "priority",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -14142,19 +13698,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "current_lot_number",
-        "irName": "currentLotNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "current_lot_received_at",
-        "irName": "currentLotReceivedAt",
+        "name": "deleted_at",
+        "irName": "deletedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -14164,8 +13709,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "current_lot_expires_at",
-        "irName": "currentLotExpiresAt",
+        "name": "created_at",
+        "irName": "createdAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -14175,8 +13720,87 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "is_recalled",
-        "irName": "isRecalled",
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "VersionedEntity": {
+    "accessor": "versioned_entities",
+    "dbName": "versioned_entities",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_type",
+        "irName": "entityType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_id",
+        "irName": "entityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_name",
+        "irName": "entityName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_locked",
+        "irName": "isLocked",
         "type": "Boolean",
         "isEnum": false,
         "isList": false,
@@ -14186,8 +13810,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "recall_reason",
-        "irName": "recallReason",
+        "name": "current_version_id",
+        "irName": "currentVersionId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -14197,8 +13821,1320 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "recalled_at",
-        "irName": "recalledAt",
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "EntityVersion": {
+    "accessor": "entity_versions",
+    "dbName": "entity_versions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versioned_entity_id",
+        "irName": "versionedEntityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "version_number",
+        "irName": "versionNumber",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "change_reason",
+        "irName": "changeReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "change_summary",
+        "irName": "changeSummary",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "change_type",
+        "irName": "changeType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "snapshot_data",
+        "irName": "snapshotData",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_approved",
+        "irName": "isApproved",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_by",
+        "irName": "createdBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "VersionApproval": {
+    "accessor": "version_approvals",
+    "dbName": "version_approvals",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_version_id",
+        "irName": "entityVersionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approver_id",
+        "irName": "approverId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "comments",
+        "irName": "comments",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reviewed_at",
+        "irName": "reviewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "BulkOrderRule": {
+    "accessor": "bulk_order_rules",
+    "dbName": "bulk_order_rules",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "catalog_entry_id",
+        "irName": "catalogEntryId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rule_name",
+        "irName": "ruleName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "minimum_quantity",
+        "irName": "minimumQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rule_type",
+        "irName": "ruleType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "threshold_quantity",
+        "irName": "thresholdQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "action",
+        "irName": "action",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discount_percent",
+        "irName": "discountPercent",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "free_item_quantity",
+        "irName": "freeItemQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shipping_included",
+        "irName": "shippingIncluded",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_from",
+        "irName": "effectiveFrom",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_to",
+        "irName": "effectiveTo",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "CycleCountSession": {
+    "accessor": "cycle_count_sessions",
+    "dbName": "cycle_count_sessions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "session_id",
+        "irName": "sessionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "session_name",
+        "irName": "sessionName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "count_type",
+        "irName": "countType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_date",
+        "irName": "scheduledDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "started_at",
+        "irName": "startedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "finalized_at",
+        "irName": "finalizedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_items",
+        "irName": "totalItems",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "counted_items",
+        "irName": "countedItems",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_variance",
+        "irName": "totalVariance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "variance_percentage",
+        "irName": "variancePercentage",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_by_id",
+        "irName": "createdById",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by_id",
+        "irName": "approvedById",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "CycleCountRecord": {
+    "accessor": "cycle_count_records",
+    "dbName": "cycle_count_records",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "session_id",
+        "irName": "sessionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_id",
+        "irName": "itemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_number",
+        "irName": "itemNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_name",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "storage_location_id",
+        "irName": "storageLocationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expected_quantity",
+        "irName": "expectedQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "counted_quantity",
+        "irName": "countedQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "variance",
+        "irName": "variance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "variance_pct",
+        "irName": "variancePct",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "count_date",
+        "irName": "countDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "counted_by_id",
+        "irName": "countedById",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "barcode",
+        "irName": "barcode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_verified",
+        "irName": "isVerified",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verified_by_id",
+        "irName": "verifiedById",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verified_at",
+        "irName": "verifiedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sync_status",
+        "irName": "syncStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "offline_id",
+        "irName": "offlineId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "VarianceReport": {
+    "accessor": "variance_reports",
+    "dbName": "variance_reports",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "session_id",
+        "irName": "sessionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "report_type",
+        "irName": "reportType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_id",
+        "irName": "itemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_number",
+        "irName": "itemNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_name",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expected_quantity",
+        "irName": "expectedQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "counted_quantity",
+        "irName": "countedQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "variance",
+        "irName": "variance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "variance_pct",
+        "irName": "variancePct",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accuracy_score",
+        "irName": "accuracyScore",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "adjustment_type",
+        "irName": "adjustmentType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "adjustment_amount",
+        "irName": "adjustmentAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "adjustment_date",
+        "irName": "adjustmentDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejected_at",
+        "irName": "rejectedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejected_by",
+        "irName": "rejectedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejection_reason",
+        "irName": "rejectionReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "root_cause",
+        "irName": "rootCause",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolution_notes",
+        "irName": "resolutionNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved_by_id",
+        "irName": "resolvedById",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved_at",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "generated_at",
+        "irName": "generatedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -16678,17 +17614,16 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "Invoice": {
-    "accessor": "invoices",
-    "dbName": "invoices",
+  "Dish": {
+    "accessor": "dishes",
+    "dbName": "dishes",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
       "id"
     ],
     "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "versionProperty": "version",
+    "hasDeletedAt": true,
     "fields": [
       {
         "name": "id",
@@ -16713,163 +17648,64 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "invoice_number",
-        "irName": "invoiceNumber",
+        "name": "recipe_id",
+        "irName": "recipeId",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "type",
-        "irName": "type",
+        "name": "name",
+        "irName": "name",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
+        "name": "description",
+        "irName": "description",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "client_id",
-        "irName": "clientId",
+        "name": "category",
+        "irName": "category",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
+        "optional": true,
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "event_id",
-        "irName": "eventId",
+        "name": "service_style",
+        "irName": "serviceStyle",
         "type": "String",
         "isEnum": false,
         "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subtotal",
-        "irName": "subtotal",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_amount",
-        "irName": "taxAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discount_amount",
-        "irName": "discountAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total",
-        "irName": "total",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "amount_paid",
-        "irName": "amountPaid",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "amount_due",
-        "irName": "amountDue",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payment_terms",
-        "irName": "paymentTerms",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "due_date",
-        "irName": "dueDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "paid_at",
-        "irName": "paidAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
         "optional": true,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "deposit_percentage",
-        "irName": "depositPercentage",
-        "type": "Decimal",
+        "name": "default_container_id",
+        "irName": "defaultContainerId",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -16878,9 +17714,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "deposit_required",
-        "irName": "depositRequired",
-        "type": "Decimal",
+        "name": "presentation_image_url",
+        "irName": "presentationImageUrl",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -16889,63 +17725,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "deposit_paid",
-        "irName": "depositPaid",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "issued_at",
-        "irName": "issuedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sent_at",
-        "irName": "sentAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "viewed_at",
-        "irName": "viewedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "overdue_since",
-        "irName": "overdueSince",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reminder_count",
-        "irName": "reminderCount",
+        "name": "min_prep_lead_days",
+        "irName": "minPrepLeadDays",
         "type": "Int",
         "isEnum": false,
         "isList": false,
@@ -16955,8 +17736,151 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "last_reminder_at",
-        "irName": "lastReminderAt",
+        "name": "max_prep_lead_days",
+        "irName": "maxPrepLeadDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "portion_size_description",
+        "irName": "portionSizeDescription",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dietary_tags",
+        "irName": "dietaryTags",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "allergens",
+        "irName": "allergens",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "price_per_person",
+        "irName": "pricePerPerson",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cost_per_person",
+        "irName": "costPerPerson",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_seasonal",
+        "irName": "isSeasonal",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "season_label",
+        "irName": "seasonLabel",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "season_start_month",
+        "irName": "seasonStartMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "season_end_month",
+        "irName": "seasonEndMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_eighty_six",
+        "irName": "isEightySix",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eighty_six_reason",
+        "irName": "eightySixReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eighty_six_at",
+        "irName": "eightySixAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -16966,79 +17890,247 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "quick_books_id",
-        "irName": "quickBooksId",
-        "type": "String",
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "goodshuffle_id",
-        "irName": "goodshuffleId",
-        "type": "String",
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "external_sync_status",
-        "irName": "externalSyncStatus",
-        "type": "String",
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
+        "hasDefault": false,
+        "isUpdatedAt": true,
         "isId": false
-      },
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Ingredient": {
+    "accessor": "ingredients",
+    "dbName": "ingredients",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
       {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "internal_notes",
-        "irName": "internalNotes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "line_items",
-        "irName": "lineItems",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
+        "name": "id",
+        "irName": "id",
         "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": false,
         "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "default_unit_id",
+        "irName": "defaultUnitId",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "density_g_per_ml",
+        "irName": "densityGPerMl",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shelf_life_days",
+        "irName": "shelfLifeDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "storage_instructions",
+        "irName": "storageInstructions",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "allergens",
+        "irName": "allergens",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inventory_item_id",
+        "irName": "inventoryItemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "current_lot_number",
+        "irName": "currentLotNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "current_lot_received_at",
+        "irName": "currentLotReceivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "current_lot_expires_at",
+        "irName": "currentLotExpiresAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_recalled",
+        "irName": "isRecalled",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recall_reason",
+        "irName": "recallReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recalled_at",
+        "irName": "recalledAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -19123,1459 +20215,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "KnowledgeBaseEntry": {
-    "accessor": "knowledge_base_entries",
-    "dbName": "knowledge_base_entries",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "category",
-        "irName": "category",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "content",
-        "irName": "content",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tags",
-        "irName": "tags",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "author_id",
-        "irName": "authorId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "published_at",
-        "irName": "publishedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "view_count",
-        "irName": "viewCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "LaborBudget": {
-    "accessor": "labor_budgets",
-    "dbName": "labor_budgets",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "period_start",
-        "irName": "periodStart",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "period_end",
-        "irName": "periodEnd",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "budget_amount",
-        "irName": "budgetAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_amount",
-        "irName": "actualAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "budget_type",
-        "irName": "budgetType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_by",
-        "irName": "createdBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "BudgetAlert": {
-    "accessor": "budget_alerts",
-    "dbName": "budget_alerts",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "budget_id",
-        "irName": "budgetId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "alert_type",
-        "irName": "alertType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "threshold_pct",
-        "irName": "thresholdPct",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_pct",
-        "irName": "actualPct",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "message",
-        "irName": "message",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_acknowledged",
-        "irName": "isAcknowledged",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "acknowledged_by",
-        "irName": "acknowledgedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "acknowledged_at",
-        "irName": "acknowledgedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved",
-        "irName": "resolved",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved_at",
-        "irName": "resolvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Lead": {
-    "accessor": "leads",
-    "dbName": "leads",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "source",
-        "irName": "source",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "company_name",
-        "irName": "companyName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contact_name",
-        "irName": "contactName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contact_email",
-        "irName": "contactEmail",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contact_phone",
-        "irName": "contactPhone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_type",
-        "irName": "eventType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_date",
-        "irName": "eventDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_guests",
-        "irName": "estimatedGuests",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_value",
-        "irName": "estimatedValue",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "converted_to_client_id",
-        "irName": "convertedToClientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "converted_at",
-        "irName": "convertedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Driver": {
-    "accessor": "drivers",
-    "dbName": "drivers",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "email",
-        "irName": "email",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "license_number",
-        "irName": "licenseNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "license_expiry",
-        "irName": "licenseExpiry",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vehicle_id",
-        "irName": "vehicleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Vehicle": {
-    "accessor": "vehicles",
-    "dbName": "vehicles",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "make",
-        "irName": "make",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "model",
-        "irName": "model",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "year",
-        "irName": "year",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "plate_number",
-        "irName": "plateNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vin",
-        "irName": "vin",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "capacity_weight",
-        "irName": "capacityWeight",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "capacity_volume",
-        "irName": "capacityVolume",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "fuel_type",
-        "irName": "fuelType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "mileage",
-        "irName": "mileage",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "LogisticsRoute": {
-    "accessor": "deliveryRoute",
-    "dbName": "logistics_routes",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vehicle_id",
-        "irName": "vehicleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "driver_id",
-        "irName": "driverId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "start_location",
-        "irName": "startLocation",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_location",
-        "irName": "endLocation",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "distance",
-        "irName": "distance",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_duration",
-        "irName": "estimatedDuration",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_start",
-        "irName": "scheduledStart",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_end",
-        "irName": "scheduledEnd",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_start",
-        "irName": "actualStart",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_end",
-        "irName": "actualEnd",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "stops",
-        "irName": "stops",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_stops",
-        "irName": "completedStops",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "delay_minutes",
-        "irName": "delayMinutes",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "LogisticsDispatch": {
-    "accessor": "logistics_dispatches",
-    "dbName": "logistics_dispatches",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "route_id",
-        "irName": "routeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "driver_id",
-        "irName": "driverId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vehicle_id",
-        "irName": "vehicleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_delivery_time",
-        "irName": "estimatedDeliveryTime",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_delivery_time",
-        "irName": "actualDeliveryTime",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "departed_at",
-        "irName": "departedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "failure_reason",
-        "irName": "failureReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
   "Menu": {
     "accessor": "menus",
     "dbName": "menus",
@@ -20922,1489 +20561,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ],
     "requiresTenantConnect": true
-  },
-  "Notification": {
-    "accessor": "notifications",
-    "dbName": "notifications",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recipient_employee_id",
-        "irName": "recipientEmployeeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notification_type",
-        "irName": "notificationType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "body",
-        "irName": "body",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "action_url",
-        "irName": "actionUrl",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_read",
-        "irName": "isRead",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "read_at",
-        "irName": "readAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "correlation_id",
-        "irName": "correlationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "OverrideAudit": {
-    "accessor": "override_audits",
-    "dbName": "override_audit",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_type",
-        "irName": "entityType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_id",
-        "irName": "entityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "constraint_id",
-        "irName": "constraintId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "guard_expression",
-        "irName": "guardExpression",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "overridden_by",
-        "irName": "overriddenBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "override_reason",
-        "irName": "overrideReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "authorized_by",
-        "irName": "authorizedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "authorized_at",
-        "irName": "authorizedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "PaymentMethod": {
-    "accessor": "payment_methods",
-    "dbName": "payment_methods",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "external_method_id",
-        "irName": "externalMethodId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "type",
-        "irName": "type",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_last_four",
-        "irName": "cardLastFour",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_network",
-        "irName": "cardNetwork",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_expiry_month",
-        "irName": "cardExpiryMonth",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_expiry_year",
-        "irName": "cardExpiryYear",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "card_holder_name",
-        "irName": "cardHolderName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "bank_account_last_four",
-        "irName": "bankAccountLastFour",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "bank_account_type",
-        "irName": "bankAccountType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "bank_routing_number",
-        "irName": "bankRoutingNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "wallet_provider",
-        "irName": "walletProvider",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "wallet_email",
-        "irName": "walletEmail",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_default",
-        "irName": "isDefault",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "fraud_flagged",
-        "irName": "fraudFlagged",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "verified_at",
-        "irName": "verifiedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "verification_method",
-        "irName": "verificationMethod",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "nickname",
-        "irName": "nickname",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expires_at",
-        "irName": "expiresAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Payment": {
-    "accessor": "payments",
-    "dbName": "payments",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "versionProperty": "version",
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "amount",
-        "irName": "amount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "currency",
-        "irName": "currency",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "method_type",
-        "irName": "methodType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "invoice_id",
-        "irName": "invoiceId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "gateway_transaction_id",
-        "irName": "gatewayTransactionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "gateway_payment_method_id",
-        "irName": "gatewayPaymentMethodId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "processor",
-        "irName": "processor",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "processor_response_code",
-        "irName": "processorResponseCode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "processor_response_message",
-        "irName": "processorResponseMessage",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "processed_at",
-        "irName": "processedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "refunded_at",
-        "irName": "refundedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "chargeback_at",
-        "irName": "chargebackAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "fraud_status",
-        "irName": "fraudStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "fraud_score",
-        "irName": "fraudScore",
-        "type": "Float",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reviewed_at",
-        "irName": "reviewedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reviewed_by",
-        "irName": "reviewedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "external_reference",
-        "irName": "externalReference",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "PayrollPeriod": {
-    "accessor": "payroll_periods",
-    "dbName": "payroll_periods",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "period_start",
-        "irName": "periodStart",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "period_end",
-        "irName": "periodEnd",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
-  "EmployeeDeduction": {
-    "accessor": "employee_deductions",
-    "dbName": null,
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "employee_id",
-        "irName": "employeeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "type",
-        "irName": "type",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "amount",
-        "irName": "amount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "percentage",
-        "irName": "percentage",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_pre_tax",
-        "irName": "isPreTax",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_date",
-        "irName": "effectiveDate",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_date",
-        "irName": "endDate",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "max_annual_amount",
-        "irName": "maxAnnualAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "PayrollApprovalHistory": {
-    "accessor": "payroll_approval_histories",
-    "dbName": "payroll_approval_history",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payroll_run_id",
-        "irName": "payrollRunId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "action",
-        "irName": "action",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "previous_status",
-        "irName": "previousStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "new_status",
-        "irName": "newStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "performed_by",
-        "irName": "performedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "performed_at",
-        "irName": "performedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reason",
-        "irName": "reason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "PayrollRun": {
-    "accessor": "payroll_runs",
-    "dbName": "payroll_runs",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payroll_period_id",
-        "irName": "payrollPeriodId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "run_date",
-        "irName": "runDate",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_gross",
-        "irName": "totalGross",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_deductions",
-        "irName": "totalDeductions",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_net",
-        "irName": "totalNet",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejected_by",
-        "irName": "rejectedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "paid_at",
-        "irName": "paidAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reject_reason",
-        "irName": "rejectReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
   },
   "PrepComment": {
     "accessor": "prep_comments",
@@ -23754,2303 +21910,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "PricingTier": {
-    "accessor": "pricing_tiers",
-    "dbName": "pricing_tiers",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "catalog_entry_id",
-        "irName": "catalogEntryId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tier_name",
-        "irName": "tierName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "min_quantity",
-        "irName": "minQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "max_quantity",
-        "irName": "maxQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_cost",
-        "irName": "unitCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discount_percent",
-        "irName": "discountPercent",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_from",
-        "irName": "effectiveFrom",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_to",
-        "irName": "effectiveTo",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
-  "PurchaseRequisition": {
-    "accessor": "purchase_requisitions",
-    "dbName": "purchase_requisitions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "requisition_number",
-        "irName": "requisitionNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "requested_by",
-        "irName": "requestedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "request_date",
-        "irName": "requestDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "required_by",
-        "irName": "requiredBy",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "department",
-        "irName": "department",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "justification",
-        "irName": "justification",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subtotal",
-        "irName": "subtotal",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_tax",
-        "irName": "estimatedTax",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_shipping",
-        "irName": "estimatedShipping",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_total",
-        "irName": "estimatedTotal",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "manager_approval_by",
-        "irName": "managerApprovalBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "manager_approval_at",
-        "irName": "managerApprovalAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "finance_approval_by",
-        "irName": "financeApprovalBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "finance_approval_at",
-        "irName": "financeApprovalAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "converted_to_po_id",
-        "irName": "convertedToPoId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "converted_at",
-        "irName": "convertedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejection_reason",
-        "irName": "rejectionReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "submitted_at",
-        "irName": "submittedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_category",
-        "irName": "itemCategory",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_count",
-        "irName": "itemCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "PurchaseRequisitionItem": {
-    "accessor": "purchase_requisition_items",
-    "dbName": "purchase_requisition_items",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "requisition_id",
-        "irName": "requisitionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_id",
-        "irName": "itemId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_name",
-        "irName": "itemName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quantity_requested",
-        "irName": "quantityRequested",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_id",
-        "irName": "unitId",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_unit_cost",
-        "irName": "estimatedUnitCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "estimated_total_cost",
-        "irName": "estimatedTotalCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "suggested_vendor_id",
-        "irName": "suggestedVendorId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "suggested_vendor_name",
-        "irName": "suggestedVendorName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "specifications",
-        "irName": "specifications",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Proposal": {
-    "accessor": "proposals",
-    "dbName": "proposals",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "proposal_number",
-        "irName": "proposalNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_id",
-        "irName": "leadId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_date",
-        "irName": "eventDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_type",
-        "irName": "eventType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "guest_count",
-        "irName": "guestCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_name",
-        "irName": "venueName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "venue_address",
-        "irName": "venueAddress",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subtotal",
-        "irName": "subtotal",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_rate",
-        "irName": "taxRate",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_amount",
-        "irName": "taxAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discount_amount",
-        "irName": "discountAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total",
-        "irName": "total",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "valid_until",
-        "irName": "validUntil",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sent_at",
-        "irName": "sentAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "viewed_at",
-        "irName": "viewedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "accepted_at",
-        "irName": "acceptedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rejected_at",
-        "irName": "rejectedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "terms_and_conditions",
-        "irName": "termsAndConditions",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "line_item_count",
-        "irName": "lineItemCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "public_token",
-        "irName": "publicToken",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "ProposalLineItem": {
-    "accessor": "proposal_line_items",
-    "dbName": "proposal_line_items",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "proposal_id",
-        "irName": "proposalId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_type",
-        "irName": "itemType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "category",
-        "irName": "category",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quantity",
-        "irName": "quantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_of_measure",
-        "irName": "unitOfMeasure",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_price",
-        "irName": "unitPrice",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total",
-        "irName": "total",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_price",
-        "irName": "totalPrice",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sort_order",
-        "irName": "sortOrder",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "PurchaseOrder": {
-    "accessor": "purchase_orders",
-    "dbName": "purchase_orders",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "po_number",
-        "irName": "poNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vendor_id",
-        "irName": "vendorId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "order_date",
-        "irName": "orderDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expected_delivery_date",
-        "irName": "expectedDeliveryDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "actual_delivery_date",
-        "irName": "actualDeliveryDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "subtotal",
-        "irName": "subtotal",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_amount",
-        "irName": "taxAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "shipping_amount",
-        "irName": "shippingAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total",
-        "irName": "total",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "submitted_by",
-        "irName": "submittedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "submitted_at",
-        "irName": "submittedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "received_by",
-        "irName": "receivedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "received_at",
-        "irName": "receivedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_count",
-        "irName": "itemCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "PurchaseOrderItem": {
-    "accessor": "purchase_order_items",
-    "dbName": "purchase_order_items",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "purchase_order_id",
-        "irName": "purchaseOrderId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_id",
-        "irName": "itemId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quantity_ordered",
-        "irName": "quantityOrdered",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quantity_received",
-        "irName": "quantityReceived",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_id",
-        "irName": "unitId",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_cost",
-        "irName": "unitCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_cost",
-        "irName": "totalCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quality_status",
-        "irName": "qualityStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discrepancy_type",
-        "irName": "discrepancyType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "discrepancy_amount",
-        "irName": "discrepancyAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "QACheck": {
-    "accessor": "qa_checks",
-    "dbName": "qa_checks",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location",
-        "irName": "location",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "check_type",
-        "irName": "checkType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "result",
-        "irName": "result",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "inspector",
-        "irName": "inspector",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reinspected_at",
-        "irName": "reinspectedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "QACorrectiveAction": {
-    "accessor": "correctiveAction",
-    "dbName": "qa_corrective_actions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "check_id",
-        "irName": "checkId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolution_notes",
-        "irName": "resolutionNotes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "escalated_to",
-        "irName": "escalatedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "escalation_reason",
-        "irName": "escalationReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "due_date",
-        "irName": "dueDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "resolved_at",
-        "irName": "resolvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "escalated_at",
-        "irName": "escalatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "QATemperatureLog": {
-    "accessor": "temperatureLog",
-    "dbName": "qa_temperature_logs",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location",
-        "irName": "location",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "temperature",
-        "irName": "temperature",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit",
-        "irName": "unit",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment",
-        "irName": "equipment",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recorded_by",
-        "irName": "recordedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "logged_at",
-        "irName": "loggedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "RateLimitConfig": {
-    "accessor": "rate_limit_configs",
-    "dbName": "rate_limit_configs",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "endpoint_pattern",
-        "irName": "endpointPattern",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "window_ms",
-        "irName": "windowMs",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "max_requests",
-        "irName": "maxRequests",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "burst_allowance",
-        "irName": "burstAllowance",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
   "Recipe": {
     "accessor": "recipes",
     "dbName": "recipes",
@@ -26832,9 +22691,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "RevenueRecognitionSchedule": {
-    "accessor": "revenue_recognition_schedules",
-    "dbName": "revenue_recognition_schedules",
+  "Station": {
+    "accessor": "stations",
+    "dbName": "stations",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -26866,8 +22725,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "invoice_id",
-        "irName": "invoiceId",
+        "name": "location_id",
+        "irName": "locationId",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -26877,8 +22736,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "event_id",
-        "irName": "eventId",
+        "name": "name",
+        "irName": "name",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -26888,63 +22747,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "contract_id",
-        "irName": "contractId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "client_id",
-        "irName": "clientId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_amount",
-        "irName": "totalAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recognized_amount",
-        "irName": "recognizedAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "remaining_amount",
-        "irName": "remainingAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "method",
-        "irName": "method",
+        "name": "station_type",
+        "irName": "stationType",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -26954,41 +22758,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "start_date",
-        "irName": "startDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_date",
-        "irName": "endDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recognition_period",
-        "irName": "recognitionPeriod",
+        "name": "capacity_simultaneous_tasks",
+        "irName": "capacitySimultaneousTasks",
         "type": "Int",
         "isEnum": false,
         "isList": false,
@@ -26998,388 +22769,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "service_start_date",
-        "irName": "serviceStartDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "service_end_date",
-        "irName": "serviceEndDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_milestones",
-        "irName": "totalMilestones",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_milestones",
-        "irName": "completedMilestones",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "RevenueRecognitionLine": {
-    "accessor": "revenue_recognition_lines",
-    "dbName": "revenue_recognition_lines",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "schedule_id",
-        "irName": "scheduleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sequence",
-        "irName": "sequence",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "amount",
-        "irName": "amount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recognized_amount",
-        "irName": "recognizedAmount",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "due_date",
-        "irName": "dueDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recognized_at",
-        "irName": "recognizedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "milestone_id",
-        "irName": "milestoneId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "milestone_name",
-        "irName": "milestoneName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "milestone_description",
-        "irName": "milestoneDescription",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "RolePolicy": {
-    "accessor": "role_policies",
-    "dbName": "role_policies",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "role_id",
-        "irName": "roleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "role_name",
-        "irName": "roleName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "permissions",
-        "irName": "permissions",
-        "type": "String",
-        "isEnum": false,
-        "isList": true,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
+        "name": "equipment_list",
+        "irName": "equipmentList",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -27400,13 +22791,57 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "deleted_at",
-        "irName": "deletedAt",
+        "name": "in_maintenance",
+        "irName": "inMaintenance",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maintenance_reason",
+        "irName": "maintenanceReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maintenance_start_at",
+        "irName": "maintenanceStartAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "current_task_count",
+        "irName": "currentTaskCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27432,11 +22867,1094 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ]
+    ],
+    "requiresTenantConnect": true
   },
-  "SampleData": {
-    "accessor": "sample_datas",
-    "dbName": "sample_datas",
+  "Equipment": {
+    "accessor": "equipments",
+    "dbName": "equipment",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "serial_number",
+        "irName": "serialNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "manufacturer",
+        "irName": "manufacturer",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "model",
+        "irName": "model",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "purchase_date",
+        "irName": "purchaseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "warranty_expiry",
+        "irName": "warrantyExpiry",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_maintenance_date",
+        "irName": "lastMaintenanceDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "next_maintenance_date",
+        "irName": "nextMaintenanceDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maintenance_interval_days",
+        "irName": "maintenanceIntervalDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "usage_hours",
+        "irName": "usageHours",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "max_usage_hours",
+        "irName": "maxUsageHours",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "condition",
+        "irName": "condition",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "MaintenanceWorkOrder": {
+    "accessor": "maintenance_work_orders",
+    "dbName": "maintenance_work_orders",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "work_order_number",
+        "irName": "workOrderNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "area_id",
+        "irName": "areaId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipment_id",
+        "irName": "equipmentId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipment_name",
+        "irName": "equipmentName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reported_by",
+        "irName": "reportedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_date",
+        "irName": "scheduledDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_date",
+        "irName": "completedDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_cost",
+        "irName": "estimatedCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_cost",
+        "irName": "actualCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parts_used",
+        "irName": "partsUsed",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vendor_id",
+        "irName": "vendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Facility": {
+    "accessor": "facilities",
+    "dbName": "facilities",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "facility_type",
+        "irName": "facilityType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "address_line1",
+        "irName": "addressLine1",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "address_line2",
+        "irName": "addressLine2",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "city",
+        "irName": "city",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "state",
+        "irName": "state",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "postal_code",
+        "irName": "postalCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "country",
+        "irName": "country",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "FacilityArea": {
+    "accessor": "facility_areas",
+    "dbName": "facility_areas",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "venue_id",
+        "irName": "venueId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "area_type",
+        "irName": "areaType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "floor",
+        "irName": "floor",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "square_feet",
+        "irName": "squareFeet",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "FacilityAsset": {
+    "accessor": "facility_assets",
+    "dbName": "facility_assets",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "facility_id",
+        "irName": "facilityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "area_id",
+        "irName": "areaId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "asset_type",
+        "irName": "assetType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "asset_class",
+        "irName": "assetClass",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "purchase_date",
+        "irName": "purchaseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "purchase_price",
+        "irName": "purchasePrice",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "current_value",
+        "irName": "currentValue",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "depreciation_rate",
+        "irName": "depreciationRate",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "serial_number",
+        "irName": "serialNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "manufacturer",
+        "irName": "manufacturer",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "model",
+        "irName": "model",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "warranty_expiry",
+        "irName": "warrantyExpiry",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_maintenance_at",
+        "irName": "lastMaintenanceAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "next_maintenance_at",
+        "irName": "nextMaintenanceAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "FacilitySchedule": {
+    "accessor": "facility_schedules",
+    "dbName": "facility_schedules",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -27468,8 +23986,74 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "seeded_at",
-        "irName": "seededAt",
+        "name": "facility_id",
+        "irName": "facilityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "area_id",
+        "irName": "areaId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schedule_type",
+        "irName": "scheduleType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "start_date",
+        "irName": "startDate",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -27479,8 +24063,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "cleared_at",
-        "irName": "clearedAt",
+        "name": "end_date",
+        "irName": "endDate",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -27490,9 +24074,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "is_seeded",
-        "irName": "isSeeded",
-        "type": "Boolean",
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -27501,42 +24085,20 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "events_created",
-        "irName": "eventsCreated",
-        "type": "Int",
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "clients_created",
-        "irName": "clientsCreated",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "users_created",
-        "irName": "usersCreated",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "recipes_created",
-        "irName": "recipesCreated",
-        "type": "Int",
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -27568,16 +24130,238 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "Schedule": {
-    "accessor": "schedules",
-    "dbName": "schedules",
+  "FacilityWorkOrder": {
+    "accessor": "facility_work_orders",
+    "dbName": "facility_work_orders",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
       "id"
     ],
     "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "facility_id",
+        "irName": "facilityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "area_id",
+        "irName": "areaId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "asset_id",
+        "irName": "assetId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requested_by",
+        "irName": "requestedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_cost",
+        "irName": "estimatedCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_cost",
+        "irName": "actualCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_date",
+        "irName": "scheduledDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_date",
+        "irName": "completedDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "Driver": {
+    "accessor": "drivers",
+    "dbName": "drivers",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
     "fields": [
       {
         "name": "id",
@@ -27602,8 +24386,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "location_id",
-        "irName": "locationId",
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "email",
+        "irName": "email",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -27613,13 +24408,46 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "schedule_date",
-        "irName": "scheduleDate",
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "license_number",
+        "irName": "licenseNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "license_expiry",
+        "irName": "licenseExpiry",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vehicle_id",
+        "irName": "vehicleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27635,50 +24463,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "published_at",
-        "irName": "publishedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "published_by",
-        "irName": "publishedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
         "name": "notes",
         "irName": "notes",
         "type": "String",
@@ -27686,28 +24470,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "shift_count",
-        "irName": "shiftCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27736,17 +24498,16 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "ScheduleShift": {
-    "accessor": "schedule_shifts",
-    "dbName": "schedule_shifts",
+  "Vehicle": {
+    "accessor": "vehicles",
+    "dbName": "vehicles",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
       "id"
     ],
     "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "versionProperty": "version",
+    "hasDeletedAt": false,
     "fields": [
       {
         "name": "id",
@@ -27771,8 +24532,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "schedule_id",
-        "irName": "scheduleId",
+        "name": "make",
+        "irName": "make",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -27782,8 +24543,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "employee_id",
-        "irName": "employeeId",
+        "name": "model",
+        "irName": "model",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -27793,41 +24554,85 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "shift_start",
-        "irName": "shiftStart",
-        "type": "DateTime",
+        "name": "year",
+        "irName": "year",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "shift_end",
-        "irName": "shiftEnd",
-        "type": "DateTime",
+        "name": "plate_number",
+        "irName": "plateNumber",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "role_during_shift",
-        "irName": "roleDuringShift",
+        "name": "vin",
+        "irName": "vin",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "capacity_weight",
+        "irName": "capacityWeight",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "capacity_volume",
+        "irName": "capacityVolume",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fuel_type",
+        "irName": "fuelType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "mileage",
+        "irName": "mileage",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -27844,72 +24649,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "swap_offered_to",
-        "irName": "swapOfferedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "swap_status",
-        "irName": "swapStatus",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "swap_offered_at",
-        "irName": "swapOfferedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "swap_accepted_at",
-        "irName": "swapAcceptedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "inherited_context",
-        "irName": "inheritedContext",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -27937,6 +24676,407 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ],
     "requiresTenantConnect": true
+  },
+  "LogisticsRoute": {
+    "accessor": "deliveryRoute",
+    "dbName": "logistics_routes",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vehicle_id",
+        "irName": "vehicleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "driver_id",
+        "irName": "driverId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "start_location",
+        "irName": "startLocation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "end_location",
+        "irName": "endLocation",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "distance",
+        "irName": "distance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_duration",
+        "irName": "estimatedDuration",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_start",
+        "irName": "scheduledStart",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_end",
+        "irName": "scheduledEnd",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_start",
+        "irName": "actualStart",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_end",
+        "irName": "actualEnd",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "stops",
+        "irName": "stops",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_stops",
+        "irName": "completedStops",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delay_minutes",
+        "irName": "delayMinutes",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "LogisticsDispatch": {
+    "accessor": "logistics_dispatches",
+    "dbName": "logistics_dispatches",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "route_id",
+        "irName": "routeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "driver_id",
+        "irName": "driverId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vehicle_id",
+        "irName": "vehicleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_delivery_time",
+        "irName": "estimatedDeliveryTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_delivery_time",
+        "irName": "actualDeliveryTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "departed_at",
+        "irName": "departedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "failure_reason",
+        "irName": "failureReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
   },
   "Shipment": {
     "accessor": "shipments",
@@ -28450,9 +25590,412 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "requiresTenantConnect": true
   },
-  "SmsAutomationRule": {
-    "accessor": "sms_automation_rules",
-    "dbName": "sms_automation_rules",
+  "WorkOrder": {
+    "accessor": "work_orders",
+    "dbName": "work_orders",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipment_id",
+        "irName": "equipmentId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipment_name",
+        "irName": "equipmentName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduled_date",
+        "irName": "scheduledDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "WorkforceOptimization": {
+    "accessor": "workforce_optimizations",
+    "dbName": "workforce_optimizations",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optimization_type",
+        "irName": "optimizationType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "PerformancePrediction": {
+    "accessor": "performance_predictions",
+    "dbName": "performance_predictions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employee_id",
+        "irName": "employeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prediction_type",
+        "irName": "predictionType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prediction_horizon",
+        "irName": "predictionHorizon",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prediction_score",
+        "irName": "predictionScore",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "factors",
+        "irName": "factors",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expires_at",
+        "irName": "expiresAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "ApiKey": {
+    "accessor": "api_keys",
+    "dbName": "api_keys",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -28460,6 +26003,2870 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
     ],
     "whereAccessor": "tenant_id_id",
     "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "key_prefix",
+        "irName": "keyPrefix",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "hashed_key",
+        "irName": "hashedKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scopes",
+        "irName": "scopes",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_used_at",
+        "irName": "lastUsedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expires_at",
+        "irName": "expiresAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "revoked_at",
+        "irName": "revokedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_by_user_id",
+        "irName": "createdByUserId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "Notification": {
+    "accessor": "notifications",
+    "dbName": "notifications",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipient_employee_id",
+        "irName": "recipientEmployeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notification_type",
+        "irName": "notificationType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "body",
+        "irName": "body",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "action_url",
+        "irName": "actionUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_read",
+        "irName": "isRead",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "read_at",
+        "irName": "readAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correlation_id",
+        "irName": "correlationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "OverrideAudit": {
+    "accessor": "override_audits",
+    "dbName": "override_audit",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_type",
+        "irName": "entityType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity_id",
+        "irName": "entityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "constraint_id",
+        "irName": "constraintId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "guard_expression",
+        "irName": "guardExpression",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "overridden_by",
+        "irName": "overriddenBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "override_reason",
+        "irName": "overrideReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "authorized_by",
+        "irName": "authorizedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "authorized_at",
+        "irName": "authorizedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "RateLimitConfig": {
+    "accessor": "rate_limit_configs",
+    "dbName": "rate_limit_configs",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "endpoint_pattern",
+        "irName": "endpointPattern",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "window_ms",
+        "irName": "windowMs",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "max_requests",
+        "irName": "maxRequests",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "burst_allowance",
+        "irName": "burstAllowance",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "RolePolicy": {
+    "accessor": "role_policies",
+    "dbName": "role_policies",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role_id",
+        "irName": "roleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role_name",
+        "irName": "roleName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "permissions",
+        "irName": "permissions",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "SampleData": {
+    "accessor": "sample_datas",
+    "dbName": "sample_datas",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seeded_at",
+        "irName": "seededAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cleared_at",
+        "irName": "clearedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_seeded",
+        "irName": "isSeeded",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "events_created",
+        "irName": "eventsCreated",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "clients_created",
+        "irName": "clientsCreated",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "users_created",
+        "irName": "usersCreated",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipes_created",
+        "irName": "recipesCreated",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "User": {
+    "accessor": "users",
+    "dbName": "employees",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "email",
+        "irName": "email",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "first_name",
+        "irName": "firstName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_name",
+        "irName": "lastName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role",
+        "irName": "role",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "auth_user_id",
+        "irName": "authUserId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employee_number",
+        "irName": "employeeNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employment_type",
+        "irName": "employmentType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "hourly_rate",
+        "irName": "hourlyRate",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "salary_annual",
+        "irName": "salaryAnnual",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "hire_date",
+        "irName": "hireDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "termination_date",
+        "irName": "terminationDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "avatar_url",
+        "irName": "avatarUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role_id",
+        "irName": "roleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Workflow": {
+    "accessor": "workflows",
+    "dbName": "workflows",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_type",
+        "irName": "triggerType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_config",
+        "irName": "triggerConfig",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PurchaseRequisition": {
+    "accessor": "purchase_requisitions",
+    "dbName": "purchase_requisitions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requisition_number",
+        "irName": "requisitionNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requested_by",
+        "irName": "requestedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "request_date",
+        "irName": "requestDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "required_by",
+        "irName": "requiredBy",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "department",
+        "irName": "department",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "justification",
+        "irName": "justification",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subtotal",
+        "irName": "subtotal",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_tax",
+        "irName": "estimatedTax",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_shipping",
+        "irName": "estimatedShipping",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_total",
+        "irName": "estimatedTotal",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "manager_approval_by",
+        "irName": "managerApprovalBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "manager_approval_at",
+        "irName": "managerApprovalAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "finance_approval_by",
+        "irName": "financeApprovalBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "finance_approval_at",
+        "irName": "financeApprovalAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "converted_to_po_id",
+        "irName": "convertedToPoId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "converted_at",
+        "irName": "convertedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejection_reason",
+        "irName": "rejectionReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "submitted_at",
+        "irName": "submittedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_category",
+        "irName": "itemCategory",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_count",
+        "irName": "itemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PurchaseRequisitionItem": {
+    "accessor": "purchase_requisition_items",
+    "dbName": "purchase_requisition_items",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requisition_id",
+        "irName": "requisitionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_id",
+        "irName": "itemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_name",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quantity_requested",
+        "irName": "quantityRequested",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_id",
+        "irName": "unitId",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_unit_cost",
+        "irName": "estimatedUnitCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimated_total_cost",
+        "irName": "estimatedTotalCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suggested_vendor_id",
+        "irName": "suggestedVendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suggested_vendor_name",
+        "irName": "suggestedVendorName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "specifications",
+        "irName": "specifications",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PurchaseOrder": {
+    "accessor": "purchase_orders",
+    "dbName": "purchase_orders",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "po_number",
+        "irName": "poNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vendor_id",
+        "irName": "vendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "order_date",
+        "irName": "orderDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expected_delivery_date",
+        "irName": "expectedDeliveryDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_delivery_date",
+        "irName": "actualDeliveryDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subtotal",
+        "irName": "subtotal",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_amount",
+        "irName": "taxAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shipping_amount",
+        "irName": "shippingAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total",
+        "irName": "total",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "submitted_by",
+        "irName": "submittedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "submitted_at",
+        "irName": "submittedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "received_by",
+        "irName": "receivedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "received_at",
+        "irName": "receivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_count",
+        "irName": "itemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PurchaseOrderItem": {
+    "accessor": "purchase_order_items",
+    "dbName": "purchase_order_items",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "purchase_order_id",
+        "irName": "purchaseOrderId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_id",
+        "irName": "itemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quantity_ordered",
+        "irName": "quantityOrdered",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quantity_received",
+        "irName": "quantityReceived",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_id",
+        "irName": "unitId",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_cost",
+        "irName": "unitCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_cost",
+        "irName": "totalCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quality_status",
+        "irName": "qualityStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discrepancy_type",
+        "irName": "discrepancyType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "discrepancy_amount",
+        "irName": "discrepancyAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "VendorCatalog": {
+    "accessor": "vendor_catalogs",
+    "dbName": "vendor_catalogs",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supplier_id",
+        "irName": "supplierId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_number",
+        "irName": "itemNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "item_name",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "category",
+        "irName": "category",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "base_unit_cost",
+        "irName": "baseUnitCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currency",
+        "irName": "currency",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_of_measure",
+        "irName": "unitOfMeasure",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_time_days",
+        "irName": "leadTimeDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_time_min_days",
+        "irName": "leadTimeMinDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lead_time_max_days",
+        "irName": "leadTimeMaxDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "minimum_order_quantity",
+        "irName": "minimumOrderQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "order_multiple",
+        "irName": "orderMultiple",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_from",
+        "irName": "effectiveFrom",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_to",
+        "irName": "effectiveTo",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supplier_sku",
+        "irName": "supplierSku",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tags",
+        "irName": "tags",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_cost_update",
+        "irName": "lastCostUpdate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "VendorContract": {
+    "accessor": "vendor_contracts",
+    "dbName": "vendor_contracts",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "versionProperty": "version",
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contract_number",
+        "irName": "contractNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vendor_id",
+        "irName": "vendorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vendor_name",
+        "irName": "vendorName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contract_type",
+        "irName": "contractType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "start_date",
+        "irName": "startDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "end_date",
+        "irName": "endDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "auto_renew",
+        "irName": "autoRenew",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "renewal_term_days",
+        "irName": "renewalTermDays",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notice_days_before_renewal",
+        "irName": "noticeDaysBeforeRenewal",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payment_terms",
+        "irName": "paymentTerms",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delivery_terms",
+        "irName": "deliveryTerms",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "minimum_order_quantity",
+        "irName": "minimumOrderQuantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "annual_spend_commitment",
+        "irName": "annualSpendCommitment",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "spend_to_period",
+        "irName": "spendToPeriod",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currency_code",
+        "irName": "currencyCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "terminated_by",
+        "irName": "terminatedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "terminated_at",
+        "irName": "terminatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "termination_reason",
+        "irName": "terminationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "contract_url",
+        "irName": "contractUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "compliance_score",
+        "irName": "complianceScore",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_compliance_review",
+        "irName": "lastComplianceReview",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sla_breach_count",
+        "irName": "slaBreachCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "on_time_delivery_rate",
+        "irName": "onTimeDeliveryRate",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quality_rating",
+        "irName": "qualityRating",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "Vendor": {
+    "accessor": "vendors",
+    "dbName": "vendors",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
     "fields": [
       {
         "name": "id",
@@ -28490,13 +28897,13 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
-        "name": "description",
-        "irName": "description",
+        "name": "type",
+        "irName": "type",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28506,8 +28913,263 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "trigger_type",
-        "irName": "triggerType",
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "email",
+        "irName": "email",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "phone",
+        "irName": "phone",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "website",
+        "irName": "website",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "address",
+        "irName": "address",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "city",
+        "irName": "city",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "state",
+        "irName": "state",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "zip",
+        "irName": "zip",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tax_id",
+        "irName": "taxId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payment_terms",
+        "irName": "paymentTerms",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rating",
+        "irName": "rating",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rating_count",
+        "irName": "ratingCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspended_at",
+        "irName": "suspendedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspended_reason",
+        "irName": "suspendedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklisted_at",
+        "irName": "blacklistedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklisted_reason",
+        "irName": "blacklistedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "last_contact_added_at",
+        "irName": "lastContactAddedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "QACheck": {
+    "accessor": "qa_checks",
+    "dbName": "qa_checks",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28517,8 +29179,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "trigger_config",
-        "irName": "triggerConfig",
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location",
+        "irName": "location",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28528,8 +29201,19 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "template_id",
-        "irName": "templateId",
+        "name": "check_type",
+        "irName": "checkType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "result",
+        "irName": "result",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28539,8 +29223,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "custom_message",
-        "irName": "customMessage",
+        "name": "status",
+        "irName": "status",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28550,8 +29234,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "recipient_type",
-        "irName": "recipientType",
+        "name": "inspector",
+        "irName": "inspector",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28561,8 +29245,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "recipient_config",
-        "irName": "recipientConfig",
+        "name": "notes",
+        "irName": "notes",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -28572,9 +29256,111 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
+        "name": "completed_at",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reinspected_at",
+        "irName": "reinspectedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "QACorrectiveAction": {
+    "accessor": "correctiveAction",
+    "dbName": "qa_corrective_actions",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "check_id",
+        "irName": "checkId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_to",
+        "irName": "assignedTo",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -28585,7 +29371,1058 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       {
         "name": "priority",
         "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolution_notes",
+        "irName": "resolutionNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_to",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalation_reason",
+        "irName": "escalationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "due_date",
+        "irName": "dueDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved_at",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_at",
+        "irName": "escalatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "QATemperatureLog": {
+    "accessor": "temperatureLog",
+    "dbName": "qa_temperature_logs",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location",
+        "irName": "location",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "temperature",
+        "irName": "temperature",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit",
+        "irName": "unit",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipment",
+        "irName": "equipment",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recorded_by",
+        "irName": "recordedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "logged_at",
+        "irName": "loggedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "WasteEntry": {
+    "accessor": "waste_entries",
+    "dbName": "waste_entries",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inventory_item_id",
+        "irName": "inventoryItemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reason_id",
+        "irName": "reasonId",
         "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "quantity",
+        "irName": "quantity",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_id",
+        "irName": "unitId",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "logged_by",
+        "irName": "loggedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "logged_at",
+        "irName": "loggedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit_cost",
+        "irName": "unitCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_cost",
+        "irName": "totalCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "LaborBudget": {
+    "accessor": "labor_budgets",
+    "dbName": "labor_budgets",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "period_start",
+        "irName": "periodStart",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "period_end",
+        "irName": "periodEnd",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "budget_amount",
+        "irName": "budgetAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_amount",
+        "irName": "actualAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "budget_type",
+        "irName": "budgetType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_by",
+        "irName": "createdBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "BudgetAlert": {
+    "accessor": "budget_alerts",
+    "dbName": "budget_alerts",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "budget_id",
+        "irName": "budgetId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "alert_type",
+        "irName": "alertType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "threshold_pct",
+        "irName": "thresholdPct",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actual_pct",
+        "irName": "actualPct",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "message",
+        "irName": "message",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_acknowledged",
+        "irName": "isAcknowledged",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "acknowledged_by",
+        "irName": "acknowledgedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "acknowledged_at",
+        "irName": "acknowledgedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved",
+        "irName": "resolved",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolved_at",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "PayrollPeriod": {
+    "accessor": "payroll_periods",
+    "dbName": "payroll_periods",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "period_start",
+        "irName": "periodStart",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "period_end",
+        "irName": "periodEnd",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "EmployeeDeduction": {
+    "accessor": "employee_deductions",
+    "dbName": null,
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employee_id",
+        "irName": "employeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "type",
+        "irName": "type",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "amount",
+        "irName": "amount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "percentage",
+        "irName": "percentage",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_pre_tax",
+        "irName": "isPreTax",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "effective_date",
+        "irName": "effectiveDate",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "end_date",
+        "irName": "endDate",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "max_annual_amount",
+        "irName": "maxAnnualAmount",
+        "type": "Decimal",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -28627,6 +30464,699 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       }
     ]
+  },
+  "PayrollApprovalHistory": {
+    "accessor": "payroll_approval_histories",
+    "dbName": "payroll_approval_history",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payroll_run_id",
+        "irName": "payrollRunId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "action",
+        "irName": "action",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "previous_status",
+        "irName": "previousStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "new_status",
+        "irName": "newStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "performed_by",
+        "irName": "performedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "performed_at",
+        "irName": "performedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reason",
+        "irName": "reason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "PayrollRun": {
+    "accessor": "payroll_runs",
+    "dbName": "payroll_runs",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payroll_period_id",
+        "irName": "payrollPeriodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "run_date",
+        "irName": "runDate",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_gross",
+        "irName": "totalGross",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_deductions",
+        "irName": "totalDeductions",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "total_net",
+        "irName": "totalNet",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejected_by",
+        "irName": "rejectedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "paid_at",
+        "irName": "paidAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reject_reason",
+        "irName": "rejectReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ]
+  },
+  "Schedule": {
+    "accessor": "schedules",
+    "dbName": "schedules",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schedule_date",
+        "irName": "scheduleDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "published_at",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "published_by",
+        "irName": "publishedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_by",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approved_at",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shift_count",
+        "irName": "shiftCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
+  },
+  "ScheduleShift": {
+    "accessor": "schedule_shifts",
+    "dbName": "schedule_shifts",
+    "pgSchema": null,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": true,
+    "versionProperty": "version",
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schedule_id",
+        "irName": "scheduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employee_id",
+        "irName": "employeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shift_start",
+        "irName": "shiftStart",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shift_end",
+        "irName": "shiftEnd",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role_during_shift",
+        "irName": "roleDuringShift",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swap_offered_to",
+        "irName": "swapOfferedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swap_status",
+        "irName": "swapStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swap_offered_at",
+        "irName": "swapOfferedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swap_accepted_at",
+        "irName": "swapAcceptedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inherited_context",
+        "irName": "inheritedContext",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": true,
+        "isId": false
+      }
+    ],
+    "requiresTenantConnect": true
   },
   "TimecardApproval": {
     "accessor": "timecard_approvals",
@@ -30896,185 +33426,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
       }
     ]
   },
-  "Station": {
-    "accessor": "stations",
-    "dbName": "stations",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "station_type",
-        "irName": "stationType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "capacity_simultaneous_tasks",
-        "irName": "capacitySimultaneousTasks",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment_list",
-        "irName": "equipmentList",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "in_maintenance",
-        "irName": "inMaintenance",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "maintenance_reason",
-        "irName": "maintenanceReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "maintenance_start_at",
-        "irName": "maintenanceStartAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "current_task_count",
-        "irName": "currentTaskCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
   "TimeEntry": {
     "accessor": "time_entries",
     "dbName": "time_entries",
@@ -32562,2357 +34913,6 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "User": {
-    "accessor": "users",
-    "dbName": "employees",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "email",
-        "irName": "email",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "first_name",
-        "irName": "firstName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_name",
-        "irName": "lastName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "role",
-        "irName": "role",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "auth_user_id",
-        "irName": "authUserId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "employee_number",
-        "irName": "employeeNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "employment_type",
-        "irName": "employmentType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "hourly_rate",
-        "irName": "hourlyRate",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "salary_annual",
-        "irName": "salaryAnnual",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "hire_date",
-        "irName": "hireDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "termination_date",
-        "irName": "terminationDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "avatar_url",
-        "irName": "avatarUrl",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "role_id",
-        "irName": "roleId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "VendorCatalog": {
-    "accessor": "vendor_catalogs",
-    "dbName": "vendor_catalogs",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "supplier_id",
-        "irName": "supplierId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_number",
-        "irName": "itemNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "item_name",
-        "irName": "itemName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "category",
-        "irName": "category",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "base_unit_cost",
-        "irName": "baseUnitCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "currency",
-        "irName": "currency",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_of_measure",
-        "irName": "unitOfMeasure",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_time_days",
-        "irName": "leadTimeDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_time_min_days",
-        "irName": "leadTimeMinDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "lead_time_max_days",
-        "irName": "leadTimeMaxDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "minimum_order_quantity",
-        "irName": "minimumOrderQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "order_multiple",
-        "irName": "orderMultiple",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_from",
-        "irName": "effectiveFrom",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "effective_to",
-        "irName": "effectiveTo",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "supplier_sku",
-        "irName": "supplierSku",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tags",
-        "irName": "tags",
-        "type": "String",
-        "isEnum": false,
-        "isList": true,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_cost_update",
-        "irName": "lastCostUpdate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ]
-  },
-  "VendorContract": {
-    "accessor": "vendor_contracts",
-    "dbName": "vendor_contracts",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "versionProperty": "version",
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contract_number",
-        "irName": "contractNumber",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vendor_id",
-        "irName": "vendorId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "vendor_name",
-        "irName": "vendorName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contract_type",
-        "irName": "contractType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "start_date",
-        "irName": "startDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "end_date",
-        "irName": "endDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "auto_renew",
-        "irName": "autoRenew",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "renewal_term_days",
-        "irName": "renewalTermDays",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notice_days_before_renewal",
-        "irName": "noticeDaysBeforeRenewal",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payment_terms",
-        "irName": "paymentTerms",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "delivery_terms",
-        "irName": "deliveryTerms",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "minimum_order_quantity",
-        "irName": "minimumOrderQuantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "annual_spend_commitment",
-        "irName": "annualSpendCommitment",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "spend_to_period",
-        "irName": "spendToPeriod",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "currency_code",
-        "irName": "currencyCode",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "terminated_by",
-        "irName": "terminatedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "terminated_at",
-        "irName": "terminatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "termination_reason",
-        "irName": "terminationReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "contract_url",
-        "irName": "contractUrl",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "compliance_score",
-        "irName": "complianceScore",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_compliance_review",
-        "irName": "lastComplianceReview",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sla_breach_count",
-        "irName": "slaBreachCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "on_time_delivery_rate",
-        "irName": "onTimeDeliveryRate",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quality_rating",
-        "irName": "qualityRating",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Vendor": {
-    "accessor": "vendors",
-    "dbName": "vendors",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "type",
-        "irName": "type",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "email",
-        "irName": "email",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "phone",
-        "irName": "phone",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "website",
-        "irName": "website",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "address",
-        "irName": "address",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "city",
-        "irName": "city",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "state",
-        "irName": "state",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "zip",
-        "irName": "zip",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tax_id",
-        "irName": "taxId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "payment_terms",
-        "irName": "paymentTerms",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rating",
-        "irName": "rating",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "rating_count",
-        "irName": "ratingCount",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "suspended_at",
-        "irName": "suspendedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "suspended_reason",
-        "irName": "suspendedReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "blacklisted_at",
-        "irName": "blacklistedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "blacklisted_reason",
-        "irName": "blacklistedReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "last_contact_added_at",
-        "irName": "lastContactAddedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "VersionedEntity": {
-    "accessor": "versioned_entities",
-    "dbName": "versioned_entities",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_type",
-        "irName": "entityType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_id",
-        "irName": "entityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_name",
-        "irName": "entityName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_locked",
-        "irName": "isLocked",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "current_version_id",
-        "irName": "currentVersionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "EntityVersion": {
-    "accessor": "entity_versions",
-    "dbName": "entity_versions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "versioned_entity_id",
-        "irName": "versionedEntityId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "version_number",
-        "irName": "versionNumber",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "change_reason",
-        "irName": "changeReason",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "change_summary",
-        "irName": "changeSummary",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "change_type",
-        "irName": "changeType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "snapshot_data",
-        "irName": "snapshotData",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "metadata",
-        "irName": "metadata",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_approved",
-        "irName": "isApproved",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_by",
-        "irName": "createdBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "VersionApproval": {
-    "accessor": "version_approvals",
-    "dbName": "version_approvals",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "entity_version_id",
-        "irName": "entityVersionId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approver_id",
-        "irName": "approverId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "comments",
-        "irName": "comments",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reviewed_at",
-        "irName": "reviewedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "WasteEntry": {
-    "accessor": "waste_entries",
-    "dbName": "waste_entries",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "inventory_item_id",
-        "irName": "inventoryItemId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "reason_id",
-        "irName": "reasonId",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "quantity",
-        "irName": "quantity",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_id",
-        "irName": "unitId",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "event_id",
-        "irName": "eventId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "logged_by",
-        "irName": "loggedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "logged_at",
-        "irName": "loggedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_by",
-        "irName": "approvedBy",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "approved_at",
-        "irName": "approvedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "unit_cost",
-        "irName": "unitCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "total_cost",
-        "irName": "totalCost",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "notes",
-        "irName": "notes",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "WorkOrder": {
-    "accessor": "work_orders",
-    "dbName": "work_orders",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment_id",
-        "irName": "equipmentId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "equipment_name",
-        "irName": "equipmentName",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "title",
-        "irName": "title",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "type",
-        "irName": "type",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "priority",
-        "irName": "priority",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "scheduled_date",
-        "irName": "scheduledDate",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "assigned_to",
-        "irName": "assignedTo",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "Workflow": {
-    "accessor": "workflows",
-    "dbName": "workflows",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": true,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "name",
-        "irName": "name",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "description",
-        "irName": "description",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "trigger_type",
-        "irName": "triggerType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "trigger_config",
-        "irName": "triggerConfig",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "is_active",
-        "irName": "isActive",
-        "type": "Boolean",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "deleted_at",
-        "irName": "deletedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": true,
-        "isId": false
-      }
-    ],
-    "requiresTenantConnect": true
-  },
-  "WorkforceOptimization": {
-    "accessor": "workforce_optimizations",
-    "dbName": "workforce_optimizations",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "location_id",
-        "irName": "locationId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "optimization_type",
-        "irName": "optimizationType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "status",
-        "irName": "status",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "completed_at",
-        "irName": "completedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "created_at",
-        "irName": "createdAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "updated_at",
-        "irName": "updatedAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      }
-    ]
-  },
-  "PerformancePrediction": {
-    "accessor": "performance_predictions",
-    "dbName": "performance_predictions",
-    "pgSchema": null,
-    "pkFields": [
-      "tenant_id",
-      "id"
-    ],
-    "whereAccessor": "tenant_id_id",
-    "hasDeletedAt": false,
-    "fields": [
-      {
-        "name": "id",
-        "irName": "id",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "tenant_id",
-        "irName": "tenantId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": false,
-        "hasDefault": false,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "employee_id",
-        "irName": "employeeId",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "prediction_type",
-        "irName": "predictionType",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "prediction_horizon",
-        "irName": "predictionHorizon",
-        "type": "Int",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "prediction_score",
-        "irName": "predictionScore",
-        "type": "Decimal",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "confidence",
-        "irName": "confidence",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "factors",
-        "irName": "factors",
-        "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "expires_at",
-        "irName": "expiresAt",
-        "type": "DateTime",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },

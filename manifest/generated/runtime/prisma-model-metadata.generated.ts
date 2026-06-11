@@ -39745,22 +39745,22 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "shiftStart",
         "irName": "shiftStart",
-        "type": "Int",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
       {
         "name": "shiftEnd",
         "irName": "shiftEnd",
-        "type": "Int",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
