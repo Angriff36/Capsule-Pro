@@ -478,7 +478,8 @@ export async function addEventStaff(
     SELECT event_date FROM tenant_events.events
     WHERE tenant_id = ${user.tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
   if (eventRow.length === 0) throw new Error("Event not found");
-  const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).toISOString();
+  // Engine datetime contract = epoch ms (ISO strings fail E_TYPE_DATETIME).
+  const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).getTime();
 
   // Route through Manifest runtime (EventStaff.create) instead of raw SQL
   const result = await runManifestCommand({

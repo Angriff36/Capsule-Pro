@@ -49,7 +49,15 @@ describe("commitEventBoardDrafts", () => {
     expect(result.success).toBe(true);
     const assigns = calls.filter((c) => c.entity === "EventStaff" && c.command === "create");
     expect(assigns).toHaveLength(2);
-    expect(assigns[0].body).toMatchObject({ eventId: "e1", staffMemberId: "s1", role: "server" });
+    expect(assigns[0].body).toMatchObject({
+      eventId: "e1",
+      staffMemberId: "s1",
+      role: "server",
+      // Envelope carries ISO strings; the orchestrator must convert to epoch ms
+      // (engine datetime contract — ISO strings fail E_TYPE_DATETIME).
+      shiftStart: Date.parse("2026-06-28T16:00:00.000Z"),
+      shiftEnd: Date.parse("2026-06-28T23:00:00.000Z"),
+    });
     const flips = calls.filter((c) => c.entity === "CommandBoardCard" && c.command === "update");
     expect(flips).toHaveLength(2);
     expect(flips[0].body).toMatchObject({ newTitle: "Staff s1", newStatus: "pending", newCardType: "entity" });

@@ -39,6 +39,9 @@ const STAFF_MEMBER_ID = "staff-22222222-2222-2222-2222-222222222222";
 const BOARD_ID = "board-33333333-3333-3333-3333-333333333333";
 const ENTITY_ID = "user-44444444-4444-4444-4444-444444444444";
 
+// Engine datetime contract = epoch milliseconds (runtime-engine validateDateTimeTypes:
+// `typeof value === 'number'`). ISO strings are REJECTED with E_TYPE_DATETIME at create
+// validation — callers must Date.parse() before building command bodies.
 const SHIFT_START = Date.parse("2026-06-28T16:00:00.000Z");
 const SHIFT_END = Date.parse("2026-06-28T23:00:00.000Z");
 

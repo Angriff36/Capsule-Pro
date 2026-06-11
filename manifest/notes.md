@@ -1240,4 +1240,8 @@ Conformance testing of the board commit path (§30) exposed a production bug: `E
 
 OUT-OF-SCOPE pre-existing finding (vocab reconciliation needed later, §14 class): EventStaff transitions reference `"cancelled"`/`"completed"` which are NOT in the `validStatus` constraint list, and `unassign`/`checkOut` mutate to states (`unassigned`/`checked_out`) that have no inbound transition rule.
 
-Search: EventStaff create assign silent no-op, shouldAutoCreateInstance, event_staff empty table, auto-create only create command, EventStaff vocab cancelled completed
+**Engine datetime contract = EPOCH MILLISECONDS (2026-06-11 follow-up):** `validateDateTimeTypes` (runtime-engine.js:1317) requires `typeof value === 'number'` for `datetime` properties at create validation — ISO strings are REJECTED with blocking `E_TYPE_DATETIME`. The prisma-generic store's `asNullableDate` coerces epoch→Date at the write boundary, so the correct caller pattern is: ISO strings in UI/JSON envelopes → `Date.parse()` to epoch ms when building the command body. Applied to the event-board commit orchestrator + both legacy EventStaff callers. ⚠ SUSPECT pre-existing path: `createEvent` (apps/app events/actions.ts) passes `eventDate` as a JS `Date`, which JSON-serializes to an ISO string over the dispatcher HTTP hop — that should hit the same E_TYPE_DATETIME rejection; needs verification (governed event create may be failing or being saved without validation passing as believed).
+
+Also noted from review: the 6e26c9211 routes regen picked up a third drift item beyond EventStaff.create + BattleBoard.syncFromEvent — `Event.create` gained its (pre-existing in IR) `templateId` param in routes.manifest.json.
+
+Search: EventStaff create assign silent no-op, shouldAutoCreateInstance, event_staff empty table, auto-create only create command, EventStaff vocab cancelled completed, E_TYPE_DATETIME epoch milliseconds ISO string rejected, datetime command body contract

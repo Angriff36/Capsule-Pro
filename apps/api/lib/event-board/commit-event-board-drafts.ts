@@ -190,6 +190,17 @@ export async function commitEventBoardDrafts(
         // 1. Governed domain write: EventStaff.create (auto-creates the row;
         //    the engine only auto-instantiates commands named `create` —
         //    `assign` without an existing row was a silent no-op).
+        //    Engine datetime contract = epoch milliseconds: ISO strings are
+        //    REJECTED with E_TYPE_DATETIME at create validation, so the
+        //    envelope's ISO shift times must be parsed here.
+        const shiftStartMs = Date.parse(envelope.draftAction.params.shiftStart ?? "");
+        const shiftEndMs = Date.parse(envelope.draftAction.params.shiftEnd ?? "");
+        if (Number.isNaN(shiftStartMs) || Number.isNaN(shiftEndMs)) {
+          throw new CommitError(
+            `Invalid shift times on card ${card.id}`,
+            card.id
+          );
+        }
         const assign = await deps.runCommand(tx, {
           entity: "EventStaff",
           command: "create",
@@ -198,8 +209,8 @@ export async function commitEventBoardDrafts(
             staffMemberId: envelope.draftAction.entityId,
             role: envelope.draftAction.params.role ?? "",
             notes: "",
-            shiftStart: envelope.draftAction.params.shiftStart ?? "",
-            shiftEnd: envelope.draftAction.params.shiftEnd ?? "",
+            shiftStart: shiftStartMs,
+            shiftEnd: shiftEndMs,
           },
           user,
         });

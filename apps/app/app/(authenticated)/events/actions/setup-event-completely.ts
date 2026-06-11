@@ -276,7 +276,8 @@ export async function setupEventCompletely(
 
         // Route through Manifest runtime (EventStaff.create) instead of raw SQL.
         // Placeholder shift = event date (no real shift schedule at setup time).
-        const shiftPlaceholder = (event.event_date ?? new Date()).toISOString();
+        // Engine datetime contract = epoch ms (ISO strings fail E_TYPE_DATETIME).
+        const shiftPlaceholder = (event.event_date ?? new Date()).getTime();
         const assignResult = await runManifestCommand({
           entity: "EventStaff",
           command: "create",
