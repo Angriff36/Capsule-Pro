@@ -467,15 +467,12 @@ async function createEventDishLink(
       tenantId,
       eventId,
       dishId,
-      quantity: Math.max(1, Math.round(entry.quantity)),
-      notes: specialInstructions.length > 0 ? specialInstructions : "",
-      courseLabel: entry.category ?? "",
-      sortOrder: 0,
-      // Extra fields passed through to store (not in IR params but needed by schema)
-      course: entry.category ?? null,
+      quantityServings: Math.max(1, Math.round(entry.quantity)),
+      specialInstructions,
+      course: entry.category ?? "",
+      // serviceStyle is a live column without an IR property; passed through
+      // to the store (GenericPrismaStore writes by live field name).
       serviceStyle: entry.serviceLocation ?? serviceStyle ?? null,
-      specialInstructions:
-        specialInstructions.length > 0 ? specialInstructions : null,
     },
     user
   );

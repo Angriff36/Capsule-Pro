@@ -133,10 +133,9 @@ export async function createDishAndAddToEvent(
       body: {
         eventId,
         dishId: createdId,
-        quantity: 1,
-        notes: "",
-        courseLabel: course ?? "",
-        sortOrder: 0,
+        quantityServings: 1,
+        specialInstructions: "",
+        course: course ?? "",
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
@@ -323,10 +322,9 @@ export async function addDishToEvent(
       body: {
         eventId,
         dishId,
-        quantity: quantityServings ?? 1,
-        notes: "",
-        courseLabel: course ?? "",
-        sortOrder: 0,
+        quantityServings: quantityServings ?? 1,
+        specialInstructions: "",
+        course: course ?? "",
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });

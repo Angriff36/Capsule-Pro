@@ -2,6 +2,12 @@ tenant tenantId : string from context.tenantId
 // Events & Catering - Event Dish Rules
 // Manifest spec for event-to-dish associations (event menu composition).
 // Day-of quantity/course adjustments are common as final headcounts firm up.
+//
+// Property names match the LIVE event_dishes columns (quantity_servings,
+// course, special_instructions) — the prior quantity/courseLabel/notes/
+// sortOrder names drifted from the table, so the generic store silently
+// dropped every one of those fields on write (notes.md §33 class). The table
+// has no sort_order column; sortOrder was removed rather than invented.
 
 entity EventDish {
   key [tenantId, id]
@@ -9,10 +15,9 @@ entity EventDish {
   indexed property required tenantId: string
   property required eventId: string
   property required dishId: string
-  property quantity: int = 1
-  searchable property notes: string = ""
-  property courseLabel: string = ""
-  property sortOrder: int = 0
+  property quantityServings: int = 1
+  searchable property specialInstructions: string = ""
+  property course: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -20,49 +25,47 @@ entity EventDish {
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireDish: self.dishId != null and self.dishId != "" "Dish ID is required"
-  constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
+  constraint positiveQuantity: self.quantityServings > 0 "Quantity must be positive"
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
 
   default policy EventDishDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, dishId: string, quantity: int, notes: string, courseLabel: string, sortOrder: int) {
+  command create(eventId: string, dishId: string, quantityServings: int, specialInstructions: string, course: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard dishId != null and dishId != "" "Dish ID is required"
-    guard quantity > 0 "Quantity must be positive"
+    guard quantityServings > 0 "Quantity must be positive"
 
     mutate eventId = eventId
     mutate dishId = dishId
-    mutate quantity = quantity
-    mutate notes = notes
-    mutate courseLabel = courseLabel
-    mutate sortOrder = sortOrder
+    mutate quantityServings = quantityServings
+    mutate specialInstructions = specialInstructions
+    mutate course = course
 
     emit EventDishCreated
   }
 
-  command updateQuantity(quantity: int) {
+  command updateQuantity(quantityServings: int) {
     guard self.deletedAt == null "Cannot change quantity on a removed event dish"
-    guard quantity > 0 "Quantity must be positive"
+    guard quantityServings > 0 "Quantity must be positive"
 
-    mutate quantity = quantity
+    mutate quantityServings = quantityServings
 
     emit EventDishQuantityUpdated
   }
 
-  command updateCourse(courseLabel: string, sortOrder: int) {
+  command updateCourse(course: string) {
     guard self.deletedAt == null "Cannot re-course a removed event dish"
 
-    mutate courseLabel = courseLabel
-    mutate sortOrder = sortOrder
+    mutate course = course
 
     emit EventDishCourseUpdated
   }
 
-  command updateNotes(notes: string) {
+  command updateNotes(specialInstructions: string) {
     guard self.deletedAt == null "Cannot annotate a removed event dish"
 
-    mutate notes = notes
+    mutate specialInstructions = specialInstructions
 
     emit EventDishNotesUpdated
   }
@@ -85,8 +88,8 @@ event EventDishCreated: "events.event-dish.created" {
   tenantId: string
   eventId: string
   dishId: string
-  quantity: int
-  courseLabel: string
+  quantityServings: int
+  course: string
   createdAt: datetime
 }
 
@@ -95,7 +98,7 @@ event EventDishQuantityUpdated: "events.event-dish.quantity-updated" {
   tenantId: string
   eventId: string
   dishId: string
-  quantity: int
+  quantityServings: int
   updatedAt: datetime
 }
 
@@ -103,8 +106,7 @@ event EventDishCourseUpdated: "events.event-dish.course-updated" {
   eventDishId: string
   tenantId: string
   eventId: string
-  courseLabel: string
-  sortOrder: int
+  course: string
   updatedAt: datetime
 }
 
@@ -112,7 +114,7 @@ event EventDishNotesUpdated: "events.event-dish.notes-updated" {
   eventDishId: string
   tenantId: string
   eventId: string
-  notes: string
+  specialInstructions: string
   updatedAt: datetime
 }
 

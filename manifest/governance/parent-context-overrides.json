@@ -8,6 +8,13 @@
       "owner": "accounting",
       "reviewed": "2026-06-07"
     },
+    "EventStaff": {
+      "fields": ["role"],
+      "category": "FALSE_POSITIVE",
+      "reason": "EventStaff.role is the per-assignment shift role (e.g. server, bartender) chosen when staffing an event — semantically independent of StaffMember.role (the employee's job title). One staff member works different roles across events, so the value cannot be inherited from the parent.",
+      "owner": "events",
+      "reviewed": "2026-06-11"
+    },
     "Deal": {
       "fields": ["assignedTo"],
       "category": "FALSE_POSITIVE",

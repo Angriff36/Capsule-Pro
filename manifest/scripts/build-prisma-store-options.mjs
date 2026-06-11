@@ -50,7 +50,16 @@ const options = {
   // and a ".js" specifier breaks Next.js (webpack AND turbopack) when the
   // dispatcher bundles these files through the src/generated junction —
   // every governed command 500s in api dev. Repo rule: no .js extensions.
-  metadataImportPath: "./manifest-prisma-store-metadata.generated",
+  //
+  // LIVE schema metadata, NOT the IR-projection metadata: the projection's
+  // manifest-prisma-store-metadata describes the IR-projected schema (snake
+  // accessors like "event_staffs", column-named fields like "tenant_id"),
+  // which does not exist on the live PrismaClient — 173/191 entities had a
+  // delegate name the client doesn't expose, so GenericPrismaStore threw at
+  // construction for every governed write. The runtime must consume the
+  // schema-derived prisma-model-metadata until Phase 2b makes the live schema
+  // IR-generated.
+  metadataImportPath: "./prisma-model-metadata.generated",
   storeImportPath: "@angriff36/manifest/stores/prisma-generic",
   accessorNames,
   tableMappings: prismaOptions.tableMappings ?? {},

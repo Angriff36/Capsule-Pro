@@ -42,7 +42,11 @@ import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
 import { loadMergedPrecompiledIR, loadPrecompiledIR, verifyProvenanceHash } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
 import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
-import { PRISMA_MODEL_METADATA } from "./generated/manifest-prisma-store-metadata.generated";
+// LIVE schema metadata (NOT the IR-projection manifest-prisma-store-metadata):
+// the projection metadata describes the IR-projected schema whose delegates
+// (e.g. "event_staffs") don't exist on the live PrismaClient — GenericPrismaStore
+// threw at construction for 173/191 entities. See build-prisma-store-options.mjs.
+import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 
 // ---------------------------------------------------------------------------
 // Public types

@@ -140,9 +140,27 @@ while ((mm = modelRe.exec(schema)) !== null) {
     pkFields = [idField ? idField.name : "id"];
   }
   const whereAccessor = pkFields.length > 1 ? pkFields.join("_") : pkFields[0];
-  // PrepList and similar models require `tenant: { connect: { id } }` on create —
-  // scalar tenantId alone is rejected by Prisma when the Account relation is required.
-  const requiresTenantConnect = /\btenant\s+Account\s+@relation\b/.test(body);
+  // `tenant: { connect: { id } }` is required on create for models like PrepList
+  // where scalar tenantId alone is rejected by Prisma when the Account relation
+  // is required AND tenantId is used by NO other relation.
+  //
+  // BUT it must NOT be used when tenantId is ALSO a foreign-key field of another
+  // relation (e.g. CommandBoardCard.board = @relation(fields: [tenantId, boardId])).
+  // Mixing a `tenant: { connect }` (checked input) with a scalar `boardId` makes
+  // Prisma reject the write ("Argument `board` is missing") because the shared
+  // tenantId can no longer satisfy the board/group composite FKs. Such models must
+  // write FLAT scalar keys (the repo's flat-key convention) — unchecked input,
+  // where one scalar tenantId satisfies every composite FK at once.
+  const hasTenantRelation = /\btenant\s+Account\s+@relation\b/.test(body);
+  const otherRelationUsesTenantId = [
+    ...body.matchAll(/@relation\([^)]*fields:\s*\[([^\]]*)\]/g),
+  ].some((m) => {
+    const fkFields = m[1].split(",").map((s) => s.trim());
+    // The tenant relation itself is `fields: [tenantId]` (length 1). A composite
+    // FK that also includes tenantId (board/group) is what forces flat writes.
+    return fkFields.includes("tenantId") && fkFields.length > 1;
+  });
+  const requiresTenantConnect = hasTenantRelation && !otherRelationUsesTenantId;
 
   models[name] = {
     accessor: accessorOf(name),

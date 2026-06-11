@@ -8327,26 +8327,24 @@ export interface ContractSignatureSoftDeleteInput {
 export interface EventDishCreateInput {
   eventId?: string;
   dishId?: string;
-  quantity?: number;
-  notes?: string;
-  courseLabel?: string;
-  sortOrder?: number;
+  quantityServings?: number;
+  specialInstructions?: string;
+  course?: string;
 }
 
 export interface EventDishUpdateQuantityInput {
   id?: string;
-  quantity?: number;
+  quantityServings?: number;
 }
 
 export interface EventDishUpdateCourseInput {
   id?: string;
-  courseLabel?: string;
-  sortOrder?: number;
+  course?: string;
 }
 
 export interface EventDishUpdateNotesInput {
   id?: string;
-  notes?: string;
+  specialInstructions?: string;
 }
 
 export interface EventDishRemoveInput {

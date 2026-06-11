@@ -5,7 +5,7 @@
 import type { EntityInstance, Store } from "@angriff36/manifest";
 import { GenericPrismaStore } from "@angriff36/manifest/stores/prisma-generic";
 import type { PrismaClient } from "@repo/database/standalone";
-import { PRISMA_MODEL_METADATA } from "../generated/manifest-prisma-store-metadata.generated";
+import { PRISMA_MODEL_METADATA } from "../generated/prisma-model-metadata.generated";
 import {
   allocateEventNumberInTransaction,
   resolveEventNumberForCreate,

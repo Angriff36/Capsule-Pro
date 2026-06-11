@@ -794,10 +794,9 @@ export interface EventDish {
   tenantId: string;
   eventId: string;
   dishId: string;
-  quantity?: number;
-  notes?: string;
-  courseLabel?: string;
-  sortOrder?: number;
+  quantityServings?: number;
+  specialInstructions?: string;
+  course?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;

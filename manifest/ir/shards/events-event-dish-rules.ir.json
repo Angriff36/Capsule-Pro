@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "5675dfbd8f6adc72f2b1db1d4a1b73cc57bc6e7c92f0289d7eb1349918fdda91",
-    "irHash": "a2338c0f7a38e68fe19121ed9c0c06de8974877eae56f91258573c1060ddfb53",
+    "contentHash": "4f542b8cb845a29657fd9d3d520669a977bd3ee55ba9870fa2214b239bb94870",
+    "irHash": "b82b1ce9a716774611bf34be5b225259bc5eca1d1192aa07c1a2c9b1d10f4dc9",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-11T16:15:32.482Z"
+    "compiledAt": "2026-06-11T20:57:07.577Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -62,7 +62,7 @@
           ]
         },
         {
-          "name": "quantity",
+          "name": "quantityServings",
           "type": {
             "name": "int",
             "nullable": false
@@ -74,7 +74,7 @@
           "modifiers": []
         },
         {
-          "name": "notes",
+          "name": "specialInstructions",
           "type": {
             "name": "string",
             "nullable": false
@@ -86,7 +86,7 @@
           "modifiers": []
         },
         {
-          "name": "courseLabel",
+          "name": "course",
           "type": {
             "name": "string",
             "nullable": false
@@ -94,18 +94,6 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "sortOrder",
-          "type": {
-            "name": "int",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
           },
           "modifiers": []
         },
@@ -314,7 +302,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "quantity"
+              "property": "quantityServings"
             },
             "right": {
               "kind": "literal",
@@ -386,7 +374,7 @@
           "required": true
         },
         {
-          "name": "quantity",
+          "name": "quantityServings",
           "type": {
             "name": "int",
             "nullable": false
@@ -394,7 +382,7 @@
           "required": true
         },
         {
-          "name": "courseLabel",
+          "name": "course",
           "type": {
             "name": "string",
             "nullable": false
@@ -448,7 +436,7 @@
           "required": true
         },
         {
-          "name": "quantity",
+          "name": "quantityServings",
           "type": {
             "name": "int",
             "nullable": false
@@ -494,17 +482,9 @@
           "required": true
         },
         {
-          "name": "courseLabel",
+          "name": "course",
           "type": {
             "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "sortOrder",
-          "type": {
-            "name": "int",
             "nullable": false
           },
           "required": true
@@ -548,7 +528,7 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "specialInstructions",
           "type": {
             "name": "string",
             "nullable": false
@@ -650,7 +630,7 @@
           "required": true
         },
         {
-          "name": "quantity",
+          "name": "quantityServings",
           "type": {
             "name": "int",
             "nullable": false
@@ -658,7 +638,7 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "specialInstructions",
           "type": {
             "name": "string",
             "nullable": false
@@ -666,17 +646,9 @@
           "required": true
         },
         {
-          "name": "courseLabel",
+          "name": "course",
           "type": {
             "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "sortOrder",
-          "type": {
-            "name": "int",
             "nullable": false
           },
           "required": true
@@ -754,7 +726,7 @@
           "operator": ">",
           "left": {
             "kind": "identifier",
-            "name": "quantity"
+            "name": "quantityServings"
           },
           "right": {
             "kind": "literal",
@@ -818,34 +790,26 @@
         },
         {
           "kind": "mutate",
-          "target": "quantity",
+          "target": "quantityServings",
           "expression": {
             "kind": "identifier",
-            "name": "quantity"
+            "name": "quantityServings"
           }
         },
         {
           "kind": "mutate",
-          "target": "notes",
+          "target": "specialInstructions",
           "expression": {
             "kind": "identifier",
-            "name": "notes"
+            "name": "specialInstructions"
           }
         },
         {
           "kind": "mutate",
-          "target": "courseLabel",
+          "target": "course",
           "expression": {
             "kind": "identifier",
-            "name": "courseLabel"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "sortOrder",
-          "expression": {
-            "kind": "identifier",
-            "name": "sortOrder"
+            "name": "course"
           }
         }
       ],
@@ -858,7 +822,7 @@
       "entity": "EventDish",
       "parameters": [
         {
-          "name": "quantity",
+          "name": "quantityServings",
           "type": {
             "name": "int",
             "nullable": false
@@ -890,7 +854,7 @@
           "operator": ">",
           "left": {
             "kind": "identifier",
-            "name": "quantity"
+            "name": "quantityServings"
           },
           "right": {
             "kind": "literal",
@@ -928,10 +892,10 @@
         },
         {
           "kind": "mutate",
-          "target": "quantity",
+          "target": "quantityServings",
           "expression": {
             "kind": "identifier",
-            "name": "quantity"
+            "name": "quantityServings"
           }
         }
       ],
@@ -944,17 +908,9 @@
       "entity": "EventDish",
       "parameters": [
         {
-          "name": "courseLabel",
+          "name": "course",
           "type": {
             "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "sortOrder",
-          "type": {
-            "name": "int",
             "nullable": false
           },
           "required": true
@@ -997,18 +953,10 @@
         },
         {
           "kind": "mutate",
-          "target": "courseLabel",
+          "target": "course",
           "expression": {
             "kind": "identifier",
-            "name": "courseLabel"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "sortOrder",
-          "expression": {
-            "kind": "identifier",
-            "name": "sortOrder"
+            "name": "course"
           }
         }
       ],
@@ -1021,7 +969,7 @@
       "entity": "EventDish",
       "parameters": [
         {
-          "name": "notes",
+          "name": "specialInstructions",
           "type": {
             "name": "string",
             "nullable": false
@@ -1066,10 +1014,10 @@
         },
         {
           "kind": "mutate",
-          "target": "notes",
+          "target": "specialInstructions",
           "expression": {
             "kind": "identifier",
-            "name": "notes"
+            "name": "specialInstructions"
           }
         }
       ],
