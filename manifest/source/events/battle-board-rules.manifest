@@ -60,7 +60,7 @@ entity BattleBoard {
   transition status from "open" to ["voting"]
   transition status from "voting" to ["finalized"]
 
-  default policy BattleBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Battle board"
+  default policy BattleBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Battle board"
   command create(boardName: string, boardType: string, eventId: string, description: string, isTemplate: boolean, notes: string, tags: string) {
     guard boardName != null and boardName != "" "Board name is required"
 

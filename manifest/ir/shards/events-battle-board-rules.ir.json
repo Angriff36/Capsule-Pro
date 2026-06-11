@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d6591e76779af62ac599aa1c1daa99e99f17142a573c2ff0313c2e0dd5fbdd9d",
-    "irHash": "617d1ecc88d461ce80ff7e4366878c9561d4cf4b191e02523b5f44b633ea4e8a",
+    "contentHash": "a72432553055c962092fcf52cb079b53df79a8484f9dcb35087bced9ab1a89c6",
+    "irHash": "6debfd4370338dca4822d985613c36c220093ce84b84adc9f8b44eefc4994e25",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-11T20:57:07.559Z"
+    "compiledAt": "2026-06-11T23:20:11.643Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2688,7 +2688,28 @@
               "kind": "literal",
               "value": {
                 "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
                 "value": "event_coordinator"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "catering_manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "event_manager"
               }
             },
             {
