@@ -4,6 +4,7 @@ import type { UIMessage } from "ai";
 import {
   buildSimulationPlanSchema,
   type CommandCatalog,
+  type CommandRoute,
   loadCommandCatalog,
   resolveAliases,
   resolveCanonicalEntityCommandPairFromPair,
@@ -386,9 +387,11 @@ export function detectQueryIntent(request: string): string | null {
     return null;
   }
 
-  // Strong write signals — skip query path
+  // Strong write signals — skip query path. Includes follow-up verbs like
+  // "fill"/"make"/"populate" so messages such as "just fill in the fields
+  // with random information" reach the planner instead of a list query.
   const hasWriteSignal =
-    /\b(create|add|update|edit|change|delete|remove|move|assign|schedule|set|plan|draft|book)\b/i.test(
+    /\b(create|add|update|edit|change|delete|remove|move|assign|schedule|set|plan|draft|book|make|fill|populate|generate|build|submit|execute|run|apply)\b/i.test(
       lowered
     );
   if (hasWriteSignal) {
@@ -445,6 +448,94 @@ export function detectQueryIntent(request: string): string | null {
   return null;
 }
 
+export const PLANNING_CONVERSATION_MAX_MESSAGES = 12;
+const PLANNING_CONVERSATION_MAX_CHARS_PER_MESSAGE = 2000;
+
+/**
+ * Builds the conversation history passed to the planning model. Follow-up
+ * messages like "just fill in the fields" are meaningless without the prior
+ * turns, so the planner sees recent user AND assistant messages — not just
+ * the latest user message.
+ */
+export function buildPlanningConversation(
+  messages: UIMessage[]
+): Array<{ role: "user" | "assistant"; content: string }> {
+  const conversation: Array<{ role: "user" | "assistant"; content: string }> =
+    [];
+
+  for (const message of messages) {
+    if (message.role !== "user" && message.role !== "assistant") {
+      continue;
+    }
+    const text = getMessageText(message);
+    if (text.length === 0) {
+      continue;
+    }
+    conversation.push({
+      role: message.role,
+      content: text.slice(0, PLANNING_CONVERSATION_MAX_CHARS_PER_MESSAGE),
+    });
+  }
+
+  const recent = conversation.slice(-PLANNING_CONVERSATION_MAX_MESSAGES);
+  if (recent.length === 0) {
+    return [{ role: "user", content: "No user request provided." }];
+  }
+  return recent;
+}
+
+function lowerFirst(value: string): string {
+  return value.charAt(0).toLowerCase() + value.slice(1);
+}
+
+/**
+ * Extracts the created instance id from an execute_manifest_command tool
+ * result (`data.response.result.id` per the dispatcher's success envelope).
+ */
+export function extractCreatedEntityId(data: unknown): string | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+  const response = (data as { response?: unknown }).response;
+  if (!response || typeof response !== "object") {
+    return null;
+  }
+  const result = (response as { result?: unknown }).result;
+  if (!result || typeof result !== "object") {
+    return null;
+  }
+  const id = (result as { id?: unknown }).id;
+  if (typeof id === "string" && id.length > 0) {
+    return id;
+  }
+  if (typeof id === "number" && Number.isFinite(id)) {
+    return String(id);
+  }
+  return null;
+}
+
+/**
+ * Fills missing `<entity>Id` args (e.g. menuId, eventId) from entities
+ * created by earlier steps in the same plan, so multi-step plans like
+ * Event.create → Menu.create → MenuDish.create link up without the model
+ * having to invent ids it cannot know.
+ */
+export function applyCreatedEntityIds(
+  args: Record<string, unknown>,
+  params: CommandRoute["params"],
+  createdEntityIds: ReadonlyMap<string, string>
+): void {
+  for (const [entityName, createdId] of createdEntityIds) {
+    const paramName = `${lowerFirst(entityName)}Id`;
+    if (!params.some((param) => param.name === paramName)) {
+      continue;
+    }
+    if (isMissingRequiredArgValue(args[paramName], "string")) {
+      args[paramName] = createdId;
+    }
+  }
+}
+
 export function buildPlanningInstructions(
   catalog: CommandCatalog,
   userRequest: string,
@@ -488,6 +579,9 @@ export function buildPlanningInstructions(
     "For each commandSequence item, provide entityCommand using canonical 'Entity.command' and argsKv only. Do not provide route; route is derived server-side.",
     "argsKv must be an array of {name,value}; never emit args as an object.",
     "Never emit pseudo entities/commands (Venue, Bill, Staff, create_venue, create_bill, add_staff, create_full_menu).",
+    "Use the full conversation for context: follow-up messages like 'fill in the fields' refer to the action discussed in earlier turns.",
+    "If the user asks for test, sample, or random data, invent plausible values for required params instead of asking again.",
+    "If a required param references an entity created by an earlier step in this plan (e.g. menuId after Menu.create, eventId after Event.create), set its value to null — it is filled automatically from the created entity's id after that step executes.",
     "Alias rules that must be applied before planning:",
     "- venue -> Event.create fields venueName + venueAddress",
     "- staff -> User.create",
@@ -1005,9 +1099,7 @@ async function planSimulation(
       userRequest,
       aliases
     )}`,
-    input: [
-      { role: "user", content: userRequest || "No user request provided." },
-    ],
+    input: buildPlanningConversation(params.messages),
     tools: [],
     timeoutMs: API_CALL_TIMEOUT_MS,
     textFormat: {
@@ -1260,12 +1352,24 @@ export async function runManifestActionAgent(
     };
   }
 
+  const createdEntityIds = new Map<string, string>();
+
   for (let index = 0; index < plan.commandSequence.length; index += 1) {
     const step = plan.commandSequence[index];
     const pair = `${step.entity}.${step.command}`;
     const toolName = "execute_manifest_command";
 
     const executionArgs = materializeStepArgs(step, commandCatalog);
+    const stepCanonicalPair = resolveCanonicalEntityCommandPairFromPair(
+      commandCatalog,
+      pair
+    );
+    const stepRoute = stepCanonicalPair
+      ? commandCatalog.byEntityCommand.get(stepCanonicalPair)
+      : null;
+    if (stepRoute) {
+      applyCreatedEntityIds(executionArgs, stepRoute.params, createdEntityIds);
+    }
     const validationError = validateStepArgs(
       step,
       executionArgs,
@@ -1304,6 +1408,13 @@ export async function runManifestActionAgent(
       toolCall,
       params.context.correlationId
     );
+
+    if (toolResult.ok && step.command === "create") {
+      const createdId = extractCreatedEntityId(toolResult.data);
+      if (createdId) {
+        createdEntityIds.set(step.entity, createdId);
+      }
+    }
 
     toolExecutions.push({
       toolName: pair,
