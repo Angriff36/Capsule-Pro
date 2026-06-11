@@ -89,15 +89,26 @@ export function BoardClient({
     }
   };
 
-  const handleConfirm = (input: ShiftDialogSubmit) => {
+  const handleConfirm = async (input: ShiftDialogSubmit) => {
     if (!pendingStaff) return;
-    if (!boardId) {
-      setDraftError("Board is still being created — try again in a moment.");
-      return;
+    // If the lazy mount-effect create failed (it swallows rejection and never
+    // re-runs), confirm is the retry point: re-attempt board creation here.
+    let targetBoardId = boardId;
+    if (targetBoardId === null) {
+      try {
+        const res = await getOrCreateEventBoard(eventId);
+        targetBoardId = res.boardId;
+        setBoardId(targetBoardId);
+      } catch (err) {
+        setDraftError(
+          err instanceof Error ? err.message : "Failed to create event board"
+        );
+        return;
+      }
     }
     createDraft.mutate(
       {
-        boardId,
+        boardId: targetBoardId,
         staff: { id: pendingStaff.id, name: pendingStaff.name },
         ...input,
       },
