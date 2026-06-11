@@ -1245,3 +1245,17 @@ OUT-OF-SCOPE pre-existing finding (vocab reconciliation needed later, §14 class
 Also noted from review: the 6e26c9211 routes regen picked up a third drift item beyond EventStaff.create + BattleBoard.syncFromEvent — `Event.create` gained its (pre-existing in IR) `templateId` param in routes.manifest.json.
 
 Search: EventStaff create assign silent no-op, shouldAutoCreateInstance, event_staff empty table, auto-create only create command, EventStaff vocab cancelled completed, E_TYPE_DATETIME epoch milliseconds ISO string rejected, datetime command body contract
+
+---
+
+## 32. Event Tree Command Board v1 SHIPPED + local-dev E2E findings (2026-06-11)
+
+**Feature complete** (plan `docs/plans/2026-06-11-event-tree-board-v1.md`, spec `specs/event-tree-command-board.md`): per-event Command Board tab (lazy board create on tab activation — NO write-on-browse), tree canvas (opalescent elbow branches, template-driven branch states from `board/templates.ts` — ADVISORY only, never Manifest constraints), drag palette → draft cards (envelope in `CommandBoardCard.metadata` Json under key `eventBoardDraft`; cardType "entity"/status "pending" per the block-enum constraints), impact preview (pure `computeStaffImpact`, read-path), atomic commit endpoint (`POST /api/command-board/[boardId]/commit`: FOR-UPDATE board lock + event validation + EventStaff.create + full-field card flips, ALL in one `$transaction` via `prismaOverride`; CommitError→422, unexpected→Sentry+500). 30 tests green (17 app pure + 10 api orchestrator + 3 IR conformance); both typechecks 0.
+
+**Browser E2E (local, Chrome): VERIFIED** tab renders with live data, tree/outline/palette/impact-rail UI, drag→shift-dialog (correct event-date prefill), error surfacing in dialog. **BLOCKED before the commit roundtrip** by two pre-existing local-dev infra issues:
+1. **Split-brain envs:** `NEXT_PUBLIC_API_URL=https://capsule-pro-api.vercel.app` in root + apps/app `.env.local` → local dev posts governed commands to the PRODUCTION Vercel API (whose DB = ep-divine-math, 10 migrations behind!) while local reads hit ep-square-dust. A test board (`36952375-6f48-4a8f-9d92-bd155341a96b`, "A real event — Event Board") + 2 draft cards were inadvertently created on divine-math through the prod API — cleanup candidates. Root `.env.local` DATABASE_URL was fixed to square-dust (user-approved); `apps/app/.env.local` still has divine-math + the vercel API URL.
+2. **API dev server cannot bundle the Phase-4 generated store registry** (since v0.12.247): `manifest/generated/runtime/prisma-store-registry.generated.ts` imports `./manifest-prisma-store-metadata.generated.js` (ESM .js specifier); both webpack (even with resolve.extensionAlias) and turbopack (with resolveExtensions) fail "Module not found" when reached through the `manifest/runtime/src/generated` junction → every governed command via the local dispatcher 500s. In-flight uncommitted edits to these generated files suggest active work; NOT fixed here.
+
+Also: `.next-dev/dev/types` typegen corruption reappeared after dev-server runs (known gotcha — `rm -rf apps/api/.next-dev/dev/types`). Pre-existing `manifest:schema:check` staleness (~5k lines, from the source restructure) still open — fix is `pnpm manifest:schema:full` + commit.
+
+Search: event tree command board v1, event board tab, draft commit pipeline, NEXT_PUBLIC_API_URL vercel split brain, prod API divine-math, prisma-store-registry module not found junction, api dev 500 governed commands
