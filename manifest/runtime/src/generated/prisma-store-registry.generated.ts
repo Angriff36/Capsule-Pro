@@ -3,7 +3,7 @@
 
 import type { EntityInstance, Store } from '@angriff36/manifest';
 import { GenericPrismaStore } from '@angriff36/manifest/stores/prisma-generic';
-import { PRISMA_MODEL_METADATA } from './manifest-prisma-store-metadata.generated';
+import { PRISMA_MODEL_METADATA } from './prisma-model-metadata.generated';
 
 export type PrismaClientLike = Record<string, unknown>;
 

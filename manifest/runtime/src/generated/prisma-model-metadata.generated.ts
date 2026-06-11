@@ -640,7 +640,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -2334,7 +2333,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -3091,7 +3089,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5276,7 +5273,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5824,7 +5820,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6427,7 +6422,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8338,7 +8332,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9434,7 +9427,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9847,7 +9839,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10015,7 +10006,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10150,7 +10140,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10464,7 +10453,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -14607,7 +14595,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15197,7 +15184,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15343,7 +15329,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15690,7 +15675,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16808,7 +16792,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16932,7 +16915,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24491,7 +24473,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24626,7 +24607,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -26693,7 +26673,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27597,7 +27576,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27732,7 +27710,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29833,7 +29810,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -32646,7 +32622,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35623,7 +35598,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35926,7 +35900,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -36920,7 +36893,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37044,7 +37016,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37278,7 +37249,6 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
-    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",

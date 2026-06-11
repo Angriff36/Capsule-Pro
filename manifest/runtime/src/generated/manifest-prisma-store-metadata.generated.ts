@@ -492,8 +492,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "AdminTask": {
     "accessor": "admin_tasks",
@@ -1791,8 +1790,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CrmScoringRule": {
     "accessor": "crm_scoring_rules",
@@ -2476,8 +2474,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "DocumentVersion": {
     "accessor": "document_versions",
@@ -2666,8 +2663,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "EmailTemplate": {
     "accessor": "email_templates",
@@ -5064,8 +5060,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "BattleBoard": {
     "accessor": "battle_boards",
@@ -6166,8 +6161,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CommandBoardGroup": {
     "accessor": "command_board_groups",
@@ -6334,8 +6328,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CommandBoardConnection": {
     "accessor": "command_board_connections",
@@ -6469,8 +6462,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CommandBoardLayout": {
     "accessor": "command_board_layouts",
@@ -7833,8 +7825,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "EventDish": {
     "accessor": "event_dishes",
@@ -7892,8 +7883,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "quantity",
-        "irName": "quantity",
+        "name": "quantity_servings",
+        "irName": "quantityServings",
         "type": "Int",
         "isEnum": false,
         "isList": false,
@@ -7903,8 +7894,8 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "notes",
-        "irName": "notes",
+        "name": "special_instructions",
+        "irName": "specialInstructions",
         "type": "String",
         "isEnum": false,
         "isList": false,
@@ -7914,20 +7905,9 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isId": false
       },
       {
-        "name": "course_label",
-        "irName": "courseLabel",
+        "name": "course",
+        "irName": "course",
         "type": "String",
-        "isEnum": false,
-        "isList": false,
-        "optional": true,
-        "hasDefault": true,
-        "isUpdatedAt": false,
-        "isId": false
-      },
-      {
-        "name": "sort_order",
-        "irName": "sortOrder",
-        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -10622,8 +10602,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "BoardAnnotation": {
     "accessor": "board_annotations",
@@ -10746,8 +10725,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Note": {
     "accessor": "notes",
@@ -13551,8 +13529,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "SmsAutomationRule": {
     "accessor": "sms_automation_rules",
@@ -16065,8 +16042,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "VendorRating": {
     "accessor": "vendor_ratings",
@@ -16189,8 +16165,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "InventoryTransferItem": {
     "accessor": "inventory_transfer_items",
@@ -16291,8 +16266,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "ProcurementBudget": {
     "accessor": "procurement_budgets",
@@ -16550,8 +16524,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "AuditSchedule": {
     "accessor": "audit_schedules",
@@ -18517,8 +18490,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "IotAlertRule": {
     "accessor": "iot_alert_rules",
@@ -18751,8 +18723,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "IoTAlert": {
     "accessor": "io_t_alerts",
@@ -18952,8 +18923,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CorrectiveAction": {
     "accessor": "corrective_actions",
@@ -19313,8 +19283,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "KitchenTaskClaim": {
     "accessor": "kitchen_task_claims",
@@ -20559,8 +20528,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PrepComment": {
     "accessor": "prep_comments",
@@ -21162,8 +21130,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PrepMethod": {
     "accessor": "prep_methods",
@@ -25755,8 +25722,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "WorkforceOptimization": {
     "accessor": "workforce_optimizations",
@@ -27073,8 +27039,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Workflow": {
     "accessor": "workflows",
@@ -27742,8 +27707,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PurchaseOrder": {
     "accessor": "purchase_orders",
@@ -29836,8 +29800,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "LaborBudget": {
     "accessor": "labor_budgets",
