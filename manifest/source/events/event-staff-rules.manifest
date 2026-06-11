@@ -135,10 +135,10 @@ entity EventStaff {
   }
 
   // State transitions
-  transition status from "assigned" to ["confirmed", "cancelled"]
-  transition status from "confirmed" to ["checked_in", "cancelled", "no_show"]
+  transition status from "assigned" to ["confirmed", "cancelled", "unassigned"]
+  transition status from "confirmed" to ["checked_in", "cancelled", "no_show", "unassigned"]
   transition status from "checked_in" to ["completed", "no_show"]
-  // "completed", "no_show", "cancelled" are terminal states
+  // "completed", "no_show", "cancelled", "unassigned" are terminal states
 
   store EventStaff in durable
 }

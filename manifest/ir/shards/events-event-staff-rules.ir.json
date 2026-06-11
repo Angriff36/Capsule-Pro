@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a4ae12221b1b83f6227c8febf9cfa32a53aa217664f203ee341b78b278c62260",
-    "irHash": "21318c08144b69b150b0cfc793300ad7247abc6c8004f055a66e3946cc5d5f59",
+    "contentHash": "e434ac9834d6a3873941323d1909e6b83d7fbd0d11bbc98769ff9e5f73e5d679",
+    "irHash": "59eb86182f7a6775568f153963f24de96c8b1a21b9f96f79e8314b6aa9feaf6d",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-11T23:20:11.674Z"
+    "compiledAt": "2026-06-11T23:47:57.516Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -686,7 +686,8 @@
           "from": "assigned",
           "to": [
             "confirmed",
-            "cancelled"
+            "cancelled",
+            "unassigned"
           ]
         },
         {
@@ -695,7 +696,8 @@
           "to": [
             "checked_in",
             "cancelled",
-            "no_show"
+            "no_show",
+            "unassigned"
           ]
         },
         {
