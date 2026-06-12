@@ -141,7 +141,7 @@ export function AvailabilityClient() {
   );
 
   // Fetch filter options
-  const fetchFilterOptions = useCallback(async () => {
+  const _fetchFilterOptions = useCallback(async () => {
     try {
       const [employeesData, locationsData] = await Promise.all([
         getEmployees(),

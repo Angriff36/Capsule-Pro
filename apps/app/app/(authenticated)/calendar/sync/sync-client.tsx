@@ -174,7 +174,7 @@ export function SyncClient() {
     { id: "outlook", name: "Microsoft Outlook" },
   ];
 
-  const connectedCount = syncs.filter((s) => s.status === "connected").length;
+  const _connectedCount = syncs.filter((s) => s.status === "connected").length;
 
   return (
     <OperationalColumn>

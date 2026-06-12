@@ -139,7 +139,7 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_BOARD_ID,
       } as any);
 
-      const annotationData = {
+      const _annotationData = {
         boardId: TEST_BOARD_ID,
         annotationType: "connection",
       };
@@ -332,7 +332,7 @@ describe("Command Board Annotation Tests", () => {
         lastName: "User",
       });
 
-      const existingMetadata = { priority: "low", tags: ["a", "b"] };
+      const _existingMetadata = { priority: "low", tags: ["a", "b"] };
       const newMetadata = { priority: "high", extra: "data" };
 
       const mockRuntime = {

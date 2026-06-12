@@ -85,7 +85,7 @@ const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000004";
 const TEST_USER_ID = "user_client_test";
-const TEST_ORG_ID = "org_client_test";
+const _TEST_ORG_ID = "org_client_test";
 
 const TEST_CURRENT_USER = {
   id: TEST_USER_ID,

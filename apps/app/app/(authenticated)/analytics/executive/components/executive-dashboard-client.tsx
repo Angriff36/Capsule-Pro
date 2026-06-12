@@ -32,7 +32,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const percentFormatter = new Intl.NumberFormat("en-US", {
+const _percentFormatter = new Intl.NumberFormat("en-US", {
   style: "percent",
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
@@ -50,7 +50,7 @@ export interface ExecutiveDashboardClientProps {
 export function ExecutiveDashboardClient({
   metrics,
 }: ExecutiveDashboardClientProps) {
-  const getTrendIcon = (trend: TrendDirection): string => {
+  const _getTrendIcon = (trend: TrendDirection): string => {
     switch (trend) {
       case "up":
         return "↑";

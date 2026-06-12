@@ -136,7 +136,7 @@ async function detectMergeConflicts(
   }
 
   // Check for projections that were modified in source since simulation was created
-  const simulationProjEntityIds = new Set(
+  const _simulationProjEntityIds = new Set(
     simulationBoard.projections.map((p) => p.entityId)
   );
   const sourceProjEntityIds = new Set(

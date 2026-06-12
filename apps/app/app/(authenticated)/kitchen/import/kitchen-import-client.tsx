@@ -190,7 +190,7 @@ export function KitchenImportClient() {
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const activeTabConfig = TABS.find((t) => t.id === activeTab)!;
+  const _activeTabConfig = TABS.find((t) => t.id === activeTab)!;
 
   // ── Render ────────────────────────────────────────────────────────
 

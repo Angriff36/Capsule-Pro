@@ -436,7 +436,7 @@ describe("Email Templates API", () => {
           }
         );
 
-        const response = await listPOST(request);
+        const _response = await listPOST(request);
 
         expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -699,7 +699,7 @@ describe("Email Templates API", () => {
         );
         const context = createMockContext(TEST_TEMPLATE_ID);
 
-        const response = await detailPUT(request, context);
+        const _response = await detailPUT(request, context);
 
         expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -804,7 +804,7 @@ describe("Email Templates API", () => {
         );
         const context = createMockContext(TEST_TEMPLATE_ID);
 
-        const response = await detailDELETE(request, context);
+        const _response = await detailDELETE(request, context);
 
         expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -1009,7 +1009,7 @@ describe("Email Templates Policy Tests", () => {
       }
     );
 
-    const response = await listPOST(request);
+    const _response = await listPOST(request);
 
     // runManifestCommand handles the policy check
     expect(runManifestCommand).toHaveBeenCalled();
@@ -1027,7 +1027,7 @@ describe("Email Templates Policy Tests", () => {
     );
     const context = createMockContext(TEST_TEMPLATE_ID);
 
-    const response = await detailDELETE(request, context);
+    const _response = await detailDELETE(request, context);
 
     // runManifestCommand handles the policy check
     expect(runManifestCommand).toHaveBeenCalled();

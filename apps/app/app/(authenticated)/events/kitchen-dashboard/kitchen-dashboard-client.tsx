@@ -960,7 +960,7 @@ export const KitchenDashboardClient = ({
                           : `Ended ${formatDuration(now.getTime() - event.end.getTime())} ago`;
                       const operationalBadge =
                         operationalStatusConfig[event.operationalStatus];
-                      const statusVariant =
+                      const _statusVariant =
                         statusVariantMap[
                           event.status as keyof typeof statusVariantMap
                         ] ?? "outline";
@@ -1103,7 +1103,7 @@ export const KitchenDashboardClient = ({
                           {group.items.map((event, index) => {
                             const operationalBadge =
                               operationalStatusConfig[event.operationalStatus];
-                            const statusVariant =
+                            const _statusVariant =
                               statusVariantMap[
                                 event.status as keyof typeof statusVariantMap
                               ] ?? "outline";
@@ -1219,7 +1219,7 @@ export const KitchenDashboardClient = ({
                       {queueEvents.map((event, index) => {
                         const operationalBadge =
                           operationalStatusConfig[event.operationalStatus];
-                        const statusVariant =
+                        const _statusVariant =
                           statusVariantMap[
                             event.status as keyof typeof statusVariantMap
                           ] ?? "outline";

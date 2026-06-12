@@ -118,10 +118,10 @@ const formatCurrency = (value: number) =>
     currency: "USD",
   }).format(value);
 
-const formatNumber = (value: number) =>
+const _formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value);
 
-const TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
+const _TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
   if (trend === "up") {
     return <TrendingUp className="h-4 w-4 text-green-500" />;
   }

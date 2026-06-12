@@ -460,7 +460,7 @@ describe("POST /api/events/battle-boards (delegated create)", () => {
 
 const CURRENT_USER = { id: USER_ID, tenantId: TENANT_ID, role: "admin" };
 
-const dispatch = (entity: string, command: string) => (req: NextRequest) => {
+const _dispatch = (entity: string, command: string) => (req: NextRequest) => {
   const { POST } =
     require("@/app/api/manifest/[entity]/commands/[command]/route") as typeof import("@/app/api/manifest/[entity]/commands/[command]/route");
   return POST(req, { params: Promise.resolve({ entity, command }) });

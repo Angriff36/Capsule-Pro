@@ -29,7 +29,7 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-function formatInvoiceResponse(invoice: Record<string, unknown>) {
+function _formatInvoiceResponse(invoice: Record<string, unknown>) {
   return {
     ...invoice,
     subtotal: String(invoice.subtotal),

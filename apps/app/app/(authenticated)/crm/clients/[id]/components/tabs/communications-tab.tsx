@@ -105,7 +105,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   const [interactionAttachments, setInteractionAttachments] = useState<
     Record<string, Attachment[]>
   >({});
-  const [uploading, setUploading] = useState(false);
+  const [_uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const [editPendingFiles, setEditPendingFiles] = useState<File[]>([]);

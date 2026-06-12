@@ -160,7 +160,7 @@ export default function PayrollLineItemsTable({
     }
   };
 
-  const getTotalDeductions = (deductions: Record<string, number>) =>
+  const _getTotalDeductions = (deductions: Record<string, number>) =>
     Object.values(deductions).reduce((sum, val) => sum + val, 0);
 
   return (

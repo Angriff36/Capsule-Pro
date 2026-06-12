@@ -238,7 +238,7 @@ export async function POST(
 
     // Determine location (use provided location or event's location)
     const shipToLocationId = locationId || event.locationId;
-    const totalValue = requirements.reduce(
+    const _totalValue = requirements.reduce(
       (sum, req) => sum + req.requiredQuantity * req.unitCost,
       0
     );

@@ -270,7 +270,7 @@ interface EventTemplateSelectorProps {
   open: boolean;
 }
 
-const categoryColors = {
+const _categoryColors = {
   social: "bg-muted/50 text-foreground",
   corporate: "bg-muted/50 text-foreground",
   specialty: "bg-muted/50 text-foreground",

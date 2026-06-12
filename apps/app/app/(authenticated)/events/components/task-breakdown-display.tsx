@@ -700,7 +700,7 @@ export function GenerateTaskBreakdownModal({
     }
   };
 
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  const _dateFormatter = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
   });

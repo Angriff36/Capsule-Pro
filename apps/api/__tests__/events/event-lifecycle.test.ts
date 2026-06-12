@@ -85,7 +85,7 @@ const TEST_EVENT_ID = "b0000000-0000-4000-a000-000000000010";
 const TEST_USER_ORG = "test-org-123";
 
 // Mock data factories
-function createMockEvent(overrides = {}) {
+function _createMockEvent(overrides = {}) {
   return {
     id: TEST_EVENT_ID,
     tenantId: TEST_TENANT_ID,

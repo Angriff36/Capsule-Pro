@@ -87,8 +87,8 @@ const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockResolveCurrentUser = vi.mocked(resolveCurrentUser);
 const mockCreateManifestRuntime = vi.mocked(createManifestRuntime);
 const mockCommandBoard = vi.mocked(database.commandBoard);
-const mockBoardProjection = vi.mocked(database.boardProjection);
-const mockCommandBoardCard = vi.mocked(database.commandBoardCard);
+const _mockBoardProjection = vi.mocked(database.boardProjection);
+const _mockCommandBoardCard = vi.mocked(database.commandBoardCard);
 
 // Test constants
 const TEST_TENANT_ID = "67a4af48-114e-4e45-89d7-6ae36da6ff71";
@@ -192,7 +192,7 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const response = await POST(request as any);
-        const body = await response.json();
+        const _body = await response.json();
 
         expect(response.status).toBe(200);
         expect(mockCreateManifestRuntime).toHaveBeenCalled();
@@ -294,7 +294,7 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const response = await POST(request as any);
-        const body = await response.json();
+        const _body = await response.json();
 
         expect(response.status).toBe(200);
         expect(mockRuntime.runCommand).toHaveBeenCalledWith(
@@ -686,7 +686,7 @@ describe("Command Board CRUD Tests", () => {
       const request = new Request(
         `http://localhost/api/command-board/${TEST_BOARD_ID}`
       );
-      const response = await GET_BOARD(request, {
+      const _response = await GET_BOARD(request, {
         params: Promise.resolve({ boardId: TEST_BOARD_ID }),
       });
 
@@ -732,7 +732,7 @@ describe("Command Board CRUD Tests", () => {
       const response = await DELETE(request as any, {
         params: Promise.resolve({ boardId: TEST_BOARD_ID }),
       });
-      const body = await response.json();
+      const _body = await response.json();
 
       expect(response.status).toBe(200);
       expect(mockRuntime.runCommand).toHaveBeenCalledWith(

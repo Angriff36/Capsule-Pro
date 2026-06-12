@@ -116,7 +116,7 @@ export function TrashPageClient({
   initialParams: { entityType?: string; search?: string; page?: string };
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const _searchParams = useSearchParams();
 
   const [items, setItems] = useState<TrashItem[]>([]);
   const [entityTypes, setEntityTypes] = useState<

@@ -61,7 +61,7 @@ interface POOrder {
 
 export default function PODetailPage() {
   const params = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const id = (params?.id ?? "") as string;
 
   const [order, setOrder] = useState<POOrder | null>(null);
@@ -143,7 +143,7 @@ export default function PODetailPage() {
     }
     setReceiving(true);
     try {
-      for (const [itemId, qty] of Object.entries(receiveItems)) {
+      for (const [_itemId, qty] of Object.entries(receiveItems)) {
         const qtyReceived = Number(qty);
         if (qtyReceived > 0) {
           await purchaseOrderMarkReceived({

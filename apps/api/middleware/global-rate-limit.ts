@@ -122,7 +122,7 @@ function extractTenantKey(request: Request): string | null {
 /**
  * Creates rate limit response headers.
  */
-function createRateLimitHeaders(
+function _createRateLimitHeaders(
   limit: number,
   remaining: number,
   reset: Date

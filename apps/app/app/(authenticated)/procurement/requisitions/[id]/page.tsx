@@ -70,7 +70,7 @@ const WORKFLOW_ACTIONS: Record<
 
 export default function RequisitionDetailPage() {
   const params = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const id = (params?.id ?? "") as string;
 
   const [requisition, setRequisition] = useState<Requisition | null>(null);

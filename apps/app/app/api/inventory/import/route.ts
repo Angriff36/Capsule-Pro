@@ -14,7 +14,7 @@ interface ImportRow {
   unitCost: string;
 }
 
-function parseBoolean(val: unknown): boolean {
+function _parseBoolean(val: unknown): boolean {
   if (typeof val === "boolean") {
     return val;
   }

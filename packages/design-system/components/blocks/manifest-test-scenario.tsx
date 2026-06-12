@@ -115,7 +115,7 @@ export function ManifestTestScenario({
       });
       setIsCreateOpen(false);
       toast.success("Test scenario created");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Invalid JSON in test data");
     }
   };

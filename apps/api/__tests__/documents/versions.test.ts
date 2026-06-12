@@ -153,7 +153,7 @@ function makeGetRequest(params: Record<string, string>): NextRequest {
   );
 }
 
-function makeManifestParams(entity: string, command: string) {
+function _makeManifestParams(entity: string, command: string) {
   return { params: Promise.resolve({ entity, command }) };
 }
 

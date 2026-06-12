@@ -89,7 +89,11 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
 
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const _previousMonthStart = new Date(
+    now.getFullYear(),
+    now.getMonth() - 1,
+    1
+  );
   const currentYearStart = new Date(now.getFullYear(), 0, 1);
   const lastYearStart = new Date(now.getFullYear() - 1, 0, 1);
   const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);

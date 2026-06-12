@@ -346,7 +346,7 @@ export function UnifiedCalendar({
   const getEventsForDay = (day: Date) => {
     return filteredEvents.filter((event) => {
       const dayStart = startOfDay(day);
-      const dayEnd = endOfDay(day);
+      const _dayEnd = endOfDay(day);
       const eventStart = event.start;
 
       // Event starts on this day

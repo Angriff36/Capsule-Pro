@@ -108,7 +108,7 @@ export async function GET(request: Request) {
       orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
     });
 
-    const locationIds = locations.map((l) => l.id);
+    const _locationIds = locations.map((l) => l.id);
 
     // Date range filters
     const startDate = filters.startDate

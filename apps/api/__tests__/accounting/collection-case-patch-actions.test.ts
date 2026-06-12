@@ -135,7 +135,7 @@ function manifestSuccess(result: Record<string, unknown> = {}) {
   });
 }
 
-function manifestError(message: string, status = 500) {
+function _manifestError(message: string, status = 500) {
   return NextResponse.json({ success: false, message }, { status });
 }
 

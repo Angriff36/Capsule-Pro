@@ -71,7 +71,7 @@ interface ApprovalOrder {
 }
 
 // Approval chain steps
-const APPROVAL_STEPS = [
+const _APPROVAL_STEPS = [
   { key: "requester", label: "Requester", description: "PO Created" },
   { key: "manager", label: "Manager", description: "Review & Approve" },
   { key: "finance", label: "Finance", description: "Final Review" },
@@ -92,7 +92,7 @@ function ApprovalChainStepper({
 
   // Check approval history for specific actions
   const managerApproval = approvalHistory.find((h) => h.action === "approved");
-  const financeApproval = hasApproval && managerApproval; // If approved, we assume finance also signed off
+  const _financeApproval = hasApproval && managerApproval; // If approved, we assume finance also signed off
 
   return (
     <div className="mt-2 flex items-center gap-1">

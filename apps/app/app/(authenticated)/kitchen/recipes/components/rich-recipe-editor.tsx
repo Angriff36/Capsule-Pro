@@ -382,7 +382,7 @@ function IngredientRowItem({
                 <Button
                   className="h-9 w-9"
                   onClick={() => {
-                    const newIng = { ...ingredient, id: `copy-${Date.now()}` };
+                    const _newIng = { ...ingredient, id: `copy-${Date.now()}` };
                     // This will be handled by parent component
                   }}
                   size="icon"
@@ -544,7 +544,7 @@ export function RichRecipeEditor({
     setIngredients(updated);
   };
 
-  const handleDuplicateIngredient = (index: number) => {
+  const _handleDuplicateIngredient = (index: number) => {
     const original = ingredients[index];
     const duplicate = {
       ...original,

@@ -225,12 +225,12 @@ const AnalyticsSalesPage = async () => {
 
   const leadCount = leadSummary._count;
   const proposalCount = proposalSummary._count;
-  const invoiceCount = invoiceSummary._count;
-  const paymentCount = paymentSummary._count;
-  const estimatedPipelineValue = Number(leadSummary._sum.estimatedValue ?? 0);
-  const proposedRevenue = Number(proposalSummary._sum.total ?? 0);
+  const _invoiceCount = invoiceSummary._count;
+  const _paymentCount = paymentSummary._count;
+  const _estimatedPipelineValue = Number(leadSummary._sum.estimatedValue ?? 0);
+  const _proposedRevenue = Number(proposalSummary._sum.total ?? 0);
   const invoicedRevenue = Number(invoiceSummary._sum.total ?? 0);
-  const outstandingRevenue = Number(invoiceSummary._sum.amountDue ?? 0);
+  const _outstandingRevenue = Number(invoiceSummary._sum.amountDue ?? 0);
   const collectedRevenue = Number(paymentSummary._sum.amount ?? 0);
 
   return (

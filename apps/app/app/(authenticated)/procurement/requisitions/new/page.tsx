@@ -55,7 +55,7 @@ interface LineItem {
 }
 
 export default function NewRequisitionPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);

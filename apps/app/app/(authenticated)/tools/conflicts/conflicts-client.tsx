@@ -183,7 +183,7 @@ function severityIcon(severity: ConflictSeverity) {
   }
 }
 
-function severityColor(severity: ConflictSeverity): string {
+function _severityColor(severity: ConflictSeverity): string {
   switch (severity) {
     case "critical":
       return "text-red-600";
@@ -283,7 +283,7 @@ function StatCard({
 
 function ConflictCard({ conflict }: { conflict: Conflict }) {
   const [expanded, setExpanded] = useState(false);
-  const router = useRouter();
+  const _router = useRouter();
 
   const hasResolutions =
     conflict.resolutionOptions && conflict.resolutionOptions.length > 0;
@@ -391,7 +391,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
 // ---------------------------------------------------------------------------
 
 export function ConflictsClient() {
-  const router = useRouter();
+  const _router = useRouter();
   const [activeTab, setActiveTab] = useState<ConflictTab>("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

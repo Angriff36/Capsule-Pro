@@ -672,7 +672,7 @@ export function ActivityStats({
   byType,
   byEntity,
 }: ActivityStatsProps) {
-  const topEntities = Object.entries(byEntity)
+  const _topEntities = Object.entries(byEntity)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
 

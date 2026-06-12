@@ -2342,7 +2342,7 @@ function generateTitle(
   return generatedTitle || cleaned || "New Event";
 }
 
-function parseNaturalLanguageEvent(
+function _parseNaturalLanguageEvent(
   text: string,
   referenceDate: Date = new Date()
 ): ParsedEventData {

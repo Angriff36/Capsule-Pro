@@ -345,7 +345,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Optional: Check for force flag in body
     const body = await request.json().catch(() => ({}));
-    const force = body.force === true;
+    const _force = body.force === true;
 
     // Apply changes in a transaction
     await database.$transaction(async (tx) => {

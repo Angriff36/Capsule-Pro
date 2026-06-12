@@ -182,7 +182,7 @@ export function EventDetailTabs({
         localStorage.setItem(`event-mode:${eventId}`, newMode);
       }
       // Reset tab to first tab of new mode
-      const newTabs = getTabsForMode(newMode);
+      const _newTabs = getTabsForMode(newMode);
       const nextSearchParams = new URLSearchParams(
         searchParams?.toString() ?? ""
       );

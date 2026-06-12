@@ -47,7 +47,7 @@ interface InventoryItem {
 
 export default function NewPOPage() {
   const posthog = usePostHog();
-  const router = useRouter();
+  const _router = useRouter();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);

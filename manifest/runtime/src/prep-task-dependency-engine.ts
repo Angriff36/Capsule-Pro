@@ -339,7 +339,7 @@ export class PrepTaskDependencyEngine {
       // Find minimum latest start among predecessors
       const reverseAdj = this.reverseAdjacencyList.get(taskId) ?? new Set();
       const predecessors = Array.from(reverseAdj);
-      const minPredecessorStart = node.latestFinish;
+      const _minPredecessorStart = node.latestFinish;
 
       for (let j = 0; j < predecessors.length; j++) {
         const predId = predecessors[j];

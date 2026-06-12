@@ -98,7 +98,7 @@ export function InventoryTransfersClient() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
+  const [_selectedTransfer, _setSelectedTransfer] = useState<Transfer | null>(
     null
   );
 

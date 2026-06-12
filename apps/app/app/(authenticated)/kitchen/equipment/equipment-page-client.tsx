@@ -289,7 +289,7 @@ export function EquipmentPageClient() {
       });
       fetchEquipment();
       fetchWorkOrders();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to schedule maintenance");
     } finally {
       setSubmitting(false);
@@ -320,7 +320,7 @@ export function EquipmentPageClient() {
       });
       setSelectedEquipment(null);
       fetchWorkOrders();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to create work order");
     } finally {
       setSubmitting(false);
@@ -343,7 +343,7 @@ export function EquipmentPageClient() {
       setStatusForm({ status: "in_progress", notes: "" });
       setSelectedWorkOrder(null);
       fetchWorkOrders();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update status");
     } finally {
       setSubmitting(false);

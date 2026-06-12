@@ -117,7 +117,7 @@ function formatCapacity(container: ContainerRecord): string {
   return "\u2014";
 }
 
-function formatDate(iso: string): string {
+function _formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -173,7 +173,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       }
 
       setTotalCount(filtered.length);
-      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      const _totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       const start = (page - 1) * PAGE_SIZE;
       setContainers(filtered.slice(start, start + PAGE_SIZE));
     } catch (err) {

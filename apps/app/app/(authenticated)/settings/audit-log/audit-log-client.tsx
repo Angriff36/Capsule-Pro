@@ -174,7 +174,7 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
 export function AuditLogClient() {
   const [entries, setEntries] = useState<AuditLogEntry[]>([]);
   const [tableNames, setTableNames] = useState<string[]>([]);
-  const [total, setTotal] = useState(0);
+  const [_total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
 

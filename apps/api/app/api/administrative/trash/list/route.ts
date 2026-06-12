@@ -221,7 +221,7 @@ const ENTITY_DISPLAY_NAMES: Record<RestorableEntity, string> = {
 };
 
 // SQL queries for fetching soft-deleted items with display names
-const ENTITY_QUERIES: Record<
+const _ENTITY_QUERIES: Record<
   RestorableEntity,
   { sql: string; displayNameColumn: string }
 > = {

@@ -199,12 +199,12 @@ describe("Supplier Catalog Webhook", () => {
 
   describe("POST /api/webhooks/supplier-catalog", () => {
     let POST: typeof import("@/app/api/webhooks/supplier-catalog/route").POST;
-    let GET: typeof import("@/app/api/webhooks/supplier-catalog/route").GET;
+    let _GET: typeof import("@/app/api/webhooks/supplier-catalog/route").GET;
 
     beforeEach(async () => {
       const mod = await import("@/app/api/webhooks/supplier-catalog/route");
       POST = mod.POST;
-      GET = mod.GET;
+      _GET = mod.GET;
     });
 
     it("returns 400 for invalid JSON body", async () => {

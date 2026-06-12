@@ -22,7 +22,7 @@ import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { PaymentMethodsClient } from "./payment-methods-client";
 
-function formatDate(value: Date | null) {
+function _formatDate(value: Date | null) {
   if (!value) {
     return "\u2014";
   }

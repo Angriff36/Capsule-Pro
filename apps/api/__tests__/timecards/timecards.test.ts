@@ -231,7 +231,7 @@ function createMockTimeOffRequest(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createMockUser(overrides: Record<string, unknown> = {}) {
+function _createMockUser(overrides: Record<string, unknown> = {}) {
   return {
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,

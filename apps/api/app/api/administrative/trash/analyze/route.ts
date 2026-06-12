@@ -550,7 +550,7 @@ async function analyzeEntityDependencies(
 
   // Determine if restoration is safe
   const hasActiveDependents = activeDependents > 0;
-  const canRestore =
+  const _canRestore =
     !hasActiveDependents ||
     dependents.every((d) => d.node.isDeleted || d.edge.type === "optional");
 

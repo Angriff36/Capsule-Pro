@@ -41,7 +41,7 @@ function arrayToManifestString(arr: string[]): string {
 /**
  * Convert comma-separated string from manifest to array for API response.
  */
-function manifestStringToArray(str: string): string[] {
+function _manifestStringToArray(str: string): string[] {
   if (!str || str === "") {
     return [];
   }

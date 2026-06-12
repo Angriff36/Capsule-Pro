@@ -881,7 +881,7 @@ export function EmptyListState({
   ambientVariant = "particles",
   ambientIntensity = 0.6,
 }: EmptyListStateProps) {
-  const canCreate = canRoleCreate(userRole);
+  const _canCreate = canRoleCreate(userRole);
   const messaging = getRoleAwareEmptyMessage(
     itemName,
     userRole,

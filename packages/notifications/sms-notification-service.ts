@@ -86,7 +86,7 @@ function normalizePhoneNumber(phoneNumber: string): string {
 /**
  * Checks if an employee has opted in to SMS notifications for a specific type
  */
-async function checkOptInStatus(
+async function _checkOptInStatus(
   database: PrismaClient,
   tenantId: string,
   employeeId: string,

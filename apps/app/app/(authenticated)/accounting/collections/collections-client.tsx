@@ -126,7 +126,7 @@ interface InitialMetrics {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const formatDate = (d: string | null) => {
+const _formatDate = (d: string | null) => {
   if (!d) {
     return "\u2014";
   }

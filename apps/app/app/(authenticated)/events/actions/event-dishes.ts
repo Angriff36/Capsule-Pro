@@ -317,7 +317,7 @@ export async function addDishToEvent(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  const _tenantId = await getTenantIdForOrg(orgId);
 
   try {
     // Governed write: EventDish.create via Manifest runtime (constitution §9)
@@ -353,7 +353,7 @@ export async function removeDishFromEvent(eventId: string, linkId: string) {
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  const _tenantId = await getTenantIdForOrg(orgId);
 
   try {
     // Governed write: EventDish.remove via Manifest runtime (constitution §9)

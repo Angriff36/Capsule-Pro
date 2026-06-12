@@ -527,7 +527,7 @@ function mockUnauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 }
 
-function mockNoTenant() {
+function _mockNoTenant() {
   vi.mocked(auth).mockResolvedValue({
     userId: TEST_USER_ID,
     orgId: TEST_ORG_ID,

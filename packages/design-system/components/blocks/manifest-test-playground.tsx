@@ -97,7 +97,7 @@ export function ManifestTestPlayground({
   const [executionResult, setExecutionResult] =
     useState<ExecutionResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [_isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [isDryRun, setIsDryRun] = useState(false);
   const [history, setHistory] = useState<ExecutionHistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);

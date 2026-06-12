@@ -88,7 +88,7 @@ const WINDOW_PARSERS: Record<string, (value: number) => number> = {
 };
 
 // Window string unit names for Duration format
-const WINDOW_UNITS: Record<string, string> = {
+const _WINDOW_UNITS: Record<string, string> = {
   s: "s",
   m: "m",
   h: "h",
@@ -383,7 +383,7 @@ export async function checkRateLimit(
 
   // Check rate limit
   const key = `${endpoint}:${identifier}`;
-  const startTime = Date.now();
+  const _startTime = Date.now();
 
   try {
     const { success, remaining, reset } = await rateLimiter.limit(key);

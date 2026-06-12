@@ -51,7 +51,7 @@ export function useSelection() {
 export function SelectableList({ items, type, children }: SelectableListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
-  const [selectMode, setSelectMode] = useState(true);
+  const [selectMode, _setSelectMode] = useState(true);
 
   const [batchPrice, setBatchPrice] = useState("");
   const [batchName, setBatchName] = useState("");

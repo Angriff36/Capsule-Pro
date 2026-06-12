@@ -758,7 +758,7 @@ function timestampToDate(value: unknown): Date | null {
  * This returns a function that provides the appropriate Store implementation
  * for each entity type, backed by Prisma.
  */
-const loggedMissingStoreEntities = new Set<string>();
+const _loggedMissingStoreEntities = new Set<string>();
 
 export type ManifestStoreIssueKind = "missing";
 
@@ -767,13 +767,13 @@ export type ManifestStoreIssueReporter = (
   kind: ManifestStoreIssueKind
 ) => void;
 
-let manifestStoreIssueReporter: ManifestStoreIssueReporter | undefined;
+let _manifestStoreIssueReporter: ManifestStoreIssueReporter | undefined;
 
 /** Optional hook for apps to persist missing-store diagnostics. */
 export function registerManifestStoreIssueReporter(
   reporter: ManifestStoreIssueReporter
 ): void {
-  manifestStoreIssueReporter = reporter;
+  _manifestStoreIssueReporter = reporter;
 }
 
 export function createPrismaStoreProvider(

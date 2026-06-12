@@ -799,10 +799,10 @@ export function EventDetailsClient({
   const addDishMutation = useAddDishToEvent();
   const removeDishMutation = useRemoveDishFromEvent();
   const createVariantMutation = useCreateDishVariant();
-  const createDishAndAddMutation = useCreateDishAndAdd();
+  const _createDishAndAddMutation = useCreateDishAndAdd();
   const generateSummaryMutation = useGenerateEventSummary();
   const deleteSummaryMutation = useDeleteEventSummary();
-  const generateBreakdownMutation = useGenerateTaskBreakdown();
+  const _generateBreakdownMutation = useGenerateTaskBreakdown();
   const saveBreakdownMutation = useSaveTaskBreakdown();
   const generatePrepListMutation = useGeneratePrepList();
   const quickRsvpMutation = useQuickRsvp();

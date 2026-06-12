@@ -8,7 +8,7 @@ if (!DATABASE_URL) {
 }
 
 async function test() {
-  const neonConfig = { webSocketConstructor: ws, poolQueryViaFetch: true };
+  const _neonConfig = { webSocketConstructor: ws, poolQueryViaFetch: true };
   const adapter = new PrismaNeon({ connectionString: DATABASE_URL });
   const database = new PrismaClient({ adapter });
 

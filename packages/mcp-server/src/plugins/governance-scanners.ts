@@ -78,7 +78,7 @@ const HARDCODED_USER_PATTERN = /userId\s*[:=]\s*["']test-user["']/i;
 const AUTH_DISABLED_PATTERN = /auth\s*[:=]\s*(false|0|null)/i;
 const MANIFEST_FILE_PATTERN = /\.manifest$/;
 const IR_FILE_PATTERN = /\.ir\.json$/;
-const DOC_FILE_PATTERN = /\.md$/;
+const _DOC_FILE_PATTERN = /\.md$/;
 
 // ---------------------------------------------------------------------------
 // File scanning utilities

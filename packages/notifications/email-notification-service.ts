@@ -76,7 +76,7 @@ function validateEmail(email: string): boolean {
 /**
  * Checks if a recipient has opted in to email notifications for a specific type
  */
-async function checkOptInStatus(
+async function _checkOptInStatus(
   database: PrismaClient,
   tenantId: string,
   employeeId: string | undefined,
