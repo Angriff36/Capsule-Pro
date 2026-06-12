@@ -40,10 +40,9 @@ import {
   deleteEmailWorkflow,
   getAvailableTemplates,
   getEmailWorkflowById,
-  TRIGGER_TYPE_GROUPS,
-  TRIGGER_TYPE_LABELS,
   updateEmailWorkflow,
 } from "../actions";
+import { TRIGGER_TYPE_GROUPS, TRIGGER_TYPE_LABELS } from "../constants";
 
 export default function EditEmailWorkflowPage({
   params,

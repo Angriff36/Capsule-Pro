@@ -46,9 +46,9 @@ import type { EmailTriggerType, EmailWorkflowRow } from "../actions";
 import {
   deleteEmailWorkflow,
   getEmailWorkflows,
-  TRIGGER_TYPE_LABELS,
   toggleEmailWorkflow,
 } from "../actions";
+import { TRIGGER_TYPE_LABELS } from "../constants";
 
 export function EmailWorkflowsClient() {
   const [workflows, setWorkflows] = useState<EmailWorkflowRow[]>([]);

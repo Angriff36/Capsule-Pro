@@ -8,7 +8,8 @@ import { requireCurrentUser } from "@/app/lib/tenant";
 
 // Marketing spec FR-501: closed enum, immutable after creation.
 // `website` is reserved for the public infrastructure-allowlisted endpoint (FR-505).
-export const LEAD_SOURCES = ["website", "manual", "import"] as const;
+// not exported: "use server" modules may only export async functions at runtime
+const LEAD_SOURCES = ["website", "manual", "import"] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 export interface CreateLeadInput {

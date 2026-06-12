@@ -25,12 +25,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { EmailTriggerType } from "../actions";
-import {
-  createEmailWorkflow,
-  getAvailableTemplates,
-  TRIGGER_TYPE_GROUPS,
-  TRIGGER_TYPE_LABELS,
-} from "../actions";
+import { createEmailWorkflow, getAvailableTemplates } from "../actions";
+import { TRIGGER_TYPE_GROUPS, TRIGGER_TYPE_LABELS } from "../constants";
 
 interface TemplateOption {
   id: string;
