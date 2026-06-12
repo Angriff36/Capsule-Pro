@@ -214,9 +214,9 @@ function parseModelBlock(body) {
     }
 
     // Fix 2 & 4: Filter and fix field default attributes
-    const isStringField = /^String(\??|\[\])?$/.test(field.type);
+    const _isStringField = /^String(\??|\[\])?$/.test(field.type);
     const isDateTimeField = /^DateTime(\??)$/.test(field.type);
-    const isListField = /\[\]$/.test(field.type);
+    const _isListField = /\[\]$/.test(field.type);
 
     if (field.defaults) {
       const fixedDefaults = [];

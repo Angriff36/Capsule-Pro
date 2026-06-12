@@ -57,6 +57,7 @@
       "!!manifest/capsule-conventions.json",
       "!!manifest/runtime/commands.registry.json",
       "!!manifest/runtime/routes.manifest.json",
+      "!!manifest/runtime/routes.ts",
       "!!manifest-structure-audit.json",
       "!!manifest-domain-drift-audit.json",
       // Golden projection snapshots: exact-match against generator output —

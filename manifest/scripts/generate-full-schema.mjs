@@ -611,7 +611,7 @@ console.log(`  @db.Time stripped: ${strippedDbTime}`);
   // Find tables with multiple models
   let dupTableCount = 0;
   const modelsToRemove = new Set();
-  for (const [table, models] of tableModelsMap) {
+  for (const [_table, models] of tableModelsMap) {
     if (models.length > 1) {
       dupTableCount++;
       // Keep the "canonical" model and remove the alias.

@@ -1885,3 +1885,29 @@ Gotchas discovered (do not repeat):
 5. **Renames re-key the direct-writes baseline**: improved metadata attribution made 9
    pre-existing writes newly visible (and 136 stale keys resolvable) — regenerate via
    --save-baseline, not new bypasses.
+
+## 51. Ultracite/Biome lint pass + generated-surface protection (2026-06-12)
+
+Repo lint surface: 11,987 errors + 4,061 warnings → **2,628 errors + 2,023 warnings**
+(-78% errors) via three verified batches (commits 8372bf28b, unsafe-rule batch, unused-vars):
+1. `pnpm lint:fix` safe pass (1,392 files).
+2. Per-rule `--unsafe --only` batch for 12 mechanical rules (445 files); two useAtIndex
+   fixes introduced possibly-undefined accesses → rewritten with guarded locals.
+3. noUnusedVariables underscore-prefix batch (76 files).
+Each batch verified: 3 typechecks 0 errors + tests api 5,263 / app 341 / runtime 172.
+
+**Generated-surface protection added to biome.jsonc** (the important part): Biome was
+rewriting drift-gated producer output — 584+169 generated route files, IR JSON artifacts,
+governance baselines, runtime registries, and the projection golden snapshots
+(`__snapshots__/*.snapshot.ts`, whose reformatting broke exact-match tests). Now excluded:
+`**/*.generated.*`, `manifest/ir`, `manifest/governance`, runtime registries (incl. generated routes.ts),
+`**/__snapshots__`. Reformatted producer files were restored from HEAD; drift gates verified.
+
+Remaining lint debt is judgment-class, deliberately NOT auto-fixed:
+useTopLevelRegex 1,393 (hoisting /g-flag regexes changes lastIndex behavior — needs
+per-site review), noNestedTernary 348, noExplicitAny 313, noExcessiveCognitiveComplexity
+275, useAwait 263 (fix removes `async` — changes return contracts), noNonNullAssertion 248,
+noLabelWithoutControl 155 (a11y markup), noArrayIndexKey 119 (needs stable keys).
+
+SonarLint note: the "250 problems" listed in the IDE have no headless reproduction — no
+sonar config exists in the repo. The Biome pass covers the overlapping rule surface.

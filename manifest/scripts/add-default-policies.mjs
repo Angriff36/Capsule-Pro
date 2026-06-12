@@ -402,7 +402,7 @@ function processFile(filepath, filename) {
   let braceDepth = 0;
   let hasDefaultPolicy = false;
   let insertedInThisEntity = false;
-  let currentEntityName = "";
+  let _currentEntityName = "";
   let currentPolicy = null;
   let currentPolicyLine = "";
 
@@ -418,7 +418,7 @@ function processFile(filepath, filename) {
       braceDepth = 1;
       hasDefaultPolicy = false;
       insertedInThisEntity = false;
-      currentEntityName = entityName;
+      _currentEntityName = entityName;
       // Get the domain-appropriate policy for this entity
       currentPolicy = getPolicyForFile(filename);
       currentPolicyLine = `  default policy ${entityName}DefaultAccess execute: user.role in ${currentPolicy.roles} "${currentPolicy.desc}"`;
