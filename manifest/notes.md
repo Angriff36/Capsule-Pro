@@ -1398,3 +1398,56 @@ Completion of the board-propagation fix batch (§36–§37). Commits f257af45b..
 - **Pre-existing warn-only IR provenance mismatch** (computed vs stored hash) logged by the
   runtime before AND after these recompiles — predates this batch, `requireValidProvenance`
   not set, manifest:ci provenance gates pass. Worth a future look.
+
+## 39. Dev-log error sweep: raw-SQL identifier drift, use-server constants, rewrite shadowing (2026-06-11)
+
+Source: full app+api dev-log triage (10-agent workflow), all fixes DB-probed against live Neon dev.
+
+- **Raw-SQL identifier drift is the dominant bug class (4 of 10 errors).** Three sub-patterns:
+  (a) unquoted camelCase ALIASES fold to lowercase — `as createdAt` → result key `createdat`,
+  reader gets `undefined` (get-client-ltv.ts: cohort crash + 4 silently-NaN metrics; fix = quote
+  aliases + `COUNT(...)::int` to avoid BigInt mixing); (b) camelCase Prisma FIELD names used as
+  column names — `pt.tenantId`/`pli.createdAt`/`te.deletedAt` (bottleneck detector, 5 queries;
+  fix = snake_case physical names, NOT quoting — these tables have no camelCase columns);
+  (c) wrong TABLE name — `tenant_admin.activity_feed` vs physical `tenant_admin."ActivityFeed"`
+  (PascalCase @@map; stats route + activity-feed-service), and phantom `tenant_admin.audit_log`
+  (real table is `platform.audit_log`).
+- **`$queryRawUnsafe` is variadic** — passing the values ARRAY as one arg binds 1 param
+  ("bind message supplies 1 parameters"). Spread it: `...(cond ? [a,b,c] : [a,b])`. Found in
+  menu-engineering route (logged) AND all 5 bottleneck-detector call sites (latent behind the
+  column errors). menu-engineering also interpolated `${locationId}` raw (injection) → `$3::uuid`.
+- **prep_tasks has NO completed_at column** — detector avgTime query used it; substituted
+  `updated_at` (valid: rows filtered to status='completed'). Also `prep_list_items.station_id`
+  is TEXT while `stations.id` is UUID → `s.id = pli.station_id` is `uuid = text` (always errors);
+  fixed with `s.id::text = pli.station_id` + added missing `s.tenant_id = pli.tenant_id` scope.
+- **apps/app/app/api/settings/audit-log/route.ts DELETED (phantom).** Queried nonexistent
+  `tenant_admin.audit_log` with columns no audit table has; returned `{data,pagination}` while the
+  only client (audit-log-client.tsx) expects `{entries,...}` — never worked. The working twin is
+  apps/api/app/api/settings/audit-log/route.ts (Prisma `database.audit_log` → platform.audit_log);
+  the existing `/api/settings/*` rewrite now proxies to it. Same class as the May audit/logs deletion.
+- **Next.js rewrite-ordering gotcha (the playground-404 root cause):** afterFiles rewrites run
+  AFTER static filesystem routes but BEFORE dynamic ones. The broad `/api/settings/:path*` rewrite
+  let `entities/list` (static) work while swallowing `entities/[entityName]` (dynamic) → proxied
+  to apps/api → 404. Fix: narrowed to the 3 subtrees apps/api actually serves
+  (api-keys/audit-log/rate-limits). RULE: any future dynamic app-local route under a rewritten
+  prefix will be silently captured — enumerate subtrees, don't blanket-rewrite. Also noted:
+  routes.manifest.json has zero /api/settings/* entries so apiFetch dev validation can't see these.
+- **"use server" modules may only export async functions at runtime.** email-workflows actions.ts
+  exported TRIGGER_TYPE_LABELS (object) + TRIGGER_TYPE_GROUPS (array) → list-page actions loader
+  500 + client imports became server-reference proxies (`.map is not a function` on /new). Fix:
+  moved to email-workflows/constants.ts (plain module), imports updated in 3 consumers. Latent
+  same-class: marketing/leads/actions.ts LEAD_SOURCES un-exported. Type-only exports are fine.
+- **createEvent E_TYPE_DATETIME was deploy/process skew, NOT a coercion gap** — f257af45b
+  (v0.12.249 ISO→epoch coercion) is correct (11/11 conformance tests) but main is ~40 commits
+  ahead of origin; the 19:12 log came from a pre-fix executor (stale dev process and/or prod API
+  via the NEXT_PUBLIC_API_URL split-brain). Hardened senders anyway to epoch ms:
+  events/actions.ts (create/update/assignClient) + importer.ts. OPERATIONAL: restart both dev
+  servers; push+deploy needed for prod.
+- **Integrations page crash:** nowsta/status returns 200 with `lastSync:null` (never-synced or
+  unconfigured); client interface lied (non-nullable) so TS missed the unguarded
+  `status.lastSync.status`. Fix: `| null` types + optional chaining; `autoSyncInterval ?? "—"`.
+- **Multi-location React key warning:** mapped child was a shorthand fragment `<>` with key on the
+  INNER TableRow — key must go on the outermost mapped element: `<Fragment key={...}>`.
+- **Dead code flagged (no action):** trash/list route's 400-line ENTITY_QUERIES map is unreferenced
+  (live path uses Prisma delegates); its ActivityFeed entry queries nonexistent `activity_feeds`
+  with a deleted_at column ActivityFeed doesn't have. Cleanup candidate.
