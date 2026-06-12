@@ -1681,3 +1681,43 @@ PASS, snapshot manifest-structure-audit.json refreshed to honest state.
 
 Search: file override, pnpm overrides, pnpm-workspace.yaml, cut-release, GitHub Packages, 2.4.2,
 requiresTenantConnect release, registry distribution, never link local Manifest
+
+---
+
+## 46. Reaction payload CI gate + consolidated prep-demand draft ordering (2026-06-12)
+
+**Gate:** `manifest:audit-reaction-payloads` (`manifest/scripts/check-reaction-payloads.mjs --strict`,
+chained into `manifest:audit` → `manifest:ci`). Validates every IR reaction's `payload.*` reference
+against the REAL runtime payload contract — `{...emittingCommandInput, result}` (verified at
+runtime-engine.js:2294; reactions see `payload`/`self`, NOT the docs' `event.*`, and NOT the
+declared event payload schema). `payload.result.Y` validated against the emitting entity's
+properties (create result = instance). Baseline: manifest/governance/reaction-payload-baseline.json
+(4 entries, remove-only). First run found 4 REAL silent no-ops: StaffMemberCreated→TrainingAssignment.create
+references staffMemberId/firstShiftAt/dueAt (StaffMember.create only has displayName/email/phone/role)
+and StaffMemberFirstShiftScheduled is an orphan event NO command emits. Fix = training-domain follow-up.
+
+**Consolidated ordering (user directive: draft, NEVER auto-submit; merge a week of prep lists into
+one order):** prep-inventory-demand-middleware reworked: (1) dedupe moved BEFORE inventory reserves
+(re-finalize via reopen no longer double-reserves — old code reserved first); (2) ONE open draft
+per tenant (itemCategory prep-list-demand + status draft), found-or-created (number PREP-DRAFT-*);
+demand lines MERGE via PurchaseRequisitionItem.update (qty += new, latest catalog cost wins) or
+create; totals refreshed via completeDraftFromPrepDemand; ingested prep lists tracked as
+`[prep:<id>]` markers in requisition notes (dedupe scans markers + legacy justification-contains);
+(3) the auto `PurchaseRequisition.submit` dispatch DELETED — draft sits until a manager submits;
+(4) all 15 silent bails now report via onDiagnostic (default console.warn; injectable in tests) —
+incl. "no active US Foods supplier configured" and per-line catalog-match failures; (5) reserve
+dispatches got idempotency keys (inert until deps.idempotency enabled — pre-existing caveat).
+Tests rewritten (3): consolidation across two prep lists (8+6→14 merge, ONE draft, both markers,
+NOT submitted), reopen→re-finalize dedupe (8 not 16), no-supplier loud diagnostic. Runtime suite
+172/172, typecheck green.
+
+**Engine semantics (2.4.2, verified):** reaction context = {payload, self} where payload =
+{...input, result, _subject, _eventName, _channel}; resolve targets ONE instance (find-or-create /
+merge is NOT expressible in DSL → middleware stays the sanctioned imperative home, dispatching only
+governed commands). NOT YET DONE: EventConfirmed→PrepList auto-seed reaction — blocked on porting
+menu→items derivation runtime-side (it lives app-side as raw SQL in kitchen/prep-lists/actions.ts
++ a duplicate in api prep-lists/generate route; both write prep_lists/prep_list_items via raw SQL,
+bypassing the runtime — registered as the next migration).
+
+Search: reaction payload gate, check-reaction-payloads, payload result, silent no-op reaction,
+consolidated draft requisition, prep demand merge, never auto-submit, onDiagnostic, PREP-DRAFT

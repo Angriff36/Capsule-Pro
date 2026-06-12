@@ -11,5 +11,6 @@ export { createRbacMiddleware, type RbacMiddlewareOptions } from "./rbac-middlew
 export { createIdentityMiddleware, type IdentityMiddlewareOptions } from "./identity-middleware";
 export {
   createPrepInventoryDemandMiddleware,
+  type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,
 } from "./prep-inventory-demand-middleware";
