@@ -51,9 +51,7 @@ async function fetchMenuItemAnalysis(
   startDate: Date,
   locationId: string | null
 ) {
-  const locationFilter = locationId
-    ? `AND e.location_id = ${locationId}`
-    : "";
+  const locationFilter = locationId ? "AND e.location_id = $3::uuid" : "";
 
   return await database.$queryRawUnsafe<MenuItemAnalysis[]>(
     `
@@ -86,7 +84,7 @@ async function fetchMenuItemAnalysis(
     HAVING COALESCE(SUM(ed.quantity_servings), 0) > 0
     ORDER BY contribution_margin DESC
     `,
-    locationId ? [tenantId, startDate, locationId] : [tenantId, startDate]
+    ...(locationId ? [tenantId, startDate, locationId] : [tenantId, startDate])
   );
 }
 

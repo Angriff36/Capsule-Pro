@@ -469,13 +469,13 @@ export async function getActivityStats(tenantId: string): Promise<{
     }),
     database.$queryRaw<Array<{ activity_type: string; count: bigint }>>`
       SELECT activity_type, COUNT(*) as count
-      FROM tenant_admin.activity_feed
+      FROM tenant_admin."ActivityFeed"
       WHERE tenant_id = ${tenantId}
       GROUP BY activity_type
     `,
     database.$queryRaw<Array<{ entity_type: string; count: bigint }>>`
       SELECT COALESCE(entity_type, 'unknown') as entity_type, COUNT(*) as count
-      FROM tenant_admin.activity_feed
+      FROM tenant_admin."ActivityFeed"
       WHERE tenant_id = ${tenantId} AND entity_type IS NOT NULL
       GROUP BY entity_type
       ORDER BY count DESC

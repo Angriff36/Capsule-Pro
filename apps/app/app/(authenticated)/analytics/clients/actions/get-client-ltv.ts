@@ -89,17 +89,17 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
       c.id,
       COALESCE(c.company_name, CONCAT(c.first_name, ' ', c.last_name)) as name,
       c.email,
-      COALESCE(SUM(co.total_amount), 0)::decimal as lifetimeValue,
-      COUNT(co.id) as orderCount,
-      MAX(co.order_date) as lastOrderDate,
-      COALESCE(AVG(co.total_amount), 0)::decimal as averageOrderValue,
-      c.created_at as createdAt
+      COALESCE(SUM(co.total_amount), 0)::decimal as "lifetimeValue",
+      COUNT(co.id)::int as "orderCount",
+      MAX(co.order_date) as "lastOrderDate",
+      COALESCE(AVG(co.total_amount), 0)::decimal as "averageOrderValue",
+      c.created_at as "createdAt"
     FROM tenant_crm.clients c
-    LEFT JOIN tenant_events.catering_orders co 
+    LEFT JOIN tenant_events.catering_orders co
       ON c.tenant_id = co.tenant_id AND c.id = co.customer_id AND co.deleted_at IS NULL
     WHERE c.tenant_id = $1 AND c.deleted_at IS NULL
     GROUP BY c.id, c.company_name, c.first_name, c.last_name, c.email, c.created_at
-    ORDER BY lifetimeValue DESC
+    ORDER BY "lifetimeValue" DESC
     `,
     tenantId
   );
@@ -419,9 +419,9 @@ function calculatePredictiveLTV(clientData: ClientLTVData[]): {
 }
 
 const ALLOWED_ORDER_CLAUSES = {
-  ltv: "lifetimeValue DESC",
-  orders: "orderCount DESC",
-  recent: "lastOrderDate DESC NULLS LAST",
+  ltv: '"lifetimeValue" DESC',
+  orders: '"orderCount" DESC',
+  recent: '"lastOrderDate" DESC NULLS LAST',
 } as const;
 
 export async function getClientList(
@@ -447,11 +447,11 @@ export async function getClientList(
       c.id,
       COALESCE(c.company_name, CONCAT(c.first_name, ' ', c.last_name)) as name,
       c.email,
-      COALESCE(SUM(co.total_amount), 0)::decimal as lifetimeValue,
-      COUNT(co.id) as orderCount,
-      MAX(co.order_date) as lastOrderDate,
-      COALESCE(AVG(co.total_amount), 0)::decimal as averageOrderValue,
-      c.created_at as createdAt
+      COALESCE(SUM(co.total_amount), 0)::decimal as "lifetimeValue",
+      COUNT(co.id)::int as "orderCount",
+      MAX(co.order_date) as "lastOrderDate",
+      COALESCE(AVG(co.total_amount), 0)::decimal as "averageOrderValue",
+      c.created_at as "createdAt"
     FROM tenant_crm.clients c
     LEFT JOIN tenant_events.catering_orders co
       ON c.tenant_id = co.tenant_id AND c.id = co.customer_id AND co.deleted_at IS NULL

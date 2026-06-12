@@ -46,14 +46,14 @@ export async function GET(request: NextRequest) {
         COUNT(*) as total_activities,
         COUNT(*) FILTER (WHERE created_at >= ${todayStart}) as today_count,
         COUNT(*) FILTER (WHERE created_at >= ${weekStart}) as week_count
-      FROM tenant_admin.activity_feed
+      FROM tenant_admin."ActivityFeed"
       WHERE tenant_id = ${tenantId}
     `;
 
     const byTypeResult = await (await import("@repo/database")).database
       .$queryRaw<Array<{ activity_type: string; count: bigint }>>`
       SELECT activity_type, COUNT(*) as count
-      FROM tenant_admin.activity_feed
+      FROM tenant_admin."ActivityFeed"
       WHERE tenant_id = ${tenantId}
       GROUP BY activity_type
     `;
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     const byEntityResult = await (await import("@repo/database")).database
       .$queryRaw<Array<{ entity_type: string; count: bigint }>>`
       SELECT COALESCE(entity_type, 'unknown') as entity_type, COUNT(*) as count
-      FROM tenant_admin.activity_feed
+      FROM tenant_admin."ActivityFeed"
       WHERE tenant_id = ${tenantId} AND entity_type IS NOT NULL
       GROUP BY entity_type
       ORDER BY count DESC
