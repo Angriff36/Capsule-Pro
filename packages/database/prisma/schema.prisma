@@ -2681,27 +2681,31 @@ model Report {
 }
 
 model AdminTask {
-  tenantId    String    @map("tenant_id") @db.Uuid
-  id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title       String
-  description String?
-  status      String    @default("backlog")
-  priority    String    @default("medium")
-  category    String?
-  dueDate     DateTime? @map("due_date") @db.Date
-  assignedTo  String?   @map("assigned_to") @db.Uuid
-  createdBy   String?   @map("created_by") @db.Uuid
-  sourceType  String?   @map("source_type")
-  sourceId    String?   @map("source_id") @db.Uuid
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-  tenant      Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title          String
+  description    String?
+  status         String    @default("backlog")
+  priority       String    @default("medium")
+  category       String?
+  position       Int       @default(0)
+  labels         String[]  @default([])
+  estimatedHours Decimal?  @map("estimated_hours") @db.Decimal(6, 2)
+  dueDate        DateTime? @map("due_date") @db.Date
+  assignedTo     String?   @map("assigned_to") @db.Uuid
+  createdBy      String?   @map("created_by") @db.Uuid
+  sourceType     String?   @map("source_type")
+  sourceId       String?   @map("source_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId], map: "admin_tasks_tenant_idx")
   @@index([tenantId, status], map: "admin_tasks_status_idx")
   @@index([tenantId, dueDate], map: "admin_tasks_due_idx")
+  @@index([tenantId, status, position], map: "admin_tasks_status_position_idx")
   @@map("admin_tasks")
   @@schema("tenant_admin")
 }
@@ -7175,4 +7179,259 @@ model WorkforceOptimization {
 
   @@id([tenantId, id])
   @@schema("public")
+}
+
+// ===== Admin Kanban v2 (board config, task collaboration) =====
+
+model BoardConfig {
+  tenantId  String    @map("tenant_id") @db.Uuid
+  id        String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @default("Default Board")
+  columns   Json      @default("[]")
+  settings  Json      @default("{}")
+  createdBy String?   @map("created_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId], map: "board_configs_tenant_idx")
+  @@map("board_configs")
+  @@schema("tenant_admin")
+}
+
+model AdminTaskComment {
+  tenantId   String    @map("tenant_id") @db.Uuid
+  id         String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId     String    @map("task_id") @db.Uuid
+  authorId   String?   @map("author_id") @db.Uuid
+  authorName String    @map("author_name")
+  text       String
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, taskId], map: "admin_task_comments_task_idx")
+  @@map("admin_task_comments")
+  @@schema("tenant_admin")
+}
+
+model AdminTaskAttachment {
+  tenantId   String    @map("tenant_id") @db.Uuid
+  id         String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId     String    @map("task_id") @db.Uuid
+  fileName   String    @map("file_name")
+  fileUrl    String    @map("file_url")
+  fileSize   Int       @map("file_size")
+  mimeType   String    @map("mime_type")
+  uploadedBy String?   @map("uploaded_by") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, taskId], map: "admin_task_attachments_task_idx")
+  @@map("admin_task_attachments")
+  @@schema("tenant_admin")
+}
+
+model AdminTaskFileRef {
+  tenantId  String    @map("tenant_id") @db.Uuid
+  id        String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId    String    @map("task_id") @db.Uuid
+  refType   String    @map("ref_type")
+  refId     String    @map("ref_id") @db.Uuid
+  refLabel  String    @map("ref_label")
+  linkedBy  String?   @map("linked_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, taskId], map: "admin_task_file_refs_task_idx")
+  @@map("admin_task_file_refs")
+  @@schema("tenant_admin")
+}
+
+model AdminTaskActivity {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId    String   @map("task_id") @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  actorName String   @map("actor_name")
+  action    String
+  details   Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, taskId], map: "admin_task_activity_task_idx")
+  @@map("admin_task_activity")
+  @@schema("tenant_admin")
+}
+
+model AdminTaskDevMeta {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId         String    @map("task_id") @db.Uuid
+  severity       String    @default("medium")
+  environment    String?
+  stepsToRepro   String?   @map("steps_to_repro")
+  expectedResult String?   @map("expected_result")
+  actualResult   String?   @map("actual_result")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, taskId], map: "admin_task_dev_meta_task_unique")
+  @@index([tenantId, taskId], map: "admin_task_dev_meta_task_idx")
+  @@map("admin_task_dev_meta")
+  @@schema("tenant_admin")
+}
+
+// ===== AI Call Planner (transcript -> extraction -> event draft -> proposal) =====
+
+model CallPlanningSession {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String    @map("user_id")
+  status         String    @default("active")
+  sourceType     String    @default("manual") @map("source_type")
+  transcriptText String?   @map("transcript_text") @db.Text
+  metadata       Json?
+  startedAt      DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  endedAt        DateTime? @map("ended_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status], map: "call_planning_sessions_status_idx")
+  @@index([tenantId, userId], map: "call_planning_sessions_user_idx")
+  @@map("call_planning_sessions")
+  @@schema("tenant_crm")
+}
+
+model EventPlanningDraft {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId           String    @map("session_id") @db.Uuid
+  userId              String    @map("user_id")
+  status              String    @default("active")
+  clientName          String?   @map("client_name")
+  clientContactId     String?   @map("client_contact_id") @db.Uuid
+  eventType           String?   @map("event_type")
+  eventDate           DateTime? @map("event_date") @db.Date
+  eventTime           String?   @map("event_time")
+  guestCount          Int?      @map("guest_count")
+  guestCountMin       Int?      @map("guest_count_min")
+  guestCountMax       Int?      @map("guest_count_max")
+  venuePreference     String?   @map("venue_preference")
+  venueId             String?   @map("venue_id") @db.Uuid
+  serviceStyle        String?   @map("service_style")
+  dietaryRestrictions String?   @map("dietary_restrictions")
+  menuPreferences     Json?     @map("menu_preferences")
+  budgetMin           Decimal?  @map("budget_min") @db.Decimal(12, 2)
+  budgetMax           Decimal?  @map("budget_max") @db.Decimal(12, 2)
+  packageIds          String[]  @default([]) @map("package_ids")
+  addOnIds            String[]  @default([]) @map("add_on_ids")
+  customItems         Json?     @map("custom_items")
+  timelineNotes       String?   @map("timeline_notes")
+  openQuestions       String[]  @default([]) @map("open_questions")
+  specialNotes        String?   @map("special_notes")
+  aiSummary           String?   @map("ai_summary") @db.Text
+  overallConfidence   Decimal?  @map("overall_confidence") @db.Decimal(3, 2)
+  convertedEventId    String?   @map("converted_event_id") @db.Uuid
+  proposalId          String?   @map("proposal_id") @db.Uuid
+  expiresAt           DateTime? @map("expires_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status], map: "event_planning_drafts_status_idx")
+  @@index([tenantId, sessionId], map: "event_planning_drafts_session_idx")
+  @@map("event_planning_drafts")
+  @@schema("tenant_crm")
+}
+
+model ExtractedDetail {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId       String    @map("session_id") @db.Uuid
+  draftId         String    @map("draft_id") @db.Uuid
+  fieldName       String    @map("field_name")
+  rawValue        String?   @map("raw_value") @db.Text
+  normalizedValue String?   @map("normalized_value")
+  confidence      String    @default("medium")
+  sourceQuote     String?   @map("source_quote") @db.Text
+  sourceTimestamp Int?      @map("source_timestamp")
+  status          String    @default("pending")
+  catalogMatchType String?  @map("catalog_match_type")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, draftId], map: "extracted_details_draft_idx")
+  @@index([tenantId, sessionId], map: "extracted_details_session_idx")
+  @@map("extracted_details")
+  @@schema("tenant_crm")
+}
+
+model ProposalDraft {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  draftId             String    @map("draft_id") @db.Uuid
+  userId              String    @map("user_id")
+  status              String    @default("draft")
+  version             Int       @default(1)
+  title               String
+  clientName          String    @map("client_name")
+  clientEmail         String?   @map("client_email")
+  clientPhone         String?   @map("client_phone")
+  eventSummary        Json      @default("{}") @map("event_summary")
+  menuSections        Json      @default("{}") @map("menu_sections")
+  servicePlan         Json      @default("{}") @map("service_plan")
+  pricingBreakdown    Json      @default("{}") @map("pricing_breakdown")
+  timeline            Json?
+  upgradeOptions      Json?     @map("upgrade_options")
+  visionSummary       String?   @map("vision_summary") @db.Text
+  notes               String?
+  nextSteps           String?   @map("next_steps")
+  templateId          String?   @map("template_id") @db.Uuid
+  magicToken          String    @unique(map: "proposal_drafts_magic_token_key") @map("magic_token")
+  magicTokenExpiresAt DateTime? @map("magic_token_expires_at") @db.Timestamptz(6)
+  sentAt              DateTime? @map("sent_at") @db.Timestamptz(6)
+  sentVia             String    @default("") @map("sent_via")
+  viewedAt            DateTime? @map("viewed_at") @db.Timestamptz(6)
+  respondedAt         DateTime? @map("responded_at") @db.Timestamptz(6)
+  depositAmount       Decimal   @default(0) @map("deposit_amount") @db.Decimal(12, 2)
+  depositPaid         Boolean   @default(false) @map("deposit_paid")
+  htmlContent         String?   @map("html_content") @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status], map: "proposal_drafts_status_idx")
+  @@index([tenantId, draftId], map: "proposal_drafts_draft_idx")
+  @@map("proposal_drafts")
+  @@schema("tenant_crm")
+}
+
+model ProposalAction {
+  tenantId   String   @map("tenant_id") @db.Uuid
+  id         String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposalId String   @map("proposal_id") @db.Uuid
+  action     String
+  message    String?  @db.Text
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, proposalId], map: "proposal_actions_proposal_idx")
+  @@map("proposal_actions")
+  @@schema("tenant_crm")
 }
