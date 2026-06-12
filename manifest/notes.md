@@ -1824,3 +1824,64 @@ targets prod even with .env present.
 
 Search: production migration, divine-math, rebaseline, resolve --applied, last common migration
 null, deploy.yml migrate step, P3018 constraint already exists, legacy public tables
+
+## 50. Schema-drift baseline drain — IN PROGRESS (2026-06-12, autonomous run)
+
+Draining all 614 `manifest/governance/schema-drift-baseline.json` entries (134 entities).
+Per-violation decisions produced by a 13-agent classification pass and saved to
+`manifest/reports/schema-drift/drain-decisions.json` (gitignored reports dir):
+RENAME 121 · RETYPE 74 · REMOVE 57 · ADD_COLUMN 247 (75 models, all nullable/defaulted,
+validated mechanically) · ADD_PARAM 22 · ADD_DEFAULT 5 · ALLOWLIST 31 (applied:
+global tenant_id rule + 25 per-entity entries) · DEFER 57.
+
+DEFER = entity-level design conflicts needing a user decision, NOT per-field drift:
+- **EventImportWorkflow** (11): IR is a 9-transition workflow entity but is aliased to
+  `EventImport` (event_imports = file-parse record). Needs its own table or a redesign.
+- **ForecastInput / InventoryForecast / ReorderSuggestion** (11/15/12): IR governance
+  designs vs live ML pipeline tables (sku-keyed, Decimal(10,2), Json features). Whether
+  to govern the ML tables at all is a product decision.
+- **EventTimelineItem** (5): duplicate of TimelineTask, both mapped to event_timeline.
+- **CorrectiveAction.sourceType/sourceId** (2): polymorphic source ref vs typed FK columns.
+- **TemperatureProbe.isActive** (1): boolean vs 5-state status column. **Schedule.shiftCount** (1): guard references a count column that never existed.
+
+REMOVE/RENAME decisions (178) are being adversarially verified before application.
+Baseline target after this run: exactly the 57 DEFER entries.
+
+### §50 progress (apply stage done)
+- 276/279 verified IR fixes applied by 15 agents across 52 .manifest files + 23 caller files;
+  every edited file passes per-file `manifest compile`. One skip: **Shipment.signatureData →
+  `signature` is a hard reserved word in the upstream lexer** (webhook keyword set); rename
+  blocked until upstream makes it contextual. Decision + reverted partial edits documented in
+  the apply workflow output.
+- 247 columns inserted into schema.prisma programmatically (validated: model exists, no dup
+  field/@map, convention-matched, all nullable/defaulted); `prisma validate` green.
+- **audit-schema-drift.mjs enhancement**: create-coverage now counts `mutate <field> = <expr>`
+  actions in the create command as coverage (`create_mutation`) — the runtime applies them
+  before persist, but call-expression defaults (`= now()`) never reach IR `defaultValue`, so
+  DisciplinaryAction.issued_date / OnboardingCompletion.completed_at were false "missing".
+- Audit after regen: 614 → 62 → (post-straggler fixes) target 58 = 57 DEFER + 1 reserved-word.
+
+### §50 COMPLETE (2026-06-12): baseline 614 → 58, all gates green
+Final state: `manifest:ci` green end-to-end; api/app/runtime typechecks 0 errors;
+tests api 5,263 / app 341 / runtime 172 all passing. Migration
+`20260612150718_schema_drift_baseline_drain` (247 ADD COLUMN, purely additive,
+shadow-validated) applied to dev; db:check zero drift. Commits: ed162e0bb (columns),
+ee4e62f8a (IR fixes + callers), 1c7777732 (governance + audit).
+
+Gotchas discovered (do not repeat):
+1. **`signature` is a hard reserved word** in the Manifest lexer (webhook keyword set:
+   webhook/signature/idempotencyHeader/transform) — properties cannot use it. Blocked
+   Shipment.signatureData→signature rename; needs upstream contextual-keyword fix.
+2. **`= now()` property defaults never reach IR `defaultValue`** (call expressions are
+   dropped; only literals compile). Coverage for required columns set at create time
+   must come from a `mutate field = now()` in the create command — the audit now
+   recognizes that (`create_mutation` coverage).
+3. **`pnpm db:dev -- --create-only` forwards a LITERAL `--` to prisma**, which then
+   ignores `--name` and prompts interactively (hangs non-interactive shells forever).
+   Correct form: `pnpm db:dev --create-only --name X` (no `--`).
+4. **Renames can kill parent-context overrides**: the runtime test "no dead allowlist"
+   fails when a rename/retype eliminates the detected case. Removing the dead entries
+   is the correct response.
+5. **Renames re-key the direct-writes baseline**: improved metadata attribution made 9
+   pre-existing writes newly visible (and 136 stale keys resolvable) — regenerate via
+   --save-baseline, not new bypasses.
