@@ -29,3 +29,13 @@ see manifest/notes.md §39 for the full catalog and the rewrite-ordering rule.
 Remaining operational items: restart both dev servers (pick up coercion fix + these changes);
 push to origin + deploy api so prod gets f257af45b and this batch (push = Tier 3, needs user).
 Flagged not fixed: trash/list ENTITY_QUERIES dead map (cleanup candidate, notes §39).
+
+# Round 2 (post-restart log + screenshot) — ALL FIXED
+- [x] events `column version does not exist` — NOT local: Infisical dev env overrides .env.local, app posted to PROD API/DB (no version column there). dev scripts now pin NEXT_PUBLIC_API_URL=localhost:2223 (ed4583c0a).
+- [x] recipe-cost detail `undefined.name` — POST /cost returned command envelope instead of breakdown (26ef0c5de regression). Contract restored + client guard.
+- [x] inventory items `undefined.toFixed` — generated-client adoption shape mismatch (7dae4343a). Reverted to bespoke /api/inventory/items endpoints.
+- [x] vendor-catalog modal — per-field validation, supplier empty-state, NaN effective dates → epoch ms, currency/units aligned to IR vocab. OPEN: no InventorySupplier creation UI exists (structural).
+- [x] validDifficulty/validStatus block spam — entity-level :block anti-pattern removed at source (transitions + create guard), IR recompiled, manifest:ci green. OPEN: upstream engine mutate-swallow (silent 200 no-ops).
+
+Verification: manifest:ci PASS, runtime 172/172, api kitchen 728/728, constraint-severity 3/3, app kitchen+adoption 4/4, app+api typecheck 0 errors.
+Operational: prod DB needs db:deploy (+ consider migrate step in deploy.yml); push still pending (user, Tier 3).

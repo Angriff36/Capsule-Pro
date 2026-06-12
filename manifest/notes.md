@@ -1451,3 +1451,56 @@ Source: full app+api dev-log triage (10-agent workflow), all fixes DB-probed aga
 - **Dead code flagged (no action):** trash/list route's 400-line ENTITY_QUERIES map is unreferenced
   (live path uses Prisma delegates); its ActivityFeed entry queries nonexistent `activity_feeds`
   with a deleted_at column ActivityFeed doesn't have. Cleanup candidate.
+
+## 40. Round-2 sweep: split-brain root cause, contract regressions, RecipeVersion block anti-pattern (2026-06-11)
+
+Triggered by post-restart dev log + vendor-catalog screenshot. 4-agent diagnosis, all high-confidence.
+
+- **SPLIT-BRAIN ROOT CAUSE FOUND AND KILLED:** Infisical dev env injects
+  `NEXT_PUBLIC_API_URL=https://capsule-pro-api.vercel.app` as a process env var, which BEATS
+  .env.local — every infisical-run app dev process posted governed commands to PROD API + PROD DB
+  regardless of the .env.local flip. Yesterday's E_TYPE_DATETIME and tonight's "column version
+  does not exist" were both prod executions (prod DB never received migration 20260610055049 —
+  deploy.yml has NO migrate step; schema commit c6c72e195 IS on origin/main, so prod's client is
+  version-aware while prod's DB is not). Fix: dev:infisical/dev:webpack pin
+  `cross-env NEXT_PUBLIC_API_URL=http://localhost:2223` AFTER injection (verified override wins).
+  OPEN OPERATIONAL: prod DB needs `db:deploy`; consider a migrate step in deploy.yml.
+- **Recipe-cost recalc crash = response-contract regression (26ef0c5de):** POST
+  kitchen/recipes/[id]/cost returned the runManifestCommand envelope `{success,result,events}`
+  while the client stores it as RecipeCostBreakdown → `recipe.name` undefined crash. Fix: await
+  the command, propagate failure, return `manifestSuccessResponse(costData.breakdown)` (same
+  shape as GET). RULE: when migrating a route to runManifestCommand, preserve the client's
+  response contract — return the domain payload, not the envelope. Client guard hardened
+  (`!costData?.recipe`). Latent same-class flagged: update-budgets `affectedEvents` toast drift;
+  unwrapManifestResponse in use-recipe-costing.ts matches NO current API shape (dead).
+- **Inventory items crash = Task 6.2 adoption regression (7dae4343a):** listInventoryItems was
+  pointed at generated `/api/kitchen/inventory/list` (raw camelCase rows, Decimal-as-string, no
+  stock_status/total_value, ignores ALL filters) behind an `as unknown as` double cast; page
+  reads snake_case + computed fields → toFixed crash for any tenant with ≥1 item (since Jun 8).
+  Fix: reverted listInventoryItems + getInventoryItem to bespoke /api/inventory/items[/:id]
+  (the listSuppliers escape-hatch convention). RULE: `as unknown as Promise<...>` casts over
+  generated-client calls hide contract drift — audit remaining Task 6.2 batch-19 files
+  (budgets.ts, shipments.ts) for the same class.
+- **Vendor-catalog modal:** supplier dropdown empty because the tenant has zero InventorySupplier
+  rows and NO UI exists to create one (procurement/vendors writes the DISJOINT Vendor entity;
+  VendorCatalog.supplierId belongsTo InventorySupplier). Fixed: per-field validation message,
+  dropdown empty-state, `Number("yyyy-MM-dd")`→NaN effective dates (now epoch ms), UI
+  currency/unit lists aligned to IR vocab (validCurrency [USD,EUR,JPY,CAD]; requireUnitOfMeasure
+  [each,case,lb,oz,kg,units,cases] — UI offered GBP/g/liter/gallon/box/bag/dozen/pack which the
+  runtime always blocks). STRUCTURAL GAP (open): need an InventorySupplier management UI (governed
+  inventorySupplierCreate exists in generated client, zero call sites) or Vendor/InventorySupplier
+  reconciliation. ALSO UNVERIFIED: create payload passes null for string/int params and omits
+  required `tags` — verify against dispatcher before calling the modal done.
+- **RecipeVersion entity-level :block anti-pattern (v0.12.58 redux) + ENGINE SWALLOW:**
+  validDifficulty/validStatus block constraints re-validate on EVERY mutate; live rows have NULL
+  difficulty_level and NO status column (IR↔schema drift, Phase 2b), so EVERY updateCosts was
+  silently dropped. Fixed at source: both constraints removed (status enforced by transitions;
+  difficulty now a create guard `difficulty == null or (1..5)`), recompiled, manifest:ci green.
+  UPSTREAM BUG (open, @angriff36/manifest): runtime-engine executeAction case 'mutate'
+  (dist line ~2724) DISCARDS updateInstance's return; blocked updates warn-log but the command
+  still returns success:true → HTTP 200 no-op writes. Needs engine fail-loud patch + version
+  bump; repo-wide audit afterward (any entity whose live row violates an entity block constraint
+  has silent-200 governed updates). Also open: RecipeVersion markPublished/retract/approve are
+  persistence NO-OPS (status/publishedAt/approvedAt/approvedBy columns don't exist in live
+  schema); markPublished can never pass (ingredientCount has no column); seed-dev.ts writes NULL
+  difficulty rows directly.
