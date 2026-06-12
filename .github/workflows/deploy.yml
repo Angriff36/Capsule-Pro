@@ -61,13 +61,19 @@ jobs:
         run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
 
       - name: Apply migrations (prisma migrate deploy)
+        env:
+          # Vercel marks DATABASE_URL as sensitive (write-only — `vercel pull`
+          # cannot retrieve it), so the migrate connection comes from this
+          # GitHub secret. The pulled env file remains a fallback for
+          # non-sensitive setups.
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: |
           ENV_FILE=".vercel/.env.production.local"
           getvar() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
-          DATABASE_URL="$(getvar DATABASE_URL)"
+          DATABASE_URL="${PRODUCTION_DATABASE_URL:-$(getvar DATABASE_URL)}"
           DIRECT_URL="$(getvar DIRECT_URL)"
           if [ -z "$DATABASE_URL" ]; then
-            echo "::error::DATABASE_URL not found in pulled Vercel production env"
+            echo "::error::No database URL: set the PRODUCTION_DATABASE_URL GitHub secret (Vercel marks DATABASE_URL sensitive, so it cannot be pulled)"
             exit 1
           fi
           # prisma migrate needs a direct (non-pooled) connection; derive it
