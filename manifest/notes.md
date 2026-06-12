@@ -1911,3 +1911,13 @@ noLabelWithoutControl 155 (a11y markup), noArrayIndexKey 119 (needs stable keys)
 
 SonarLint note: the "250 problems" listed in the IDE have no headless reproduction — no
 sonar config exists in the repo. The Biome pass covers the overlapping rule surface.
+
+### §51 papercut: Biome vs generated route files (ping-pong hazard)
+Generated read routes (`apps/api/app/api/**/{list,[id]}/route.ts` with the DO-NOT-EDIT
+header) cannot be path-excluded from Biome (43/220 list routes are hand-written at the
+same paths). A blanket `biome --write` reformats them; the next `manifest:generate`
+reverts them — endless churn. Rule: after any blanket lint fix, run
+`pnpm manifest:generate` and `git checkout` every modified DO-NOT-EDIT file before
+committing (commit producer bytes only). Durable fix (follow-up): make the nextjs
+projection emit lint-clean code upstream, or teach generate.mjs to run biome on its
+staged output before materializing.
