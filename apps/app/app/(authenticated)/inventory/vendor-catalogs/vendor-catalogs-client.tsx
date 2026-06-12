@@ -161,21 +161,10 @@ const CATEGORIES = [
   "Other",
 ] as const;
 
-const CURRENCIES = ["USD", "CAD", "EUR", "GBP"] as const;
-const UNITS = [
-  "each",
-  "lb",
-  "kg",
-  "oz",
-  "g",
-  "liter",
-  "gallon",
-  "case",
-  "box",
-  "bag",
-  "dozen",
-  "pack",
-] as const;
+// Must match the VendorCatalog IR vocabulary (vendor-catalog-rules.manifest:
+// validCurrency + requireUnitOfMeasure) or create/update is blocked at runtime.
+const CURRENCIES = ["USD", "EUR", "JPY", "CAD"] as const;
+const UNITS = ["each", "case", "lb", "oz", "kg", "units", "cases"] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -353,8 +342,15 @@ export function VendorCatalogsClient() {
   };
 
   const handleSubmit = async () => {
-    if (!(formData.supplierId && formData.itemNumber && formData.itemName)) {
-      toast.error("Supplier, item number, and item name are required");
+    const missing = [
+      !formData.supplierId && "Supplier",
+      !formData.itemNumber && "Item number",
+      !formData.itemName && "Item name",
+    ].filter(Boolean) as string[];
+    if (missing.length > 0) {
+      toast.error(
+        `${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} required`
+      );
       return;
     }
 
@@ -375,8 +371,14 @@ export function VendorCatalogsClient() {
         minimumOrderQuantity: formData.minimumOrderQuantity
           ? Number(formData.minimumOrderQuantity)
           : null,
-        effectiveFrom: formData.effectiveFrom ? Number(formData.effectiveFrom) : null,
-        effectiveTo: formData.effectiveTo ? Number(formData.effectiveTo) : null,
+        // DatePicker emits "yyyy-MM-dd"; Number() of that is NaN (→ JSON null).
+        // IR datetime contract = epoch ms.
+        effectiveFrom: formData.effectiveFrom
+          ? new Date(`${formData.effectiveFrom}T00:00:00`).getTime()
+          : null,
+        effectiveTo: formData.effectiveTo
+          ? new Date(`${formData.effectiveTo}T00:00:00`).getTime()
+          : null,
         notes: formData.notes || null,
       };
 
@@ -847,11 +849,18 @@ export function VendorCatalogsClient() {
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
+                    {suppliers.length === 0 ? (
+                      <div className="px-2 py-1.5 text-muted-foreground text-sm">
+                        No inventory suppliers found. Add a supplier before
+                        creating catalog entries.
+                      </div>
+                    ) : (
+                      suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
