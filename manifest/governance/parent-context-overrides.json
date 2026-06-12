@@ -1,260 +1,315 @@
 {
   "$comment": "Documented override reasons for the parent-context propagation audit (manifest/scripts/audit-parent-context.mjs). A child `create` command should INHERIT parent-owned context via parent-context propagation (specs/parent-context-propagation.md), not require it as user input. Each entry below records WHY a required create parameter that name+type-matches a belongsTo-parent property is acceptable. Two categories: (1) FALSE_POSITIVE — coincidental name match; the child value is semantically independent of the parent's. (2) BASELINE — a genuine propagation candidate that predates the propagation mechanism (2026-06-05); tracked in IMPLEMENTATION_PLAN.md for follow-up migration. New, undocumented cases must be fixed (inherit server-side) or added here with a reason. BattleBoard is intentionally ABSENT: its create inherits event context and requires no parent-owned input.",
   "overrides": {
+    "InventoryStock": {
+      "fields": [
+        "quantityOnHand"
+      ],
+      "category": "FALSE_POSITIVE",
+      "reason": "InventoryStock.quantityOnHand is the per-storage-location quantity of one stock row; InventoryItem.quantityOnHand is the item's aggregate on-hand total across locations. Inheriting the parent's aggregate into a new location row would be wrong — the caller supplies the location's initial quantity. Surfaced 2026-06-12 when the FK property was renamed inventoryItemId -> itemId (schema-drift baseline drain), making the belongsTo linkage visible to this audit.",
+      "owner": "inventory",
+      "reviewed": "2026-06-12"
+    },
     "ChartOfAccount": {
-      "fields": ["accountNumber", "accountName", "accountType"],
+      "fields": [
+        "accountNumber",
+        "accountName",
+        "accountType"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Self-referencing parent (parentId → ChartOfAccount). Each account has its own unique accountNumber, accountName, and accountType — a child account is a distinct ledger node, not a copy of its parent. The name match is structural (same entity), not semantic inheritance.",
       "owner": "accounting",
       "reviewed": "2026-06-07"
     },
     "EventStaff": {
-      "fields": ["role"],
+      "fields": [
+        "role"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "EventStaff.role is the per-assignment shift role (e.g. server, bartender) chosen when staffing an event — semantically independent of StaffMember.role (the employee's job title). One staff member works different roles across events, so the value cannot be inherited from the parent.",
       "owner": "events",
       "reviewed": "2026-06-11"
     },
     "Deal": {
-      "fields": ["assignedTo"],
+      "fields": [
+        "assignedTo"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Deal.assignedTo is the deal's own sales rep, semantically independent of Lead.assignedTo (the lead qualifier). The name match is coincidental — a deal may be reassigned to a different rep than the originating lead.",
       "owner": "crm",
       "reviewed": "2026-06-07"
     },
-    "AllergenWarning": {
-      "fields": ["allergens"],
-      "category": "FALSE_POSITIVE",
-      "reason": "A warning's allergen string is authored for the warning, not copied from the Dish's allergen list.",
-      "owner": "kitchen",
-      "reviewed": "2026-06-05"
-    },
     "ClientContact": {
-      "fields": ["firstName", "lastName", "email", "phone"],
+      "fields": [
+        "firstName",
+        "lastName",
+        "email",
+        "phone"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "A contact's own PII is distinct from the Client (company/account) record's fields with the same names.",
       "owner": "crm",
       "reviewed": "2026-06-05"
     },
-    "VendorContact": {
-      "fields": ["email", "phone"],
-      "category": "FALSE_POSITIVE",
-      "reason": "A vendor contact's own email/phone is distinct from the InventorySupplier record's contact fields.",
-      "owner": "procurement",
-      "reviewed": "2026-06-05"
-    },
     "Dish": {
-      "fields": ["category"],
+      "fields": [
+        "category"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "A dish's menu category is independent of the source Recipe's category.",
       "owner": "kitchen",
       "reviewed": "2026-06-05"
     },
     "Ingredient": {
-      "fields": ["category"],
+      "fields": [
+        "category"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "An ingredient's food category (e.g. 'Produce') is authored per ingredient and semantically independent of the linked InventoryItem's category. The name match is coincidental.",
       "owner": "kitchen",
       "reviewed": "2026-06-06"
     },
     "PrepListItem": {
-      "fields": ["category", "allergens"],
+      "fields": [
+        "category"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Prep-line category/allergens are denormalized per source (Ingredient/Dish/RecipeVersion) and provided explicitly; not a single inferable parent value.",
       "owner": "kitchen",
       "reviewed": "2026-06-05"
     },
     "IotAlertRule": {
-      "fields": ["condition", "isActive"],
+      "fields": [
+        "condition",
+        "isActive"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "A rule's condition/isActive are the rule's own configuration, not inherited from the Equipment it monitors.",
       "owner": "facilities",
       "reviewed": "2026-06-05"
     },
     "IoTAlert": {
-      "fields": ["severity"],
+      "fields": [
+        "severity"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "An alert's severity is evaluated per-event, not copied from the IotAlertRule's name-matching field.",
       "owner": "facilities",
       "reviewed": "2026-06-05"
     },
     "FacilityArea": {
-      "fields": ["code"],
+      "fields": [
+        "code"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Surfaced 2026-06-06 when the Facility entity was reconciled to its real `facilities` columns (Task 8.3) and gained a `code` property. FacilityArea.code is the AREA's own short code (e.g. \"KITCHEN-1\"), authored per area; it is semantically independent of the parent Facility's `code` (e.g. \"MAIN-KIT\"). The name match is coincidental — the area code must NOT inherit the facility code.",
       "owner": "facilities",
       "reviewed": "2026-06-06"
     },
     "TimecardEditRequest": {
-      "fields": ["employeeId"],
+      "fields": [
+        "employeeId"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "The requesting employee is supplied by the caller; coincidental name match with TimeEntry.employeeId.",
       "owner": "staff",
       "reviewed": "2026-06-05"
     },
     "Lead": {
-      "fields": ["assignedTo", "source", "companyName"],
+      "fields": [
+        "assignedTo",
+        "source",
+        "companyName"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Lead.assignedTo is the lead's own sales assignee, Lead.source is the lead's origin (e.g. 'website', 'referral'), and Lead.companyName is the lead's company at time of capture. All three are semantically independent of the Client's same-named fields — a lead must NOT inherit the converted-to client's assignee, source, or company name.",
       "owner": "crm",
       "reviewed": "2026-06-07"
     },
     "LogisticsRoute": {
-      "fields": ["vehicleId"],
+      "fields": [
+        "vehicleId"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "LogisticsRoute.vehicleId is the route's assigned vehicle, semantically independent of Driver.vehicleId (the driver's default vehicle). The name match is coincidental — the route vehicle is authored per route, not inherited from the linked driver.",
       "owner": "logistics",
       "reviewed": "2026-06-07"
     },
-    "TimecardApproval": {
-      "fields": ["payrollPeriodId"],
-      "category": "FALSE_POSITIVE",
-      "reason": "TimecardApproval.payrollPeriodId is the approval's target pay period, semantically independent of PayrollRun.payrollPeriodId (the run's period). The name match is coincidental — an approval may reference a different period than the run it belongs to.",
-      "owner": "payroll",
-      "reviewed": "2026-06-07"
-    },
     "VendorContract": {
-      "fields": ["paymentTerms"],
+      "fields": [
+        "paymentTerms"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "VendorContract.paymentTerms is the contract-specific payment terms, semantically independent of Vendor.paymentTerms (the vendor's default terms). The name match is coincidental — a contract may negotiate different terms than the vendor's default.",
       "owner": "procurement",
       "reviewed": "2026-06-07"
     },
     "EventContract": {
-      "fields": ["clientId"],
+      "fields": [
+        "clientId"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-05): clientId is inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "events",
       "reviewed": "2026-06-05"
     },
-    "TimelineTask": {
-      "fields": ["assignedTo"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "events",
-      "reviewed": "2026-06-05"
-    },
     "EventFollowup": {
-      "fields": ["assignedTo"],
+      "fields": [
+        "assignedTo"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "events",
       "reviewed": "2026-06-05"
     },
     "PrepTask": {
-      "fields": ["eventId"],
+      "fields": [
+        "eventId"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-05): eventId inferable from the linked PrepList. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "kitchen",
       "reviewed": "2026-06-05"
     },
     "RevenueRecognitionSchedule": {
-      "fields": ["metadata"],
+      "fields": [
+        "metadata"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "MIGRATED 2026-06-05 (6th parent-context adopter): eventId/clientId (formerly BASELINE) are now inherited server-side from the linked Invoice — dropped as create params. `metadata` remains an explicit create param ONLY to fence the generic resolver: Invoice also owns a `metadata` string, but the schedule's metadata is its own, authored for the schedule (not copied from the invoice). Listing it as a param excludes it from inheritance so Invoice.metadata never bleeds onto the schedule.",
       "owner": "accounting",
       "reviewed": "2026-06-05"
     },
     "TrainingQuestion": {
-      "fields": ["code"],
+      "fields": [
+        "code"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "A question's code (e.g. 'FS-Q1') is its own unique identifier within the module, not inherited from the parent TrainingModule's code (e.g. 'FOOD-SAFETY-101'). The name match is coincidental — each question authors its own code.",
       "owner": "training",
       "reviewed": "2026-06-06"
     },
     "TrainingAttempt": {
-      "fields": ["moduleId", "staffMemberId", "managerReviewRequired"],
+      "fields": [
+        "moduleId",
+        "managerReviewRequired"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-06): moduleId, staffMemberId, and managerReviewRequired are all inferable from the parent TrainingAssignment, which already holds these values. Candidates for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "training",
       "reviewed": "2026-06-06"
     },
     "EmailWorkflow": {
-      "fields": ["isActive"],
+      "fields": [
+        "isActive"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "EmailWorkflow.isActive is the workflow's own enabled/disabled state, semantically independent of EmailTemplate.isActive (whether the template is available). A workflow can be inactive even when its template is active — the name match is coincidental.",
       "owner": "notifications",
       "reviewed": "2026-06-07"
     },
     "SmsAutomationRule": {
-      "fields": ["isActive"],
+      "fields": [
+        "isActive"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "SmsAutomationRule.isActive is the rule's own enabled/disabled state, semantically independent of EmailTemplate.isActive (whether the referenced template is available). A rule can be inactive even when its template is active — the name match is coincidental.",
       "owner": "notifications",
       "reviewed": "2026-06-07"
     },
     "PurchaseRequisition": {
-      "fields": ["locationId"],
+      "fields": [
+        "locationId"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "PurchaseRequisition.locationId is the location where items are needed (origin), semantically independent of PurchaseOrder.locationId (where the order is fulfilled). A requisition may originate at a different location than where its converted purchase order is processed — structural name match but not semantic inheritance.",
       "owner": "procurement",
       "reviewed": "2026-06-07"
     },
     "CommandBoardCard": {
-      "fields": ["boardId", "color"],
+      "fields": [
+        "boardId",
+        "color"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-08): boardId is deterministically the group's board (card must be on same board as its group). color is a per-card override of the group color; both are propagation candidates. boardId is the primary candidate (invariant), color is secondary (default from group).",
       "owner": "command-board",
       "reviewed": "2026-06-08"
     },
     "CommandBoardConnection": {
-      "fields": ["boardId"],
+      "fields": [
+        "boardId"
+      ],
       "category": "BASELINE",
       "reason": "PRE-EXISTING (2026-06-08): Connection's boardId is deterministically the board of either connected card (fromCardId/toCardId). Both cards live on the same board. Candidate for propagation from CommandBoardCard.",
       "owner": "command-board",
       "reviewed": "2026-06-08"
     },
     "InventoryTransaction": {
-      "fields": ["itemId", "transactionType", "referenceType", "referenceId", "reason", "employeeId", "storageLocationId", "unitCost"],
+      "fields": [
+        "itemId",
+        "transactionType",
+        "referenceType",
+        "referenceId",
+        "reason",
+        "employeeId",
+        "storageLocationId",
+        "unitCost"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Self-referencing back-link via reverseOfTransactionId. This FK is empty at creation (set only by the reverse() command). All 8 fields are the transaction's own core identity — unitCost is the per-transaction cost (may differ from InventoryItem's standard cost due to vendor pricing, bulk discounts, etc.). A reversal copies and inverts explicitly, not via parent-context inheritance.",
       "owner": "inventory",
       "reviewed": "2026-06-09"
     },
     "PurchaseOrderItem": {
-      "fields": ["unitCost"],
+      "fields": [
+        "unitCost"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "PO line unitCost is a per-order negotiated price with the vendor, not inherited from InventoryItem's standard cost. Purchase pricing varies by vendor, contract terms, and order timing — the name match is structural, not semantic.",
       "owner": "procurement",
       "reviewed": "2026-06-08"
     },
     "TrainingAssignment": {
-      "fields": ["moduleId", "staffMemberId"],
+      "fields": [
+        "moduleId"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Inverted relationship direction: TrainingAssignment is the PARENT of TrainingAttempt (not the child). The lastAttemptId FK is empty at creation and only set after an attempt is submitted. moduleId and staffMemberId are the assignment's own defining identity — which module is assigned to which staff member. Inheriting from TrainingAttempt would be circular.",
       "owner": "training",
       "reviewed": "2026-06-08"
     },
     "ShipmentItem": {
-      "fields": ["unitCost"],
+      "fields": [
+        "unitCost"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Shipment line unitCost is the per-shipment negotiated price with the supplier, not inherited from InventoryItem's standard cost. Shipping pricing varies by order, contract terms, and market conditions — the name match is structural, not semantic.",
       "owner": "logistics",
       "reviewed": "2026-06-09"
     },
-    "PaymentRefundAttempt": {
-      "fields": ["amount"],
-      "category": "FALSE_POSITIVE",
-      "reason": "Refund amount is authored per attempt (may be partial, may differ from the Payment's full amount). A $1000 payment can have a $200 refund — the amount is semantically independent of the parent payment's total.",
-      "owner": "finance",
-      "reviewed": "2026-06-09"
-    },
     "WasteEntry": {
-      "fields": ["unitCost"],
+      "fields": [
+        "unitCost"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Waste entry unitCost is the cost at the time of waste recording, which may differ from InventoryItem's current unitCost due to price changes over time. Historical cost tracking requires explicit per-entry values.",
       "owner": "inventory",
       "reviewed": "2026-06-09"
     },
     "CateringOrder": {
-      "fields": ["guestCount"],
+      "fields": [
+        "guestCount"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "CateringOrder.guestCount is the meal headcount (may be less than the event total — e.g., vendor/staff meals, dietary-specific orders). Semantically independent of Event.guestCount (total event attendees). The name match is coincidental — the catering count is authored per order.",
       "owner": "events",
       "reviewed": "2026-06-09"
     },
     "AutomatedFollowup": {
-      "fields": ["templateId"],
+      "fields": [
+        "templateId"
+      ],
       "category": "FALSE_POSITIVE",
       "reason": "Surfaced 2026-06-10 when the Event hub-propagation increment added a `templateId` property to Event (which event-creation template the event was built from). AutomatedFollowup.templateId is the followup's OWN notification template — the email/sms/push message template used to render the followup — authored per followup and semantically independent of the parent Event's source template. The name+type match is coincidental; the followup message template must NOT inherit the event's creation template.",
       "owner": "events",

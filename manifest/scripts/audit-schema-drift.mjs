@@ -274,6 +274,21 @@ function buildCommandParams(cmd) {
   return map;
 }
 
+/**
+ * Property names the create command assigns via `mutate <target> = <expr>`.
+ * The runtime applies these to the instance before persistence, so a required
+ * Prisma column targeted by a create mutation IS satisfied at create time —
+ * even when the value is a call expression (e.g. `now()`) that the IR cannot
+ * represent as a literal property default.
+ */
+function buildCreateMutationTargets(cmd) {
+  const set = new Set();
+  for (const a of cmd?.actions ?? []) {
+    if (a.kind === "mutate" && a.target) set.add(a.target);
+  }
+  return set;
+}
+
 function hasManifestDefault(prop) {
   // The IR represents defaults a few different ways; check the common keys.
   if (!prop) return false;
@@ -307,6 +322,7 @@ function checkEntity({
 
   const props = buildEntityProperties(irEntity);
   const params = buildCommandParams(createCmd);
+  const createMutations = buildCreateMutationTargets(createCmd);
   const ignoredFields = new Set(allowlist.ignoredFields?.[entityName] ?? []);
   const globalDerived = allowlist.globalAdapterDerived ?? {};
   const adapterDerived = {
@@ -331,6 +347,8 @@ function checkEntity({
     const declaredAsParam = !!irParam;
     const declaredAsPropWithDefault =
       !!irProp && hasManifestDefault(irProp);
+    const mutatedByCreate =
+      createMutations.has(field.name) || createMutations.has(camelName);
 
     let actualKind = null;
     if (irParam) actualKind = irParam.type?.name ?? null;
@@ -342,7 +360,8 @@ function checkEntity({
     const typeMismatch =
       actualKind && expectedKind !== "unknown" && normalizedActual !== expectedKind;
 
-    const declared = declaredAsParam || declaredAsPropWithDefault;
+    const declared =
+      declaredAsParam || declaredAsPropWithDefault || mutatedByCreate;
     const derivedRule = adapterDerived[field.name];
     const bypassEntry = nonconforming[field.name];
 
@@ -363,7 +382,11 @@ function checkEntity({
       allowed.push({
         field: field.name,
         prismaType: field.prismaType,
-        coverage: declaredAsParam ? "create_param" : "property_default",
+        coverage: declaredAsParam
+          ? "create_param"
+          : declaredAsPropWithDefault
+            ? "property_default"
+            : "create_mutation",
         manifestKind: actualKind,
       });
       continue;
