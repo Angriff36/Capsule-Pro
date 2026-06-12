@@ -1504,3 +1504,48 @@ Triggered by post-restart dev log + vendor-catalog screenshot. 4-agent diagnosis
   persistence NO-OPS (status/publishedAt/approvedAt/approvedBy columns don't exist in live
   schema); markPublished can never pass (ingredientCount has no column); seed-dev.ts writes NULL
   difficulty rows directly.
+
+---
+
+## 41. requiresTenantConnect round 2: ANY other FK relation forces flat writes (FIXED 2026-06-12)
+
+**Symptom:** `Event.create` (AI event setup + any governed event create) failed at the store with
+`PrismaClientValidationError: Unknown argument 'clientId'. Did you mean 'client'?` — the
+GenericPrismaStore passed `tenant: { connect: { id } }` plus scalar `clientId/locationId/venueId/
+venueEntityId`.
+
+**Root cause (completes §35):** a relation-connect selects Prisma's CHECKED create input, which
+rejects the scalar FK of EVERY relation on the model — not just composite FKs sharing tenantId.
+§35's heuristic (`hasTenantRelation && !otherRelationUsesTenantId`) still flagged Event
+(its client/location/venue/venueEntity relations are single-column FKs that don't include
+tenantId). Connect-mode is safe ONLY when the tenant relation is the model's SOLE FK-bearing
+relation.
+
+**Fix:** `generate-prisma-model-metadata.mjs` now sets `requiresTenantConnect` only when every
+`@relation(fields:[…])` list is exactly `[tenantId]`. Regen flipped **20 models to flat writes**
+(Event, EventReport, EventBudget, BudgetLineItem, Proposal, InventoryItem, SupplierSyncLog,
+PurchaseOrderItem, Shipment, ShipmentItem, BudgetAlert, EventContract, Invoice, PaymentMethod,
+Payment, CollectionCase, CollectionAction, CollectionPaymentPlan, EmailWorkflow, Driver) — every
+one of these had governed creates broken since v0.12.247 introduced connect-mode. 100 tenant-only-FK
+models (PrepList, Menu, CommandBoard, BattleBoard, Client, Recipe, …) keep connect. Verified live
+on ep-square-dust: the exact failing payload now creates (row persisted, clientId null) — test row
+deleted after.
+
+**Same increment — AI "Missing required args" fixed at source:** the DSL DOES support optional
+command params (`optional name: type`, parser.js:817 — keyword BEFORE the name; undocumented in
+mintlify). All 18 `Event.create` params (source comment already said "All params are optional")
+and `BattleBoard.addDish`/`removeDish` `userId` (unused in command body, audit-only via event
+payload) are now `optional`. IR/routes.manifest.json now carry `required: false`, so the
+command-board agent loop (`validateStepArgs`) stops demanding clientId/featuredMediaUrl/templateId
+and inventing placeholder values (it had fabricated `featuredMediaUrl: "https://example.com/fbkl"`).
+Generated client output unchanged. NOTE: `MenuDish.create` was already fixed by §35 (composite
+menu/dish FKs → flat) — the AI's "request format was invalid" (generic 4xx mapping in
+tool-registry.ts) predates the running server picking up that metadata; retest before chasing.
+
+Regen chain run: manifest:compile + manifest:routes:ir + manifest:generate-metadata +
+manifest:client. manifest:ci fully green; api+app typecheck 0; factory tests 16/16,
+command-board tests 113/113. Restart the API dev server to pick up the new metadata.
+
+Search: requiresTenantConnect other FK relation, Unknown argument clientId did you mean client,
+checked unchecked create input, optional command parameter keyword, Event.create missing required
+args, agent loop required false, flat keys 20 models flipped
