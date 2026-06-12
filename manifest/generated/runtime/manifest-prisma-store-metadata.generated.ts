@@ -2965,8 +2965,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "EmployeeAvailability": {
     "accessor": "employee_availabilities",
@@ -4870,8 +4869,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "ProposalLineItem": {
     "accessor": "proposal_line_items",
@@ -7255,8 +7253,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "BudgetLineItem": {
     "accessor": "budget_line_items",
@@ -7423,8 +7420,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "EventContract": {
     "accessor": "event_contracts",
@@ -7635,8 +7631,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "ContractSignature": {
     "accessor": "contract_signatures",
@@ -8639,8 +8634,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Event": {
     "accessor": "events",
@@ -8951,8 +8945,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "EventProfitability": {
     "accessor": "event_profitabilities",
@@ -9504,7 +9497,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -9515,7 +9508,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": true,
-        "hasDefault": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -11436,8 +11429,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CollectionAction": {
     "accessor": "collection_actions",
@@ -11681,8 +11673,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "CollectionPaymentPlan": {
     "accessor": "collection_payment_plans",
@@ -11893,8 +11884,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Invoice": {
     "accessor": "invoices",
@@ -12282,8 +12272,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PaymentMethod": {
     "accessor": "payment_methods",
@@ -12571,8 +12560,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Payment": {
     "accessor": "payments",
@@ -12883,8 +12871,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PricingTier": {
     "accessor": "pricing_tiers",
@@ -16882,8 +16869,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "InventorySupplier": {
     "accessor": "inventory_suppliers",
@@ -24462,8 +24448,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "Vehicle": {
     "accessor": "vehicles",
@@ -25353,8 +25338,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "ShipmentItem": {
     "accessor": "shipment_items",
@@ -25554,8 +25538,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "WorkOrder": {
     "accessor": "work_orders",
@@ -28152,8 +28135,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "VendorCatalog": {
     "accessor": "vendor_catalogs",
@@ -30157,8 +30139,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isUpdatedAt": true,
         "isId": false
       }
-    ],
-    "requiresTenantConnect": true
+    ]
   },
   "PayrollPeriod": {
     "accessor": "payroll_periods",

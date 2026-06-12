@@ -144,23 +144,28 @@ while ((mm = modelRe.exec(schema)) !== null) {
   // where scalar tenantId alone is rejected by Prisma when the Account relation
   // is required AND tenantId is used by NO other relation.
   //
-  // BUT it must NOT be used when tenantId is ALSO a foreign-key field of another
-  // relation (e.g. CommandBoardCard.board = @relation(fields: [tenantId, boardId])).
-  // Mixing a `tenant: { connect }` (checked input) with a scalar `boardId` makes
-  // Prisma reject the write ("Argument `board` is missing") because the shared
-  // tenantId can no longer satisfy the board/group composite FKs. Such models must
+  // BUT a relation-connect selects Prisma's CHECKED create input, which rejects
+  // the scalar FK of EVERY relation on the model — not just composite FKs that
+  // share tenantId. Two known breakages:
+  //   - CommandBoardCard.board = @relation(fields: [tenantId, boardId]) →
+  //     "Argument `board` is missing" (tenantId shared by a composite FK).
+  //   - Event.client = @relation(fields: [clientId]) →
+  //     "Unknown argument `clientId`. Did you mean `client`?" (any other
+  //     single-column FK relation, since the store writes FK scalars verbatim).
+  // So connect is safe ONLY when the tenant relation is the model's sole
+  // FK-bearing relation (PrepList, Menu, CommandBoard). Every other model must
   // write FLAT scalar keys (the repo's flat-key convention) — unchecked input,
-  // where one scalar tenantId satisfies every composite FK at once.
+  // where scalar tenantId + scalar FKs satisfy every relation at once.
   const hasTenantRelation = /\btenant\s+Account\s+@relation\b/.test(body);
-  const otherRelationUsesTenantId = [
+  const hasOtherFkRelation = [
     ...body.matchAll(/@relation\([^)]*fields:\s*\[([^\]]*)\]/g),
   ].some((m) => {
     const fkFields = m[1].split(",").map((s) => s.trim());
-    // The tenant relation itself is `fields: [tenantId]` (length 1). A composite
-    // FK that also includes tenantId (board/group) is what forces flat writes.
-    return fkFields.includes("tenantId") && fkFields.length > 1;
+    // The tenant relation itself is exactly `fields: [tenantId]`. Anything
+    // else (composite FK or another single-column FK) forces flat writes.
+    return !(fkFields.length === 1 && fkFields[0] === "tenantId");
   });
-  const requiresTenantConnect = hasTenantRelation && !otherRelationUsesTenantId;
+  const requiresTenantConnect = hasTenantRelation && !hasOtherFkRelation;
 
   models[name] = {
     accessor: accessorOf(name),
