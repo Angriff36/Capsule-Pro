@@ -8,7 +8,7 @@
  */
 
 import { log } from "@repo/observability/log";
-import { createHmac } from "crypto";
+import { createHmac } from "node:crypto";
 import { NextResponse } from "next/server";
 
 /**

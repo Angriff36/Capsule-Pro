@@ -68,7 +68,7 @@ const SENSITIVE_RATE_LIMIT = {
  * GET /api/accounting/payments/[id]
  * Get a single payment by ID
  */
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
     const { id } = await context.params;

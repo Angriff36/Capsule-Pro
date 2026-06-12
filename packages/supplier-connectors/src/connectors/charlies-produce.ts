@@ -128,7 +128,7 @@ export class CharliesProduceConnector implements SupplierConnector {
    * real-time flag.
    */
   async checkAvailability(
-    config: SupplierConnectorConfig,
+    _config: SupplierConnectorConfig,
     skus: string[]
   ): Promise<Record<string, { available: boolean; quantity?: number }>> {
     // BLOCKER: API credentials from Charlie's Produce not yet obtained.
@@ -164,8 +164,8 @@ export class CharliesProduceConnector implements SupplierConnector {
    * - Contract-specific pricing
    */
   async fetchPricing(
-    config: SupplierConnectorConfig,
-    skus: string[]
+    _config: SupplierConnectorConfig,
+    _skus: string[]
   ): Promise<
     Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
   > {

@@ -591,7 +591,7 @@ export function ConflictsClient() {
                   <CheckCircle2 className="h-10 w-10 text-green-500" />
                   <p className="font-medium text-green-700 text-sm">
                     No{" "}
-                    {tab.value === "all" ? "" : tab.label.toLowerCase() + " "}
+                    {tab.value === "all" ? "" : `${tab.label.toLowerCase()} `}
                     conflicts detected
                   </p>
                   <p className="text-muted-foreground text-sm">

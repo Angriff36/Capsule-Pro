@@ -100,7 +100,7 @@ function remapToDomainPath(relativePath) {
   }
 
   const rest = parts.slice(1); // e.g. ["create", "route.ts"] or ["list", "route.ts"]
-  const routeFile = rest[rest.length - 1]; // "route.ts"
+  const routeFile = rest.at(-1); // "route.ts"
   let commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
 
   if (entity && (commandOrAction === ":id" || commandOrAction === "[id]")) {

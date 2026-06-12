@@ -5,9 +5,9 @@
  *
  * Usage: node manifest/scripts/fix-cmd-money-as-number.mjs [--dry-run]
  */
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE_DIR = path.join(__dirname, "..", "source");

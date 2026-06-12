@@ -11,7 +11,7 @@ import { z } from "zod";
  * If VERCEL_PREVIEW_URL_SUFFIX is set (e.g., "preview.capsulepro.com"),
  * all services use that suffix instead of the auto-generated Vercel URL.
  */
-function getPreviewUrl(servicePrefix: string): string | undefined {
+function getPreviewUrl(_servicePrefix: string): string | undefined {
   // Custom preview suffix takes priority (e.g., "preview.capsulepro.com")
   const customSuffix = process.env.VERCEL_PREVIEW_URL_SUFFIX;
   if (customSuffix) {

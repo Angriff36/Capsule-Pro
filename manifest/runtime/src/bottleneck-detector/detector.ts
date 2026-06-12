@@ -559,8 +559,8 @@ export class BottleneckDetector {
    */
   private async fetchSchedulingMetrics(
     tenantId: string,
-    startDate: Date,
-    endDate: Date,
+    _startDate: Date,
+    _endDate: Date,
     locationId?: string
   ): Promise<TimeSeriesData[]> {
     const weekAgo = new Date();
@@ -684,8 +684,7 @@ export class BottleneckDetector {
 
     for (const series of relevantMetrics) {
       // Get the latest value from the time series
-      const latestValue =
-        series.dataPoints[series.dataPoints.length - 1]?.value ?? 0;
+      const latestValue = series.dataPoints.at(-1)?.value ?? 0;
       const threshold = rule.threshold.value;
 
       // Check if threshold is breached

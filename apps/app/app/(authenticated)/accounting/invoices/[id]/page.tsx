@@ -183,7 +183,7 @@ export default function InvoiceDetailPage() {
 
   const handleAction = async (
     action: string,
-    body?: Record<string, unknown>
+    _body?: Record<string, unknown>
   ) => {
     setActionLoading(true);
     try {

@@ -28,10 +28,10 @@ const camel = (s) => s.charAt(0).toLowerCase() + s.slice(1);
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const plural = (s) =>
   /(s|x|z|ch|sh)$/.test(s)
-    ? s + "es"
+    ? `${s}es`
     : /y$/.test(s)
-      ? s.slice(0, -1) + "ies"
-      : s + "s";
+      ? `${s.slice(0, -1)}ies`
+      : `${s}s`;
 
 // 1) TYPES: generate via the official projection, copy into the app lib.
 const tdir = mkdtempSync(join(tmpdir(), "mf-types-"));
@@ -246,10 +246,10 @@ const ifaceBlock =
     : "";
 writeFileSync(
   conv.client.clientOutput,
-  out.join("\n").replace("__TYPE_IMPORT__", importLine) + "\n" + ifaceBlock
+  `${out.join("\n").replace("__TYPE_IMPORT__", importLine)}\n${ifaceBlock}`
 );
 
-console.log("WROTE", conv.client.typesOutput, "(" + typeSet.size + " types)");
+console.log("WROTE", conv.client.typesOutput, `(${typeSet.size} types)`);
 console.log(
   "WROTE",
   conv.client.clientOutput,

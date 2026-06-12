@@ -96,7 +96,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
     setTogglingId(workflow.id);
     try {
       const res = await fetch(
-        "/api/collaboration/notifications/email/workflows/" + workflow.id,
+        `/api/collaboration/notifications/email/workflows/${workflow.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

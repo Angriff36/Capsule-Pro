@@ -21,7 +21,7 @@ export const runtime = "nodejs";
  * GET /api/rolepolicy/:id
  * Get a single role policy by ID
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

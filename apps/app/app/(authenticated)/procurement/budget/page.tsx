@@ -745,7 +745,7 @@ export default function BudgetPage() {
                                 ) / 100
                               : 0;
                           const monthLabel = new Date(
-                            m.month + "-01"
+                            `${m.month}-01`
                           ).toLocaleDateString("en-US", {
                             month: "short",
                             year: "numeric",

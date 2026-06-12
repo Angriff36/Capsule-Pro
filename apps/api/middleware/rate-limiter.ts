@@ -294,7 +294,7 @@ function logRateLimitEvent(
 
   // Hash IP for privacy
   const ipHash = ip
-    ? require("crypto")
+    ? require("node:crypto")
         .createHash("sha256")
         .update(ip)
         .digest("hex")

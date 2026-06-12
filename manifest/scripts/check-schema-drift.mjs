@@ -126,7 +126,7 @@ function runSelfTest() {
   assert("1-line change -> diffLineCount=1", r.diffLineCount === 1);
 
   // 3. appended content (length grows) -> detected
-  const appended = base + "model B {\n  id String @id\n}\n";
+  const appended = `${base}model B {\n  id String @id\n}\n`;
   r = diffText(base, appended);
   assert("append -> inSync=false", r.inSync === false);
   assert(

@@ -239,7 +239,7 @@ export default function AllergenManagementPage() {
 
   const handleResolveWarning = async (
     warningId: string,
-    overrideReason: string
+    _overrideReason: string
   ) => {
     setActionLoading(true);
     try {

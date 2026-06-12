@@ -391,7 +391,7 @@ export async function createShipment(
  * Update a shipment
  */
 export async function updateShipment(
-  shipmentId: string,
+  _shipmentId: string,
   request: UpdateShipmentRequest
 ): Promise<Shipment> {
   const result = await shipmentUpdate({
@@ -432,7 +432,7 @@ export async function deleteShipment(shipmentId: string): Promise<void> {
  * Maps status string to the appropriate generated command
  */
 export async function updateShipmentStatus(
-  shipmentId: string,
+  _shipmentId: string,
   request: UpdateShipmentStatusRequest
 ): Promise<Shipment> {
   let result: unknown;
@@ -506,8 +506,8 @@ export async function addShipmentItem(
  * Update a shipment item
  */
 export async function updateShipmentItem(
-  shipmentId: string,
-  itemId: string,
+  _shipmentId: string,
+  _itemId: string,
   request: UpdateShipmentItemRequest
 ): Promise<ShipmentItem> {
   // Use updateReceived if quantity_received or condition fields are present, otherwise general update
@@ -530,8 +530,8 @@ export async function updateShipmentItem(
  * Delete a shipment item
  */
 export async function deleteShipmentItem(
-  shipmentId: string,
-  itemId: string
+  _shipmentId: string,
+  _itemId: string
 ): Promise<void> {
   const result = await shipmentItemSoftDelete({});
   if (!result) {

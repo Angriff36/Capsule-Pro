@@ -574,7 +574,7 @@ function calculateSeniorityBalance(
 async function fetchEmployeePerformanceData(
   tenantId: string,
   employeeId: string,
-  horizon: number
+  _horizon: number
 ): Promise<any> {
   const data = await database.$queryRaw<
     Array<{

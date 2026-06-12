@@ -26,7 +26,7 @@ interface RouteParams {
  * GET /api/settings/rate-limits/[id]
  * Get a single rate limit configuration
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { orgId, userId: clerkId } = await auth();
     if (!(clerkId && orgId)) {

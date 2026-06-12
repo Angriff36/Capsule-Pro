@@ -429,7 +429,7 @@ function getActionDescription(action: string): string {
 function formatEntityType(entityType: string): string {
   // Handle common pluralizations
   if (entityType.endsWith("ies")) {
-    return entityType.slice(0, -3) + "y";
+    return `${entityType.slice(0, -3)}y`;
   }
   if (entityType.endsWith("ses") || entityType.endsWith("xes")) {
     return entityType.slice(0, -2);

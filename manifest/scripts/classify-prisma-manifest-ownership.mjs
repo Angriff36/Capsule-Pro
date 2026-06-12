@@ -207,8 +207,8 @@ if (errors.length) {
 
 function tbl(title, rows, cols) {
   out.push(`\n## ${title} (${rows.length})\n`);
-  out.push("| " + cols.join(" | ") + " |");
-  out.push("|" + cols.map(() => "---").join("|") + "|");
+  out.push(`| ${cols.join(" | ")} |`);
+  out.push(`|${cols.map(() => "---").join("|")}|`);
   for (const r of rows) {
     out.push(
       "| " +

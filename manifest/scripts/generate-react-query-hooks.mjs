@@ -233,10 +233,10 @@ lines.push("// Summary");
 lines.push("// ============================================================");
 lines.push(`// Entities: ${entities.length}`);
 lines.push(
-  `// List hooks: ${listHookCount} (skipped ${skippedList.length}${skippedList.length > 0 ? ": " + skippedList.join(", ") : ""})`
+  `// List hooks: ${listHookCount} (skipped ${skippedList.length}${skippedList.length > 0 ? `: ${skippedList.join(", ")}` : ""})`
 );
 lines.push(
-  `// Detail hooks: ${detailHookCount} (skipped ${skippedDetail.length}${skippedDetail.length > 0 ? ": " + skippedDetail.join(", ") : ""})`
+  `// Detail hooks: ${detailHookCount} (skipped ${skippedDetail.length}${skippedDetail.length > 0 ? `: ${skippedDetail.join(", ")}` : ""})`
 );
 lines.push(`// Command mutation hooks: ${mutationCount}`);
 lines.push(

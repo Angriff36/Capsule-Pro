@@ -819,7 +819,7 @@ function validateStepArgs(
   return null;
 }
 
-function defaultArgValue(type: "string" | "number" | "boolean"): unknown {
+function defaultArgValue(_type: "string" | "number" | "boolean"): unknown {
   // Keep defaults intentionally unresolved so required args are surfaced
   // before hitting downstream API validation.
   return null;

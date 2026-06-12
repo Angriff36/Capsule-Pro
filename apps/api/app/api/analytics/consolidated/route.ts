@@ -315,7 +315,7 @@ export async function GET(request: Request) {
 /**
  * GET /api/analytics/consolidated/locations - Get location comparison metrics
  */
-export async function GET_LOCATIONS(request: Request) {
+export async function GET_LOCATIONS(_request: Request) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {

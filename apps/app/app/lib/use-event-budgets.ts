@@ -213,7 +213,7 @@ export async function createBudget(
 }
 
 export async function updateBudget(
-  budgetId: string,
+  _budgetId: string,
   input: UpdateEventBudgetInput
 ): Promise<EventBudget> {
   try {
@@ -286,8 +286,8 @@ export async function createLineItem(
 }
 
 export async function updateLineItem(
-  budgetId: string,
-  lineItemId: string,
+  _budgetId: string,
+  _lineItemId: string,
   input: UpdateBudgetLineItemInput
 ): Promise<BudgetLineItem> {
   try {
@@ -308,8 +308,8 @@ export async function updateLineItem(
 }
 
 export async function deleteLineItem(
-  budgetId: string,
-  lineItemId: string
+  _budgetId: string,
+  _lineItemId: string
 ): Promise<void> {
   try {
     const result = await budgetLineItemRemove({});

@@ -193,7 +193,7 @@ function resolveManifestPath(): string {
       "..".repeat(7),
       ROUTE_SURFACE_MANIFEST_RELATIVE_PATH
     ),
-    "/var/task/apps/app/" + ROUTE_SURFACE_MANIFEST_RELATIVE_PATH,
+    `/var/task/apps/app/${ROUTE_SURFACE_MANIFEST_RELATIVE_PATH}`,
   ];
 
   for (const manifestPath of directPaths) {

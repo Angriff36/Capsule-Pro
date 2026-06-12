@@ -21,7 +21,7 @@ interface RouteContext {
  * GET /api/collaboration/notifications/email/templates/[id]
  * Get a specific email template by ID
  */
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

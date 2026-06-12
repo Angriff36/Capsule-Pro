@@ -212,14 +212,14 @@ const staleBaseline = [...baseline].filter(
 if (WRITE_BASELINE) {
   writeFileSync(
     BASELINE_PATH,
-    JSON.stringify(
+    `${JSON.stringify(
       {
         $doc: "Pre-existing reaction payload violations (see check-reaction-payloads.mjs). Entries may only be REMOVED as reactions are fixed — never added. Strict mode fails on NEW violations only.",
         violations: errors.map((e) => e.key).sort(),
       },
       null,
       2
-    ) + "\n"
+    )}\n`
   );
   console.log(
     `Baseline written: ${errors.length} violation(s) -> ${BASELINE_PATH}`
@@ -263,5 +263,5 @@ if (STRICT && newErrors.length > 0) {
   process.exit(1);
 }
 console.log(
-  "\nOK" + (errors.length ? " (pre-existing violations are baselined)" : "")
+  `\nOK${errors.length ? " (pre-existing violations are baselined)" : ""}`
 );

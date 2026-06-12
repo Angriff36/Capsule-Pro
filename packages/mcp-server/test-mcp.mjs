@@ -34,7 +34,7 @@ server.stdout.on("data", (chunk) => {
       const msg = JSON.parse(line);
       console.log(
         "Response:",
-        JSON.stringify(msg, null, 2).slice(0, 500) + "..."
+        `${JSON.stringify(msg, null, 2).slice(0, 500)}...`
       );
       if (msg.result?.tools) {
         console.log("\nTools:", msg.result.tools.map((t) => t.name).join(", "));
@@ -42,7 +42,7 @@ server.stdout.on("data", (chunk) => {
       if (msg.result?.content) {
         console.log(
           "\nTool result:",
-          JSON.stringify(msg.result).slice(0, 300) + "..."
+          `${JSON.stringify(msg.result).slice(0, 300)}...`
         );
       }
     } catch {
@@ -59,7 +59,7 @@ server.on("error", (err) => {
 });
 
 function send(req) {
-  const line = JSON.stringify(req) + "\n";
+  const line = `${JSON.stringify(req)}\n`;
   server.stdin.write(line);
 }
 

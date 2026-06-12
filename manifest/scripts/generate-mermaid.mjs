@@ -21,9 +21,9 @@
  * Task 5.4 — Mermaid projection for architecture documentation.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");

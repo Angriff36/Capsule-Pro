@@ -13,7 +13,7 @@
  *   - Composite-PK entity rejection (ENTITY_DETAIL_DROP)
  */
 
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestSuccessResponse,
@@ -35,7 +35,7 @@ interface PrismaDetailDelegate {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ entity: string; id: string }> },
+  { params }: { params: Promise<{ entity: string; id: string }> }
 ) {
   // ── Auth ──────────────────────────────────────────────────────
   let tenantId: string;
@@ -53,24 +53,27 @@ export async function GET(
   if (resolution.drop || !resolution.exists) {
     return manifestErrorResponse(
       `Entity '${entity}' not found or has no backing table`,
-      404,
+      404
     );
   }
 
   if (!resolution.hasDetail) {
     return manifestErrorResponse(
       `Entity '${entity}' does not support single-record reads (composite PK)`,
-      400,
+      400
     );
   }
 
   // ── Query ────────────────────────────────────────────────────
-  const model = (await import("@repo/database")).database as unknown as Record<string, PrismaDetailDelegate>;
+  const model = (await import("@repo/database")).database as unknown as Record<
+    string,
+    PrismaDetailDelegate
+  >;
   const delegate = model[resolution.accessor];
   if (!delegate) {
     return manifestErrorResponse(
       `No Prisma delegate for '${resolution.accessor}'`,
-      500,
+      500
     );
   }
 
@@ -79,21 +82,18 @@ export async function GET(
     const record = await delegate.findFirst({ where });
 
     if (!record) {
-      return manifestErrorResponse(
-        `${entity} with id '${id}' not found`,
-        404,
-      );
+      return manifestErrorResponse(`${entity} with id '${id}' not found`, 404);
     }
 
     return manifestSuccessResponse({ data: record });
   } catch (err) {
     console.error(
       `[manifest-read] Error reading ${entity}/${id}:`,
-      err instanceof Error ? err.message : err,
+      err instanceof Error ? err.message : err
     );
     return manifestErrorResponse(
       `Failed to read ${entity}: ${err instanceof Error ? err.message : "unknown error"}`,
-      500,
+      500
     );
   }
 }

@@ -272,15 +272,12 @@ export function ExecutiveDashboardClient({
               description="Health Score"
               detail="Overall operational score"
               trend={metrics.operationalHealth.trend}
-              value={
-                (
-                  (metrics.operationalHealth.onTimeDeliveryRate * 0.3 +
-                    metrics.operationalHealth.staffRetentionRate * 0.5 +
-                    (100 - metrics.operationalHealth.foodWastePercentage) *
-                      0.2) /
+              value={`${(
+                (metrics.operationalHealth.onTimeDeliveryRate * 0.3 +
+                  metrics.operationalHealth.staffRetentionRate * 0.5 +
+                  (100 - metrics.operationalHealth.foodWastePercentage) * 0.2) /
                   100
-                ).toFixed(0) + "%"
-              }
+              ).toFixed(0)}%`}
             />
           </div>
 

@@ -6,7 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {

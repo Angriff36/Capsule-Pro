@@ -278,7 +278,7 @@ function routePath(relPath) {
   if (!m) {
     return null;
   }
-  return "/api/" + m[2];
+  return `/api/${m[2]}`;
 }
 
 async function scanFile(absPath) {
@@ -383,8 +383,8 @@ function buildGovernedModelMap(entitiesDoc) {
       map.set(snake, name);
     }
     // Form 3: plural snake_case (Capsule sometimes pluralizes table models).
-    if (!map.has(snake + "s")) {
-      map.set(snake + "s", name);
+    if (!map.has(`${snake}s`)) {
+      map.set(`${snake}s`, name);
     }
   }
   return map;

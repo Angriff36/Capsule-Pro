@@ -9,8 +9,8 @@
  * USAGE: node manifest/scripts/add-default-policies.mjs [--dry-run]
  */
 
-import { readdirSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const SOURCE_DIR = "./manifest/source";
 const DRY_RUN = process.argv.includes("--dry-run");

@@ -256,7 +256,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = ${JSON.str
 `;
 
 mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, header + "\n" + body);
+writeFileSync(outPath, `${header}\n${body}`);
 
 // Also emit a lightweight JSON file for consumption by .mjs scripts
 // (generate.mjs, entity-domain-map.mjs) that cannot import .ts directly.
@@ -275,7 +275,7 @@ for (const [entityName, meta] of Object.entries(models)) {
     fields: meta.fields.map((f) => ({ name: f.name, irName: f.irName })),
   };
 }
-writeFileSync(jsonOutPath, JSON.stringify(lightweight, null, 2) + "\n");
+writeFileSync(jsonOutPath, `${JSON.stringify(lightweight, null, 2)}\n`);
 
 // Runtime bridge map: IR entity name → Prisma model metadata key.
 // Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
@@ -299,7 +299,7 @@ export function resolvePrismaModelKey(entityName: string): string {
   return ENTITY_TO_PRISMA_MODEL[entityName] ?? entityName;
 }
 `;
-writeFileSync(bridgeOutPath, bridgeHeader + "\n" + bridgeBody);
+writeFileSync(bridgeOutPath, `${bridgeHeader}\n${bridgeBody}`);
 
 process.stdout.write(
   `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\nbridge: ${bridgeOutPath}\n`

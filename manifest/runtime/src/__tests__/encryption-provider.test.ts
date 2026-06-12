@@ -215,7 +215,7 @@ describe("createAesGcmEncryptionProvider", () => {
       const encrypted = await provider.encrypt("secret");
 
       // Tamper with the ciphertext by flipping a bit
-      const tampered = encrypted.ciphertext.slice(0, -4) + "ffff";
+      const tampered = `${encrypted.ciphertext.slice(0, -4)}ffff`;
 
       await expect(
         provider.decrypt(tampered, encrypted.keyId)

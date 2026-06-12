@@ -16,9 +16,9 @@
  *
  * Task 5.3 — OpenAPI projection evaluation + wiring.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -94,11 +94,11 @@ for (const [path, methods] of Object.entries(spec.paths || {})) {
     methods.post &&
     Object.keys(methods).length === 1
   ) {
-    const last = segments[segments.length - 1];
+    const last = segments.at(-1);
     // Skip if already has /commands/ segment or if last is {id}
     if (last !== "{id}" && !fixed.includes("/commands/")) {
       segments.splice(segments.length - 1, 0, "commands");
-      fixed = "/" + segments.join("/");
+      fixed = `/${segments.join("/")}`;
       commandRewrites++;
     }
   }

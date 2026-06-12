@@ -75,7 +75,7 @@ const options = {
   multiSchema: prismaOptions.multiSchema,
 };
 
-writeFileSync(outPath, JSON.stringify(options, null, 2) + "\n");
+writeFileSync(outPath, `${JSON.stringify(options, null, 2)}\n`);
 process.stdout.write(
   `wrote ${outPath}\naccessorNames: ${Object.keys(accessorNames).length}\n`
 );

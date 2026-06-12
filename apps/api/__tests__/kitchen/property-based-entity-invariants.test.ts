@@ -189,7 +189,7 @@ describe("Property-Based: VendorContract invariants", () => {
         // Run again with different ID (store is shared, so use different contractNumber)
         const input2 = {
           ...input,
-          contractNumber: input.contractNumber + "-dup",
+          contractNumber: `${input.contractNumber}-dup`,
         };
         const r2 = await runCommand(runtime, "create", input2);
         if (!(r1 && r2)) {

@@ -4,7 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {

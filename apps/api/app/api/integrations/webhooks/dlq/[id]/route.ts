@@ -19,7 +19,7 @@ interface RouteParams {
 /**
  * Get a single DLQ entry
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { userId, orgId } = await auth();
     if (!(userId && orgId)) {
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 /**
  * Delete a DLQ entry (mark as resolved without retrying)
  */
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { userId, orgId } = await auth();
     if (!(userId && orgId)) {

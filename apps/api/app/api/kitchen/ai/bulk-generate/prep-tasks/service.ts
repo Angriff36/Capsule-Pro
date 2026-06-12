@@ -322,7 +322,7 @@ function convertTasksToDbFormat(
  */
 export async function generateBulkPrepTasks(
   tenantId: string,
-  userId: string,
+  _userId: string,
   request: BulkGenerateRequest
 ): Promise<{
   batchId: string;

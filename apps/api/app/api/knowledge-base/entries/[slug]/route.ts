@@ -14,7 +14,7 @@ import {
 
 // GET /api/knowledge-base/entries/[slug] - Get entry by slug
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {

@@ -1268,7 +1268,8 @@ function deriveTimes(
   };
 
   const startTime = format(sorted[0]);
-  const endTime = sorted.length > 1 ? format(sorted[sorted.length - 1]) : "";
+  const lastSorted = sorted.at(-1);
+  const endTime = sorted.length > 1 && lastSorted !== undefined ? format(lastSorted) : "";
 
   return { startTime, endTime };
 }

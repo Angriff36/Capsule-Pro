@@ -121,7 +121,7 @@ console.log(
     " diagnostics"
 );
 for (const [code, count] of Object.entries(diagByCode)) {
-  console.log("    " + code + ": " + count);
+  console.log(`    ${code}: ${count}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -140,15 +140,15 @@ for (const [entityName, uniqueGroups] of Object.entries(
     const fields = Array.isArray(uniqueFields)
       ? uniqueFields
       : uniqueFields.fields;
-    const uniqueAttr = "@@unique([" + fields.join(", ") + "])";
+    const uniqueAttr = `@@unique([${fields.join(", ")}])`;
 
     // Find the model block start (after the opening {)
-    const modelStart = generatedCode.indexOf("model " + entityName + " {");
+    const modelStart = generatedCode.indexOf(`model ${entityName} {`);
     if (modelStart === -1) {
       continue;
     }
 
-    const openBrace = modelStart + ("model " + entityName + " {").length - 1;
+    const openBrace = modelStart + `model ${entityName} {`.length - 1;
     // Find the matching closing brace using depth-aware matching
     let depth = 1; // we start after the opening {
     let i = openBrace + 1;
@@ -169,7 +169,7 @@ for (const [entityName, uniqueGroups] of Object.entries(
 
     // Check if this exact @@unique already exists in the block
     if (!modelBlock.includes(uniqueAttr)) {
-      insertions.push({ pos: modelEnd, text: "\n  " + uniqueAttr + "\n" });
+      insertions.push({ pos: modelEnd, text: `\n  ${uniqueAttr}\n` });
     }
   }
 }
@@ -180,7 +180,7 @@ for (const { pos, text } of insertions) {
   generatedCode =
     generatedCode.substring(0, pos) + text + generatedCode.substring(pos);
 }
-console.log("  @@unique injected: " + insertions.length);
+console.log(`  @@unique injected: ${insertions.length}`);
 
 // ---------------------------------------------------------------------------
 // 5. Strip any RLS comment lines (defensive)
@@ -191,7 +191,7 @@ generatedCode = generatedCode
   .filter((line) => !/^\s*\/\/\s*RLS\s+policy\s+comment/i.test(line))
   .join("\n");
 const rlsStripped = beforeStrip - generatedCode.split("\n").length;
-console.log("  RLS comment lines stripped: " + rlsStripped);
+console.log(`  RLS comment lines stripped: ${rlsStripped}`);
 
 // ---------------------------------------------------------------------------
 // 5b. Fix DUPLICATE_FIELD: rename scalar fields that clash with relation arrays
@@ -253,8 +253,8 @@ while ((dupMatch = dupFieldRegex.exec(generatedCode)) !== null) {
       const oldLine = modelLines[lineIdx];
       // Replace the field name (first word on the line, after optional whitespace)
       const newLine = oldLine.replace(
-        new RegExp("^(\\s+)" + fieldName + "\\b"),
-        "$1" + fieldName + "Data"
+        new RegExp(`^(\\s+)${fieldName}\\b`),
+        `$1${fieldName}Data`
       );
       modelLines[lineIdx] = newLine;
       dupFieldFixes++;
@@ -267,7 +267,7 @@ while ((dupMatch = dupFieldRegex.exec(generatedCode)) !== null) {
     modelLines.join("\n") +
     generatedCode.substring(i);
 }
-console.log("  Duplicate field renames: " + dupFieldFixes);
+console.log(`  Duplicate field renames: ${dupFieldFixes}`);
 
 // ---------------------------------------------------------------------------
 // 5c. Strip invalid @@index and @@unique that reference non-existent fields
@@ -338,7 +338,7 @@ while ((stripMatch = stripRegex.exec(generatedCode)) !== null) {
       generatedCode.substring(i);
   }
 }
-console.log("  Invalid indexes stripped: " + strippedIndexes);
+console.log(`  Invalid indexes stripped: ${strippedIndexes}`);
 
 // ---------------------------------------------------------------------------
 // 5d. Fix type mismatches: @db.* must match the Prisma scalar type
@@ -428,7 +428,7 @@ while ((match5d = modelRegex5d.exec(generatedCode)) !== null) {
       generatedCode.substring(idx);
   }
 }
-console.log("  Type mismatches fixed: " + typeFixCount);
+console.log(`  Type mismatches fixed: ${typeFixCount}`);
 
 // ---------------------------------------------------------------------------
 // 5e. Fix @default("") on non-String fields in generated code
@@ -474,9 +474,7 @@ generatedCode = generatedCode.replace(
   /(\s+\w+\s+(?:Int|Float)\??(?:\s+\S+)?)\s+@default\("([0-9.]+)"\)/g,
   (_match, prefix, val) => {
     genDefaultFixCount++;
-    return (
-      prefix.trimEnd() + " @default(" + Math.floor(Number.parseFloat(val)) + ")"
-    );
+    return `${prefix.trimEnd()} @default(${Math.floor(Number.parseFloat(val))})`;
   }
 );
 // Fix @default(0) on String fields → @default("")
@@ -485,7 +483,7 @@ generatedCode = generatedCode.replace(
   /(\s+\w+\s+String\??(?:\s+\S+)*?)\s+@default\(0\)/g,
   (_match, prefix) => {
     genDefaultFixCount++;
-    return prefix + ' @default("")';
+    return `${prefix} @default("")`;
   }
 );
 // Fix @default(0) on DateTime fields → remove @default entirely
@@ -497,7 +495,7 @@ generatedCode = generatedCode.replace(
     return prefix;
   }
 );
-console.log("  Generated default fixes: " + genDefaultFixCount);
+console.log(`  Generated default fixes: ${genDefaultFixCount}`);
 
 // ---------------------------------------------------------------------------
 // 5f. Strip forward relation fields from generated models
@@ -564,8 +562,8 @@ while ((match5f = modelRegex5f.exec(generatedCode)) !== null) {
       generatedCode.substring(idx);
   }
 }
-console.log("  Forward relation lines stripped: " + strippedRelLines);
-console.log("  @db.Time stripped: " + strippedDbTime);
+console.log(`  Forward relation lines stripped: ${strippedRelLines}`);
+console.log(`  @db.Time stripped: ${strippedDbTime}`);
 
 // ---------------------------------------------------------------------------
 // 5g. Deduplicate generated models with the same @@map table name.
@@ -630,7 +628,7 @@ console.log("  @db.Time stripped: " + strippedDbTime);
   if (modelsToRemove.size > 0) {
     // Remove the duplicate models from generatedCode
     for (const modelName of modelsToRemove) {
-      const startPattern = "model " + modelName + " {";
+      const startPattern = `model ${modelName} {`;
       const startIdx = generatedCode.indexOf(startPattern);
       if (startIdx === -1) {
         continue;
@@ -653,7 +651,7 @@ console.log("  @db.Time stripped: " + strippedDbTime);
       // Remove the model block plus surrounding whitespace
       const before = generatedCode.substring(0, startIdx).trimEnd();
       const after = generatedCode.substring(idx + 1).trimStart();
-      generatedCode = before + "\n" + after;
+      generatedCode = `${before}\n${after}`;
     }
   }
   console.log(
@@ -664,7 +662,7 @@ console.log("  @db.Time stripped: " + strippedDbTime);
       " table conflicts)"
   );
   if (modelsToRemove.size > 0) {
-    console.log("    Removed: " + [...modelsToRemove].join(", "));
+    console.log(`    Removed: ${[...modelsToRemove].join(", ")}`);
   }
 }
 
@@ -688,7 +686,7 @@ if (committedSchemasMatch) {
 const sortedSchemas = [...allSchemas].sort();
 const updatedHeader = header.replace(
   /schemas\s*=\s*\[[^\]]+\]/,
-  "schemas = [" + sortedSchemas.map((s) => '"' + s + '"').join(", ") + "]"
+  `schemas = [${sortedSchemas.map((s) => `"${s}"`).join(", ")}]`
 );
 
 // ---------------------------------------------------------------------------
@@ -702,8 +700,8 @@ for (const enumMatch of committedSchema.matchAll(
 )) {
   enumBlocks.push(enumMatch[0]);
 }
-console.log("\nHeader: " + enumBlocks.length + " enums + datasource/generator");
-console.log("  Schemas: " + sortedSchemas.join(", "));
+console.log(`\nHeader: ${enumBlocks.length} enums + datasource/generator`);
+console.log(`  Schemas: ${sortedSchemas.join(", ")}`);
 
 // ---------------------------------------------------------------------------
 // 7. Extract infra-core models from committed schema (not in IR)
@@ -728,11 +726,11 @@ let genMapMatch;
 while ((genMapMatch = genMapRegex.exec(generatedCode)) !== null) {
   generatedTableNames.add(genMapMatch[1]);
 }
-console.log("  Generated @@map tables: " + generatedTableNames.size);
+console.log(`  Generated @@map tables: ${generatedTableNames.size}`);
 
 // Extract each infra model block using depth-aware brace matching
 function extractModelBlock(schemaText, modelName) {
-  const startPattern = "model " + modelName + " {";
+  const startPattern = `model ${modelName} {`;
   const startIdx = schemaText.indexOf(startPattern);
   if (startIdx === -1) {
     return null;
@@ -766,7 +764,7 @@ for (const name of infraModels) {
     const infraMapMatch = block.match(/@@map\("([^"]+)"\)/);
     const infraTable = infraMapMatch ? infraMapMatch[1] : name;
     if (generatedTableNames.has(infraTable)) {
-      infraDeduped.push(name + " (table: " + infraTable + ")");
+      infraDeduped.push(`${name} (table: ${infraTable})`);
       continue; // Skip — generated model already covers this table
     }
     infraBlocks.push(block);
@@ -774,19 +772,17 @@ for (const name of infraModels) {
     infraMissing.push(name);
   }
 }
-console.log(
-  "\nInfra-core: " + infraBlocks.length + " pass-through models appended"
-);
+console.log(`\nInfra-core: ${infraBlocks.length} pass-through models appended`);
 if (infraDeduped.length > 0) {
   console.log(
-    "  Deduplicated (table covered by generated model): " + infraDeduped.length
+    `  Deduplicated (table covered by generated model): ${infraDeduped.length}`
   );
   for (const d of infraDeduped) {
-    console.log("    " + d);
+    console.log(`    ${d}`);
   }
 }
 if (infraMissing.length > 0) {
-  console.log("  Missing (extract failed): " + infraMissing.join(", "));
+  console.log(`  Missing (extract failed): ${infraMissing.join(", ")}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -825,7 +821,7 @@ for (let bi = 0; bi < infraBlocks.length; bi++) {
     infraBlocks[bi] = newLines.join("\n");
   }
 }
-console.log("  Infra-core forward relations stripped: " + strippedRelations);
+console.log(`  Infra-core forward relations stripped: ${strippedRelations}`);
 
 // ---------------------------------------------------------------------------
 // 7c. Fix @default("0.000") parse errors on Int fields
@@ -840,7 +836,7 @@ for (let bi = 0; bi < infraBlocks.length; bi++) {
     /(\s+\w+\s+(?:Int|Float|Decimal)\??\s+.*)@default\("([0-9.]+)"\)/g,
     (_match, prefix, val) => {
       defaultFixCount++;
-      return prefix + "@default(" + Math.floor(Number.parseFloat(val)) + ")";
+      return `${prefix}@default(${Math.floor(Number.parseFloat(val))})`;
     }
   );
   // Fix @default("") on Int/Float fields → remove the @default entirely
@@ -852,7 +848,7 @@ for (let bi = 0; bi < infraBlocks.length; bi++) {
     infraBlocks[bi] = fixed;
   }
 }
-console.log("  Infra-core default fixes: " + defaultFixCount);
+console.log(`  Infra-core default fixes: ${defaultFixCount}`);
 
 // ---------------------------------------------------------------------------
 // 8. Assemble final schema
@@ -917,7 +913,7 @@ for (let i = 0; i < outputLines.length; i++) {
 const finalOutput = outputLines.join("\n");
 if (finalDefaultFixes > 0) {
   console.log(
-    "  Final default fixes on assembled output: " + finalDefaultFixes
+    `  Final default fixes on assembled output: ${finalDefaultFixes}`
   );
 }
 
@@ -925,14 +921,14 @@ if (finalDefaultFixes > 0) {
 // 9. Write output
 // ---------------------------------------------------------------------------
 writeFileSync(OUTPUT_PATH, finalOutput);
-console.log("Output: " + OUTPUT_PATH);
+console.log(`Output: ${OUTPUT_PATH}`);
 
 // ---------------------------------------------------------------------------
 // 10. Validate with prisma validate
 // ---------------------------------------------------------------------------
 console.log("\nValidating...");
 try {
-  execSync('npx prisma validate --schema="' + OUTPUT_PATH + '"', {
+  execSync(`npx prisma validate --schema="${OUTPUT_PATH}"`, {
     cwd: PROJECT_ROOT,
     stdio: "pipe",
     timeout: 60_000,
@@ -946,12 +942,12 @@ try {
   const errorOutput = stdout + stderr;
   const errorLines = errorOutput.split("\n").filter((l) => l.trim());
   for (const line of errorLines.slice(0, 50)) {
-    console.log("  " + line);
+    console.log(`  ${line}`);
   }
   if (errorLines.length > 50) {
-    console.log("  ... and " + (errorLines.length - 50) + " more lines");
+    console.log(`  ... and ${errorLines.length - 50} more lines`);
   }
-  console.log("\n  Exit code: " + err.status);
+  console.log(`\n  Exit code: ${err.status}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -965,11 +961,9 @@ console.log(
     diagnostics.length +
     " diagnostics"
 );
-console.log("Post-process: " + insertions.length + " @@unique injected");
-console.log("Header: " + enumBlocks.length + " enums + datasource/generator");
-console.log(
-  "Infra-core: " + infraBlocks.length + " pass-through models appended"
-);
+console.log(`Post-process: ${insertions.length} @@unique injected`);
+console.log(`Header: ${enumBlocks.length} enums + datasource/generator`);
+console.log(`Infra-core: ${infraBlocks.length} pass-through models appended`);
 console.log(
   "Total: " +
     totalModels +
@@ -979,4 +973,4 @@ console.log(
     infraBlocks.length +
     " infra)"
 );
-console.log("Output: " + OUTPUT_PATH);
+console.log(`Output: ${OUTPUT_PATH}`);

@@ -19,7 +19,7 @@ import { type NextRequest, NextResponse } from "next/server";
  * Returns a list of all registered supplier connectors.
  * Each connector includes its ID and display name.
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Authenticate (optional for public connector listing)
     const { orgId } = await auth();

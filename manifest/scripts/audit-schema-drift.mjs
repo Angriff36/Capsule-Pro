@@ -817,7 +817,7 @@ function main() {
   if (process.argv.includes("--update-baseline")) {
     writeFileSync(
       baselinePath,
-      JSON.stringify(
+      `${JSON.stringify(
         {
           _doc: "Pre-existing schema-drift debt (see manifest/reports/schema-drift/). Entries may ONLY be removed (by fixing the drift) — additions require fixing the new drift instead. Generated via pnpm manifest:audit-schema-drift --update-baseline.",
           generatedAt: new Date().toISOString(),
@@ -825,7 +825,7 @@ function main() {
         },
         null,
         2
-      ) + "\n"
+      )}\n`
     );
     console.log(
       `[schema-drift] Baseline updated: ${violationKeys.length} entries.`

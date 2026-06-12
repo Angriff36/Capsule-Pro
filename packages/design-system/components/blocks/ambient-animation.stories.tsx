@@ -6,11 +6,7 @@
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { AmbientAnimation } from "./ambient-animation";
-import {
-  EmptyListState,
-  NoDataState,
-  NoEventsState,
-} from "./illustrated-empty-states";
+import { EmptyListState, NoDataState } from "./illustrated-empty-states";
 
 const meta: Meta<typeof AmbientAnimation> = {
   title: "Blocks/AmbientAnimation",

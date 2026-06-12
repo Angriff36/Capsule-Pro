@@ -91,7 +91,7 @@ export default function NewLeadPage() {
       } else {
         toast.success("Lead created successfully");
       }
-      router.push("/marketing/leads/" + result.lead.id);
+      router.push(`/marketing/leads/${result.lead.id}`);
     } catch (error) {
       toast.error("Failed to create lead", {
         description: error instanceof Error ? error.message : "Unknown error",

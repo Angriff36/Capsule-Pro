@@ -13,7 +13,7 @@
  *   - Correct field names for raw snake_case models
  */
 
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestSuccessResponse,
@@ -40,7 +40,7 @@ interface PrismaListDelegate {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ entity: string }> },
+  { params }: { params: Promise<{ entity: string }> }
 ) {
   // ── Auth ──────────────────────────────────────────────────────
   let tenantId: string;
@@ -58,7 +58,7 @@ export async function GET(
   if (resolution.drop || !resolution.exists) {
     return manifestErrorResponse(
       `Entity '${entity}' not found or has no backing table`,
-      404,
+      404
     );
   }
 
@@ -67,17 +67,20 @@ export async function GET(
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const limit = Math.min(
     200,
-    Math.max(1, Number(url.searchParams.get("limit")) || 50),
+    Math.max(1, Number(url.searchParams.get("limit")) || 50)
   );
   const skip = (page - 1) * limit;
 
   // ── Build query ──────────────────────────────────────────────
-  const model = (await import("@repo/database")).database as unknown as Record<string, PrismaListDelegate>;
+  const model = (await import("@repo/database")).database as unknown as Record<
+    string,
+    PrismaListDelegate
+  >;
   const delegate = model[resolution.accessor];
   if (!delegate) {
     return manifestErrorResponse(
       `No Prisma delegate for '${resolution.accessor}'`,
-      500,
+      500
     );
   }
 
@@ -110,11 +113,11 @@ export async function GET(
   } catch (err) {
     console.error(
       `[manifest-read] Error listing ${entity}:`,
-      err instanceof Error ? err.message : err,
+      err instanceof Error ? err.message : err
     );
     return manifestErrorResponse(
       `Failed to list ${entity}: ${err instanceof Error ? err.message : "unknown error"}`,
-      500,
+      500
     );
   }
 }

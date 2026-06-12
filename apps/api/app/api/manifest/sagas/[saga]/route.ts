@@ -18,7 +18,10 @@ export async function POST(
     const { saga } = await context.params;
     const currentUser = await requireCurrentUser();
     const body = (await request.json().catch(() => ({}))) as {
-      steps?: Record<string, { instanceId?: string; input?: Record<string, unknown> }>;
+      steps?: Record<
+        string,
+        { instanceId?: string; input?: Record<string, unknown> }
+      >;
       correlationId?: string;
     };
 

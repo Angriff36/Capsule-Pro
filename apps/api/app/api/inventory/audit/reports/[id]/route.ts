@@ -210,7 +210,7 @@ function buildTrendData(
  * GET /api/inventory/audit/reports/[id] - Get a specific saved report
  * Read — bypasses Manifest per §10
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
 
@@ -397,7 +397,7 @@ export async function GET(request: Request, context: RouteContext) {
  * Soft-delete via Manifest runtime (Report.remove command).
  * Pre-validation read is §10-compliant.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
     const user = await requireCurrentUser();

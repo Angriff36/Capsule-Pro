@@ -381,7 +381,7 @@ export function EventGuestsClient({
     });
   };
 
-  const handleUpdateRSVP = (guestId: string, status: string) => {
+  const handleUpdateRSVP = (guestId: string, _status: string) => {
     startTransition(async () => {
       try {
         await eventGuestUpdate({ id: guestId });

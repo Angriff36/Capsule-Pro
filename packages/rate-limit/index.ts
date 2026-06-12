@@ -51,7 +51,7 @@ export const createRateLimiter = (props: Omit<RatelimitConfig, "redis">) => {
   if (!client) {
     // No Redis available — return a passthrough that always succeeds.
     return {
-      limit: async (key: string) => ({
+      limit: async (_key: string) => ({
         success: true as const,
         remaining: 100,
         limit: 100,

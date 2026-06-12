@@ -36,7 +36,7 @@ async function getIngredientCost(
   tenantId: string,
   ingredientName: string,
   quantity: number,
-  unit: string
+  _unit: string
 ): Promise<{
   cost: number;
   unitCost: number;

@@ -3,9 +3,9 @@
 // Parses schema.prisma + IR to produce PrismaProjectionOptions JSON.
 // Run: node manifest/scripts/derive-prisma-options.mjs
 
-import { readFileSync, writeFileSync } from "fs";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -255,7 +255,7 @@ function parseModelBlock(body) {
         if (isQuoted || isFuncCall || isBool || isNumber || isList) {
           fixedDefaults.push(d);
         } else {
-          fixedDefaults.push('@default("' + inner + '")');
+          fixedDefaults.push(`@default("${inner}")`);
         }
       }
       field.defaults = fixedDefaults;
@@ -512,14 +512,14 @@ function main() {
 
   if (report.noPrismaModel.length > 0) {
     console.log(
-      "\nEntities without Prisma model (" + report.noPrismaModel.length + "):"
+      `\nEntities without Prisma model (${report.noPrismaModel.length}):`
     );
-    console.log("  " + report.noPrismaModel.join(", "));
+    console.log(`  ${report.noPrismaModel.join(", ")}`);
   }
 
   if (report.errors.length > 0) {
     console.log("\nParse errors:");
-    report.errors.forEach((e) => console.log("  " + e.entity + ":", e.error));
+    report.errors.forEach((e) => console.log(`  ${e.entity}:`, e.error));
   }
 
   // Sample entries
@@ -528,7 +528,7 @@ function main() {
   for (const name of samples) {
     const entry = report.matched.find((m) => m.entity === name);
     if (entry) {
-      console.log("\n  " + name + ":");
+      console.log(`\n  ${name}:`);
       console.log("    tableMapping:", entry.tableMapping);
       console.log("    columnMappings:", entry.columnMappings);
       console.log("    dbAttributes:", entry.dbAttributes);

@@ -320,13 +320,13 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
     profitabilityByMonth.reduce((sum, r) => sum + r.margin, 0) /
     profitabilityByMonth.length;
 
+  const lastMonth = profitabilityByMonth.at(-1);
+  const prevMonth = profitabilityByMonth.at(-2);
   const profitabilityTrend: "up" | "down" | "neutral" =
-    profitabilityByMonth.length >= 2
-      ? profitabilityByMonth[profitabilityByMonth.length - 1].margin >
-        profitabilityByMonth[profitabilityByMonth.length - 2].margin
+    lastMonth && prevMonth
+      ? lastMonth.margin > prevMonth.margin
         ? "up"
-        : profitabilityByMonth[profitabilityByMonth.length - 1].margin <
-            profitabilityByMonth[profitabilityByMonth.length - 2].margin
+        : lastMonth.margin < prevMonth.margin
           ? "down"
           : "neutral"
       : "neutral";

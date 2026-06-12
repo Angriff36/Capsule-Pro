@@ -36,7 +36,7 @@ const DEFAULT_FEDERAL_BRACKETS = [
   { min: 609_350, max: Number.POSITIVE_INFINITY, rate: 0.37 },
 ];
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {

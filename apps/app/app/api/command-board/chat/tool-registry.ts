@@ -2018,7 +2018,7 @@ function parseDayOfMonth(text: string): number | null {
   return null;
 }
 
-function parseYear(text: string, referenceYear: number): number | null {
+function parseYear(text: string, _referenceYear: number): number | null {
   const yearMatch = text.match(/\b(20\d{2})\b/);
   if (yearMatch) {
     return Number.parseInt(yearMatch[1], 10);

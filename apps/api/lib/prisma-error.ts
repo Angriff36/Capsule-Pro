@@ -138,7 +138,7 @@ export function translatePrismaError(error: unknown): PrismaErrorResult {
  * Returns a safe error message that doesn't expose internal database details.
  * The message is appropriate to return to API clients.
  */
-function getSafeErrorMessage(type: PrismaErrorType, code: string): string {
+function getSafeErrorMessage(type: PrismaErrorType, _code: string): string {
   switch (type) {
     case "not_found":
       return "The requested resource was not found";

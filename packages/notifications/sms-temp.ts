@@ -74,7 +74,7 @@ class NoOpProvider implements SmsProvider {
     console.warn(
       "[SMS] No-op provider: SMS not sent. Configure TWILIO credentials."
     );
-    return "noop-" + Date.now();
+    return `noop-${Date.now()}`;
   }
 }
 

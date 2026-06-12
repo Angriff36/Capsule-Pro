@@ -87,7 +87,7 @@ export class UsFoodsConnector implements SupplierConnector {
    * - Triggered by catalog changes
    */
   async fetchCatalog(
-    config: SupplierConnectorConfig
+    _config: SupplierConnectorConfig
   ): Promise<SupplierProduct[]> {
     // BLOCKER: EDI infrastructure not yet available.
     // 1. Connect to EDI endpoint
@@ -108,7 +108,7 @@ export class UsFoodsConnector implements SupplierConnector {
    * The 846 document returns stock levels by warehouse location.
    */
   async checkAvailability(
-    config: SupplierConnectorConfig,
+    _config: SupplierConnectorConfig,
     skus: string[]
   ): Promise<Record<string, { available: boolean; quantity?: number }>> {
     // BLOCKER: EDI infrastructure not yet available.
@@ -134,8 +134,8 @@ export class UsFoodsConnector implements SupplierConnector {
    * cached catalog data. US Foods pricing may be contract-specific.
    */
   async fetchPricing(
-    config: SupplierConnectorConfig,
-    skus: string[]
+    _config: SupplierConnectorConfig,
+    _skus: string[]
   ): Promise<
     Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
   > {
@@ -176,7 +176,7 @@ export class UsFoodsConnector implements SupplierConnector {
  * BLOCKER: EDI infrastructure not yet available. Implement full 832 parsing with proper segment handling.
  * Tracked as capsule-pro/TODO:us-foods-edi-integration
  */
-export function parseEdi832Catalog(ediContent: string): SupplierProduct[] {
+export function parseEdi832Catalog(_ediContent: string): SupplierProduct[] {
   // BLOCKER: EDI infrastructure not yet available.
   // 1. Split by segment terminator (usually ~ or newline)
   // 2. Parse each segment by element delimiter (*)

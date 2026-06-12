@@ -47,7 +47,7 @@ function parseSimpleYaml(text) {
     const trimmed = line.trim();
 
     // Pop stack until we find the parent whose indent is strictly less than ours
-    while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
+    while (stack.length > 1 && stack.at(-1).indent >= indent) {
       stack.pop();
     }
 
@@ -58,7 +58,7 @@ function parseSimpleYaml(text) {
 
     const [, key, rawVal] = kvMatch;
     const val = rawVal.trim();
-    const parent = stack[stack.length - 1].container;
+    const parent = stack.at(-1).container;
 
     if (val === "" || val === undefined) {
       // Mapping — push a new frame so children go into this sub-object

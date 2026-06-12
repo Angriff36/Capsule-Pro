@@ -160,7 +160,7 @@ async function fetchMenuPerformanceSummary(
   );
 
   const topDish = sortedByMargin[0];
-  const lowDish = sortedByMargin[sortedByMargin.length - 1];
+  const lowDish = sortedByMargin.at(-1);
 
   return {
     total_dishes: menuItemAnalysis.length,

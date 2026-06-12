@@ -197,7 +197,7 @@ if (opts.saveBaseline) {
   await fs.mkdir(path.dirname(opts.baselinePath), { recursive: true });
   await fs.writeFile(
     opts.baselinePath,
-    JSON.stringify(baseline, null, 2) + "\n"
+    `${JSON.stringify(baseline, null, 2)}\n`
   );
   console.log(
     `[direct-write-baseline] Saved baseline with ${baseline.count} (file, entity, method) triple(s) to ${path.relative(ROOT, opts.baselinePath)}`

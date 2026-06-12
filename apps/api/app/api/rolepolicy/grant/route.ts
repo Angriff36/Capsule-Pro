@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
   log.info("[RolePolicy/grant] Delegating to manifest grant command");
 
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "RolePolicy",

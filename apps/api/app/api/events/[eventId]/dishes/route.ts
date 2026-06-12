@@ -11,7 +11,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * List all dishes for a specific event
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {

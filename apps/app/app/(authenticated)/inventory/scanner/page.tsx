@@ -527,7 +527,7 @@ export default function ScannerPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {scanHistory.map((entry, i) => (
+                {scanHistory.map((entry, _i) => (
                   <TableRow
                     key={`${entry.barcode}-${entry.timestamp.getTime()}`}
                   >

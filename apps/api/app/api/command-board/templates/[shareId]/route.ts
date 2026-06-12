@@ -13,7 +13,7 @@ import type { NextRequest } from "next/server";
 import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ shareId: string }> }
 ) {
   try {
@@ -40,7 +40,7 @@ export async function GET(
 }
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ shareId: string }> }
 ) {
   try {

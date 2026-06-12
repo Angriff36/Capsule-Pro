@@ -8,7 +8,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const guard = await requireApiManager();
     if (!guard.ok) {

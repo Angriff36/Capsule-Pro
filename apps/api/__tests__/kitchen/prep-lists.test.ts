@@ -670,7 +670,7 @@ describe("Prep Lists API", () => {
       });
 
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(401);
@@ -686,7 +686,7 @@ describe("Prep Lists API", () => {
 
       mockRunSuccess({ id: TEST_PREP_LIST_ID, status: "active" });
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(200);
@@ -706,7 +706,7 @@ describe("Prep Lists API", () => {
 
       mockRunError(403, "Access denied: adminOnly (role=admin)");
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(403);
@@ -723,7 +723,7 @@ describe("Prep Lists API", () => {
 
       mockRunError(422, "Guard 0 failed: id is required");
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(422);
@@ -740,7 +740,7 @@ describe("Prep Lists API", () => {
 
       mockRunError(400, "State transition not allowed");
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(400);
@@ -754,7 +754,7 @@ describe("Prep Lists API", () => {
       );
 
       const res = await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
       expect(res.status).toBe(500);
@@ -770,7 +770,7 @@ describe("Prep Lists API", () => {
 
       mockRunSuccess({ id: TEST_PREP_LIST_ID });
       await manifestDispatch(
-        makePOST("/api/kitchen/prep-lists/commands/" + name, sampleBody),
+        makePOST(`/api/kitchen/prep-lists/commands/${name}`, sampleBody),
         { params: Promise.resolve({ entity: "PrepList", command: name }) }
       );
 

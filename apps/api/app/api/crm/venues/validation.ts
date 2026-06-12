@@ -96,7 +96,7 @@ function validateOptionalTags(value: unknown): string[] | undefined {
 
 function validateOptionalJson(
   value: unknown,
-  field: string
+  _field: string
 ): unknown | undefined {
   if (value === undefined || value === null) {
     return;

@@ -7,9 +7,9 @@
  * Usage: node manifest/scripts/adopt-timestamps.mjs [--dry-run]
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const sourceDir = path.resolve(__dirname, "..", "source");
@@ -54,7 +54,7 @@ for (const file of files) {
       fileChanged = true;
       if (!timestampsAddedInCurrentEntity) {
         const indent = line.match(/^(\s*)/)[1];
-        newLines.push(indent + "timestamps");
+        newLines.push(`${indent}timestamps`);
         timestampsAddedInCurrentEntity = true;
         stats.timestampsAdded++;
         stats.entitiesModified++;
@@ -67,7 +67,7 @@ for (const file of files) {
       fileChanged = true;
       if (!timestampsAddedInCurrentEntity) {
         const indent = line.match(/^(\s*)/)[1];
-        newLines.push(indent + "timestamps");
+        newLines.push(`${indent}timestamps`);
         timestampsAddedInCurrentEntity = true;
         stats.timestampsAdded++;
         stats.entitiesModified++;

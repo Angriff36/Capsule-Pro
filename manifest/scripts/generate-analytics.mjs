@@ -17,9 +17,9 @@
  * Output: manifest/generated/analytics/
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");

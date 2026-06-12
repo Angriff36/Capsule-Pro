@@ -371,14 +371,14 @@ export function AdvancedEventAnalyticsDashboard() {
   const clientRevenueData = data.clientPreferences.slice(0, 10).map((c) => ({
     label:
       c.clientName.length > 20
-        ? c.clientName.slice(0, 20) + "..."
+        ? `${c.clientName.slice(0, 20)}...`
         : c.clientName,
     value: c.totalRevenue,
   }));
 
   const menuItemData = data.topMenuItems.slice(0, 10).map((m) => ({
     label:
-      m.dishName.length > 25 ? m.dishName.slice(0, 25) + "..." : m.dishName,
+      m.dishName.length > 25 ? `${m.dishName.slice(0, 25)}...` : m.dishName,
     value: m.eventCount,
   }));
 
