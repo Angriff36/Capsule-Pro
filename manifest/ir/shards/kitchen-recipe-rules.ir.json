@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "6d7aaf7f452922ad566b025e80cae74c8574460655665f968426bc6c5e7ee9b8",
-    "irHash": "eb17b2b292948f09d0c9253930de93fe385f03b8c9b430b803a9a332be484dc0",
+    "contentHash": "2365898377c0be5c36f5ceb1d2398f0de7739479c596c3a7654d57182a8b6ae4",
+    "irHash": "f2fa1294beecbde73dff1899174e4b1d711aa1d54b69a35be2c6e058800ceda5",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-11T23:47:57.582Z"
+    "compiledAt": "2026-06-12T04:42:16.121Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -867,55 +867,6 @@
           "overrideable": false
         },
         {
-          "name": "validDifficulty",
-          "code": "validDifficulty",
-          "expression": {
-            "kind": "binary",
-            "operator": "and",
-            "left": {
-              "kind": "binary",
-              "operator": ">=",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "difficultyLevel"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 1
-                }
-              }
-            },
-            "right": {
-              "kind": "binary",
-              "operator": "<=",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "difficultyLevel"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 5
-                }
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Difficulty must be between 1 (easy) and 5 (expert)",
-          "overrideable": false
-        },
-        {
           "name": "validTimes",
           "code": "validTimes",
           "expression": {
@@ -1011,44 +962,6 @@
           },
           "severity": "block",
           "message": "Total cost cannot be negative",
-          "overrideable": false
-        },
-        {
-          "name": "validStatus",
-          "code": "validStatus",
-          "expression": {
-            "kind": "binary",
-            "operator": "in",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "array",
-              "elements": [
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "draft"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "published"
-                  }
-                }
-              ]
-            }
-          },
-          "severity": "block",
-          "message": "Version status must be draft or published",
           "overrideable": false
         },
         {
@@ -3222,6 +3135,58 @@
               }
             }
           }
+        },
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "identifier",
+              "name": "difficulty"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "identifier",
+                "name": "difficulty"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 1
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<=",
+              "left": {
+                "kind": "identifier",
+                "name": "difficulty"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 5
+                }
+              }
+            }
+          }
         }
       ],
       "constraints": [],
@@ -3246,6 +3211,16 @@
             "value": {
               "kind": "string",
               "value": "Yield unit is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Difficulty must be between 1 (easy) and 5 (expert)"
             }
           }
         },

@@ -123,10 +123,13 @@ entity RecipeVersion {
 
   constraint validVersionNumber: self.versionNumber > 0 "Version number must be positive"
   constraint positiveYield: self.yieldQuantity > 0 "Yield quantity must be positive"
-  constraint validDifficulty: self.difficultyLevel >= 1 and self.difficultyLevel <= 5 "Difficulty must be between 1 (easy) and 5 (expert)"
+  // validDifficulty/validStatus were entity-level :block constraints — the documented
+  // anti-pattern (v0.12.58): they re-validate on EVERY mutate, and live rows with NULL
+  // difficulty_level (and no status column yet — Phase 2b drift) blocked updateCosts
+  // silently. Difficulty range is now a create guard; status values are enforced by
+  // the transitions below.
   constraint validTimes: self.prepTimeMinutes >= 0 and self.cookTimeMinutes >= 0 and self.restTimeMinutes >= 0 "Time values must be non-negative"
   constraint nonNegativeCost: self.totalCost >= 0 "Total cost cannot be negative"
-  constraint validStatus: self.status in ["draft", "published"] "Version status must be draft or published"
 
   constraint warnLongRecipe:warn self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes > 480 {
     messageTemplate: "Recipe takes 8+ hours to complete"
@@ -148,6 +151,7 @@ entity RecipeVersion {
   command create(yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
     guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
     guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
+    guard difficulty == null or (difficulty >= 1 and difficulty <= 5) "Difficulty must be between 1 (easy) and 5 (expert)"
 
     mutate yieldQuantity = yieldQty
     mutate yieldUnitId = yieldUnit
