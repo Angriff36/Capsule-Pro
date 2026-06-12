@@ -1,17 +1,47 @@
 /**
  * Public Proposal Draft API Endpoints
  *
- * GET    /api/public/proposals-draft/[token]     - Get public proposal by magic token
- * POST   /api/public/proposals-draft/[token]/respond - Respond to proposal (approve/request changes)
+ * GET    /api/public/proposals-draft/[token] - Get public proposal by magic token
+ * POST   /api/public/proposals-draft/[token] - Respond to proposal (approve/request changes)
+ *
+ * Unauthenticated magic-token surface. Governed ProposalDraft transitions
+ * (recordView / approve / requestChanges) execute via Manifest runtime using
+ * the tenant's admin user as the system actor (same pattern as
+ * app/api/public/proposals/[token]/respond). ProposalAction rows are a
+ * documented bypass (public response audit trail — see
+ * manifest/governance/bypasses.json).
  */
 
 import { database } from "@repo/database";
+import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { runCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 type Params = Promise<{ token: string }>;
+
+/**
+ * Build a synthetic system-user context for public (unauthenticated) operations.
+ * Uses the tenant's admin user to satisfy Manifest's RBAC requirements.
+ */
+async function buildSystemUserContext(
+  tenantId: string
+): Promise<ManifestUserContext> {
+  const adminUser = await database.user.findFirst({
+    where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    select: { id: true, role: true },
+  });
+
+  return {
+    id: adminUser?.id ?? "system",
+    tenantId,
+    role: adminUser?.role ?? "admin",
+  };
+}
 
 /**
  * GET /api/public/proposals-draft/[token]
@@ -25,55 +55,58 @@ export async function GET(
     const { token } = await params;
 
     if (!token) {
-      return NextResponse.json({ message: "Invalid proposal link" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid proposal link" },
+        { status: 400 }
+      );
     }
 
-    // Find proposal by magic token
+    // Read path (constitution §10): magicToken is globally unique; all
+    // follow-up operations are scoped by the row's tenantId.
     const proposal = await database.proposalDraft.findFirst({
       where: {
         magicToken: token,
         deletedAt: null,
       },
-      include: {
-        draft: {
-          include: {
-            session: {
-              select: {
-                id: true,
-                startedAt: true,
-                endedAt: true,
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!proposal) {
-      return NextResponse.json({ message: "Proposal not found or link has expired" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Proposal not found or link has expired" },
+        { status: 404 }
+      );
     }
 
     // Check if proposal has expired
-    if (proposal.magicTokenExpiresAt && new Date(proposal.magicTokenExpiresAt) < new Date()) {
+    if (
+      proposal.magicTokenExpiresAt &&
+      new Date(proposal.magicTokenExpiresAt) < new Date()
+    ) {
       return NextResponse.json(
         { message: "This proposal link has expired", expired: true },
         { status: 410 }
       );
     }
 
-    // Update viewedAt timestamp if this is the first view
-    if (!proposal.viewedAt) {
-      await database.proposalDraft.update({
-        where: {
-          tenantId_id: {
-            tenantId: proposal.tenantId,
-            id: proposal.id,
-          },
-        },
-        data: {
-          viewedAt: new Date(),
-        },
+    // Governed write: record the first view via Manifest runtime
+    // (sent -> viewed transition). Non-fatal — the proposal is still served.
+    if (
+      !proposal.viewedAt &&
+      (proposal.status === "sent" || proposal.status === "viewed")
+    ) {
+      const actor = await buildSystemUserContext(proposal.tenantId);
+      const viewResponse = await runCommand({
+        entity: "ProposalDraft",
+        command: "recordView",
+        body: { id: proposal.id, tenantId: proposal.tenantId },
+        user: { id: actor.id, tenantId: actor.tenantId, role: actor.role },
       });
+      if (!viewResponse.ok) {
+        log.error(
+          "ProposalDraft.recordView failed for public view:",
+          await viewResponse.text()
+        );
+      }
     }
 
     return NextResponse.json({
@@ -107,7 +140,7 @@ export async function GET(
 }
 
 /**
- * POST /api/public/proposals-draft/[token]/respond
+ * POST /api/public/proposals-draft/[token]
  * Allow client to respond to proposal (approve/request changes)
  */
 export async function POST(
@@ -118,7 +151,10 @@ export async function POST(
     const { token } = await params;
 
     if (!token) {
-      return NextResponse.json({ message: "Invalid proposal link" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid proposal link" },
+        { status: 400 }
+      );
     }
 
     const body = await request.json();
@@ -136,7 +172,15 @@ export async function POST(
       );
     }
 
-    // Find proposal
+    if (action === "request_changes" && !notes) {
+      // ProposalDraft.requestChanges requires a non-empty clientMessage
+      return NextResponse.json(
+        { message: "Please describe the changes you would like" },
+        { status: 400 }
+      );
+    }
+
+    // Read path: find proposal by magic token
     const proposal = await database.proposalDraft.findFirst({
       where: {
         magicToken: token,
@@ -156,10 +200,13 @@ export async function POST(
       proposal.magicTokenExpiresAt &&
       new Date(proposal.magicTokenExpiresAt) < new Date()
     ) {
-      return NextResponse.json({ message: "This proposal has expired" }, { status: 410 });
+      return NextResponse.json(
+        { message: "This proposal has expired" },
+        { status: 410 }
+      );
     }
 
-    // Check if proposal can be responded to
+    // Pre-validation; the Manifest guards enforce the same transitions.
     if (proposal.status === "approved") {
       return NextResponse.json(
         { message: "This proposal has already been approved" },
@@ -167,24 +214,35 @@ export async function POST(
       );
     }
 
-    // Update proposal status
-    const now = new Date();
-    const updateData =
-      action === "approve"
-        ? { status: "approved" as const, respondedAt: now }
-        : { status: "change_requested" as const, respondedAt: now };
-
-    const updatedProposal = await database.proposalDraft.update({
-      where: {
-        tenantId_id: {
-          tenantId: proposal.tenantId,
-          id: proposal.id,
-        },
+    // Governed write: approve / requestChanges via Manifest runtime with the
+    // tenant's system actor (no Clerk identity on this public surface).
+    const actor = await buildSystemUserContext(proposal.tenantId);
+    const commandResponse = await runCommand({
+      entity: "ProposalDraft",
+      command: action === "approve" ? "approve" : "requestChanges",
+      body: {
+        id: proposal.id,
+        tenantId: proposal.tenantId,
+        clientMessage: notes ?? "",
       },
-      data: updateData,
+      user: { id: actor.id, tenantId: actor.tenantId, role: actor.role },
     });
 
-    // Record action
+    if (!commandResponse.ok) {
+      log.error(
+        "Failed to record public proposal response via Manifest:",
+        await commandResponse.text()
+      );
+      return NextResponse.json(
+        { message: "Unable to record your response to this proposal" },
+        { status: commandResponse.status >= 500 ? 500 : 409 }
+      );
+    }
+
+    // Documented bypass: ProposalAction has no manifest entity (yet). The
+    // audit-trail row is written only inside this parent flow, tenant-scoped
+    // via the proposal row. See manifest/governance/bypasses.json.
+    const now = new Date();
     await database.proposalAction.create({
       data: {
         proposalId: proposal.id,
@@ -204,8 +262,8 @@ export async function POST(
       message:
         action === "approve"
           ? "Thank you for approving this proposal!"
-          : "Thank you for your feedback. We'll be in in touch soon.",
-      proposalStatus: updatedProposal.status,
+          : "Thank you for your feedback. We'll be in touch soon.",
+      proposalStatus: action === "approve" ? "approved" : "change_requested",
     });
   } catch (error) {
     captureException(error);

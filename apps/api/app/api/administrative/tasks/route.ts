@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { AdminTaskFiltersSchema } from "./validation";
 
 export const runtime = "nodejs";
@@ -69,15 +69,21 @@ export async function GET(request: Request) {
  * POST /api/administrative/tasks
  * Create a new admin task via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "AdminTask",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
-      ...body,
-      createdBy: ctx.userId,
-      status: body.status || "backlog",
-      priority: body.priority || "medium",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "AdminTask",
+    command: "create",
+    body: {
+      ...rawBody,
+      createdBy: user.id,
+      status: (rawBody.status as string) || "backlog",
+      priority: (rawBody.priority as string) || "medium",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

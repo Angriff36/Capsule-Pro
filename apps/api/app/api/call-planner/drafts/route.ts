@@ -2,9 +2,9 @@
  * AI Call Planner Drafts API Endpoints
  *
  * GET    /api/call-planner/drafts        - List drafts
- * GET    /api/call-planner/drafts/[id]   - Get draft details
- * PATCH  /api/call-planner/drafts/[id]   - Update draft
- * POST   /api/call-planner/drafts/[id]/generate-proposal - Generate proposal from draft
+ *
+ * Read-only route: direct tenant-scoped Prisma reads (constitution §10).
+ * The schema has no Prisma relations — session rows are fetched by flat key.
  */
 
 import { auth } from "@repo/auth/server";
@@ -15,7 +15,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-type Params = Promise<{ id?: string }>;
+export const runtime = "nodejs";
 
 /**
  * GET /api/call-planner/drafts
@@ -36,63 +36,73 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = (page - 1) * limit;
 
-    const whereClause: Record<string, unknown> = {
-      AND: [{ tenantId }, { deletedAt: null }],
+    const whereClause = {
+      AND: [
+        { tenantId },
+        { deletedAt: null },
+        ...(status ? [{ status }] : []),
+      ],
     };
 
-    if (status) {
-      whereClause.AND = [
-        ...(whereClause.AND as Record<string, unknown>[]),
-        { status },
-      ];
-    }
+    const [drafts, totalCount] = await Promise.all([
+      database.eventPlanningDraft.findMany({
+        where: whereClause,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          tenantId: true,
+          sessionId: true,
+          userId: true,
+          status: true,
+          clientName: true,
+          eventType: true,
+          eventDate: true,
+          eventTime: true,
+          guestCount: true,
+          guestCountMin: true,
+          guestCountMax: true,
+          venuePreference: true,
+          venueId: true,
+          serviceStyle: true,
+          dietaryRestrictions: true,
+          budgetMin: true,
+          budgetMax: true,
+          overallConfidence: true,
+          proposalId: true,
+          expiresAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      database.eventPlanningDraft.count({ where: whereClause }),
+    ]);
 
-    const drafts = await database.eventPlanningDraft.findMany({
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" }],
-      take: limit,
-      skip: offset,
-      select: {
-        id: true,
-        tenantId: true,
-        sessionId: true,
-        userId: true,
-        status: true,
-        clientName: true,
-        eventType: true,
-        eventDate: true,
-        eventTime: true,
-        guestCount: true,
-        guestCountMin: true,
-        guestCountMax: true,
-        venuePreference: true,
-        venueId: true,
-        serviceStyle: true,
-        dietaryRestrictions: true,
-        budgetMin: true,
-        budgetMax: true,
-        overallConfidence: true,
-        proposalId: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-        session: {
+    // No Prisma relations in this schema — resolve sessions by flat key.
+    const sessionIds = [...new Set(drafts.map((draft) => draft.sessionId))];
+    const sessions = sessionIds.length
+      ? await database.callPlanningSession.findMany({
+          where: {
+            tenantId,
+            id: { in: sessionIds },
+            deletedAt: null,
+          },
           select: {
             id: true,
             status: true,
             startedAt: true,
             endedAt: true,
           },
-        },
-      },
-    });
-
-    const totalCount = await database.eventPlanningDraft.count({
-      where: whereClause,
-    });
+        })
+      : [];
+    const sessionById = new Map(sessions.map((s) => [s.id, s]));
 
     return NextResponse.json({
-      drafts,
+      drafts: drafts.map((draft) => ({
+        ...draft,
+        session: sessionById.get(draft.sessionId) ?? null,
+      })),
       pagination: {
         page,
         limit,

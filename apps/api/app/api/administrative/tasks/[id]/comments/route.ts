@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { runCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -29,21 +29,31 @@ export async function GET(
   return NextResponse.json({ data: comments });
 }
 
+/**
+ * POST /api/administrative/tasks/[id]/comments
+ * Create a comment via the governed AdminTaskComment.create command.
+ * Author identity is server-resolved, never trusted from the client.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
-  return executeManifestCommand(request, {
-    entityName: "AdminTaskComment",
-    commandName: "create",
-    transformBody: (body) => ({
-      ...body,
+  return runCommand({
+    entity: "AdminTaskComment",
+    command: "create",
+    body: {
+      text: rawBody.text,
       taskId: id,
       authorId: user.id,
       authorName: `${user.firstName} ${user.lastName}`.trim(),
-    }),
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

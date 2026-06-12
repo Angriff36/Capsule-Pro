@@ -2,14 +2,17 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
+// Column statuses MUST match the AdminTask state machine
+// (manifest/source/core/admin-task-rules.manifest): backlog / in_progress /
+// review / done (+ cancelled, never shown as a column). The legacy "todo"
+// status no longer exists.
 const DEFAULT_COLUMNS = [
   { status: "backlog", title: "Backlog", color: "neutral", wipLimit: 0 },
-  { status: "todo", title: "To Do", color: "blue", wipLimit: 0 },
   {
     status: "in_progress",
     title: "In Progress",
@@ -20,6 +23,14 @@ const DEFAULT_COLUMNS = [
   { status: "done", title: "Done", color: "green", wipLimit: 0 },
 ];
 
+/**
+ * GET /api/administrative/board-config
+ *
+ * Read-only: returns the tenant's board config, or an unpersisted default
+ * (id: "") when none exists. GET must not write — creating a real config row
+ * is the governed POST (BoardConfig.create). This mirrors the kanban page's
+ * server-side fallback (apps/app .../kanban/page.tsx).
+ */
 export async function GET(_request: Request) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -28,15 +39,18 @@ export async function GET(_request: Request) {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  let config = await database.boardConfig.findFirst({
-    where: { tenantId },
+  const config = await database.boardConfig.findFirst({
+    where: { tenantId, deletedAt: null },
+    orderBy: { createdAt: "desc" },
   });
 
   if (!config) {
-    config = await database.boardConfig.create({
+    return NextResponse.json({
       data: {
-        tenantId,
+        id: "",
+        name: "Default Board",
         columns: DEFAULT_COLUMNS,
+        settings: {},
       },
     });
   }
@@ -44,13 +58,25 @@ export async function GET(_request: Request) {
   return NextResponse.json({ data: config });
 }
 
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "BoardConfig",
-    commandName: "create",
-    transformBody: (body) => ({
-      ...body,
-      columns: body.columns || DEFAULT_COLUMNS,
-    }),
+/**
+ * POST /api/administrative/board-config
+ * Create the board config via the governed BoardConfig.create command.
+ */
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runCommand({
+    entity: "BoardConfig",
+    command: "create",
+    body: {
+      name: (rawBody.name as string) || "Default Board",
+      columns: rawBody.columns ?? DEFAULT_COLUMNS,
+      settings: rawBody.settings ?? {},
+      createdBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

@@ -2,10 +2,10 @@
  * AI Call Planner API Endpoints
  *
  * POST   /api/call-planner/transcript     - Process transcript and create draft
- * GET    /api/call-planner/drafts        - List drafts
- * GET    /api/call-planner/drafts/[id]   - Get draft details
- * PATCH  /api/call-planner/drafts/[id]   - Update draft
- * POST   /api/call-planner/proposals      - Generate proposal from draft
+ *
+ * Governed writes (CallPlanningSession, EventPlanningDraft) execute via
+ * Manifest runtime commands. ExtractedDetail rows are a documented bypass
+ * (child rows of the extraction pipeline — see manifest/governance/bypasses.json).
  */
 
 import { auth } from "@repo/auth/server";
@@ -14,10 +14,21 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
-import { extractEventDetails, type ExtractedEventDetails } from "../lib/transcript-extractor";
-import { Prisma } from "@repo/database";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runCommand } from "@/lib/manifest/execute-command";
+import { extractEventDetails } from "../lib/transcript-extractor";
+
+export const runtime = "nodejs";
+
+/** Parse the domain result out of a runCommand success envelope. */
+async function readCommandResult(
+  response: Response
+): Promise<Record<string, unknown>> {
+  const payload = (await response.json()) as {
+    result?: Record<string, unknown>;
+  };
+  return payload.result ?? {};
+}
 
 /**
  * POST /api/call-planner/transcript
@@ -25,89 +36,164 @@ import { Prisma } from "@repo/database";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!orgId || !userId) {
+    const { orgId, userId: clerkUserId } = await auth();
+    if (!orgId || !clerkUserId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+    const user = await resolveCurrentUser(request);
     const body = await request.json();
 
-    const { transcript, sourceType = "manual", sessionId } = body as {
+    const { transcript, sourceType = "manual" } = body as {
       transcript?: string;
       sourceType?: string;
-      sessionId?: string;
     };
 
     if (!transcript || typeof transcript !== "string") {
-      return NextResponse.json({ message: "Transcript is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Transcript is required" },
+        { status: 400 }
+      );
     }
 
     if (sourceType && !["manual", "ringcentral", "upload"].includes(sourceType)) {
-      return NextResponse.json({ message: "Invalid source type" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid source type" },
+        { status: 400 }
+      );
     }
 
-    // Create a new call planning session
-    const session = await database.callPlanningSession.create({
-      data: {
-        tenantId,
-        userId,
-        status: "active",
+    // Governed write: create the call planning session via Manifest runtime
+    const sessionResponse = await runCommand({
+      entity: "CallPlanningSession",
+      command: "create",
+      body: {
+        userId: user.id,
         sourceType: sourceType || "manual",
         transcriptText: transcript,
-        startedAt: new Date(),
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+    if (!sessionResponse.ok) {
+      return sessionResponse;
+    }
+    const session = await readCommandResult(sessionResponse);
+    const sessionId = typeof session.id === "string" ? session.id : "";
+    if (!sessionId) {
+      return NextResponse.json(
+        { message: "Session creation returned no id" },
+        { status: 500 }
+      );
+    }
 
-    // Extract event details from transcript
+    // Extract event details from transcript (pure heuristics, no DB writes)
     const extractedDetails = extractEventDetails(transcript);
 
-    // Create event planning draft
-    const draft = await database.eventPlanningDraft.create({
-      data: {
-        tenantId,
-        sessionId: session.id,
-        userId,
-        status: "active",
-        clientName: extractedDetails.clientName || null,
-        eventType: extractedDetails.eventType || null,
-        eventDate: extractedDetails.eventDate || null,
-        eventTime: extractedDetails.eventTime || null,
-        guestCount: extractedDetails.guestCount || null,
-        guestCountMin: extractedDetails.guestCountMin || null,
-        guestCountMax: extractedDetails.guestCountMax || null,
-        venuePreference: extractedDetails.venuePreference || null,
-        serviceStyle: extractedDetails.serviceStyle || null,
-        dietaryRestrictions: extractedDetails.dietaryRestrictions || null,
-        menuPreferences: (extractedDetails.menuPreferences as unknown as Prisma.InputJsonValue) || Prisma.JsonNull,
-        budgetMin: extractedDetails.budgetMin || null,
-        budgetMax: extractedDetails.budgetMax || null,
-        customItems: (extractedDetails.customItems as unknown as Prisma.InputJsonValue) || Prisma.JsonNull,
-        timelineNotes: extractedDetails.timelineNotes || null,
-        openQuestions: (extractedDetails.openQuestions as unknown as Prisma.InputJsonValue) || Prisma.JsonNull,
-        specialNotes: extractedDetails.specialNotes || null,
-        aiSummary: extractedDetails.aiSummary || null,
-        overallConfidence: extractedDetails.overallConfidence || null,
-      },
-    });
+    // Governed write: create the event planning draft via Manifest runtime.
+    // The create body is the authoritative instance seed, so extracted fields
+    // are passed alongside the declared (sessionId, userId) params.
+    const draftBody: Record<string, unknown> = {
+      sessionId,
+      userId: user.id,
+    };
+    if (extractedDetails.clientName) {
+      draftBody.clientName = extractedDetails.clientName;
+    }
+    if (extractedDetails.eventType) {
+      draftBody.eventType = extractedDetails.eventType;
+    }
+    if (extractedDetails.eventDate) {
+      // Datetime command params are epoch-ms numbers
+      draftBody.eventDate = extractedDetails.eventDate.getTime();
+    }
+    if (extractedDetails.eventTime) {
+      draftBody.eventTime = extractedDetails.eventTime;
+    }
+    if (extractedDetails.guestCount !== undefined) {
+      draftBody.guestCount = extractedDetails.guestCount;
+    }
+    if (extractedDetails.guestCountMin !== undefined) {
+      draftBody.guestCountMin = extractedDetails.guestCountMin;
+    }
+    if (extractedDetails.guestCountMax !== undefined) {
+      draftBody.guestCountMax = extractedDetails.guestCountMax;
+    }
+    if (extractedDetails.venuePreference) {
+      draftBody.venuePreference = extractedDetails.venuePreference;
+    }
+    if (extractedDetails.serviceStyle) {
+      draftBody.serviceStyle = extractedDetails.serviceStyle;
+    }
+    if (extractedDetails.dietaryRestrictions) {
+      draftBody.dietaryRestrictions = extractedDetails.dietaryRestrictions;
+    }
+    if (extractedDetails.budgetMin !== undefined) {
+      draftBody.budgetMin = extractedDetails.budgetMin;
+    }
+    if (extractedDetails.budgetMax !== undefined) {
+      draftBody.budgetMax = extractedDetails.budgetMax;
+    }
+    if (extractedDetails.timelineNotes) {
+      draftBody.timelineNotes = extractedDetails.timelineNotes;
+    }
+    if (extractedDetails.openQuestions?.length) {
+      draftBody.openQuestions = extractedDetails.openQuestions;
+    }
+    if (extractedDetails.specialNotes) {
+      draftBody.specialNotes = extractedDetails.specialNotes;
+    }
+    if (extractedDetails.aiSummary) {
+      draftBody.aiSummary = extractedDetails.aiSummary;
+    }
+    if (extractedDetails.overallConfidence !== undefined) {
+      draftBody.overallConfidence = extractedDetails.overallConfidence;
+    }
 
-    // Store extracted details
+    const draftResponse = await runCommand({
+      entity: "EventPlanningDraft",
+      command: "create",
+      body: draftBody,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!draftResponse.ok) {
+      // Best-effort: abandon the dangling session so it doesn't stay active
+      await runCommand({
+        entity: "CallPlanningSession",
+        command: "abandon",
+        body: { id: sessionId },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+      return draftResponse;
+    }
+    const draft = await readCommandResult(draftResponse);
+    const draftId = typeof draft.id === "string" ? draft.id : "";
+    if (!draftId) {
+      return NextResponse.json(
+        { message: "Draft creation returned no id" },
+        { status: 500 }
+      );
+    }
+
+    // Documented bypass: ExtractedDetail has no manifest entity (yet). These
+    // child rows are written only inside this parent flow, tenant-scoped.
+    // See manifest/governance/bypasses.json (entity: ExtractedDetail).
     if (extractedDetails.details && extractedDetails.details.length > 0) {
       await database.extractedDetail.createMany({
         data: extractedDetails.details.map((detail) => ({
-          tenantId,
-          sessionId: session.id,
-          draftId: draft.id,
+          tenantId: user.tenantId,
+          sessionId,
+          draftId,
           fieldName: detail.fieldName,
           rawValue: detail.rawValue,
           normalizedValue:
             typeof detail.normalizedValue === "string"
               ? detail.normalizedValue
               : detail.normalizedValue instanceof Date
-              ? detail.normalizedValue.toISOString()
-              : detail.normalizedValue === null
-              ? null
-              : String(detail.normalizedValue),
+                ? detail.normalizedValue.toISOString()
+                : detail.normalizedValue === null ||
+                    detail.normalizedValue === undefined
+                  ? null
+                  : String(detail.normalizedValue),
           confidence: detail.confidence || "medium",
           sourceQuote: detail.sourceQuote || null,
           sourceTimestamp: detail.sourceTimestamp || null,
@@ -117,24 +203,25 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Mark session as complete
-    await database.callPlanningSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: session.id,
-        },
-      },
-      data: {
-        status: "completed",
-        endedAt: new Date(),
-      },
+    // Governed write: mark session as complete via Manifest runtime.
+    // Non-fatal — the draft already exists; surface the failure in logs.
+    const completeResponse = await runCommand({
+      entity: "CallPlanningSession",
+      command: "complete",
+      body: { id: sessionId },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+    if (!completeResponse.ok) {
+      log.error(
+        "CallPlanningSession.complete failed after transcript processing:",
+        await completeResponse.text()
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      sessionId: session.id,
-      draftId: draft.id,
+      sessionId,
+      draftId,
       extractedDetails: extractedDetails.details,
     });
   } catch (error) {

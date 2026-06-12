@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -28,17 +28,33 @@ export async function GET(
   return NextResponse.json({ data: attachments });
 }
 
+/**
+ * POST /api/administrative/tasks/[id]/attachments
+ * Create an attachment via the governed AdminTaskAttachment.create command.
+ * Uploader identity is server-resolved, never trusted from the client.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "AdminTaskAttachment",
-    commandName: "create",
-    transformBody: (body) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+
+  return runCommand({
+    entity: "AdminTaskAttachment",
+    command: "create",
+    body: {
+      fileName: rawBody.fileName,
+      fileUrl: rawBody.fileUrl,
+      fileSize: rawBody.fileSize ?? 0,
+      mimeType: rawBody.mimeType ?? "",
       taskId: id,
-    }),
+      uploadedBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
