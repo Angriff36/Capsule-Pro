@@ -204,7 +204,7 @@ export const RecipeCostDetailClient = ({
     );
   }
 
-  if (error || !costData) {
+  if (error || !costData?.recipe) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">

@@ -276,7 +276,7 @@ export async function POST(
     });
 
     // Update RecipeVersion costs via governed Manifest command
-    return runManifestCommand({
+    const commandResponse = await runManifestCommand({
       entity: "RecipeVersion",
       command: "updateCosts",
       body: {
@@ -287,6 +287,14 @@ export async function POST(
       },
       user,
     });
+
+    if (!commandResponse.ok) {
+      return commandResponse;
+    }
+
+    // Client contract (use-recipe-costing.recalculateRecipeCost) expects the
+    // full RecipeCostBreakdown — same shape as GET, not the command envelope.
+    return manifestSuccessResponse(costData.breakdown);
   } catch (error) {
     log.error("[recipes/cost] Error:", error);
     captureException(error);
