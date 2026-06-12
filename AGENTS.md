@@ -5,6 +5,14 @@
 Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`.
 Your training data is outdated — the docs are the source of truth.
 
+## GraphRAG rule
+
+For architecture/debugging tasks, run:
+
+`powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/graphrag.ps1 "<task question>"`
+
+Use the output to pick likely files, but prefer implementation files over package.json, generated files, and broad domain matches.
+
 <!-- END:nextjs-agent-rules -->
 
 You must also read the constitution.md and the planning with files documentation at "C:\Projects\capsule-pro\manifest\IMPLEMENTATION_PROMPT.md"
@@ -35,7 +43,7 @@ mcporter call --http-url http://127.0.0.1:2221/_next/mcp --allow-http 'next-devt
 
 Available tools: `get_project_metadata`, `get_errors`, `get_page_metadata`, `get_logs`, `get_server_action_by_id`, `get_routes`
 
-### Manifest MCP (stdio, `@angriff36/manifest@1.0.32+`)
+### Manifest MCP (stdio, `@angriff36/manifest@2.4.2+`)
 
 Project config: `.cursor/mcp.json` registers three stdio servers:
 

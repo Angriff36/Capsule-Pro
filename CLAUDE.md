@@ -259,10 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 85% context — saved before compacting]
-Files (3):
-  apps/app/__tests__/api/command-board/agent-loop-context-budget.test.ts (create)
-  apps/app/app/api/command-board/chat/agent-loop.ts (edit)
-  apps/app/__tests__/api/command-board/agent-loop-followup-intent.test.ts (create)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===
