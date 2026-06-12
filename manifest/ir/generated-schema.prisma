@@ -376,6 +376,76 @@ model AiEventSetupSession {
 // CREATE POLICY tenant_isolation ON "AiEventSetupSession"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
+model CallPlanningSession {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  userId String @map("user_id")
+  status String? @default("active")
+  sourceType String? @map("source_type") @default("manual")
+  transcriptText String? @map("transcript_text") @db.Text @default("")
+  metadata String? @default("{}")
+  startedAt DateTime? @map("started_at") @db.Timestamptz(6)
+  endedAt DateTime? @map("ended_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("call_planning_sessions")
+  @@id([tenantId, id])
+  @@schema("tenant_crm")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "call_planning_sessions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "call_planning_sessions"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model EventPlanningDraft {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  sessionId String @map("session_id") @db.Uuid
+  userId String @map("user_id")
+  status String? @default("active")
+  clientName String? @map("client_name") @default("")
+  clientContactId String? @map("client_contact_id") @db.Uuid @default("")
+  eventType String? @map("event_type") @default("")
+  eventDate DateTime? @map("event_date") @db.Date
+  eventTime String? @map("event_time") @default("")
+  guestCount Int? @map("guest_count")
+  guestCountMin Int? @map("guest_count_min")
+  guestCountMax Int? @map("guest_count_max") @default(0)
+  venuePreference String? @map("venue_preference") @default("")
+  venueId String? @map("venue_id") @db.Uuid @default("")
+  serviceStyle String? @map("service_style") @default("")
+  dietaryRestrictions String? @map("dietary_restrictions") @default("")
+  menuPreferences String? @map("menu_preferences") @default("{}")
+  budgetMin Decimal? @map("budget_min") @db.Decimal(12, 2)
+  budgetMax Decimal? @map("budget_max") @db.Decimal(12, 2) @default(0)
+  packageIds String[] @map("package_ids") @default([])
+  addOnIds String[] @map("add_on_ids") @default([])
+  customItems String? @map("custom_items") @default("{}")
+  timelineNotes String? @map("timeline_notes") @default("")
+  openQuestions String[] @map("open_questions") @default([])
+  specialNotes String? @map("special_notes") @default("")
+  aiSummary String? @map("ai_summary") @db.Text @default("")
+  overallConfidence Decimal? @map("overall_confidence") @db.Decimal(3, 2)
+  convertedEventId String? @map("converted_event_id") @db.Uuid @default("")
+  proposalId String? @map("proposal_id") @db.Uuid @default("")
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("event_planning_drafts")
+  @@id([tenantId, id])
+  @@schema("tenant_crm")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "event_planning_drafts" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_planning_drafts"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
 model KnowledgeBaseEntry {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
@@ -404,6 +474,50 @@ model KnowledgeBaseEntry {
 // CREATE POLICY tenant_isolation ON "knowledge_base_entries"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
+model ProposalDraft {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  draftId String? @map("draft_id") @db.Uuid @default("")
+  userId String? @map("user_id") @default("")
+  status String? @default("draft")
+  version Int? @default(1)
+  title String? @default("")
+  clientName String? @map("client_name") @default("")
+  clientEmail String? @map("client_email") @default("")
+  clientPhone String? @map("client_phone") @default("")
+  eventSummary String? @map("event_summary") @default("{}")
+  menuSections String? @map("menu_sections") @default("{}")
+  servicePlan String? @map("service_plan") @default("{}")
+  pricingBreakdown String? @map("pricing_breakdown") @default("{}")
+  timeline String? @default("{}")
+  upgradeOptions String? @map("upgrade_options") @default("{}")
+  visionSummary String? @map("vision_summary") @db.Text @default("")
+  notes String? @default("")
+  nextSteps String? @map("next_steps") @default("")
+  templateId String? @map("template_id") @db.Uuid @default("")
+  magicToken String? @map("magic_token") @default("")
+  magicTokenExpiresAt DateTime? @map("magic_token_expires_at") @db.Timestamptz(6)
+  sentAt DateTime? @map("sent_at") @db.Timestamptz(6)
+  sentVia String? @map("sent_via") @default("")
+  viewedAt DateTime? @map("viewed_at") @db.Timestamptz(6)
+  respondedAt DateTime? @map("responded_at") @db.Timestamptz(6)
+  depositAmount Decimal? @map("deposit_amount") @db.Decimal(12, 2)
+  depositPaid Boolean? @map("deposit_paid") @default(false)
+  htmlContent String? @map("html_content") @db.Text @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("proposal_drafts")
+  @@id([tenantId, id])
+  @@schema("tenant_crm")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "proposal_drafts" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "proposal_drafts"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
 model AdminChatParticipant {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
@@ -429,6 +543,98 @@ model AdminChatParticipant {
 // CREATE POLICY tenant_isolation ON "admin_chat_participants"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
+model AdminTaskAttachment {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  taskId String? @map("task_id") @db.Uuid @default("")
+  fileName String? @map("file_name") @default("")
+  fileUrl String? @map("file_url") @default("")
+  fileSize Int? @map("file_size")
+  mimeType String? @map("mime_type") @default("")
+  uploadedBy String? @map("uploaded_by") @db.Uuid @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("admin_task_attachments")
+  @@id([tenantId, id])
+  @@schema("tenant_admin")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "admin_task_attachments" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "admin_task_attachments"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model AdminTaskComment {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  taskId String? @map("task_id") @db.Uuid @default("")
+  authorId String? @map("author_id") @db.Uuid @default("")
+  authorName String? @map("author_name") @default("")
+  text String? @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("admin_task_comments")
+  @@id([tenantId, id])
+  @@schema("tenant_admin")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "admin_task_comments" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "admin_task_comments"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model AdminTaskDevMeta {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  taskId String? @map("task_id") @db.Uuid @default("")
+  severity String? @default("medium")
+  environment String? @default("")
+  stepsToRepro String? @map("steps_to_repro") @default("")
+  expectedResult String? @map("expected_result") @default("")
+  actualResult String? @map("actual_result") @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("admin_task_dev_meta")
+  @@id([tenantId, id])
+  @@index([tenantId, taskId])
+  @@schema("tenant_admin")
+
+  @@unique([tenantId, taskId])
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "admin_task_dev_meta" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "admin_task_dev_meta"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model AdminTaskFileRef {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  taskId String? @map("task_id") @db.Uuid @default("")
+  refType String? @map("ref_type") @default("")
+  refId String? @map("ref_id") @db.Uuid @default("")
+  refLabel String? @map("ref_label") @default("")
+  linkedBy String? @map("linked_by") @db.Uuid @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("admin_task_file_refs")
+  @@id([tenantId, id])
+  @@schema("tenant_admin")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "admin_task_file_refs" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "admin_task_file_refs"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
 model AdminTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
@@ -437,9 +643,14 @@ model AdminTask {
   status String? @default("backlog")
   priority String? @default("medium")
   category String? @default("")
+  position Int?
+  labels String[] @default([])
+  estimatedHours Decimal? @map("estimated_hours") @db.Decimal(6, 2)
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
   dueDate DateTime? @map("due_date") @db.Date
   createdBy String? @map("created_by") @db.Uuid @default("")
+  sourceType String? @map("source_type") @default("")
+  sourceId String? @map("source_id") @db.Uuid @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -534,6 +745,27 @@ model BankAccount {
 // -- RLS policy (apply manually or via migration):
 // ALTER TABLE "BankAccount" ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON "BankAccount"
+//   USING ("tenantId" = current_setting('app.tenant_id'));
+
+model BoardConfig {
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  name String? @default("Default Board")
+  columns String? @default("[]")
+  settings String? @default("{}")
+  createdBy String? @map("created_by") @db.Uuid @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
+
+  @@map("board_configs")
+  @@id([tenantId, id])
+  @@schema("tenant_admin")
+}
+
+// -- RLS policy (apply manually or via migration):
+// ALTER TABLE "board_configs" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "board_configs"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model ChartOfAccount {
@@ -7545,4 +7777,59 @@ model ProviderSync {
   @@index([tenantId, status])
   @@map("provider_syncs")
   @@schema("tenant_admin")
+}
+
+model AdminTaskActivity {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId    String   @map("task_id") @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  actorName String   @map("actor_name")
+  action    String
+  details   Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, taskId], map: "admin_task_activity_task_idx")
+  @@map("admin_task_activity")
+  @@schema("tenant_admin")
+}
+
+model ExtractedDetail {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId       String    @map("session_id") @db.Uuid
+  draftId         String    @map("draft_id") @db.Uuid
+  fieldName       String    @map("field_name")
+  rawValue        String?   @map("raw_value") @db.Text
+  normalizedValue String?   @map("normalized_value")
+  confidence      String    @default("medium")
+  sourceQuote     String?   @map("source_quote") @db.Text
+  sourceTimestamp Int?      @map("source_timestamp")
+  status          String    @default("pending")
+  catalogMatchType String?  @map("catalog_match_type")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, draftId], map: "extracted_details_draft_idx")
+  @@index([tenantId, sessionId], map: "extracted_details_session_idx")
+  @@map("extracted_details")
+  @@schema("tenant_crm")
+}
+
+model ProposalAction {
+  tenantId   String   @map("tenant_id") @db.Uuid
+  id         String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposalId String   @map("proposal_id") @db.Uuid
+  action     String
+  message    String?  @db.Text
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, proposalId], map: "proposal_actions_proposal_idx")
+  @@map("proposal_actions")
+  @@schema("tenant_crm")
 }

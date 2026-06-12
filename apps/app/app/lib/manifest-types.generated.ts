@@ -25,6 +25,58 @@ export interface AiEventSetupSession {
   updatedAt: string;
 }
 
+export interface CallPlanningSession {
+  id: string;
+  tenantId: string;
+  userId: string;
+  status?: string;
+  sourceType?: string;
+  transcriptText?: string;
+  metadata?: string;
+  startedAt: string;
+  endedAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventPlanningDraft {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  userId: string;
+  status?: string;
+  clientName?: string;
+  clientContactId?: string;
+  eventType?: string;
+  eventDate: string;
+  eventTime?: string;
+  guestCount?: number;
+  guestCountMin?: number;
+  guestCountMax?: number;
+  venuePreference?: string;
+  venueId?: string;
+  serviceStyle?: string;
+  dietaryRestrictions?: string;
+  menuPreferences?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  packageIds?: unknown[];
+  addOnIds?: unknown[];
+  customItems?: string;
+  timelineNotes?: string;
+  openQuestions?: unknown[];
+  specialNotes?: string;
+  aiSummary?: string;
+  overallConfidence?: number;
+  convertedEventId?: string;
+  proposalId?: string;
+  expiresAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface KnowledgeBaseEntry {
   id: string;
   tenantId: string;
@@ -36,6 +88,41 @@ export interface KnowledgeBaseEntry {
   authorId?: string;
   publishedAt: string;
   viewCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProposalDraft {
+  id: string;
+  tenantId: string;
+  draftId?: string;
+  userId?: string;
+  status?: string;
+  version?: number;
+  title?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  eventSummary?: string;
+  menuSections?: string;
+  servicePlan?: string;
+  pricingBreakdown?: string;
+  timeline?: string;
+  upgradeOptions?: string;
+  visionSummary?: string;
+  notes?: string;
+  nextSteps?: string;
+  templateId?: string;
+  magicToken?: string;
+  magicTokenExpiresAt: string;
+  sentAt: string;
+  sentVia?: string;
+  viewedAt: string;
+  respondedAt: string;
+  depositAmount?: number;
+  depositPaid?: boolean;
+  htmlContent?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +139,59 @@ export interface AdminChatParticipant {
   updatedAt: string;
 }
 
+export interface AdminTaskAttachment {
+  id: string;
+  tenantId: string;
+  taskId?: string;
+  fileName?: string;
+  fileUrl?: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedBy?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminTaskComment {
+  id: string;
+  tenantId: string;
+  taskId?: string;
+  authorId?: string;
+  authorName?: string;
+  text?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminTaskDevMeta {
+  id: string;
+  tenantId: string;
+  taskId?: string;
+  severity?: string;
+  environment?: string;
+  stepsToRepro?: string;
+  expectedResult?: string;
+  actualResult?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminTaskFileRef {
+  id: string;
+  tenantId: string;
+  taskId?: string;
+  refType?: string;
+  refId?: string;
+  refLabel?: string;
+  linkedBy?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AdminTask {
   id: string;
   tenantId: string;
@@ -60,9 +200,14 @@ export interface AdminTask {
   status?: string;
   priority?: string;
   category?: string;
+  position?: number;
+  labels?: unknown[];
+  estimatedHours?: number;
   assignedTo?: string;
   dueDate: string;
   createdBy?: string;
+  sourceType?: string;
+  sourceId?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -114,6 +259,18 @@ export interface BankAccount {
   verifiedAt: string;
   verificationFailedAt: string;
   verificationFailureReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoardConfig {
+  id: string;
+  tenantId: string;
+  name?: string;
+  columns?: string;
+  settings?: string;
+  createdBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }

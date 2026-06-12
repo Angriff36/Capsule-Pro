@@ -649,6 +649,107 @@
     "expiresOn": "2026-09-01"
   },
   {
+    "path": "app/api/administrative/tasks/[id]/move/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommand → AdminTask.moveCard/reorder; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/comments/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskComment.create; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/comments/[commentId]/route.ts",
+    "methods": [
+      "DELETE"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskComment.softDelete; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/attachments/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskAttachment.create; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/attachments/[attachmentId]/route.ts",
+    "methods": [
+      "DELETE"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskAttachment.softDelete; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/file-refs/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskFileRef.create; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/file-refs/[refId]/route.ts",
+    "methods": [
+      "DELETE"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskFileRef.softDelete; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/dev-meta/route.ts",
+    "methods": [
+      "POST",
+      "PATCH"
+    ],
+    "reason": "Uses runManifestCommand → AdminTaskDevMeta.create/update; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/board-config/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runManifestCommand → BoardConfig.create; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/board-config/[id]/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "reason": "Uses runManifestCommand → BoardConfig.updateColumns/updateSettings; REST-shaped Kanban route outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
     "path": "app/api/administrative/chat/threads/route.ts",
     "methods": [
       "POST"
@@ -1661,5 +1762,65 @@
     "category": "infrastructure",
     "owner": "platform-team",
     "allowPermanent": true
+  },
+  {
+    "path": "app/api/call-planner/transcript/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runCommand (CallPlanningSession.create/complete + EventPlanningDraft.create) but lives outside commands/ namespace; ExtractedDetail createMany is a documented bypass (see bypasses.json)",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/call-planner/drafts/[id]/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "reason": "Uses runCommand (EventPlanningDraft updateField/updateBudget/updateGuestCount/updateVenue/updateMenuPreferences/markReview/convertToEvent/expire) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/call-planner/drafts/[id]/generate-proposal/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runCommand (ProposalDraft.create) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/public/proposals-draft/[token]/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Public magic-token surface, no Clerk identity — governed ProposalDraft.approve/requestChanges run via runCommand with tenant system actor; ProposalAction audit row is a documented bypass (see bypasses.json)",
+    "category": "public",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/call-planner/proposals/[id]/send/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runCommand (ProposalDraft.send) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/call-planner/proposals/[id]/refresh-token/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Uses runCommand (ProposalDraft.refreshToken) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
   }
 ]

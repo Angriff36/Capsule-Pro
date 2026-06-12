@@ -1,10 +1,18 @@
 {
   "tableMappings": {
+    "CallPlanningSession": "call_planning_sessions",
+    "EventPlanningDraft": "event_planning_drafts",
     "KnowledgeBaseEntry": "knowledge_base_entries",
+    "ProposalDraft": "proposal_drafts",
     "AdminChatParticipant": "admin_chat_participants",
+    "AdminTaskAttachment": "admin_task_attachments",
+    "AdminTaskComment": "admin_task_comments",
+    "AdminTaskDevMeta": "admin_task_dev_meta",
+    "AdminTaskFileRef": "admin_task_file_refs",
     "AdminTask": "admin_tasks",
     "AlertsConfig": "alerts_config",
     "AllergenWarning": "allergen_warnings",
+    "BoardConfig": "board_configs",
     "ChartOfAccount": "chart_of_accounts",
     "Container": "containers",
     "ProposalTemplate": "proposal_templates",
@@ -159,6 +167,51 @@
     "TrainingAssignment": "training_assignments"
   },
   "columnMappings": {
+    "CallPlanningSession": {
+      "tenantId": "tenant_id",
+      "userId": "user_id",
+      "sourceType": "source_type",
+      "transcriptText": "transcript_text",
+      "startedAt": "started_at",
+      "endedAt": "ended_at",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
+    "EventPlanningDraft": {
+      "tenantId": "tenant_id",
+      "sessionId": "session_id",
+      "userId": "user_id",
+      "clientName": "client_name",
+      "clientContactId": "client_contact_id",
+      "eventType": "event_type",
+      "eventDate": "event_date",
+      "eventTime": "event_time",
+      "guestCount": "guest_count",
+      "guestCountMin": "guest_count_min",
+      "guestCountMax": "guest_count_max",
+      "venuePreference": "venue_preference",
+      "venueId": "venue_id",
+      "serviceStyle": "service_style",
+      "dietaryRestrictions": "dietary_restrictions",
+      "menuPreferences": "menu_preferences",
+      "budgetMin": "budget_min",
+      "budgetMax": "budget_max",
+      "packageIds": "package_ids",
+      "addOnIds": "add_on_ids",
+      "customItems": "custom_items",
+      "timelineNotes": "timeline_notes",
+      "openQuestions": "open_questions",
+      "specialNotes": "special_notes",
+      "aiSummary": "ai_summary",
+      "overallConfidence": "overall_confidence",
+      "convertedEventId": "converted_event_id",
+      "proposalId": "proposal_id",
+      "expiresAt": "expires_at",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
     "KnowledgeBaseEntry": {
       "tenantId": "tenant_id",
       "category": "category",
@@ -168,6 +221,34 @@
       "publishedAt": "published_at",
       "deletedAt": "deleted_at",
       "viewCount": "view_count"
+    },
+    "ProposalDraft": {
+      "tenantId": "tenant_id",
+      "draftId": "draft_id",
+      "userId": "user_id",
+      "clientName": "client_name",
+      "clientEmail": "client_email",
+      "clientPhone": "client_phone",
+      "eventSummary": "event_summary",
+      "menuSections": "menu_sections",
+      "servicePlan": "service_plan",
+      "pricingBreakdown": "pricing_breakdown",
+      "upgradeOptions": "upgrade_options",
+      "visionSummary": "vision_summary",
+      "nextSteps": "next_steps",
+      "templateId": "template_id",
+      "magicToken": "magic_token",
+      "magicTokenExpiresAt": "magic_token_expires_at",
+      "sentAt": "sent_at",
+      "sentVia": "sent_via",
+      "viewedAt": "viewed_at",
+      "respondedAt": "responded_at",
+      "depositAmount": "deposit_amount",
+      "depositPaid": "deposit_paid",
+      "htmlContent": "html_content",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
     },
     "AdminChatParticipant": {
       "tenantId": "tenant_id",
@@ -180,8 +261,51 @@
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
     },
+    "AdminTaskAttachment": {
+      "tenantId": "tenant_id",
+      "taskId": "task_id",
+      "fileName": "file_name",
+      "fileUrl": "file_url",
+      "fileSize": "file_size",
+      "mimeType": "mime_type",
+      "uploadedBy": "uploaded_by",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
+    "AdminTaskComment": {
+      "tenantId": "tenant_id",
+      "taskId": "task_id",
+      "authorId": "author_id",
+      "authorName": "author_name",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
+    "AdminTaskDevMeta": {
+      "tenantId": "tenant_id",
+      "taskId": "task_id",
+      "stepsToRepro": "steps_to_repro",
+      "expectedResult": "expected_result",
+      "actualResult": "actual_result",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
+    "AdminTaskFileRef": {
+      "tenantId": "tenant_id",
+      "taskId": "task_id",
+      "refType": "ref_type",
+      "refId": "ref_id",
+      "refLabel": "ref_label",
+      "linkedBy": "linked_by",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
     "AdminTask": {
       "tenantId": "tenant_id",
+      "estimatedHours": "estimated_hours",
       "dueDate": "due_date",
       "assignedTo": "assigned_to",
       "createdBy": "created_by",
@@ -213,6 +337,13 @@
       "deletedAt": "deleted_at",
       "escalatedAt": "escalated_at",
       "escalatedTo": "escalated_to"
+    },
+    "BoardConfig": {
+      "tenantId": "tenant_id",
+      "createdBy": "created_by",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
     },
     "ChartOfAccount": {
       "tenantId": "tenant_id",
@@ -2429,6 +2560,34 @@
     "AiEventSetupSession": {
       "confidence": "Decimal(12, 2)"
     },
+    "CallPlanningSession": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "transcriptText": "Text",
+      "startedAt": "Timestamptz(6)",
+      "endedAt": "Timestamptz(6)",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
+    "EventPlanningDraft": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "sessionId": "Uuid",
+      "clientContactId": "Uuid",
+      "eventDate": "Date",
+      "venueId": "Uuid",
+      "budgetMin": "Decimal(12, 2)",
+      "budgetMax": "Decimal(12, 2)",
+      "aiSummary": "Text",
+      "overallConfidence": "Decimal(3, 2)",
+      "convertedEventId": "Uuid",
+      "proposalId": "Uuid",
+      "expiresAt": "Timestamptz(6)",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
     "KnowledgeBaseEntry": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -2437,6 +2596,22 @@
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
       "publishedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
+    "ProposalDraft": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "draftId": "Uuid",
+      "visionSummary": "Text",
+      "templateId": "Uuid",
+      "magicTokenExpiresAt": "Timestamptz(6)",
+      "sentAt": "Timestamptz(6)",
+      "viewedAt": "Timestamptz(6)",
+      "respondedAt": "Timestamptz(6)",
+      "depositAmount": "Decimal(12, 2)",
+      "htmlContent": "Text",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
     "AdminChatParticipant": {
@@ -2451,9 +2626,46 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
+    "AdminTaskAttachment": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "taskId": "Uuid",
+      "uploadedBy": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
+    "AdminTaskComment": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "taskId": "Uuid",
+      "authorId": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
+    "AdminTaskDevMeta": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "taskId": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
+    "AdminTaskFileRef": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "taskId": "Uuid",
+      "refId": "Uuid",
+      "linkedBy": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
     "AdminTask": {
       "tenantId": "Uuid",
       "id": "Uuid",
+      "estimatedHours": "Decimal(6, 2)",
       "dueDate": "Date",
       "assignedTo": "Uuid",
       "createdBy": "Uuid",
@@ -2481,6 +2693,14 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)",
       "escalatedAt": "Timestamptz(6)"
+    },
+    "BoardConfig": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "createdBy": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
     },
     "ChartOfAccount": {
       "tenantId": "Uuid",
@@ -4492,6 +4712,31 @@
         "@default(\"\")"
       ]
     },
+    "CallPlanningSession": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"active\")"
+      ],
+      "sourceType": [
+        "@default(\"manual\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "EventPlanningDraft": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"active\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
     "KnowledgeBaseEntry": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
@@ -4506,7 +4751,77 @@
         "@default(0)"
       ]
     },
+    "ProposalDraft": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"draft\")"
+      ],
+      "version": [
+        "@default(1)"
+      ],
+      "eventSummary": [
+        "@default(\"{}\")"
+      ],
+      "menuSections": [
+        "@default(\"{}\")"
+      ],
+      "servicePlan": [
+        "@default(\"{}\")"
+      ],
+      "pricingBreakdown": [
+        "@default(\"{}\")"
+      ],
+      "sentVia": [
+        "@default(\"\")"
+      ],
+      "depositAmount": [
+        "@default(0)"
+      ],
+      "depositPaid": [
+        "@default(false)"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
     "AdminChatParticipant": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "AdminTaskAttachment": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "AdminTaskComment": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "AdminTaskDevMeta": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "severity": [
+        "@default(\"medium\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "AdminTaskFileRef": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
       ],
@@ -4523,6 +4838,9 @@
       ],
       "priority": [
         "@default(\"medium\")"
+      ],
+      "position": [
+        "@default(0)"
       ],
       "updatedAt": [
         "@updatedAt"
@@ -4548,6 +4866,23 @@
       ],
       "resolved": [
         "@default(false)"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "BoardConfig": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "name": [
+        "@default(\"Default Board\")"
+      ],
+      "columns": [
+        "@default(\"[]\")"
+      ],
+      "settings": [
+        "@default(\"{}\")"
       ],
       "updatedAt": [
         "@updatedAt"
@@ -7391,6 +7726,32 @@
         "scale": 2
       }
     },
+    "EventPlanningDraft": {
+      "budgetMin": {
+        "precision": 12,
+        "scale": 2
+      },
+      "budgetMax": {
+        "precision": 12,
+        "scale": 2
+      },
+      "overallConfidence": {
+        "precision": 3,
+        "scale": 2
+      }
+    },
+    "ProposalDraft": {
+      "depositAmount": {
+        "precision": 12,
+        "scale": 2
+      }
+    },
+    "AdminTask": {
+      "estimatedHours": {
+        "precision": 6,
+        "scale": 2
+      }
+    },
     "Container": {
       "capacityVolumeMl": {
         "precision": 10,
@@ -8380,6 +8741,12 @@
         "tenantId",
         "threadId",
         "userId"
+      ]
+    ],
+    "AdminTaskDevMeta": [
+      [
+        "tenantId",
+        "taskId"
       ]
     ],
     "AllergenWarning": [
@@ -10116,11 +10483,19 @@
   "multiSchema": {
     "entitySchema": {
       "AiEventSetupSession": "public",
+      "CallPlanningSession": "tenant_crm",
+      "EventPlanningDraft": "tenant_crm",
       "KnowledgeBaseEntry": "tenant",
+      "ProposalDraft": "tenant_crm",
       "AdminChatParticipant": "tenant_admin",
+      "AdminTaskAttachment": "tenant_admin",
+      "AdminTaskComment": "tenant_admin",
+      "AdminTaskDevMeta": "tenant_admin",
+      "AdminTaskFileRef": "tenant_admin",
       "AdminTask": "tenant_admin",
       "AlertsConfig": "tenant_inventory",
       "AllergenWarning": "tenant_kitchen",
+      "BoardConfig": "tenant_admin",
       "ChartOfAccount": "tenant_accounting",
       "Container": "tenant_kitchen",
       "ProposalTemplate": "tenant_crm",
@@ -10295,11 +10670,39 @@
       "tenantId",
       "id"
     ],
+    "CallPlanningSession": [
+      "tenantId",
+      "id"
+    ],
+    "EventPlanningDraft": [
+      "tenantId",
+      "id"
+    ],
     "KnowledgeBaseEntry": [
       "tenantId",
       "id"
     ],
+    "ProposalDraft": [
+      "tenantId",
+      "id"
+    ],
     "AdminChatParticipant": [
+      "tenantId",
+      "id"
+    ],
+    "AdminTaskAttachment": [
+      "tenantId",
+      "id"
+    ],
+    "AdminTaskComment": [
+      "tenantId",
+      "id"
+    ],
+    "AdminTaskDevMeta": [
+      "tenantId",
+      "id"
+    ],
+    "AdminTaskFileRef": [
       "tenantId",
       "id"
     ],
@@ -10312,6 +10715,10 @@
       "id"
     ],
     "AllergenWarning": [
+      "tenantId",
+      "id"
+    ],
+    "BoardConfig": [
       "tenantId",
       "id"
     ],
@@ -10980,6 +11387,12 @@
         "tenantId",
         "threadId",
         "userId"
+      ]
+    ],
+    "AdminTaskDevMeta": [
+      [
+        "tenantId",
+        "taskId"
       ]
     ],
     "ChartOfAccount": [

@@ -1,0 +1,60 @@
+tenant tenantId : string from context.tenantId
+// Administrative Domain - Admin Task File Reference Rules
+// Manifest spec for linking existing files to admin tasks without duplicating storage
+
+entity AdminTaskFileRef {
+  // No relationships: taskId/refId are loose keys by design (refId is
+  // polymorphic via refType); AdminTask declares no child relationships.
+  key [tenantId, id]
+  property required id: string
+  indexed property required tenantId: string
+  indexed property taskId: string = ""
+  property refType: string = ""
+  property refId: string = ""
+  searchable property refLabel: string = ""
+  property linkedBy: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  default policy AdminTaskFileRefDefaultAccess execute: user.role in ["manager", "admin"] "Admin task file reference management"
+
+  command create(taskId: string, refType: string, refId: string, refLabel: string, linkedBy: string) {
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard refType != null and refType != "" "Reference type is required"
+    guard refId != null and refId != "" "Reference ID is required"
+
+    mutate taskId = taskId
+    mutate refType = refType
+    mutate refId = refId
+    mutate refLabel = refLabel
+    mutate linkedBy = linkedBy
+
+    emit AdminTaskFileRefCreated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "File reference is already deleted"
+
+    mutate deletedAt = now()
+
+    emit AdminTaskFileRefDeleted
+  }
+
+  store AdminTaskFileRef in durable
+}
+
+policy AdminTaskFileRefManagement execute: user.role in ["manager", "admin"] "Managers can manage file references"
+
+event AdminTaskFileRefCreated: "admin.task-file-ref.created" {
+  refId: string
+  taskId: string
+  refType: string
+  createdAt: datetime
+}
+
+event AdminTaskFileRefDeleted: "admin.task-file-ref.deleted" {
+  refId: string
+  deletedAt: datetime
+}

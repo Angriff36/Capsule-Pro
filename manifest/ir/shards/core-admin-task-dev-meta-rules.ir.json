@@ -1,0 +1,619 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "f7546550190e74d092ecf1ac648474868802edaeebc43361aeb9733754a7d7f2",
+    "irHash": "24399fa0232e5b8430363774be2c1c60a0e7e0e0e4da620b0752a7563d04426f",
+    "compilerVersion": "2.4.2",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-12T20:01:49.888Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "AdminTaskDevMeta",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "severity",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "medium"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "environment",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "stepsToRepro",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "expectedResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "actualResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "AdminTaskDevMetaDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "AdminTaskDevMeta",
+      "target": "durable",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminTaskDevMetaCreated",
+      "channel": "admin.task-dev-meta.created",
+      "payload": [
+        {
+          "name": "metaId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "AdminTaskDevMetaUpdated",
+      "channel": "admin.task-dev-meta.updated",
+      "payload": [
+        {
+          "name": "metaId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "create",
+      "entity": "AdminTaskDevMeta",
+      "parameters": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepsToRepro",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expectedResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "actualResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "taskId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "taskId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "AdminTaskDevMetaDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Task ID is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "taskId",
+          "expression": {
+            "kind": "identifier",
+            "name": "taskId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "severity",
+          "expression": {
+            "kind": "identifier",
+            "name": "severity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "environment",
+          "expression": {
+            "kind": "identifier",
+            "name": "environment"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "stepsToRepro",
+          "expression": {
+            "kind": "identifier",
+            "name": "stepsToRepro"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "expectedResult",
+          "expression": {
+            "kind": "identifier",
+            "name": "expectedResult"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "actualResult",
+          "expression": {
+            "kind": "identifier",
+            "name": "actualResult"
+          }
+        }
+      ],
+      "emits": [
+        "AdminTaskDevMetaCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "AdminTaskDevMeta",
+      "parameters": [
+        {
+          "name": "severity",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepsToRepro",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expectedResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "actualResult",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "AdminTaskDevMetaDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update deleted dev metadata"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "severity",
+          "expression": {
+            "kind": "identifier",
+            "name": "severity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "environment",
+          "expression": {
+            "kind": "identifier",
+            "name": "environment"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "stepsToRepro",
+          "expression": {
+            "kind": "identifier",
+            "name": "stepsToRepro"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "expectedResult",
+          "expression": {
+            "kind": "identifier",
+            "name": "expectedResult"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "actualResult",
+          "expression": {
+            "kind": "identifier",
+            "name": "actualResult"
+          }
+        }
+      ],
+      "emits": [
+        "AdminTaskDevMetaUpdated"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "AdminTaskDevMetaManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Managers can manage dev metadata"
+    },
+    {
+      "name": "AdminTaskDevMetaDefaultAccess",
+      "entity": "AdminTaskDevMeta",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Admin task dev metadata management"
+    }
+  ],
+  "reactions": []
+}

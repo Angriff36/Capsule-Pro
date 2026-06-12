@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "5d9d8162bbde459c8538be940343ae998254451ebd55675935b51ca4fdfaf5f9",
-    "irHash": "27c2c93ac043985578d52cb497ae703779fe722265c936cad4d4e4c2d231e7f9",
+    "contentHash": "8802ad382303eec5bb41b15ad7ecc2900f3616e35bfa15a3ee58b1fdc11187de",
+    "irHash": "094c8b921985aeb3e84f0f5da22009402b2577f9500350871d75174568828d2a",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T14:47:34.066Z"
+    "compiledAt": "2026-06-12T20:01:49.890Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -102,6 +102,46 @@
           "modifiers": []
         },
         {
+          "name": "position",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "labels",
+          "type": {
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "array",
+            "elements": []
+          },
+          "modifiers": []
+        },
+        {
+          "name": "estimatedHours",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
           "name": "assignedTo",
           "type": {
             "name": "string",
@@ -123,6 +163,30 @@
         },
         {
           "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sourceType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sourceId",
           "type": {
             "name": "string",
             "nullable": false
@@ -194,6 +258,8 @@
       "commands": [
         "create",
         "update",
+        "moveCard",
+        "reorder",
         "moveToBacklog",
         "startProgress",
         "submitForReview",
@@ -382,6 +448,44 @@
       ]
     },
     {
+      "name": "AdminTaskMoved",
+      "channel": "admin.task.moved",
+      "payload": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "AdminTaskStatusChanged",
       "channel": "admin.task.status-changed",
       "payload": [
@@ -502,6 +606,50 @@
             "nullable": false
           },
           "required": true
+        },
+        {
+          "name": "sourceType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "sourceId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "labels",
+          "type": {
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "estimatedHours",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "required": false
         }
       ],
       "guards": [
@@ -609,6 +757,163 @@
             "kind": "identifier",
             "name": "createdBy"
           }
+        },
+        {
+          "kind": "mutate",
+          "target": "sourceType",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "sourceType"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "sourceType"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "sourceId",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "sourceId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "sourceId"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "position",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "position"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "position"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "labels",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "labels"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "labels"
+            },
+            "alternate": {
+              "kind": "array",
+              "elements": []
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "estimatedHours",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "estimatedHours"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "estimatedHours"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
         }
       ],
       "emits": [
@@ -666,6 +971,26 @@
             "nullable": false
           },
           "required": true
+        },
+        {
+          "name": "labels",
+          "type": {
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "estimatedHours",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "required": false
         }
       ],
       "guards": [
@@ -750,10 +1075,298 @@
             "kind": "identifier",
             "name": "dueDate"
           }
+        },
+        {
+          "kind": "mutate",
+          "target": "labels",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "labels"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "labels"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "labels"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "estimatedHours",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "estimatedHours"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "estimatedHours"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "estimatedHours"
+            }
+          }
         }
       ],
       "emits": [
         "AdminTaskUpdated"
+      ]
+    },
+    {
+      "name": "moveCard",
+      "entity": "AdminTask",
+      "parameters": [
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "status"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "backlog"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "in_progress"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "review"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "done"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "cancelled"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "status"
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "AdminTaskDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot move a deleted task"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid target column"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Task is already in this column; use reorder to change position"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "identifier",
+            "name": "status"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "position",
+          "expression": {
+            "kind": "identifier",
+            "name": "position"
+          }
+        }
+      ],
+      "emits": [
+        "AdminTaskMoved"
+      ]
+    },
+    {
+      "name": "reorder",
+      "entity": "AdminTask",
+      "parameters": [
+        {
+          "name": "position",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "AdminTaskDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot reorder a deleted task"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "position",
+          "expression": {
+            "kind": "identifier",
+            "name": "position"
+          }
+        }
+      ],
+      "emits": [
+        "AdminTaskMoved"
       ]
     },
     {

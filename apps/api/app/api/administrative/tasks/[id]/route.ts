@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
-import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export const runtime = "nodejs";
 
@@ -48,54 +48,36 @@ export async function GET(
  * PATCH /api/administrative/tasks/[id]
  * Update task fields or transition status via manifest commands.
  *
- * Status changes are mapped to specific manifest commands (one per target
- * column, matching the AdminTask state machine):
- *   backlog → moveToBacklog, in_progress → startProgress, review → submitForReview,
- *   done → complete, cancelled → cancel
+ * Status changes are mapped to specific manifest commands:
+ *   todo → moveToTodo, in_progress → startProgress, done → complete,
+ *   cancelled → cancel, backlog → reopen
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await resolveCurrentUser(request);
-  const rawBody = (await request.json().catch(() => ({}))) as Record<
-    string,
-    unknown
-  >;
+  const body = await request.clone().json();
 
-  // If status is being changed, use the specific status command
-  if (rawBody.status) {
-    const statusCommandMap: Record<string, string> = {
-      backlog: "moveToBacklog",
-      in_progress: "startProgress",
-      review: "submitForReview",
-      done: "complete",
-      cancelled: "cancel",
-    };
-    const commandName = statusCommandMap[rawBody.status as string];
-    if (!commandName) {
-      return new Response(
-        JSON.stringify({ message: `Invalid status: ${rawBody.status}` }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    return runManifestCommand({
-      entity: "AdminTask",
-      command: commandName,
-      body: {},
-      user: { id: user.id, tenantId: user.tenantId, role: user.role },
-      instanceId: id,
+  // If status or position is being changed, use the moveCard command
+  if (body.status !== undefined || body.position !== undefined) {
+    return executeManifestCommand(request, {
+      entityName: "AdminTask",
+      commandName: "moveCard",
+      params: { id },
+      transformBody: (b) => ({
+        status: b.status,
+        position: b.position ?? 0,
+      }),
     });
   }
 
   // Otherwise it's a field update
-  return runManifestCommand({
-    entity: "AdminTask",
-    command: "update",
-    body: { ...rawBody },
-    user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    instanceId: id,
+  return executeManifestCommand(request, {
+    entityName: "AdminTask",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({ ...body }),
   });
 }
 
@@ -108,12 +90,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const user = await resolveCurrentUser(request);
-  return runManifestCommand({
-    entity: "AdminTask",
-    command: "softDelete",
-    body: {},
-    user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    instanceId: id,
+  return executeManifestCommand(request, {
+    entityName: "AdminTask",
+    commandName: "softDelete",
+    params: { id },
   });
 }

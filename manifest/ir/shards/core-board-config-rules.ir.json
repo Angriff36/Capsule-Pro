@@ -1,0 +1,688 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "b745ff05508893b336b2227a7ae5f1e578d34272d81f443ea8ff638cdcce1e45",
+    "irHash": "e5546ec2e8a4a5b404ec747915e40d447596c5ac7f1316ff52444c8937713127",
+    "compilerVersion": "2.4.2",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-12T20:01:49.894Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "BoardConfig",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Default Board"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "columns",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "[]"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "settings",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "updateColumns",
+        "updateSettings",
+        "softDelete"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "BoardConfig",
+      "target": "durable",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "BoardConfigCreated",
+      "channel": "admin.board-config.created",
+      "payload": [
+        {
+          "name": "configId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BoardConfigUpdated",
+      "channel": "admin.board-config.updated",
+      "payload": [
+        {
+          "name": "configId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BoardConfigDeleted",
+      "channel": "admin.board-config.deleted",
+      "payload": [
+        {
+          "name": "configId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "create",
+      "entity": "BoardConfig",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "columns",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "settings",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Board name is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "columns",
+          "expression": {
+            "kind": "identifier",
+            "name": "columns"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "settings",
+          "expression": {
+            "kind": "identifier",
+            "name": "settings"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "createdBy"
+          }
+        }
+      ],
+      "emits": [
+        "BoardConfigCreated"
+      ]
+    },
+    {
+      "name": "updateColumns",
+      "entity": "BoardConfig",
+      "parameters": [
+        {
+          "name": "columns",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "columns"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted config"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Columns are required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "columns",
+          "expression": {
+            "kind": "identifier",
+            "name": "columns"
+          }
+        }
+      ],
+      "emits": [
+        "BoardConfigUpdated"
+      ]
+    },
+    {
+      "name": "updateSettings",
+      "entity": "BoardConfig",
+      "parameters": [
+        {
+          "name": "settings",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "settings"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted config"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Settings are required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "settings",
+          "expression": {
+            "kind": "identifier",
+            "name": "settings"
+          }
+        }
+      ],
+      "emits": [
+        "BoardConfigUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "BoardConfig",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Config is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BoardConfigDeleted"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "BoardConfigManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Managers can manage board config"
+    },
+    {
+      "name": "BoardConfigDefaultAccess",
+      "entity": "BoardConfig",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Kanban board config management"
+    }
+  ],
+  "reactions": []
+}

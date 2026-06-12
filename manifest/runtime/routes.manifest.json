@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-12T14:38:20.626Z",
+  "generatedAt": "2026-06-12T20:03:26.420Z",
   "basePath": "/api",
   "routes": [
     {
@@ -150,6 +150,126 @@
       "source": {
         "kind": "entity-read",
         "entity": "AdminTask"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskAttachment.get.list",
+      "path": "/api/admintaskattachment/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskAttachment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskAttachment.get.detail",
+      "path": "/api/admintaskattachment/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskAttachment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskComment.get.list",
+      "path": "/api/admintaskcomment/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskComment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskComment.get.detail",
+      "path": "/api/admintaskcomment/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskComment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskDevMeta.get.list",
+      "path": "/api/admintaskdevmeta/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskDevMeta"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskDevMeta.get.detail",
+      "path": "/api/admintaskdevmeta/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskDevMeta"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskFileRef.get.list",
+      "path": "/api/admintaskfileref/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskFileRef"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskFileRef.get.detail",
+      "path": "/api/admintaskfileref/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTaskFileRef"
       },
       "auth": true,
       "tenant": true
@@ -425,6 +545,36 @@
       "tenant": true
     },
     {
+      "id": "BoardConfig.get.list",
+      "path": "/api/boardconfig/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BoardConfig"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BoardConfig.get.detail",
+      "path": "/api/boardconfig/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BoardConfig"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BoardProjection.get.list",
       "path": "/api/boardprojection/list",
       "method": "GET",
@@ -600,6 +750,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "BulkOrderRule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.get.list",
+      "path": "/api/callplanningsession/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CallPlanningSession"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.get.detail",
+      "path": "/api/callplanningsession/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CallPlanningSession"
       },
       "auth": true,
       "tenant": true
@@ -1860,6 +2040,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "EventImportWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.get.list",
+      "path": "/api/eventplanningdraft/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventPlanningDraft"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.get.detail",
+      "path": "/api/eventplanningdraft/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventPlanningDraft"
       },
       "auth": true,
       "tenant": true
@@ -3810,6 +4020,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "Proposal"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.get.list",
+      "path": "/api/proposaldraft/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ProposalDraft"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.get.detail",
+      "path": "/api/proposaldraft/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ProposalDraft"
       },
       "auth": true,
       "tenant": true
@@ -6361,12 +6601,68 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "sourceType",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "sourceId",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "estimatedHours",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
         "kind": "command",
         "entity": "AdminTask",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.moveCard",
+      "path": "/api/manifest/AdminTask/commands/move-card",
+      "method": "POST",
+      "params": [
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "moveCard"
       },
       "auth": true,
       "tenant": true
@@ -6380,6 +6676,26 @@
         "kind": "command",
         "entity": "AdminTask",
         "command": "moveToBacklog"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.reorder",
+      "path": "/api/manifest/AdminTask/commands/reorder",
+      "method": "POST",
+      "params": [
+        {
+          "name": "position",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "reorder"
       },
       "auth": true,
       "tenant": true
@@ -6463,12 +6779,309 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "estimatedHours",
+          "type": "string",
+          "location": "body",
+          "required": false
         }
       ],
       "source": {
         "kind": "command",
         "entity": "AdminTask",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskAttachment.create",
+      "path": "/api/manifest/AdminTaskAttachment/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "taskId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fileName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fileUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fileSize",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "mimeType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "uploadedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskAttachment",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskAttachment.softDelete",
+      "path": "/api/manifest/AdminTaskAttachment/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskAttachment",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskComment.create",
+      "path": "/api/manifest/AdminTaskComment/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "taskId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "authorId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "authorName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskComment",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskComment.softDelete",
+      "path": "/api/manifest/AdminTaskComment/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskComment",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskComment.update",
+      "path": "/api/manifest/AdminTaskComment/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "text",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskComment",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskDevMeta.create",
+      "path": "/api/manifest/AdminTaskDevMeta/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "taskId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "stepsToRepro",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expectedResult",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualResult",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskDevMeta",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskDevMeta.update",
+      "path": "/api/manifest/AdminTaskDevMeta/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "severity",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "stepsToRepro",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expectedResult",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualResult",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskDevMeta",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskFileRef.create",
+      "path": "/api/manifest/AdminTaskFileRef/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "taskId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "refType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "refId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "refLabel",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "linkedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskFileRef",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTaskFileRef.softDelete",
+      "path": "/api/manifest/AdminTaskFileRef/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTaskFileRef",
+        "command": "softDelete"
       },
       "auth": true,
       "tenant": true
@@ -7913,6 +8526,97 @@
       "tenant": true
     },
     {
+      "id": "BoardConfig.create",
+      "path": "/api/manifest/BoardConfig/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "columns",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BoardConfig",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BoardConfig.softDelete",
+      "path": "/api/manifest/BoardConfig/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "BoardConfig",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BoardConfig.updateColumns",
+      "path": "/api/manifest/BoardConfig/commands/update-columns",
+      "method": "POST",
+      "params": [
+        {
+          "name": "columns",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BoardConfig",
+        "command": "updateColumns"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BoardConfig.updateSettings",
+      "path": "/api/manifest/BoardConfig/commands/update-settings",
+      "method": "POST",
+      "params": [
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BoardConfig",
+        "command": "updateSettings"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BoardProjection.create",
       "path": "/api/manifest/BoardProjection/commands/create",
       "method": "POST",
@@ -8774,6 +9478,123 @@
         "kind": "command",
         "entity": "BulkOrderRule",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.abandon",
+      "path": "/api/manifest/CallPlanningSession/commands/abandon",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "abandon"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.complete",
+      "path": "/api/manifest/CallPlanningSession/commands/complete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "complete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.create",
+      "path": "/api/manifest/CallPlanningSession/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "sourceType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "transcriptText",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.finalize",
+      "path": "/api/manifest/CallPlanningSession/commands/finalize",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "finalize"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.start",
+      "path": "/api/manifest/CallPlanningSession/commands/start",
+      "method": "POST",
+      "params": [
+        {
+          "name": "sourceType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "start"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CallPlanningSession.updateTranscript",
+      "path": "/api/manifest/CallPlanningSession/commands/update-transcript",
+      "method": "POST",
+      "params": [
+        {
+          "name": "transcriptText",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CallPlanningSession",
+        "command": "updateTranscript"
       },
       "auth": true,
       "tenant": true
@@ -16393,6 +17214,264 @@
         "kind": "command",
         "entity": "EventImportWorkflow",
         "command": "startValidating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.confirmDetail",
+      "path": "/api/manifest/EventPlanningDraft/commands/confirm-detail",
+      "method": "POST",
+      "params": [
+        {
+          "name": "fieldName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "confirmedValue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "numericValue",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "confirmDetail"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.convertToEvent",
+      "path": "/api/manifest/EventPlanningDraft/commands/convert-to-event",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "convertToEvent"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.create",
+      "path": "/api/manifest/EventPlanningDraft/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.expire",
+      "path": "/api/manifest/EventPlanningDraft/commands/expire",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "expire"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.markReview",
+      "path": "/api/manifest/EventPlanningDraft/commands/mark-review",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "markReview"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.updateBudget",
+      "path": "/api/manifest/EventPlanningDraft/commands/update-budget",
+      "method": "POST",
+      "params": [
+        {
+          "name": "budgetMin",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetMax",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "updateBudget"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.updateField",
+      "path": "/api/manifest/EventPlanningDraft/commands/update-field",
+      "method": "POST",
+      "params": [
+        {
+          "name": "fieldName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "numericValue",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "dateValue",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "normalizedValue",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "updateField"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.updateGuestCount",
+      "path": "/api/manifest/EventPlanningDraft/commands/update-guest-count",
+      "method": "POST",
+      "params": [
+        {
+          "name": "guestCount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "guestCountMin",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "guestCountMax",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "updateGuestCount"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.updateMenuPreferences",
+      "path": "/api/manifest/EventPlanningDraft/commands/update-menu-preferences",
+      "method": "POST",
+      "params": [
+        {
+          "name": "menuPreferences",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "updateMenuPreferences"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventPlanningDraft.updateVenue",
+      "path": "/api/manifest/EventPlanningDraft/commands/update-venue",
+      "method": "POST",
+      "params": [
+        {
+          "name": "venueId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "venuePreference",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventPlanningDraft",
+        "command": "updateVenue"
       },
       "auth": true,
       "tenant": true
@@ -26810,6 +27889,346 @@
         "kind": "command",
         "entity": "Proposal",
         "command": "withdraw"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.approve",
+      "path": "/api/manifest/ProposalDraft/commands/approve",
+      "method": "POST",
+      "params": [
+        {
+          "name": "clientMessage",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "approve"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.create",
+      "path": "/api/manifest/ProposalDraft/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "draftId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientEmail",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "clientPhone",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "eventSummary",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "menuSections",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "servicePlan",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "pricingBreakdown",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "upgradeOptions",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "visionSummary",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "nextSteps",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "templateId",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.generateHtml",
+      "path": "/api/manifest/ProposalDraft/commands/generate-html",
+      "method": "POST",
+      "params": [
+        {
+          "name": "htmlContent",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "generateHtml"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.markConverted",
+      "path": "/api/manifest/ProposalDraft/commands/mark-converted",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "markConverted"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.markExpired",
+      "path": "/api/manifest/ProposalDraft/commands/mark-expired",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "markExpired"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.recordView",
+      "path": "/api/manifest/ProposalDraft/commands/record-view",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "recordView"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.refreshToken",
+      "path": "/api/manifest/ProposalDraft/commands/refresh-token",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "refreshToken"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.requestChanges",
+      "path": "/api/manifest/ProposalDraft/commands/request-changes",
+      "method": "POST",
+      "params": [
+        {
+          "name": "clientMessage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "requestChanges"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.send",
+      "path": "/api/manifest/ProposalDraft/commands/send",
+      "method": "POST",
+      "params": [
+        {
+          "name": "deliveryMethod",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expiresInDays",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "send"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ProposalDraft.update",
+      "path": "/api/manifest/ProposalDraft/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientEmail",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "clientPhone",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "eventSummary",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "menuSections",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "servicePlan",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "pricingBreakdown",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "upgradeOptions",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "visionSummary",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": false
+        },
+        {
+          "name": "nextSteps",
+          "type": "string",
+          "location": "body",
+          "required": false
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalDraft",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
