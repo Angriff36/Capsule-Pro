@@ -154,9 +154,21 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/communications/:path*",
       destination: `${apiBaseUrl}/api/communications/:path*`,
     },
+    // Per-subtree (NOT /api/settings/:path*): a broad rewrite would capture
+    // /api/settings/manifest-editor/entities/[entityName] — afterFiles rewrites
+    // run BEFORE dynamic filesystem routes, so the app-local dynamic handler
+    // would 404 against apps/api (which has no manifest-editor routes).
     {
-      source: "/api/settings/:path*",
-      destination: `${apiBaseUrl}/api/settings/:path*`,
+      source: "/api/settings/api-keys/:path*",
+      destination: `${apiBaseUrl}/api/settings/api-keys/:path*`,
+    },
+    {
+      source: "/api/settings/audit-log/:path*",
+      destination: `${apiBaseUrl}/api/settings/audit-log/:path*`,
+    },
+    {
+      source: "/api/settings/rate-limits/:path*",
+      destination: `${apiBaseUrl}/api/settings/rate-limits/:path*`,
     },
     {
       source: "/api/rolepolicy/:path*",
