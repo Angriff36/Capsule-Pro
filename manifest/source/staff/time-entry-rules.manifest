@@ -32,7 +32,7 @@ entity TimeEntry {
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
-    constraint blockAlreadyClockedIn:block self.isClockedIn {
+    constraint blockAlreadyClockedIn:block !self.isClockedIn {
       messageTemplate: "Employee '{employeeId}' is already clocked in"
       details: {
         employeeId: self.employeeId
@@ -54,7 +54,7 @@ entity TimeEntry {
   command clockOut(breakMinutes: number, notes: string) {
     guard self.isClockedIn "Must be clocked in to clock out"
 
-    constraint blockNotClockedIn:block self.clockIn == null {
+    constraint blockNotClockedIn:block self.clockIn != null {
       messageTemplate: "Cannot clock out - no active clock-in found"
       details: {
         employeeId: self.employeeId
@@ -159,7 +159,7 @@ entity TimecardEditRequest {
   command approve(userId: string) {
     guard self.status == "pending" "Can only approve pending requests"
 
-    constraint blockAlreadyProcessed:block self.isProcessed {
+    constraint blockAlreadyProcessed:block !self.isProcessed {
       messageTemplate: "Edit request has already been processed (status: '{status}')"
       details: {
         timeEntryId: self.timeEntryId
@@ -176,7 +176,7 @@ entity TimecardEditRequest {
   command reject(userId: string, reason: string) {
     guard self.status == "pending" "Can only reject pending requests"
 
-    constraint blockAlreadyProcessed:block self.isProcessed {
+    constraint blockAlreadyProcessed:block !self.isProcessed {
       messageTemplate: "Edit request has already been processed (status: '{status}')"
       details: {
         timeEntryId: self.timeEntryId

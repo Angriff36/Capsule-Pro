@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "90fa8c5fbc203cee8ff2021f529df270c925c8ccaddbb88ab7df54a9947f61ac",
-    "irHash": "8c2f6bffe6822346dab2c4730447f485ead802fe015aa0c87a27e9cfe6e594a1",
+    "contentHash": "73c84a5fad67d983ec133493bf2611bbf59ecc827a623fbaefdf7e84f163908a",
+    "irHash": "87d201c2345a74b81142c17ea887b94f55f888b8c96181ebcb46525f699f9404",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.546Z"
+    "compiledAt": "2026-06-12T12:29:27.821Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1015,7 +1015,7 @@
               }
             }
           },
-          "severity": "block",
+          "severity": "warn",
           "messageTemplate": "Equipment '{equipmentName}' is overdue for maintenance by {days} day(s)",
           "detailsMapping": {
             "equipmentName": {

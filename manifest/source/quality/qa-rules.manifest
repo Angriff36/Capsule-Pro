@@ -213,7 +213,7 @@ entity QATemperatureLog {
 
   computed isInSafeRange: boolean = self.unit == "fahrenheit" ? (self.temperature >= 0 and self.temperature <= 40) : (self.temperature >= -18 and self.temperature <= 4)
 
-  constraint warnUnsafeTemperature:block !self.isInSafeRange {
+  constraint warnUnsafeTemperature:warn !self.isInSafeRange {
     messageTemplate: "Temperature {temp}{unit} at {location} is outside safe range"
     details: {
       location: self.location

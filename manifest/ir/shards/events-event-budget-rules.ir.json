@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "74f2f9f405009f70d0472e8dd056fc49b6e79f551057bc11ca7514d901241f9a",
-    "irHash": "99350c28256c44e47709172fc29efa4a29a7b4e719d6fd981b731bbe3e9e626d",
+    "contentHash": "0a62c5918b3b1f52f395433a240329b5eed7e1c2cbd996dcfdb125cf846918d4",
+    "irHash": "52e8a21971bb120c09fca830cf16e485bf16885169c8346e3492a607c81daae1",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.459Z"
+    "compiledAt": "2026-06-12T12:29:27.725Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -761,77 +761,6 @@
                 "name": "self"
               },
               "property": "eventId"
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "blockFinalizeHighVariance",
-          "code": "blockFinalizeHighVariance",
-          "expression": {
-            "kind": "binary",
-            "operator": "or",
-            "left": {
-              "kind": "binary",
-              "operator": ">",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "variancePercentage"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 20
-                }
-              }
-            },
-            "right": {
-              "kind": "binary",
-              "operator": "<",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "variancePercentage"
-              },
-              "right": {
-                "kind": "unary",
-                "operator": "-",
-                "operand": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "number",
-                    "value": 20
-                  }
-                }
-              }
-            }
-          },
-          "severity": "block",
-          "messageTemplate": "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold",
-          "detailsMapping": {
-            "variancePercentage": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "variancePercentage"
-            },
-            "varianceAmount": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "varianceAmount"
             }
           },
           "overrideable": false
@@ -2224,7 +2153,7 @@
           "code": "blockNoLineItems",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {
@@ -2352,6 +2281,77 @@
         }
       ],
       "constraints": [
+        {
+          "name": "blockFinalizeHighVariance",
+          "code": "blockFinalizeHighVariance",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "<=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePercentage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 20
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePercentage"
+              },
+              "right": {
+                "kind": "unary",
+                "operator": "-",
+                "operand": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 20
+                  }
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "messageTemplate": "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold",
+          "detailsMapping": {
+            "variancePercentage": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "variancePercentage"
+            },
+            "varianceAmount": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "varianceAmount"
+            }
+          },
+          "overrideable": false
+        },
         {
           "name": "warnFinalizeWithVariance",
           "code": "warnFinalizeWithVariance",

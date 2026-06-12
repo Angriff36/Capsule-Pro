@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d6eb61cd7aa54c306494f2adb7f1275320bb7aa524db6a4c95855d9232da68a6",
-    "irHash": "d8de6af0dbd9b7f3e865a11f71c82af1e2ecb30dd451bb959941426375c0bd9a",
+    "contentHash": "7624934148daa8962ee306f6b727378aff87fa7d52005a8ddc137ec78026d269",
+    "irHash": "a28d9035a0d20ea2b6099c1bee99d07feba19b24a19462ffb1f59448e4044316",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.572Z"
+    "compiledAt": "2026-06-12T12:29:27.847Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1009,13 +1009,13 @@
           "code": "blockNoTriggerConfig",
           "expression": {
             "kind": "binary",
-            "operator": "or",
+            "operator": "and",
             "left": {
               "kind": "binary",
-              "operator": "or",
+              "operator": "and",
               "left": {
                 "kind": "binary",
-                "operator": "==",
+                "operator": "!=",
                 "left": {
                   "kind": "member",
                   "object": {
@@ -1033,7 +1033,7 @@
               },
               "right": {
                 "kind": "binary",
-                "operator": "==",
+                "operator": "!=",
                 "left": {
                   "kind": "member",
                   "object": {
@@ -1053,7 +1053,7 @@
             },
             "right": {
               "kind": "binary",
-              "operator": "==",
+              "operator": "!=",
               "left": {
                 "kind": "member",
                 "object": {

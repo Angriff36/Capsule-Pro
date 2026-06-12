@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "bda68e80192e9f1c23b0a924a6617f1c4c2868512104514c86d8457ee97b8524",
-    "irHash": "9765d8ad4d30006932ea49735dead9e02602f46e53e427d28ebe8871d95bddfb",
+    "contentHash": "f7fc3cad43ac9890d09f3719675bf3563171418792cbad80adbc6e3652281aeb",
+    "irHash": "2c4d215e2b6fcdb343a360283ae0496005300091760e5d947ec79dc51130fc8b",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.588Z"
+    "compiledAt": "2026-06-12T12:29:27.862Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1492,7 +1492,7 @@
           "code": "blockApproveZero",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {

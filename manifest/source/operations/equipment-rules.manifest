@@ -48,7 +48,7 @@ entity Equipment {
     }
   }
 
-  constraint warnOverdueMaintenance:block self.isOverdueForMaintenance and self.status == "active" {
+  constraint warnOverdueMaintenance:warn self.isOverdueForMaintenance and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' is overdue for maintenance by {days} day(s)"
     details: {
       equipmentName: self.name

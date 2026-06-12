@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a57f8a89bd6bd1a537bbc12de1d6dd0776120a722bff841b0e9f6eaa15992f63",
-    "irHash": "ff8ca4b8aa744db6226d7847f370ff7031e7dfc81f78cfdb6f528242bec06b08",
+    "contentHash": "1efb55efb12050ecc10700a808dc16ee7054bf65473380a455df6574b26a999c",
+    "irHash": "ff33210038610bd43a15115986e68a55b2baa6dcd3024a70b933371acd7b6e7a",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.571Z"
+    "compiledAt": "2026-06-12T12:29:27.846Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1506,12 +1506,16 @@
           "name": "blockAlreadyTerminated",
           "code": "blockAlreadyTerminated",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isTerminated"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isTerminated"
+            }
           },
           "severity": "block",
           "messageTemplate": "User '{name}' is already terminated",

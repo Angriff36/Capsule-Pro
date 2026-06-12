@@ -59,7 +59,7 @@ entity Workflow {
   command activate(userId: string) {
     guard self.isActive == false "Workflow is already active"
 
-    constraint blockNoTriggerConfig:block self.triggerConfig == null or self.triggerConfig == "" or self.triggerConfig == "{}" {
+    constraint blockNoTriggerConfig:block self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}" {
       messageTemplate: "Cannot activate workflow '{workflowName}' without trigger configuration"
       details: {
         workflowName: self.name

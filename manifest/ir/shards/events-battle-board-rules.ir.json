@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "254601ea79e86a9c662bda1a59caab5d37ee2500d135a6a484ce0e566c102e8c",
-    "irHash": "cbaea22f0723823dfebdc6fb6541284abd43b27a34e7414ec7fc22b3f69cd326",
+    "contentHash": "3e2074dac3c16bb759d5f2ac7a6795a670e4ac12b7d07dd8c18102ac916cec7d",
+    "irHash": "2871e7755d267f3e3c0478d96df8e9ccc626fd3f2d2ae025971b511057c4dcea",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.448Z"
+    "compiledAt": "2026-06-12T12:29:27.711Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1504,7 +1504,7 @@
           "code": "blockNoDishes",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {

@@ -87,7 +87,7 @@ entity Shipment {
   command schedule(userId: string, scheduledDate: datetime) {
     guard self.status == "draft" "Can only schedule draft shipments"
 
-    constraint blockNoItems:block self.totalItems == 0 {
+    constraint blockNoItems:block self.totalItems > 0 {
       messageTemplate: "Cannot schedule shipment with no items"
       details: {
         shipmentId: self.id
@@ -122,7 +122,7 @@ entity Shipment {
   command markDelivered(userId: string, receivedBy: string, signatureData: string) {
     guard self.status == "in_transit" or self.status == "scheduled" "Can only deliver in-transit or scheduled shipments"
 
-    constraint blockNoItems:block self.totalItems == 0 {
+    constraint blockNoItems:block self.totalItems > 0 {
       messageTemplate: "Cannot mark shipment '{shipmentNumber}' as delivered with no items received"
       details: {
         shipmentNumber: self.shipmentNumber

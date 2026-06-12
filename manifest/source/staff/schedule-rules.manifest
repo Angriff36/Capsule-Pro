@@ -86,7 +86,7 @@ entity Schedule {
   command release(userId: string) {
     guard self.status in ["draft", "approved"] "Can only publish draft or approved schedules"
 
-    constraint blockNoShifts:block self.shiftCount == 0 {
+    constraint blockNoShifts:block self.shiftCount > 0 {
       messageTemplate: "Cannot publish schedule with no shifts assigned"
       details: {
         scheduleId: self.id

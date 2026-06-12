@@ -82,7 +82,7 @@ entity Station {
       }
     }
 
-    constraint blockFull:block self.isAtCapacity {
+    constraint blockFull:block !self.isAtCapacity {
       messageTemplate: "Cannot assign task — station '{stationName}' is at full capacity ({current}/{max})"
       details: {
         stationName: self.name

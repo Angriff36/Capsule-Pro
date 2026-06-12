@@ -69,7 +69,7 @@ entity PurchaseOrder {
   command submit(userId: string) {
     guard self.status == "draft" "Can only submit draft orders"
 
-    constraint blockNoItems:block self.itemCount == 0 {
+    constraint blockNoItems:block self.itemCount > 0 {
       messageTemplate: "Cannot submit purchase order '{poNumber}' with no items"
       details: {
         poNumber: self.poNumber
@@ -99,7 +99,7 @@ entity PurchaseOrder {
   command approve(userId: string) {
     guard self.status == "submitted" "Can only approve submitted orders"
 
-    constraint blockNoItems:block self.itemCount == 0 {
+    constraint blockNoItems:block self.itemCount > 0 {
       messageTemplate: "Cannot approve purchase order '{poNumber}' with no items"
       details: {
         poNumber: self.poNumber
@@ -125,7 +125,7 @@ entity PurchaseOrder {
     guard self.status != "received" "Cannot cancel a received order"
     guard self.status != "cancelled" "Order is already cancelled"
 
-    constraint blockCancelReceived:block self.status == "received" {
+    constraint blockCancelReceived:block self.status != "received" {
       messageTemplate: "Cannot cancel purchase order '{poNumber}' - already received"
       details: {
         poNumber: self.poNumber

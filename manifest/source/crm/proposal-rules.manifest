@@ -143,7 +143,7 @@ entity Proposal {
     guard self.deletedAt == null "Cannot send a deleted proposal"
     guard self.isDraft "Can only send proposals in draft status"
 
-    constraint blockNoLineItems:block self.hasLineItems == false {
+    constraint blockNoLineItems:block self.hasLineItems {
       messageTemplate: "Cannot send proposal '{proposalNumber}' with no line items"
       details: {
         proposalNumber: self.proposalNumber
@@ -187,7 +187,7 @@ entity Proposal {
     guard self.deletedAt == null "Cannot accept a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only accept sent or viewed proposals"
 
-    constraint blockExpired:block self.isExpired {
+    constraint blockExpired:block !self.isExpired {
       messageTemplate: "Cannot accept expired proposal '{proposalNumber}' (expired on {validUntil})"
       details: {
         proposalNumber: self.proposalNumber
@@ -215,7 +215,7 @@ entity Proposal {
   command withdraw(reason: string, userId: string) {
     guard self.deletedAt == null "Cannot withdraw a deleted proposal"
 
-    constraint blockAlreadyAccepted:block self.isAccepted {
+    constraint blockAlreadyAccepted:block !self.isAccepted {
       messageTemplate: "Cannot withdraw accepted proposal '{proposalNumber}'"
       details: {
         proposalNumber: self.proposalNumber
@@ -224,7 +224,7 @@ entity Proposal {
       }
     }
 
-    constraint blockAlreadyWithdrawn:block self.isWithdrawn {
+    constraint blockAlreadyWithdrawn:block !self.isWithdrawn {
       messageTemplate: "Proposal '{proposalNumber}' is already withdrawn"
       details: {
         proposalNumber: self.proposalNumber

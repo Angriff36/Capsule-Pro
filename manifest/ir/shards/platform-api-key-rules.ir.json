@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "90b0d89383d087e7202e185bcc8ba255ce4163d8fda5456ad2895420b144f028",
-    "irHash": "014f1f7ac2832a3f0b62f4fbc6d2156aead602f14147dc0a379f3b08e41e1948",
+    "contentHash": "3dcbbbf33931be00074a560dc5a0cb5b5110db442e565767e60555734cab1057",
+    "irHash": "5a3fdd6eddb7a4472aaedbbea3ab0a9454818c610794fc53ddb8f6e19701f128",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.562Z"
+    "compiledAt": "2026-06-12T12:29:27.836Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1927,12 +1927,16 @@
           "name": "blockExpiredKey",
           "code": "blockExpiredKey",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isExpired"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isExpired"
+            }
           },
           "severity": "block",
           "messageTemplate": "API key '{name}' has expired",

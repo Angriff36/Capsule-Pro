@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0ba7702985653d8cb1c7bc8ef13885e9b62bebf1bf30810d4827837ae2cbea72",
-    "irHash": "bdd65c89116d6977595dcf9d0d5c38830643f4e40fd3b6c1ce6b22b9f1266194",
+    "contentHash": "135e37b7b9c1aa945ca71556f1e7ae26891d73ee109ef33c530208fc71059401",
+    "irHash": "a69de9a7c2e5eeaf8adba179781671e2107265395674091c8e110c780652ac86",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.557Z"
+    "compiledAt": "2026-06-12T12:29:27.831Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2484,7 +2484,7 @@
           "code": "blockNoItems",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {
@@ -2868,7 +2868,7 @@
           "code": "blockNoItems",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {

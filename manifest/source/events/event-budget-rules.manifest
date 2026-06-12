@@ -59,14 +59,6 @@ entity EventBudget {
     }
   }
 
-  constraint blockFinalizeHighVariance:block self.variancePercentage > 20 or self.variancePercentage < -20 {
-    messageTemplate: "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold"
-    details: {
-      variancePercentage: self.variancePercentage
-      varianceAmount: self.varianceAmount
-    }
-  }
-
   default policy EventBudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Budget management"
   command create(eventId: string, totalBudgetAmount: money, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -105,7 +97,7 @@ entity EventBudget {
   command approve(userId: string) {
     guard self.status == "draft" "Can only approve draft budgets"
 
-    constraint blockNoLineItems:block self.totalBudgetAmount == 0 {
+    constraint blockNoLineItems:block self.totalBudgetAmount > 0 {
       messageTemplate: "Cannot approve budget with no budgeted amount"
       details: {
         budgetId: self.id
@@ -119,6 +111,14 @@ entity EventBudget {
   }
 
   command finalize(userId: string) {
+    constraint blockFinalizeHighVariance:block self.variancePercentage <= 20 and self.variancePercentage >= -20 {
+      messageTemplate: "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold"
+      details: {
+        variancePercentage: self.variancePercentage
+        varianceAmount: self.varianceAmount
+      }
+    }
+
     guard self.status == "draft" or self.status == "approved" "Can only finalize draft or approved budgets"
 
     constraint warnFinalizeWithVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {

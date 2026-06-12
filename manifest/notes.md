@@ -1758,3 +1758,38 @@ Hard-won engine facts (2.4.2, verified in dist):
 
 Search: auto-seed prep list, EventConfirmed reaction, prep-list-seed-middleware, _subject.id,
 mutate result value, inverted block constraint, evaluation budget, maxEvaluationSteps, seed chain
+
+---
+
+## 48. Systemic inverted-block-constraint sweep: 34 of 38 were inverted (2026-06-12)
+
+§47's blockNoGuestCount was not an outlier — it was the NORM. Engine semantics: a `:block`
+constraint PASSES when its expression is TRUE (assert-the-ALLOWED-state), while `:warn` FIRES
+when TRUE (report-the-BAD-state). Authors wrote essentially every block constraint in warn style
+(expression = forbidden state), so **34 of the repo's 38 block constraints were inverted** — the
+guarded commands failed in their NORMAL case and would have permitted the forbidden one. The only
+correct 4 were prior fixes (2× inventory v0.12.124, requisition submit, Event.confirm §47).
+ROOT CAUSE: the warn/block expression-polarity asymmetry — upstream lint candidate
+(@angriff36/manifest): flag `:block` whose name starts with block-the-bad-state vocabulary while
+its expression asserts the bad state.
+
+Fixed all 34: 29 expression flips (lead convert, proposal send/accept/withdraw, battle-board open,
+event-budget approve, finance+labor budget approve, inventory adjust/budget-reduce, prep-comment
+delete, station assign, shipment schedule/deliver ×2, api-key recordUsage, user terminate,
+workflow activate, PO submit/approve/cancel ×3, schedule release, time-entry clockIn/clockOut/
+process ×4); 3 severity corrections `:block`→`:warn` (warnOverBudget, warnOverdueMaintenance,
+warnUnsafeTemperature — warn-named, warn-shaped expressions); 1 entity-level relocation
+(blockFinalizeHighVariance → EventBudget.finalize, flipped — entity-level block anti-pattern
+v0.12.58); 3 deletions (prep-comment entity-level duplicate of its command-level constraint;
+EventReport blockSubmitEmptyContent + blockApproveIfNotCompleted — redundant: submit/approve
+guards already enforce identical conditions and guards run BEFORE constraints, so they could
+never fire).
+
+Gotcha for tooling: naive brace-counting over .manifest text breaks on literal `{}` INSIDE
+strings (`self.checklistData == "{}"`) — corrupted EventReport mid-sweep (silently dropped its
+default policy at parse; caught by conformance-index policy-coverage tests). Reverted + fixed.
+Verified: compile + validate green, runtime 172/172, api seed/demand/schedule/shipment 39/39,
+reaction gate strict OK.
+
+Search: inverted block constraint, block passes when true, warn fires when true, constraint
+polarity, 34 of 38, blockNoItems, blockAlreadyClockedIn, entity-level block anti-pattern

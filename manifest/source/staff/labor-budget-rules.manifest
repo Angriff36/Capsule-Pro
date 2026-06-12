@@ -77,7 +77,7 @@ entity LaborBudget {
     guard self.deletedAt == null "Cannot approve a deleted budget"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
 
-    constraint blockApproveZero:block self.budgetAmount == 0 {
+    constraint blockApproveZero:block self.budgetAmount > 0 {
       messageTemplate: "Cannot approve labor budget with zero amount"
       details: {
         locationId: self.locationId

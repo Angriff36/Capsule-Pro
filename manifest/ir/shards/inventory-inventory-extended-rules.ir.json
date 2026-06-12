@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "704e1524b57f10c16021c7f525a988b6dd02265803651d8e7328e68473f0892e",
-    "irHash": "18fb79abe61606c2aab786ba41448751aea7d2136c03956770b9d6e9bce561c8",
+    "contentHash": "8969be453d64efd327ddb9d4e8a275d5be62ebdd0d6a408aa82c909284e94033",
+    "irHash": "20dda997d9610c6cf0981a1a357b3d5393eb7295906f81d3cb6c6c8d0c463073",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.504Z"
+    "compiledAt": "2026-06-12T12:29:27.775Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -6137,7 +6137,7 @@
           "code": "blockNegativeResult",
           "expression": {
             "kind": "binary",
-            "operator": "<",
+            "operator": ">=",
             "left": {
               "kind": "binary",
               "operator": "+",
@@ -10091,7 +10091,7 @@
           "code": "blockReduceBelowSpent",
           "expression": {
             "kind": "binary",
-            "operator": "<",
+            "operator": ">=",
             "left": {
               "kind": "identifier",
               "name": "budgetAmount"

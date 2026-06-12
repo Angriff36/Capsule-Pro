@@ -117,7 +117,7 @@ entity Lead {
     guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
-    constraint blockAlreadyConverted:block self.isConverted {
+    constraint blockAlreadyConverted:block !self.isConverted {
       messageTemplate: "Lead '{contactName}' has already been converted to client '{existingClientId}'"
       details: {
         contactName: self.contactName
@@ -126,7 +126,7 @@ entity Lead {
       }
     }
 
-    constraint blockDisqualified:block self.status == "disqualified" {
+    constraint blockDisqualified:block self.status != "disqualified" {
       messageTemplate: "Cannot convert disqualified lead '{contactName}'"
       details: {
         contactName: self.contactName

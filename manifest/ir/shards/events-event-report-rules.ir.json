@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "986cdf24feff98be65aee5a6ff200d36416c2d383aecde9b06c05f90fef08e80",
-    "irHash": "20218059c02e7ca84430ae327687ffaf64f4936b9ce3e3c29c96a6fff3b2f05c",
+    "contentHash": "177348d3bd6c7a34f9d7fa3b9fc4091d3c5c6d75b8d5ad552c6fdcd9bd31bd8e",
+    "irHash": "a9b9e1ed46837ad7b588f6b05364885a0d1c929b77227ccfafb6972ae303847a",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.470Z"
+    "compiledAt": "2026-06-12T12:29:27.738Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -802,109 +802,6 @@
                 "name": "self"
               },
               "property": "completion"
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "blockSubmitEmptyContent",
-          "code": "blockSubmitEmptyContent",
-          "expression": {
-            "kind": "binary",
-            "operator": "or",
-            "left": {
-              "kind": "binary",
-              "operator": "==",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "checklistData"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "{}"
-                }
-              }
-            },
-            "right": {
-              "kind": "binary",
-              "operator": "==",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "checklistData"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": ""
-                }
-              }
-            }
-          },
-          "severity": "block",
-          "messageTemplate": "Cannot submit report '{reportName}' - checklist data is empty",
-          "detailsMapping": {
-            "reportName": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "name"
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "blockApproveIfNotCompleted",
-          "code": "blockApproveIfNotCompleted",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "completed"
-              }
-            }
-          },
-          "severity": "block",
-          "messageTemplate": "Cannot approve report '{reportName}' - report must be completed first (current: {status})",
-          "detailsMapping": {
-            "reportName": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "name"
-            },
-            "status": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
             }
           },
           "overrideable": false

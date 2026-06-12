@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "4e8fd88b096eb022ab72889fcaf0177de37ddc9c62c2b9365e70f7d714cdbb23",
-    "irHash": "6adcd3efeb4165985842c0ff6d0a3bad925713ffd2ec546dbc0ffa0b7188dd58",
+    "contentHash": "b97bfb48dfbde4c95dbdfb5cef802c2856d8cbc14d1921fd3ae65968ffa28448",
+    "irHash": "3d4516d2e468cd468cb62da59aba7396d5299d415ba820036984773ac97a52a6",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.544Z"
+    "compiledAt": "2026-06-12T12:29:27.818Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1431,12 +1431,16 @@
           "name": "blockFull",
           "code": "blockFull",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isAtCapacity"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isAtCapacity"
+            }
           },
           "severity": "block",
           "messageTemplate": "Cannot assign task — station '{stationName}' is at full capacity ({current}/{max})",

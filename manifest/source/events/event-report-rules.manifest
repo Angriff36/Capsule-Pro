@@ -55,21 +55,6 @@ entity EventReport {
     }
   }
 
-  constraint blockSubmitEmptyContent:block self.checklistData == "{}" or self.checklistData == "" {
-    messageTemplate: "Cannot submit report '{reportName}' - checklist data is empty"
-    details: {
-      reportName: self.name
-    }
-  }
-
-  constraint blockApproveIfNotCompleted:block self.status != "completed" {
-    messageTemplate: "Cannot approve report '{reportName}' - report must be completed first (current: {status})"
-    details: {
-      reportName: self.name
-      status: self.status
-    }
-  }
-
   default policy EventReportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, name: string, version: string, checklistData: string, reportConfig: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"

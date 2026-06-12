@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "97c41c6789e14e3bca64b231fd1d0a801256ac56d315e9afed642515facd0ecb",
-    "irHash": "a8317f78af783e84e6183574fc59a588a87c6ba29b3fe5fa1a87d317578f7ab4",
+    "contentHash": "ef6d09f18efddcb42340799dee55ffbd2206fe5df4037b9f055061f9dd49b4e7",
+    "irHash": "55ec588a93bc4491f254fa690cf3df4c1f3db967867057bed060028782763eaf",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.445Z"
+    "compiledAt": "2026-06-12T12:29:27.707Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -3271,23 +3271,12 @@
           "name": "blockNoLineItems",
           "code": "blockNoLineItems",
           "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "hasLineItems"
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
             },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "boolean",
-                "value": false
-              }
-            }
+            "property": "hasLineItems"
           },
           "severity": "block",
           "messageTemplate": "Cannot send proposal '{proposalNumber}' with no line items",
@@ -3605,12 +3594,16 @@
           "name": "blockExpired",
           "code": "blockExpired",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isExpired"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isExpired"
+            }
           },
           "severity": "block",
           "messageTemplate": "Cannot accept expired proposal '{proposalNumber}' (expired on {validUntil})",
@@ -3866,12 +3859,16 @@
           "name": "blockAlreadyAccepted",
           "code": "blockAlreadyAccepted",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isAccepted"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isAccepted"
+            }
           },
           "severity": "block",
           "messageTemplate": "Cannot withdraw accepted proposal '{proposalNumber}'",
@@ -3907,12 +3904,16 @@
           "name": "blockAlreadyWithdrawn",
           "code": "blockAlreadyWithdrawn",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isWithdrawn"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isWithdrawn"
+            }
           },
           "severity": "block",
           "messageTemplate": "Proposal '{proposalNumber}' is already withdrawn",

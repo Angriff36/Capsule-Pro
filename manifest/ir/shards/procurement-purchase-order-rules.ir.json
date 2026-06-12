@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "266a208e935fdcf3e6e49c95aee73c440a8b8502245c8e7070622ede3eb7d1da",
-    "irHash": "272b9467b6c4e842e98fee03252d4766fc6362f9f3fc042d0b594c97dc0ef83a",
+    "contentHash": "4b58ca86ebfec9dbfbedd6cec8a43b474e96c630b2643dfd8bc64f4fb9cbcca8",
+    "irHash": "8457eed7d51b5dde68807b797a15f841cda230140a18ff391f84243c05925968",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.577Z"
+    "compiledAt": "2026-06-12T12:29:27.851Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2020,7 +2020,7 @@
           "code": "blockNoItems",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {
@@ -2142,7 +2142,7 @@
           "code": "blockNoItems",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {
@@ -2395,7 +2395,7 @@
           "code": "blockCancelReceived",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": "!=",
             "left": {
               "kind": "member",
               "object": {

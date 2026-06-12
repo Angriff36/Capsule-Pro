@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "78ef632100448b77fca21e45bff26535d015bc92626f88a5daff01bdd663c34b",
-    "irHash": "bcd899b8080b9713bf02f562fc2585b83963601d854edcfd057871461aa66c34",
+    "contentHash": "fd6db479445284a180323ae2705c98f8c70c4d564b394953e5ae088df0482b7d",
+    "irHash": "56c9803b21e1012957abc77597227bcafedd619b03b79612d24d0c9ff05892cd",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.442Z"
+    "compiledAt": "2026-06-12T12:29:27.703Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1897,12 +1897,16 @@
           "name": "blockAlreadyConverted",
           "code": "blockAlreadyConverted",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isConverted"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isConverted"
+            }
           },
           "severity": "block",
           "messageTemplate": "Lead '{contactName}' has already been converted to client '{existingClientId}'",
@@ -1939,7 +1943,7 @@
           "code": "blockDisqualified",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": "!=",
             "left": {
               "kind": "member",
               "object": {

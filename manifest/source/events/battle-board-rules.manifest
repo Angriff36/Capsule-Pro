@@ -79,7 +79,7 @@ entity BattleBoard {
   command open(userId: string) {
     guard self.status == "draft" "Can only open draft battle boards"
 
-    constraint blockNoDishes:block self.dishCount == 0 {
+    constraint blockNoDishes:block self.dishCount > 0 {
       messageTemplate: "Cannot open battle board '{boardName}' with no dishes"
       details: {
         boardName: self.boardName

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "afe429717615f875d0b1edf9c3b34a51afcc394371f46f3172641e365045af60",
-    "irHash": "e50037874f6706b31eaa9b7495f06d5adae090ac2eb33cf4988cc438bab83106",
+    "contentHash": "263a061ce74484c5b8fca85df6a82aa49928925b3892b259634fd73da86d02e4",
+    "irHash": "f20f74b237ab6633c57fdb3460fe753ae727b986aa092acd7171b592ad51a381",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.584Z"
+    "compiledAt": "2026-06-12T12:29:27.858Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1176,7 +1176,7 @@
               "property": "isInSafeRange"
             }
           },
-          "severity": "block",
+          "severity": "warn",
           "messageTemplate": "Temperature {temp}{unit} at {location} is outside safe range",
           "detailsMapping": {
             "location": {

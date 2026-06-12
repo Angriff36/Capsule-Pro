@@ -116,7 +116,7 @@ entity InventoryStock {
   command adjust(delta: decimal, reason: string) {
     guard reason != null and reason != "" "Adjustment reason is required"
 
-    constraint blockNegativeResult:block (self.quantityOnHand + delta) < 0 {
+    constraint blockNegativeResult:block (self.quantityOnHand + delta) >= 0 {
       messageTemplate: "Adjustment would result in negative stock ({result})"
       details: {
         inventoryItemId: self.inventoryItemId
@@ -680,7 +680,7 @@ entity ProcurementBudget {
     guard name != null and name != "" "Budget name is required"
     guard budgetAmount != null and budgetAmount > 0 "Budget amount must be positive"
 
-    constraint blockReduceBelowSpent:block budgetAmount < self.spentAmount {
+    constraint blockReduceBelowSpent:block budgetAmount >= self.spentAmount {
       messageTemplate: "Cannot reduce budget below already-spent amount ({spent})"
       details: {
         name: self.name

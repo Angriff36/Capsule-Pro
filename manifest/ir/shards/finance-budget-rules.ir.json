@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "5512eb2c4adc4e2bafc8341c238e715be493f4fd5dfac6126db3780c87b2e785",
-    "irHash": "527fd8d2f8637ebe060544c0a3b711b1e1bbecd63623fac8ec694a4934f9cd3a",
+    "contentHash": "15f9b3f274ab8dfd94b68bc150701ed12e8d93207b24c443b9fc9b552c46b434",
+    "irHash": "6bc11e35df70252b81182d8c3dfc0bf04a67cc204cb526b8ec13869e143c5628",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.481Z"
+    "compiledAt": "2026-06-12T12:29:27.750Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -416,7 +416,7 @@
               }
             }
           },
-          "severity": "block",
+          "severity": "warn",
           "messageTemplate": "Budget '{budgetName}' is over by {overAmount}",
           "detailsMapping": {
             "budgetName": {
@@ -1360,7 +1360,7 @@
           "code": "blockApproveZero",
           "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": ">",
             "left": {
               "kind": "member",
               "object": {

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0e821221ee2af2fc63648ec5502ebab0f48fbbfea8e1bf2c9879ef20ac2efa06",
-    "irHash": "0949c601a572b8bdc1d3cef7250205841178ccf6793f8f5dad226961bc2d284c",
+    "contentHash": "dfb66ee05ab0429bacb81cd05deada3768d4fabb3b85eec56b804d961ec364ed",
+    "irHash": "c94b2296835d7a019f2d948daf405a306b2cfdc7103d341b4f4fb0403e71b480",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:11:25.529Z"
+    "compiledAt": "2026-06-12T12:29:27.803Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -215,49 +215,7 @@
         "unresolve",
         "softDelete"
       ],
-      "constraints": [
-        {
-          "name": "blockDeleteIfResolved",
-          "code": "blockDeleteIfResolved",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isResolved"
-          },
-          "severity": "block",
-          "messageTemplate": "Cannot delete resolved comment '{commentId}' on task '{taskId}'",
-          "detailsMapping": {
-            "commentId": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "id"
-            },
-            "taskId": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "taskId"
-            },
-            "resolvedBy": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "resolvedBy"
-            }
-          },
-          "overrideable": false
-        }
-      ],
+      "constraints": [],
       "policies": [],
       "defaultPolicies": [
         "PrepCommentDefaultAccess"
@@ -1229,12 +1187,16 @@
           "name": "blockDeleteIfResolved",
           "code": "blockDeleteIfResolved",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isResolved"
+            "kind": "unary",
+            "operator": "!",
+            "operand": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isResolved"
+            }
           },
           "severity": "block",
           "messageTemplate": "Cannot delete resolved comment '{commentId}' — unresolve it first",

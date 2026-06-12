@@ -82,7 +82,7 @@ entity User {
   command terminate(userId: string, reason: string, terminationDate: datetime) {
     guard self.isActive "User is already inactive"
 
-    constraint blockAlreadyTerminated:block self.isTerminated {
+    constraint blockAlreadyTerminated:block !self.isTerminated {
       messageTemplate: "User '{name}' is already terminated"
       details: {
         name: self.fullName
