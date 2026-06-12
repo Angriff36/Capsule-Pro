@@ -18,7 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
-import { Alert } from "@repo/design-system/components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@repo/design-system/components/ui/alert";
 import {
   ArrowLeft,
   Copy,
@@ -41,12 +45,13 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { usePostHog } from "posthog-js/react";
+import { apiFetch } from "@/app/lib/api";
+import * as routes from "@/app/lib/routes";
 
 interface ProposalAction {
   id: string;
   actionType: string;
   clientMessage: string | null;
-  respondedAt: string | null;
   createdAt: string;
 }
 
@@ -80,9 +85,9 @@ interface Proposal {
   nextSteps: string | null;
   templateId: string | null;
   magicToken: string;
-  magicTokenExpiresAt: string;
+  magicTokenExpiresAt: string | null;
   sentAt: string | null;
-  sentVia: string[] | null;
+  sentVia: string[];
   viewedAt: string | null;
   respondedAt: string | null;
   depositAmount: number;
@@ -98,7 +103,7 @@ interface ProposalDetailClientProps {
   proposal: Proposal;
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<string, "default" | "secondary" | "destructive"> = {
   draft: "secondary",
   sent: "default",
   viewed: "default",
@@ -132,8 +137,9 @@ const formatDate = (date: string) =>
     year: "numeric",
   });
 
-const isTokenExpired = (expiresAt: string) => {
-  return new Date(expiresAt) < new Date();
+const isTokenExpired = (expiresAt: string | null) => {
+  // No expiry recorded = link never expires.
+  return expiresAt ? new Date(expiresAt) < new Date() : false;
 };
 
 export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
@@ -167,7 +173,7 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
   const handleSendProposal = useCallback(async () => {
     setIsSending(true);
     try {
-      const response = await fetch(`/api/call-planner/proposals/${proposal.id}/send`, {
+      const response = await apiFetch(routes.callPlannerProposalSend(proposal.id), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -190,9 +196,12 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
 
   const handleRefreshToken = useCallback(async () => {
     try {
-      const response = await fetch(`/api/call-planner/proposals/${proposal.id}/refresh-token`, {
-        method: "POST",
-      });
+      const response = await apiFetch(
+        routes.callPlannerProposalRefreshToken(proposal.id),
+        {
+          method: "POST",
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to refresh token");
 
@@ -206,6 +215,15 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
   const eventSummary = proposal.eventSummary as Record<string, unknown>;
   const pricingBreakdown = proposal.pricingBreakdown as Record<string, unknown>;
   const menuSections = proposal.menuSections as Record<string, unknown>;
+
+  const timelineItemsRaw = proposal.timeline?.items;
+  const timelineItems = Array.isArray(timelineItemsRaw)
+    ? (timelineItemsRaw as unknown[])
+    : null;
+  const pricingItemsRaw = pricingBreakdown.items;
+  const pricingItems = Array.isArray(pricingItemsRaw)
+    ? (pricingItemsRaw as unknown[])
+    : null;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -374,13 +392,16 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {eventSummary.guestCount || "-"} guests
+                    {eventSummary.guestCount
+                      ? String(eventSummary.guestCount)
+                      : "-"}{" "}
+                    guests
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {eventSummary.venue || "Venue TBD"}
+                    {eventSummary.venue ? String(eventSummary.venue) : "Venue TBD"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -392,7 +413,7 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
                   </span>
                 </div>
               </div>
-              {eventSummary.description && (
+              {typeof eventSummary.description === "string" && (
                 <p className="text-sm text-muted-foreground">
                   {eventSummary.description}
                 </p>
@@ -414,12 +435,18 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
                     return (
                       <div key={sectionKey} className="border-b pb-4 last:border-0">
                         <h4 className="font-medium mb-2">
-                          {sectionData.title || sectionKey}
+                          {sectionData.title
+                            ? String(sectionData.title)
+                            : sectionKey}
                         </h4>
                         <ul className="space-y-1 text-sm text-muted-foreground">
                           {(sectionData.items as unknown[][])?.map((item: unknown[], idx: number) => (
                             <li key={idx}>
-                              {Array.isArray(item) && item.length > 0 ? item[0] : item}
+                              {String(
+                                Array.isArray(item) && item.length > 0
+                                  ? item[0]
+                                  : item
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -441,17 +468,20 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {(proposal.timeline as Record<string, unknown>).items &&
-                  Array.isArray((proposal.timeline as Record<string, unknown>).items) ? (
-                    (proposal.timeline as Record<string, unknown>).items.map((item: unknown, idx: number) => {
+                  {timelineItems ? (
+                    timelineItems.map((item: unknown, idx: number) => {
                       if (typeof item !== "object" || item === null) return null;
                       const timelineItem = item as Record<string, unknown>;
                       return (
                         <div key={idx} className="flex items-start gap-3 text-sm">
                           <div className="w-2 h-2 rounded-full bg-primary mt-1.5" />
                           <div>
-                            <p className="font-medium">{timelineItem.title || "Item"}</p>
-                            {timelineItem.description && (
+                            <p className="font-medium">
+                              {timelineItem.title
+                                ? String(timelineItem.title)
+                                : "Item"}
+                            </p>
+                            {typeof timelineItem.description === "string" && (
                               <p className="text-muted-foreground">
                                 {timelineItem.description}
                               </p>
@@ -479,29 +509,33 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
             <CardContent className="space-y-3">
               {pricingBreakdown && typeof pricingBreakdown === "object" ? (
                 <>
-                  {(pricingBreakdown as Record<string, unknown>).items &&
-                  Array.isArray((pricingBreakdown as Record<string, unknown>).items) ? (
-                    (pricingBreakdown as Record<string, unknown>).items.map((item: unknown, idx: number) => {
-                      if (typeof item !== "object" || item === null) return null;
-                      const lineItem = item as Record<string, unknown>;
-                      return (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span>{lineItem.description || "Item"}</span>
-                          <span className="font-medium">
-                            {lineItem.amount
-                              ? formatCurrency(lineItem.amount as number)
-                              : "-"}
-                          </span>
-                        </div>
-                      );
-                    })
-                  ) : null}
+                  {pricingItems
+                    ? pricingItems.map((item: unknown, idx: number) => {
+                        if (typeof item !== "object" || item === null)
+                          return null;
+                        const lineItem = item as Record<string, unknown>;
+                        return (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span>
+                              {lineItem.description
+                                ? String(lineItem.description)
+                                : "Item"}
+                            </span>
+                            <span className="font-medium">
+                              {lineItem.amount
+                                ? formatCurrency(lineItem.amount as number)
+                                : "-"}
+                            </span>
+                          </div>
+                        );
+                      })
+                    : null}
                   <div className="border-t pt-3">
                     <div className="flex justify-between font-semibold">
                       <span>Estimated Total</span>
                       <span>
-                        {(pricingBreakdown as Record<string, unknown>).total
-                          ? formatCurrency((pricingBreakdown as Record<string, unknown>).total as number)
+                        {pricingBreakdown.total
+                          ? formatCurrency(pricingBreakdown.total as number)
                           : "-"}
                       </span>
                     </div>
@@ -576,7 +610,11 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Expires</span>
-                  <span>{formatDate(proposal.magicTokenExpiresAt)}</span>
+                  <span>
+                    {proposal.magicTokenExpiresAt
+                      ? formatDate(proposal.magicTokenExpiresAt)
+                      : "Never"}
+                  </span>
                 </div>
                 {proposal.viewedAt && (
                   <div className="flex justify-between text-sm">

@@ -48,9 +48,8 @@ export function KanbanCard({
         if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
       ref={setNodeRef}
-      role="button"
       style={style}
-      tabIndex={0}
+      // dnd-kit attributes provide role="button" and tabIndex
       {...attributes}
       {...listeners}
     >

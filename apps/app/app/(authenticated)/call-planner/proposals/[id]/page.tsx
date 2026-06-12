@@ -29,22 +29,24 @@ export default async function ProposalDetailPage({ params }: Props) {
       id,
       deletedAt: null,
     },
-    include: {
-      draft: {
-        select: {
-          id: true,
-          sessionId: true,
-          status: true,
-          clientName: true,
-          eventType: true,
-        },
-      },
-    },
   });
 
   if (!proposal) {
     notFound();
   }
+
+  // No FK relations in this schema (flat keys) — resolve the source draft
+  // with a separate query.
+  const draft = await database.eventPlanningDraft.findFirst({
+    where: { tenantId, id: proposal.draftId },
+    select: {
+      id: true,
+      sessionId: true,
+      status: true,
+      clientName: true,
+      eventType: true,
+    },
+  });
 
   // Serialize for client component
   const serializedProposal = {
@@ -58,51 +60,65 @@ export default async function ProposalDetailPage({ params }: Props) {
     clientName: proposal.clientName,
     clientEmail: proposal.clientEmail,
     clientPhone: proposal.clientPhone,
-    eventSummary: proposal.eventSummary,
-    menuSections: proposal.menuSections,
-    servicePlan: proposal.servicePlan,
-    pricingBreakdown: proposal.pricingBreakdown,
-    timeline: proposal.timeline,
-    upgradeOptions: proposal.upgradeOptions,
+    eventSummary: (proposal.eventSummary ?? {}) as Record<string, unknown>,
+    menuSections: (proposal.menuSections ?? {}) as Record<string, unknown>,
+    servicePlan: (proposal.servicePlan ?? {}) as Record<string, unknown>,
+    pricingBreakdown: (proposal.pricingBreakdown ?? {}) as Record<
+      string,
+      unknown
+    >,
+    timeline: proposal.timeline as Record<string, unknown> | null,
+    upgradeOptions: proposal.upgradeOptions as Record<string, unknown> | null,
     visionSummary: proposal.visionSummary,
     notes: proposal.notes,
     nextSteps: proposal.nextSteps,
     templateId: proposal.templateId,
     magicToken: proposal.magicToken,
-    magicTokenExpiresAt: proposal.magicTokenExpiresAt.toISOString(),
-    sentAt: proposal.sentAt?.toISOString(),
-    sentVia: proposal.sentVia,
-    viewedAt: proposal.viewedAt?.toISOString(),
-    respondedAt: proposal.respondedAt?.toISOString(),
-    depositAmount: proposal.depositAmount,
+    magicTokenExpiresAt: proposal.magicTokenExpiresAt
+      ? proposal.magicTokenExpiresAt.toISOString()
+      : null,
+    sentAt: proposal.sentAt ? proposal.sentAt.toISOString() : null,
+    sentVia: proposal.sentVia ? proposal.sentVia.split(",") : [],
+    viewedAt: proposal.viewedAt ? proposal.viewedAt.toISOString() : null,
+    respondedAt: proposal.respondedAt
+      ? proposal.respondedAt.toISOString()
+      : null,
+    depositAmount: Number(proposal.depositAmount),
     depositPaid: proposal.depositPaid,
     htmlContent: proposal.htmlContent,
     createdAt: proposal.createdAt.toISOString(),
     updatedAt: proposal.updatedAt.toISOString(),
-    draft: proposal.draft
+    draft: draft
       ? {
-          id: proposal.draft.id,
-          sessionId: proposal.draft.sessionId,
-          status: proposal.draft.status,
-          clientName: proposal.draft.clientName,
-          eventType: proposal.draft.eventType,
+          id: draft.id,
+          sessionId: draft.sessionId,
+          status: draft.status,
+          clientName: draft.clientName,
+          eventType: draft.eventType,
         }
       : null,
-    actions: await database.proposalAction.findMany({
-      where: {
-        proposalId: proposal.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: {
-        id: true,
-        actionType: true,
-        clientMessage: true,
-        respondedAt: true,
-        createdAt: true,
-      },
-    }),
+    actions: (
+      await database.proposalAction.findMany({
+        where: {
+          tenantId,
+          proposalId: proposal.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          action: true,
+          message: true,
+          createdAt: true,
+        },
+      })
+    ).map((a) => ({
+      id: a.id,
+      actionType: a.action,
+      clientMessage: a.message,
+      createdAt: a.createdAt.toISOString(),
+    })),
   };
 
   return <ProposalDetailClient proposal={serializedProposal} />;

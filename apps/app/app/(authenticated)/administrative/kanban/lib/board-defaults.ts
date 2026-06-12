@@ -1,8 +1,11 @@
 import type { BoardColumn, BoardSettings } from "./board-types";
 
+// Column statuses MUST match the AdminTask state machine
+// (manifest/source/admin-task-rules.manifest): backlog / in_progress /
+// review / done (+ cancelled, which is not shown as a board column).
+// Moves into any other status are rejected by the governed API.
 export const DEFAULT_COLUMNS: BoardColumn[] = [
   { status: "backlog", title: "Backlog", color: "neutral", wipLimit: 0 },
-  { status: "todo", title: "To Do", color: "blue", wipLimit: 0 },
   {
     status: "in_progress",
     title: "In Progress",
@@ -13,6 +16,8 @@ export const DEFAULT_COLUMNS: BoardColumn[] = [
   { status: "done", title: "Done", color: "green", wipLimit: 0 },
 ];
 
+// Dev mode shows a narrower view of the SAME state machine — no custom
+// statuses (the API rejects moves into states the state machine doesn't own).
 export const DEV_MODE_COLUMNS: BoardColumn[] = [
   { status: "backlog", title: "Backlog", color: "neutral", wipLimit: 0 },
   {
@@ -21,13 +26,7 @@ export const DEV_MODE_COLUMNS: BoardColumn[] = [
     color: "amber",
     wipLimit: 0,
   },
-  { status: "blocked", title: "Blocked", color: "red", wipLimit: 0 },
-  {
-    status: "ready_for_qa",
-    title: "Ready for QA",
-    color: "purple",
-    wipLimit: 0,
-  },
+  { status: "review", title: "Review", color: "purple", wipLimit: 0 },
   { status: "done", title: "Done", color: "green", wipLimit: 0 },
 ];
 

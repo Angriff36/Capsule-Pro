@@ -23,6 +23,7 @@ import type {
 import { SEVERITY_OPTIONS, ENVIRONMENT_OPTIONS } from "../lib/board-defaults";
 import { apiFetch } from "@/app/lib/api";
 import * as routes from "@/app/lib/routes";
+import type { useCardMutations } from "../hooks/use-card-mutations";
 
 type TabKey = "details" | "comments" | "attachments" | "activity";
 
@@ -34,37 +35,7 @@ interface KanbanCardDetailProps {
   onUpdate: (
     updated: Partial<KanbanTask> & { id: string }
   ) => void;
-  mutations: {
-    updateTask: (
-      id: string,
-      data: Record<string, unknown>
-    ) => Promise<{ success: boolean }>;
-    deleteTask: (id: string) => Promise<{ success: boolean }>;
-    addComment: (
-      taskId: string,
-      text: string
-    ) => Promise<{ success: boolean }>;
-    deleteComment: (
-      taskId: string,
-      commentId: string
-    ) => Promise<{ success: boolean }>;
-    addAttachment: (
-      taskId: string,
-      data: Record<string, unknown>
-    ) => Promise<{ success: boolean }>;
-    deleteAttachment: (
-      taskId: string,
-      attachmentId: string
-    ) => Promise<{ success: boolean }>;
-    createDevMeta: (
-      taskId: string,
-      data: Record<string, unknown>
-    ) => Promise<{ success: boolean }>;
-    updateDevMeta: (
-      taskId: string,
-      data: Record<string, unknown>
-    ) => Promise<{ success: boolean }>;
-  };
+  mutations: ReturnType<typeof useCardMutations>;
   isDevMode: boolean;
 }
 
@@ -90,38 +61,52 @@ export function KanbanCardDetail({
   useEffect(() => {
     if (!open) return;
     if (activeTab === "comments") {
-      apiFetch<{ data: TaskComment[] }>(routes.adminTaskComments(task.id))
+      apiFetch(routes.adminTaskComments(task.id))
         .then((res) => {
           if (res.ok) {
-            return res.json().then((data) => setComments(data.data ?? []));
+            return res
+              .json()
+              .then((data: { data?: TaskComment[] }) =>
+                setComments(data.data ?? [])
+              );
           }
         })
         .catch(() => {});
     } else if (activeTab === "attachments") {
-      apiFetch<{ data: TaskAttachment[] }>(
-        routes.adminTaskAttachments(task.id)
-      )
+      apiFetch(routes.adminTaskAttachments(task.id))
         .then((res) => {
           if (res.ok) {
-            return res.json().then((data) => setAttachments(data.data ?? []));
+            return res
+              .json()
+              .then((data: { data?: TaskAttachment[] }) =>
+                setAttachments(data.data ?? [])
+              );
           }
         })
         .catch(() => {});
     } else if (activeTab === "activity") {
-      apiFetch<{ data: TaskActivity[] }>(routes.adminTaskActivity(task.id))
+      apiFetch(routes.adminTaskActivity(task.id))
         .then((res) => {
           if (res.ok) {
-            return res.json().then((data) => setActivity(data.data ?? []));
+            return res
+              .json()
+              .then((data: { data?: TaskActivity[] }) =>
+                setActivity(data.data ?? [])
+              );
           }
         })
         .catch(() => {});
     }
     // Load dev meta for bug tasks
     if (task.sourceType === "dev_bug") {
-      apiFetch<{ data: DevBugMeta | null }>(routes.adminTaskDevMeta(task.id))
+      apiFetch(routes.adminTaskDevMeta(task.id))
         .then((res) => {
           if (res.ok) {
-            return res.json().then((data) => setDevMeta(data.data ?? null));
+            return res
+              .json()
+              .then((data: { data?: DevBugMeta | null }) =>
+                setDevMeta(data.data ?? null)
+              );
           }
         })
         .catch(() => {});
@@ -145,10 +130,14 @@ export function KanbanCardDetail({
     if (result.success) {
       setCommentText("");
       // Refresh comments
-      apiFetch<{ data: TaskComment[] }>(routes.adminTaskComments(task.id))
+      apiFetch(routes.adminTaskComments(task.id))
         .then((res) => {
           if (res.ok) {
-            return res.json().then((data) => setComments(data.data ?? []));
+            return res
+              .json()
+              .then((data: { data?: TaskComment[] }) =>
+                setComments(data.data ?? [])
+              );
           }
         })
         .catch(() => {});

@@ -1,11 +1,15 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "../../../lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { KanbanBoardClient } from "./components/kanban-board-client";
 import { DEFAULT_COLUMNS, DEFAULT_SETTINGS } from "./lib/board-defaults";
-import type { KanbanTask, BoardConfigData, Employee } from "./lib/board-types";
-import type { TaskPriority } from "./lib/board-types";
+import type {
+  BoardConfigData,
+  Employee,
+  KanbanTask,
+  TaskPriority,
+} from "./lib/board-types";
 
 async function getBoardData(tenantId: string) {
   const [tasks, configRow, employees] = await Promise.all([
@@ -52,7 +56,9 @@ async function getBoardData(tenantId: string) {
     ? {
         id: configRow.id,
         name: configRow.name,
-        columns: (configRow.columns as BoardConfigData["columns"]) ?? DEFAULT_COLUMNS,
+        columns:
+          (configRow.columns as unknown as BoardConfigData["columns"]) ??
+          DEFAULT_COLUMNS,
         settings: (configRow.settings as BoardConfigData["settings"]) ?? DEFAULT_SETTINGS,
       }
     : {

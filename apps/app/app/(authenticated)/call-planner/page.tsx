@@ -28,6 +28,7 @@ export default async function CallPlannerPage() {
     take: 10,
     select: {
       id: true,
+      sessionId: true,
       status: true,
       clientName: true,
       eventType: true,
@@ -37,29 +38,36 @@ export default async function CallPlannerPage() {
       proposalId: true,
       createdAt: true,
       updatedAt: true,
-      session: {
-        select: {
-          status: true,
-          startedAt: true,
-        },
-      },
     },
   });
 
-  const serialized = drafts.map((draft) => ({
-    id: draft.id,
-    status: draft.status,
-    clientName: draft.clientName,
-    eventType: draft.eventType,
-    eventDate: draft.eventDate?.toISOString(),
-    guestCount: draft.guestCount,
-    overallConfidence: draft.overallConfidence,
-    proposalId: draft.proposalId,
-    createdAt: draft.createdAt.toISOString(),
-    updatedAt: draft.updatedAt.toISOString(),
-    sessionStatus: draft.session?.status,
-    sessionStartedAt: draft.session?.startedAt?.toISOString(),
-  }));
+  // No FK relations in this schema (flat keys) — resolve sessions separately.
+  const sessionIds = Array.from(new Set(drafts.map((d) => d.sessionId)));
+  const sessions = sessionIds.length
+    ? await database.callPlanningSession.findMany({
+        where: { tenantId, id: { in: sessionIds } },
+        select: { id: true, status: true, startedAt: true },
+      })
+    : [];
+  const sessionMap = new Map(sessions.map((s) => [s.id, s]));
+
+  const serialized = drafts.map((draft) => {
+    const session = sessionMap.get(draft.sessionId);
+    return {
+      id: draft.id,
+      status: draft.status,
+      clientName: draft.clientName,
+      eventType: draft.eventType,
+      eventDate: draft.eventDate ? draft.eventDate.toISOString() : null,
+      guestCount: draft.guestCount,
+      overallConfidence: Number(draft.overallConfidence ?? 0),
+      proposalId: draft.proposalId,
+      createdAt: draft.createdAt.toISOString(),
+      updatedAt: draft.updatedAt.toISOString(),
+      sessionStatus: session?.status ?? null,
+      sessionStartedAt: session ? session.startedAt.toISOString() : null,
+    };
+  });
 
   return <CallPlannerClient initialDrafts={serialized} />;
 }

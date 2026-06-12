@@ -43,6 +43,8 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
+import { apiFetch } from "@/app/lib/api";
+import * as routes from "@/app/lib/routes";
 
 interface Draft {
   id: string;
@@ -63,7 +65,7 @@ interface CallPlannerClientProps {
   initialDrafts: Draft[];
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<string, "default" | "secondary" | "destructive"> = {
   active: "default",
   review: "secondary",
   converted: "default",
@@ -127,7 +129,7 @@ export function CallPlannerClient({
 
     setIsUploading(true);
     try {
-      const response = await fetch("/api/call-planner/transcript", {
+      const response = await apiFetch(routes.callPlannerTranscript(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript, sourceType: "manual" }),
@@ -161,7 +163,7 @@ export function CallPlannerClient({
   const handleDeleteDraft = useCallback(
     async (draftId: string) => {
       try {
-        const response = await fetch(`/api/call-planner/drafts/${draftId}`, {
+        const response = await apiFetch(routes.callPlannerDraft(draftId), {
           method: "DELETE",
         });
 
@@ -179,7 +181,7 @@ export function CallPlannerClient({
 
   const handleRefresh = useCallback(async () => {
     try {
-      const response = await fetch("/api/call-planner/drafts");
+      const response = await apiFetch(routes.callPlannerDrafts());
       if (!response.ok) throw new Error("Failed to refresh drafts");
 
       const data = await response.json();

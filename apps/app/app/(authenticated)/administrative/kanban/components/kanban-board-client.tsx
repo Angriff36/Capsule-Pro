@@ -143,25 +143,19 @@ export function KanbanBoardClient({
       const task = tasks.find((t) => t.id === taskId);
       if (!task) return;
 
-      // Calculate new position
-      const targetTasks = filteredTasksByColumn[targetStatus] ?? [];
-      const overIndex = targetTasks.findIndex((t) => t.id === overId);
-      const newPosition = overIndex >= 0 ? overIndex : targetTasks.length;
-
-      onDragEnd(taskId, targetStatus, newPosition);
+      // The hook derives the new position from the card/column dropped on.
+      onDragEnd(taskId, overId, targetStatus);
     },
-    [tasks, filteredTasksByColumn, onDragEnd]
+    [tasks, onDragEnd]
   );
 
+  // AdminTaskDialog performs the POST itself and hands back the created task;
+  // the board only needs to add it to local state.
   const handleCreateTask = useCallback(
-    async (data: Record<string, unknown>) => {
-      const result = await mutations.createTask(data);
-      if (result.success && result.data) {
-        addTask(result.data as KanbanTask);
-      }
-      return result;
+    (task: KanbanTask) => {
+      addTask(task);
     },
-    [mutations, addTask]
+    [addTask]
   );
 
   return (

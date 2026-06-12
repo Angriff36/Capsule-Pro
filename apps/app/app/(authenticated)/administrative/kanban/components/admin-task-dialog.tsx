@@ -14,9 +14,10 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type { Employee, KanbanTask } from "../lib/board-types";
-import { SEVERITY_OPTIONS, ENVIRONMENT_OPTIONS } from "../lib/board-defaults";
+import { apiFetch } from "@/app/lib/api";
 import * as routes from "@/app/lib/routes";
+import { ENVIRONMENT_OPTIONS, SEVERITY_OPTIONS } from "../lib/board-defaults";
+import type { Employee, KanbanTask } from "../lib/board-types";
 
 const priorities = [
   { value: "high", label: "High" },
@@ -60,7 +61,7 @@ export function AdminTaskDialog({
     }
 
     try {
-      const res = await fetch(routes.adminTasks(), {
+      const res = await apiFetch(routes.adminTasks(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -197,8 +198,8 @@ export function AdminTaskDialog({
                   name="severity"
                 >
                   {SEVERITY_OPTIONS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.value} value={s.value}>
+                      {s.label}
                     </option>
                   ))}
                 </select>
@@ -212,9 +213,9 @@ export function AdminTaskDialog({
                   name="environment"
                 >
                   <option value="">Select</option>
-                  {ENVIRONMENT_OPTIONS.map((e) => (
-                    <option key={e} value={e}>
-                      {e}
+                  {ENVIRONMENT_OPTIONS.map((env) => (
+                    <option key={env.value} value={env.value}>
+                      {env.label}
                     </option>
                   ))}
                 </select>

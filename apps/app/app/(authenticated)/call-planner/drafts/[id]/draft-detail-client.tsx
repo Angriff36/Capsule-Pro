@@ -63,6 +63,8 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { usePostHog } from "posthog-js/react";
+import { apiFetch } from "@/app/lib/api";
+import * as routes from "@/app/lib/routes";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 
 interface ExtractedDetail {
@@ -127,7 +129,7 @@ interface DraftDetailClientProps {
   draft: Draft;
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<string, "default" | "secondary" | "destructive"> = {
   active: "default",
   review: "secondary",
   converted: "default",
@@ -213,7 +215,7 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
   const handleSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/call-planner/drafts/${draft.id}`, {
+      const response = await apiFetch(routes.callPlannerDraft(draft.id), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -257,8 +259,8 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
   const handleGenerateProposal = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch(
-        `/api/call-planner/drafts/${draft.id}/generate-proposal`,
+      const response = await apiFetch(
+        routes.callPlannerDraftGenerateProposal(draft.id),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -305,8 +307,10 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
       }));
 
       // Update the extracted detail status
-      const detailIndex = prev =>
-        prev.extractedDetails.findIndex((d) => d.fieldName === fieldName);
+      const detailIndex = (draftState: Draft) =>
+        draftState.extractedDetails.findIndex(
+          (d) => d.fieldName === fieldName
+        );
 
       setEditedDraft((prev) => {
         const updated = { ...prev };
@@ -523,15 +527,16 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
               <div className="grid gap-2">
                 <Label htmlFor="eventDate">Event Date</Label>
                 <DatePicker
-                  date={
+                  id="eventDate"
+                  value={
                     editedDraft.eventDate
-                      ? new Date(editedDraft.eventDate)
+                      ? editedDraft.eventDate.slice(0, 10)
                       : undefined
                   }
-                  onSelect={(date) =>
+                  onChange={(e) =>
                     setEditedDraft((prev) => ({
                       ...prev,
-                      eventDate: date?.toISOString() || null,
+                      eventDate: e.target.value || null,
                     }))
                   }
                 />
