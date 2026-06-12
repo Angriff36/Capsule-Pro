@@ -40,12 +40,12 @@ import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  allergenWarningAcknowledge,
+  allergenWarningMarkResolved,
   listAllergenWarnings,
   listDishes,
   listEvents,
   listRecipes,
-  allergenWarningAcknowledge,
-  allergenWarningMarkResolved,
 } from "@/app/lib/manifest-client.generated";
 import { AllergenMatrix } from "@/components/allergen-matrix";
 import { AllergenManagementModal } from "./allergen-management-modal";
@@ -54,54 +54,54 @@ const { logger, captureException } = Sentry;
 
 // Types matching database schema
 interface AllergenWarning {
-  id: string;
-  eventId?: string;
-  dishId?: string;
-  warningType: string;
-  allergens: string[];
-  affectedGuests: string[];
-  severity: string;
-  isAcknowledged: boolean;
-  acknowledgedBy?: string;
   acknowledgedAt?: Date;
-  overrideReason?: string;
-  resolved: boolean;
-  resolvedAt?: Date;
-  notes?: string;
+  acknowledgedBy?: string;
+  affectedGuests: string[];
+  allergens: string[];
   createdAt: Date;
-  updatedAt: Date;
+  dish?: {
+    id: string;
+    name: string;
+  };
+  dishId?: string;
   event?: {
     id: string;
     title: string;
     startDate: Date;
     location?: string;
   };
-  dish?: {
-    id: string;
-    name: string;
-  };
+  eventId?: string;
+  id: string;
+  isAcknowledged: boolean;
+  notes?: string;
+  overrideReason?: string;
+  resolved: boolean;
+  resolvedAt?: Date;
+  severity: string;
+  updatedAt: Date;
+  warningType: string;
 }
 
 interface Event {
-  id: string;
-  title: string;
   eventDate: Date;
-  venueName?: string;
+  id: string;
   status: string;
+  title: string;
+  venueName?: string;
 }
 
 interface Dish {
-  id: string;
-  name: string;
   allergens: string[];
   dietaryTags: string[];
+  id: string;
+  name: string;
 }
 
 interface Recipe {
+  category?: string;
   id: string;
   name: string;
   tags: string[];
-  category?: string;
 }
 
 export default function AllergenManagementPage() {
@@ -257,18 +257,16 @@ export default function AllergenManagementPage() {
     }
   };
 
-  const formatGuests = (guests: string[]) => {
-    return guests.length > 0 ? `${guests.length} guest(s)` : "No guests";
-  };
+  const formatGuests = (guests: string[]) =>
+    guests.length > 0 ? `${guests.length} guest(s)` : "No guests";
 
-  const formatDateTime = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
+  const formatDateTime = (date: Date | string) =>
+    new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date(date));
-  };
 
   const getSeverityBadgeColor = (severity: string) => {
     switch (severity) {
@@ -288,7 +286,7 @@ export default function AllergenManagementPage() {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Allergen Management
         </h1>
         <p className="text-muted-foreground">
@@ -301,7 +299,7 @@ export default function AllergenManagementPage() {
 
       {/* Search Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Search</h2>
+        <h2 className="font-medium text-muted-foreground text-sm">Search</h2>
         <div className="flex items-center gap-2">
           <SearchIcon className="size-4 text-muted-foreground" />
           <Input
@@ -320,7 +318,7 @@ export default function AllergenManagementPage() {
       ) : (
         /* Allergen Information Section */
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Allergen Information
           </h2>
           <Tabs className="space-y-4" defaultValue="warnings">
@@ -346,7 +344,7 @@ export default function AllergenManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredWarnings.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="py-8 text-center text-muted-foreground">
                       No allergen warnings found
                     </div>
                   ) : (
@@ -368,7 +366,7 @@ export default function AllergenManagementPage() {
                                   >
                                     {warning.severity}
                                   </Badge>
-                                  <span className="text-sm text-muted-foreground">
+                                  <span className="text-muted-foreground text-sm">
                                     {formatDateTime(warning.createdAt)}
                                   </span>
                                   {warning.isAcknowledged && (
@@ -380,7 +378,7 @@ export default function AllergenManagementPage() {
                                     {warning.warningType}
                                   </p>
                                   {warning.event && (
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground text-sm">
                                       Event: {warning.event.title} on{" "}
                                       {new Date(
                                         warning.event.startDate
@@ -388,24 +386,24 @@ export default function AllergenManagementPage() {
                                     </p>
                                   )}
                                   {warning.dish && (
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground text-sm">
                                       Dish: {warning.dish.name}
                                     </p>
                                   )}
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-muted-foreground text-sm">
                                     Allergens:{" "}
                                     {warning.allergens.join(", ") || "None"}
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-muted-foreground text-sm">
                                     {formatGuests(warning.affectedGuests)}
                                   </p>
                                   {warning.notes && (
-                                    <p className="text-sm mt-2">
+                                    <p className="mt-2 text-sm">
                                       {warning.notes}
                                     </p>
                                   )}
                                   {warning.overrideReason && (
-                                    <p className="text-sm mt-2 text-muted-foreground">
+                                    <p className="mt-2 text-muted-foreground text-sm">
                                       Override: {warning.overrideReason}
                                     </p>
                                   )}
@@ -464,7 +462,7 @@ export default function AllergenManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredEvents.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="py-8 text-center text-muted-foreground">
                       No events found
                     </div>
                   ) : (
@@ -475,13 +473,13 @@ export default function AllergenManagementPage() {
                             <div className="flex items-center justify-between">
                               <div>
                                 <h3 className="font-medium">{event.title}</h3>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-muted-foreground text-sm">
                                   {new Date(
                                     event.eventDate
                                   ).toLocaleDateString()}
                                   {event.venueName && ` at ${event.venueName}`}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-muted-foreground text-sm">
                                   Status:{" "}
                                   <Badge
                                     variant={
@@ -513,7 +511,7 @@ export default function AllergenManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredDishes.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="py-8 text-center text-muted-foreground">
                       No dishes found
                     </div>
                   ) : (
@@ -572,7 +570,7 @@ export default function AllergenManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredRecipes.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="py-8 text-center text-muted-foreground">
                       No recipes found
                     </div>
                   ) : (
@@ -598,7 +596,7 @@ export default function AllergenManagementPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-sm text-muted-foreground mt-2 p-2 bg-muted/50 border border-hairline rounded">
+                              <div className="mt-2 rounded border border-hairline bg-muted/50 p-2 text-muted-foreground text-sm">
                                 <strong>Note:</strong> Recipe allergen
                                 management is not available. Allergens are
                                 managed at the dish level.

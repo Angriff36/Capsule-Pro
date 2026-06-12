@@ -69,7 +69,7 @@ vi.mock("@repo/database", () => ({
         get sql() {
           return strings.reduce(
             (acc: string, str: string, i: number) =>
-              acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+              acc + str + (values[i] === undefined ? "" : String(values[i])),
             ""
           );
         },
@@ -120,9 +120,7 @@ const { getTenantIdForOrg, requireCurrentUser } = await import(
   "@/app/lib/tenant"
 );
 const { InvariantError } = await import("@/app/lib/invariant");
-const { runManifestCommand } = await import(
-  "@/lib/manifest/execute-command"
-);
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 const { database } = await import("@repo/database");
 
 // ---------------------------------------------------------------------------
@@ -203,7 +201,10 @@ function postRequest(path: string, body: Record<string, unknown> = {}) {
   });
 }
 
-function mockCommandSuccess(result: Record<string, unknown>, events: Array<Record<string, unknown>> = []) {
+function mockCommandSuccess(
+  result: Record<string, unknown>,
+  events: Array<Record<string, unknown>> = []
+) {
   vi.mocked(runManifestCommand).mockResolvedValue(
     NextResponse.json({
       success: true,
@@ -239,10 +240,7 @@ function mockCommandGuardFailure(index: number, formatted: string) {
 
 function mockCommandFailure(message: string, status = 400) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    NextResponse.json(
-      { success: false, message },
-      { status }
-    ) as never
+    NextResponse.json({ success: false, message }, { status }) as never
   );
 }
 
@@ -267,10 +265,9 @@ async function assertManifestCommandRoute(
 
   // --- 200 success ---
   makeAuthedUser();
-  mockCommandSuccess(
-    { id: `${entityName.toLowerCase()}-001` },
-    [{ type: `${entityName}Created` }]
-  );
+  mockCommandSuccess({ id: `${entityName.toLowerCase()}-001` }, [
+    { type: `${entityName}Created` },
+  ]);
 
   const res200 = await handler(postRequest(path, body));
   expect(res200.status).toBe(200);

@@ -59,8 +59,8 @@ export const getRevenueMetrics = cache(
 // ============================================================================
 
 export interface LaborMetrics {
-  budgeted_labor: string | null;
   actual_labor: string | null;
+  budgeted_labor: string | null;
 }
 
 export const getLaborMetrics = cache(
@@ -184,9 +184,9 @@ export const getMarginMetrics = cache(
 // ============================================================================
 
 export interface EventCompletion {
-  totalEvents: number;
   completedEvents: number;
   completionRate: number;
+  totalEvents: number;
 }
 
 export const getEventCompletion = cache(
@@ -227,9 +227,9 @@ export const getEventCompletion = cache(
 // ============================================================================
 
 export interface FollowUpMetrics {
-  totalFollowUps: number;
   completedFollowUps: number;
   completionRate: number;
+  totalFollowUps: number;
 }
 
 export const getFollowUpMetrics = cache(
@@ -271,10 +271,10 @@ export const getFollowUpMetrics = cache(
 
 export interface TopEvent {
   id: string;
-  title: string;
-  status: string;
-  revenue: number;
   marginPct: number;
+  revenue: number;
+  status: string;
+  title: string;
 }
 
 export const getTopEvents = cache(

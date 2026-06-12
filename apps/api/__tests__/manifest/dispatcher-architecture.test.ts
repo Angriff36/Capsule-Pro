@@ -32,8 +32,8 @@ const DISPATCHER = resolve(
 // ── Helpers ──
 
 interface CommandEntry {
-  entity: string;
   command: string;
+  entity: string;
   params?: unknown[];
 }
 
@@ -244,8 +244,6 @@ describe("Concrete Command Route Prohibition", () => {
     const routes = findConcreteCommandRoutes();
     const undocumented = routes.filter((route) => !isCustomCommandRoute(route));
     expect(undocumented).toEqual([]);
-    expect(routes.sort()).toEqual(
-      [...CUSTOM_COMMAND_ROUTE_ALLOWLIST].sort()
-    );
+    expect(routes.sort()).toEqual([...CUSTOM_COMMAND_ROUTE_ALLOWLIST].sort());
   });
 });

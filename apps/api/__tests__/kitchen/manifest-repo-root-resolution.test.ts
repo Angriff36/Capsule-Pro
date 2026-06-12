@@ -20,9 +20,7 @@ describe("manifest repo-root path resolution", () => {
   it("loadPrecompiledIR resolves kitchen.ir.json from the repo root regardless of cwd", () => {
     // This test runs with cwd = apps/api (vitest is invoked from there).
     // If path resolution were broken, this would throw ENOENT.
-    const bundle = loadPrecompiledIR(
-      "manifest/ir/kitchen.ir.json"
-    );
+    const bundle = loadPrecompiledIR("manifest/ir/kitchen.ir.json");
 
     expect(bundle.ir).toBeDefined();
     expect(bundle.ir.entities.length).toBeGreaterThan(0);
@@ -32,9 +30,7 @@ describe("manifest repo-root path resolution", () => {
   });
 
   it("loadPrecompiledIR includes Event entity and Event.create command", () => {
-    const bundle = loadPrecompiledIR(
-      "manifest/ir/kitchen.ir.json"
-    );
+    const bundle = loadPrecompiledIR("manifest/ir/kitchen.ir.json");
 
     const eventEntity = bundle.ir.entities.find((e) => e.name === "Event");
     expect(eventEntity).toBeDefined();

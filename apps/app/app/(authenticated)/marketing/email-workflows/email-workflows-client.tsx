@@ -40,19 +40,19 @@ function formatTriggerType(type: string): string {
 }
 
 interface WorkflowTemplate {
+  deletedAt: string | null;
   id: string;
   name: string;
-  deletedAt: string | null;
 }
 
 interface Workflow {
+  createdAt: string;
+  emailTemplate: WorkflowTemplate | null;
   id: string;
-  name: string;
-  triggerType: string;
   isActive: boolean;
   lastTriggeredAt: string | null;
-  emailTemplate: WorkflowTemplate | null;
-  createdAt: string;
+  name: string;
+  triggerType: string;
 }
 
 // Props type for the client component
@@ -75,8 +75,12 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
 
   const filtered = useMemo(() => {
     let result = workflows;
-    if (filter === "active") result = result.filter((w) => w.isActive);
-    if (filter === "inactive") result = result.filter((w) => !w.isActive);
+    if (filter === "active") {
+      result = result.filter((w) => w.isActive);
+    }
+    if (filter === "inactive") {
+      result = result.filter((w) => !w.isActive);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -99,7 +103,9 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
           body: JSON.stringify({ isActive: !workflow.isActive }),
         }
       );
-      if (!res.ok) throw new Error("Failed to update workflow");
+      if (!res.ok) {
+        throw new Error("Failed to update workflow");
+      }
       toast.success(
         workflow.isActive
           ? `"${workflow.name}" deactivated`
@@ -132,7 +138,9 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
           }),
         }
       );
-      if (!res.ok) throw new Error("Failed to create workflow");
+      if (!res.ok) {
+        throw new Error("Failed to create workflow");
+      }
       toast.success("Workflow created");
       setCreateOpen(false);
       setCreateForm({ name: "", triggerType: "event_confirmed" });
@@ -146,10 +154,10 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
 
   if (workflows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+      <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
         <Mail className="mb-4 size-10 text-muted-foreground" />
-        <h3 className="text-lg font-medium">No email workflows</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h3 className="font-medium text-lg">No email workflows</h3>
+        <p className="mt-1 text-muted-foreground text-sm">
           Create your first automated email workflow.
         </p>
         <Dialog onOpenChange={setCreateOpen} open={createOpen}>
@@ -206,7 +214,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
       {/* Filter bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearch(e.target.value)}
@@ -217,7 +225,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
         <div className="flex items-center gap-2">
           {(["all", "active", "inactive"] as const).map((f) => (
             <button
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${
                 filter === f
                   ? "bg-ink text-white"
                   : "border border-hairline bg-canvas text-muted-foreground hover:bg-soft-stone"
@@ -277,7 +285,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
 
       {/* Workflow list */}
       <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-        <div className="grid grid-cols-[1fr_180px_120px_120px_100px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="grid grid-cols-[1fr_180px_120px_120px_100px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
           <span>Name</span>
           <span>Trigger</span>
           <span>Template</span>
@@ -285,7 +293,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
           <span>Last triggered</span>
         </div>
         {filtered.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-12 text-center text-muted-foreground text-sm">
             No workflows match your filters.
           </div>
         ) : (
@@ -296,7 +304,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
                 key={workflow.id}
               >
                 <span className="font-medium">{workflow.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatTriggerType(workflow.triggerType)}
                 </span>
                 <span className="text-xs">
@@ -311,7 +319,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
                   )}
                 </span>
                 <button
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
+                  className={`rounded-full px-2.5 py-0.5 font-medium text-[11px] uppercase tracking-wide transition-colors ${
                     workflow.isActive
                       ? "bg-ink text-white"
                       : "border border-hairline bg-canvas text-muted-foreground"
@@ -322,7 +330,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
                 >
                   {workflow.isActive ? "Active" : "Inactive"}
                 </button>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {workflow.lastTriggeredAt
                     ? new Date(workflow.lastTriggeredAt).toLocaleDateString()
                     : "\u2014"}

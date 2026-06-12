@@ -20,8 +20,8 @@ import type {
 import { BOARD_STATUSES } from "./types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -188,7 +188,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "CommandBoard",
     command: "create",

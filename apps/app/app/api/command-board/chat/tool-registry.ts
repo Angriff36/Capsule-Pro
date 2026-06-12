@@ -12,10 +12,9 @@ import {
 } from "./manifest-command-tools";
 
 export interface ManifestAgentContext {
-  tenantId: string;
-  userId: string;
-  boardId?: string;
   authCookie?: string | null;
+  boardId?: string;
+  correlationId: string;
   /**
    * Mints a fresh Clerk session token. Clerk session JWTs expire ~60s after
    * issue, so the cookie captured at request start goes stale mid-loop (model
@@ -23,7 +22,8 @@ export interface ManifestAgentContext {
    * a misleading "permission" error. Prefer this over authCookie per call.
    */
   getToken?: (() => Promise<string | null>) | null;
-  correlationId: string;
+  tenantId: string;
+  userId: string;
 }
 
 /** Per-call auth headers: fresh Bearer token when available, cookie fallback. */
@@ -40,23 +40,23 @@ async function buildAuthHeaders(
 }
 
 export interface AgentToolCall {
-  name: string;
   argumentsJson: string;
   callId: string;
+  name: string;
 }
 
 export interface AgentToolResult {
-  ok: boolean;
-  summary: string;
   data?: unknown;
   error?: string;
+  ok: boolean;
+  summary: string;
 }
 
 interface ToolDefinition {
-  type: "function";
-  name: string;
   description: string;
+  name: string;
   parameters: Record<string, unknown>;
+  type: "function";
 }
 
 // ── Deterministic idempotency key helpers ──────────────────────────
@@ -1862,17 +1862,17 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
 // ── Natural Language Event Parsing ─────────────────────────────────
 
 interface ParsedEventData {
-  title: string;
-  eventType: string;
-  eventDate: number | null;
-  guestCount: number;
-  venueName: string;
-  venueAddress: string;
-  notes: string;
-  tags: string;
   confidence: number;
+  eventDate: number | null;
+  eventType: string;
+  guestCount: number;
   missingFields: string[];
+  notes: string;
   suggestions: string[];
+  tags: string;
+  title: string;
+  venueAddress: string;
+  venueName: string;
 }
 
 const EVENT_TYPE_PATTERNS: Array<{
@@ -2384,10 +2384,18 @@ function parseNaturalLanguageEvent(
 
   // Calculate overall confidence
   let confidence = 0.5;
-  if (guestCount > 0) confidence += 0.15;
-  if (eventDate) confidence += 0.2;
-  if (venue.name) confidence += 0.1;
-  if (typeResult.confidence > 0.7) confidence += 0.05;
+  if (guestCount > 0) {
+    confidence += 0.15;
+  }
+  if (eventDate) {
+    confidence += 0.2;
+  }
+  if (venue.name) {
+    confidence += 0.1;
+  }
+  if (typeResult.confidence > 0.7) {
+    confidence += 0.05;
+  }
   confidence = Math.min(confidence, 1);
 
   return {
@@ -2398,7 +2406,7 @@ function parseNaturalLanguageEvent(
     venueName: venue.name,
     venueAddress: venue.address,
     notes: "",
-    tags: typeResult.eventType !== "general" ? typeResult.eventType : "",
+    tags: typeResult.eventType === "general" ? "" : typeResult.eventType,
     confidence,
     missingFields,
     suggestions,

@@ -19,6 +19,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 
 interface ClientTableProps {
+  className?: string;
   clients: Array<{
     id: string;
     name: string;
@@ -28,7 +29,6 @@ interface ClientTableProps {
     lastOrderDate: Date | null;
     averageOrderValue: number;
   }>;
-  className?: string;
 }
 
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
@@ -96,7 +96,7 @@ export function ClientTable({ clients, className }: ClientTableProps) {
                       )}
                     </div>
                     {client.email && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {client.email}
                       </span>
                     )}

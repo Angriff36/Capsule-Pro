@@ -340,7 +340,9 @@ export function mergeIrs(irsOrEntries, provenance) {
   let mergedTenant;
   for (const entry of entries) {
     const t = entry.ir.tenant;
-    if (!t) continue;
+    if (!t) {
+      continue;
+    }
     if (!mergedTenant) {
       mergedTenant = t;
       continue;

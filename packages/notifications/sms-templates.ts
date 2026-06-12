@@ -10,9 +10,9 @@ export interface SmsTemplateData {
 }
 
 export interface SmsTemplate {
-  type: string;
-  template: string;
   description: string;
+  template: string;
+  type: string;
 }
 
 /**

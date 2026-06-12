@@ -38,43 +38,43 @@ export function FinancialTab({ client }: FinancialTabProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-xl font-semibold">Financial Summary</h2>
+      <h2 className="font-semibold text-xl">Financial Summary</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card tone="soft-stone">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <DollarSignIcon className="h-4 w-4" />
               Total Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               ${totalRevenue.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground text-xs">
               Across {client.eventCount} event
-              {client.eventCount !== 1 ? "s" : ""}
+              {client.eventCount === 1 ? "" : "s"}
             </p>
           </CardContent>
         </Card>
 
         <Card tone="soft-stone">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <TrendingUpIcon className="h-4 w-4" />
               Avg per Event
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               $
               {avgRevenuePerEvent.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground text-xs">
               Average event value
             </p>
           </CardContent>
@@ -82,27 +82,27 @@ export function FinancialTab({ client }: FinancialTabProps) {
 
         <Card tone="soft-stone">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <CalendarIcon className="h-4 w-4" />
               Est. Annual
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               $
               {annualRevenue.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              ~{clientYears} year{clientYears !== 1 ? "s" : ""} as client
+            <p className="mt-1 text-muted-foreground text-xs">
+              ~{clientYears} year{clientYears === 1 ? "" : "s"} as client
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card tone="canvas">
           <CardHeader>
             <CardTitle>Payment Terms</CardTitle>
@@ -110,10 +110,10 @@ export function FinancialTab({ client }: FinancialTabProps) {
           <CardContent>
             {client.defaultPaymentTerms ? (
               <div>
-                <div className="text-2xl font-bold">
+                <div className="font-bold text-2xl">
                   Net {client.defaultPaymentTerms}
                 </div>
-                <p className="text-sm text-muted-foreground">days</p>
+                <p className="text-muted-foreground text-sm">days</p>
               </div>
             ) : (
               <p className="text-muted-foreground">Not specified</p>
@@ -127,14 +127,14 @@ export function FinancialTab({ client }: FinancialTabProps) {
           </CardHeader>
           <CardContent>
             {client.taxExempt ? (
-              <Badge className="text-base py-1" variant="secondary">
+              <Badge className="py-1 text-base" variant="secondary">
                 Tax Exempt
               </Badge>
             ) : (
               <p className="text-muted-foreground">Standard tax applies</p>
             )}
             {client.taxId && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="mt-2 text-muted-foreground text-sm">
                 Tax ID: {client.taxId}
               </p>
             )}
@@ -148,7 +148,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Client since</span>
               <span className="font-medium">
                 {new Date(client.createdAt).toLocaleDateString("en-US", {
@@ -157,11 +157,11 @@ export function FinancialTab({ client }: FinancialTabProps) {
                 })}
               </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Total events</span>
               <span className="font-medium">{client.eventCount}</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Lifetime value</span>
               <span className="font-bold text-lg">
                 ${totalRevenue.toLocaleString()}

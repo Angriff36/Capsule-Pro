@@ -41,16 +41,16 @@ import {
 import { useCallback, useState } from "react";
 
 interface PaymentMethodEntry {
-  id: string;
-  type: string;
   cardLastFour: string | null;
   cardNetwork: string | null;
-  isDefault: boolean;
-  status: string;
   clientId: string;
-  displayInfo: string;
   clientLabel: string;
   createdAt: string;
+  displayInfo: string;
+  id: string;
+  isDefault: boolean;
+  status: string;
+  type: string;
 }
 
 interface PaymentMethodsClientProps {
@@ -125,8 +125,12 @@ export function PaymentMethodsClient({
   const [formIsDefault, setFormIsDefault] = useState(false);
 
   const filteredMethods = methods.filter((m) => {
-    if (typeFilter !== "ALL" && m.type !== typeFilter) return false;
-    if (statusFilter !== "ALL" && m.status !== statusFilter) return false;
+    if (typeFilter !== "ALL" && m.type !== typeFilter) {
+      return false;
+    }
+    if (statusFilter !== "ALL" && m.status !== statusFilter) {
+      return false;
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       return (
@@ -156,8 +160,12 @@ export function PaymentMethodsClient({
       };
 
       if (formType === "CREDIT_CARD" || formType === "DEBIT_CARD") {
-        if (formCardLastFour) body.cardLastFour = formCardLastFour;
-        if (formCardNetwork) body.cardNetwork = formCardNetwork;
+        if (formCardLastFour) {
+          body.cardLastFour = formCardLastFour;
+        }
+        if (formCardNetwork) {
+          body.cardNetwork = formCardNetwork;
+        }
       }
 
       const res = await fetch("/api/accounting/payment-methods", {
@@ -400,14 +408,14 @@ export function PaymentMethodsClient({
 
       {/* Table */}
       {filteredMethods.length === 0 ? (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           {methods.length === 0
             ? "No payment methods have been saved for this tenant yet."
             : "No payment methods match the current filters."}
         </div>
       ) : (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_0.85fr_0.7fr_0.6fr_0.65fr_0.55fr_0.4fr] gap-4 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_0.85fr_0.7fr_0.6fr_0.65fr_0.55fr_0.4fr] gap-4 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Method</span>
             <span>Client</span>
             <span>Type</span>
@@ -418,7 +426,7 @@ export function PaymentMethodsClient({
           </div>
           {filteredMethods.map((method) => (
             <div
-              className="grid grid-cols-[1fr_0.85fr_0.7fr_0.6fr_0.65fr_0.55fr_0.4fr] gap-4 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+              className="grid grid-cols-[1fr_0.85fr_0.7fr_0.6fr_0.65fr_0.55fr_0.4fr] gap-4 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
               key={method.id}
             >
               <div className="space-y-1">
@@ -440,12 +448,12 @@ export function PaymentMethodsClient({
               </div>
               <div>
                 {method.isDefault ? (
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-ink">
+                  <span className="inline-flex items-center gap-1 font-medium text-ink text-sm">
                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     Default
                   </span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {"\u2014"}
                   </span>
                 )}

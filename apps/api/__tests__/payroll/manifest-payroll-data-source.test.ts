@@ -22,26 +22,30 @@
  *  - an empty record set opens no transaction at all.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PayrollRecord } from "@repo/payroll-engine";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { txClient, mockDatabase, runManifestCommandCore, createManifestRuntime } =
-  vi.hoisted(() => {
-    const txClient = { __txClient: "shared-transaction-client" };
-    return {
-      txClient,
-      mockDatabase: {
-        // Interactive transaction: run the callback with our sentinel tx client.
-        // A throw inside the callback propagates (as real Prisma would, then
-        // rolling back) — that is exactly the behavior the tests assert.
-        $transaction: vi.fn(
-          async (cb: (tx: unknown) => Promise<unknown>) => cb(txClient)
-        ),
-      },
-      runManifestCommandCore: vi.fn(),
-      createManifestRuntime: vi.fn(async () => ({ __runtime: true })),
-    };
-  });
+const {
+  txClient,
+  mockDatabase,
+  runManifestCommandCore,
+  createManifestRuntime,
+} = vi.hoisted(() => {
+  const txClient = { __txClient: "shared-transaction-client" };
+  return {
+    txClient,
+    mockDatabase: {
+      // Interactive transaction: run the callback with our sentinel tx client.
+      // A throw inside the callback propagates (as real Prisma would, then
+      // rolling back) — that is exactly the behavior the tests assert.
+      $transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) =>
+        cb(txClient)
+      ),
+    },
+    runManifestCommandCore: vi.fn(),
+    createManifestRuntime: vi.fn(async () => ({ __runtime: true })),
+  };
+});
 
 vi.mock("@repo/database", () => ({ database: mockDatabase }));
 // Isolate the unit: the base class only needs to accept the prisma client.
@@ -84,7 +88,10 @@ describe("ManifestPayrollDataSource.savePayrollRecords", () => {
   });
 
   it("persists the run header, process, and every line item in ONE transaction, all bound to the same tx client", async () => {
-    runManifestCommandCore.mockResolvedValue({ ok: true, result: { id: "period-1" } });
+    runManifestCommandCore.mockResolvedValue({
+      ok: true,
+      result: { id: "period-1" },
+    });
 
     const ds = new ManifestPayrollDataSource(USER);
     await ds.savePayrollRecords([
@@ -98,10 +105,22 @@ describe("ManifestPayrollDataSource.savePayrollRecords", () => {
     // create + process + 2 line items, in order.
     const calls = runManifestCommandCore.mock.calls;
     expect(calls).toHaveLength(4);
-    expect(calls[0][1]).toMatchObject({ entity: "PayrollRun", command: "create" });
-    expect(calls[1][1]).toMatchObject({ entity: "PayrollRun", command: "process" });
-    expect(calls[2][1]).toMatchObject({ entity: "PayrollLineItem", command: "create" });
-    expect(calls[3][1]).toMatchObject({ entity: "PayrollLineItem", command: "create" });
+    expect(calls[0][1]).toMatchObject({
+      entity: "PayrollRun",
+      command: "create",
+    });
+    expect(calls[1][1]).toMatchObject({
+      entity: "PayrollRun",
+      command: "process",
+    });
+    expect(calls[2][1]).toMatchObject({
+      entity: "PayrollLineItem",
+      command: "create",
+    });
+    expect(calls[3][1]).toMatchObject({
+      entity: "PayrollLineItem",
+      command: "create",
+    });
 
     // Every command ran through ONE deps object (the transaction-bound deps).
     const depsArgs = calls.map((c) => c[0]);

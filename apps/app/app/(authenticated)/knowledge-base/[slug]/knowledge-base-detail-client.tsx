@@ -24,15 +24,15 @@ import { useEffect, useState } from "react";
 import { getKnowledgeBaseEntry } from "@/app/lib/manifest-client.generated";
 
 interface KnowledgeBaseEntry {
-  id: string;
-  slug: string;
-  title: string;
-  content: string | null;
   category: string | null;
-  tags: string[] | null;
-  status: string;
+  content: string | null;
   createdAt: string;
+  id: string;
   publishedAt: string | null;
+  slug: string;
+  status: string;
+  tags: string[] | null;
+  title: string;
 }
 
 const formatDate = (date: string) =>

@@ -1,14 +1,14 @@
 import { StyleSheet, View } from "react-native";
 
 interface LoadingSkeletonProps {
-  /** Width of the skeleton (number or percentage string) */
-  width?: number | string;
-  /** Height of the skeleton */
-  height?: number;
   /** Border radius (default: 4) */
   borderRadius?: number;
+  /** Height of the skeleton */
+  height?: number;
   /** Additional style overrides */
   style?: object;
+  /** Width of the skeleton (number or percentage string) */
+  width?: number | string;
 }
 
 export default function LoadingSkeleton({

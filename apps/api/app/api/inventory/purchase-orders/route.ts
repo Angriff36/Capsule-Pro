@@ -20,8 +20,8 @@ import type {
 import { PO_STATUSES } from "./types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

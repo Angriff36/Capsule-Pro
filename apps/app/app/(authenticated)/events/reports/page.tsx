@@ -130,7 +130,7 @@ const EventReportsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Event Reports
           </h1>
           <p className="text-muted-foreground">
@@ -142,7 +142,7 @@ const EventReportsPage = async () => {
 
         {/* Performance Overview Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
@@ -162,7 +162,7 @@ const EventReportsPage = async () => {
                 <CardDescription>In Progress</CardDescription>
                 <CardTitle className="text-2xl">{inProgressCount}</CardTitle>
               </CardHeader>
-              <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
+              <CardContent className="flex items-center gap-1 text-muted-foreground text-sm">
                 <Clock3 className="size-3.5" />
                 Needs attention
               </CardContent>
@@ -172,7 +172,7 @@ const EventReportsPage = async () => {
                 <CardDescription>Completed</CardDescription>
                 <CardTitle className="text-2xl">{completedCount}</CardTitle>
               </CardHeader>
-              <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
+              <CardContent className="flex items-center gap-1 text-muted-foreground text-sm">
                 <CheckCircle2 className="size-3.5" />
                 Ready for event
               </CardContent>
@@ -192,7 +192,7 @@ const EventReportsPage = async () => {
         {/* Reports List Section */}
         {reportsWithEvents.length === 0 ? (
           <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
+            <h2 className="font-medium text-muted-foreground text-sm">
               Reports
             </h2>
             <Empty>
@@ -218,7 +218,7 @@ const EventReportsPage = async () => {
           </section>
         ) : (
           <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
+            <h2 className="font-medium text-muted-foreground text-sm">
               Reports ({reportsWithEvents.length})
             </h2>
             <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
@@ -275,7 +275,7 @@ const EventReportsPage = async () => {
                         />
                       </div>
                       {report.autoFillScore !== null && (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           Auto-filled: {report.autoFillScore} questions
                         </div>
                       )}

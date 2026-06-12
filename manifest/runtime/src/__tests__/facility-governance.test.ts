@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { beforeEach, describe, expect, it } from "vitest";

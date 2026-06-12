@@ -20,8 +20,8 @@ type NavigationProp = StackNavigationProp<
 
 // Group prep lists by event
 interface EventGroup {
-  eventKey: string;
   event: PrepList["event"];
+  eventKey: string;
   lists: PrepList[];
 }
 
@@ -216,7 +216,7 @@ export default function PrepListsScreen() {
           <View style={styles.header}>
             <Text style={styles.title}>Prep Lists</Text>
             <Text style={styles.subtitle}>
-              {totalLists} active list{totalLists !== 1 ? "s" : ""}
+              {totalLists} active list{totalLists === 1 ? "" : "s"}
             </Text>
           </View>
         }

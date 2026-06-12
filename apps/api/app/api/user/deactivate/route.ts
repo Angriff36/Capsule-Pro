@@ -1,8 +1,8 @@
-import type { NextRequest } from "next/server";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 /**
  * User deactivate command handler.

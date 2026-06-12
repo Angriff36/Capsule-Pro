@@ -19,7 +19,10 @@ export async function PUT(
 ) {
   const { id, itemId } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   const result = await runManifestCommand({
     entity: "ShipmentItem",
     command: "update",

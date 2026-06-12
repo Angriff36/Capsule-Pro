@@ -71,11 +71,15 @@ vi.mock("@/app/lib/webhook-dispatch", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, resolveCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, resolveCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { database } = await import("@repo/database");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
-const _venueEventsRoute = await import("@/app/api/crm/venues/[id]/events/route");
+const _venueEventsRoute = await import(
+  "@/app/api/crm/venues/[id]/events/route"
+);
 const listVenueEvents = _venueEventsRoute.GET;
 
 const _venueIdRoute = await import("@/app/api/crm/venues/[id]/route");
@@ -141,12 +145,13 @@ beforeEach(() => {
     firstName: "Test",
     lastName: "User",
   } as never);
-  vi.mocked(runManifestCommand).mockImplementation(async (params: any) => {
-    return new Response(JSON.stringify({ success: true, data: params.body }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  });
+  vi.mocked(runManifestCommand).mockImplementation(
+    async (params: any) =>
+      new Response(JSON.stringify({ success: true, data: params.body }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+  );
 });
 
 // --- GET /api/crm/venues ------------------------------------------------
@@ -224,7 +229,14 @@ describe("POST /api/crm/venues", () => {
       new Response(
         JSON.stringify({
           success: true,
-          data: { id: VENUE_ID, name: "Grand Ballroom", venueType: "other", capacity: 0, isActive: true, tags: [] },
+          data: {
+            id: VENUE_ID,
+            name: "Grand Ballroom",
+            venueType: "other",
+            capacity: 0,
+            isActive: true,
+            tags: [],
+          },
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )
@@ -355,10 +367,10 @@ describe("DELETE /api/crm/venues/[id]", () => {
     // what the route actually does: check events, then delegate.
     vi.mocked(database.event.count).mockResolvedValue(0 as never);
     vi.mocked(runManifestCommand).mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({ success: false, error: "not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      )
+      new Response(JSON.stringify({ success: false, error: "not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
     );
 
     const res = await deleteVenue(
@@ -389,10 +401,10 @@ describe("DELETE /api/crm/venues/[id]", () => {
   it("soft-deletes via manifest when no active events", async () => {
     vi.mocked(database.event.count).mockResolvedValue(0 as never);
     vi.mocked(runManifestCommand).mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({ success: true, data: { id: VENUE_ID } }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      )
+      new Response(JSON.stringify({ success: true, data: { id: VENUE_ID } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
     );
 
     const res = await deleteVenue(

@@ -42,7 +42,7 @@ export class InMemoryStore implements Store {
   ): Promise<EntityInstance | undefined> {
     const existing = this.items.get(id);
     if (!existing) {
-      return undefined;
+      return;
     }
     const updated = { ...existing, ...data, id } as EntityInstance;
     this.items.set(id, updated);

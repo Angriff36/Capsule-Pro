@@ -1,9 +1,9 @@
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import type { Event } from "@repo/database";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it, vi, type Mock } from "vitest";
+import { describe, expect, it, type Mock, vi } from "vitest";
 import type { CreateEventState } from "../../app/(authenticated)/events/actions";
 import { EventForm } from "../../app/(authenticated)/events/components/event-form";
 
@@ -41,10 +41,7 @@ describe("DatePicker form submission", () => {
     const submit = vi.fn();
 
     render(
-      <ControlledDatePickerForm
-        initialValue="2026-06-10"
-        onSubmit={submit}
-      />
+      <ControlledDatePickerForm initialValue="2026-06-10" onSubmit={submit} />
     );
 
     const input = screen.getByLabelText("Event date");
@@ -64,11 +61,7 @@ describe("DatePicker form submission", () => {
 
     render(
       <form>
-        <DatePicker
-          defaultValue="2026-06-10"
-          id="eventDate"
-          name="eventDate"
-        />
+        <DatePicker defaultValue="2026-06-10" id="eventDate" name="eventDate" />
       </form>
     );
 

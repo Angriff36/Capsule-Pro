@@ -9,18 +9,18 @@ import type { Prisma, PrismaClient } from "@repo/database";
  * Input for creating an outbox event.
  */
 export interface CreateOutboxEventInput {
-  /** Tenant identifier */
-  tenantId: string;
-  /** Aggregate type (e.g., "KitchenTask", "Event") */
-  aggregateType: string;
   /** Aggregate instance ID */
   aggregateId: string;
+  /** Aggregate type (e.g., "KitchenTask", "Event") */
+  aggregateType: string;
   /** Event type (e.g., "kitchen.task.claimed") */
   eventType: string;
-  /** Event payload */
-  payload: Record<string, unknown>;
   /** When the event occurred (defaults to now) */
   occurredAt?: Date;
+  /** Event payload */
+  payload: Record<string, unknown>;
+  /** Tenant identifier */
+  tenantId: string;
 }
 
 /**

@@ -2,7 +2,7 @@
  * Helper functions for shipment item route handlers
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 

@@ -15,10 +15,10 @@
  * wiring, fails here.
  */
 
-import { RuntimeEngine, type Store } from "@angriff36/manifest";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { RuntimeEngine, type Store } from "@angriff36/manifest";
 import { describe, expect, it } from "vitest";
 import { resolveParentContext } from "../parent-context-resolver.js";
 
@@ -53,7 +53,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -79,10 +81,17 @@ function makeProvider(): (entity: string) => Store {
 }
 
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
-  return new RuntimeEngine(ir, { user: { id: "u1", tenantId: TENANT } }, { storeProvider: provider });
+  return new RuntimeEngine(
+    ir,
+    { user: { id: "u1", tenantId: TENANT } },
+    { storeProvider: provider }
+  );
 }
 
-async function seedEvent(provider: (entity: string) => Store, overrides: Record<string, unknown> = {}) {
+async function seedEvent(
+  provider: (entity: string) => Store,
+  overrides: Record<string, unknown> = {}
+) {
   await provider("Event").create({
     id: EVENT_ID,
     tenantId: TENANT,
@@ -103,7 +112,12 @@ describe("WasteEntry create — inherits Event locationId from only the eventId 
       entity: "WasteEntry",
       command: "create",
       // ONLY waste-specific input + the parent link — no event-owned location.
-      body: { inventoryItemId: "inv-1", reasonId: 2, quantity: 3, eventId: EVENT_ID },
+      body: {
+        inventoryItemId: "inv-1",
+        reasonId: 2,
+        quantity: 3,
+        eventId: EVENT_ID,
+      },
     });
 
     expect(body.locationId).toBe(LOCATION_ID);
@@ -118,7 +132,12 @@ describe("WasteEntry create — inherits Event locationId from only the eventId 
     const { body, inheritedFields } = await resolveParentContext(runtime, {
       entity: "WasteEntry",
       command: "create",
-      body: { inventoryItemId: "inv-1", quantity: 1, eventId: EVENT_ID, locationId: "loc-override" },
+      body: {
+        inventoryItemId: "inv-1",
+        quantity: 1,
+        eventId: EVENT_ID,
+        locationId: "loc-override",
+      },
     });
 
     expect(body.locationId).toBe("loc-override");
@@ -180,7 +199,11 @@ describe("Shipment create — inherits Event locationId from only the eventId FK
     const { body, inheritedFields } = await resolveParentContext(runtime, {
       entity: "Shipment",
       command: "create",
-      body: { shipmentNumber: "S-2", eventId: EVENT_ID, locationId: "loc-override" },
+      body: {
+        shipmentNumber: "S-2",
+        eventId: EVENT_ID,
+        locationId: "loc-override",
+      },
     });
 
     expect(body.locationId).toBe("loc-override");

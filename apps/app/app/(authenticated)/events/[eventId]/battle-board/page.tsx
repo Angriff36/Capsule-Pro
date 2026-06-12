@@ -61,7 +61,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
           <Link href={`/events/${eventId}`}>Back to Event</Link>
         </Button>
       </Header>
-      <div className="mx-4 mb-4 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+      <div className="mx-4 mb-4 rounded-md border border-border bg-muted/40 px-4 py-3 text-muted-foreground text-sm">
         This Gantt timeline uses legacy <code>timeline_tasks</code> data. For
         print-ready staff assignments, open the{" "}
         <Link

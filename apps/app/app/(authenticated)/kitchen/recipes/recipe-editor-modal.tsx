@@ -26,10 +26,10 @@ import { useRef, useState } from "react";
 
 interface Ingredient {
   id: string;
-  quantity: string;
-  unit: string;
   name: string;
   optional: boolean;
+  quantity: string;
+  unit: string;
 }
 
 interface Instruction {
@@ -39,15 +39,16 @@ interface Instruction {
 }
 
 interface RecipeImage {
-  id: string;
   file: File;
-  url: string;
+  id: string;
   isMain: boolean;
+  url: string;
 }
 
 interface RecipeEditorModalProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (data: FormData) => Promise<void>;
+  open: boolean;
   recipe?: {
     id?: string;
     name?: string;
@@ -60,7 +61,6 @@ interface RecipeEditorModalProps {
     ingredients?: Ingredient[];
     instructions?: Instruction[];
   };
-  onSave: (data: FormData) => Promise<void>;
 }
 
 const difficultyLevels = ["Easy", "Medium", "Hard"] as const;
@@ -336,14 +336,14 @@ export const RecipeEditorModal = ({
                 <UploadIcon className="mr-2 size-4" />
                 Upload Images
               </Button>
-              <p className="text-muted-foreground mt-2 text-sm">
+              <p className="mt-2 text-muted-foreground text-sm">
                 Drag and drop or click to upload
               </p>
             </div>
             {images.length > 0 && (
               <div className="grid gap-3 md:grid-cols-3">
                 {images.map((image) => (
-                  <div className="relative group" key={image.id}>
+                  <div className="group relative" key={image.id}>
                     <AspectRatio ratio={16 / 9}>
                       <Image
                         alt="Recipe"
@@ -354,13 +354,13 @@ export const RecipeEditorModal = ({
                     </AspectRatio>
                     {image.isMain && (
                       <Badge
-                        className="absolute left-2 top-2"
+                        className="absolute top-2 left-2"
                         variant="default"
                       >
                         Main
                       </Badge>
                     )}
-                    <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       {!image.isMain && (
                         <Button
                           onClick={() => handleSetMainImage(image.id)}

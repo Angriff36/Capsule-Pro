@@ -3,69 +3,69 @@
  */
 
 export interface EventBudget {
-  tenantId: string;
-  id: string;
+  createdAt: Date;
+  deletedAt: Date | null;
   eventId: string;
-  version: number;
+  id: string;
+  notes: string | null;
   status: "draft" | "approved" | "active" | "completed" | "exceeded";
-  totalBudgetAmount: number;
+  tenantId: string;
   totalActualAmount: number;
+  totalBudgetAmount: number;
+  updatedAt: Date;
   varianceAmount: number;
   variancePercentage: number;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  version: number;
 }
 
 export interface BudgetLineItem {
-  tenantId: string;
-  id: string;
+  actualAmount: number;
+  budgetedAmount: number;
   budgetId: string;
   category: string;
-  name: string;
-  description: string | null;
-  budgetedAmount: number;
-  actualAmount: number;
-  varianceAmount: number;
-  sortOrder: number;
-  notes: string | null;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
+  description: string | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  sortOrder: number;
+  tenantId: string;
+  updatedAt: Date;
+  varianceAmount: number;
 }
 
 export interface CreateEventBudgetRequest {
   eventId: string;
+  lineItems?: CreateBudgetLineItemRequest[];
+  notes?: string;
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount: number;
-  notes?: string;
-  lineItems?: CreateBudgetLineItemRequest[];
 }
 
 export interface UpdateEventBudgetRequest {
+  notes?: string;
   status?: "draft" | "approved" | "active" | "completed" | "exceeded";
   totalBudgetAmount?: number;
-  notes?: string;
 }
 
 export interface CreateBudgetLineItemRequest {
-  category: string;
-  name: string;
-  description?: string;
   budgetedAmount: number;
-  sortOrder?: number;
+  category: string;
+  description?: string;
+  name: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export interface UpdateBudgetLineItemRequest {
-  category?: string;
-  name?: string;
-  description?: string;
-  budgetedAmount?: number;
   actualAmount?: number;
-  sortOrder?: number;
+  budgetedAmount?: number;
+  category?: string;
+  description?: string;
+  name?: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export type EventBudgetWithLineItems = EventBudget & {
@@ -74,21 +74,21 @@ export type EventBudgetWithLineItems = EventBudget & {
 
 export interface EventBudgetListResponse {
   budgets: EventBudget[];
-  total: number;
-  page: number;
   limit: number;
+  page: number;
+  total: number;
   totalPages: number;
 }
 
 export interface BudgetSummary {
-  totalBudgetAmount: number;
-  totalActualAmount: number;
-  totalVarianceAmount: number;
-  totalVariancePercentage: number;
   budgetCount: number;
-  byStatus: Record<string, number>;
   byCategory: Record<
     string,
     { budgeted: number; actual: number; variance: number }
   >;
+  byStatus: Record<string, number>;
+  totalActualAmount: number;
+  totalBudgetAmount: number;
+  totalVarianceAmount: number;
+  totalVariancePercentage: number;
 }

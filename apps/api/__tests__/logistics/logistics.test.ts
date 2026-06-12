@@ -18,9 +18,36 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/database", () => ({
   database: {
-    driver: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    vehicle: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    deliveryRoute: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    driver: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    vehicle: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    deliveryRoute: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     $queryRaw: vi.fn(),
     $transaction: vi.fn((fn) => fn({})),
     $connect: vi.fn(),
@@ -54,7 +81,10 @@ vi.mock("@/lib/manifest-response", async () => {
     manifestErrorResponse: (
       message:
         | string
-        | ({ error: string; diagnostics?: unknown[] } & Record<string, unknown>),
+        | ({ error: string; diagnostics?: unknown[] } & Record<
+            string,
+            unknown
+          >),
       status: number
     ) => {
       const body =
@@ -102,7 +132,9 @@ vi.mock("@/lib/manifest/issue-log", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireTenantId, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireTenantId, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
@@ -415,7 +447,10 @@ describe("Logistics API", () => {
         createdAt: new Date("2026-04-01"),
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: driverResult, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({ success: true, result: driverResult, events: [] }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -449,7 +484,10 @@ describe("Logistics API", () => {
           entity: "Driver",
           command: "create",
           body: expect.objectContaining({ name: "Jane Doe" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
@@ -502,7 +540,14 @@ describe("Logistics API", () => {
     it("soft-deletes a driver through manifest runtime", async () => {
       mockRequireCurrentUser();
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "driver-001", deletedAt: new Date().toISOString() }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "driver-001", deletedAt: new Date().toISOString() },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -526,7 +571,10 @@ describe("Logistics API", () => {
           entity: "Driver",
           command: "remove",
           body: expect.objectContaining({ driverId: "driver-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
@@ -598,7 +646,9 @@ describe("Logistics API", () => {
         }),
       ];
 
-      vi.mocked(database.vehicle.findMany).mockResolvedValue(mockVehicles as never);
+      vi.mocked(database.vehicle.findMany).mockResolvedValue(
+        mockVehicles as never
+      );
       vi.mocked(database.driver.count).mockResolvedValue(0);
       vi.mocked(database.driver.count).mockResolvedValue(2);
 
@@ -706,7 +756,10 @@ describe("Logistics API", () => {
         created_at: new Date("2026-04-01"),
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: vehicleResult, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({ success: true, result: vehicleResult, events: [] }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -742,7 +795,10 @@ describe("Logistics API", () => {
         expect.objectContaining({
           entity: "Vehicle",
           command: "create",
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
@@ -795,7 +851,14 @@ describe("Logistics API", () => {
     it("soft-deletes vehicle through manifest runtime", async () => {
       mockRequireCurrentUser();
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "vehicle-001", deletedAt: new Date().toISOString() }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "vehicle-001", deletedAt: new Date().toISOString() },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -819,7 +882,10 @@ describe("Logistics API", () => {
           entity: "Vehicle",
           command: "remove",
           body: expect.objectContaining({ vehicleId: "vehicle-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
@@ -975,7 +1041,10 @@ describe("Logistics API", () => {
         tenantId: TEST_TENANT_ID,
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: routeResult, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({ success: true, result: routeResult, events: [] }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -1006,7 +1075,10 @@ describe("Logistics API", () => {
           entity: "LogisticsRoute",
           command: "create",
           body: expect.objectContaining({ name: "Downtown Delivery" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
@@ -1022,7 +1094,10 @@ describe("Logistics API", () => {
         ],
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: routeResult, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({ success: true, result: routeResult, events: [] }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(

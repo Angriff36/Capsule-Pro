@@ -47,12 +47,12 @@ export type TransitionResult<T> =
  * Input for validating state transitions
  */
 export interface TaskTransitionInput {
+  currentStatus: string;
+  note?: string;
+  targetStatus: string;
   taskId: string;
   tenantId: string;
-  currentStatus: string;
-  targetStatus: string;
   userId?: string;
-  note?: string;
 }
 
 /**
@@ -68,7 +68,7 @@ export interface ClaimInput {
  * Information about an active claim on a task
  */
 export interface ClaimConflictInfo {
+  claimedAt: Date;
   claimId: string;
   userId: string;
-  claimedAt: Date;
 }

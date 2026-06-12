@@ -27,14 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
 import {
   Empty,
   EmptyContent,
@@ -43,6 +35,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CheckCircle2,
@@ -70,29 +70,29 @@ import {
 } from "@/app/lib/manifest-client.generated";
 
 interface RouteStop {
-  id: string;
-  stopNumber: number;
-  name: string;
   addressLine1: string | null;
   city: string | null;
-  stopType: string;
-  status: string;
-  plannedArrival: string | null;
+  id: string;
   latitude: string | null;
   longitude: string | null;
+  name: string;
+  plannedArrival: string | null;
+  status: string;
+  stopNumber: number;
+  stopType: string;
 }
 
 interface DeliveryRoute {
-  id: string;
-  routeNumber: string;
-  name: string;
+  createdAt: string;
   description: string | null;
-  status: string;
+  id: string;
+  name: string;
+  routeNumber: string;
   scheduledDate: string | null;
+  status: string;
+  stops: RouteStop[];
   totalDistance: string | null;
   totalDuration: number | null;
-  stops: RouteStop[];
-  createdAt: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -151,7 +151,9 @@ export function RoutesView() {
 
   const handleCreateRoute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.name.trim()) return;
+    if (!createForm.name.trim()) {
+      return;
+    }
 
     setCreating(true);
     try {
@@ -179,7 +181,9 @@ export function RoutesView() {
       const route = await logisticsRouteOptimize({ id: routeId });
       if (route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === routeId ? (route as unknown as DeliveryRoute) : r))
+          prev.map((r) =>
+            r.id === routeId ? (route as unknown as DeliveryRoute) : r
+          )
         );
       }
     } catch (error) {
@@ -197,7 +201,9 @@ export function RoutesView() {
       if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
-            r.id === routeId ? { ...r, status: (route as unknown as DeliveryRoute).status } : r
+            r.id === routeId
+              ? { ...r, status: (route as unknown as DeliveryRoute).status }
+              : r
           )
         );
       }
@@ -212,7 +218,9 @@ export function RoutesView() {
       if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
-            r.id === routeId ? { ...r, status: (route as unknown as DeliveryRoute).status } : r
+            r.id === routeId
+              ? { ...r, status: (route as unknown as DeliveryRoute).status }
+              : r
           )
         );
       }
@@ -235,7 +243,9 @@ export function RoutesView() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!(editingRoute && editForm.name.trim())) return;
+    if (!(editingRoute && editForm.name.trim())) {
+      return;
+    }
 
     setSaving(true);
     try {
@@ -248,7 +258,9 @@ export function RoutesView() {
       });
       if (route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === editingRoute.id ? (route as unknown as DeliveryRoute) : r))
+          prev.map((r) =>
+            r.id === editingRoute.id ? (route as unknown as DeliveryRoute) : r
+          )
         );
         setShowEditDialog(false);
         toast.success("Route updated");
@@ -261,7 +273,9 @@ export function RoutesView() {
   };
 
   const handleDeleteRoute = async () => {
-    if (!deleteRouteId) return;
+    if (!deleteRouteId) {
+      return;
+    }
 
     setDeleting(true);
     try {
@@ -277,12 +291,16 @@ export function RoutesView() {
   };
 
   const filteredRoutes = routes.filter((route) => {
-    if (activeTab === "all") return true;
+    if (activeTab === "all") {
+      return true;
+    }
     return route.status === activeTab;
   });
 
   const formatDuration = (minutes: number | null) => {
-    if (!minutes) return "--";
+    if (!minutes) {
+      return "--";
+    }
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -300,7 +318,7 @@ export function RoutesView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Delivery Routes</h1>
+          <h1 className="font-semibold text-2xl">Delivery Routes</h1>
           <p className="text-muted-foreground">
             Optimize delivery and catering routes for multi-venue events
           </p>
@@ -331,9 +349,9 @@ export function RoutesView() {
                     </EmptyMedia>
                     <EmptyTitle>No routes found</EmptyTitle>
                     <EmptyDescription>
-                      {activeTab !== "all"
-                        ? `No ${activeTab.replace("_", " ")} routes. Try a different filter or create a new route.`
-                        : "Create delivery routes to optimize multi-venue logistics."}
+                      {activeTab === "all"
+                        ? "Create delivery routes to optimize multi-venue logistics."
+                        : `No ${activeTab.replace("_", " ")} routes. Try a different filter or create a new route.`}
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
@@ -360,12 +378,12 @@ export function RoutesView() {
                 </CardHeader>
                 <CardContent>
                   {route.description && (
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="mb-4 text-muted-foreground text-sm">
                       {route.description}
                     </p>
                   )}
 
-                  <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+                  <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span>
@@ -385,24 +403,24 @@ export function RoutesView() {
                   </div>
 
                   {route.stops.length > 0 && (
-                    <div className="space-y-2 mb-4">
+                    <div className="mb-4 space-y-2">
                       {route.stops.map((stop) => (
                         <div
-                          className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+                          className="flex items-center gap-3 rounded-lg bg-muted/50 p-2"
                           key={stop.id}
                         >
-                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-medium text-primary text-xs">
                             {stop.stopNumber}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <MapPin className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-medium text-sm truncate">
+                              <span className="truncate font-medium text-sm">
                                 {stop.name}
                               </span>
                             </div>
                             {stop.addressLine1 && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="truncate text-muted-foreground text-xs">
                                 {stop.addressLine1}
                                 {stop.city && `, ${stop.city}`}
                               </p>
@@ -556,7 +574,9 @@ export function RoutesView() {
       <Dialog
         onOpenChange={(open) => {
           setShowEditDialog(open);
-          if (!open) setEditingRoute(null);
+          if (!open) {
+            setEditingRoute(null);
+          }
         }}
         open={showEditDialog}
       >
@@ -625,7 +645,9 @@ export function RoutesView() {
       {/* Delete Route Confirmation */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeleteRouteId(null);
+          if (!open) {
+            setDeleteRouteId(null);
+          }
         }}
         open={!!deleteRouteId}
       >

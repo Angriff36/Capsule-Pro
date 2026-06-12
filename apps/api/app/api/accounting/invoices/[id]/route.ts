@@ -156,7 +156,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     let taxAmount = Number(invoice.taxAmount);
     let total = Number(invoice.total);
     let amountDue = Number(invoice.amountDue);
-    let lineItems = typeof invoice.lineItems === "string" ? invoice.lineItems : JSON.stringify(invoice.lineItems);
+    let lineItems =
+      typeof invoice.lineItems === "string"
+        ? invoice.lineItems
+        : JSON.stringify(invoice.lineItems);
 
     if (body.lineItems) {
       const totals = calculateInvoiceTotals(body.lineItems);
@@ -178,10 +181,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         taxAmount,
         total,
         amountDue,
-        notes: body.notes ?? (invoice.notes as string ?? ""),
-        internalNotes: body.internalNotes ?? (invoice.internalNotes as string ?? ""),
+        notes: body.notes ?? (invoice.notes as string) ?? "",
+        internalNotes:
+          body.internalNotes ?? (invoice.internalNotes as string) ?? "",
         dueDate: body.dueDate ? new Date(body.dueDate) : invoice.dueDate,
-        paymentTerms: body.paymentTerms ?? (invoice.paymentTerms as number ?? 30),
+        paymentTerms:
+          body.paymentTerms ?? (invoice.paymentTerms as number) ?? 30,
         lineItems,
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
@@ -236,7 +241,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const user = await resolveCurrentUser(request);
-    const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+    const manifestUser = {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    };
     const action = body.action;
 
     if (action === "apply-payment") {

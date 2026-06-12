@@ -1,49 +1,49 @@
 export interface EventDishSummary {
-  linkId: string;
-  dishId: string;
-  name: string;
   category: string | null;
-  recipeId: string | null;
-  recipeName: string | null;
+  costPerPerson: number | null;
   course: string | null;
-  quantityServings: number;
   dietaryTags: string[];
+  dishId: string;
+  linkId: string;
+  name: string;
   presentationImageUrl: string | null;
   pricePerPerson: number | null;
-  costPerPerson: number | null;
+  quantityServings: number;
+  recipeId: string | null;
+  recipeName: string | null;
 }
 
 export interface RecipeIngredientSummary {
   ingredientId: string;
   ingredientName: string;
+  isOptional: boolean;
+  preparationNotes: string | null;
   quantity: number;
   unitCode: string | null;
-  preparationNotes: string | null;
-  isOptional: boolean;
 }
 
 export interface RecipeStepSummary {
-  stepNumber: number;
-  instruction: string;
   durationMinutes: number | null;
-  temperatureValue: number | null;
-  temperatureUnit: string | null;
   equipmentNeeded: string[];
+  instruction: string;
+  stepNumber: number;
+  temperatureUnit: string | null;
+  temperatureValue: number | null;
   tips: string | null;
 }
 
 export interface RecipeDetailSummary {
+  cookTimeMinutes: number | null;
+  ingredients: RecipeIngredientSummary[];
+  instructions: string | null;
+  prepTimeMinutes: number | null;
   recipeId: string;
   recipeName: string;
+  restTimeMinutes: number | null;
+  steps: RecipeStepSummary[];
   versionId: string;
   yieldQuantity: number;
   yieldUnitCode: string | null;
-  instructions: string | null;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
-  restTimeMinutes: number | null;
-  ingredients: RecipeIngredientSummary[];
-  steps: RecipeStepSummary[];
 }
 
 export interface InventoryCoverageItem {
@@ -56,18 +56,18 @@ export interface InventoryCoverageItem {
 }
 
 export interface RelatedEventSummary {
-  id: string;
-  title: string;
-  eventType: string;
+  accessibilityOptions: string[];
   eventDate: string;
+  eventFormat: string | null;
+  eventType: string;
+  featuredMediaUrl: string | null;
   guestCount: number;
+  id: string;
   status: string;
-  venueName: string | null;
-  venueAddress: string | null;
+  tags: string[];
   ticketPrice: number | null;
   ticketTier: string | null;
-  eventFormat: string | null;
-  accessibilityOptions: string[];
-  featuredMediaUrl: string | null;
-  tags: string[];
+  title: string;
+  venueAddress: string | null;
+  venueName: string | null;
 }

@@ -53,7 +53,9 @@ vi.mock("@repo/database", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireTenantId: vi.fn().mockResolvedValue("00000000-0000-0000-0000-000000000001"),
+  requireTenantId: vi
+    .fn()
+    .mockResolvedValue("00000000-0000-0000-0000-000000000001"),
   resolveCurrentUser: mocks.resolveCurrentUserMock,
 }));
 
@@ -215,9 +217,7 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
         "33333333-3333-3333-3333-333333333333",
         "44444444-4444-4444-4444-444444444444",
       ];
-      mocks.pmFindManyMock.mockResolvedValue(
-        siblingIds.map((id) => ({ id }))
-      );
+      mocks.pmFindManyMock.mockResolvedValue(siblingIds.map((id) => ({ id })));
 
       await PATCH(makeRequest({ action: "mark-as-default" }), { params });
 

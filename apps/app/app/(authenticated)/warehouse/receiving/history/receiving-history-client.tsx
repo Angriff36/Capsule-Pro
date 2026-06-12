@@ -46,29 +46,29 @@ import { toast } from "sonner";
 // ---------- Types ----------
 
 interface ReceivingRecord {
+  completionPercentage: number;
   id: string;
   poNumber: string;
-  vendorName: string | null;
-  status: string;
   receivedAt: string | null;
   receivedBy: string | null;
-  totalItems: number;
   receivedItems: number;
-  completionPercentage: number;
+  status: string;
+  totalItems: number;
+  vendorName: string | null;
 }
 
 interface ReceivingHistoryResponse {
+  page: number;
   records: ReceivingRecord[];
   total: number;
-  page: number;
   totalPages: number;
 }
 
 interface HistoryFilters {
-  search: string;
-  status: string;
   dateFrom: string;
   dateTo: string;
+  search: string;
+  status: string;
 }
 
 // ---------- Helpers ----------
@@ -95,16 +95,19 @@ const getStatusBadgeVariant = (
 
 const STATUS_SEPARATOR_RE = /[_\s]+/;
 
-const formatStatus = (status: string): string => {
-  return status
+const formatStatus = (status: string): string =>
+  status
     .split(STATUS_SEPARATOR_RE)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
-};
 
 const getCompletionColor = (pct: number): string => {
-  if (pct >= 100) return "bg-emerald-600";
-  if (pct >= 50) return "bg-amber-500";
+  if (pct >= 100) {
+    return "bg-emerald-600";
+  }
+  if (pct >= 50) {
+    return "bg-amber-500";
+  }
   return "bg-red-500";
 };
 
@@ -147,11 +150,18 @@ export function ReceivingHistoryClient() {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("limit", String(limit));
-      if (filters.search) params.set("search", filters.search);
-      if (filters.status && filters.status !== "all")
+      if (filters.search) {
+        params.set("search", filters.search);
+      }
+      if (filters.status && filters.status !== "all") {
         params.set("status", filters.status);
-      if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
-      if (filters.dateTo) params.set("dateTo", filters.dateTo);
+      }
+      if (filters.dateFrom) {
+        params.set("dateFrom", filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        params.set("dateTo", filters.dateTo);
+      }
       return params;
     },
     [filters]

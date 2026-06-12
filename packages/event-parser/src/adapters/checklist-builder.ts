@@ -21,11 +21,11 @@ import type {
 const CHECKLIST_VERSION = "2025-01-27";
 
 export interface ChecklistBuildResult {
-  checklist: EventChecklist;
   autoFilledCount: number;
+  checklist: EventChecklist;
+  missingFields: string[];
   totalQuestions: number;
   warnings: string[];
-  missingFields: string[];
 }
 
 /**
@@ -111,11 +111,11 @@ export function updateChecklistQuestion(
       }
 
       const nextValue =
-        updates.value !== undefined ? updates.value : question.value;
+        updates.value === undefined ? question.value : updates.value;
       const nextNotes =
-        updates.notes !== undefined
-          ? (updates.notes ?? undefined)
-          : question.notes;
+        updates.notes === undefined
+          ? question.notes
+          : (updates.notes ?? undefined);
       const sameValue = nextValue === question.value;
       const sameNotes = (nextNotes ?? "") === (question.notes ?? "");
 

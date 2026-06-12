@@ -78,8 +78,8 @@ function draftOrderSeed() {
 }
 
 interface Transition {
-  property: string;
   from: string;
+  property: string;
   to: string[];
 }
 

@@ -74,55 +74,55 @@ type SuggestionPriority = "high" | "medium" | "low";
 type Timeframe = "today" | "week" | "month";
 
 interface NavigateAction {
-  type: "navigate";
   path: string;
+  type: "navigate";
 }
 
 interface ApiCallAction {
-  type: "api_call";
-  method: string;
   endpoint: string;
+  method: string;
   payload: Record<string, unknown>;
+  type: "api_call";
 }
 
 type SuggestionAction = NavigateAction | ApiCallAction;
 
 interface Suggestion {
-  id: string;
-  type: SuggestionType;
+  action: SuggestionAction;
   category: SuggestionCategory;
+  description: string;
+  dismissed: boolean;
+  estimatedImpact: string;
+  id: string;
   priority: SuggestionPriority;
   title: string;
-  description: string;
-  action: SuggestionAction;
-  estimatedImpact: string;
-  dismissed: boolean;
+  type: SuggestionType;
 }
 
 interface SuggestionsContext {
-  timeframe: Timeframe;
-  totalEvents: number;
   incompleteTasks: number;
   inventoryAlerts: number;
+  timeframe: Timeframe;
+  totalEvents: number;
 }
 
 interface SuggestionsResponse {
+  context: SuggestionsContext;
+  generatedAt: string;
   suggestions: Suggestion[];
   summary: string;
-  generatedAt: string;
-  context: SuggestionsContext;
 }
 
 interface EventSummaryResponse {
+  criticalInfo: string[];
+  eventDate: string;
   eventId: string;
+  eventTitle: string;
+  generatedAt: string;
+  highlights: string[];
+  model: string;
   summary: string;
   wordCount: number;
-  highlights: string[];
-  criticalInfo: string[];
-  generatedAt: string;
-  eventTitle: string;
-  eventDate: string;
-  model: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -212,8 +212,8 @@ function StatCard({
           <Icon className="h-4 w-4 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-2xl font-bold leading-none">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="font-bold text-2xl leading-none">{value}</p>
+          <p className="text-muted-foreground text-sm">{label}</p>
         </div>
       </CardContent>
     </Card>
@@ -292,7 +292,7 @@ function SuggestionsTab() {
       {/* Timeframe selector + generate button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Timeframe</Label>
+          <Label className="font-medium text-sm">Timeframe</Label>
           <div className="flex gap-2">
             {TIMEFRAMES.map((tf) => (
               <Button
@@ -358,7 +358,7 @@ function SuggestionsTab() {
           <CardContent className="p-4">
             <div className="flex items-start gap-2">
               <Brain className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{data.summary}</p>
+              <p className="text-muted-foreground text-sm">{data.summary}</p>
             </div>
           </CardContent>
         </Card>
@@ -369,7 +369,7 @@ function SuggestionsTab() {
         <Card tone="canvas">
           <CardContent className="flex flex-col items-center gap-2 py-12">
             <Lightbulb className="h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No suggestions for this timeframe. Everything looks good.
             </p>
           </CardContent>
@@ -405,7 +405,7 @@ function SuggestionsTab() {
               )}
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-4 text-muted-foreground text-sm">
                 {suggestion.description}
               </p>
               {suggestion.action.type === "navigate" && (
@@ -435,7 +435,7 @@ function SuggestionsTab() {
 
       {/* Generated timestamp */}
       {data?.generatedAt && (
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs">
           Generated at {formatTimestamp(data.generatedAt)}
         </p>
       )}
@@ -447,8 +447,8 @@ function SuggestionsTab() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Sparkles className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">No suggestions yet</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-2 font-medium text-sm">No suggestions yet</p>
+            <p className="text-muted-foreground text-sm">
               Select a timeframe and click &quot;Generate Suggestions&quot; to
               get AI-powered recommendations.
             </p>
@@ -542,8 +542,8 @@ function EventSummariesTab() {
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <div className="text-center">
-              <p className="text-sm font-medium">Generating summary...</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-sm">Generating summary...</p>
+              <p className="text-muted-foreground text-xs">
                 This may take a few seconds while the AI analyzes the event
                 data.
               </p>
@@ -580,11 +580,11 @@ function EventSummariesTab() {
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {summary.summary}
               </p>
               <Separator className="my-3" />
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-muted-foreground text-xs">
                 <span>{summary.wordCount} words</span>
                 <span>Generated {formatTimestamp(summary.generatedAt)}</span>
               </div>
@@ -595,7 +595,7 @@ function EventSummariesTab() {
           {summary.highlights.length > 0 && (
             <Card tone="canvas">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <CardTitle className="flex items-center gap-2 font-medium text-sm">
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
                   Highlights
                 </CardTitle>
@@ -617,7 +617,7 @@ function EventSummariesTab() {
           {summary.criticalInfo.length > 0 && (
             <Card className="border-hairline bg-muted/50" tone="canvas">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <CardTitle className="flex items-center gap-2 font-medium text-foreground text-sm">
                   <AlertTriangle className="h-4 w-4 text-amber-600" />
                   Critical Information
                 </CardTitle>
@@ -626,7 +626,7 @@ function EventSummariesTab() {
                 <ul className="space-y-2">
                   {summary.criticalInfo.map((info, i) => (
                     <li
-                      className="flex items-start gap-2 text-sm text-foreground"
+                      className="flex items-start gap-2 text-foreground text-sm"
                       key={i}
                     >
                       <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
@@ -647,8 +647,8 @@ function EventSummariesTab() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <FileText className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">No summary generated</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-2 font-medium text-sm">No summary generated</p>
+            <p className="text-muted-foreground text-sm">
               Enter an event ID and click &quot;Generate Summary&quot; to create
               an AI-powered event summary.
             </p>

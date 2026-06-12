@@ -38,15 +38,15 @@ import {
  * Contains the key information needed for downstream processing.
  */
 export interface ApiKeyContext {
-  tenantId: string;
-  id: string;
-  name: string;
-  keyPrefix: string;
-  scopes: string[];
-  lastUsedAt: Date | null;
-  expiresAt: Date | null;
-  createdByUserId: string;
   createdAt: Date;
+  createdByUserId: string;
+  expiresAt: Date | null;
+  id: string;
+  keyPrefix: string;
+  lastUsedAt: Date | null;
+  name: string;
+  scopes: string[];
+  tenantId: string;
 }
 
 /**

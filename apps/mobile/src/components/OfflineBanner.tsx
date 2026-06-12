@@ -56,14 +56,14 @@ export function OfflineBanner({
     }
     if (isSyncing) {
       return {
-        message: `Syncing ${pendingCount} change${pendingCount !== 1 ? "s" : ""}...`,
+        message: `Syncing ${pendingCount} change${pendingCount === 1 ? "" : "s"}...`,
         backgroundColor: "#f59e0b",
         iconName: "\u21BB", // Refresh arrow
       };
     }
     if (pendingCount > 0) {
       return {
-        message: `${pendingCount} change${pendingCount !== 1 ? "s" : ""} pending`,
+        message: `${pendingCount} change${pendingCount === 1 ? "" : "s"} pending`,
         backgroundColor: "#f59e0b",
         iconName: "\u26A0",
       };

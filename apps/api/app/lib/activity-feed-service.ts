@@ -8,44 +8,44 @@
 import { database, type Prisma } from "@repo/database";
 
 export interface ActivityCreateInput {
-  tenantId: string;
+  action: string;
   activityType:
     | "entity_change"
     | "ai_approval"
     | "collaborator_action"
     | "system_event";
-  entityType?: string;
-  entityId?: string;
-  action: string;
-  title: string;
+  correlationId?: string;
   description?: string;
+  entityId?: string;
+  entityType?: string;
+  importance?: "low" | "normal" | "high" | "urgent";
   metadata?: Record<string, unknown>;
+  parentId?: string;
   performedBy?: string;
   performerName?: string;
-  correlationId?: string;
-  parentId?: string;
+  sourceId?: string;
   sourceType?:
     | "manifest_command"
     | "ai_generation"
     | "direct_action"
     | "webhook";
-  sourceId?: string;
-  importance?: "low" | "normal" | "high" | "urgent";
+  tenantId: string;
+  title: string;
   visibility?: "all" | "admins" | "performers";
 }
 
 export interface ActivityFilterOptions {
   activityType?: string;
-  entityType?: string;
-  entityId?: string;
-  performedBy?: string;
-  importance?: string;
-  sourceType?: string;
   correlationId?: string;
-  startDate?: Date;
   endDate?: Date;
+  entityId?: string;
+  entityType?: string;
+  importance?: string;
   limit?: number;
   offset?: number;
+  performedBy?: string;
+  sourceType?: string;
+  startDate?: Date;
 }
 
 /**
@@ -82,7 +82,9 @@ export async function createActivity(
 export async function createActivities(
   activities: ActivityCreateInput[]
 ): Promise<void> {
-  if (activities.length === 0) return;
+  if (activities.length === 0) {
+    return;
+  }
 
   await database.activityFeed.createMany({
     data: activities.map((a) => ({

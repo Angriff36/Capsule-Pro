@@ -110,7 +110,11 @@ describe("Manifest Runtime - RecipeVersion.totalTimeMinutes computed", () => {
     });
 
     expect(
-      await runtime.evaluateComputed("RecipeVersion", "rv-2", "totalTimeMinutes")
+      await runtime.evaluateComputed(
+        "RecipeVersion",
+        "rv-2",
+        "totalTimeMinutes"
+      )
     ).toBe(0);
   });
 });

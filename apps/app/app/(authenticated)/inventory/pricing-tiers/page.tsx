@@ -23,10 +23,14 @@ import { PricingTiersClient } from "./pricing-tiers-client";
 
 export default async function PricingTiersPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [total, active, inactive] = await Promise.all([
     database.pricingTier.count({
@@ -108,7 +112,7 @@ export default async function PricingTiersPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} tier${total !== 1 ? "s" : ""}`}
+            count={`${total} tier${total === 1 ? "" : "s"}`}
             description="Create and manage volume pricing tiers with quantity breaks and effective dates."
             eyebrow="Pricing"
             title="All Tiers"

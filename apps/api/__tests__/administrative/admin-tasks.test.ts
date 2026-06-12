@@ -102,12 +102,9 @@ vi.mock("@repo/observability/log", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, resolveCurrentUser, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
-const { runManifestCommand } = await import(
-  "@/lib/manifest/execute-command"
-);
+const { getTenantIdForOrg, resolveCurrentUser, requireCurrentUser } =
+  await import("@/app/lib/tenant");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
 
@@ -196,7 +193,11 @@ function mockRequireCurrentUser() {
 function mockManifestSuccess(result: Record<string, unknown> = {}) {
   vi.mocked(runManifestCommand).mockResolvedValue(
     new Response(
-      JSON.stringify({ success: true, result: { id: "test-id", ...result }, events: [] }),
+      JSON.stringify({
+        success: true,
+        result: { id: "test-id", ...result },
+        events: [],
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     )
   );
@@ -254,7 +255,9 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.count).mockResolvedValue(0);
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
-      await getTasksList(makeRequest("/api/administrative/tasks?status=review"));
+      await getTasksList(
+        makeRequest("/api/administrative/tasks?status=review")
+      );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
       const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
@@ -723,7 +726,10 @@ describe("Admin Task API", () => {
     it("should return error response from runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: false, message: "Access denied by policy AdminOnly" }),
+          JSON.stringify({
+            success: false,
+            message: "Access denied by policy AdminOnly",
+          }),
           { status: 403, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -742,7 +748,10 @@ describe("Admin Task API", () => {
     it("should return 422 from runManifestCommand guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: false, message: "Guard 1 failed: Title too short" }),
+          JSON.stringify({
+            success: false,
+            message: "Guard 1 failed: Title too short",
+          }),
           { status: 422, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -778,7 +787,9 @@ describe("Admin Task API", () => {
     });
 
     it("should return 500 on unexpected exception", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("DB connection lost"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("DB connection lost")
+      );
 
       const request = makeRequest("/api/administrative/tasks/commands/create", {
         method: "POST",

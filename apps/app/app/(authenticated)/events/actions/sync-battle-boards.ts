@@ -1,8 +1,8 @@
 "use server";
 
 import { database } from "@repo/database";
-import { runManifestCommand } from "@/lib/manifest-command";
 import type { ManifestUserContext } from "@/lib/manifest-command";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 /**
  * Refresh inherited event snapshot on all battle boards linked to an event.

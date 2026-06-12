@@ -27,15 +27,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "active";
     const overdue = searchParams.get("overdue") === "true";
 
-    const scheduleRecords = await database.preventiveMaintenanceSchedule.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        ...(status !== "all" ? { status } : {}),
-        ...(overdue ? { nextDueAt: { lt: new Date() } } : {}),
-      },
-      orderBy: { nextDueAt: "asc" },
-    });
+    const scheduleRecords =
+      await database.preventiveMaintenanceSchedule.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          ...(status === "all" ? {} : { status }),
+          ...(overdue ? { nextDueAt: { lt: new Date() } } : {}),
+        },
+        orderBy: { nextDueAt: "asc" },
+      });
     const schedules = scheduleRecords.map((schedule) => ({
       id: schedule.id,
       schedule_number: schedule.scheduleNumber,

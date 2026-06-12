@@ -72,7 +72,7 @@ function findColumn(
       }
     }
   }
-  return undefined;
+  return;
 }
 
 export function parseRowToRecord(

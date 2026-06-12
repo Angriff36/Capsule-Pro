@@ -90,7 +90,7 @@ function validateBooleanField(
 ): boolean | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(typeof value === "boolean", `${field} must be a boolean`);
   return value as boolean;
@@ -106,7 +106,7 @@ function validateIntegerField(
 ): number | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "number" && Number.isInteger(value),

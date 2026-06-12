@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/kitchen/recipes/[id]/composite/update-with-version/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const mocks = vi.hoisted(() => {
   const tx = {
@@ -144,7 +144,10 @@ describe("POST /api/kitchen/recipes/[id]/composite/update-with-version", () => {
     expect(mocks.database.recipeVersion.findFirst).not.toHaveBeenCalled();
     expect(mocks.tx.recipe.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ id: "recipe-1", tenantId: "tenant-1" }),
+        where: expect.objectContaining({
+          id: "recipe-1",
+          tenantId: "tenant-1",
+        }),
       })
     );
     expect(mocks.tx.recipeVersion.findFirst).toHaveBeenCalledWith(

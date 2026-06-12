@@ -1,7 +1,7 @@
 /** A single breadcrumb entry used by the Header component. */
 export interface BreadcrumbItem {
-  label: string;
   href?: string;
+  label: string;
 }
 
 /**

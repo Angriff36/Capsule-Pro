@@ -20,20 +20,20 @@ interface RouteParams {
 }
 
 interface ClientSelect {
-  id: true;
   company_name: true;
-  first_name: true;
-  last_name: true;
   email: true;
+  first_name: true;
+  id: true;
+  last_name: true;
   phone: true;
 }
 
 interface LeadSelect {
-  id: true;
   companyName: true;
-  contactName: true;
   contactEmail: true;
+  contactName: true;
   contactPhone: true;
+  id: true;
 }
 
 /**
@@ -157,7 +157,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
 export async function PUT(request: NextRequest, context: RouteParams) {
   const { id } = await context.params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "Proposal",
     command: "update",

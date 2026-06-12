@@ -122,7 +122,7 @@ const WarehouseInventoryPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Warehouse Inventory
         </h1>
         <p className="text-muted-foreground">
@@ -133,14 +133,14 @@ const WarehouseInventoryPage = async () => {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Stock by Location
         </h2>
         <Card tone="canvas">
           <CardContent className="overflow-x-auto">
             <div className="rounded-md border">
               {inventoryRows.length === 0 ? (
-                <div className="p-6 text-sm text-muted-foreground">
+                <div className="p-6 text-muted-foreground text-sm">
                   No inventory items found.
                 </div>
               ) : (

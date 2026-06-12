@@ -114,11 +114,11 @@ const BoardDetailPage = async ({ params }: PageProps) => {
                 <Badge variant="outline">Template</Badge>
               ) : null}
               <Badge variant="outline">
-                {cards.length} card{cards.length !== 1 ? "s" : ""}
+                {cards.length} card{cards.length === 1 ? "" : "s"}
               </Badge>
               {groups.length > 0 ? (
                 <Badge variant="outline">
-                  {groups.length} group{groups.length !== 1 ? "s" : ""}
+                  {groups.length} group{groups.length === 1 ? "" : "s"}
                 </Badge>
               ) : null}
             </div>

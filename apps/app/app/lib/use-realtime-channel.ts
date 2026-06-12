@@ -29,20 +29,20 @@ import { useEffect } from "react";
 export interface RealtimeEventMessage<T = unknown> {
   /** The fanout channel this message arrived on. */
   channel: string;
-  /** The event name (e.g. "kitchen.task.claimed"). */
-  name: string;
   /** The opaque payload as published by the server. */
   data: T;
+  /** The event name (e.g. "kitchen.task.claimed"). */
+  name: string;
 }
 
 export interface UseRealtimeChannelOptions {
-  /** Whether the subscription should be active. Defaults to true. */
-  enabled?: boolean;
   /**
    * Optional channels to subscribe to. Each must start with `tenant:{tenantId}`.
    * When omitted, defaults to `["tenant:{tenantId}"]` (the wide tenant feed).
    */
   channels?: readonly string[];
+  /** Whether the subscription should be active. Defaults to true. */
+  enabled?: boolean;
 }
 
 const SSE_ENDPOINT = "/api/realtime/events";

@@ -164,7 +164,7 @@ export const NoDataWithAction: Story = {
   render: () => {
     const actionButton = (
       <button
-        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
         onClick={() => alert("Importing data...")}
         type="button"
       >
@@ -218,45 +218,45 @@ export const FilteredEmpty: Story = {
 // Grid view for comparison
 export const AllIllustrationsGrid: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-8 p-8 max-w-6xl">
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">Empty List</h3>
+    <div className="grid max-w-6xl grid-cols-2 gap-8 p-8">
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">Empty List</h3>
         <EmptyListState itemName="items" />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Search Results</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Search Results</h3>
         <NoSearchResultsState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Notifications</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Notifications</h3>
         <NoNotificationsState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Clients</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Clients</h3>
         <NoClientsState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Tasks</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Tasks</h3>
         <NoTasksState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Inventory</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Inventory</h3>
         <NoInventoryState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Shipments</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Shipments</h3>
         <NoShipmentsState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Events</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Events</h3>
         <NoEventsState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Recipes</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Recipes</h3>
         <NoRecipesState />
       </div>
-      <div className="border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-2">No Data</h3>
+      <div className="rounded-lg border p-4">
+        <h3 className="mb-2 font-medium text-sm">No Data</h3>
         <NoDataState />
       </div>
     </div>

@@ -37,18 +37,21 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowUpRight, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { knowledgeBaseEntryCreate, listKnowledgeBaseEntries } from "@/app/lib/manifest-client.generated";
+import {
+  knowledgeBaseEntryCreate,
+  listKnowledgeBaseEntries,
+} from "@/app/lib/manifest-client.generated";
 
 interface KnowledgeBaseEntry {
-  id: string;
-  slug: string;
-  title: string;
-  content: string | null;
   category: string | null;
-  tags: string[] | null;
-  status: string;
+  content: string | null;
   createdAt: string;
+  id: string;
   publishedAt: string | null;
+  slug: string;
+  status: string;
+  tags: string[] | null;
+  title: string;
 }
 
 export default function KnowledgeBaseClient() {
@@ -75,8 +78,12 @@ export default function KnowledgeBaseClient() {
     setLoading(true);
     try {
       const query: Record<string, string | number> = { status: "published" };
-      if (search) query.search = search;
-      if (selectedCategory) query.category = selectedCategory;
+      if (search) {
+        query.search = search;
+      }
+      if (selectedCategory) {
+        query.category = selectedCategory;
+      }
 
       const result = await listKnowledgeBaseEntries(query);
       setEntries(result.data as unknown as KnowledgeBaseEntry[]);
@@ -91,16 +98,17 @@ export default function KnowledgeBaseClient() {
     ...new Set(entries.map((e) => e.category).filter(Boolean)),
   ] as string[];
 
-  const generateSlug = (title: string) => {
-    return title
+  const generateSlug = (title: string) =>
+    title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-  };
 
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!(createForm.title.trim() && createForm.slug.trim())) return;
+    if (!(createForm.title.trim() && createForm.slug.trim())) {
+      return;
+    }
 
     setCreating(true);
     try {
@@ -278,7 +286,7 @@ export default function KnowledgeBaseClient() {
                     {entry.title}
                   </h3>
                   {entry.content ? (
-                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                    <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
                       {entry.content.slice(0, 180)}...
                     </p>
                   ) : null}

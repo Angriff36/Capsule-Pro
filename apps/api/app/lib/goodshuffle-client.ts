@@ -6,107 +6,107 @@
  */
 
 export interface GoodshuffleEvent {
-  id: string;
-  name: string;
-  event_date: string;
-  end_date?: string;
-  status: string;
-  client_name?: string;
   client_email?: string;
+  client_name?: string;
   client_phone?: string;
-  venue_name?: string;
-  venue_address?: string;
-  guest_count?: number;
-  total_price?: number;
-  notes?: string;
   created_at: string;
-  updated_at: string;
+  end_date?: string;
+  event_date: string;
+  guest_count?: number;
+  id: string;
   items?: GoodshuffleEventItem[];
+  name: string;
+  notes?: string;
+  status: string;
+  total_price?: number;
+  updated_at: string;
+  venue_address?: string;
+  venue_name?: string;
 }
 
 export interface GoodshuffleEventItem {
   id: string;
   name: string;
   quantity: number;
-  unit_price: number;
   total_price: number;
+  unit_price: number;
 }
 
 export interface GoodshuffleInventoryItem {
+  category?: string;
+  created_at: string;
+  description?: string;
   id: string;
   name: string;
-  sku?: string;
-  description?: string;
-  category?: string;
   quantity_available: number;
+  sku?: string;
   unit_cost?: number;
   unit_of_measure?: string;
-  created_at: string;
   updated_at: string;
 }
 
 export interface GoodshuffleInvoice {
+  client_email?: string;
+  client_name?: string;
+  created_at: string;
+  due_date?: string;
+  event_id?: string;
   id: string;
   invoice_number: string;
-  event_id?: string;
-  client_name?: string;
-  client_email?: string;
-  total_amount: number;
-  status: string;
   issue_date: string;
-  due_date?: string;
-  paid_date?: string;
-  notes?: string;
   line_items?: GoodshuffleInvoiceLineItem[];
-  created_at: string;
+  notes?: string;
+  paid_date?: string;
+  status: string;
+  total_amount: number;
   updated_at: string;
 }
 
 export interface GoodshuffleInvoiceLineItem {
-  id: string;
   description: string;
+  id: string;
   quantity: number;
-  unit_price: number;
   total_price: number;
+  unit_price: number;
 }
 
 export interface GoodshuffleSyncResult {
-  success: boolean;
+  conflicts: GoodshuffleConflict[];
+  errors: string[];
   eventsImported: number;
   eventsSkipped: number;
   eventsUpdated: number;
-  conflicts: GoodshuffleConflict[];
-  errors: string[];
+  success: boolean;
 }
 
 export interface GoodshuffleInventorySyncResult {
-  success: boolean;
+  conflicts: GoodshuffleConflict[];
+  errors: string[];
   itemsImported: number;
   itemsSkipped: number;
   itemsUpdated: number;
-  conflicts: GoodshuffleConflict[];
-  errors: string[];
+  success: boolean;
 }
 
 export interface GoodshuffleInvoiceSyncResult {
-  success: boolean;
+  conflicts: GoodshuffleConflict[];
+  errors: string[];
   invoicesImported: number;
   invoicesSkipped: number;
   invoicesUpdated: number;
-  conflicts: GoodshuffleConflict[];
-  errors: string[];
+  success: boolean;
 }
 
 export interface GoodshuffleConflict {
-  goodshuffleEventId?: string;
   convoyEventId?: string;
-  goodshuffleItemId?: string;
   convoyInventoryItemId?: string;
-  goodshuffleInvoiceId?: string;
   convoyInvoiceId?: string;
-  field: string;
-  goodshuffleValue: unknown;
   convoyValue: unknown;
+  field: string;
+  goodshuffleEventId?: string;
+  goodshuffleInvoiceId?: string;
+  goodshuffleItemId?: string;
+  goodshuffleValue: unknown;
   resolution: "pending" | "convoy_wins" | "goodshuffle_wins";
 }
 

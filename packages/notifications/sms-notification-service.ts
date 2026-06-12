@@ -23,11 +23,11 @@ const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 export type SmsStatus = "pending" | "sent" | "delivered" | "failed";
 
 export interface SendSmsOptions {
-  tenantId: string;
+  customMessage?: string;
   notificationType: string;
   recipients: SmsRecipient[];
   templateData: SmsTemplateData;
-  customMessage?: string;
+  tenantId: string;
 }
 
 export interface SmsRecipient {
@@ -36,26 +36,26 @@ export interface SmsRecipient {
 }
 
 export interface SendSmsResult {
-  success: boolean;
-  messageId?: string;
   error?: string;
+  messageId?: string;
   status: SmsStatus;
+  success: boolean;
 }
 
 export interface SmsLogEntry {
-  id: string;
-  tenantId: string;
+  createdAt: Date;
+  deliveredAt?: Date;
   employeeId?: string;
-  phoneNumber: string;
+  errorMessage?: string;
+  failedAt?: Date;
+  id: string;
   message: string;
   notificationType: string;
-  status: SmsStatus;
-  twilioSid?: string;
-  errorMessage?: string;
+  phoneNumber: string;
   sentAt?: Date;
-  deliveredAt?: Date;
-  failedAt?: Date;
-  createdAt: Date;
+  status: SmsStatus;
+  tenantId: string;
+  twilioSid?: string;
 }
 
 /**
@@ -223,7 +223,9 @@ async function batchCheckSmsOptInStatus(
     .map((r) => r.employeeId)
     .filter((id): id is string => !!id);
 
-  if (employeeIds.length === 0) return new Set();
+  if (employeeIds.length === 0) {
+    return new Set();
+  }
 
   const preferences = await database.notification_preferences.findMany({
     where: {

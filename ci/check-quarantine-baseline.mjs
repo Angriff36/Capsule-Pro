@@ -62,15 +62,25 @@ console.log(`  Removed        : ${removed.length}`);
 
 if (removed.length > 0) {
   console.log("");
-  console.log("[quarantine-baseline] Removed files (good — these were retired or renamed):");
-  for (const f of removed.slice(0, 20)) console.log(`  ${f}`);
-  if (removed.length > 20) console.log(`  ...and ${removed.length - 20} more.`);
+  console.log(
+    "[quarantine-baseline] Removed files (good — these were retired or renamed):"
+  );
+  for (const f of removed.slice(0, 20)) {
+    console.log(`  ${f}`);
+  }
+  if (removed.length > 20) {
+    console.log(`  ...and ${removed.length - 20} more.`);
+  }
 }
 
 if (newlyAdded.length > 0) {
   console.log("");
-  console.log("[quarantine-baseline] ::error::NEW quarantined files not in baseline:");
-  for (const f of newlyAdded) console.log(`  ${f}`);
+  console.log(
+    "[quarantine-baseline] ::error::NEW quarantined files not in baseline:"
+  );
+  for (const f of newlyAdded) {
+    console.log(`  ${f}`);
+  }
   console.log("");
   console.log(
     "Adding a new quarantined test means quarantining a NEW failure into the " +

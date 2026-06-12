@@ -114,18 +114,18 @@ const PAY_PERIODS_PER_YEAR: Record<string, number> = {
 };
 
 export interface TaxCalculationInput {
-  grossPay: Currency;
-  preTaxDeductions: Currency;
   employee: Employee;
+  grossPay: Currency;
+  payPeriodFrequency?: "weekly" | "biweekly" | "semimonthly" | "monthly";
+  preTaxDeductions: Currency;
   ytdGrossPay?: Currency;
   ytdSocialSecurityWages?: Currency;
-  payPeriodFrequency?: "weekly" | "biweekly" | "semimonthly" | "monthly";
 }
 
 export interface TaxCalculationResult {
   taxableIncome: Currency;
-  withholdings: TaxWithholding[];
   totalTax: Currency;
+  withholdings: TaxWithholding[];
 }
 
 /**

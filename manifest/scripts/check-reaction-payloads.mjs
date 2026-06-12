@@ -27,11 +27,13 @@
  *   node manifest/scripts/check-reaction-payloads.mjs --write-baseline
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const IR_PATH = resolve("manifest/ir/kitchen.ir.json");
-const BASELINE_PATH = resolve("manifest/governance/reaction-payload-baseline.json");
+const BASELINE_PATH = resolve(
+  "manifest/governance/reaction-payload-baseline.json"
+);
 const STRICT = process.argv.includes("--strict");
 const WRITE_BASELINE = process.argv.includes("--write-baseline");
 
@@ -43,7 +45,9 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 const emittersByEvent = new Map();
 for (const cmd of ir.commands ?? []) {
   for (const ev of cmd.emits ?? []) {
-    if (!emittersByEvent.has(ev)) emittersByEvent.set(ev, []);
+    if (!emittersByEvent.has(ev)) {
+      emittersByEvent.set(ev, []);
+    }
     emittersByEvent.get(ev).push({
       entity: cmd.entity,
       command: cmd.name,
@@ -56,7 +60,9 @@ for (const cmd of ir.commands ?? []) {
 const entityProps = new Map();
 for (const ent of ir.entities ?? []) {
   const names = new Set((ent.properties ?? []).map((p) => p.name));
-  for (const c of ent.computedProperties ?? []) names.add(c.name);
+  for (const c of ent.computedProperties ?? []) {
+    names.add(c.name);
+  }
   names.add("id");
   entityProps.set(ent.name, names);
 }
@@ -67,20 +73,34 @@ for (const ent of ir.entities ?? []) {
  * re-walked; everything else recurses generically.
  */
 function collectPayloadChains(node, out) {
-  if (node == null || typeof node !== "object") return;
+  if (node == null || typeof node !== "object") {
+    return;
+  }
   if (Array.isArray(node)) {
-    for (const n of node) collectPayloadChains(n, out);
+    for (const n of node) {
+      collectPayloadChains(n, out);
+    }
     return;
   }
   if (node.kind === "member") {
     const chain = [];
     let spine = node;
-    while (spine && spine.kind === "member" && typeof spine.property === "string") {
+    while (
+      spine &&
+      spine.kind === "member" &&
+      typeof spine.property === "string"
+    ) {
       chain.unshift(spine.property);
       spine = spine.object;
     }
-    if (spine && spine.kind === "identifier" && (spine.name === "payload" || spine.name === "self")) {
-      if (chain.length > 0) out.push(chain);
+    if (
+      spine &&
+      spine.kind === "identifier" &&
+      (spine.name === "payload" || spine.name === "self")
+    ) {
+      if (chain.length > 0) {
+        out.push(chain);
+      }
       return; // whole spine consumed
     }
     // Not a payload chain — recurse into the unconsumed parts.
@@ -88,7 +108,14 @@ function collectPayloadChains(node, out) {
     return;
   }
   for (const key of Object.keys(node)) {
-    if (key === "kind" || key === "property" || key === "name" || key === "operator") continue;
+    if (
+      key === "kind" ||
+      key === "property" ||
+      key === "name" ||
+      key === "operator"
+    ) {
+      continue;
+    }
     collectPayloadChains(node[key], out);
   }
 }
@@ -110,26 +137,36 @@ for (const reaction of ir.reactions ?? []) {
 
   const chains = [];
   collectPayloadChains(reaction.resolve, chains);
-  for (const p of reaction.params ?? []) collectPayloadChains(p.expression, chains);
+  for (const p of reaction.params ?? []) {
+    collectPayloadChains(p.expression, chains);
+  }
 
   const seen = new Set();
   for (const chain of chains) {
     const chainStr = chain.join(".");
-    if (seen.has(chainStr)) continue;
+    if (seen.has(chainStr)) {
+      continue;
+    }
     seen.add(chainStr);
 
     const head = chain[0];
-    if (ENRICHED_FIELDS.has(head)) continue;
+    if (ENRICHED_FIELDS.has(head)) {
+      continue;
+    }
 
     if (head === "result") {
-      if (chain.length === 1) continue;
+      if (chain.length === 1) {
+        continue;
+      }
       const field = chain[1];
       for (const em of emitters) {
         const props = entityProps.get(em.entity) ?? new Set();
         const key = `${label} :: payload.${chainStr} :: emitter=${em.entity}.${em.command}`;
         if (em.command === "create") {
           // create's result is the created instance — property refs are valid.
-          if (props.has(field)) continue;
+          if (props.has(field)) {
+            continue;
+          }
           errors.push({
             key,
             message: `${label}: payload.result.${field} — '${field}' is not a property of ${em.entity} (create result is the created instance); undefined at runtime`,
@@ -148,7 +185,9 @@ for (const reaction of ir.reactions ?? []) {
     }
 
     for (const em of emitters) {
-      if (em.paramNames.has(head)) continue;
+      if (em.paramNames.has(head)) {
+        continue;
+      }
       const key = `${label} :: payload.${chainStr} :: emitter=${em.entity}.${em.command}`;
       errors.push({
         key,
@@ -166,7 +205,9 @@ const baseline = existsSync(BASELINE_PATH)
   : new Set();
 
 const newErrors = errors.filter((e) => !baseline.has(e.key));
-const staleBaseline = [...baseline].filter((k) => !errors.some((e) => e.key === k));
+const staleBaseline = [...baseline].filter(
+  (k) => !errors.some((e) => e.key === k)
+);
 
 if (WRITE_BASELINE) {
   writeFileSync(
@@ -180,31 +221,47 @@ if (WRITE_BASELINE) {
       2
     ) + "\n"
   );
-  console.log(`Baseline written: ${errors.length} violation(s) -> ${BASELINE_PATH}`);
+  console.log(
+    `Baseline written: ${errors.length} violation(s) -> ${BASELINE_PATH}`
+  );
   process.exit(0);
 }
 
 console.log(`reactions checked: ${(ir.reactions ?? []).length}`);
-console.log(`errors: ${errors.length} (${newErrors.length} new vs baseline of ${baseline.size})`);
+console.log(
+  `errors: ${errors.length} (${newErrors.length} new vs baseline of ${baseline.size})`
+);
 console.log(`warnings: ${warnings.length}`);
 
 if (errors.length > 0) {
   console.log("\n--- ERRORS (silent no-op risk) ---");
   for (const e of errors) {
-    console.log(`${baseline.has(e.key) ? "[baselined] " : "[NEW]       "}${e.message}`);
+    console.log(
+      `${baseline.has(e.key) ? "[baselined] " : "[NEW]       "}${e.message}`
+    );
   }
 }
 if (warnings.length > 0) {
   console.log("\n--- WARNINGS ---");
-  for (const w of warnings) console.log(`  ${w}`);
+  for (const w of warnings) {
+    console.log(`  ${w}`);
+  }
 }
 if (staleBaseline.length > 0) {
-  console.log(`\n--- STALE BASELINE ENTRIES (fixed — remove from baseline) ---`);
-  for (const k of staleBaseline) console.log(`  ${k}`);
+  console.log(
+    "\n--- STALE BASELINE ENTRIES (fixed — remove from baseline) ---"
+  );
+  for (const k of staleBaseline) {
+    console.log(`  ${k}`);
+  }
 }
 
 if (STRICT && newErrors.length > 0) {
-  console.error(`\nFAIL: ${newErrors.length} NEW reaction payload violation(s). Fix the reaction or its emitting command — do not add baseline entries.`);
+  console.error(
+    `\nFAIL: ${newErrors.length} NEW reaction payload violation(s). Fix the reaction or its emitting command — do not add baseline entries.`
+  );
   process.exit(1);
 }
-console.log("\nOK" + (errors.length ? " (pre-existing violations are baselined)" : ""));
+console.log(
+  "\nOK" + (errors.length ? " (pre-existing violations are baselined)" : "")
+);

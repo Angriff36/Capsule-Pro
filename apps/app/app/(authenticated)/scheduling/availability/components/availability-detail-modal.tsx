@@ -32,10 +32,6 @@ import { toast } from "sonner";
 import { deleteAvailability } from "../actions";
 
 interface AvailabilityDetailModalProps {
-  open: boolean;
-  onClose: () => void;
-  onDelete: () => void;
-  onEdit: () => void;
   availability: {
     id: string;
     employeeId: string;
@@ -52,6 +48,10 @@ interface AvailabilityDetailModalProps {
     createdAt: Date;
     updatedAt: Date;
   } | null;
+  onClose: () => void;
+  onDelete: () => void;
+  onEdit: () => void;
+  open: boolean;
 }
 
 export function AvailabilityDetailModal({
@@ -88,13 +88,12 @@ export function AvailabilityDetailModal({
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  };
 
   const formatTime = (timeString: string) => {
     const date = new Date(`2000-01-01T${timeString}`);
@@ -130,9 +129,9 @@ export function AvailabilityDetailModal({
         {availability && (
           <div className="space-y-4">
             {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <UserIcon className="h-4 w-4" />
                   Employee
                 </div>
@@ -140,13 +139,13 @@ export function AvailabilityDetailModal({
                   {availability.employeeFirstName}{" "}
                   {availability.employeeLastName}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {availability.employeeEmail} • {availability.employeeRole}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <CalendarIcon className="h-4 w-4" />
                   Day of Week
                 </div>
@@ -157,9 +156,9 @@ export function AvailabilityDetailModal({
             </div>
 
             {/* Time Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <ClockIcon className="h-4 w-4" />
                   Start Time
                 </div>
@@ -169,7 +168,7 @@ export function AvailabilityDetailModal({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <ClockIcon className="h-4 w-4" />
                   End Time
                 </div>
@@ -180,9 +179,9 @@ export function AvailabilityDetailModal({
             </div>
 
             {/* Status and Effective Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <InfoIcon className="h-4 w-4" />
                   Status
                 </div>
@@ -192,7 +191,7 @@ export function AvailabilityDetailModal({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                   <CalendarIcon className="h-4 w-4" />
                   Effective From
                 </div>
@@ -204,7 +203,7 @@ export function AvailabilityDetailModal({
 
             {/* Effective Until Date */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                 <CalendarIcon className="h-4 w-4" />
                 Effective Until
               </div>
@@ -217,13 +216,13 @@ export function AvailabilityDetailModal({
 
             {/* Audit Information */}
             <div className="space-y-2">
-              <div className="text-sm font-medium text-muted-foreground">
+              <div className="font-medium text-muted-foreground text-sm">
                 Audit Information
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Created: {formatDate(availability.createdAt)}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Last Updated: {formatDate(availability.updatedAt)}
               </div>
             </div>
@@ -237,7 +236,7 @@ export function AvailabilityDetailModal({
           {availability && (
             <>
               <Button onClick={onEdit} variant="default">
-                <PencilIcon className="h-4 w-4 mr-2" />
+                <PencilIcon className="mr-2 h-4 w-4" />
                 Edit
               </Button>
               <Button
@@ -245,7 +244,7 @@ export function AvailabilityDetailModal({
                 onClick={() => setDeleteDialogOpen(true)}
                 variant="destructive"
               >
-                <TrashIcon className="h-4 w-4 mr-2" />
+                <TrashIcon className="mr-2 h-4 w-4" />
                 {loading ? "Deleting..." : "Delete"}
               </Button>
             </>

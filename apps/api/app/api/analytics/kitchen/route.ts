@@ -6,16 +6,16 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface StationMetrics {
+  avg_completion_minutes: string;
+  completed_items: string;
   station_id: string;
   station_name: string;
   total_items: string;
-  completed_items: string;
-  avg_completion_minutes: string;
 }
 
 interface PrepListsSync {
-  total: string;
   completed: string;
+  total: string;
 }
 
 interface TimeToCompletion {
@@ -23,18 +23,18 @@ interface TimeToCompletion {
 }
 
 interface StationTrend {
+  completed: string;
   date: string;
   station_name: string;
-  completed: string;
   total: string;
 }
 
 interface TopPerformer {
+  avg_minutes: string;
+  completed_tasks: string;
   employee_id: string;
   first_name: string;
   last_name: string;
-  completed_tasks: string;
-  avg_minutes: string;
 }
 
 interface DateRange {
@@ -43,26 +43,26 @@ interface DateRange {
 }
 
 interface StationThroughputData {
+  avgTime: string;
+  completed: number;
+  completedItems: number;
+  load: number;
+  pendingItems: number;
   stationId: string;
   stationName: string;
-  load: number;
-  completed: number;
-  avgTime: string;
   totalItems: number;
-  completedItems: number;
-  pendingItems: number;
 }
 
 interface KitchenHealthData {
+  allergenWarnings: number;
+  avgMinutes: number;
   prepListsSync: {
     rate: number;
     total: number;
     completed: number;
   };
-  allergenWarnings: number;
-  wasteAlerts: number;
   timeToCompletion: string;
-  avgMinutes: number;
+  wasteAlerts: number;
 }
 
 interface TrendData {
@@ -76,11 +76,11 @@ interface TrendData {
 }
 
 interface TopPerformerData {
+  avgMinutes: number;
+  completedTasks: number;
   employeeId: string;
   firstName: string;
   lastName: string;
-  completedTasks: number;
-  avgMinutes: number;
 }
 
 function calculateDateRange(period: string): DateRange {

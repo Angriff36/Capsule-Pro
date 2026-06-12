@@ -97,7 +97,7 @@ export default function NewKitchenTaskPage() {
                       <SelectItem key={p.value} value={p.value}>
                         <div>
                           <div className="font-medium">{p.label}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {p.description}
                           </div>
                         </div>

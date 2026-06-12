@@ -24,7 +24,13 @@ import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { kitchenTaskCancel, kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
+import {
+  kitchenTaskCancel,
+  kitchenTaskClaim,
+  kitchenTaskComplete,
+  kitchenTaskRelease,
+  kitchenTaskStart,
+} from "@/app/lib/manifest-client.generated";
 
 type UserSelect = Pick<
   DbUser,
@@ -36,9 +42,9 @@ type TaskWithRelations = KitchenTask & {
 };
 
 interface TaskCardProps {
-  task: TaskWithRelations;
-  currentUserId?: string | null;
   compact?: boolean;
+  currentUserId?: string | null;
+  task: TaskWithRelations;
 }
 
 const priorityConfig = {

@@ -36,8 +36,8 @@ vi.mock("@repo/database", () => ({
 
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { createFacility } from "../../app/(authenticated)/facilities/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
@@ -50,7 +50,9 @@ const USER_ID = "user-1";
 
 function form(fields: Record<string, string>): FormData {
   const fd = new FormData();
-  for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+  for (const [k, v] of Object.entries(fields)) {
+    fd.append(k, v);
+  }
   return fd;
 }
 

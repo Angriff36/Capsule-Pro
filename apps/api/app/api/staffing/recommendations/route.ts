@@ -5,18 +5,18 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface StaffingRecommendationRequest {
-  guestCount?: number;
-  eventType?: string;
-  serviceStyle?: string;
   duration?: number;
+  eventType?: string;
+  guestCount?: number;
+  serviceStyle?: string;
 }
 
 interface StaffRole {
-  role: string;
   count: number;
   hourlyRate: number;
   hoursNeeded: number;
   notes: string;
+  role: string;
 }
 
 const SERVICE_STYLE_MULTIPLIERS: Record<string, number> = {

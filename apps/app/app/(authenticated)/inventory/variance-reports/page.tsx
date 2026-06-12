@@ -23,10 +23,14 @@ import { VarianceReportsClient } from "./variance-reports-client";
 
 export default async function VarianceReportsPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [total, pending, reviewed, approved] = await Promise.all([
     database.varianceReport.count({
@@ -108,7 +112,7 @@ export default async function VarianceReportsPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} report${total !== 1 ? "s" : ""}`}
+            count={`${total} report${total === 1 ? "" : "s"}`}
             description="Review variance reports from cycle counts. Approve adjustments for inventory discrepancies."
             eyebrow="Variance"
             title="All Reports"

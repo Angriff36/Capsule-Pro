@@ -5,17 +5,17 @@ import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
 import type { ReactNode } from "react";
 
 interface RoomProps {
-  id: string;
-  children: ReactNode;
   authEndpoint: string;
+  children: ReactNode;
   fallback: ReactNode;
-  // biome-ignore lint/suspicious/noExplicitAny: Liveblocks resolver types are complex generics
-  resolveUsers?: (args: { userIds: string[] }) => Promise<any>;
+  id: string;
   // biome-ignore lint/suspicious/noExplicitAny: Liveblocks resolver types are complex generics
   resolveMentionSuggestions?: (args: {
     text: string;
     roomId: string;
   }) => Promise<any>;
+  // biome-ignore lint/suspicious/noExplicitAny: Liveblocks resolver types are complex generics
+  resolveUsers?: (args: { userIds: string[] }) => Promise<any>;
 }
 
 /**

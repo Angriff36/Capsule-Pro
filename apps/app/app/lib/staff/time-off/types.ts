@@ -14,56 +14,56 @@ export type TimeOffType =
   | "OTHER";
 
 export interface TimeOffRequest {
-  id: string;
-  tenant_id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  start_date: Date;
-  end_date: Date;
-  reason: string | null;
-  status: TimeOffStatus;
-  request_type: TimeOffType;
   created_at: Date;
-  updated_at: Date;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  end_date: Date;
+  id: string;
   processed_at: Date | null;
   processed_by: string | null;
   processed_by_first_name: string | null;
   processed_by_last_name: string | null;
+  reason: string | null;
   rejection_reason: string | null;
+  request_type: TimeOffType;
+  start_date: Date;
+  status: TimeOffStatus;
+  tenant_id: string;
+  updated_at: Date;
 }
 
 export interface CreateTimeOffRequestInput {
   employeeId: string;
-  startDate: string;
   endDate: string;
   reason?: string;
   requestType: TimeOffType;
+  startDate: string;
 }
 
 export interface UpdateTimeOffStatusInput {
-  status: TimeOffStatus;
   rejectionReason?: string;
+  status: TimeOffStatus;
 }
 
 export interface TimeOffRequestFilters {
   employeeId?: string;
-  status?: TimeOffStatus;
-  startDate?: string;
   endDate?: string;
-  requestType?: TimeOffType;
-  page?: number;
   limit?: number;
+  page?: number;
+  requestType?: TimeOffType;
+  startDate?: string;
+  status?: TimeOffStatus;
 }
 
 export interface TimeOffRequestsListResponse {
-  requests: TimeOffRequest[];
   pagination: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
   };
+  requests: TimeOffRequest[];
 }

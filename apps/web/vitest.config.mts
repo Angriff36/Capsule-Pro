@@ -23,7 +23,7 @@ export default defineConfig({
             "./test/mocks/next-link.tsx"
           );
         }
-        return undefined;
+        return;
       },
     },
   ],

@@ -37,7 +37,7 @@
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
-import { subscribeMany, type RealtimeMessage } from "@/lib/realtime/pubsub";
+import { type RealtimeMessage, subscribeMany } from "@/lib/realtime/pubsub";
 
 export const runtime = "nodejs";
 // Disable response caching — this is a long-lived stream, not a cacheable resource.

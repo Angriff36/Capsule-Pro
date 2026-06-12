@@ -42,10 +42,10 @@ import {
 } from "@/app/lib/chart-of-accounts";
 
 interface AccountModalProps {
-  open: boolean;
+  editAccount?: ChartOfAccountWithParent | null;
   onClose: () => void;
   onCreated: () => void;
-  editAccount?: ChartOfAccountWithParent | null;
+  open: boolean;
   parentAccounts?: ChartOfAccountWithParent[];
 }
 

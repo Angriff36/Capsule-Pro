@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -276,7 +276,12 @@ describe("Venue.update — editing must NOT be blocked on deactivated venues", (
     // Deactivate, then edit via update with isActive=false in the body.
     await runManifestCommandCore(
       { createRuntime: async () => engine },
-      { entity: "Venue", command: "deactivate", body: { id, reason: "closed" }, user: { ...USER } }
+      {
+        entity: "Venue",
+        command: "deactivate",
+        body: { id, reason: "closed" },
+        user: { ...USER },
+      }
     );
 
     const updated = await runManifestCommandCore(
@@ -284,13 +289,20 @@ describe("Venue.update — editing must NOT be blocked on deactivated venues", (
       {
         entity: "Venue",
         command: "update",
-        body: { id, ...fullCreateBody({ name: "Grand Hall (renamed)" }), isActive: false },
+        body: {
+          id,
+          ...fullCreateBody({ name: "Grand Hall (renamed)" }),
+          isActive: false,
+        },
         user: { ...USER },
       }
     );
 
     expect(updated.ok).toBe(true);
-    const stored = (await engine.getInstance("Venue", id)) as Record<string, unknown>;
+    const stored = (await engine.getInstance("Venue", id)) as Record<
+      string,
+      unknown
+    >;
     expect(stored.name).toBe("Grand Hall (renamed)");
     expect(stored.isActive).toBe(false);
   });
@@ -304,11 +316,19 @@ describe("Venue.softDelete — governed soft delete", () => {
 
     const deleted = await runManifestCommandCore(
       { createRuntime: async () => engine },
-      { entity: "Venue", command: "softDelete", body: { id }, user: { ...USER } }
+      {
+        entity: "Venue",
+        command: "softDelete",
+        body: { id },
+        user: { ...USER },
+      }
     );
     expect(deleted.ok).toBe(true);
 
-    const stored = (await engine.getInstance("Venue", id)) as Record<string, unknown>;
+    const stored = (await engine.getInstance("Venue", id)) as Record<
+      string,
+      unknown
+    >;
     expect(stored.deletedAt).toBeTruthy();
 
     // A deleted venue is frozen: update is guarded on deletedAt == null.

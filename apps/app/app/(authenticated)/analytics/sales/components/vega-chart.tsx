@@ -18,14 +18,14 @@ import { isFacetedSpec } from "../lib/chart-catalog";
 /* ------------------------------------------------------------------ */
 
 interface EmbedResultView {
+  finalize: () => void;
   toCanvas: (scaleFactor?: number) => Promise<HTMLCanvasElement>;
   toSVG: () => Promise<string>;
-  finalize: () => void;
 }
 
 interface EmbedResult {
-  view: EmbedResultView;
   finalize: () => void;
+  view: EmbedResultView;
 }
 
 /* ------------------------------------------------------------------ */
@@ -33,22 +33,22 @@ interface EmbedResult {
 /* ------------------------------------------------------------------ */
 
 interface VegaChartProps {
-  /** Vega-Lite specification */
-  spec: TopLevelSpec;
+  /** Whether to wrap in a Card */
+  asCard?: boolean;
+  /** Additional CSS class */
+  className?: string;
   /** Override data values (merged into spec.data.values) */
   data?: Record<string, unknown>[];
-  /** Chart title shown in card header */
-  title?: string;
   /** Chart description shown in card header */
   description?: string;
   /** Chart height in pixels */
   height?: number;
   /** Whether to show export action buttons */
   showActions?: boolean;
-  /** Whether to wrap in a Card */
-  asCard?: boolean;
-  /** Additional CSS class */
-  className?: string;
+  /** Vega-Lite specification */
+  spec: TopLevelSpec;
+  /** Chart title shown in card header */
+  title?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -268,34 +268,34 @@ export function VegaChart({
       <div className="relative w-full" style={{ minHeight: height }}>
         {isLoading && !error && (
           <div
-            className="absolute inset-0 flex items-center justify-center bg-muted/30 rounded-lg animate-pulse z-10"
+            className="absolute inset-0 z-10 flex animate-pulse items-center justify-center rounded-lg bg-muted/30"
             style={{ height }}
           >
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               Loading chart&hellip;
             </span>
           </div>
         )}
         {error && (
           <div
-            className="absolute inset-0 flex items-center justify-center bg-destructive/10 rounded-lg z-10"
+            className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-destructive/10"
             style={{ height }}
           >
-            <span className="text-sm text-destructive">{error}</span>
+            <span className="text-destructive text-sm">{error}</span>
           </div>
         )}
         <div className="w-full" ref={containerRef} />
       </div>
 
       {showActions && !isLoading && !error && (
-        <div className="flex items-center gap-1 mt-2">
+        <div className="mt-2 flex items-center gap-1">
           <Button
             onClick={handleExportPng}
             size="sm"
             title="Download PNG"
             variant="ghost"
           >
-            <Download className="h-3.5 w-3.5 mr-1" />
+            <Download className="mr-1 h-3.5 w-3.5" />
             PNG
           </Button>
           <Button
@@ -304,7 +304,7 @@ export function VegaChart({
             title="Download SVG"
             variant="ghost"
           >
-            <ImageIcon className="h-3.5 w-3.5 mr-1" />
+            <ImageIcon className="mr-1 h-3.5 w-3.5" />
             SVG
           </Button>
           <Button
@@ -313,7 +313,7 @@ export function VegaChart({
             title="Copy to clipboard"
             variant="ghost"
           >
-            <Copy className="h-3.5 w-3.5 mr-1" />
+            <Copy className="mr-1 h-3.5 w-3.5" />
             {copyFeedback ? "Copied!" : "Copy"}
           </Button>
         </div>

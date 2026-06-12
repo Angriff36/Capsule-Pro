@@ -53,28 +53,26 @@ import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipesSearch } from "@/app/lib/routes";
 
 interface IngredientRow {
-  id: string;
-  ingredientId: string | null;
-  name: string;
-  quantity: string;
-  unit: string;
-  unitId: number | null;
-  preparationNotes: string;
-  isOptional: boolean;
-  isSubRecipe: boolean;
-  subRecipeId: string | null;
-  subRecipeName: string | null;
-  sortOrder: number;
   costPerIngredient: number;
   hasCostData: boolean;
+  id: string;
+  ingredientId: string | null;
+  isOptional: boolean;
+  isSubRecipe: boolean;
+  name: string;
+  preparationNotes: string;
+  quantity: string;
+  sortOrder: number;
+  subRecipeId: string | null;
+  subRecipeName: string | null;
+  unit: string;
+  unitId: number | null;
 }
 
 interface CostBreakdown {
-  totalCost: number;
-  costPerYield: number;
   costPerServing: number;
+  costPerYield: number;
   foodCostPercentage: number | null;
-  targetPrice: number | null;
   ingredients: {
     id: string;
     name: string;
@@ -85,11 +83,14 @@ interface CostBreakdown {
     hasInventoryItem: boolean;
     wasteFactor: number;
   }[];
+  targetPrice: number | null;
+  totalCost: number;
 }
 
 interface RichRecipeEditorProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (data: FormData) => Promise<void>;
+  open: boolean;
   recipe?: {
     id?: string;
     name?: string;
@@ -106,7 +107,6 @@ interface RichRecipeEditorProps {
     difficultyLevel?: number;
     notes?: string;
   };
-  onSave: (data: FormData) => Promise<void>;
 }
 
 const categoryOptions = [
@@ -258,7 +258,7 @@ function IngredientRowItem({
         </div>
       </TooltipProvider>
 
-      <div className="flex-1 grid grid-cols-12 gap-2 items-start">
+      <div className="grid flex-1 grid-cols-12 items-start gap-2">
         {/* Quantity */}
         <div className="col-span-2">
           <Input
@@ -292,7 +292,7 @@ function IngredientRowItem({
         </div>
 
         {/* Ingredient Name with Search */}
-        <div className="col-span-4 relative">
+        <div className="relative col-span-4">
           <div className="relative">
             <Input
               className="h-9 pr-8"
@@ -302,7 +302,7 @@ function IngredientRowItem({
             />
             {ingredient.isSubRecipe && (
               <Link
-                className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                className="absolute top-1/2 right-8 -translate-y-1/2 text-muted-foreground hover:text-primary"
                 href={`/kitchen/recipes/${ingredient.subRecipeId}`}
                 onClick={(e) => e.preventDefault()}
                 target="_blank"
@@ -321,7 +321,7 @@ function IngredientRowItem({
               </Link>
             )}
             {ingredient.hasCostData && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <div className="absolute top-1/2 right-2 -translate-y-1/2">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -339,7 +339,7 @@ function IngredientRowItem({
 
           {/* Search Results Dropdown */}
           {showNameSearch && nameResults.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 border-hairline max-h-60 overflow-y-auto">
+            <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-hairline bg-popover p-1">
               {nameResults.map((result) => (
                 <button
                   className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
@@ -625,7 +625,9 @@ export function RichRecipeEditor({
   };
 
   const foodCostPercentage = useMemo(() => {
-    if (!(costBreakdown && targetPrice)) return null;
+    if (!(costBreakdown && targetPrice)) {
+      return null;
+    }
     return (costBreakdown.totalCost / targetPrice) * 100;
   }, [costBreakdown, targetPrice]);
 
@@ -654,13 +656,13 @@ export function RichRecipeEditor({
           {/* Cost Summary Header */}
           <Collapsible defaultOpen>
             <Card>
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-accent/50 transition-colors">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 transition-colors hover:bg-accent/50">
                 <div className="flex items-center gap-3">
                   <DollarSign className="h-5 w-5 text-green-600" />
                   <div className="text-left">
                     <div className="font-semibold">Recipe Costing</div>
                     {costBreakdown && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Total: {formatCurrency(costBreakdown.totalCost)}
                       </div>
                     )}
@@ -668,12 +670,12 @@ export function RichRecipeEditor({
                 </div>
                 <div className="flex items-center gap-2">
                   {isCalculating && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Calculating...
                     </div>
                   )}
                   <Button size="sm" type="button" variant="ghost">
-                    <Info className="h-4 w-4 mr-2" />
+                    <Info className="mr-2 h-4 w-4" />
                     Cost Details
                   </Button>
                 </div>
@@ -682,10 +684,10 @@ export function RichRecipeEditor({
                 <CardContent className="pt-6">
                   {costBreakdown ? (
                     <div className="grid gap-4 md:grid-cols-4">
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
                         <DollarSign className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             Total Cost
                           </div>
                           <div className="font-semibold">
@@ -693,10 +695,10 @@ export function RichRecipeEditor({
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
                         <Utensils className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             Cost per Yield
                           </div>
                           <div className="font-semibold">
@@ -704,10 +706,10 @@ export function RichRecipeEditor({
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
                         <Users className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             Cost per Serving
                           </div>
                           <div className="font-semibold">
@@ -715,10 +717,10 @@ export function RichRecipeEditor({
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
                         <Percent className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             Food Cost %
                           </div>
                           <div className="font-semibold">
@@ -730,8 +732,8 @@ export function RichRecipeEditor({
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <div className="py-8 text-center text-muted-foreground">
+                      <DollarSign className="mx-auto mb-3 h-12 w-12 opacity-50" />
                       <p>
                         Add ingredients with cost data to see recipe costing.
                       </p>
@@ -739,8 +741,8 @@ export function RichRecipeEditor({
                   )}
 
                   {/* Scale Controls */}
-                  <div className="mt-4 p-4 rounded-lg border">
-                    <Label className="text-sm font-medium mb-3 block">
+                  <div className="mt-4 rounded-lg border p-4">
+                    <Label className="mb-3 block font-medium text-sm">
                       Scale Recipe
                     </Label>
                     <div className="flex flex-wrap items-center gap-2">
@@ -763,7 +765,7 @@ export function RichRecipeEditor({
                       <div className="ml-auto flex items-center gap-2">
                         <Label className="text-sm">Custom:</Label>
                         <Input
-                          className="w-20 h-9"
+                          className="h-9 w-20"
                           min="0.1"
                           onChange={(e) => {
                             const val = Number.parseFloat(e.target.value);
@@ -782,11 +784,11 @@ export function RichRecipeEditor({
                   {/* Target Price & Food Cost Target */}
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
                     <div>
-                      <Label className="text-sm font-medium mb-2 block">
+                      <Label className="mb-2 block font-medium text-sm">
                         Target Selling Price
                       </Label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <span className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
                           $
                         </span>
                         <Input
@@ -807,7 +809,7 @@ export function RichRecipeEditor({
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium mb-2 block">
+                      <Label className="mb-2 block font-medium text-sm">
                         Target Food Cost %
                       </Label>
                       <div className="relative">
@@ -827,7 +829,7 @@ export function RichRecipeEditor({
                           type="number"
                           value={foodCostTarget || ""}
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <span className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">
                           %
                         </span>
                       </div>
@@ -936,7 +938,7 @@ export function RichRecipeEditor({
             {ingredients.length > 0 ? (
               <div className="space-y-2">
                 {/* Column headers */}
-                <div className="grid grid-cols-12 gap-2 px-3 pb-2 text-sm text-muted-foreground">
+                <div className="grid grid-cols-12 gap-2 px-3 pb-2 text-muted-foreground text-sm">
                   <div className="col-span-2">Quantity</div>
                   <div className="col-span-2">Unit</div>
                   <div className="col-span-4">Ingredient</div>
@@ -963,8 +965,8 @@ export function RichRecipeEditor({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground border rounded-lg border-dashed">
-                <Utensils className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <div className="rounded-lg border border-dashed py-12 text-center text-muted-foreground">
+                <Utensils className="mx-auto mb-3 h-12 w-12 opacity-50" />
                 <p className="mb-2">No ingredients yet</p>
                 <p className="text-sm">
                   Click "Add Ingredient" to start building your recipe

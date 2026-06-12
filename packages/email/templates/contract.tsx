@@ -15,8 +15,8 @@ import type React from "react";
 export interface ContractTemplateProps {
   readonly clientName: string;
   readonly contractTitle: string;
-  readonly signingUrl: string;
   readonly message?: string;
+  readonly signingUrl: string;
 }
 
 export const ContractTemplate = ({
@@ -49,7 +49,7 @@ export const ContractTemplate = ({
               )}
               <Section className="mt-8 mb-8 text-center">
                 <Button
-                  className="rounded-md bg-zinc-950 px-6 py-3 text-base font-semibold text-zinc-50"
+                  className="rounded-md bg-zinc-950 px-6 py-3 font-semibold text-base text-zinc-50"
                   href={signingUrl}
                 >
                   Sign Contract

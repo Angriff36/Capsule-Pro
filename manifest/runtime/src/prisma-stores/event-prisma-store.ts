@@ -16,13 +16,13 @@ export class EventPrismaStore implements Store<EntityInstance> {
 
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {
     this.inner = new GenericPrismaStore(
       prisma,
       "Event",
       tenantId,
-      PRISMA_MODEL_METADATA,
+      PRISMA_MODEL_METADATA
     );
   }
 
@@ -36,16 +36,19 @@ export class EventPrismaStore implements Store<EntityInstance> {
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     return this.prisma.$transaction(async (tx) => {
-      const allocated = await allocateEventNumberInTransaction(tx, this.tenantId);
+      const allocated = await allocateEventNumberInTransaction(
+        tx,
+        this.tenantId
+      );
       const enriched = resolveEventNumberForCreate(
         data as Record<string, unknown>,
-        allocated,
+        allocated
       );
       const scoped = new GenericPrismaStore(
         tx,
         "Event",
         this.tenantId,
-        PRISMA_MODEL_METADATA,
+        PRISMA_MODEL_METADATA
       );
       return scoped.create(enriched as Partial<EntityInstance>);
     });
@@ -53,7 +56,7 @@ export class EventPrismaStore implements Store<EntityInstance> {
 
   update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     return this.inner.update(id, data);
   }

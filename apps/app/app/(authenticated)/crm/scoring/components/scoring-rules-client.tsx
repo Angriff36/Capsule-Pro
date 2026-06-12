@@ -9,6 +9,17 @@
  * @canonical true
  */
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -17,21 +28,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import {
   Dialog,
   DialogContent,
@@ -69,35 +65,35 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  crmScoringRuleCreate,
   crmScoringRuleActivate,
+  crmScoringRuleCreate,
   crmScoringRuleDeactivate,
   crmScoringRuleSoftDelete,
 } from "@/app/lib/manifest-client.generated";
 
 // Types
 export interface ScoringRule {
-  id: string;
-  rule_name: string;
-  field: string;
   condition: string;
-  value: string;
-  points: number;
-  is_active: boolean;
-  priority: number;
   created_at: Date;
+  field: string;
+  id: string;
+  is_active: boolean;
+  points: number;
+  priority: number;
+  rule_name: string;
   updated_at: Date;
+  value: string;
 }
 
 export interface ScoringDistribution {
+  cold: number;
   hot: number;
   warm: number;
-  cold: number;
 }
 
 interface ScoringRulesClientProps {
-  fetchRules: () => Promise<ScoringRule[]>;
   fetchDistribution: () => Promise<ScoringDistribution>;
+  fetchRules: () => Promise<ScoringRule[]>;
 }
 
 // Field options for the select dropdown
@@ -291,7 +287,11 @@ export function ScoringRulesClient({
                 )}
                 Calculate Scores
               </Button>
-              <Button onClick={() => setIsDialogOpen(true)} size="sm" variant="on-dark">
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                size="sm"
+                variant="on-dark"
+              >
                 <PlusIcon className="mr-2 size-4" />
                 Add Rule
               </Button>
@@ -325,17 +325,17 @@ export function ScoringRulesClient({
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Lead Distribution</CardDescription>
-                <div className="flex gap-2 mt-1">
+                <div className="mt-1 flex gap-2">
                   <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                    <Flame className="size-3 mr-1" />
+                    <Flame className="mr-1 size-3" />
                     {distribution.hot} Hot
                   </Badge>
                   <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                    <Thermometer className="size-3 mr-1" />
+                    <Thermometer className="mr-1 size-3" />
                     {distribution.warm} Warm
                   </Badge>
                   <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    <Snowflake className="size-3 mr-1" />
+                    <Snowflake className="mr-1 size-3" />
                     {distribution.cold} Cold
                   </Badge>
                 </div>
@@ -357,7 +357,7 @@ export function ScoringRulesClient({
               <div className="mb-4 rounded-full bg-muted p-4">
                 <Thermometer className="size-8 text-muted-foreground" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
+              <h3 className="mb-2 font-semibold text-lg">
                 No scoring rules yet
               </h3>
               <p className="mb-4 text-muted-foreground text-sm">
@@ -460,7 +460,7 @@ export function ScoringRulesClient({
               </Table>
             </div>
           )}
-      </OperationalColumn>
+        </OperationalColumn>
       </PageCanvas>
 
       {/* Add Rule Dialog */}
@@ -476,7 +476,7 @@ export function ScoringRulesClient({
           <div className="grid gap-4 py-4">
             {/* Rule Name */}
             <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="rule_name">
+              <label className="font-medium text-sm" htmlFor="rule_name">
                 Rule Name
               </label>
               <Input
@@ -491,7 +491,7 @@ export function ScoringRulesClient({
 
             {/* Field Selection */}
             <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="field">
+              <label className="font-medium text-sm" htmlFor="field">
                 Field
               </label>
               <Select
@@ -515,7 +515,7 @@ export function ScoringRulesClient({
 
             {/* Condition Selection */}
             <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="condition">
+              <label className="font-medium text-sm" htmlFor="condition">
                 Condition
               </label>
               <Select
@@ -540,7 +540,7 @@ export function ScoringRulesClient({
             {/* Value Input */}
             {form.condition !== "exists" && (
               <div className="grid gap-2">
-                <label className="text-sm font-medium" htmlFor="value">
+                <label className="font-medium text-sm" htmlFor="value">
                   Value
                 </label>
                 <Input
@@ -556,7 +556,7 @@ export function ScoringRulesClient({
 
             {/* Points Input */}
             <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="points">
+              <label className="font-medium text-sm" htmlFor="points">
                 Points (-100 to 100)
               </label>
               <Input
@@ -576,7 +576,7 @@ export function ScoringRulesClient({
 
             {/* Priority Input */}
             <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="priority">
+              <label className="font-medium text-sm" htmlFor="priority">
                 Priority (lower = evaluated first)
               </label>
               <Input
@@ -595,7 +595,7 @@ export function ScoringRulesClient({
 
             {/* Active Toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium" htmlFor="is_active">
+              <label className="font-medium text-sm" htmlFor="is_active">
                 Active
               </label>
               <Switch

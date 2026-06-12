@@ -1,13 +1,7 @@
 // Shared types for native mobile kitchen app
 
 export interface Task {
-  id: string;
-  title: string;
-  summary: string | null;
-  status: string;
-  priority: number;
-  dueDate: string | null;
-  tags: string[];
+  claimedAt?: string | null;
   claims: Array<{
     id: string;
     employeeId: string;
@@ -18,9 +12,15 @@ export interface Task {
       email: string | null;
     } | null;
   }>;
-  isClaimedByOthers?: boolean;
+  dueDate: string | null;
+  id: string;
   isAvailable?: boolean;
-  claimedAt?: string | null;
+  isClaimedByOthers?: boolean;
+  priority: number;
+  status: string;
+  summary: string | null;
+  tags: string[];
+  title: string;
 }
 
 export interface ApiResponse {
@@ -29,8 +29,6 @@ export interface ApiResponse {
 }
 
 export interface OfflineQueueItem {
-  id: string;
-  taskId: string;
   action:
     | "claim"
     | "release"
@@ -38,55 +36,57 @@ export interface OfflineQueueItem {
     | "complete"
     | "markPrepComplete"
     | "updatePrepNotes";
+  id: string;
   payload?: Record<string, unknown>;
+  taskId: string;
   timestamp: string;
 }
 
 export interface PrepList {
-  id: string;
-  name: string;
-  eventId: string | null;
+  completedCount: number;
+  dueDate: string | null;
   event?: {
     id: string;
     name: string;
     startTime: string | null;
     headcount: number | null;
   } | null;
-  stationId: string | null;
+  eventId: string | null;
+  id: string;
+  items?: PrepListItem[];
+  name: string;
   station?: {
     id: string;
     name: string;
   } | null;
+  stationId: string | null;
   status: string;
-  dueDate: string | null;
-  completedCount: number;
   totalCount: number;
-  items?: PrepListItem[];
 }
 
 export interface PrepListItem {
+  completed: boolean;
   id: string;
   name: string;
-  quantity: number;
-  unit: string | null;
-  completed: boolean;
   notes: string | null;
-  stationId: string | null;
+  quantity: number;
   station?: {
     id: string;
     name: string;
   } | null;
+  stationId: string | null;
+  unit: string | null;
 }
 
 export interface TodayEvent {
-  id: string;
-  name: string;
-  startTime: string | null;
   headcount: number | null;
-  unclaimedPrepCount: number;
+  id: string;
   incompleteItemsCount: number;
-  urgency: "critical" | "warning" | "ok";
+  name: string;
   prepListIds: string[];
+  startTime: string | null;
+  unclaimedPrepCount: number;
+  urgency: "critical" | "warning" | "ok";
 }
 
 export const priorityConfig: Record<number, { label: string; color: string }> =
@@ -109,7 +109,7 @@ export interface BundleClaimRequest {
 }
 
 export interface BundleClaimResponse {
-  success: boolean;
+  alreadyClaimedTaskIds?: string[];
   data?: {
     claimed: Array<{
       taskId: string;
@@ -118,23 +118,23 @@ export interface BundleClaimResponse {
     }>;
     totalClaimed: number;
   };
-  message?: string;
   errorCode?: string;
-  alreadyClaimedTaskIds?: string[];
+  message?: string;
   notFoundTaskIds?: string[];
+  success: boolean;
 }
 
 export interface TaskFilter {
-  station?: string;
-  priority?: number;
   eventId?: string;
+  priority?: number;
+  station?: string;
 }
 
 export interface FilterState {
-  station: string | null;
-  minPriority: number | null;
   eventId: string | null;
+  minPriority: number | null;
   myStation: string | null;
+  station: string | null;
 }
 
 // Navigation types - use type alias for React Navigation compatibility
@@ -149,8 +149,8 @@ export type RootTabParamList = {
 };
 
 export interface PrepListDetailParams {
-  id: string;
   eventId?: string;
+  id: string;
 }
 
 // Stack navigation types - use type alias for React Navigation compatibility

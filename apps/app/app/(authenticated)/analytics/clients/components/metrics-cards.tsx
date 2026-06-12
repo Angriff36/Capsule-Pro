@@ -10,8 +10,8 @@ import { cn } from "@repo/design-system/lib/utils";
 import type { ClientLTVMetrics } from "../actions/get-client-ltv";
 
 interface MetricsCardsProps {
-  metrics: ClientLTVMetrics;
   className?: string;
+  metrics: ClientLTVMetrics;
 }
 
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";

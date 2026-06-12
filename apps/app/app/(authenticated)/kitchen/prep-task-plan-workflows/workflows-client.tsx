@@ -38,50 +38,53 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { executeCommand } from "@/app/lib/manifest-client";
-import { listPrepTaskPlanWorkflows, prepTaskPlanWorkflowCreate } from "@/app/lib/manifest-client.generated";
+import {
+  listPrepTaskPlanWorkflows,
+  prepTaskPlanWorkflowCreate,
+} from "@/app/lib/manifest-client.generated";
 
 interface Workflow {
-  id: string;
-  tenantId: string;
-  eventId: string;
-  idempotencyKey: string;
-  status: string;
-  currentStep: number;
-  totalSteps: number;
-  generationOptions: string | null;
-  generatedTasks: string | null;
-  reviewedTasks: string | null;
-  approvedTaskIds: string | null;
-  rejectedTaskIds: string | null;
-  instantiatedTaskIds: string | null;
-  scheduledWindows: string | null;
-  constraintOutcomes: string | null;
-  errors: string | null;
-  warnings: string | null;
-  generatedCount: number;
-  approvedCount: number;
-  instantiatedCount: number;
-  reviewedBy: string | null;
-  reviewedAt: string | null;
-  approvedBy: string | null;
   approvedAt: string | null;
-  startedAt: string | null;
+  approvedBy: string | null;
+  approvedCount: number;
+  approvedTaskIds: string | null;
   completedAt: string | null;
+  constraintOutcomes: string | null;
   createdAt: string;
+  currentStep: number;
+  errors: string | null;
+  eventId: string;
+  generatedCount: number;
+  generatedTasks: string | null;
+  generationOptions: string | null;
+  id: string;
+  idempotencyKey: string;
+  instantiatedCount: number;
+  instantiatedTaskIds: string | null;
+  rejectedTaskIds: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  reviewedTasks: string | null;
+  scheduledWindows: string | null;
+  startedAt: string | null;
+  status: string;
+  tenantId: string;
+  totalSteps: number;
   updatedAt: string;
+  warnings: string | null;
 }
 
 interface InitialMetrics {
-  total: number;
+  approved: number;
+  approving: number;
+  avgTasks: number;
+  cancelled: number;
+  completed: number;
   created: number;
+  failed: number;
   generating: number;
   reviewing: number;
-  approving: number;
-  approved: number;
-  completed: number;
-  failed: number;
-  cancelled: number;
-  avgTasks: number;
+  total: number;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode }> =
@@ -160,7 +163,9 @@ function getStepIndex(status: string): number {
 }
 
 function truncateUuid(uuid: string): string {
-  if (uuid.length <= 12) return uuid;
+  if (uuid.length <= 12) {
+    return uuid;
+  }
   return `${uuid.slice(0, 8)}...${uuid.slice(-4)}`;
 }
 
@@ -173,7 +178,9 @@ function formatDate(iso: string): string {
 }
 
 function formatDateTime(iso: string | null): string {
-  if (!iso) return "--";
+  if (!iso) {
+    return "--";
+  }
   return new Date(iso).toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -217,8 +224,12 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
         page,
         limit: 25,
       };
-      if (statusFilter !== "all") query.status = statusFilter;
-      if (searchQuery) query.search = searchQuery;
+      if (statusFilter !== "all") {
+        query.status = statusFilter;
+      }
+      if (searchQuery) {
+        query.search = searchQuery;
+      }
 
       const result = await listPrepTaskPlanWorkflows(query);
       setWorkflows(result.data as unknown as Workflow[]);
@@ -288,7 +299,9 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
   };
 
   const handleConfirmAction = () => {
-    if (!confirmAction) return;
+    if (!confirmAction) {
+      return;
+    }
     executeAction(
       confirmAction.workflow.id,
       confirmAction.action,
@@ -349,7 +362,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -400,7 +413,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
       )}
 
       {!isLoading && workflows.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No prep task plan workflows found. Create your first workflow to get
           started.
         </div>
@@ -408,7 +421,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
 
       {!isLoading && workflows.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_130px_120px_80px_80px_110px_80px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_130px_120px_80px_80px_110px_80px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Event</span>
             <span>Status</span>
             <span>Progress</span>
@@ -431,15 +444,15 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
             return (
               <div key={workflow.id}>
                 <button
-                  className="grid w-full grid-cols-[1fr_130px_120px_80px_80px_110px_80px] gap-3 border-b border-hairline px-5 py-4 text-sm text-left last:border-b-0 hover:bg-muted/30 transition-colors"
+                  className="grid w-full grid-cols-[1fr_130px_120px_80px_80px_110px_80px] gap-3 border-hairline border-b px-5 py-4 text-left text-sm transition-colors last:border-b-0 hover:bg-muted/30"
                   onClick={() => setExpandedId(isExpanded ? null : workflow.id)}
                   type="button"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium font-mono text-xs truncate">
+                    <p className="truncate font-medium font-mono text-xs">
                       {truncateUuid(workflow.eventId)}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="truncate text-muted-foreground text-xs">
                       {workflow.idempotencyKey}
                     </p>
                   </div>
@@ -448,13 +461,13 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                     {statusCfg.label}
                   </StatusPill>
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-primary transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="whitespace-nowrap text-muted-foreground text-xs">
                       {workflow.currentStep}/{workflow.totalSteps}
                     </span>
                   </div>
@@ -477,10 +490,10 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                 </button>
 
                 {isExpanded && (
-                  <div className="border-b border-hairline bg-muted/20 px-5 py-5 space-y-5">
+                  <div className="space-y-5 border-hairline border-b bg-muted/20 px-5 py-5">
                     {/* Step progress */}
                     <div>
-                      <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+                      <h4 className="mb-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                         Workflow Progress
                       </h4>
                       <div className="flex items-center gap-1">
@@ -496,7 +509,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                           return (
                             <div className="flex items-center gap-1" key={step}>
                               <div
-                                className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                                className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${
                                   isComplete
                                     ? "bg-primary/10 text-primary"
                                     : isCurrent && isFailed
@@ -522,7 +535,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                                 {STATUS_CONFIG[step]?.label ?? step}
                               </div>
                               {idx < STATUS_ORDER.length - 1 && (
-                                <div className="w-4 h-px bg-muted-foreground/20" />
+                                <div className="h-px w-4 bg-muted-foreground/20" />
                               )}
                             </div>
                           );
@@ -533,26 +546,26 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                     {/* Counts row */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="rounded-[14px] border border-hairline bg-canvas p-3">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
                           Generated
                         </p>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="mt-1 font-semibold text-lg">
                           {workflow.generatedCount}
                         </p>
                       </div>
                       <div className="rounded-[14px] border border-hairline bg-canvas p-3">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
                           Approved
                         </p>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="mt-1 font-semibold text-lg">
                           {workflow.approvedCount}
                         </p>
                       </div>
                       <div className="rounded-[14px] border border-hairline bg-canvas p-3">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
                           Instantiated
                         </p>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="mt-1 font-semibold text-lg">
                           {workflow.instantiatedCount}
                         </p>
                       </div>
@@ -587,13 +600,13 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                     {/* Errors */}
                     {workflow.errors && (
                       <div className="rounded-[14px] border border-destructive/30 bg-destructive/5 p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <AlertTriangle className="size-4 text-destructive" />
-                          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
+                          <span className="font-mono text-[10px] text-destructive uppercase tracking-[0.18em]">
                             Errors
                           </span>
                         </div>
-                        <p className="text-sm text-destructive/90 whitespace-pre-wrap">
+                        <p className="whitespace-pre-wrap text-destructive/90 text-sm">
                           {workflow.errors}
                         </p>
                       </div>
@@ -602,13 +615,13 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                     {/* Warnings */}
                     {workflow.warnings && (
                       <div className="rounded-[14px] border border-yellow-500/30 bg-yellow-500/5 p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <AlertTriangle className="size-4 text-yellow-600" />
-                          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-yellow-600">
+                          <span className="font-mono text-[10px] text-yellow-600 uppercase tracking-[0.18em]">
                             Warnings
                           </span>
                         </div>
-                        <p className="text-sm text-yellow-700/90 whitespace-pre-wrap">
+                        <p className="whitespace-pre-wrap text-sm text-yellow-700/90">
                           {workflow.warnings}
                         </p>
                       </div>
@@ -617,7 +630,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
                     {/* Actions */}
                     {getAvailableActions(workflow).length > 0 && (
                       <div className="flex items-center gap-2 pt-1">
-                        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">
+                        <span className="mr-2 font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
                           Actions
                         </span>
                         {getAvailableActions(workflow).map((act) => (
@@ -709,7 +722,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Event ID</label>
+              <label className="font-medium text-sm">Event ID</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, eventId: e.target.value }))
@@ -719,7 +732,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Idempotency Key</label>
+              <label className="font-medium text-sm">Idempotency Key</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({
@@ -732,7 +745,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="font-medium text-sm">
                 Generation Options (JSON)
               </label>
               <Textarea

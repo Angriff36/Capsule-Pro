@@ -19,13 +19,13 @@ export default async function EditMenuPage({
 
   if (!menu) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex h-full flex-col">
         <Header
           page="Menu Not Found"
           pages={["Kitchen Ops", "Recipes", "Menus"]}
         />
         <div className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="mx-auto max-w-4xl">
             <p className="text-muted-foreground">Menu not found.</p>
           </div>
         </div>
@@ -34,13 +34,13 @@ export default async function EditMenuPage({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <Header
         page={`Edit: ${menu.name}`}
         pages={["Kitchen Ops", "Recipes", "Menus"]}
       />
       <div className="flex-1 p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="mx-auto max-w-4xl">
           <MenuFormWithConstraints
             formMode="update"
             initialData={menu}
@@ -51,10 +51,10 @@ export default async function EditMenuPage({
                 <div className="grid gap-6">
                   {/* Basic Info Section */}
                   <div className="space-y-4">
-                    <h2 className="text-lg font-semibold">Menu Information</h2>
+                    <h2 className="font-semibold text-lg">Menu Information</h2>
 
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium" htmlFor="name">
+                      <label className="font-medium text-sm" htmlFor="name">
                         Menu Name *
                       </label>
                       <input
@@ -69,7 +69,7 @@ export default async function EditMenuPage({
 
                     <div className="grid gap-2">
                       <label
-                        className="text-sm font-medium"
+                        className="font-medium text-sm"
                         htmlFor="description"
                       >
                         Description
@@ -84,7 +84,7 @@ export default async function EditMenuPage({
                     </div>
 
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium" htmlFor="category">
+                      <label className="font-medium text-sm" htmlFor="category">
                         Category
                       </label>
                       <input
@@ -97,7 +97,7 @@ export default async function EditMenuPage({
                     </div>
 
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium" htmlFor="isActive">
+                      <label className="font-medium text-sm" htmlFor="isActive">
                         Status
                       </label>
                       <select
@@ -114,12 +114,12 @@ export default async function EditMenuPage({
 
                   {/* Pricing Section */}
                   <div className="space-y-4">
-                    <h2 className="text-lg font-semibold">Pricing</h2>
+                    <h2 className="font-semibold text-lg">Pricing</h2>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <label
-                          className="text-sm font-medium"
+                          className="font-medium text-sm"
                           htmlFor="basePrice"
                         >
                           Base Price ($)
@@ -137,7 +137,7 @@ export default async function EditMenuPage({
 
                       <div className="grid gap-2">
                         <label
-                          className="text-sm font-medium"
+                          className="font-medium text-sm"
                           htmlFor="pricePerPerson"
                         >
                           Price Per Person ($)
@@ -157,7 +157,7 @@ export default async function EditMenuPage({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <label
-                          className="text-sm font-medium"
+                          className="font-medium text-sm"
                           htmlFor="minGuests"
                         >
                           Min Guests
@@ -174,7 +174,7 @@ export default async function EditMenuPage({
 
                       <div className="grid gap-2">
                         <label
-                          className="text-sm font-medium"
+                          className="font-medium text-sm"
                           htmlFor="maxGuests"
                         >
                           Max Guests
@@ -197,13 +197,13 @@ export default async function EditMenuPage({
                   {/* Submit Button */}
                   <div className="flex justify-end gap-4">
                     <a
-                      className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground"
                       href={`/kitchen/recipes/menus/${menuId}`}
                     >
                       Cancel
                     </a>
                     <button
-                      className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                      className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                       disabled={isSubmitting}
                       type="submit"
                     >

@@ -16,16 +16,16 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface EventListFilters {
-  status?: string;
-  eventType?: string;
   clientId?: string;
-  venueId?: string;
+  eventType?: string;
   search?: string;
+  status?: string;
+  venueId?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

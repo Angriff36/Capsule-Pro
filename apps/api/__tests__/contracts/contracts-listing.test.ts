@@ -35,7 +35,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: mocks.tenant, requireTenantId: vi.fn(), requireCurrentUser: vi.fn(), resolveCurrentUser: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: mocks.tenant,
+  requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+}));
 vi.mock("@/lib/database", () => ({
   database: {
     eventContract: { findMany: mocks.ecFindMany, findFirst: mocks.ecFindFirst },
@@ -63,7 +68,9 @@ vi.mock("@repo/database", () => ({
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {},
   invariant: (condition: unknown, message: string) => {
-    if (!condition) throw new Error(message);
+    if (!condition) {
+      throw new Error(message);
+    }
   },
 }));
 
@@ -71,12 +78,24 @@ vi.mock("@repo/notifications", () => ({}));
 vi.mock("@/app/lib/webhook-dispatch", () => ({
   dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
-vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: (...args: any[]) => Response.json({ success: true, ...args[0] }, { status: args[1]?.status ?? 200 }),
-  manifestErrorResponse: (...args: any[]) => Response.json({ success: false, error: args[0] }, { status: args[1]?.status ?? 500 }),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/manifest-response", () => ({
+  manifestSuccessResponse: (...args: any[]) =>
+    Response.json(
+      { success: true, ...args[0] },
+      { status: args[1]?.status ?? 200 }
+    ),
+  manifestErrorResponse: (...args: any[]) =>
+    Response.json(
+      { success: false, error: args[0] },
+      { status: args[1]?.status ?? 500 }
+    ),
+}));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 import { GET as ecDetailGET } from "@/app/api/events/contracts/[id]/route";
 import { GET as ecListGET } from "@/app/api/events/contracts/list/route";

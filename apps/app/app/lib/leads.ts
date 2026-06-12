@@ -12,13 +12,13 @@
 
 import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
-  leadCreate,
-  leadUpdate as _leadUpdate,
+  leadArchive as _leadArchive,
   leadConvertToClient as _leadConvertToClient,
   leadDisqualify as _leadDisqualify,
-  leadArchive as _leadArchive,
-  listLeads,
+  leadUpdate as _leadUpdate,
   getLead,
+  leadCreate,
+  listLeads,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -35,25 +35,21 @@ export type LeadStatus =
 export type DateOrString = Date | string;
 
 export interface Lead {
-  id: string;
-  tenantId: string;
-  source: string | null;
+  assignedTo: string | null;
   companyName: string | null;
-  contactName: string;
   contactEmail: string | null;
+  contactName: string;
   contactPhone: string | null;
-  eventType: string | null;
-  eventDate: DateOrString | null;
+  convertedAt: DateOrString | null;
+  convertedToClientId: string | null;
+  createdAt: DateOrString;
+  deletedAt: DateOrString | null;
   estimatedGuests: number | null;
   estimatedValue: number | null;
-  status: string;
-  assignedTo: string | null;
+  eventDate: DateOrString | null;
+  eventType: string | null;
+  id: string;
   notes: string | null;
-  convertedToClientId: string | null;
-  convertedAt: DateOrString | null;
-  createdAt: DateOrString;
-  updatedAt: DateOrString;
-  deletedAt: DateOrString | null;
   /**
    * Marketing spec FR-129: when contactEmail matches an existing Client.email
    * or another Lead.contactEmail in the same tenant, the row is flagged so the
@@ -61,15 +57,19 @@ export interface Lead {
    * regardless; this is annotation, not rejection.
    */
   possibleDuplicate?: boolean;
+  source: string | null;
+  status: string;
+  tenantId: string;
+  updatedAt: DateOrString;
 }
 
 export interface LeadSummary {
-  totalCount: number;
-  newCount: number;
   contactedCount: number;
-  qualifiedCount: number;
   convertedCount: number;
   disqualifiedCount: number;
+  newCount: number;
+  qualifiedCount: number;
+  totalCount: number;
   totalEstimatedValue: number;
 }
 
@@ -84,7 +84,9 @@ export async function fetchLeads(): Promise<Lead[]> {
 
 export async function fetchLeadById(id: string): Promise<Lead> {
   const lead = await getLead(id);
-  if (!lead) throw new Error("Failed to fetch lead");
+  if (!lead) {
+    throw new Error("Failed to fetch lead");
+  }
   return lead as Lead;
 }
 
@@ -142,7 +144,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export function formatDate(value: DateOrString | null | undefined): string {
-  if (!value) return "\u2014";
+  if (!value) {
+    return "\u2014";
+  }
   const date = value instanceof Date ? value : new Date(value);
   return dateFormatter.format(date);
 }
@@ -155,7 +159,9 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
 export function formatShortDate(
   value: DateOrString | null | undefined
 ): string {
-  if (!value) return "\u2014";
+  if (!value) {
+    return "\u2014";
+  }
   const date = value instanceof Date ? value : new Date(value);
   return shortDateFormatter.format(date);
 }

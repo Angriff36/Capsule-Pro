@@ -48,14 +48,14 @@ import {
 } from "../../../actions";
 
 interface ClientContactData {
-  id: string;
-  first_name: string;
-  last_name: string;
-  title: string | null;
   email: string | null;
-  phone: string | null;
-  isPrimary: boolean;
+  first_name: string;
+  id: string;
   isBillingContact: boolean;
+  isPrimary: boolean;
+  last_name: string;
+  phone: string | null;
+  title: string | null;
 }
 
 interface ContactsTabProps {
@@ -127,7 +127,9 @@ export function ContactsTab({ client }: ContactsTabProps) {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedContact) return;
+    if (!selectedContact) {
+      return;
+    }
     setSubmitting(true);
     try {
       await updateClientContact(client.id, selectedContact.id, {
@@ -154,7 +156,9 @@ export function ContactsTab({ client }: ContactsTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!selectedContact) return;
+    if (!selectedContact) {
+      return;
+    }
     setSubmitting(true);
     try {
       await deleteClientContact(client.id, selectedContact.id);
@@ -279,11 +283,11 @@ export function ContactsTab({ client }: ContactsTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Contacts ({contacts.length})</h2>
+        <h2 className="font-semibold text-xl">Contacts ({contacts.length})</h2>
         <Dialog onOpenChange={setCreateDialogOpen} open={createDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add Contact
             </Button>
           </DialogTrigger>
@@ -311,25 +315,25 @@ export function ContactsTab({ client }: ContactsTabProps) {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="py-8 text-center text-muted-foreground">
           Loading contacts...
         </div>
       ) : contacts.length === 0 ? (
         <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <UserIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No contacts yet</h3>
-            <p className="text-muted-foreground mb-4">
+            <UserIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">No contacts yet</h3>
+            <p className="mb-4 text-muted-foreground">
               Add contacts to this client to keep track of key people.
             </p>
             <Button onClick={() => setCreateDialogOpen(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add First Contact
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {contacts.map((contact) => (
             <Card key={contact.id} tone="canvas">
               <CardHeader className="pb-3">
@@ -341,19 +345,19 @@ export function ContactsTab({ client }: ContactsTabProps) {
                     <div className="flex gap-1">
                       {contact.isPrimary && (
                         <Badge className="text-xs" variant="secondary">
-                          <StarIcon className="h-3 w-3 mr-1" />
+                          <StarIcon className="mr-1 h-3 w-3" />
                           Primary
                         </Badge>
                       )}
                       {contact.isBillingContact && (
                         <Badge className="text-xs" variant="secondary">
-                          <CreditCardIcon className="h-3 w-3 mr-1" />
+                          <CreditCardIcon className="mr-1 h-3 w-3" />
                           Billing
                         </Badge>
                       )}
                     </div>
                     <Button
-                      className="h-7 w-7 ml-1"
+                      className="ml-1 h-7 w-7"
                       onClick={() => openEditDialog(contact)}
                       size="icon"
                       variant="ghost"
@@ -371,7 +375,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
                   </div>
                 </div>
                 {contact.title && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {contact.title}
                   </p>
                 )}

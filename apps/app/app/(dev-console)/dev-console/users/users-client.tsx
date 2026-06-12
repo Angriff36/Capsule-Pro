@@ -23,9 +23,9 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  userUpdateRole,
   userDeactivate,
   userTerminate,
+  userUpdateRole,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -33,18 +33,18 @@ import {
 // ---------------------------------------------------------------------------
 
 interface Employee {
-  id: string;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
-  role: string;
-  is_active: boolean;
-  phone: string | null;
   avatar_url: string | null;
-  employment_type: string;
-  hourly_rate: number | null;
-  hire_date: string;
   created_at: string;
+  email: string;
+  employment_type: string;
+  first_name: string | null;
+  hire_date: string;
+  hourly_rate: number | null;
+  id: string;
+  is_active: boolean;
+  last_name: string | null;
+  phone: string | null;
+  role: string;
   updated_at: string;
 }
 
@@ -87,7 +87,7 @@ function RoleBadge({ role }: { role: string }) {
   const colorClass = colors[role] ?? "bg-slate-500/10 text-slate-400";
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${colorClass}`}
+      className={`inline-flex rounded-full px-2.5 py-1 font-medium text-xs ${colorClass}`}
     >
       {role}
     </span>
@@ -97,14 +97,14 @@ function RoleBadge({ role }: { role: string }) {
 function StatusBadge({ isActive }: { isActive: boolean }) {
   if (isActive) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400">
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 font-medium text-green-400 text-xs">
         <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
         Active
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-medium text-slate-400">
+    <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-1 font-medium text-slate-400 text-xs">
       <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
       Inactive
     </span>
@@ -181,7 +181,7 @@ function ChangeRoleDialog({
 
         <div className="space-y-4">
           <div>
-            <span className="mb-1.5 block text-xs text-slate-400">
+            <span className="mb-1.5 block text-slate-400 text-xs">
               New Role
             </span>
             <div className="flex flex-wrap gap-2">
@@ -249,7 +249,7 @@ function UserDetailDialog({
       <div className="dev-console-panel mx-4 w-full max-w-lg">
         <div className="dev-console-panel-header">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20 text-sm font-semibold text-blue-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20 font-semibold text-blue-400 text-sm">
               {getInitials(employee)}
             </div>
             <div>
@@ -300,7 +300,7 @@ function UserDetailDialog({
             </span>
 
             <span className="text-slate-500">ID</span>
-            <span className="font-mono text-xs text-slate-400">
+            <span className="font-mono text-slate-400 text-xs">
               {employee.id}
             </span>
 
@@ -524,8 +524,8 @@ export const UsersClient = () => {
               <UserPlusIcon className="h-5 w-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Total Users</p>
-              <p className="text-xl font-semibold text-slate-200">
+              <p className="text-slate-400 text-xs">Total Users</p>
+              <p className="font-semibold text-slate-200 text-xl">
                 {employees.length}
               </p>
             </div>
@@ -537,8 +537,8 @@ export const UsersClient = () => {
               <UserCheckIcon className="h-5 w-5 text-green-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Active</p>
-              <p className="text-xl font-semibold text-green-400">
+              <p className="text-slate-400 text-xs">Active</p>
+              <p className="font-semibold text-green-400 text-xl">
                 {activeCount}
               </p>
             </div>
@@ -550,8 +550,8 @@ export const UsersClient = () => {
               <UserMinusIcon className="h-5 w-5 text-slate-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Inactive</p>
-              <p className="text-xl font-semibold text-slate-400">
+              <p className="text-slate-400 text-xs">Inactive</p>
+              <p className="font-semibold text-slate-400 text-xl">
                 {inactiveCount}
               </p>
             </div>
@@ -563,8 +563,8 @@ export const UsersClient = () => {
               <ShieldIcon className="h-5 w-5 text-purple-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Admins</p>
-              <p className="text-xl font-semibold text-purple-400">
+              <p className="text-slate-400 text-xs">Admins</p>
+              <p className="font-semibold text-purple-400 text-xl">
                 {employees.filter((e) => e.role === "admin").length}
               </p>
             </div>
@@ -589,7 +589,7 @@ export const UsersClient = () => {
             <div className="flex items-center gap-1 rounded-lg bg-slate-900/50 p-1">
               {(["all", "active", "inactive"] as const).map((f) => (
                 <button
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-md px-3 py-1.5 font-medium text-xs transition-colors ${
                     filterActive === f
                       ? "bg-slate-700/50 text-slate-200"
                       : "text-slate-400 hover:text-slate-300"
@@ -624,7 +624,7 @@ export const UsersClient = () => {
           <div className="flex min-h-[200px] items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-              <p className="text-sm text-slate-400">Loading users...</p>
+              <p className="text-slate-400 text-sm">Loading users...</p>
             </div>
           </div>
         )}
@@ -634,7 +634,7 @@ export const UsersClient = () => {
             <div className="text-center">
               <p className="text-rose-400">{error}</p>
               <button
-                className="mt-4 text-sm text-blue-400 hover:underline"
+                className="mt-4 text-blue-400 text-sm hover:underline"
                 onClick={() => {
                   fetchEmployees().catch(() => {
                     // Retry error handled internally
@@ -654,10 +654,10 @@ export const UsersClient = () => {
               <UserXIcon className="h-12 w-12 text-slate-600" />
               <div>
                 <p className="font-medium text-slate-300">No users found</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {filterActive !== "all"
-                    ? `No ${filterActive} users match the filter`
-                    : "Users will appear here once added to the system"}
+                <p className="mt-1 text-slate-500 text-sm">
+                  {filterActive === "all"
+                    ? "Users will appear here once added to the system"
+                    : `No ${filterActive} users match the filter`}
                 </p>
               </div>
             </div>
@@ -683,7 +683,7 @@ export const UsersClient = () => {
                   <TableRow key={emp.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-400">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 font-semibold text-blue-400 text-xs">
                           {getInitials(emp)}
                         </div>
                         <span className="font-medium text-slate-200">
@@ -692,7 +692,7 @@ export const UsersClient = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-slate-400">
+                      <span className="text-slate-400 text-sm">
                         {emp.email}
                       </span>
                     </TableCell>
@@ -700,7 +700,7 @@ export const UsersClient = () => {
                       <RoleBadge role={emp.role} />
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-slate-400 text-xs">
                         {emp.employment_type?.replace(/_/g, " ") ?? "-"}
                       </span>
                     </TableCell>
@@ -708,7 +708,7 @@ export const UsersClient = () => {
                       <StatusBadge isActive={emp.is_active} />
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-slate-400 text-xs">
                         {formatDate(emp.hire_date)}
                       </span>
                     </TableCell>
@@ -780,7 +780,7 @@ export const UsersClient = () => {
             <p>Employee directory and access controls</p>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-slate-400 md:grid-cols-3">
+        <div className="grid gap-4 text-slate-400 text-sm md:grid-cols-3">
           <div>
             <p className="mb-2 font-medium text-slate-300">Roles</p>
             <ul className="ml-4 list-disc space-y-1">

@@ -14,15 +14,15 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface StationListFilters {
-  stationType?: string;
-  locationId?: string;
   isActive?: boolean;
+  locationId?: string;
   search?: string;
+  stationType?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

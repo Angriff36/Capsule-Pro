@@ -150,7 +150,11 @@ export async function verifyEmployee(
   }
 
   return {
-    employee: { id: employee.id, role: employee.role, is_active: employee.isActive },
+    employee: {
+      id: employee.id,
+      role: employee.role,
+      is_active: employee.isActive,
+    },
     error: null,
   };
 }

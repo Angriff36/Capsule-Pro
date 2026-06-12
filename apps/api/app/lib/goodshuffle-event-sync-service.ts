@@ -17,11 +17,11 @@ import {
 } from "./goodshuffle-client";
 
 export interface EventSyncOptions {
-  tenantId: string;
-  startDate: Date;
-  endDate: Date;
-  dryRun?: boolean;
   direction?: "convoy_to_goodshuffle" | "goodshuffle_to_convoy" | "both";
+  dryRun?: boolean;
+  endDate: Date;
+  startDate: Date;
+  tenantId: string;
 }
 
 /**

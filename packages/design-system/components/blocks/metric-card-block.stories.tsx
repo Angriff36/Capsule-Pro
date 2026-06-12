@@ -93,7 +93,7 @@ export const WithMultiLineDetail: Story = {
     description: "Total Costs",
     value: "$12,500",
     detail: (
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="space-y-1 text-muted-foreground text-xs">
         <div>Food: $4,200</div>
         <div>Labor: $6,800</div>
         <div>Overhead: $1,500</div>
@@ -136,7 +136,7 @@ export const DashboardGrid: Story = {
   },
   render: () => (
     <div className="w-[800px]">
-      <div className="mb-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-4 font-medium text-muted-foreground text-sm">
         Performance Overview
       </div>
       <div className="grid gap-4 md:grid-cols-3">
@@ -173,7 +173,7 @@ export const FocusMetricsGrid: Story = {
   },
   render: () => (
     <div className="w-[800px]">
-      <div className="mb-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-4 font-medium text-muted-foreground text-sm">
         Focus Metrics
       </div>
       <div className="grid gap-4 md:grid-cols-3">
@@ -207,7 +207,7 @@ export const CostAnalysisGrid: Story = {
   },
   render: () => (
     <div className="w-[800px]">
-      <div className="mb-4 text-sm font-medium text-muted-foreground">
+      <div className="mb-4 font-medium text-muted-foreground text-sm">
         Cost Analysis
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -221,7 +221,7 @@ export const CostAnalysisGrid: Story = {
         <MetricCardBlock
           description="Total Costs"
           detail={
-            <div className="space-y-1 text-xs text-muted-foreground">
+            <div className="space-y-1 text-muted-foreground text-xs">
               <div>Food: $14,200</div>
               <div>Labor: $18,400</div>
               <div>Overhead: $2,820</div>

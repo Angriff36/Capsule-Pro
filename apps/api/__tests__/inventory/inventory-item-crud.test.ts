@@ -40,10 +40,10 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, resolveCurrentUser } = await import("@/app/lib/tenant");
-const { runManifestCommand } = await import(
-  "@/lib/manifest/execute-command"
+const { getTenantIdForOrg, resolveCurrentUser } = await import(
+  "@/app/lib/tenant"
 );
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "user_test123";

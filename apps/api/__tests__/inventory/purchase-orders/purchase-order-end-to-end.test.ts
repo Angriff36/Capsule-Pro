@@ -20,7 +20,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks
 // ---------------------------------------------------------------------------
 
-
 // ── Standard infrastructure mocks ──
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
@@ -36,17 +35,19 @@ vi.mock("@/lib/manifest/issue-log", () => ({
   logManifestIssue: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...data }), { status })
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(JSON.stringify({ success: true, ...data }), { status })
   ),
-  manifestErrorResponse: vi.fn((data, status = 400) =>
-    new Response(
-      JSON.stringify({
-        success: false,
-        ...(typeof data === "string" ? { message: data } : data),
-      }),
-      { status }
-    )
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          ...(typeof data === "string" ? { message: data } : data),
+        }),
+        { status }
+      )
   ),
 }));
 vi.mock("@repo/database", async () => ({
@@ -97,7 +98,6 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
@@ -276,7 +276,9 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
     ];
 
     // Import the dispatcher route
-    const dispatcherMod = import("@/app/api/manifest/[entity]/commands/[command]/route");
+    const dispatcherMod = import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
 
     for (const verb of instanceScopedVerbs) {
       it(`${verb} passes id in body to runManifestCommand via dispatcher`, async () => {
@@ -313,7 +315,14 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
     it("create route passes body without instanceId to runManifestCommand", async () => {
       const { POST } = await dispatcherMod;
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "po-new" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "po-new" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = createMockRequest(

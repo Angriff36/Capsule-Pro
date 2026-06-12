@@ -118,7 +118,9 @@ function auditRouteBoundaries() {
       shell: process.platform === "win32",
     }
   );
-  if (result.status !== 0) {
+  if (result.status === 0) {
+    console.log("[manifest/build] Route boundary audit passed (strict mode).");
+  } else {
     console.error(
       "[manifest/build] Route boundary audit FAILED — ownership-rule violations detected."
     );
@@ -126,8 +128,6 @@ function auditRouteBoundaries() {
       "[manifest/build] Fix all COMMAND_ROUTE_ORPHAN, COMMAND_ROUTE_MISSING_RUNTIME_CALL, and WRITE_OUTSIDE_COMMANDS_NAMESPACE findings before merging."
     );
     process.exit(1);
-  } else {
-    console.log("[manifest/build] Route boundary audit passed (strict mode).");
   }
 }
 
@@ -146,12 +146,18 @@ function generateReactQueryHooks() {
 }
 
 function cleanupGeneratedOrphans() {
-  console.log("[manifest/build] Step 6: Cleaning generated/ orphan artifacts...");
+  console.log(
+    "[manifest/build] Step 6: Cleaning generated/ orphan artifacts..."
+  );
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const result = spawnSync(bin, ["exec", "node", "manifest/scripts/cleanup-generated-orphans.mjs"], {
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  });
+  const result = spawnSync(
+    bin,
+    ["exec", "node", "manifest/scripts/cleanup-generated-orphans.mjs"],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    }
+  );
   if (result.status !== 0) {
     console.error("[manifest/build] Generated cleanup failed.");
     process.exit(1);

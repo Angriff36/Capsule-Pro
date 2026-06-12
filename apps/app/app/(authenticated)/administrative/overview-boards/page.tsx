@@ -489,7 +489,7 @@ const AdministrativeOverviewBoardsPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Overview Boards
         </h1>
         <p className="text-muted-foreground">
@@ -501,7 +501,7 @@ const AdministrativeOverviewBoardsPage = async () => {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Board Snapshots
         </h2>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -512,8 +512,8 @@ const AdministrativeOverviewBoardsPage = async () => {
                 <CardDescription>{snapshot.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-2xl font-bold">{snapshot.value}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-bold text-2xl">{snapshot.value}</p>
+                <p className="text-muted-foreground text-sm">
                   {snapshot.trend}
                 </p>
               </CardContent>
@@ -523,7 +523,7 @@ const AdministrativeOverviewBoardsPage = async () => {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Executive Actions
         </h2>
         <Card tone="canvas">
@@ -533,7 +533,7 @@ const AdministrativeOverviewBoardsPage = async () => {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-3">
             {executiveActions.length === 0 ? (
-              <div className="rounded border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground md:col-span-3">
+              <div className="rounded border border-border/60 border-dashed p-6 text-center text-muted-foreground text-sm md:col-span-3">
                 No executive approvals pending.
               </div>
             ) : (
@@ -542,11 +542,11 @@ const AdministrativeOverviewBoardsPage = async () => {
                   className="space-y-3 rounded border border-border/60 p-4"
                   key={action.title}
                 >
-                  <p className="text-sm font-medium">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm">{action.title}</p>
+                  <p className="text-muted-foreground text-xs">
                     {action.owner}
                   </p>
-                  <p className="text-xs text-muted-foreground">{action.eta}</p>
+                  <p className="text-muted-foreground text-xs">{action.eta}</p>
                   <Badge variant="secondary">{action.status}</Badge>
                 </div>
               ))
@@ -556,7 +556,7 @@ const AdministrativeOverviewBoardsPage = async () => {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Alerts & Board Health
         </h2>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -570,17 +570,17 @@ const AdministrativeOverviewBoardsPage = async () => {
             <CardContent>
               <div className="space-y-3">
                 {criticalAlerts.length === 0 ? (
-                  <div className="rounded border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
+                  <div className="rounded border border-border/60 border-dashed p-4 text-muted-foreground text-sm">
                     No active alerts.
                   </div>
                 ) : (
                   criticalAlerts.map((alert, index) => (
                     <div key={alert.label}>
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{alert.label}</p>
+                        <p className="font-medium text-sm">{alert.label}</p>
                         <Badge variant="destructive">Action</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="mt-1 text-muted-foreground text-sm">
                         {alert.detail}
                       </p>
                       {index < criticalAlerts.length - 1 && (

@@ -1,16 +1,16 @@
 import { StyleSheet, Text, View } from "react-native";
 
 interface ProgressBarProps {
-  /** Current progress value (0-100) */
-  progress: number;
-  /** Height of the progress bar (default: 8) */
-  height?: number;
-  /** Whether to show the percentage label (default: false) */
-  showLabel?: boolean;
-  /** Custom color for the fill (overrides automatic color) */
-  color?: string;
   /** Custom background color (default: #e2e8f0) */
   backgroundColor?: string;
+  /** Custom color for the fill (overrides automatic color) */
+  color?: string;
+  /** Height of the progress bar (default: 8) */
+  height?: number;
+  /** Current progress value (0-100) */
+  progress: number;
+  /** Whether to show the percentage label (default: false) */
+  showLabel?: boolean;
 }
 
 function getProgressColor(progress: number): string {

@@ -12,11 +12,11 @@ import { resolveEntityAccessor } from "@/lib/manifest/entity-accessor";
 // ─────────────────────────────────────────────────────────────
 
 export interface PrismaDelegate {
+  count(args?: object): Promise<number>;
+  delete(args?: object): Promise<unknown>;
   findFirst(args?: object): Promise<unknown>;
   findMany(args?: object): Promise<unknown[]>;
   update(args?: object): Promise<unknown>;
-  delete(args?: object): Promise<unknown>;
-  count(args?: object): Promise<number>;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export interface PrismaDelegate {
  */
 export function getPrismaDelegate(
   entityType: string,
-  db: unknown,
+  db: unknown
 ): PrismaDelegate | null {
   const resolution = resolveEntityAccessor(entityType);
 
@@ -39,9 +39,7 @@ export function getPrismaDelegate(
     return null;
   }
 
-  const delegate = (db as Record<string, PrismaDelegate>)[
-    resolution.accessor
-  ];
+  const delegate = (db as Record<string, PrismaDelegate>)[resolution.accessor];
 
   return delegate ?? null;
 }

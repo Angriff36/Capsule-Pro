@@ -15,18 +15,18 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface PrepTaskListFilters {
   eventId?: string;
-  status?: string;
-  priority?: number;
-  stationId?: string;
-  locationId?: string;
-  taskType?: string;
-  search?: string;
   isOverdue?: boolean;
+  locationId?: string;
+  priority?: number;
+  search?: string;
+  stationId?: string;
+  status?: string;
+  taskType?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

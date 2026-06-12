@@ -32,66 +32,66 @@ export type InvoiceType =
  * Invoice line item
  */
 export interface InvoiceLineItem {
-  id: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  taxRate: number;
   amount: number;
+  description: string;
+  id: string;
+  quantity: number;
+  taxRate: number;
+  unitPrice: number;
 }
 
 /**
  * Invoice type from database
  */
 export interface Invoice {
-  tenantId: string;
-  id: string;
-  invoiceNumber: string;
-  invoiceType: InvoiceType;
-  status: InvoiceStatus;
-  clientId: string;
-  eventId: string;
-  subtotal: number;
-  taxAmount: number;
-  discountAmount: number;
-  total: number;
-  amountPaid: number;
   amountDue: number;
-  paymentTerms: number;
-  dueDate: Date;
-  paidAt: Date | null;
+  amountPaid: number;
+  clientId: string;
+  createdAt: Date;
+  deletedAt: Date | null;
+  depositPaid: number | null;
   depositPercentage: number | null;
   depositRequired: number | null;
-  depositPaid: number | null;
-  issuedAt: Date;
-  sentAt: Date | null;
-  viewedAt: Date | null;
-  overdueSince: Date | null;
-  reminderCount: number;
-  lastReminderAt: Date | null;
-  notes: string | null;
+  discountAmount: number;
+  dueDate: Date;
+  eventId: string;
+  id: string;
   internalNotes: string | null;
+  invoiceNumber: string;
+  invoiceType: InvoiceType;
+  issuedAt: Date;
+  lastReminderAt: Date | null;
   lineItems: unknown;
   metadata: unknown;
-  createdAt: Date;
+  notes: string | null;
+  overdueSince: Date | null;
+  paidAt: Date | null;
+  paymentTerms: number;
+  reminderCount: number;
+  sentAt: Date | null;
+  status: InvoiceStatus;
+  subtotal: number;
+  taxAmount: number;
+  tenantId: string;
+  total: number;
   updatedAt: Date;
-  deletedAt: Date | null;
+  viewedAt: Date | null;
 }
 
 /**
  * Create invoice request body
  */
 export interface CreateInvoiceRequest {
-  eventId: string;
   clientId: string;
-  invoiceType?: InvoiceType;
-  paymentTerms?: number;
-  dueDate?: string; // ISO date string
-  lineItems?: InvoiceLineItem[];
-  notes?: string;
-  internalNotes?: string;
   depositPercentage?: number;
+  dueDate?: string; // ISO date string
+  eventId: string;
+  internalNotes?: string;
+  invoiceType?: InvoiceType;
+  lineItems?: InvoiceLineItem[];
   metadata?: Record<string, unknown>;
+  notes?: string;
+  paymentTerms?: number;
 }
 
 /**
@@ -113,8 +113,8 @@ export interface SendInvoiceRequest {
  * Apply payment request body
  */
 export interface ApplyPaymentRequest {
-  paymentId: string;
   amount: number;
+  paymentId: string;
 }
 
 /**
@@ -129,20 +129,20 @@ export interface RecordRefundRequest {
  * Invoice list item with minimal data for listing
  */
 export interface InvoiceListItem {
+  amountDue: number;
+  amountPaid: number;
+  clientId: string;
+  clientName: string;
+  createdAt: Date;
+  dueDate: Date;
+  eventId: string;
+  eventName: string | null;
   id: string;
   invoiceNumber: string;
   invoiceType: InvoiceType;
-  status: InvoiceStatus;
-  clientId: string;
-  clientName: string;
-  eventId: string;
-  eventName: string | null;
-  total: number;
-  amountPaid: number;
-  amountDue: number;
-  dueDate: Date;
   paidAt: Date | null;
-  createdAt: Date;
+  status: InvoiceStatus;
+  total: number;
 }
 
 /**
@@ -187,17 +187,17 @@ export type InvoiceResponse = Invoice & {
  * Invoice filters
  */
 export interface InvoiceFilters {
-  search?: string;
-  status?: InvoiceStatus;
-  invoiceType?: InvoiceType;
   clientId?: string;
-  eventId?: string;
   dateFrom?: string;
   dateTo?: string;
   dueFrom?: string;
   dueTo?: string;
-  overdue?: boolean;
+  eventId?: string;
+  invoiceType?: InvoiceType;
   isPaidInFull?: boolean;
+  overdue?: boolean;
+  search?: string;
+  status?: InvoiceStatus;
 }
 
 /**
@@ -216,8 +216,8 @@ export type InvoiceSortOptions =
  * Sort parameters
  */
 export interface SortParams {
-  sortBy: InvoiceSortOptions;
   direction: "asc" | "desc";
+  sortBy: InvoiceSortOptions;
 }
 
 /**
@@ -225,22 +225,22 @@ export interface SortParams {
  */
 export interface InvoiceListParams {
   filters?: InvoiceFilters;
-  sort?: SortParams;
-  page?: number;
   limit?: number;
+  page?: number;
+  sort?: SortParams;
 }
 
 /**
  * Invoice statistics
  */
 export interface InvoiceStats {
-  total: number;
   byStatus: Record<InvoiceStatus, number>;
   byType: Record<InvoiceType, number>;
-  totalAmount: number;
   collectedAmount: number;
-  pendingAmount: number;
   overdueAmount: number;
+  pendingAmount: number;
+  total: number;
+  totalAmount: number;
   writeOffAmount: number;
 }
 
@@ -248,9 +248,9 @@ export interface InvoiceStats {
  * Invoice reminder configuration
  */
 export interface InvoiceReminderConfig {
-  enabled: boolean;
-  daysBeforeDue: number[];
   daysAfterDue: number[];
+  daysBeforeDue: number[];
+  enabled: boolean;
   templateId?: string;
 }
 

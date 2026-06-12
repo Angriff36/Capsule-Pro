@@ -334,9 +334,9 @@
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 12px;
   line-height: 1.4;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--ds-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 @utility ds-section-eyebrow {
@@ -344,9 +344,9 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--ds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 @utility ds-display-heading {
@@ -355,31 +355,32 @@
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 400;
   line-height: 1.1;
-  letter-spacing: -0.02em;
   color: var(--ds-ink);
+  letter-spacing: -0.02em;
 }
 
 @utility ds-page-canvas {
-  background-color: var(--ds-canvas);
   color: var(--ds-ink);
+  background-color: var(--ds-canvas);
 }
 
 @utility ds-dark-band {
-  background-color: var(--ds-deep-green);
   color: var(--ds-canvas);
+  background-color: var(--ds-deep-green);
   border-radius: 22px;
 }
 
 @utility ds-navy-band {
-  background-color: var(--ds-dark-navy);
   color: var(--ds-canvas);
+  background-color: var(--ds-dark-navy);
   border-radius: 22px;
 }
 
 @utility ds-card-flat {
   /* Restrained card per DESIGN.md: subtle border, no shadow */
-  background-color: var(--ds-canvas);
   color: var(--ds-ink);
+  /* Restrained card per DESIGN.md: subtle border, no shadow */
+  background-color: var(--ds-canvas);
   border: 1px solid var(--ds-card-border);
   border-radius: 16px;
 }
@@ -390,45 +391,46 @@
 }
 
 @utility ds-meta {
-  color: var(--ds-muted);
   font-size: 14px;
   line-height: 1.4;
+  color: var(--ds-muted);
 }
 
 @utility ds-meta-strong {
-  color: var(--ds-body-muted);
   font-size: 14px;
   line-height: 1.4;
+  color: var(--ds-body-muted);
 }
 
 @utility ds-chip {
   /* Outlined pill — research filter style */
   display: inline-flex;
-  align-items: center;
   gap: 0.375rem;
-  border: 1px solid var(--ds-hairline);
-  border-radius: 30px;
+  align-items: center;
   padding: 4px 12px;
   font-size: 13px;
   font-weight: 500;
   color: var(--ds-ink);
   background: transparent;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 30px;
   transition:
     background-color 120ms ease,
     border-color 120ms ease;
 }
 
 @utility ds-chip-active {
-  border-color: var(--ds-primary);
-  background-color: var(--ds-primary);
   color: var(--ds-canvas);
+  background-color: var(--ds-primary);
+  border-color: var(--ds-primary);
 }
 
 @utility ds-chip-coral {
   /* Editorial taxonomy chip */
-  border-color: var(--ds-coral-soft);
   color: var(--ds-coral);
   background-color: transparent;
+  /* Editorial taxonomy chip */
+  border-color: var(--ds-coral-soft);
 }
 
 /* ─── DESIGN.md typography hierarchy ──────────────────────────────────
@@ -444,8 +446,8 @@
   font-size: 6rem;
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -0.02em;
   color: var(--ds-ink);
+  letter-spacing: -0.02em;
 }
 
 @utility ds-product-display {
@@ -454,8 +456,8 @@
   font-size: 4.5rem;
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -0.02em;
   color: var(--ds-ink);
+  letter-spacing: -0.02em;
 }
 
 @utility ds-section-display {
@@ -464,8 +466,8 @@
   font-size: 3.75rem;
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -0.02em;
   color: var(--ds-ink);
+  letter-spacing: -0.02em;
 }
 
 @utility ds-section-heading {
@@ -474,8 +476,8 @@
   font-size: 3rem;
   font-weight: 400;
   line-height: 1.2;
-  letter-spacing: -0.01em;
   color: var(--ds-ink);
+  letter-spacing: -0.01em;
 }
 
 @utility ds-card-heading {
@@ -484,8 +486,8 @@
   font-size: 2rem;
   font-weight: 400;
   line-height: 1.2;
-  letter-spacing: -0.01em;
   color: var(--ds-ink);
+  letter-spacing: -0.01em;
 }
 
 @utility ds-feature-heading {
@@ -494,8 +496,8 @@
   font-size: 1.5rem;
   font-weight: 400;
   line-height: 1.3;
-  letter-spacing: 0;
   color: var(--ds-ink);
+  letter-spacing: 0;
 }
 
 @utility ds-body-large {
@@ -504,8 +506,8 @@
   font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.4;
-  letter-spacing: 0;
   color: var(--ds-ink);
+  letter-spacing: 0;
 }
 
 @utility ds-body {
@@ -514,8 +516,8 @@
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  letter-spacing: 0;
   color: var(--ds-ink);
+  letter-spacing: 0;
 }
 
 @utility ds-button {
@@ -533,8 +535,8 @@
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.4;
-  letter-spacing: 0;
   color: var(--ds-muted);
+  letter-spacing: 0;
 }
 
 @utility ds-micro {
@@ -543,6 +545,6 @@
   font-size: 0.75rem;
   font-weight: 400;
   line-height: 1.4;
-  letter-spacing: 0;
   color: var(--ds-muted);
+  letter-spacing: 0;
 }

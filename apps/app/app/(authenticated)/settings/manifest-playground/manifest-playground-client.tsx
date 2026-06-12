@@ -44,7 +44,7 @@ export function ManifestPlaygroundClient() {
 
   return (
     <div className="space-y-3">
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
       <ManifestTestPlayground
         entities={entities}
         executionEnabled={false}
@@ -71,7 +71,7 @@ export function ManifestPlaygroundClient() {
         }}
         onLoadEntityDetail={fetchEntityDetail}
       />
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         This playground currently runs in preview-only mode (no command
         execution).
       </p>

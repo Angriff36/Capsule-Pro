@@ -68,9 +68,7 @@ export async function GET(request: NextRequest) {
   );
 
   // Analyze wasted items
-  const topItems = analyzeWastedItems(
-    entries as Array<WasteEntryRow>
-  );
+  const topItems = analyzeWastedItems(entries as Array<WasteEntryRow>);
 
   // Calculate reduction opportunities
   const reductionOpportunities = await calculateReductionOpportunities(

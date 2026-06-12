@@ -46,37 +46,37 @@ import {
  */
 
 export interface ChecklistItem {
-  /** Unique identifier for the item */
-  id: string;
-  /** Display label for the checklist item */
-  label: string;
+  /** Whether the item is completed */
+  completed: boolean;
   /** Optional description explaining what this task does */
   description?: string;
   /** Link to the relevant action/page */
   href: string;
-  /** Whether the item is completed */
-  completed: boolean;
   /** Optional icon for the item (defaults to checkmark when complete) */
   icon?: React.ReactNode;
+  /** Unique identifier for the item */
+  id: string;
+  /** Display label for the checklist item */
+  label: string;
 }
 
 interface GettingStartedChecklistProps {
-  /** List of checklist items to display */
-  items: ChecklistItem[];
-  /** Whether the checklist is collapsed by default */
-  defaultOpen?: boolean;
   /** Optional custom class name */
   className?: string;
+  /** Whether the checklist is collapsed by default */
+  defaultOpen?: boolean;
+  /** List of checklist items to display */
+  items: ChecklistItem[];
   /** Optional callback when an item is clicked */
   onItemClick?: (item: ChecklistItem) => void;
-  /** Optional title override */
-  title?: string;
-  /** Optional subtitle override */
-  subtitle?: string;
   /** Optional callback to share progress with team lead/manager */
   onShareProgress?: (items: ChecklistItem[]) => Promise<string | null>;
   /** Whether to show the share button */
   showShareButton?: boolean;
+  /** Optional subtitle override */
+  subtitle?: string;
+  /** Optional title override */
+  title?: string;
 }
 
 export function GettingStartedChecklist({
@@ -108,7 +108,9 @@ export function GettingStartedChecklist({
   });
 
   const handleShare = useCallback(async () => {
-    if (!onShareProgress || shareState.isLoading) return;
+    if (!onShareProgress || shareState.isLoading) {
+      return;
+    }
 
     setShareState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
@@ -132,7 +134,9 @@ export function GettingStartedChecklist({
   }, [onShareProgress, items, shareState.isLoading]);
 
   const handleCopyUrl = useCallback(async () => {
-    if (!shareState.shareUrl) return;
+    if (!shareState.shareUrl) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(shareState.shareUrl);
@@ -229,7 +233,7 @@ export function GettingStartedChecklist({
         <div className="px-6 pb-3">
           <div className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
             <input
-              className="flex-1 bg-transparent text-xs text-muted-foreground outline-none truncate"
+              className="flex-1 truncate bg-transparent text-muted-foreground text-xs outline-none"
               readOnly
               type="text"
               value={shareState.shareUrl}
@@ -247,7 +251,7 @@ export function GettingStartedChecklist({
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground text-xs">
             Share this link with your manager to show your onboarding progress
           </p>
         </div>
@@ -256,7 +260,7 @@ export function GettingStartedChecklist({
       {/* Error Display */}
       {shareState.error && (
         <div className="px-6 pb-3">
-          <p className="text-xs text-destructive">{shareState.error}</p>
+          <p className="text-destructive text-xs">{shareState.error}</p>
         </div>
       )}
 
@@ -280,26 +284,26 @@ export function GettingStartedChecklist({
                     {item.completed ? (
                       <CheckCircle2 className="size-5 text-green-500" />
                     ) : (
-                      <Circle className="size-5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                      <Circle className="size-5 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div
                       className={cn(
-                        "text-sm font-medium",
-                        item.completed && "line-through text-muted-foreground"
+                        "font-medium text-sm",
+                        item.completed && "text-muted-foreground line-through"
                       )}
                     >
                       {item.label}
                     </div>
                     {item.description && (
-                      <div className="text-muted-foreground text-xs mt-0.5">
+                      <div className="mt-0.5 text-muted-foreground text-xs">
                         {item.description}
                       </div>
                     )}
                   </div>
                   {!item.completed && item.icon && (
-                    <div className="flex-shrink-0 text-muted-foreground/50 group-hover:text-foreground transition-colors">
+                    <div className="flex-shrink-0 text-muted-foreground/50 transition-colors group-hover:text-foreground">
                       {item.icon}
                     </div>
                   )}
@@ -317,8 +321,8 @@ export function GettingStartedChecklist({
  * GettingStartedChecklistCompact - A more compact version for sidebars
  */
 interface GettingStartedChecklistCompactProps {
-  items: ChecklistItem[];
   className?: string;
+  items: ChecklistItem[];
   onItemClick?: (item: ChecklistItem) => void;
 }
 
@@ -339,7 +343,7 @@ export function GettingStartedChecklistCompact({
 
   return (
     <div className={cn("rounded-lg border bg-card p-4", className)}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Rocket className="size-4 text-primary" />
           <span className="font-medium text-sm">Getting Started</span>
@@ -348,7 +352,7 @@ export function GettingStartedChecklistCompact({
           {completedCount}/{totalCount}
         </span>
       </div>
-      <Progress className="h-1.5 mb-3" value={progressPercent} />
+      <Progress className="mb-3 h-1.5" value={progressPercent} />
       <ul className="space-y-2">
         {items
           .filter((item) => !item.completed)
@@ -356,7 +360,7 @@ export function GettingStartedChecklistCompact({
           .map((item) => (
             <li key={item.id}>
               <a
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
                 href={item.href}
                 onClick={() => onItemClick?.(item)}
               >

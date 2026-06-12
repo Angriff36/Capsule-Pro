@@ -2,14 +2,14 @@
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 interface GenerateProposalResult {
-  success: boolean;
+  error?: string;
   proposalId?: string;
   proposalNumber?: string;
-  error?: string;
+  success: boolean;
 }
 
 export async function generateProposalFromEvent(

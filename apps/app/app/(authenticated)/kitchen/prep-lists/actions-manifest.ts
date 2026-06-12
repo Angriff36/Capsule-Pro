@@ -19,49 +19,49 @@ import { requireCurrentUser } from "../../../lib/tenant";
 // ============ Helper Types ============
 
 export interface PrepListItemInput {
-  stationId: string;
-  stationName: string;
-  ingredientId: string;
-  ingredientName: string;
-  category: string | null;
+  allergens: string[];
   baseQuantity: number;
   baseUnit: string;
-  scaledQuantity: number;
-  scaledUnit: string;
-  isOptional: boolean;
-  preparationNotes: string | null;
-  allergens: string[];
+  category: string | null;
   dietarySubstitutions: string[];
   dishId: string | null;
   dishName: string | null;
+  ingredientId: string;
+  ingredientName: string;
+  isOptional: boolean;
+  preparationNotes: string | null;
   recipeVersionId: string | null;
+  scaledQuantity: number;
+  scaledUnit: string;
+  stationId: string;
+  stationName: string;
 }
 
 export interface CreatePrepListInput {
-  eventId: string;
-  name: string;
   batchMultiplier: number;
   dietaryRestrictions: string[];
-  totalItems: number;
-  totalEstimatedTime: number;
-  notes: string | null;
+  eventId: string;
   items: PrepListItemInput[];
+  name: string;
+  notes: string | null;
+  totalEstimatedTime: number;
+  totalItems: number;
 }
 
 // ============ Result Types ============
 
 export interface PrepListManifestActionResult {
-  success: boolean;
   constraintOutcomes?: ConstraintOutcome[];
-  redirectUrl?: string;
   error?: string;
   prepListId?: string;
+  redirectUrl?: string;
+  success: boolean;
 }
 
 interface OverrideRequestInput {
+  authorizedBy: string;
   constraintCode: string;
   reason: string;
-  authorizedBy: string;
   timestamp: number;
 }
 
@@ -97,12 +97,15 @@ export const createPrepListManifest = async (
 ): Promise<PrepListManifestActionResult> => {
   let response: Response;
   try {
-    response = await apiPostJsonServer("/api/kitchen/prep-lists/commands/create", {
-      input,
-      ...(overrideRequests && overrideRequests.length > 0
-        ? { overrideRequests }
-        : {}),
-    });
+    response = await apiPostJsonServer(
+      "/api/kitchen/prep-lists/commands/create",
+      {
+        input,
+        ...(overrideRequests && overrideRequests.length > 0
+          ? { overrideRequests }
+          : {}),
+      }
+    );
   } catch (error) {
     return {
       success: false,

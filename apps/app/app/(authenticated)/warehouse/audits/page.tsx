@@ -1,7 +1,5 @@
 import { CycleCountClient } from "./cycle-count-client";
 
-const WarehouseAuditsPage = () => {
-  return <CycleCountClient />;
-};
+const WarehouseAuditsPage = () => <CycleCountClient />;
 
 export default WarehouseAuditsPage;

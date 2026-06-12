@@ -21,17 +21,17 @@ import type { PrismaClient } from "../generated/client";
 
 export interface VendorCostUpdateContext {
   catalogEntryId: string;
-  oldCost: number;
   newCost: number;
+  oldCost: number;
+  reason: string;
   tenantId: string;
   userId: string;
-  reason: string;
 }
 
 export interface VendorCostUpdateResult {
+  errors: Array<{ entity: string; id: string; error: string }>;
   inventoryItemsUpdated: number;
   recipesRecalculated: number;
-  errors: Array<{ entity: string; id: string; error: string }>;
 }
 
 /**
@@ -177,16 +177,16 @@ export async function findCatalogEntryForItem(
  * pricing tiers and bulk order rules.
  */
 export interface EffectivePriceResult {
-  baseUnitCost: number;
+  appliedRule?: {
+    ruleName: string;
+    discountPercent: number;
+  };
   appliedTier?: {
     tierName: string;
     minQuantity: number;
     unitCost: number;
   };
-  appliedRule?: {
-    ruleName: string;
-    discountPercent: number;
-  };
+  baseUnitCost: number;
   finalUnitCost: number;
   totalCost: number;
 }
@@ -222,9 +222,9 @@ export function calculateEffectivePrice(
   for (const tier of catalogEntry.pricingTiers) {
     const minQty = Number(tier.minQuantity);
     const maxQty =
-      tier.maxQuantity !== null
-        ? Number(tier.maxQuantity)
-        : Number.POSITIVE_INFINITY;
+      tier.maxQuantity === null
+        ? Number.POSITIVE_INFINITY
+        : Number(tier.maxQuantity);
 
     if (quantity >= minQty && quantity <= maxQty) {
       unitCost = Number(tier.unitCost);

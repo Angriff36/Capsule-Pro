@@ -17,8 +17,8 @@
  * applied on top for expensive operations.
  */
 
-import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { log } from "@repo/observability/log";
+import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { NextResponse } from "next/server";
 
 // ============================================================================
@@ -87,24 +87,34 @@ function normalizeEndpoint(pathname: string, method: string): string {
 function extractTenantKey(request: Request): string | null {
   // Clerk sets this after successful session auth
   const tenantId = request.headers.get("x-tenant-id");
-  if (tenantId) return `tenant:${tenantId}`;
+  if (tenantId) {
+    return `tenant:${tenantId}`;
+  }
 
   // Fallback: use org ID if available
   const orgId = request.headers.get("x-org-id");
-  if (orgId) return `org:${orgId}`;
+  if (orgId) {
+    return `org:${orgId}`;
+  }
 
   // Fallback: use user ID
   const userId = request.headers.get("x-user-id");
-  if (userId) return `user:${userId}`;
+  if (userId) {
+    return `user:${userId}`;
+  }
 
   // API key identifier — set by proxy.ts after Bearer token detection
   const apiKeyId = request.headers.get("x-api-key-id");
-  if (apiKeyId) return `apikey:${apiKeyId}`;
+  if (apiKeyId) {
+    return `apikey:${apiKeyId}`;
+  }
 
   // Anonymous: fall back to IP-based key
   const forwardedFor = request.headers.get("x-forwarded-for");
   const ip = forwardedFor?.split(",")[0]?.trim();
-  if (ip) return `ip:${ip}`;
+  if (ip) {
+    return `ip:${ip}`;
+  }
 
   return null;
 }
@@ -239,7 +249,9 @@ export function appendRateLimitHeaders(
   request: Request
 ): Response {
   const applied = request.headers.get("x-ratelimit-applied");
-  if (applied !== "true") return response;
+  if (applied !== "true") {
+    return response;
+  }
 
   const limit = request.headers.get("x-ratelimit-limit");
   const remaining = request.headers.get("x-ratelimit-remaining");

@@ -27,7 +27,9 @@ describe("parseDraftEnvelope", () => {
   });
 
   it("parses the envelope from an already-parsed object (Prisma Json form)", () => {
-    expect(parseDraftEnvelope({ eventBoardDraft: staffDraft })).toEqual(staffDraft);
+    expect(parseDraftEnvelope({ eventBoardDraft: staffDraft })).toEqual(
+      staffDraft
+    );
   });
 
   it("returns null when no envelope is present", () => {

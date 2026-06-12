@@ -17,6 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -33,14 +41,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
@@ -66,23 +66,23 @@ const fmtCurrency = (v: number | null) =>
 
 // Types matching the API
 interface Shipment {
-  id: string;
-  shipmentNumber: string;
-  status: string;
-  eventId: string | null;
-  supplierId: string | null;
-  scheduledDate: string | null;
-  shippedDate: string | null;
-  estimatedDeliveryDate: string | null;
   actualDeliveryDate: string | null;
-  totalItems: number;
+  carrier: string | null;
+  createdAt: string;
+  estimatedDeliveryDate: string | null;
+  eventId: string | null;
+  id: string;
+  notes: string | null;
+  scheduledDate: string | null;
+  shipmentNumber: string;
+  shippedDate: string | null;
   shippingCost: number | null;
+  shippingMethod: string | null;
+  status: string;
+  supplierId: string | null;
+  totalItems: number;
   totalValue: number | null;
   trackingNumber: string | null;
-  carrier: string | null;
-  shippingMethod: string | null;
-  notes: string | null;
-  createdAt: string;
 }
 
 function normalizeShipment(payload: Record<string, unknown>): Shipment {
@@ -307,7 +307,9 @@ export function ShipmentsClient() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedShipment) return;
+    if (!selectedShipment) {
+      return;
+    }
     setUpdating(true);
     try {
       const res = await apiFetch(`/api/shipments/${selectedShipment.id}`, {
@@ -349,7 +351,9 @@ export function ShipmentsClient() {
         cancelled: "cancel",
       };
 
-      if (!commandMap[status]) return;
+      if (!commandMap[status]) {
+        return;
+      }
 
       const res = await apiFetch(`/api/shipments/${shipmentId}/status`, {
         method: "POST",
@@ -370,20 +374,22 @@ export function ShipmentsClient() {
     }
   };
 
-  const filteredShipments = useMemo(() => {
-    return shipments.filter((s) => {
-      const matchesTab = activeTab === "all" || s.status === activeTab;
-      const matchesSearch =
-        !searchQuery ||
-        s.shipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.carrier?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.trackingNumber?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [shipments, activeTab, searchQuery]);
+  const filteredShipments = useMemo(
+    () =>
+      shipments.filter((s) => {
+        const matchesTab = activeTab === "all" || s.status === activeTab;
+        const matchesSearch =
+          !searchQuery ||
+          s.shipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.carrier?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.trackingNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesTab && matchesSearch;
+      }),
+    [shipments, activeTab, searchQuery]
+  );
 
-  const stats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       total: shipments.length,
       active: shipments.filter((s) =>
         ["scheduled", "preparing", "in_transit"].includes(s.status)
@@ -393,17 +399,22 @@ export function ShipmentsClient() {
         (sum, s) => sum + (Number(s.totalValue) || 0),
         0
       ),
-    };
-  }, [shipments]);
+    }),
+    [shipments]
+  );
 
   const getNextStatus = (currentStatus: string): string | null => {
     const idx = STATUS_ORDER.indexOf(currentStatus);
-    if (idx === -1 || idx >= STATUS_ORDER.length - 2) return null; // Don't suggest "returned"
+    if (idx === -1 || idx >= STATUS_ORDER.length - 2) {
+      return null; // Don't suggest "returned"
+    }
     return STATUS_ORDER[idx + 1];
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "—";
+    if (!dateStr) {
+      return "—";
+    }
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -424,7 +435,7 @@ export function ShipmentsClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Shipments</h1>
+          <h1 className="font-semibold text-2xl">Shipments</h1>
           <p className="text-muted-foreground">
             Track incoming and outgoing shipments across your supply chain.
           </p>
@@ -439,41 +450,41 @@ export function ShipmentsClient() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Total Shipments
             </CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="font-bold text-2xl">{stats.total}</div>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="font-medium text-sm">Active</CardTitle>
             <Truck className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">In progress</p>
+            <div className="font-bold text-2xl">{stats.active}</div>
+            <p className="text-muted-foreground text-xs">In progress</p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+            <CardTitle className="font-medium text-sm">Delivered</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.delivered}</div>
+            <div className="font-bold text-2xl">{stats.delivered}</div>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Value</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {fmtCurrency(stats.totalValue)}
             </div>
           </CardContent>
@@ -482,8 +493,8 @@ export function ShipmentsClient() {
 
       {/* Search & Filter */}
       <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-10"
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -499,7 +510,9 @@ export function ShipmentsClient() {
           <TabsTrigger value="all">All ({shipments.length})</TabsTrigger>
           {STATUS_ORDER.slice(0, 5).map((status) => {
             const count = shipments.filter((s) => s.status === status).length;
-            if (count === 0) return null;
+            if (count === 0) {
+              return null;
+            }
             const config = STATUS_CONFIG[status];
             return (
               <TabsTrigger key={status} value={status}>
@@ -551,7 +564,7 @@ export function ShipmentsClient() {
 
                 return (
                   <Card
-                    className="hover:border-primary/40 transition-shadow"
+                    className="transition-shadow hover:border-primary/40"
                     key={shipment.id}
                     tone="canvas"
                   >
@@ -565,10 +578,10 @@ export function ShipmentsClient() {
                         </div>
 
                         {/* Main info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <button
-                              className="font-semibold hover:underline text-left"
+                              className="text-left font-semibold hover:underline"
                               onClick={() => {
                                 setSelectedShipment(shipment);
                                 setShowDetailDialog(true);
@@ -580,7 +593,7 @@ export function ShipmentsClient() {
                               {statusConfig.label}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             {shipment.carrier && (
                               <span className="flex items-center gap-1">
                                 <Truck className="h-3 w-3" />
@@ -604,7 +617,7 @@ export function ShipmentsClient() {
                         </div>
 
                         {/* Dates */}
-                        <div className="hidden md:flex flex-col items-end text-sm text-muted-foreground gap-1">
+                        <div className="hidden flex-col items-end gap-1 text-muted-foreground text-sm md:flex">
                           {shipment.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
@@ -882,8 +895,8 @@ export function ShipmentsClient() {
               </div>
               {selectedShipment.notes && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                  <p className="text-sm bg-muted rounded-md p-3">
+                  <p className="mb-1 text-muted-foreground text-sm">Notes</p>
+                  <p className="rounded-md bg-muted p-3 text-sm">
                     {selectedShipment.notes}
                   </p>
                 </div>

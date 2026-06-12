@@ -15,22 +15,22 @@
 import { apiFetch } from "@/app/lib/api";
 
 export interface CommandSuccess<T = unknown> {
-  success: true;
-  result?: T;
-  events?: unknown[];
   constraintOutcomes?: unknown[];
+  enqueuedAt?: number;
+  events?: unknown[];
   // async-command envelope (no `result`; the work runs later via the job queue)
   jobId?: string;
+  result?: T;
   status?: "pending" | "running" | "completed" | "failed" | string;
-  enqueuedAt?: number;
+  success: true;
 }
 
 export interface CommandError {
-  success: false;
-  error?: string;
-  message?: string;
   constraintOutcomes?: unknown[];
   diagnostics?: unknown[];
+  error?: string;
+  message?: string;
+  success: false;
 }
 
 export type CommandEnvelope<T = unknown> = CommandSuccess<T> | CommandError;
@@ -61,11 +61,17 @@ export class CommandFailedError extends Error {
 export function unwrapCommandResult<T = unknown>(
   json: CommandEnvelope<T> | Record<string, unknown> | null | undefined
 ): T | undefined {
-  if (json == null || typeof json !== "object") return undefined;
+  if (json == null || typeof json !== "object") {
+    return;
+  }
   const obj = json as Record<string, unknown>;
-  if ("result" in obj) return obj.result as T;
-  if ("data" in obj) return obj.data as T;
-  return undefined;
+  if ("result" in obj) {
+    return obj.result as T;
+  }
+  if ("data" in obj) {
+    return obj.data as T;
+  }
+  return;
 }
 
 const dispatcherPath = (entity: string, command: string) =>
@@ -104,7 +110,7 @@ export async function executeCommand<T = unknown>(
     json = null;
   }
 
-  if (!res.ok || !json || json.success === false) {
+  if (!(res.ok && json) || json.success === false) {
     const errObj = json as CommandError | null;
     const message =
       errObj?.error ||

@@ -19,27 +19,29 @@ import { requireCurrentUser } from "@/app/lib/tenant";
 import { MyTrainingClient } from "./my-training-client";
 
 interface TrainingRow {
+  assigned_at: Date;
+  category: string | null;
+  completed_at: Date | null;
+  content_type: string;
+  content_url: string | null;
+  due_date: Date | null;
+  duration_minutes: number | null;
   id: string;
+  is_required: boolean;
+  module_description: string | null;
   module_id: string;
   module_title: string;
-  module_description: string | null;
-  content_type: string;
-  duration_minutes: number | null;
-  category: string | null;
-  is_required: boolean;
-  status: string;
-  due_date: Date | null;
-  assigned_at: Date;
-  content_url: string | null;
-  started_at: Date | null;
-  completed_at: Date | null;
-  score: number | null;
   passed: boolean;
+  score: number | null;
+  started_at: Date | null;
+  status: string;
 }
 
 export default async function MyTrainingPage() {
   const currentUser = await requireCurrentUser();
-  if (!currentUser) redirect("/sign-in");
+  if (!currentUser) {
+    redirect("/sign-in");
+  }
 
   const { id: employeeId, tenantId } = currentUser;
 
@@ -90,10 +92,18 @@ export default async function MyTrainingPage() {
       };
       const statusDiff =
         (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
-      if (statusDiff !== 0) return statusDiff;
-      if (!(a.due_date || b.due_date)) return 0;
-      if (!a.due_date) return 1;
-      if (!b.due_date) return -1;
+      if (statusDiff !== 0) {
+        return statusDiff;
+      }
+      if (!(a.due_date || b.due_date)) {
+        return 0;
+      }
+      if (!a.due_date) {
+        return 1;
+      }
+      if (!b.due_date) {
+        return -1;
+      }
       return a.due_date.getTime() - b.due_date.getTime();
     });
 

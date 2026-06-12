@@ -19,8 +19,12 @@ export async function GET(request: NextRequest) {
     const offset = Number.parseInt(searchParams.get("offset") || "0");
 
     const where: Record<string, unknown> = { tenantId };
-    if (eventId) where.eventId = eventId;
-    if (status) where.status = status;
+    if (eventId) {
+      where.eventId = eventId;
+    }
+    if (status) {
+      where.status = status;
+    }
 
     const followups = await database.$queryRaw`
       SELECT 

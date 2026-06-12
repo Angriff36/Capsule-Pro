@@ -98,15 +98,22 @@ export function parseModels(schemaContent) {
 
     // Track depth so nested braces (e.g., in attributes) don't end the block early.
     for (const ch of line) {
-      if (ch === "{") depth++;
-      else if (ch === "}") depth--;
+      if (ch === "{") {
+        depth++;
+      } else if (ch === "}") {
+        depth--;
+      }
     }
 
     const mapMatch = /@@map\("([^"]+)"\)/.exec(line);
-    if (mapMatch) current.tableName = mapMatch[1];
+    if (mapMatch) {
+      current.tableName = mapMatch[1];
+    }
 
     const schMatch = /@@schema\("([^"]+)"\)/.exec(line);
-    if (schMatch) current.schemaName = schMatch[1];
+    if (schMatch) {
+      current.schemaName = schMatch[1];
+    }
 
     if (depth === 0) {
       models.set(current.modelName, {
@@ -204,7 +211,9 @@ export function validateModelsAgainstMigrations(schemaContent, migrations) {
   }
   // Also build a schema-agnostic set for the legacy no-schema-prefix case.
   const liveBareTables = new Set();
-  for (const key of live) liveBareTables.add(key.split(".").slice(1).join("."));
+  for (const key of live) {
+    liveBareTables.add(key.split(".").slice(1).join("."));
+  }
 
   const errors = [];
   for (const [modelName, info] of models) {
@@ -214,11 +223,17 @@ export function validateModelsAgainstMigrations(schemaContent, migrations) {
     // population of models that match this case).
     const hasUppercase = /[A-Z]/.test(modelName);
     const inferredFromModelName = info.tableName === modelName;
-    if (!(hasUppercase && inferredFromModelName)) continue;
+    if (!(hasUppercase && inferredFromModelName)) {
+      continue;
+    }
 
     const expectedKey = `${info.schemaName ?? ""}.${info.tableName}`;
-    if (live.has(expectedKey)) continue;
-    if (info.schemaName && liveBareTables.has(info.tableName)) continue;
+    if (live.has(expectedKey)) {
+      continue;
+    }
+    if (info.schemaName && liveBareTables.has(info.tableName)) {
+      continue;
+    }
 
     errors.push({
       kind: "missing-create-table",
@@ -229,9 +244,9 @@ export function validateModelsAgainstMigrations(schemaContent, migrations) {
         `Model "${modelName}" has no @@map, so Prisma expects table ` +
         `"${info.schemaName ?? "<no-schema>"}"."${info.tableName}" ` +
         `(PascalCase, verbatim from the model name), but no migration's ` +
-        `CREATE TABLE produces that exact identifier. Either rename/recreate ` +
+        "CREATE TABLE produces that exact identifier. Either rename/recreate " +
         `the migration to use the PascalCase name, or add @@map("<actual_table_name>") ` +
-        `to the model to point at the table the migrations actually create.`,
+        "to the model to point at the table the migrations actually create.",
     });
   }
 
@@ -281,7 +296,7 @@ function main() {
     err(`Migrations directory not found: ${MIGRATIONS_DIR}`);
     process.exit(1);
   }
-  ok(`Migrations directory exists`);
+  ok("Migrations directory exists");
 
   const entries = readdirSync(MIGRATIONS_DIR, { withFileTypes: true });
   const dirs = entries
@@ -290,15 +305,15 @@ function main() {
 
   // 2. Check migration_lock.toml
   const lockPath = join(MIGRATIONS_DIR, LOCK_FILE);
-  if (!existsSync(lockPath)) {
-    err(`${LOCK_FILE} is missing`);
-  } else {
+  if (existsSync(lockPath)) {
     const lockContent = readFileSync(lockPath, "utf8");
-    if (!lockContent.includes("postgresql")) {
-      err(`${LOCK_FILE} does not specify postgresql provider`);
-    } else {
+    if (lockContent.includes("postgresql")) {
       ok(`${LOCK_FILE} exists and specifies postgresql`);
+    } else {
+      err(`${LOCK_FILE} does not specify postgresql provider`);
     }
+  } else {
+    err(`${LOCK_FILE} is missing`);
   }
 
   // 3. Validate each migration directory (structural)
@@ -346,10 +361,10 @@ function main() {
   //    statements. This catches the EmployeeDeduction-class of drift where
   //    a model with no @@map defaults to a PascalCase table name but a
   //    hand-written migration uses a snake_case guess (or vice versa).
-  if (!existsSync(SCHEMA_PATH)) {
-    err(`schema.prisma not found at ${SCHEMA_PATH}`);
-  } else {
-    console.log(`\nCross-checking schema models against migration history...\n`);
+  if (existsSync(SCHEMA_PATH)) {
+    console.log(
+      "\nCross-checking schema models against migration history...\n"
+    );
     const schemaContent = readFileSync(SCHEMA_PATH, "utf8");
     const migrations = readMigrationsInOrder();
     const driftErrors = validateModelsAgainstMigrations(
@@ -361,8 +376,12 @@ function main() {
         `${parseModels(schemaContent).size} models all have matching CREATE TABLE statements`
       );
     } else {
-      for (const e of driftErrors) err(e.message);
+      for (const e of driftErrors) {
+        err(e.message);
+      }
     }
+  } else {
+    err(`schema.prisma not found at ${SCHEMA_PATH}`);
   }
 
   // Summary
@@ -387,9 +406,6 @@ function main() {
 }
 
 // Only run main() when invoked as a CLI, not when imported by a test.
-if (
-  process.argv[1] &&
-  fileURLToPath(import.meta.url) === process.argv[1]
-) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   main();
 }

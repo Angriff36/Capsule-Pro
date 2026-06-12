@@ -404,7 +404,12 @@ export async function checkShiftAgainstAvailability(
   shiftEnd: Date
 ): Promise<{
   withinAvailability: boolean;
-  availabilityWindows: { dayOfWeek: number; startTime: string; endTime: string; isAvailable: boolean }[];
+  availabilityWindows: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+  }[];
   severity: "OK" | "WARN";
   message: string;
 }> {
@@ -443,10 +448,14 @@ export async function checkShiftAgainstAvailability(
   }
 
   // Check if any "available" window covers the shift
-  const shiftStartMinutes = shiftStart.getUTCHours() * 60 + shiftStart.getUTCMinutes();
-  const shiftEndMinutes = shiftEnd.getUTCHours() * 60 + shiftEnd.getUTCMinutes();
+  const shiftStartMinutes =
+    shiftStart.getUTCHours() * 60 + shiftStart.getUTCMinutes();
+  const shiftEndMinutes =
+    shiftEnd.getUTCHours() * 60 + shiftEnd.getUTCMinutes();
 
-  const availableWindows = availability.filter((a) => a.is_available && a.start_time && a.end_time);
+  const availableWindows = availability.filter(
+    (a) => a.is_available && a.start_time && a.end_time
+  );
 
   const isCovered = availableWindows.some((window) => {
     const [wStartH, wStartM] = window.start_time!.split(":").map(Number);
@@ -458,7 +467,15 @@ export async function checkShiftAgainstAvailability(
 
   if (!isCovered) {
     const formattedWindows = availableWindows.map((w) => {
-      const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][w.day_of_week];
+      const dayName = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ][w.day_of_week];
       return `${dayName} ${w.start_time}-${w.end_time}`;
     });
     return {
@@ -491,15 +508,16 @@ export async function checkShiftAgainstAvailability(
  * Combined validation result for shift operations
  */
 export interface ShiftValidationResult {
-  valid: boolean;
-  employee: { id: string; role: string; is_active: boolean } | null;
-  schedule: { id: string; status: string } | null;
-  overlaps: ShiftOverlap[];
-  overtime: {
-    severity: "OK" | "WARN" | "BLOCK";
-    currentWeekHours: number;
-    projectedHours: number;
+  availability: {
+    severity: "OK" | "WARN";
+    withinAvailability: boolean;
     message: string;
+    availabilityWindows: {
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      isAvailable: boolean;
+    }[];
   };
   certifications: {
     severity: "OK" | "WARN" | "BLOCK";
@@ -507,13 +525,17 @@ export interface ShiftValidationResult {
     expiredCerts: { type: string; name: string; expiryDate: Date }[];
     message: string;
   };
-  availability: {
-    severity: "OK" | "WARN";
-    withinAvailability: boolean;
-    message: string;
-    availabilityWindows: { dayOfWeek: number; startTime: string; endTime: string; isAvailable: boolean }[];
-  };
+  employee: { id: string; role: string; is_active: boolean } | null;
   error: NextResponse | null;
+  overlaps: ShiftOverlap[];
+  overtime: {
+    severity: "OK" | "WARN" | "BLOCK";
+    currentWeekHours: number;
+    projectedHours: number;
+    message: string;
+  };
+  schedule: { id: string; status: string } | null;
+  valid: boolean;
 }
 
 /**

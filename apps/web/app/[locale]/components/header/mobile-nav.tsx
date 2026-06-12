@@ -3,8 +3,8 @@ import Link from "next/link";
 import type { NavigationItem } from "./navigation-config";
 
 interface MobileNavProps {
-  navigationItems: NavigationItem[];
   isOpen: boolean;
+  navigationItems: NavigationItem[];
   setOpen: (open: boolean) => void;
 }
 

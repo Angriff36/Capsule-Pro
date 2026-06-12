@@ -46,10 +46,10 @@ const CLIENT_TYPE_LABELS: Record<string, string> = {
 };
 
 interface SegmentRow {
-  key: string;
-  label: string;
   count: number;
   href: string;
+  key: string;
+  label: string;
 }
 
 const buildTagSegments = (

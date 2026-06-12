@@ -44,8 +44,8 @@ export function EntityDetailsSheetBlock() {
       <CardContent>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="text-sm text-muted-foreground">Customer</div>
-            <div className="text-lg font-semibold">Northwind Logistics</div>
+            <div className="text-muted-foreground text-sm">Customer</div>
+            <div className="font-semibold text-lg">Northwind Logistics</div>
           </div>
           <Sheet>
             <SheetTrigger asChild>

@@ -62,7 +62,9 @@ function buildMenuHtml(formData: MenuFormData, menuStory?: string): string {
 
   for (const cat of CATEGORY_ORDER) {
     const catItems = grouped[cat];
-    if (!catItems || catItems.length === 0) continue;
+    if (!catItems || catItems.length === 0) {
+      continue;
+    }
     html += `<div class="category"><div class="category-title">${CATEGORY_LABELS[cat]}</div>`;
     for (const item of catItems) {
       const tags = item.dietaryFlags
@@ -94,7 +96,9 @@ export default function MenuExport({ formData, menuStory }: Props) {
   const handlePrint = () => {
     const html = buildMenuHtml(formData, menuStory);
     const w = window.open("", "_blank");
-    if (!w) return;
+    if (!w) {
+      return;
+    }
     w.document.write(html);
     w.document.close();
     setTimeout(() => w.print(), 300);
@@ -121,11 +125,15 @@ export default function MenuExport({ formData, menuStory }: Props) {
     let text = `${direction ? direction.label : "Custom"} Menu\n`;
     text += `${formData.guestCount} guests | ${formData.season} | ${(formData.serviceStyle || "").replace(/-/g, " ")}\n\n`;
 
-    if (menuStory) text += `${menuStory}\n\n`;
+    if (menuStory) {
+      text += `${menuStory}\n\n`;
+    }
 
     for (const cat of CATEGORY_ORDER) {
       const catItems = grouped[cat];
-      if (!catItems || catItems.length === 0) continue;
+      if (!catItems || catItems.length === 0) {
+        continue;
+      }
       text += `${(CATEGORY_LABELS[cat] || cat).toUpperCase()}\n`;
       for (const item of catItems) {
         const tags =
@@ -142,30 +150,27 @@ export default function MenuExport({ formData, menuStory }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
       <button
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-          bg-stone-800 text-white hover:bg-stone-700 transition-all shadow-sm"
+        className="flex items-center gap-2 rounded-lg bg-stone-800 px-4 py-2 font-medium text-sm text-white shadow-sm transition-all hover:bg-stone-700"
         onClick={handlePrint}
         type="button"
       >
-        <Printer className="w-4 h-4" />
+        <Printer className="h-4 w-4" />
         Print / PDF
       </button>
       <button
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-          border border-stone-200 text-stone-700 hover:bg-stone-50 transition-all"
+        className="flex items-center gap-2 rounded-lg border border-stone-200 px-4 py-2 font-medium text-sm text-stone-700 transition-all hover:bg-stone-50"
         onClick={handleHtmlExport}
         type="button"
       >
-        <FileText className="w-4 h-4" />
+        <FileText className="h-4 w-4" />
         Download HTML
       </button>
       <button
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-          border border-stone-200 text-stone-700 hover:bg-stone-50 transition-all"
+        className="flex items-center gap-2 rounded-lg border border-stone-200 px-4 py-2 font-medium text-sm text-stone-700 transition-all hover:bg-stone-50"
         onClick={handleEmailCopy}
         type="button"
       >
-        <Mail className="w-4 h-4" />
+        <Mail className="h-4 w-4" />
         Copy as Text
       </button>
     </div>

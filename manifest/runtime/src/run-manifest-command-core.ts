@@ -9,8 +9,8 @@
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type {
   ConstraintOutcome,
-  IREntity,
   IRCommand,
+  IREntity,
   OverrideRequest,
 } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
@@ -18,12 +18,16 @@ import {
   refreshParentContext,
   resolveParentContext,
 } from "./parent-context-resolver";
-export { refreshParentContext, resolveParentContext } from "./parent-context-resolver";
+
+export {
+  refreshParentContext,
+  resolveParentContext,
+} from "./parent-context-resolver";
 
 export interface ManifestUserContext {
   id: string;
-  tenantId: string;
   role: string;
+  tenantId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -40,9 +44,11 @@ function datetimeParamNames(
   entity: string,
   command: string
 ): Set<string> {
-  const cmd = (runtime as unknown as {
-    getCommand?: (name: string, entity?: string) => IRCommand | undefined;
-  }).getCommand?.(command, entity);
+  const cmd = (
+    runtime as unknown as {
+      getCommand?: (name: string, entity?: string) => IRCommand | undefined;
+    }
+  ).getCommand?.(command, entity);
   const names = new Set<string>();
   for (const p of cmd?.parameters ?? []) {
     if ((p as { type?: { name?: string } }).type?.name === "datetime") {
@@ -69,7 +75,9 @@ function coerceBodyDatetimes(
   dtNames: Set<string>
 ): void {
   for (const name of dtNames) {
-    if (!Object.hasOwn(body, name)) continue;
+    if (!Object.hasOwn(body, name)) {
+      continue;
+    }
     const val = body[name];
     if (val instanceof Date) {
       body[name] = val.getTime();
@@ -84,10 +92,9 @@ function coerceBodyDatetimes(
 }
 
 export interface RunManifestCommandCoreParams {
-  entity: string;
-  command: string;
   body: Record<string, unknown>;
-  user: ManifestUserContext;
+  command: string;
+  entity: string;
   instanceId?: string;
   /**
    * Constraint override requests forwarded to RuntimeEngine.runCommand.
@@ -95,6 +102,7 @@ export interface RunManifestCommandCoreParams {
    * request body; it is extracted before the body reaches the engine.
    */
   overrideRequests?: OverrideRequest[];
+  user: ManifestUserContext;
 }
 
 export interface RunManifestCommandCoreDeps {
@@ -114,12 +122,10 @@ export type RunManifestCommandFailureKind =
   | "runtime_error";
 
 export interface RunManifestCommandCoreSuccess {
-  ok: true;
-  entity: string;
   command: string;
-  result: unknown;
-  events?: EmittedEvent[];
   constraintOutcomes?: ConstraintOutcome[];
+  entity: string;
+  events?: EmittedEvent[];
   /**
    * True when the command was a no-op: the engine guard rejected it, but the
    * entity was already in the final state this command produces, so we return
@@ -127,6 +133,8 @@ export interface RunManifestCommandCoreSuccess {
    * emitted and no [manifest-issue] is logged for a no-op.
    */
   noop?: boolean;
+  ok: true;
+  result: unknown;
 }
 
 /**
@@ -178,7 +186,7 @@ async function tryGetInstance(
     getInstance?: (entityName: string, instanceId: string) => Promise<unknown>;
   };
   if (typeof withGetter.getInstance !== "function") {
-    return undefined;
+    return;
   }
   try {
     const instance = await withGetter.getInstance(entity, id);
@@ -186,21 +194,21 @@ async function tryGetInstance(
       ? (instance as Record<string, unknown>)
       : undefined;
   } catch {
-    return undefined;
+    return;
   }
 }
 
 export interface RunManifestCommandCoreFailure {
-  ok: false;
-  entity: string;
   command: string;
-  kind: RunManifestCommandFailureKind;
-  httpStatus: number;
-  message: string;
-  policyDenial?: unknown;
-  guardFailure?: unknown;
   constraintOutcomes?: ConstraintOutcome[];
+  entity: string;
   error?: unknown;
+  guardFailure?: unknown;
+  httpStatus: number;
+  kind: RunManifestCommandFailureKind;
+  message: string;
+  ok: false;
+  policyDenial?: unknown;
 }
 
 export type RunManifestCommandCoreResult =
@@ -236,7 +244,7 @@ function deriveInstanceIdFromBody(
   if (typeof selfRef === "string" && selfRef.length > 0) {
     return selfRef;
   }
-  return undefined;
+  return;
 }
 
 type IRPropertyWithDefault = {
@@ -311,7 +319,7 @@ function extractOverrideRequests(
   const raw = body.overrideRequests;
   if (!Array.isArray(raw) || raw.length === 0) {
     delete body.overrideRequests;
-    return undefined;
+    return;
   }
   delete body.overrideRequests;
   return raw as OverrideRequest[];
@@ -474,8 +482,7 @@ export async function runManifestCommandCore(
 
       const blockedConstraint = result.constraintOutcomes?.find(
         (outcome) =>
-          !outcome.passed &&
-          !outcome.overridden &&
+          !(outcome.passed || outcome.overridden) &&
           outcome.severity === "block"
       );
       if (blockedConstraint) {

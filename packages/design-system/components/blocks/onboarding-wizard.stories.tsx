@@ -90,9 +90,7 @@ export const WithoutProgress: Story = {
 };
 
 export const Inline: Story = {
-  render: () => {
-    return <InlineWizard steps={eventsOnboardingSteps} />;
-  },
+  render: () => <InlineWizard steps={eventsOnboardingSteps} />,
 };
 
 export const Minimal: Story = {

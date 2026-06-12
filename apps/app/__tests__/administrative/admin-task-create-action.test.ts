@@ -47,8 +47,8 @@ vi.mock("@repo/database", () => ({
 
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { createAdminTask } from "../../app/(authenticated)/administrative/kanban/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
@@ -178,9 +178,9 @@ describe("createAdminTask server action — governance + spec enforcement", () =
       kind: "guard_failed",
       message: "Title is required",
     });
-    await expect(
-      createAdminTask(form({ title: "Boom" }))
-    ).rejects.toThrow(/Title is required/);
+    await expect(createAdminTask(form({ title: "Boom" }))).rejects.toThrow(
+      /Title is required/
+    );
     expect(revalidate).not.toHaveBeenCalled();
   });
 });

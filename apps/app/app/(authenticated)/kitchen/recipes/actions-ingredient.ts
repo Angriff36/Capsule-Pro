@@ -10,14 +10,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireCurrentUser } from "../../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser } from "../../../lib/tenant";
 
 export interface IngredientActionResult {
-  success: boolean;
+  error?: string;
   ingredientId?: string;
   redirectUrl?: string;
-  error?: string;
+  success: boolean;
 }
 
 const parseList = (value: FormDataEntryValue | null): string[] =>
@@ -69,7 +69,10 @@ export const createIngredient = async (
   });
 
   if (!result.ok) {
-    return { success: false, error: result.message || "Failed to create ingredient." };
+    return {
+      success: false,
+      error: result.message || "Failed to create ingredient.",
+    };
   }
 
   const ingredientId = (result.result as { id?: string } | null)?.id;

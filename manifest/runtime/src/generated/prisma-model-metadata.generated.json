@@ -411,6 +411,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "verificationFailedAt",
+        "irName": "verificationFailedAt"
+      },
+      {
+        "name": "verificationFailureReason",
+        "irName": "verificationFailureReason"
       }
     ]
   },
@@ -597,6 +605,14 @@
       {
         "name": "import_id",
         "irName": "importId"
+      },
+      {
+        "name": "prepListId",
+        "irName": "prepListId"
+      },
+      {
+        "name": "stationId",
+        "irName": "stationId"
       }
     ]
   },
@@ -644,6 +660,10 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "status",
+        "irName": "status"
       }
     ]
   },
@@ -695,6 +715,14 @@
       {
         "name": "createdAt",
         "irName": "createdAt"
+      },
+      {
+        "name": "progressPct",
+        "irName": "progressPct"
+      },
+      {
+        "name": "recordedAt",
+        "irName": "recordedAt"
       }
     ]
   },
@@ -766,6 +794,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isActive",
+        "irName": "isActive"
       }
     ]
   },
@@ -1065,6 +1097,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "inMaintenance",
+        "irName": "inMaintenance"
+      },
+      {
+        "name": "maintenanceReason",
+        "irName": "maintenanceReason"
+      },
+      {
+        "name": "maintenanceStartAt",
+        "irName": "maintenanceStartAt"
+      },
+      {
+        "name": "currentTaskCount",
+        "irName": "currentTaskCount"
       }
     ]
   },
@@ -1670,6 +1718,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "rejectedAt",
+        "irName": "rejectedAt"
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy"
+      },
+      {
+        "name": "rejectionReason",
+        "irName": "rejectionReason"
       }
     ]
   },
@@ -2247,6 +2307,22 @@
       {
         "name": "correlation_id",
         "irName": "correlationId"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "priority",
+        "irName": "priority"
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt"
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo"
       }
     ]
   },
@@ -2293,6 +2369,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "uploadedBy",
+        "irName": "uploadedBy"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
       }
     ]
   },
@@ -2482,6 +2566,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "lineItemCount",
+        "irName": "lineItemCount"
       }
     ]
   },
@@ -2817,6 +2905,22 @@
       {
         "name": "totalCost",
         "irName": "totalCost"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
       }
     ]
   },
@@ -2955,6 +3059,34 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "inventoryItemId",
+        "irName": "inventoryItemId"
+      },
+      {
+        "name": "currentLotNumber",
+        "irName": "currentLotNumber"
+      },
+      {
+        "name": "currentLotReceivedAt",
+        "irName": "currentLotReceivedAt"
+      },
+      {
+        "name": "currentLotExpiresAt",
+        "irName": "currentLotExpiresAt"
+      },
+      {
+        "name": "isRecalled",
+        "irName": "isRecalled"
+      },
+      {
+        "name": "recallReason",
+        "irName": "recallReason"
+      },
+      {
+        "name": "recalledAt",
+        "irName": "recalledAt"
       }
     ]
   },
@@ -3168,6 +3300,34 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isSeasonal",
+        "irName": "isSeasonal"
+      },
+      {
+        "name": "seasonLabel",
+        "irName": "seasonLabel"
+      },
+      {
+        "name": "seasonStartMonth",
+        "irName": "seasonStartMonth"
+      },
+      {
+        "name": "seasonEndMonth",
+        "irName": "seasonEndMonth"
+      },
+      {
+        "name": "isEightySix",
+        "irName": "isEightySix"
+      },
+      {
+        "name": "eightySixReason",
+        "irName": "eightySixReason"
+      },
+      {
+        "name": "eightySixAt",
+        "irName": "eightySixAt"
       }
     ]
   },
@@ -3235,6 +3395,30 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isSeasonal",
+        "irName": "isSeasonal"
+      },
+      {
+        "name": "seasonLabel",
+        "irName": "seasonLabel"
+      },
+      {
+        "name": "seasonYear",
+        "irName": "seasonYear"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt"
+      },
+      {
+        "name": "archivedAt",
+        "irName": "archivedAt"
       }
     ]
   },
@@ -3285,6 +3469,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "priceOverride",
+        "irName": "priceOverride"
       }
     ]
   },
@@ -3403,6 +3591,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes"
       }
     ]
   },
@@ -3494,6 +3686,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "totalRows",
+        "irName": "totalRows"
+      },
+      {
+        "name": "importedRows",
+        "irName": "importedRows"
+      },
+      {
+        "name": "skippedRows",
+        "irName": "skippedRows"
       }
     ]
   },
@@ -4074,6 +4278,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "entityType",
+        "irName": "entityType"
+      },
+      {
+        "name": "entityId",
+        "irName": "entityId"
       }
     ]
   },
@@ -4136,6 +4348,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "positionX",
+        "irName": "positionX"
+      },
+      {
+        "name": "positionY",
+        "irName": "positionY"
       }
     ]
   },
@@ -4223,6 +4443,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "sortOrder",
+        "irName": "sortOrder"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
       }
     ]
   },
@@ -4374,6 +4602,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "delivered_at",
+        "irName": "deliveredAt"
+      },
+      {
+        "name": "prep_started_at",
+        "irName": "prepStartedAt"
       }
     ]
   },
@@ -4472,6 +4708,10 @@
       {
         "name": "fsa_traceable",
         "irName": "fsaTraceable"
+      },
+      {
+        "name": "quantityReserved",
+        "irName": "quantityReserved"
       }
     ]
   },
@@ -4551,6 +4791,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "reversedAt",
+        "irName": "reversedAt"
+      },
+      {
+        "name": "reversedBy",
+        "irName": "reversedBy"
+      },
+      {
+        "name": "reverseOfTransactionId",
+        "irName": "reverseOfTransactionId"
+      },
+      {
+        "name": "isReversed",
+        "irName": "isReversed"
       }
     ]
   },
@@ -4658,6 +4914,42 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isActive",
+        "irName": "isActive"
+      },
+      {
+        "name": "openPOCount",
+        "irName": "openPOCount"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt"
+      },
+      {
+        "name": "suspendedReason",
+        "irName": "suspendedReason"
+      },
+      {
+        "name": "blacklistedAt",
+        "irName": "blacklistedAt"
+      },
+      {
+        "name": "blacklistedReason",
+        "irName": "blacklistedReason"
+      },
+      {
+        "name": "qualificationStatus",
+        "irName": "qualificationStatus"
       }
     ]
   },
@@ -4783,6 +5075,26 @@
       {
         "name": "deleted_at",
         "irName": "deletedAt"
+      },
+      {
+        "name": "severity",
+        "irName": "severity"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "acknowledgedAt",
+        "irName": "acknowledgedAt"
+      },
+      {
+        "name": "acknowledgedBy",
+        "irName": "acknowledgedBy"
+      },
+      {
+        "name": "resolvedBy",
+        "irName": "resolvedBy"
       }
     ]
   },
@@ -5022,6 +5334,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
       }
     ]
   },
@@ -5331,6 +5647,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "rejectedAt",
+        "irName": "rejectedAt"
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy"
+      },
+      {
+        "name": "rejectionReason",
+        "irName": "rejectionReason"
       }
     ]
   },
@@ -5489,6 +5817,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "itemCount",
+        "irName": "itemCount"
       }
     ]
   },
@@ -5694,6 +6026,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "itemCount",
+        "irName": "itemCount"
       }
     ]
   },
@@ -6027,6 +6363,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "ratedAt",
+        "irName": "ratedAt"
       }
     ]
   },
@@ -6180,6 +6520,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "triggeredAt",
+        "irName": "triggeredAt"
       }
     ]
   },
@@ -6431,6 +6775,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isShared",
+        "irName": "isShared"
       }
     ]
   },
@@ -6810,6 +7158,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
       }
     ]
   },
@@ -6881,6 +7241,22 @@
       {
         "name": "inherited_context",
         "irName": "inheritedContext"
+      },
+      {
+        "name": "swapOfferedTo",
+        "irName": "swapOfferedTo"
+      },
+      {
+        "name": "swapStatus",
+        "irName": "swapStatus"
+      },
+      {
+        "name": "swapOfferedAt",
+        "irName": "swapOfferedAt"
+      },
+      {
+        "name": "swapAcceptedAt",
+        "irName": "swapAcceptedAt"
       }
     ]
   },
@@ -7138,6 +7514,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
       }
     ]
   },
@@ -7395,6 +7779,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt"
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo"
       }
     ]
   },
@@ -8970,6 +9362,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "isSuspended",
+        "irName": "isSuspended"
+      },
+      {
+        "name": "suspendReason",
+        "irName": "suspendReason"
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt"
+      },
+      {
+        "name": "reinstatedAt",
+        "irName": "reinstatedAt"
       }
     ]
   },
@@ -9024,6 +9432,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "status",
+        "irName": "status"
       }
     ]
   },
@@ -9249,6 +9661,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "totalDeductions",
+        "irName": "totalDeductions"
+      },
+      {
+        "name": "hoursWorked",
+        "irName": "hoursWorked"
       }
     ]
   },
@@ -9361,6 +9781,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy"
       }
     ]
   },
@@ -9431,6 +9855,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
       }
     ]
   },
@@ -9794,6 +10222,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "distributedAmount",
+        "irName": "distributedAmount"
+      },
+      {
+        "name": "distributedAt",
+        "irName": "distributedAt"
+      },
+      {
+        "name": "distributedBy",
+        "irName": "distributedBy"
       }
     ]
   },
@@ -9903,6 +10347,42 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent"
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts"
+      },
+      {
+        "name": "requiredRole",
+        "irName": "requiredRole"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt"
+      },
+      {
+        "name": "archivedAt",
+        "irName": "archivedAt"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
       }
     ]
   },
@@ -9961,6 +10441,74 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "moduleCode",
+        "irName": "moduleCode"
+      },
+      {
+        "name": "moduleTitle",
+        "irName": "moduleTitle"
+      },
+      {
+        "name": "staffRole",
+        "irName": "staffRole"
+      },
+      {
+        "name": "dueDateReviewNeeded",
+        "irName": "dueDateReviewNeeded"
+      },
+      {
+        "name": "firstShiftAt",
+        "irName": "firstShiftAt"
+      },
+      {
+        "name": "startedAt",
+        "irName": "startedAt"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
+      },
+      {
+        "name": "waivedAt",
+        "irName": "waivedAt"
+      },
+      {
+        "name": "waiverReason",
+        "irName": "waiverReason"
+      },
+      {
+        "name": "waiverApprovedBy",
+        "irName": "waiverApprovedBy"
+      },
+      {
+        "name": "attemptCount",
+        "irName": "attemptCount"
+      },
+      {
+        "name": "lastAttemptId",
+        "irName": "lastAttemptId"
+      },
+      {
+        "name": "lastScorePercent",
+        "irName": "lastScorePercent"
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent"
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts"
+      },
+      {
+        "name": "managerReviewRequired",
+        "irName": "managerReviewRequired"
+      },
+      {
+        "name": "reminderSentAt",
+        "irName": "reminderSentAt"
       }
     ]
   },
@@ -10093,6 +10641,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "balanceSnapshot",
+        "irName": "balanceSnapshot"
+      },
+      {
+        "name": "balanceUnit",
+        "irName": "balanceUnit"
       }
     ]
   },
@@ -10253,6 +10809,22 @@
       {
         "name": "deleted_at",
         "irName": "deletedAt"
+      },
+      {
+        "name": "severity",
+        "irName": "severity"
+      },
+      {
+        "name": "escalated_to",
+        "irName": "escalatedTo"
+      },
+      {
+        "name": "escalation_reason",
+        "irName": "escalationReason"
+      },
+      {
+        "name": "escalated_at",
+        "irName": "escalatedAt"
       }
     ]
   },
@@ -10610,6 +11182,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "status",
+        "irName": "status"
       }
     ]
   },
@@ -10820,6 +11404,14 @@
       {
         "name": "versionAt",
         "irName": "versionAt"
+      },
+      {
+        "name": "declineReason",
+        "irName": "declineReason"
+      },
+      {
+        "name": "checkedInAt",
+        "irName": "checkedInAt"
       }
     ]
   },
@@ -10890,6 +11482,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "sentAt",
+        "irName": "sentAt"
+      },
+      {
+        "name": "viewedAt",
+        "irName": "viewedAt"
+      },
+      {
+        "name": "signedAt",
+        "irName": "signedAt"
+      },
+      {
+        "name": "canceledBy",
+        "irName": "canceledBy"
       }
     ]
   },
@@ -10944,6 +11552,26 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "signerRole",
+        "irName": "signerRole"
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt"
+      },
+      {
+        "name": "invalidatedAt",
+        "irName": "invalidatedAt"
+      },
+      {
+        "name": "invalidationReason",
+        "irName": "invalidationReason"
+      },
+      {
+        "name": "isValid",
+        "irName": "isValid"
       }
     ]
   },
@@ -10994,6 +11622,34 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "publishedBy",
+        "irName": "publishedBy"
+      },
+      {
+        "name": "supersededBy",
+        "irName": "supersededBy"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt"
+      },
+      {
+        "name": "supersededAt",
+        "irName": "supersededAt"
       }
     ]
   },
@@ -11245,6 +11901,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "overdueSince",
+        "irName": "overdueSince"
+      },
+      {
+        "name": "reminderCount",
+        "irName": "reminderCount"
+      },
+      {
+        "name": "lastReminderAt",
+        "irName": "lastReminderAt"
       }
     ]
   },
@@ -11299,6 +11967,62 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "externalMethodId",
+        "irName": "externalMethodId"
+      },
+      {
+        "name": "cardExpiryMonth",
+        "irName": "cardExpiryMonth"
+      },
+      {
+        "name": "cardExpiryYear",
+        "irName": "cardExpiryYear"
+      },
+      {
+        "name": "cardHolderName",
+        "irName": "cardHolderName"
+      },
+      {
+        "name": "bankAccountLastFour",
+        "irName": "bankAccountLastFour"
+      },
+      {
+        "name": "bankAccountType",
+        "irName": "bankAccountType"
+      },
+      {
+        "name": "bankRoutingNumber",
+        "irName": "bankRoutingNumber"
+      },
+      {
+        "name": "walletProvider",
+        "irName": "walletProvider"
+      },
+      {
+        "name": "walletEmail",
+        "irName": "walletEmail"
+      },
+      {
+        "name": "fraudFlagged",
+        "irName": "fraudFlagged"
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt"
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod"
+      },
+      {
+        "name": "nickname",
+        "irName": "nickname"
+      },
+      {
+        "name": "expiresAt",
+        "irName": "expiresAt"
       }
     ]
   },
@@ -11389,6 +12113,30 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "chargebackAt",
+        "irName": "chargebackAt"
+      },
+      {
+        "name": "fraudStatus",
+        "irName": "fraudStatus"
+      },
+      {
+        "name": "fraudScore",
+        "irName": "fraudScore"
+      },
+      {
+        "name": "reviewedAt",
+        "irName": "reviewedAt"
+      },
+      {
+        "name": "reviewedBy",
+        "irName": "reviewedBy"
+      },
+      {
+        "name": "description",
+        "irName": "description"
       }
     ]
   },
@@ -11557,6 +12305,46 @@
       {
         "name": "clientTenantId",
         "irName": "clientTenantId"
+      },
+      {
+        "name": "assignedAt",
+        "irName": "assignedAt"
+      },
+      {
+        "name": "paymentPlanId",
+        "irName": "paymentPlanId"
+      },
+      {
+        "name": "nextPaymentDue",
+        "irName": "nextPaymentDue"
+      },
+      {
+        "name": "disputeReason",
+        "irName": "disputeReason"
+      },
+      {
+        "name": "disputeResolvedAt",
+        "irName": "disputeResolvedAt"
+      },
+      {
+        "name": "legalCaseNumber",
+        "irName": "legalCaseNumber"
+      },
+      {
+        "name": "legalFirm",
+        "irName": "legalFirm"
+      },
+      {
+        "name": "lastActivityAt",
+        "irName": "lastActivityAt"
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt"
+      },
+      {
+        "name": "closedAt",
+        "irName": "closedAt"
       }
     ]
   },
@@ -11599,6 +12387,38 @@
       {
         "name": "createdAt",
         "irName": "createdAt"
+      },
+      {
+        "name": "direction",
+        "irName": "direction"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "nextActionDate",
+        "irName": "nextActionDate"
+      },
+      {
+        "name": "promiseAmount",
+        "irName": "promiseAmount"
+      },
+      {
+        "name": "promiseDate",
+        "irName": "promiseDate"
+      },
+      {
+        "name": "scheduledFor",
+        "irName": "scheduledFor"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
       }
     ]
   },
@@ -11653,6 +12473,22 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "installmentAmount",
+        "irName": "installmentAmount"
+      },
+      {
+        "name": "completedInstallments",
+        "irName": "completedInstallments"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
+      },
+      {
+        "name": "defaultedAt",
+        "irName": "defaultedAt"
       }
     ]
   },
@@ -13908,6 +14744,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "nextRunAt",
+        "irName": "nextRunAt"
+      },
+      {
+        "name": "lastRunAt",
+        "irName": "lastRunAt"
       }
     ]
   },
@@ -13971,6 +14815,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "viewCount",
+        "irName": "viewCount"
       }
     ]
   },
@@ -14054,6 +14902,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "discrepancyNotes",
+        "irName": "discrepancyNotes"
+      },
+      {
+        "name": "hasDiscrepancy",
+        "irName": "hasDiscrepancy"
       }
     ]
   },
@@ -14100,6 +14956,10 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "unitId",
+        "irName": "unitId"
       }
     ]
   },
@@ -14478,6 +15338,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo"
+      },
+      {
+        "name": "escalationReason",
+        "irName": "escalationReason"
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt"
       }
     ]
   },
@@ -14615,6 +15487,10 @@
       {
         "name": "createdAt",
         "irName": "createdAt"
+      },
+      {
+        "name": "withinRange",
+        "irName": "withinRange"
       }
     ]
   },
@@ -14705,6 +15581,14 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "ruleId",
+        "irName": "ruleId"
+      },
+      {
+        "name": "value",
+        "irName": "value"
       }
     ]
   },
@@ -15008,6 +15892,22 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "facilityId",
+        "irName": "facilityId"
+      },
+      {
+        "name": "currentValue",
+        "irName": "currentValue"
+      },
+      {
+        "name": "lastMaintenanceAt",
+        "irName": "lastMaintenanceAt"
+      },
+      {
+        "name": "nextMaintenanceAt",
+        "irName": "nextMaintenanceAt"
       }
     ]
   },
@@ -15123,6 +16023,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "estimatedCost",
+        "irName": "estimatedCost"
+      },
+      {
+        "name": "partsUsed",
+        "irName": "partsUsed"
       }
     ]
   },
@@ -15305,6 +16213,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "completedStops",
+        "irName": "completedStops"
+      },
+      {
+        "name": "delayMinutes",
+        "irName": "delayMinutes"
       }
     ]
   },
@@ -15985,6 +16901,18 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "lockedAt",
+        "irName": "lockedAt"
       }
     ]
   },
@@ -16121,6 +17049,10 @@
       {
         "name": "createdBy",
         "irName": "createdBy"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
       }
     ]
   },
@@ -16183,6 +17115,10 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "seatedAt",
+        "irName": "seatedAt"
       }
     ]
   },
@@ -16249,6 +17185,10 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
       }
     ]
   },
@@ -16393,6 +17333,14 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "departedAt",
+        "irName": "departedAt"
+      },
+      {
+        "name": "failureReason",
+        "irName": "failureReason"
       }
     ]
   },
@@ -16563,6 +17511,14 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "acknowledgementNotes",
+        "irName": "acknowledgementNotes"
+      },
+      {
+        "name": "acknowledgedAt",
+        "irName": "acknowledgedAt"
       }
     ]
   },
@@ -16649,6 +17605,34 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt"
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy"
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt"
+      },
+      {
+        "name": "suspendedReason",
+        "irName": "suspendedReason"
+      },
+      {
+        "name": "blacklistedAt",
+        "irName": "blacklistedAt"
+      },
+      {
+        "name": "blacklistedReason",
+        "irName": "blacklistedReason"
+      },
+      {
+        "name": "lastContactAddedAt",
+        "irName": "lastContactAddedAt"
       }
     ]
   },
@@ -16691,6 +17675,10 @@
       {
         "name": "createdAt",
         "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
       }
     ]
   },
@@ -16870,6 +17858,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "totalRows",
+        "irName": "totalRows"
+      },
+      {
+        "name": "importedRows",
+        "irName": "importedRows"
+      },
+      {
+        "name": "skippedRows",
+        "irName": "skippedRows"
       }
     ]
   },
@@ -16952,6 +17952,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "verificationFailedAt",
+        "irName": "verificationFailedAt"
+      },
+      {
+        "name": "verificationFailureReason",
+        "irName": "verificationFailureReason"
       }
     ]
   },
@@ -17051,6 +18059,14 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "completedStops",
+        "irName": "completedStops"
+      },
+      {
+        "name": "delayMinutes",
+        "irName": "delayMinutes"
       }
     ]
   },
@@ -17258,6 +18274,10 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes"
       }
     ]
   },
@@ -17561,6 +18581,18 @@
       {
         "name": "deletedAt",
         "irName": "deletedAt"
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo"
+      },
+      {
+        "name": "escalationReason",
+        "irName": "escalationReason"
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt"
       }
     ]
   },

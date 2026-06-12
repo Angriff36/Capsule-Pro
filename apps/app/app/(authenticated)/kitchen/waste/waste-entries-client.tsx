@@ -30,26 +30,26 @@ import { wasteEntryCreate } from "@/app/lib/manifest-client.generated";
 const { logger, captureException } = Sentry;
 
 interface InventoryItem {
-  id: string;
-  name: string;
-  item_number: string;
-  unit_cost?: number;
-  quantity_on_hand?: number;
   category?: string;
+  id: string;
+  item_number: string;
+  name: string;
+  quantity_on_hand?: number;
+  unit_cost?: number;
 }
 
 interface WasteReason {
-  id: number;
   code: string;
-  name: string;
-  description: string | null;
   colorHex: string | null;
+  description: string | null;
+  id: number;
+  name: string;
   sortOrder: number;
 }
 
 interface Unit {
-  id: number;
   code: string;
+  id: number;
   name: string;
   name_plural: string;
   unit_system: string;
@@ -201,8 +201,12 @@ export function WasteEntriesClient() {
     try {
       const result = await wasteEntryCreate({
         inventoryItemId: formData.inventoryItemId,
-        quantity: formData.quantity ? Number.parseFloat(formData.quantity) : undefined,
-        reasonId: formData.reasonId ? Number.parseInt(formData.reasonId) : undefined,
+        quantity: formData.quantity
+          ? Number.parseFloat(formData.quantity)
+          : undefined,
+        reasonId: formData.reasonId
+          ? Number.parseInt(formData.reasonId)
+          : undefined,
         unitId: formData.unitId ? Number.parseInt(formData.unitId) : undefined,
         notes: formData.notes || undefined,
       });
@@ -232,7 +236,7 @@ export function WasteEntriesClient() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading form...</div>;
+    return <div className="py-8 text-center">Loading form...</div>;
   }
 
   return (
@@ -242,7 +246,7 @@ export function WasteEntriesClient() {
         <div className="space-y-2">
           <Label htmlFor="itemSearch">Item *</Label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-4 w-4 text-muted-foreground" />
             </div>
             <Input
@@ -262,10 +266,10 @@ export function WasteEntriesClient() {
 
           {/* Search Results Dropdown */}
           {filteredItems.length > 0 && (
-            <div className="border rounded-md bg-background max-h-60 overflow-y-auto">
+            <div className="max-h-60 overflow-y-auto rounded-md border bg-background">
               {filteredItems.map((item) => (
                 <button
-                  className="w-full text-left px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0"
+                  className="w-full border-b px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-muted"
                   key={item.id}
                   onClick={() => handleItemSelect(item)}
                   type="button"
@@ -275,12 +279,12 @@ export function WasteEntriesClient() {
                       <div className="font-medium text-sm">
                         {item.item_number} - {item.name}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {item.category} • Stock: {item.quantity_on_hand ?? 0}
                       </div>
                     </div>
                     {item.unit_cost !== undefined && item.unit_cost > 0 && (
-                      <div className="text-xs font-medium text-green-600">
+                      <div className="font-medium text-green-600 text-xs">
                         ${item.unit_cost.toFixed(2)}/unit
                       </div>
                     )}
@@ -292,20 +296,20 @@ export function WasteEntriesClient() {
 
           {/* Selected Item Info */}
           {selectedItem && (
-            <div className="mt-2 p-3 bg-muted rounded-md border">
+            <div className="mt-2 rounded-md border bg-muted p-3">
               <div className="flex items-start gap-3">
-                <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="flex-1 min-w-0">
+                <Package className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm">
                     {selectedItem.item_number} - {selectedItem.name}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <div className="mt-1 text-muted-foreground text-xs">
                     Category: {selectedItem.category} • Stock on hand:{" "}
                     {selectedItem.quantity_on_hand ?? 0}
                   </div>
                   {selectedItem.unit_cost !== undefined &&
                     selectedItem.unit_cost > 0 && (
-                      <div className="text-xs text-green-600 mt-1">
+                      <div className="mt-1 text-green-600 text-xs">
                         Unit cost: ${selectedItem.unit_cost.toFixed(2)}
                       </div>
                     )}
@@ -346,7 +350,7 @@ export function WasteEntriesClient() {
           />
           {/* Estimated Cost Display */}
           {estimatedCost !== null && estimatedCost > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <DollarSign className="h-4 w-4" />
               <span>
                 Estimated cost:{" "}
@@ -455,7 +459,7 @@ export function WasteEntriesClient() {
               Please review the waste entry details before confirming:
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-3">
+          <div className="space-y-3 py-4">
             {selectedItem && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Item:</span>
@@ -492,7 +496,7 @@ export function WasteEntriesClient() {
               </div>
             )}
             {estimatedCost !== null && estimatedCost > 0 && (
-              <div className="flex justify-between text-sm border-t pt-3">
+              <div className="flex justify-between border-t pt-3 text-sm">
                 <span className="text-muted-foreground">Estimated Cost:</span>
                 <span className="font-bold text-red-600">
                   ${estimatedCost.toFixed(2)}
@@ -500,7 +504,7 @@ export function WasteEntriesClient() {
               </div>
             )}
             {formData.notes && (
-              <div className="text-sm border-t pt-3">
+              <div className="border-t pt-3 text-sm">
                 <span className="text-muted-foreground">Notes: </span>
                 <span>{formData.notes}</span>
               </div>

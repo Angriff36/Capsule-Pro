@@ -51,7 +51,6 @@ interface DishRow {
 }
 
 interface MenuIntelligenceSectionProps {
-  dishRows: DishRow[];
   aggregatedIngredients: Array<{
     ingredientId: string;
     ingredientName: string;
@@ -60,7 +59,17 @@ interface MenuIntelligenceSectionProps {
     isOptional: boolean;
     sources: string[];
   }>;
+  availableDishes: Array<{
+    id: string;
+    name: string;
+    category: string | null;
+    recipe_name: string | null;
+  }>;
+  dishRows: DishRow[];
+  eventId: string;
   inventoryByIngredient: Map<string, InventoryCoverageItem>;
+  isCreatingDish?: boolean;
+  isLoadingDishes: boolean;
   menuDishRows: Array<{
     link_id: string;
     dish_id: string;
@@ -71,47 +80,38 @@ interface MenuIntelligenceSectionProps {
     quantity_servings: number;
     dietary_tags: string[];
   }>;
-  availableDishes: Array<{
-    id: string;
-    name: string;
-    category: string | null;
-    recipe_name: string | null;
-  }>;
-  isLoadingDishes: boolean;
-  showAddDishDialog: boolean;
-  selectedDishIdForAdd: string;
-  selectedCourse: string;
-  // Handlers
-  onOpenRecipeDrawer: (
-    recipeId: string,
-    dishId: string,
-    mode: DrawerMode
-  ) => void;
   onAddDish: () => void;
-  onRemoveDish: (linkId: string) => void;
-  onOpenVariantDialog: (linkId: string, name: string) => void;
-  onShowAddDialogChange: (open: boolean) => void;
-  onSelectedDishIdChange: (id: string) => void;
-  onSelectedCourseChange: (course: string) => void;
-  onOpenGenerateModal?: () => void;
-  // Inline dish creation
-  recipes?: Array<{
-    id: string;
-    name: string;
-    category: string | null;
-  }>;
+  onAddSuggestedDish?: (suggestionName: string) => void;
   onCreateDishInline?: (
     name: string,
     recipeId: string,
     category?: string,
     course?: string
   ) => Promise<void>;
-  isCreatingDish?: boolean;
+  onOpenGenerateModal?: () => void;
+  // Handlers
+  onOpenRecipeDrawer: (
+    recipeId: string,
+    dishId: string,
+    mode: DrawerMode
+  ) => void;
+  onOpenVariantDialog: (linkId: string, name: string) => void;
+  onRemoveDish: (linkId: string) => void;
+  onSelectedCourseChange: (course: string) => void;
+  onSelectedDishIdChange: (id: string) => void;
+  onShowAddDialogChange: (open: boolean) => void;
+  // Inline dish creation
+  recipes?: Array<{
+    id: string;
+    name: string;
+    category: string | null;
+  }>;
+  selectedCourse: string;
+  selectedDishIdForAdd: string;
+  showAddDishDialog: boolean;
+  templateName?: string | null;
   // Template suggestions
   templateSuggestions?: Array<{ name: string; added: boolean }>;
-  templateName?: string | null;
-  eventId: string;
-  onAddSuggestedDish?: (suggestionName: string) => void;
 }
 
 export function MenuIntelligenceSection({
@@ -180,7 +180,7 @@ export function MenuIntelligenceSection({
   return (
     <section id="recipes">
       <div className="mb-4 flex items-center gap-2">
-        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+        <p className="text-muted-foreground text-xs uppercase tracking-[0.25em]">
           Menu Intelligence
         </p>
       </div>
@@ -232,11 +232,11 @@ export function MenuIntelligenceSection({
             </CardHeader>
             <CardContent className="space-y-4">
               {dishRows.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
-                  <p className="text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-border/70 border-dashed p-8 text-center">
+                  <p className="text-muted-foreground text-sm">
                     No dishes linked yet.
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-muted-foreground text-xs">
                     Link dishes from the Dishes tab first.
                   </p>
                 </div>
@@ -249,11 +249,11 @@ export function MenuIntelligenceSection({
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                           {row.dish.course ?? "Not specified"}
                         </p>
-                        <p className="text-lg font-semibold">{row.dish.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-semibold text-lg">{row.dish.name}</p>
+                        <p className="text-muted-foreground text-xs">
                           {row.dish.recipeName ?? "Recipe not linked"}
                         </p>
                       </div>
@@ -312,7 +312,7 @@ export function MenuIntelligenceSection({
                                 </div>
                               </div>
                             ) : (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground text-sm">
                                 No recipe linked yet.
                               </p>
                             )}
@@ -352,7 +352,7 @@ export function MenuIntelligenceSection({
                         </Button>
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
                       <Badge
                         className="border-border/70 bg-card/70"
                         variant="outline"
@@ -387,7 +387,7 @@ export function MenuIntelligenceSection({
                       ))}
                     </div>
                     {row.recipe && (
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
+                      <div className="mt-3 flex flex-wrap items-center gap-3 text-muted-foreground text-xs opacity-0 transition group-hover:opacity-100">
                         <span>
                           Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
                           {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
@@ -420,11 +420,11 @@ export function MenuIntelligenceSection({
             </CardHeader>
             <CardContent className="space-y-3">
               {aggregatedIngredients.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
-                  <p className="text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-border/70 border-dashed p-8 text-center">
+                  <p className="text-muted-foreground text-sm">
                     No ingredients yet.
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-muted-foreground text-xs">
                     Link recipes to see ingredient coverage.
                   </p>
                 </div>
@@ -474,10 +474,10 @@ export function MenuIntelligenceSection({
                             <p className="font-semibold">
                               {ingredient.ingredientName}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               Required: {requiredLabel}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               On hand: {onHandLabel}
                             </p>
                           </div>

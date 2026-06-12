@@ -31,7 +31,7 @@ function MetricCardSkeleton() {
     <Card>
       <CardHeader>
         <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-7 w-32 mt-2" />
+        <Skeleton className="mt-2 h-7 w-32" />
       </CardHeader>
       <CardContent>
         <Skeleton className="h-3 w-40" />
@@ -45,7 +45,7 @@ function MetricCardSkeleton() {
  */
 function TableRowSkeleton({ columns = 5 }: { columns?: number }) {
   return (
-    <div className="flex gap-4 border-b py-3 px-4">
+    <div className="flex gap-4 border-b px-4 py-3">
       {Array.from({ length: columns }).map((_, i) => (
         <Skeleton
           className="h-4 flex-1"
@@ -70,7 +70,7 @@ export function TableSkeleton({
   return (
     <Card>
       <CardContent className="p-0">
-        <div className="border-b py-3 px-4 bg-muted/30">
+        <div className="border-b bg-muted/30 px-4 py-3">
           <Skeleton className="h-4 w-24" />
         </div>
         {Array.from({ length: rows }).map((_, i) => (
@@ -143,7 +143,7 @@ export function FormSkeleton() {
       <Card>
         <CardHeader>
           <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-64 mt-1" />
+          <Skeleton className="mt-1 h-4 w-64" />
         </CardHeader>
         <CardContent className="space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -183,7 +183,7 @@ export function DetailsSkeleton() {
         </CardHeader>
       </Card>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>
               <Skeleton className="h-5 w-32" />

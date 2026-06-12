@@ -38,7 +38,7 @@
  *   at all — so we never make availability worse by adding it.
  */
 
-import { Prisma, database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 
 /** Default TTL for cached HTTP responses: 24 hours (matches Stripe). */
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
@@ -66,8 +66,8 @@ export class IdempotencyKeyError extends Error {
 
 /** A previously-served HTTP response, replayable on key reuse. */
 export interface CachedHttpResponse {
-  status: number;
   body: unknown;
+  status: number;
 }
 
 /**
@@ -84,7 +84,7 @@ export function extractIdempotencyKey(request: Request): string | undefined {
     request.headers.get("Idempotency-Key") ??
     request.headers.get("X-Idempotency-Key");
   if (raw === null) {
-    return undefined;
+    return;
   }
   const key = raw.trim();
   if (key.length === 0) {

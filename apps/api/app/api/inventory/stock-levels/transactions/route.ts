@@ -19,8 +19,8 @@ import type {
 import { TRANSACTION_TYPES } from "../types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

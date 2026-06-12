@@ -17,6 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -44,45 +52,37 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  listInventoryTransfers,
   inventoryTransferApprove,
   inventoryTransferCancel,
   inventoryTransferCreate,
   inventoryTransferReceive,
   inventoryTransferShip,
+  listInventoryTransfers,
 } from "@/app/lib/manifest-client.generated";
 
 interface TransferItem {
   id: string;
   itemId: string;
+  notes?: string;
   quantity: string;
   receivedQuantity?: string;
-  notes?: string;
 }
 
 interface Transfer {
-  id: string;
-  transferNumber: string;
-  fromLocationId: string;
-  toLocationId: string;
-  status: string;
-  requestedAt: string;
   approvedAt?: string;
-  shippedAt?: string;
-  receivedAt?: string;
-  notes?: string;
+  fromLocationId: string;
+  id: string;
   items: TransferItem[];
+  notes?: string;
+  receivedAt?: string;
+  requestedAt: string;
+  shippedAt?: string;
+  status: string;
+  toLocationId: string;
+  transferNumber: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -121,7 +121,9 @@ export function InventoryTransfersClient() {
       if (statusFilter !== "all") {
         query.status = statusFilter;
       }
-      const result = await listInventoryTransfers(Object.keys(query).length > 0 ? query : undefined);
+      const result = await listInventoryTransfers(
+        Object.keys(query).length > 0 ? query : undefined
+      );
       setTransfers(result.data as unknown as Transfer[]);
     } catch (error) {
       console.error("Failed to fetch transfers:", error);
@@ -136,7 +138,9 @@ export function InventoryTransfersClient() {
         fromLocationId: fromLocation,
         toLocationId: toLocation,
         notes,
-        items: JSON.stringify(transferItems.filter((i) => i.itemId && i.quantity)),
+        items: JSON.stringify(
+          transferItems.filter((i) => i.itemId && i.quantity)
+        ),
       });
 
       toast.success("Transfer created successfully");
@@ -196,10 +200,10 @@ export function InventoryTransfersClient() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto space-y-6 py-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Inventory Transfers
           </h1>
           <p className="text-muted-foreground">
@@ -296,7 +300,7 @@ export function InventoryTransfersClient() {
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <CardTitle>All Transfers</CardTitle>
             <Select onValueChange={setStatusFilter} value={statusFilter}>
               <SelectTrigger className="w-40">
@@ -325,14 +329,14 @@ export function InventoryTransfersClient() {
                   <ArrowRightLeft />
                 </EmptyMedia>
                 <EmptyTitle>
-                  {statusFilter !== "all"
-                    ? "No matching transfers"
-                    : "No transfers yet"}
+                  {statusFilter === "all"
+                    ? "No transfers yet"
+                    : "No matching transfers"}
                 </EmptyTitle>
                 <EmptyDescription>
-                  {statusFilter !== "all"
-                    ? "No transfers match the selected status filter. Try a different filter."
-                    : "Create your first inventory transfer to move stock between locations."}
+                  {statusFilter === "all"
+                    ? "Create your first inventory transfer to move stock between locations."
+                    : "No transfers match the selected status filter. Try a different filter."}
                 </EmptyDescription>
               </EmptyHeader>
               {statusFilter === "all" && (
@@ -363,10 +367,10 @@ export function InventoryTransfersClient() {
                     <TableCell className="font-medium">
                       {transfer.transferNumber}
                     </TableCell>
-                    <TableCell className="truncate max-w-32">
+                    <TableCell className="max-w-32 truncate">
                       {transfer.fromLocationId.slice(0, 8)}...
                     </TableCell>
-                    <TableCell className="truncate max-w-32">
+                    <TableCell className="max-w-32 truncate">
                       {transfer.toLocationId.slice(0, 8)}...
                     </TableCell>
                     <TableCell>

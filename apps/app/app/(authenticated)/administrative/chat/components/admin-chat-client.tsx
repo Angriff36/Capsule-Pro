@@ -48,44 +48,44 @@ import {
 } from "@/app/lib/use-realtime-channel";
 
 interface AdminChatMessage {
-  id: string;
   authorId: string;
   authorName: string;
+  fromMe: boolean;
+  id: string;
   text: string;
   timestamp: number;
-  fromMe: boolean;
 }
 
 interface ThreadParticipantSummary {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
   avatarUrl: string | null;
+  email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
 }
 
 interface ThreadMessageSummary {
-  id: string;
-  text: string;
   authorName: string;
   createdAt: Date;
+  id: string;
+  text: string;
 }
 
 interface ThreadSummary {
-  id: string;
-  type: "team" | "direct";
-  title: string;
-  lastMessage: ThreadMessageSummary | null;
-  lastMessageAt: Date | null;
   archivedAt: Date | null;
   clearedAt: Date | null;
+  id: string;
+  lastMessage: ThreadMessageSummary | null;
+  lastMessageAt: Date | null;
   participant: ThreadParticipantSummary | null;
+  title: string;
+  type: "team" | "direct";
 }
 
 interface ApiThreadSummary {
+  archivedAt: string | null;
+  clearedAt: string | null;
   id: string;
-  type: "team" | "direct";
-  title: string;
   lastMessage: {
     id: string;
     text: string;
@@ -93,8 +93,6 @@ interface ApiThreadSummary {
     createdAt: string;
   } | null;
   lastMessageAt: string | null;
-  archivedAt: string | null;
-  clearedAt: string | null;
   participant: {
     id: string;
     firstName: string;
@@ -102,49 +100,51 @@ interface ApiThreadSummary {
     email: string;
     avatarUrl: string | null;
   } | null;
+  title: string;
+  type: "team" | "direct";
 }
 
 interface ApiThreadResponse {
-  threads: ApiThreadSummary[];
   teamThreadId?: string | null;
+  threads: ApiThreadSummary[];
 }
 
 interface ApiMessage {
-  id: string;
-  text: string;
   authorId: string;
   authorName: string;
   createdAt: string;
+  id: string;
+  text: string;
 }
 
 interface EmployeeApiRecord {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string;
   avatar_url: string | null;
+  email: string;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
 }
 
 interface EmployeeOption {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
   avatarUrl: string | null;
+  email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
 }
 
 interface RealtimePayload {
-  id?: string;
-  threadId?: string;
-  text?: string;
   authorId?: string;
   authorName?: string;
   createdAt?: string;
+  id?: string;
+  text?: string;
+  threadId?: string;
 }
 
 interface AdministrativeChatClientProps {
-  tenantId: string;
   employeeId: string;
+  tenantId: string;
 }
 
 const messageName = "admin.chat.message";
@@ -182,9 +182,7 @@ const formatDisplayName = (employee: {
   firstName: string;
   lastName: string;
   email: string;
-}) => {
-  return `${employee.firstName} ${employee.lastName}`.trim() || employee.email;
-};
+}) => `${employee.firstName} ${employee.lastName}`.trim() || employee.email;
 
 const parseRealtimePayload = (value: unknown): RealtimePayload => {
   if (!isRecord(value)) {
@@ -860,8 +858,8 @@ export function AdministrativeChatClient({
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Administrative Chat</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-semibold text-lg">Administrative Chat</h2>
+          <p className="text-muted-foreground text-sm">
             Real-time updates from leadership and operations.
           </p>
         </div>
@@ -922,7 +920,7 @@ export function AdministrativeChatClient({
                 <Skeleton className="h-12" />
               </div>
             ) : threads.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-lg border border-border/70 border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
                 No threads yet. Start a direct message to begin.
               </div>
             ) : (
@@ -956,24 +954,24 @@ export function AdministrativeChatClient({
                             </AvatarFallback>
                           </Avatar>
                         ) : (
-                          <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                          <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-muted font-semibold text-muted-foreground text-xs">
                             T
                           </div>
                         )}
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-medium">
+                            <p className="font-medium text-sm">
                               {thread.title}
                             </p>
-                            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
                               {formatTime(timestamp)}
                             </span>
                           </div>
-                          <p className="line-clamp-1 text-xs text-muted-foreground">
+                          <p className="line-clamp-1 text-muted-foreground text-xs">
                             {preview}
                           </p>
                           {thread.archivedAt ? (
-                            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
                               Archived
                             </span>
                           ) : null}
@@ -992,7 +990,7 @@ export function AdministrativeChatClient({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
                 <CardTitle>{activeThread?.title ?? "Team thread"}</CardTitle>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {activeThread?.type === "direct"
                     ? "Direct messages are private to participants."
                     : "Team updates for leadership and operations."}
@@ -1041,7 +1039,7 @@ export function AdministrativeChatClient({
                   <Skeleton className="h-16" />
                 </div>
               ) : messages.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-center text-sm text-muted-foreground">
+                <div className="rounded-lg border border-border/70 border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
                   {activeThread && isClearedForThread(activeThread)
                     ? "History cleared. New messages will appear here."
                     : "No messages yet. Start the conversation."}
@@ -1070,14 +1068,14 @@ export function AdministrativeChatClient({
                       key={message.id}
                     >
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className="text-sm font-semibold">
+                        <p className="font-semibold text-sm">
                           {message.authorName}
                         </p>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
                           {formatTime(message.timestamp)}
                         </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         {message.text}
                       </p>
                     </div>

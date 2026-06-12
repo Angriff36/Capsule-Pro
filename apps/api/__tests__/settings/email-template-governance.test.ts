@@ -16,7 +16,6 @@
  * @vitest-environment node
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -460,9 +459,7 @@ describe("EmailTemplate governance", () => {
       await listPOST(request);
 
       const call = vi.mocked(runManifestCommand).mock.calls[0][0];
-      expect(call.body).toEqual(
-        expect.objectContaining({ isDefault: true })
-      );
+      expect(call.body).toEqual(expect.objectContaining({ isDefault: true }));
     });
 
     it("passes isDefault=true through to update command body", async () => {
@@ -486,9 +483,7 @@ describe("EmailTemplate governance", () => {
       await detailPUT(request, context);
 
       const call = vi.mocked(runManifestCommand).mock.calls[0][0];
-      expect(call.body).toEqual(
-        expect.objectContaining({ isDefault: true })
-      );
+      expect(call.body).toEqual(expect.objectContaining({ isDefault: true }));
     });
 
     it("defaults isDefault to false when not provided", async () => {
@@ -505,9 +500,7 @@ describe("EmailTemplate governance", () => {
       await listPOST(request);
 
       const call = vi.mocked(runManifestCommand).mock.calls[0][0];
-      expect(call.body).toEqual(
-        expect.objectContaining({ isDefault: false })
-      );
+      expect(call.body).toEqual(expect.objectContaining({ isDefault: false }));
     });
   });
 

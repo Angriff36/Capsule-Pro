@@ -9,7 +9,6 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestErrorResponse,
@@ -19,15 +18,16 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 interface UpdateDishAllergensRequest {
-  id: string;
-  tenantId: string;
   allergens: string[];
   dietaryTags: string[];
+  id: string;
+  tenantId: string;
 }
 
 /**
@@ -42,7 +42,9 @@ function arrayToManifestString(arr: string[]): string {
  * Convert comma-separated string from manifest to array for API response.
  */
 function manifestStringToArray(str: string): string[] {
-  if (!str || str === "") return [];
+  if (!str || str === "") {
+    return [];
+  }
   return str
     .split(",")
     .map((s) => s.trim())

@@ -42,8 +42,8 @@ export type CommunicationContentType =
  */
 export interface TimePreference {
   enabled: boolean;
-  start?: string; // HH:mm format, e.g., "09:00"
   end?: string; // HH:mm format, e.g., "17:00"
+  start?: string; // HH:mm format, e.g., "09:00"
   timezone?: string; // IANA timezone, e.g., "America/New_York"
 }
 
@@ -63,11 +63,11 @@ export type DayOfWeek =
  * Channel-specific communication preferences
  */
 export interface ChannelPreferences {
+  allowedDays?: DayOfWeek[];
+  contentTypes: CommunicationContentType[];
   enabled: boolean;
   frequency: CommunicationFrequency;
-  contentTypes: CommunicationContentType[];
   timing?: TimePreference;
-  allowedDays?: DayOfWeek[];
 }
 
 /**
@@ -84,12 +84,12 @@ export interface GlobalCommunicationPreferences {
  * Stored as JSON in ClientPreference.preferenceValue with preferenceType="communication"
  */
 export interface CommunicationPreferences {
-  global: GlobalCommunicationPreferences;
   email: ChannelPreferences;
-  sms: ChannelPreferences;
-  phone: ChannelPreferences;
+  global: GlobalCommunicationPreferences;
   mail: ChannelPreferences;
   notes?: string;
+  phone: ChannelPreferences;
+  sms: ChannelPreferences;
 }
 
 /**
@@ -168,7 +168,9 @@ export function isChannelEnabled(
   preferences: CommunicationPreferences,
   channel: CommunicationChannel
 ): boolean {
-  if (preferences.global.optOut) return false;
+  if (preferences.global.optOut) {
+    return false;
+  }
   return preferences[channel].enabled;
 }
 
@@ -180,7 +182,9 @@ export function isContentTypeAllowed(
   channel: CommunicationChannel,
   contentType: CommunicationContentType
 ): boolean {
-  if (!isChannelEnabled(preferences, channel)) return false;
+  if (!isChannelEnabled(preferences, channel)) {
+    return false;
+  }
   return preferences[channel].contentTypes.includes(contentType);
 }
 
@@ -191,7 +195,9 @@ export function getPreferredChannelForContentType(
   preferences: CommunicationPreferences,
   contentType: CommunicationContentType
 ): CommunicationChannel | null {
-  if (preferences.global.optOut) return null;
+  if (preferences.global.optOut) {
+    return null;
+  }
 
   // Check preferred channels in order
   for (const channel of preferences.global.preferredChannels || []) {

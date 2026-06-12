@@ -1,15 +1,15 @@
 "use client";
 
-import {
-  listLaborBudgets as _listLaborBudgets,
-  getLaborBudget as _getLaborBudget,
-  laborBudgetCreate,
-  laborBudgetUpdate,
-  laborBudgetSoftDelete,
-} from "@/app/lib/manifest-client.generated";
-import type { LaborBudget as GeneratedLaborBudget } from "@/app/lib/manifest-types.generated";
 // NOTE: Keeping apiFetch for budget alerts endpoint (custom response shape) and alert acknowledge/resolve actions
 import { apiFetch } from "@/app/lib/api";
+import {
+  getLaborBudget as _getLaborBudget,
+  listLaborBudgets as _listLaborBudgets,
+  laborBudgetCreate,
+  laborBudgetSoftDelete,
+  laborBudgetUpdate,
+} from "@/app/lib/manifest-client.generated";
+import type { LaborBudget as GeneratedLaborBudget } from "@/app/lib/manifest-types.generated";
 
 // Type definitions and API client functions for Labor Budget Management
 
@@ -23,54 +23,54 @@ export type AlertType =
   | "exceeded";
 
 export interface LaborBudget {
-  id: string;
-  tenant_id: string;
-  location_id: string | null;
-  event_id: string | null;
-  name: string;
-  description: string | null;
-  budget_type: BudgetType;
-  period_start: Date | null;
-  period_end: Date | null;
-  budget_target: number;
-  budget_unit: BudgetUnit;
   actual_spend: number | null;
+  budget_target: number;
+  budget_type: BudgetType;
+  budget_unit: BudgetUnit;
+  created_at: Date;
+  description: string | null;
+  event_id: string | null;
+  id: string;
+  location_id: string | null;
+  name: string;
+  override_reason: string | null;
+  period_end: Date | null;
+  period_start: Date | null;
+  status: BudgetStatus;
+  tenant_id: string;
   threshold_80_pct: boolean;
   threshold_90_pct: boolean;
   threshold_100_pct: boolean;
-  status: BudgetStatus;
-  override_reason: string | null;
-  created_at: Date;
   updated_at: Date;
 }
 
 export interface BudgetUtilization {
+  actualSpend: number;
   budgetId: string;
   budgetName: string;
-  budgetType: string;
   budgetTarget: number;
+  budgetType: string;
   budgetUnit: string;
-  actualSpend: number;
-  utilizationPct: number;
-  remainingBudget: number;
-  periodStart?: Date;
   periodEnd?: Date;
+  periodStart?: Date;
+  remainingBudget: number;
   status: BudgetStatus;
+  utilizationPct: number;
 }
 
 export interface BudgetAlert {
-  id: string;
-  tenant_id: string;
-  budget_id: string;
-  alert_type: AlertType;
-  utilization: number;
-  message: string;
-  is_acknowledged: boolean;
   acknowledged_at: Date | null;
   acknowledged_by: string | null;
-  is_resolved: boolean;
-  resolved_at: Date | null;
+  alert_type: AlertType;
+  budget_id: string;
   created_at: Date;
+  id: string;
+  is_acknowledged: boolean;
+  is_resolved: boolean;
+  message: string;
+  resolved_at: Date | null;
+  tenant_id: string;
+  utilization: number;
 }
 
 export interface BudgetWithUtilization extends LaborBudget {
@@ -78,42 +78,42 @@ export interface BudgetWithUtilization extends LaborBudget {
 }
 
 export interface CreateBudgetInput {
-  name: string;
-  description?: string;
-  budgetType: BudgetType;
   budgetTarget: number;
+  budgetType: BudgetType;
   budgetUnit: BudgetUnit;
-  locationId?: string;
+  description?: string;
   eventId?: string;
-  periodStart?: string;
+  locationId?: string;
+  name: string;
   periodEnd?: string;
+  periodStart?: string;
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
 }
 
 export interface UpdateBudgetInput {
-  name?: string;
-  description?: string;
   budgetTarget?: number;
-  status?: BudgetStatus;
+  description?: string;
+  name?: string;
   overrideReason?: string;
+  status?: BudgetStatus;
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
 }
 
 export interface BudgetFilters {
-  locationId?: string;
-  eventId?: string;
   budgetType?: BudgetType;
+  eventId?: string;
+  locationId?: string;
   status?: BudgetStatus;
 }
 
 export interface AlertFilters {
+  alertType?: AlertType;
   budgetId?: string;
   isAcknowledged?: boolean;
-  alertType?: AlertType;
 }
 
 // API Client Functions
@@ -126,10 +126,18 @@ export async function getBudgets(
   filters?: BudgetFilters
 ): Promise<LaborBudget[]> {
   const query: Record<string, string | number> = {};
-  if (filters?.locationId) query.locationId = filters.locationId;
-  if (filters?.eventId) query.eventId = filters.eventId;
-  if (filters?.budgetType) query.budgetType = filters.budgetType;
-  if (filters?.status) query.status = filters.status;
+  if (filters?.locationId) {
+    query.locationId = filters.locationId;
+  }
+  if (filters?.eventId) {
+    query.eventId = filters.eventId;
+  }
+  if (filters?.budgetType) {
+    query.budgetType = filters.budgetType;
+  }
+  if (filters?.status) {
+    query.status = filters.status;
+  }
 
   const result = await _listLaborBudgets(query);
   return result.data as unknown as LaborBudget[];
@@ -142,7 +150,9 @@ export async function getBudgetById(
   id: string
 ): Promise<BudgetWithUtilization> {
   const result = await _getLaborBudget(id);
-  if (!result) throw new Error("Failed to fetch budget");
+  if (!result) {
+    throw new Error("Failed to fetch budget");
+  }
   return result as unknown as BudgetWithUtilization;
 }
 
@@ -160,7 +170,9 @@ export async function createBudget(
     budgetType: input.budgetType,
     description: input.description,
   });
-  if (!result) throw new Error("Failed to create budget");
+  if (!result) {
+    throw new Error("Failed to create budget");
+  }
   return result;
 }
 
@@ -175,7 +187,9 @@ export async function updateBudget(
     id,
     description: updates.description,
   });
-  if (!result) throw new Error("Failed to update budget");
+  if (!result) {
+    throw new Error("Failed to update budget");
+  }
   return result;
 }
 

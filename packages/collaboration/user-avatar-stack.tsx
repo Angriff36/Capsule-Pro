@@ -4,25 +4,25 @@ import { cn } from "@repo/design-system/lib/utils";
 import { memo } from "react";
 
 export interface UserInfo {
+  avatarUrl?: string | null;
+  color: string;
   connectionId: number;
   name: string;
-  color: string;
-  avatarUrl?: string | null;
 }
 
 interface UserAvatarStackProps {
-  /** Users to display */
-  users: UserInfo[];
-  /** Maximum number of avatars to show before +N overflow */
-  maxVisible?: number;
-  /** Size of each avatar */
-  size?: "sm" | "md" | "lg";
-  /** Whether to show names as tooltips */
-  showNames?: boolean;
   /** CSS className for customization */
   className?: string;
+  /** Maximum number of avatars to show before +N overflow */
+  maxVisible?: number;
   /** Position of the overflow count badge */
   overflowPosition?: "right" | "bottom";
+  /** Whether to show names as tooltips */
+  showNames?: boolean;
+  /** Size of each avatar */
+  size?: "sm" | "md" | "lg";
+  /** Users to display */
+  users: UserInfo[];
 }
 
 const sizeStyles = {

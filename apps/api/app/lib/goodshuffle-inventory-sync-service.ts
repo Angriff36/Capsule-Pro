@@ -17,9 +17,9 @@ import {
 } from "./goodshuffle-client";
 
 export interface InventorySyncOptions {
-  tenantId: string;
-  dryRun?: boolean;
   direction?: "convoy_to_goodshuffle" | "goodshuffle_to_convoy" | "both";
+  dryRun?: boolean;
+  tenantId: string;
 }
 
 /**

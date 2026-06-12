@@ -80,7 +80,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -108,8 +110,11 @@ function makeProvider(): (entity: string) => Store {
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
   return new RuntimeEngine(
     ir,
-    { tenantId: USER.tenantId, user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
-    { storeProvider: provider, customBuiltins: createCustomBuiltins() },
+    {
+      tenantId: USER.tenantId,
+      user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
+    },
+    { storeProvider: provider, customBuiltins: createCustomBuiltins() }
   );
 }
 
@@ -117,7 +122,7 @@ async function seedInventoryItem(
   provider: (entity: string) => Store,
   id: string,
   quantityOnHand: number,
-  overrides: Record<string, unknown> = {},
+  overrides: Record<string, unknown> = {}
 ) {
   // Seed directly via the store (bypassing InventoryItem.create's guards) so the
   // test isolates the reaction chain, not item creation.
@@ -139,7 +144,7 @@ async function seedInventoryItem(
 async function logWaste(
   engine: RuntimeEngine,
   quantity: number,
-  inventoryItemId: string = INV_ID,
+  inventoryItemId: string = INV_ID
 ) {
   return runManifestCommandCore(
     { createRuntime: async () => engine },
@@ -157,7 +162,7 @@ async function logWaste(
         notes: "",
       },
       user: { ...USER },
-    },
+    }
   );
 }
 
@@ -170,7 +175,7 @@ describe("Reaction conformance: WasteEntryCreated → InventoryItem.waste", () =
       (r) =>
         r.event === "WasteEntryCreated" &&
         r.targetEntity === "InventoryItem" &&
-        r.targetCommand === "waste",
+        r.targetCommand === "waste"
     );
     expect(waste).toBeDefined();
     // resolve points at the wasted line's inventory item id.
@@ -200,7 +205,7 @@ describe("Reaction conformance: WasteEntryCreated → InventoryItem.waste", () =
     // parent command's emitted events — only possible if the reaction executed.
     const eventNames = (result.ok ? result.events : [])?.map(
       // biome-ignore lint/suspicious/noExplicitAny: structural event rows.
-      (e: any) => e?.name,
+      (e: any) => e?.name
     );
     expect(eventNames).toContain("WasteEntryCreated");
     expect(eventNames).toContain("InventoryWasted");
@@ -234,7 +239,7 @@ describe("Reaction conformance: WasteEntryCreated → InventoryItem.waste", () =
     expect(result.ok).toBe(true);
 
     const bystander = (await provider("InventoryItem").getById(
-      "inv-bystander",
+      "inv-bystander"
     )) as Record<string, unknown>;
     expect(bystander.quantityOnHand).toBe(50); // unchanged
 

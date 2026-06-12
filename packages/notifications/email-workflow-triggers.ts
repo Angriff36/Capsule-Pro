@@ -12,6 +12,12 @@ import {
 } from "./email-notification-service";
 
 export interface WorkflowTriggerContext {
+  entity: {
+    id: string;
+    type: "event" | "task" | "shift" | "proposal" | "contract";
+  };
+  recipients: EmailRecipient[];
+  templateData: Record<string, string | number | undefined>;
   tenantId: string;
   triggerType:
     | "event_confirmed"
@@ -25,12 +31,6 @@ export interface WorkflowTriggerContext {
     | "contract_signed"
     | "contract_expiration"
     | "custom";
-  entity: {
-    id: string;
-    type: "event" | "task" | "shift" | "proposal" | "contract";
-  };
-  templateData: Record<string, string | number | undefined>;
-  recipients: EmailRecipient[];
 }
 
 /**

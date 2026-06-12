@@ -54,8 +54,8 @@ type TaskWithRelations = KitchenTask & {
 };
 
 interface ProductionBoardClientProps {
-  initialTasks: TaskWithRelations[];
   currentUserId?: string | null;
+  initialTasks: TaskWithRelations[];
   tenantId?: string;
 }
 
@@ -304,7 +304,7 @@ function TaskColumn({
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {tasks.length === 0 ? (
-          <div className="flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-hairline text-center">
+          <div className="flex h-32 flex-col items-center justify-center rounded-xl border border-hairline border-dashed text-center">
             <Icon className="h-6 w-6 text-muted-foreground/50" />
             <p className="mt-2 text-muted-foreground text-sm">No tasks</p>
           </div>
@@ -474,7 +474,7 @@ export function ProductionBoardClient({
             {myTasks.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-medium text-sm text-muted-foreground">
+                  <h2 className="font-medium text-muted-foreground text-sm">
                     My Tasks
                   </h2>
                   <Badge variant="secondary">{myTasks.length} assigned</Badge>
@@ -493,7 +493,7 @@ export function ProductionBoardClient({
 
             {/* Kanban Board */}
             <section className="space-y-4">
-              <h2 className="font-medium text-sm text-muted-foreground">
+              <h2 className="font-medium text-muted-foreground text-sm">
                 Task Board
               </h2>
               <div className="grid gap-4 lg:grid-cols-3">
@@ -562,7 +562,7 @@ export function ProductionBoardClient({
                     <CardContent className="space-y-3">
                       <p className="text-muted-foreground text-xs">
                         You have {suggestions.length} suggestion
-                        {suggestions.length !== 1 ? "s" : ""} that could help
+                        {suggestions.length === 1 ? "" : "s"} that could help
                         optimize your kitchen operations.
                       </p>
                       <Button

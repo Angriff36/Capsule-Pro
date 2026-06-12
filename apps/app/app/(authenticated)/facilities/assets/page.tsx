@@ -51,8 +51,16 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { facilityAssetRemove, facilityAssetUpdate, listFacilityAssets, listFacilityAreas } from "@/app/lib/manifest-client.generated";
-import type { FacilityAsset, FacilityArea } from "@/app/lib/manifest-types.generated";
+import {
+  facilityAssetRemove,
+  facilityAssetUpdate,
+  listFacilityAreas,
+  listFacilityAssets,
+} from "@/app/lib/manifest-client.generated";
+import type {
+  FacilityArea,
+  FacilityAsset,
+} from "@/app/lib/manifest-types.generated";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -284,19 +292,19 @@ export default function AssetsPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-semibold tracking-tight">Assets</h1>
+            <h1 className="font-semibold text-2xl tracking-tight">Assets</h1>
             <p className="text-muted-foreground">
               Track equipment, warranty status, and maintenance needs.
             </p>
           </div>
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Asset
           </Button>
         </div>
 
         {/* Summary */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{assets.length} Assets</Badge>
           <Badge variant="outline">
             Active value: {formatCurrencyWithDash(totalValue)}
@@ -310,7 +318,7 @@ export default function AssetsPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-10"
             onChange={(e) => setSearch(e.target.value)}
@@ -327,7 +335,7 @@ export default function AssetsPage() {
             return (
               <Card key={status}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="font-medium text-sm">
                     {config.label}
                   </CardTitle>
                   <config.icon
@@ -335,7 +343,7 @@ export default function AssetsPage() {
                   />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{count}</div>
+                  <div className="font-bold text-2xl">{count}</div>
                 </CardContent>
               </Card>
             );
@@ -346,7 +354,7 @@ export default function AssetsPage() {
         {filteredAssets.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>
                 {search
                   ? "No assets match your search."
@@ -367,7 +375,7 @@ export default function AssetsPage() {
                   new Date(Date.now() + 90 * 86_400_000);
               return (
                 <Card
-                  className="hover:border-primary/40 transition-shadow"
+                  className="transition-shadow hover:border-primary/40"
                   key={asset.id}
                 >
                   <CardContent className="p-4">
@@ -377,13 +385,14 @@ export default function AssetsPage() {
                       >
                         <Icon className="h-5 w-5" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <span className="font-semibold">{asset.name}</span>
                           <Badge className={config.color}>{config.label}</Badge>
                           <Badge variant="outline">
                             {ASSET_TYPE_LABELS[asset.assetType ?? "other"] ??
-                              asset.assetType ?? "Other"}
+                              asset.assetType ??
+                              "Other"}
                           </Badge>
                           {isWarrantyExpiring && (
                             <Badge variant="destructive">
@@ -391,7 +400,7 @@ export default function AssetsPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-muted-foreground text-sm">
                           {asset.serialNumber && (
                             <span>SN: {asset.serialNumber}</span>
                           )}
@@ -634,7 +643,9 @@ export default function AssetsPage() {
       <AlertDialog
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
-          if (!open) setAssetToDelete(null);
+          if (!open) {
+            setAssetToDelete(null);
+          }
         }}
         open={deleteDialogOpen}
       >
@@ -655,7 +666,9 @@ export default function AssetsPage() {
               className="bg-red-600 hover:bg-red-700"
               disabled={deleting === assetToDelete?.id}
               onClick={() => {
-                if (assetToDelete) handleDelete(assetToDelete.id);
+                if (assetToDelete) {
+                  handleDelete(assetToDelete.id);
+                }
               }}
             >
               {deleting === assetToDelete?.id ? (

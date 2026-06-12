@@ -13,10 +13,10 @@ import type { OfflineQueueItem } from "../types";
 import { useNetworkStatus } from "./useNetworkStatus";
 
 export interface SyncStatus {
-  isSyncing: boolean;
-  pendingCount: number;
-  lastSyncTime: Date | null;
   error: string | null;
+  isSyncing: boolean;
+  lastSyncTime: Date | null;
+  pendingCount: number;
 }
 
 const SYNC_INTERVAL_MS = 30_000; // Try sync every 30 seconds when online

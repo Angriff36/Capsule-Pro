@@ -1,19 +1,18 @@
 import { apiFetch } from "@/app/lib/api";
 import {
-  listShipments as _listShipments,
   getShipment as _getShipment,
   listShipmentItems as _listShipmentItems,
-  shipmentCreate,
-  shipmentUpdate,
+  listShipments as _listShipments,
   shipmentCancel,
-  shipmentSchedule,
-  shipmentStartPreparing,
-  shipmentShip,
-  shipmentMarkDelivered,
+  shipmentCreate,
   shipmentItemCreate,
-  shipmentItemUpdateReceived,
-  shipmentItemUpdate,
   shipmentItemSoftDelete,
+  shipmentItemUpdate,
+  shipmentMarkDelivered,
+  shipmentSchedule,
+  shipmentShip,
+  shipmentStartPreparing,
+  shipmentUpdate,
 } from "@/app/lib/manifest-client.generated";
 /**
  * Shipments Client API Functions
@@ -49,46 +48,46 @@ export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
  * Shipment response shape matching Prisma model
  */
 export interface Shipment {
-  id: string;
-  tenant_id: string;
-  shipment_number: string;
-  status: ShipmentStatus;
+  actual_delivery_date: Date | string | null;
+  carrier: string | null;
+
+  // Audit fields
+  created_at: Date | string;
+  deleted_at: Date | string | null;
+
+  // Delivery confirmation
+  delivered_by: string | null;
+  estimated_delivery_date: Date | string | null;
 
   // Foreign Keys
   event_id: string | null;
-  supplier_id: string | null;
+  id: string;
+  internal_notes: string | null;
   location_id: string | null;
+
+  // Notes
+  notes: string | null;
+  received_by: string | null;
+  reference: string | null;
 
   // Dates
   scheduled_date: Date | string | null;
+  shipment_number: string;
   shipped_date: Date | string | null;
-  estimated_delivery_date: Date | string | null;
-  actual_delivery_date: Date | string | null;
+  shipping_cost: number | null;
+  shipping_method: string | null;
+  signature: string | null;
+  status: ShipmentStatus;
+  supplier_id: string | null;
+  tenant_id: string;
 
   // Financials
   total_items: number;
-  shipping_cost: number | null;
   total_value: number | null;
 
   // Tracking
   tracking_number: string | null;
-  carrier: string | null;
-  shipping_method: string | null;
-
-  // Delivery confirmation
-  delivered_by: string | null;
-  received_by: string | null;
-  signature: string | null;
-
-  // Notes
-  notes: string | null;
-  internal_notes: string | null;
-  reference: string | null;
-
-  // Audit fields
-  created_at: Date | string;
   updated_at: Date | string;
-  deleted_at: Date | string | null;
 }
 
 /**
@@ -102,35 +101,34 @@ export interface ShipmentWithItems extends Shipment {
  * Shipment Item response shape matching Prisma model
  */
 export interface ShipmentItem {
-  id: string;
-  tenant_id: string;
-  shipment_id: string;
-
-  // Foreign Keys
-  item_id: string;
-
-  // Quantities
-  quantity_shipped: number;
-  quantity_received: number;
-  quantity_damaged: number;
-
-  // Unit Information
-  unit_id: number | null;
-  unit_cost: number | null;
-
-  // Financials
-  total_cost: number;
-
   // Quality/Condition
   condition: ItemCondition | null;
   condition_notes: string | null;
 
-  // Lot/Batch Information
-  lot_number: string | null;
-  expiration_date: Date | string | null;
-
   // Audit fields
   created_at: Date | string;
+  expiration_date: Date | string | null;
+  id: string;
+
+  // Foreign Keys
+  item_id: string;
+
+  // Lot/Batch Information
+  lot_number: string | null;
+  quantity_damaged: number;
+  quantity_received: number;
+
+  // Quantities
+  quantity_shipped: number;
+  shipment_id: string;
+  tenant_id: string;
+
+  // Financials
+  total_cost: number;
+  unit_cost: number | null;
+
+  // Unit Information
+  unit_id: number | null;
   updated_at: Date | string;
 }
 
@@ -138,109 +136,109 @@ export interface ShipmentItem {
  * Create shipment request
  */
 export interface CreateShipmentRequest {
-  shipment_number?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
-  scheduled_date?: string;
-  estimated_delivery_date?: string;
-  shipping_cost?: number;
-  tracking_number?: string;
   carrier?: string;
-  shipping_method?: string;
-  notes?: string;
+  estimated_delivery_date?: string;
+  event_id?: string;
   internal_notes?: string;
+  location_id?: string;
+  notes?: string;
+  scheduled_date?: string;
+  shipment_number?: string;
+  shipping_cost?: number;
+  shipping_method?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
+  tracking_number?: string;
 }
 
 /**
  * Update shipment request
  */
 export interface UpdateShipmentRequest {
-  shipment_number?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
-  scheduled_date?: string;
-  shipped_date?: string;
-  estimated_delivery_date?: string;
   actual_delivery_date?: string;
+  carrier?: string;
+  delivered_by?: string;
+  estimated_delivery_date?: string;
+  event_id?: string;
+  internal_notes?: string;
+  location_id?: string;
+  notes?: string;
+  received_by?: string;
+  reference?: string;
+  scheduled_date?: string;
+  shipment_number?: string;
+  shipped_date?: string;
   shipping_cost?: number;
+  shipping_method?: string;
+  signature?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
   total_value?: number;
   tracking_number?: string;
-  carrier?: string;
-  shipping_method?: string;
-  delivered_by?: string;
-  received_by?: string;
-  signature?: string;
-  notes?: string;
-  internal_notes?: string;
-  reference?: string;
 }
 
 /**
  * Update shipment status request
  */
 export interface UpdateShipmentStatusRequest {
-  status: ShipmentStatus;
   actual_delivery_date?: string;
   delivered_by?: string;
+  notes?: string;
   received_by?: string;
   signature?: string;
-  notes?: string;
+  status: ShipmentStatus;
 }
 
 /**
  * Create shipment item request
  */
 export interface CreateShipmentItemRequest {
-  item_id: string;
-  quantity_shipped: number;
-  quantity_received?: number;
-  quantity_damaged?: number;
-  unit_id?: number;
-  unit_cost?: number;
   condition?: string;
   condition_notes?: string;
-  lot_number?: string;
   expiration_date?: string;
+  item_id: string;
+  lot_number?: string;
+  quantity_damaged?: number;
+  quantity_received?: number;
+  quantity_shipped: number;
+  unit_cost?: number;
+  unit_id?: number;
 }
 
 /**
  * Update shipment item request
  */
 export interface UpdateShipmentItemRequest {
-  quantity_shipped?: number;
-  quantity_received?: number;
-  quantity_damaged?: number;
-  unit_id?: number;
-  unit_cost?: number;
   condition?: string;
   condition_notes?: string;
-  lot_number?: string;
   expiration_date?: string;
+  lot_number?: string;
+  quantity_damaged?: number;
+  quantity_received?: number;
+  quantity_shipped?: number;
+  unit_cost?: number;
+  unit_id?: number;
 }
 
 /**
  * List filters
  */
 export interface ShipmentFilters {
-  search?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
   date_from?: string;
   date_to?: string;
+  event_id?: string;
+  location_id?: string;
+  search?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
 }
 
 /**
  * Pagination params
  */
 export interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -258,17 +256,17 @@ export interface ShipmentListResponse {
 
 // Extended types with computed fields
 export interface ShipmentWithComputed extends Shipment {
-  items?: ShipmentItem[];
   event?: {
     id: string;
     name: string;
     eventDate: Date;
   } | null;
-  supplier?: {
+  items?: ShipmentItem[];
+  location?: {
     id: string;
     name: string;
   } | null;
-  location?: {
+  supplier?: {
     id: string;
     name: string;
   } | null;
@@ -302,15 +300,33 @@ export async function listShipments(
   filters: ShipmentFilters & { page?: number; limit?: number } = {}
 ): Promise<ShipmentListResponseWithMeta> {
   const query: Record<string, string | number> = {};
-  if (filters.search) query.search = filters.search;
-  if (filters.status) query.status = filters.status;
-  if (filters.event_id) query.event_id = filters.event_id;
-  if (filters.supplier_id) query.supplier_id = filters.supplier_id;
-  if (filters.location_id) query.location_id = filters.location_id;
-  if (filters.date_from) query.date_from = filters.date_from;
-  if (filters.date_to) query.date_to = filters.date_to;
-  if (filters.page) query.page = filters.page;
-  if (filters.limit) query.limit = filters.limit;
+  if (filters.search) {
+    query.search = filters.search;
+  }
+  if (filters.status) {
+    query.status = filters.status;
+  }
+  if (filters.event_id) {
+    query.event_id = filters.event_id;
+  }
+  if (filters.supplier_id) {
+    query.supplier_id = filters.supplier_id;
+  }
+  if (filters.location_id) {
+    query.location_id = filters.location_id;
+  }
+  if (filters.date_from) {
+    query.date_from = filters.date_from;
+  }
+  if (filters.date_to) {
+    query.date_to = filters.date_to;
+  }
+  if (filters.page) {
+    query.page = filters.page;
+  }
+  if (filters.limit) {
+    query.limit = filters.limit;
+  }
 
   const data = await _listShipments(query);
 
@@ -330,8 +346,8 @@ export async function listShipments(
       (sum, s) => sum + ((s.total_value as number) || 0),
       0
     ),
-    inTransitCount: rawItems.filter(s => s.status === "in_transit").length,
-    preparingCount: rawItems.filter(s => s.status === "preparing").length,
+    inTransitCount: rawItems.filter((s) => s.status === "in_transit").length,
+    preparingCount: rawItems.filter((s) => s.status === "preparing").length,
   };
 
   return { ...data, summary } as unknown as ShipmentListResponseWithMeta;
@@ -344,7 +360,9 @@ export async function getShipment(
   shipmentId: string
 ): Promise<ShipmentWithItems> {
   const result = await _getShipment(shipmentId);
-  if (!result) throw new Error("Failed to fetch shipment");
+  if (!result) {
+    throw new Error("Failed to fetch shipment");
+  }
   return result as unknown as ShipmentWithItems;
 }
 
@@ -363,7 +381,9 @@ export async function createShipment(
     shippingMethod: request.shipping_method,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to create shipment");
+  if (!result) {
+    throw new Error("Failed to create shipment");
+  }
   return result as unknown as Shipment;
 }
 
@@ -382,7 +402,9 @@ export async function updateShipment(
     shippingCost: request.shipping_cost,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to update shipment");
+  if (!result) {
+    throw new Error("Failed to update shipment");
+  }
   return result as unknown as Shipment;
 }
 
@@ -416,7 +438,9 @@ export async function updateShipmentStatus(
   let result: unknown;
   switch (request.status) {
     case "scheduled":
-      result = await shipmentSchedule({ scheduledDate: request.actual_delivery_date });
+      result = await shipmentSchedule({
+        scheduledDate: request.actual_delivery_date,
+      });
       break;
     case "preparing":
       result = await shipmentStartPreparing({});
@@ -436,7 +460,9 @@ export async function updateShipmentStatus(
     default:
       throw new Error(`Unsupported status transition: ${request.status}`);
   }
-  if (!result) throw new Error("Failed to update shipment status");
+  if (!result) {
+    throw new Error("Failed to update shipment status");
+  }
   return result as Shipment;
 }
 
@@ -470,7 +496,9 @@ export async function addShipmentItem(
     lotNumber: request.lot_number,
     expirationDate: request.expiration_date,
   });
-  if (!result) throw new Error("Failed to add item to shipment");
+  if (!result) {
+    throw new Error("Failed to add item to shipment");
+  }
   return result as unknown as ShipmentItem;
 }
 
@@ -492,7 +520,9 @@ export async function updateShipmentItem(
     lotNumber: request.lot_number,
     expirationDate: request.expiration_date,
   });
-  if (!result) throw new Error("Failed to update shipment item");
+  if (!result) {
+    throw new Error("Failed to update shipment item");
+  }
   return result as unknown as ShipmentItem;
 }
 
@@ -504,7 +534,9 @@ export async function deleteShipmentItem(
   itemId: string
 ): Promise<void> {
   const result = await shipmentItemSoftDelete({});
-  if (!result) throw new Error("Failed to delete shipment item");
+  if (!result) {
+    throw new Error("Failed to delete shipment item");
+  }
 }
 
 // ============================================================================

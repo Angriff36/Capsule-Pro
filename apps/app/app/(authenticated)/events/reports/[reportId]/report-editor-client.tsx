@@ -36,32 +36,41 @@ import { apiFetch } from "@/app/lib/api";
 import { formatDate } from "../../../../lib/format";
 
 interface ChecklistQuestion {
-  id: string;
-  type: "single-select" | "yes-no" | "yes-no-na" | "text" | "textarea";
-  prompt: string;
-  description?: string;
-  required: boolean;
-  options?: string[];
   allowNotes?: boolean;
-  value: string | null;
-  notes?: string;
   autoFilled?: boolean;
   autoReason?: string;
+  description?: string;
+  id: string;
+  notes?: string;
+  options?: string[];
+  prompt: string;
+  required: boolean;
+  type: "single-select" | "yes-no" | "yes-no-na" | "text" | "textarea";
+  value: string | null;
 }
 
 interface ChecklistSection {
   id: string;
-  title: string;
-  summary?: string;
   questions: ChecklistQuestion[];
+  summary?: string;
+  title: string;
 }
 
 interface ChecklistData {
-  version?: string;
   sections?: ChecklistSection[];
+  version?: string;
 }
 
 interface ReportEditorProps {
+  event: {
+    id: string;
+    eventNumber: string | null;
+    title: string;
+    eventDate: string;
+    venueName: string | null;
+    venueAddress: string | null;
+    guestCount: number;
+  };
   report: {
     id: string;
     eventId: string;
@@ -72,15 +81,6 @@ interface ReportEditorProps {
     reviewNotes: string | null;
     createdAt: string;
     updatedAt: string;
-  };
-  event: {
-    id: string;
-    eventNumber: string | null;
-    title: string;
-    eventDate: string;
-    venueName: string | null;
-    venueAddress: string | null;
-    guestCount: number;
   };
 }
 
@@ -216,13 +216,13 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Main checklist area */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="space-y-4 lg:col-span-2">
         {/* Progress bar */}
         <Card tone="canvas">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Completion Progress</span>
-              <span className="text-sm text-muted-foreground">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-medium text-sm">Completion Progress</span>
+              <span className="text-muted-foreground text-sm">
                 {completion}%
               </span>
             </div>
@@ -233,7 +233,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
               />
             </div>
             {report.autoFillScore !== null && report.autoFillScore > 0 && (
-              <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+              <p className="mt-2 flex items-center gap-1 text-muted-foreground text-xs">
                 <SparklesIcon className="h-3 w-3" />
                 {report.autoFillScore} questions auto-filled from PDF
               </p>
@@ -256,11 +256,11 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
               return (
                 <AccordionItem key={section.id} value={section.id}>
                   <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center justify-between w-full pr-4">
+                    <div className="flex w-full items-center justify-between pr-4">
                       <div className="text-left">
                         <div className="font-semibold">{section.title}</div>
                         {section.summary && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {section.summary}
                           </div>
                         )}
@@ -388,21 +388,21 @@ function QuestionField({
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Label className="text-base font-medium">
+          <Label className="font-medium text-base">
             {question.prompt}
             {question.required && (
-              <span className="text-destructive ml-1">*</span>
+              <span className="ml-1 text-destructive">*</span>
             )}
           </Label>
           {question.description && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground text-sm">
               {question.description}
             </p>
           )}
         </div>
         {question.autoFilled && (
           <Badge className="shrink-0" variant="secondary">
-            <SparklesIcon className="h-3 w-3 mr-1" />
+            <SparklesIcon className="mr-1 h-3 w-3" />
             Auto-filled
           </Badge>
         )}
@@ -461,7 +461,7 @@ function QuestionField({
       {/* Notes field */}
       {question.allowNotes && (
         <div className="pt-2">
-          <Label className="text-sm text-muted-foreground">
+          <Label className="text-muted-foreground text-sm">
             Notes (optional)
           </Label>
           <Textarea
@@ -476,7 +476,7 @@ function QuestionField({
 
       {/* Auto-fill reason */}
       {question.autoFilled && question.autoReason && (
-        <p className="text-xs text-muted-foreground italic">
+        <p className="text-muted-foreground text-xs italic">
           Auto-filled because: {question.autoReason}
         </p>
       )}

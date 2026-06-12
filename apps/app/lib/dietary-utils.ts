@@ -154,24 +154,24 @@ const ANIMAL_DERIVED_CATEGORIES = [
  * Ingredient with allergen and category information
  */
 export interface IngredientWithAllergens {
-  name: string;
   allergens: string[];
   category?: string | null;
+  name: string;
 }
 
 /**
  * Calculated dietary properties
  */
 export interface DietaryProperties {
-  isVegan: boolean;
-  isVegetarian: boolean;
-  isGlutenFree: boolean;
-  isDairyFree: boolean;
+  allergenWarnings: string[];
   containsEggs: boolean;
   containsMeat: boolean;
   containsSeafood: boolean;
-  allergenWarnings: string[];
   dietaryTags: string[];
+  isDairyFree: boolean;
+  isGlutenFree: boolean;
+  isVegan: boolean;
+  isVegetarian: boolean;
 }
 
 /**
@@ -336,18 +336,36 @@ export function calculateDietaryProperties(
 
   // Build dietary tags
   const dietaryTags: string[] = [];
-  if (isVegan) dietaryTags.push("vegan");
-  if (isVegetarian && !isVegan) dietaryTags.push("vegetarian");
-  if (isGlutenFree) dietaryTags.push("gluten-free");
-  if (isDairyFree) dietaryTags.push("dairy-free");
+  if (isVegan) {
+    dietaryTags.push("vegan");
+  }
+  if (isVegetarian && !isVegan) {
+    dietaryTags.push("vegetarian");
+  }
+  if (isGlutenFree) {
+    dietaryTags.push("gluten-free");
+  }
+  if (isDairyFree) {
+    dietaryTags.push("dairy-free");
+  }
 
   // Build allergen warnings
   const allergenWarnings: string[] = [];
-  if (containsDairy) allergenWarnings.push("Contains dairy");
-  if (containsEggs) allergenWarnings.push("Contains eggs");
-  if (containsGluten) allergenWarnings.push("Contains gluten/wheat");
-  if (containsMeat) allergenWarnings.push("Contains meat");
-  if (containsSeafood) allergenWarnings.push("Contains fish/shellfish");
+  if (containsDairy) {
+    allergenWarnings.push("Contains dairy");
+  }
+  if (containsEggs) {
+    allergenWarnings.push("Contains eggs");
+  }
+  if (containsGluten) {
+    allergenWarnings.push("Contains gluten/wheat");
+  }
+  if (containsMeat) {
+    allergenWarnings.push("Contains meat");
+  }
+  if (containsSeafood) {
+    allergenWarnings.push("Contains fish/shellfish");
+  }
 
   // Check for Big 9 allergens explicitly listed
   const big9Found = new Set<string>();

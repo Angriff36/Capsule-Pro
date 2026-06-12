@@ -2,14 +2,14 @@ import { cn } from "@repo/design-system/lib/utils";
 import { StarIcon } from "lucide-react";
 
 interface DifficultyStarsProps {
-  /** Difficulty rating from 1 to 5 */
-  rating: number;
-  /** Maximum stars to display */
-  max?: number;
-  /** Size variant */
-  size?: "sm" | "md" | "lg";
   /** Additional class names */
   className?: string;
+  /** Maximum stars to display */
+  max?: number;
+  /** Difficulty rating from 1 to 5 */
+  rating: number;
+  /** Size variant */
+  size?: "sm" | "md" | "lg";
 }
 
 const sizeClasses = {

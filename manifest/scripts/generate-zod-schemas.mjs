@@ -12,9 +12,15 @@
  *
  * Output: one <EntityName>.schema.ts per entity, plus an index.ts barrel.
  */
-import { readFileSync, existsSync, mkdirSync, writeFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { resolve, basename } from "node:path";
 
 const IR_PATH = resolve("manifest/ir/kitchen.ir.json");
 const PKG_ROOT = resolve(
@@ -78,7 +84,9 @@ mkdirSync(outDir, { recursive: true });
 // Write each entity schema (content is in artifact.code, not artifact.content)
 let entityCount = 0;
 for (const artifact of result.artifacts ?? []) {
-  if (!artifact.code) continue; // skip empty artifacts
+  if (!artifact.code) {
+    continue; // skip empty artifacts
+  }
   const fileName = artifact.pathHint ?? `${artifact.id ?? "unknown"}.schema.ts`;
   const filePath = resolve(outDir, basename(fileName));
   writeFileSync(filePath, artifact.code, "utf-8");
@@ -112,6 +120,10 @@ console.log(`Generated ${entityCount} entity schemas + index.ts in ${outDir}`);
 if (result.diagnostics?.length) {
   const warnings = result.diagnostics.filter((d) => d.level === "warn");
   const infos = result.diagnostics.filter((d) => d.level === "info");
-  if (warnings.length) console.log(`Warnings: ${warnings.length}`);
-  if (infos.length) console.log(`Info: ${infos.length}`);
+  if (warnings.length) {
+    console.log(`Warnings: ${warnings.length}`);
+  }
+  if (infos.length) {
+    console.log(`Info: ${infos.length}`);
+  }
 }

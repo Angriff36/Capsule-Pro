@@ -1,26 +1,30 @@
 "use client";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
   CommandBand,
   CommandBandHeader,
   CommandBandLede,
   DisplayHeading,
   MonoLabel,
   OperationalColumn,
-  PageCanvas,
   PageBody,
+  PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import type { EventProfitabilityMetrics } from "../actions/get-event-profitability";
 
-export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabilityMetrics }) {
+export function EventProfitabilityDetail({
+  metrics,
+}: {
+  metrics: EventProfitabilityMetrics;
+}) {
   return (
     <PageCanvas>
       <CommandBand>
@@ -55,7 +59,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xs font-medium text-muted-foreground">
+                <div className="font-medium text-muted-foreground text-xs">
                   {metrics.revenueVariance >= 0 ? "+" : ""}
                   {metrics.revenueVariance.toFixed(2)} (
                   {metrics.revenueVariance >= 0 ? "over" : "under"} budget)
@@ -71,7 +75,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="space-y-1 text-muted-foreground text-xs">
                   <div>Food: ${metrics.actualFoodCost.toFixed(2)}</div>
                   <div>Labor: ${metrics.actualLaborCost.toFixed(2)}</div>
                   <div>Overhead: ${metrics.actualOverhead.toFixed(2)}</div>
@@ -87,7 +91,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xs font-medium text-muted-foreground">
+                <div className="font-medium text-muted-foreground text-xs">
                   {metrics.actualGrossMarginPct.toFixed(1)}% (
                   {metrics.marginVariancePct >= 0 ? "+" : ""}
                   {metrics.marginVariancePct.toFixed(1)}% vs budget)
@@ -112,7 +116,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         ${metrics.actualFoodCost.toFixed(2)}
                       </span>
                     </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full bg-primary/60 transition-all"
                         style={{
@@ -124,7 +128,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-muted-foreground text-xs">
                       <span>
                         Budget: ${metrics.budgetedFoodCost.toFixed(2)}
                       </span>
@@ -139,7 +143,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         ${metrics.actualLaborCost.toFixed(2)}
                       </span>
                     </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full bg-primary/70 transition-all"
                         style={{
@@ -151,7 +155,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-muted-foreground text-xs">
                       <span>
                         Budget: ${metrics.budgetedLaborCost.toFixed(2)}
                       </span>
@@ -166,7 +170,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         ${metrics.actualOverhead.toFixed(2)}
                       </span>
                     </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full bg-primary/80 transition-all"
                         style={{
@@ -178,7 +182,7 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-muted-foreground text-xs">
                       <span>
                         Budget: ${metrics.budgetedOverhead.toFixed(2)}
                       </span>
@@ -213,15 +217,15 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                           className="flex items-center gap-2 text-sm"
                           key={index}
                         >
-                          <div className="w-16 text-xs text-muted-foreground">
+                          <div className="w-16 text-muted-foreground text-xs">
                             {item.date.toLocaleDateString("en-US", {
                               month: "short",
                               year: "2-digit",
                             })}
                           </div>
-                          <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
+                          <div className="h-6 flex-1 overflow-hidden rounded-full bg-muted">
                             <div
-                              className="h-full transition-all bg-primary/60"
+                              className="h-full bg-primary/60 transition-all"
                               style={{
                                 width: `${Math.min(Math.abs(item.marginPct), 50)}%`,
                               }}
@@ -251,18 +255,18 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Budgeted Total Cost
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="font-bold text-lg">
                       ${metrics.budgetedTotalCost.toFixed(2)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Actual Total Cost
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="font-bold text-lg">
                       ${metrics.actualTotalCost.toFixed(2)}
                     </div>
                   </div>
@@ -276,9 +280,9 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                       {metrics.totalCostVariance.toFixed(2)}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full transition-all bg-primary/60"
+                      className="h-full bg-primary/60 transition-all"
                       style={{
                         width: `${Math.min(
                           (Math.abs(metrics.totalCostVariance) /
@@ -291,20 +295,20 @@ export function EventProfitabilityDetail({ metrics }: { metrics: EventProfitabil
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div className="grid grid-cols-2 gap-4 border-t pt-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Budgeted Margin %
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="font-bold text-lg">
                       {metrics.budgetedGrossMarginPct.toFixed(1)}%
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Actual Margin %
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="font-bold text-lg">
                       {metrics.actualGrossMarginPct.toFixed(1)}%
                     </div>
                   </div>

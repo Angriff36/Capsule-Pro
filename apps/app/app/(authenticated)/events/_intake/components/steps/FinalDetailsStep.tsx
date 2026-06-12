@@ -39,11 +39,11 @@ export default function FinalDetailsStep({ formData, updateField }: Props) {
         title="Final details"
       />
 
-      <div className="bg-stone-50 rounded-xl p-6 border border-stone-100 space-y-4">
-        <h3 className="text-sm font-medium text-stone-700">
+      <div className="space-y-4 rounded-xl border border-stone-100 bg-stone-50 p-6">
+        <h3 className="font-medium text-sm text-stone-700">
           Your contact info
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <TextInput
             label="Full name"
             onChange={(v) => updateField("contactName", v)}
@@ -76,19 +76,17 @@ export default function FinalDetailsStep({ formData, updateField }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Approximate budget range
         </label>
         <div className="flex flex-wrap gap-2">
           {BUDGET_RANGES.map((range) => (
             <button
-              className={`
-                px-4 py-2 rounded-full text-sm font-medium border transition-all
-                ${
-                  formData.budgetRange === range
-                    ? "bg-stone-800 text-white border-stone-800"
-                    : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
-                }
+              className={`rounded-full border px-4 py-2 font-medium text-sm transition-all ${
+                formData.budgetRange === range
+                  ? "border-stone-800 bg-stone-800 text-white"
+                  : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+              }
               `}
               key={range}
               onClick={() => updateField("budgetRange", range)}
@@ -101,19 +99,17 @@ export default function FinalDetailsStep({ formData, updateField }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           How did you hear about us?
         </label>
         <div className="flex flex-wrap gap-2">
           {REFERRAL_SOURCES.map((source) => (
             <button
-              className={`
-                px-4 py-2 rounded-full text-sm font-medium border transition-all
-                ${
-                  formData.referralSource === source
-                    ? "bg-stone-800 text-white border-stone-800"
-                    : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
-                }
+              className={`rounded-full border px-4 py-2 font-medium text-sm transition-all ${
+                formData.referralSource === source
+                  ? "border-stone-800 bg-stone-800 text-white"
+                  : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+              }
               `}
               key={source}
               onClick={() => updateField("referralSource", source)}

@@ -12,15 +12,15 @@
 
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { database } from "@repo/database";
-import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
 import { createEnvFlagProvider } from "@repo/manifest-runtime/flag-provider";
+import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
 import { registerManifestStoreIssueReporter } from "@repo/manifest-runtime/prisma-store";
 import { captureException } from "@sentry/nextjs";
+import { logManifestIssue } from "./manifest/issue-log";
 import {
   createIssueLogTelemetry,
   mergeTelemetryHooks,
 } from "./manifest/issue-log-telemetry";
-import { logManifestIssue } from "./manifest/issue-log";
 import { createManifestRuntimeLogger } from "./manifest/manifest-runtime-log";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
@@ -43,17 +43,8 @@ const flagProvider = createEnvFlagProvider();
  * Context for creating a manifest runtime.
  */
 interface GeneratedRuntimeContext {
-  user: {
-    id: string;
-    tenantId: string;
-    role?: string;
-  };
   /** Acting user identifier — forwarded to the engine's RuntimeContext. */
   actorId?: string;
-  /** Caller-supplied request id; surfaces in diagnostics and emitted events. */
-  requestId?: string;
-  /** Origin surface: 'route' | 'job' | 'cli' | 'test' | 'ui' | 'workflow'. */
-  source?: string;
   entityName?: string;
   /**
    * Optional Prisma transaction client for atomic multi-entity writes.
@@ -61,6 +52,15 @@ interface GeneratedRuntimeContext {
    * of the main singleton.
    */
   prismaOverride?: import("@repo/manifest-runtime/manifest-runtime-factory").PrismaTransactionClient;
+  /** Caller-supplied request id; surfaces in diagnostics and emitted events. */
+  requestId?: string;
+  /** Origin surface: 'route' | 'job' | 'cli' | 'test' | 'ui' | 'workflow'. */
+  source?: string;
+  user: {
+    id: string;
+    tenantId: string;
+    role?: string;
+  };
 }
 
 /**

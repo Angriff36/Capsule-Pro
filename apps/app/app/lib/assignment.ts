@@ -12,73 +12,73 @@ export interface SeniorityInfo {
 }
 
 export interface EmployeeSkill {
+  proficiencyLevel: number;
   skillId: string;
   skillName: string;
-  proficiencyLevel: number;
 }
 
 export interface ConflictShift {
   id: string;
-  shiftStart: Date;
-  shiftEnd: Date;
   locationName: string;
+  shiftEnd: Date;
+  shiftStart: Date;
 }
 
 export interface EmployeeCandidate {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  role: string;
-  isActive: boolean;
-  hourlyRate: number | null;
-  seniority?: SeniorityInfo;
-  skills?: EmployeeSkill[];
   availability?: Array<{
     dayOfWeek: number;
     startTime: string;
     endTime: string;
     isAvailable: boolean;
   }>;
-  hasConflictingShift: boolean;
   conflictingShifts: ConflictShift[];
+  email: string;
+  firstName: string | null;
+  hasConflictingShift: boolean;
+  hourlyRate: number | null;
+  id: string;
+  isActive: boolean;
+  lastName: string | null;
+  role: string;
+  seniority?: SeniorityInfo;
+  skills?: EmployeeSkill[];
 }
 
 export interface MatchDetails {
+  availabilityMatch: boolean;
+  costEstimate: number;
+  hasConflicts: boolean;
+  seniorityScore: number;
   skillsMatch: boolean;
   skillsMatched: string[];
   skillsMissing: string[];
-  seniorityScore: number;
-  availabilityMatch: boolean;
-  hasConflicts: boolean;
-  costEstimate: number;
 }
 
 export interface AssignmentSuggestion {
-  employee: EmployeeCandidate;
-  score: number;
-  reasoning: string[];
   confidence: ConfidenceLevel;
+  employee: EmployeeCandidate;
   matchDetails: MatchDetails;
+  reasoning: string[];
+  score: number;
 }
 
 export interface ShiftRequirement {
-  shiftId: string;
-  scheduleId: string;
   locationId: string;
-  shiftStart: Date;
-  shiftEnd: Date;
-  roleDuringShift?: string;
-  requiredSkills?: string[];
   notes?: string;
+  requiredSkills?: string[];
+  roleDuringShift?: string;
+  scheduleId: string;
+  shiftEnd: Date;
+  shiftId: string;
+  shiftStart: Date;
 }
 
 export interface AutoAssignmentResult {
-  shiftId: string;
-  suggestions: AssignmentSuggestion[];
   bestMatch: AssignmentSuggestion | null;
   canAutoAssign: boolean;
   laborBudgetWarning?: string;
+  shiftId: string;
+  suggestions: AssignmentSuggestion[];
 }
 
 export interface BulkAssignmentRequest {
@@ -105,10 +105,10 @@ export interface AutoAssignRequest {
 }
 
 export interface AssignmentSuccessResponse {
-  success: boolean;
-  shiftId: string;
   employeeId: string;
   message: string;
+  shiftId: string;
+  success: boolean;
 }
 
 /**

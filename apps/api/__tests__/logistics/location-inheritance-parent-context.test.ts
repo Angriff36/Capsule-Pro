@@ -18,12 +18,21 @@
  */
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "..", "manifest", "ir", "kitchen.ir.json");
+const irPath = join(
+  here,
+  "..",
+  "..",
+  "..",
+  "..",
+  "manifest",
+  "ir",
+  "kitchen.ir.json"
+);
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
@@ -33,9 +42,12 @@ const event = ir.entities.find((e: { name: string }) => e.name === "Event");
 const PARENT_OWNED = "locationId";
 
 function contractFor(entityName: string) {
-  const entity = ir.entities.find((e: { name: string }) => e.name === entityName);
+  const entity = ir.entities.find(
+    (e: { name: string }) => e.name === entityName
+  );
   const createCmd = ir.commands.find(
-    (c: { entity: string; name: string }) => c.entity === entityName && c.name === "create"
+    (c: { entity: string; name: string }) =>
+      c.entity === entityName && c.name === "create"
   );
   return { entity, createCmd };
 }
@@ -46,7 +58,8 @@ for (const entityName of ["WasteEntry", "Shipment"]) {
 
     it("links to Event via belongsTo (so context is resolvable from eventId)", () => {
       const rel = entity.relationships.find(
-        (r: { kind: string; target: string }) => r.kind === "belongsTo" && r.target === "Event"
+        (r: { kind: string; target: string }) =>
+          r.kind === "belongsTo" && r.target === "Event"
       );
       expect(rel).toBeDefined();
       expect(rel.foreignKey.fields).toContain("eventId");
@@ -58,17 +71,23 @@ for (const entityName of ["WasteEntry", "Shipment"]) {
     });
 
     it("does NOT ask the caller for the event-owned locationId", () => {
-      const params = new Set(createCmd.parameters.map((p: { name: string }) => p.name));
+      const params = new Set(
+        createCmd.parameters.map((p: { name: string }) => p.name)
+      );
       expect(params.has(PARENT_OWNED)).toBe(false);
     });
 
     it("declares locationId as a property (so the inherited value can be stored)", () => {
-      const props = new Set(entity.properties.map((p: { name: string }) => p.name));
+      const props = new Set(
+        entity.properties.map((p: { name: string }) => p.name)
+      );
       expect(props.has(PARENT_OWNED)).toBe(true);
     });
 
     it("the inherited locationId is genuinely Event-owned (the duplication it avoids)", () => {
-      const eventProps = new Set(event.properties.map((p: { name: string }) => p.name));
+      const eventProps = new Set(
+        event.properties.map((p: { name: string }) => p.name)
+      );
       expect(eventProps.has(PARENT_OWNED)).toBe(true);
     });
   });

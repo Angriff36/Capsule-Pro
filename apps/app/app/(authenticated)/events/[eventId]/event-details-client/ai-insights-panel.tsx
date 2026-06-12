@@ -29,35 +29,35 @@ import {
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 
 interface AIInsightsPanelProps {
+  breakdown: TaskBreakdown | null;
+  budget: EventBudgetForDisplay | null;
   eventId: string;
   eventTitle: string;
-  summary: GeneratedEventSummary | null | undefined;
-  isLoadingSummary: boolean;
-  breakdown: TaskBreakdown | null;
-  isGenerating: boolean;
   generationProgress: string;
-  suggestions: SuggestedAction[];
-  suggestionsLoading: boolean;
-  showSuggestions: boolean;
-  prepTasks: PrepTaskSummaryClient[];
-  budget: EventBudgetForDisplay | null;
-  // Handlers
-  onGenerateSummary: () => Promise<GeneratedEventSummary>;
-  onDeleteSummary: () => Promise<void>;
-  onOpenSummaryModal: () => void;
-  onOpenBreakdownModal: () => void;
-  onRegenerateBreakdown: () => void;
+  isGenerating: boolean;
+  isLoadingSummary: boolean;
   /** Stops UI generation progress; cannot abort the server-side model call mid-flight */
   onCancelBreakdownGeneration: () => void;
-  onExportBreakdown: () => void;
-  onSaveBreakdown: () => void;
-  onRefreshSuggestions: () => void;
-  onDismissSuggestion: (id: string) => void;
-  onHandleSuggestionAction: (suggestion: SuggestedAction) => void;
-  onShowSuggestionsChange: (show: boolean) => void;
-  onOpenGenerateModal: () => void;
-  onViewBudget: (budgetId: string) => void;
   onCreateBudget: () => void;
+  onDeleteSummary: () => Promise<void>;
+  onDismissSuggestion: (id: string) => void;
+  onExportBreakdown: () => void;
+  // Handlers
+  onGenerateSummary: () => Promise<GeneratedEventSummary>;
+  onHandleSuggestionAction: (suggestion: SuggestedAction) => void;
+  onOpenBreakdownModal: () => void;
+  onOpenGenerateModal: () => void;
+  onOpenSummaryModal: () => void;
+  onRefreshSuggestions: () => void;
+  onRegenerateBreakdown: () => void;
+  onSaveBreakdown: () => void;
+  onShowSuggestionsChange: (show: boolean) => void;
+  onViewBudget: (budgetId: string) => void;
+  prepTasks: PrepTaskSummaryClient[];
+  showSuggestions: boolean;
+  suggestions: SuggestedAction[];
+  suggestionsLoading: boolean;
+  summary: GeneratedEventSummary | null | undefined;
 }
 
 export function AIInsightsPanel({
@@ -182,7 +182,7 @@ export function AIInsightsPanel({
             ))}
           </div>
           {nextAction ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border/70 bg-muted/10 px-3 py-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 border-dashed bg-muted/10 px-3 py-2">
               <p className="text-foreground/80 text-sm">
                 Next action:{" "}
                 <span className="font-medium">{nextAction.label}</span>

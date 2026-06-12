@@ -11,12 +11,12 @@
 "use client";
 
 import {
-  listProposals,
-  getProposal,
-  proposalSend as _proposalSend,
   proposalAccept as _proposalAccept,
   proposalReject as _proposalReject,
+  proposalSend as _proposalSend,
   proposalWithdraw as _proposalWithdraw,
+  getProposal,
+  listProposals,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -35,71 +35,71 @@ export type ProposalStatus =
 export type DateOrString = Date | string;
 
 export interface ProposalLineItem {
-  id: string;
-  proposalId: string;
-  itemType: string;
   category: string;
   description: string;
+  id: string;
+  itemType: string;
+  notes: string | null;
+  proposalId: string;
   quantity: number;
-  unitOfMeasure: string | null;
-  unitPrice: number;
+  sortOrder: number;
   total: number;
   totalPrice: number;
-  sortOrder: number;
-  notes: string | null;
+  unitOfMeasure: string | null;
+  unitPrice: number;
 }
 
 export interface Proposal {
-  id: string;
-  tenantId: string;
-  proposalNumber: string;
-  templateId: string | null;
-  clientId: string | null;
-  leadId: string | null;
-  eventId: string | null;
-  title: string;
-  eventDate: DateOrString | null;
-  eventType: string | null;
-  guestCount: number | null;
-  venueName: string | null;
-  venueAddress: string | null;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  discountAmount: number;
-  status: ProposalStatus;
-  publicToken: string | null;
-  validUntil: DateOrString | null;
-  sentAt: DateOrString | null;
-  viewedAt: DateOrString | null;
   acceptedAt: DateOrString | null;
-  rejectedAt: DateOrString | null;
-  notes: string | null;
-  termsAndConditions: string | null;
-  createdAt: DateOrString;
-  updatedAt: DateOrString;
-  deletedAt: DateOrString | null;
-  clientName?: string | null;
   client?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  clientId: string | null;
+  clientName?: string | null;
+  createdAt: DateOrString;
+  deletedAt: DateOrString | null;
+  discountAmount: number;
+  eventDate: DateOrString | null;
+  eventId: string | null;
+  eventType: string | null;
+  guestCount: number | null;
+  id: string;
   lead?: {
     id: string;
     companyName: string | null;
     contactName: string | null;
   } | null;
+  leadId: string | null;
   lineItems?: ProposalLineItem[];
+  notes: string | null;
+  proposalNumber: string;
+  publicToken: string | null;
+  rejectedAt: DateOrString | null;
+  sentAt: DateOrString | null;
+  status: ProposalStatus;
+  subtotal: number;
+  taxAmount: number;
+  taxRate: number;
+  templateId: string | null;
+  tenantId: string;
+  termsAndConditions: string | null;
+  title: string;
+  total: number;
+  updatedAt: DateOrString;
+  validUntil: DateOrString | null;
+  venueAddress: string | null;
+  venueName: string | null;
+  viewedAt: DateOrString | null;
 }
 
 export interface ProposalSummary {
-  totalCount: number;
-  totalValue: number;
   acceptedCount: number;
   pendingCount: number;
+  totalCount: number;
+  totalValue: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +113,9 @@ export async function fetchProposals(): Promise<Proposal[]> {
 
 export async function fetchProposalById(id: string): Promise<Proposal> {
   const proposal = await getProposal(id);
-  if (!proposal) throw new Error("Failed to fetch proposal");
+  if (!proposal) {
+    throw new Error("Failed to fetch proposal");
+  }
   return proposal as Proposal;
 }
 

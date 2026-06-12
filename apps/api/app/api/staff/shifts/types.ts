@@ -4,6 +4,6 @@
 
 export interface ShiftOverlap {
   id: string;
-  shift_start: Date;
   shift_end: Date;
+  shift_start: Date;
 }

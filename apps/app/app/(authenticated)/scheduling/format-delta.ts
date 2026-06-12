@@ -10,7 +10,9 @@ export const formatDelta = (current: number, previous: number) => {
     return c > 0 ? "+100%" : "0%";
   }
   const delta = (c - p) / p;
-  if (!Number.isFinite(delta)) return "0%";
+  if (!Number.isFinite(delta)) {
+    return "0%";
+  }
   const sign = delta > 0 ? "+" : "";
   return `${sign}${percentFormatter.format(delta)}`;
 };

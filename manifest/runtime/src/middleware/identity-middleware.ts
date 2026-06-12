@@ -41,10 +41,10 @@ interface PrismaForIdentity {
 type CaptureException = (error: unknown) => void;
 
 export interface IdentityMiddlewareOptions {
-  /** Prisma client for user role lookups. */
-  prisma: PrismaForIdentity;
   /** Error capture function (e.g. Sentry). */
   captureException?: CaptureException;
+  /** Prisma client for user role lookups. */
+  prisma: PrismaForIdentity;
 }
 
 // ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ export function createIdentityMiddleware(
       }
 
       // Skip if no user context available.
-      if (!user?.id || !user?.tenantId) {
+      if (!(user?.id && user?.tenantId)) {
         return {};
       }
 

@@ -15,21 +15,20 @@ import { type FormEvent, useCallback, useState } from "react";
 export interface ConstraintOutcome {
   code: string;
   constraintName: string;
-  severity: "ok" | "warn" | "block";
+  details?: Record<string, unknown>;
   formatted: string;
   message?: string;
-  details?: Record<string, unknown>;
-  passed: boolean;
   overridden?: boolean;
   overriddenBy?: string;
+  passed: boolean;
   resolved?: Array<{ expression: string; value: unknown }>;
+  severity: "ok" | "warn" | "block";
 }
 
 /**
  * Command result from the Manifest runtime
  */
 export interface CommandResult {
-  success: boolean;
   constraintOutcomes?: ConstraintOutcome[];
   guardFailure?: {
     index: number;
@@ -44,6 +43,7 @@ export interface CommandResult {
     message?: string;
     resolved?: Array<{ expression: string; value: unknown }>;
   };
+  success: boolean;
 }
 
 /**
@@ -53,21 +53,21 @@ function SeverityBadge({ severity }: { severity: "ok" | "warn" | "block" }) {
   switch (severity) {
     case "ok":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 font-medium text-green-400 text-xs">
           <CheckCircle2Icon className="h-3 w-3" />
           OK
         </span>
       );
     case "warn":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1 font-medium text-amber-400 text-xs">
           <AlertTriangleIcon className="h-3 w-3" />
           WARN
         </span>
       );
     case "block":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-1 text-xs font-medium text-rose-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-1 font-medium text-rose-400 text-xs">
           <XCircleIcon className="h-3 w-3" />
           BLOCK
         </span>
@@ -137,7 +137,7 @@ function ResolvedValues({
   return (
     <div className="mt-2">
       <button
-        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+        className="flex items-center gap-1 text-blue-400 text-xs hover:text-blue-300"
         onClick={() => setExpanded(!expanded)}
         type="button"
       >
@@ -147,11 +147,11 @@ function ResolvedValues({
       {expanded && (
         <div className="mt-2 rounded-md bg-slate-900/50 p-3">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">
+            <span className="font-medium text-slate-400 text-xs">
               Expression Evaluations
             </span>
             <button
-              className="text-xs text-slate-500 hover:text-slate-300"
+              className="text-slate-500 text-xs hover:text-slate-300"
               onClick={() =>
                 copyToClipboard(
                   JSON.stringify(
@@ -170,7 +170,7 @@ function ResolvedValues({
           <div className="space-y-1">
             {resolved.map((item, index) => (
               <div
-                className="grid grid-cols-[1fr_auto] gap-2 text-xs font-mono"
+                className="grid grid-cols-[1fr_auto] gap-2 font-mono text-xs"
                 key={index}
               >
                 <span className="text-blue-300">{item.expression}</span>
@@ -306,7 +306,7 @@ function ConstraintDiagnosticsCard({
                 ? `${failedConstraints.length} Constraint${failedConstraints.length === 1 ? "" : "s"}`
                 : "Command Result"}
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-slate-500 text-xs">
               {hasGuardFailure && `Guard index: ${result.guardFailure?.index}`}
               {hasPolicyDenial && `Policy: ${result.policyDenial?.policyName}`}
               {!(hasGuardFailure || hasPolicyDenial) &&
@@ -327,11 +327,11 @@ function ConstraintDiagnosticsCard({
           {hasGuardFailure && (
             <div className="rounded-md bg-slate-900/50 p-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-rose-400">
+                <span className="font-medium text-rose-400 text-xs">
                   Guard Condition Failed
                 </span>
                 <button
-                  className="text-xs text-slate-500 hover:text-slate-300"
+                  className="text-slate-500 text-xs hover:text-slate-300"
                   onClick={() => {
                     const formatted = result.guardFailure?.formatted;
                     if (formatted) {
@@ -343,7 +343,7 @@ function ConstraintDiagnosticsCard({
                   <CopyIcon className="h-3 w-3" />
                 </button>
               </div>
-              <code className="block rounded bg-slate-950 px-2 py-1 text-sm text-rose-300">
+              <code className="block rounded bg-slate-950 px-2 py-1 text-rose-300 text-sm">
                 {result.guardFailure?.formatted}
               </code>
               {result.guardFailure?.resolved && (
@@ -356,11 +356,11 @@ function ConstraintDiagnosticsCard({
           {hasPolicyDenial && (
             <div className="rounded-md bg-slate-900/50 p-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-amber-400">
+                <span className="font-medium text-amber-400 text-xs">
                   Policy Denied
                 </span>
                 <button
-                  className="text-xs text-slate-500 hover:text-slate-300"
+                  className="text-slate-500 text-xs hover:text-slate-300"
                   onClick={() => {
                     const formatted = result.policyDenial?.formatted;
                     if (formatted) {
@@ -372,11 +372,11 @@ function ConstraintDiagnosticsCard({
                   <CopyIcon className="h-3 w-3" />
                 </button>
               </div>
-              <code className="block rounded bg-slate-950 px-2 py-1 text-sm text-amber-300">
+              <code className="block rounded bg-slate-950 px-2 py-1 text-amber-300 text-sm">
                 {result.policyDenial?.formatted}
               </code>
               {result.policyDenial?.message && (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-slate-400 text-xs">
                   {result.policyDenial.message}
                 </p>
               )}
@@ -390,10 +390,10 @@ function ConstraintDiagnosticsCard({
           {hasConstraints && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-400">
+                <span className="font-medium text-slate-400 text-xs">
                   Constraint Evaluations
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-slate-500 text-xs">
                   {result.constraintOutcomes?.filter((c) => c.passed).length}{" "}
                   passed / {failedConstraints.length} failed
                 </span>
@@ -407,24 +407,24 @@ function ConstraintDiagnosticsCard({
                     <div className="flex-1">
                       <div className="mb-1 flex items-center gap-2">
                         <SeverityBadge severity={outcome.severity} />
-                        <span className="text-xs font-mono text-slate-500">
+                        <span className="font-mono text-slate-500 text-xs">
                           {outcome.code}
                         </span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {outcome.constraintName}
                         </span>
                       </div>
                       {outcome.message && (
-                        <p className="mb-1 text-xs text-slate-300">
+                        <p className="mb-1 text-slate-300 text-xs">
                           {outcome.message}
                         </p>
                       )}
-                      <code className="block rounded bg-slate-950 px-2 py-1 text-xs text-slate-300">
+                      <code className="block rounded bg-slate-950 px-2 py-1 text-slate-300 text-xs">
                         {outcome.formatted}
                       </code>
                     </div>
                     <button
-                      className="text-xs text-slate-500 hover:text-slate-300"
+                      className="text-slate-500 text-xs hover:text-slate-300"
                       onClick={() =>
                         copyToClipboard(
                           `${outcome.constraintName}: ${outcome.formatted}`
@@ -439,7 +439,7 @@ function ConstraintDiagnosticsCard({
                     <ResolvedValues resolved={outcome.resolved} />
                   )}
                   {outcome.overridden && (
-                    <div className="mt-2 flex items-center gap-1 text-xs text-amber-400">
+                    <div className="mt-2 flex items-center gap-1 text-amber-400 text-xs">
                       <AlertTriangleIcon className="h-3 w-3" />
                       Overridden by {outcome.overriddenBy}
                     </div>
@@ -498,11 +498,11 @@ export const ConstraintDiagnosticsClient = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-slate-700">
+        <div className="flex gap-2 border-slate-700 border-b">
           <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-4 py-2 font-medium text-sm transition-colors ${
               selectedTab === "demo"
-                ? "border-b-2 border-blue-400 text-blue-400"
+                ? "border-blue-400 border-b-2 text-blue-400"
                 : "text-slate-400 hover:text-slate-200"
             }`}
             onClick={() => setSelectedTab("demo")}
@@ -511,9 +511,9 @@ export const ConstraintDiagnosticsClient = () => {
             Demo Data
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-4 py-2 font-medium text-sm transition-colors ${
               selectedTab === "custom"
-                ? "border-b-2 border-blue-400 text-blue-400"
+                ? "border-blue-400 border-b-2 text-blue-400"
                 : "text-slate-400 hover:text-slate-200"
             }`}
             onClick={() => setSelectedTab("custom")}
@@ -553,7 +553,7 @@ export const ConstraintDiagnosticsClient = () => {
                 <p>Understanding constraint outcomes and resolved values</p>
               </div>
             </div>
-            <div className="grid gap-4 text-sm text-slate-400 md:grid-cols-3">
+            <div className="grid gap-4 text-slate-400 text-sm md:grid-cols-3">
               <div>
                 <p className="mb-2 font-medium text-slate-300">
                   Severity Levels
@@ -617,7 +617,7 @@ export const ConstraintDiagnosticsClient = () => {
                   value={jsonInput}
                 />
                 {parsingError && (
-                  <p className="mt-2 text-xs text-rose-400">{parsingError}</p>
+                  <p className="mt-2 text-rose-400 text-xs">{parsingError}</p>
                 )}
               </div>
               <div className="flex gap-2">

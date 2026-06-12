@@ -226,7 +226,9 @@ const PublicProposalViewPage = async ({
   const formatDecimal = (
     value: { toNumber: () => number } | null | undefined
   ): number => {
-    if (value == null) return 0;
+    if (value == null) {
+      return 0;
+    }
     return value.toNumber();
   };
 

@@ -18,21 +18,21 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 const RECEIVING_STATUSES = ["received", "partial"] as const;
 
 interface ReceivingHistoryRecord {
+  completionPercentage: number;
   id: string;
   poNumber: string;
-  vendorName: string | null;
-  status: string;
   receivedAt: string | null;
   receivedBy: string | null;
-  totalItems: number;
   receivedItems: number;
-  completionPercentage: number;
+  status: string;
+  totalItems: number;
+  vendorName: string | null;
 }
 
 interface ReceivingHistoryResponse {
+  page: number;
   records: ReceivingHistoryRecord[];
   total: number;
-  page: number;
   totalPages: number;
 }
 

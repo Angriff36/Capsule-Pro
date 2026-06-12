@@ -5,10 +5,18 @@ function getBasePerPerson(
   rules: PricingRules,
   guestCount: number
 ): { low: number; high: number } {
-  if (guestCount >= 500) return rules.basePerPerson[4];
-  if (guestCount >= 200) return rules.basePerPerson[3];
-  if (guestCount >= 100) return rules.basePerPerson[2];
-  if (guestCount >= 50) return rules.basePerPerson[1];
+  if (guestCount >= 500) {
+    return rules.basePerPerson[4];
+  }
+  if (guestCount >= 200) {
+    return rules.basePerPerson[3];
+  }
+  if (guestCount >= 100) {
+    return rules.basePerPerson[2];
+  }
+  if (guestCount >= 50) {
+    return rules.basePerPerson[1];
+  }
   return rules.basePerPerson[0];
 }
 

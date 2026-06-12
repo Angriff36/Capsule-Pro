@@ -12,9 +12,9 @@
 import registry from "../commands.registry.json" with { type: "json" };
 
 export interface RegistryEntry {
-  entity: string;
   command: string;
   commandId: string;
+  entity: string;
 }
 
 export function getCommandsRegistry(): RegistryEntry[] {

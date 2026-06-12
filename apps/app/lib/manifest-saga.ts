@@ -13,25 +13,25 @@ export type SagaStepInput = {
 };
 
 export interface RunManifestSagaParams {
+  correlationId?: string;
   saga: string;
   steps: Record<string, SagaStepInput>;
   user: ManifestUserContext;
-  correlationId?: string;
 }
 
 export interface RunManifestSagaSuccess {
+  events?: unknown[];
   ok: true;
   saga: string;
   status: string;
   steps: unknown;
-  events?: unknown[];
 }
 
 export interface RunManifestSagaFailure {
+  httpStatus: number;
+  message: string;
   ok: false;
   saga: string;
-  message: string;
-  httpStatus: number;
 }
 
 export type RunManifestSagaResult =
@@ -55,7 +55,9 @@ export async function runManifestSaga(
       ok: false,
       saga: params.saga,
       message:
-        error instanceof Error ? error.message : "Manifest saga API unreachable",
+        error instanceof Error
+          ? error.message
+          : "Manifest saga API unreachable",
       httpStatus: 500,
     };
   }

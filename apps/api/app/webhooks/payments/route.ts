@@ -107,7 +107,11 @@ const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
 
     if (!processResult.ok) {
       const errorText = await processResult.text();
-      log.error("Manifest Payment.process failed", { errorText, paymentId, tenantId });
+      log.error("Manifest Payment.process failed", {
+        errorText,
+        paymentId,
+        tenantId,
+      });
       return;
     }
 
@@ -136,7 +140,11 @@ const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
 
         if (!applyResult.ok) {
           const errorText = await applyResult.text();
-          log.error("Manifest Invoice.applyPayment failed", { errorText, invoiceId: payment.invoiceId, tenantId });
+          log.error("Manifest Invoice.applyPayment failed", {
+            errorText,
+            invoiceId: payment.invoiceId,
+            tenantId,
+          });
           return;
         }
 
@@ -151,7 +159,11 @@ const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
 
           if (!markPaidResult.ok) {
             const errorText = await markPaidResult.text();
-            log.error("Manifest Invoice.markAsPaid failed", { errorText, invoiceId: payment.invoiceId, tenantId });
+            log.error("Manifest Invoice.markAsPaid failed", {
+              errorText,
+              invoiceId: payment.invoiceId,
+              tenantId,
+            });
           }
         }
       }
@@ -192,7 +204,11 @@ const handlePaymentIntentFailed = async (data: Stripe.PaymentIntent) => {
 
     if (!result.ok) {
       const errorText = await result.text();
-      log.error("Manifest Payment.processFailed failed", { errorText, paymentId, tenantId });
+      log.error("Manifest Payment.processFailed failed", {
+        errorText,
+        paymentId,
+        tenantId,
+      });
     }
   } catch (error) {
     log.error("Failed to reconcile payment_intent.payment_failed", { error });

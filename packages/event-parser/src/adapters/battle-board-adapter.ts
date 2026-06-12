@@ -19,17 +19,17 @@ import type {
 } from "../types/event.js";
 
 export interface BattleBoardAdapterOptions {
-  includeTaskLibrary?: boolean;
   defaultLayouts?: BattleBoardLayout[];
+  includeTaskLibrary?: boolean;
   staffParkingDefault?: string;
   staffRestroomsDefault?: string;
 }
 
 export interface BattleBoardBuildResult {
-  battleBoard: BattleBoardData;
   autoFillScore: number;
-  warnings: string[];
+  battleBoard: BattleBoardData;
   missingFields: string[];
+  warnings: string[];
 }
 
 /**

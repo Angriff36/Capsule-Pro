@@ -71,9 +71,9 @@ export function generateMonthlyPdf(
     {
       label: "Year-over-Year",
       value:
-        metrics.yearOverYearRevenue !== null
-          ? formatCurrencyFull(metrics.yearOverYearRevenue)
-          : "N/A",
+        metrics.yearOverYearRevenue === null
+          ? "N/A"
+          : formatCurrencyFull(metrics.yearOverYearRevenue),
       subtext: yoyChange.text,
       trend: yoyChange.trend,
     },

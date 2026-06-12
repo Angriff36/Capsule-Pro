@@ -31,13 +31,13 @@ const isEventIdUuid = (value: string): boolean =>
   EVENT_ID_UUID_REGEX.test(value);
 
 interface StaffAssignment {
-  id: string;
   employeeId: string;
   employeeName: string;
+  endTime: string | null;
+  id: string;
+  notes: string | null;
   role: string;
   startTime: string | null;
-  endTime: string | null;
-  notes: string | null;
 }
 
 interface EventStaffPageProps {

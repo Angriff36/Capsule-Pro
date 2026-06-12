@@ -23,7 +23,7 @@ interface FunnelBySourceTableProps {
 
 function FunnelBySourceTable({ rows }: FunnelBySourceTableProps) {
   if (!rows.length) {
-    return <div className="text-sm text-muted-foreground">No funnel data.</div>;
+    return <div className="text-muted-foreground text-sm">No funnel data.</div>;
   }
   return (
     <div className="overflow-x-auto rounded-lg border">

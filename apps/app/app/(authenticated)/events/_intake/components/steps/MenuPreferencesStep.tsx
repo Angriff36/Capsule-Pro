@@ -59,7 +59,7 @@ export default function MenuPreferencesStep({
       />
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           What cuisines interest you? Select all that apply.
         </label>
         <div className="flex flex-wrap gap-2">
@@ -75,7 +75,7 @@ export default function MenuPreferencesStep({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Any dietary restrictions to accommodate?
         </label>
         <div className="flex flex-wrap gap-2">
@@ -92,19 +92,17 @@ export default function MenuPreferencesStep({
 
       {formData.dietaryNeeds.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-3">
+          <label className="mb-3 block font-medium text-sm text-stone-700">
             What portion of your guests have dietary needs?
           </label>
           <div className="flex flex-wrap gap-3">
             {DIETARY_PERCENTAGES.map((opt) => (
               <button
-                className={`
-                  px-4 py-2 rounded-full text-sm font-medium border transition-all
-                  ${
-                    formData.dietaryPercentage === opt.value
-                      ? "bg-stone-800 text-white border-stone-800"
-                      : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
-                  }
+                className={`rounded-full border px-4 py-2 font-medium text-sm transition-all ${
+                  formData.dietaryPercentage === opt.value
+                    ? "border-stone-800 bg-stone-800 text-white"
+                    : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+                }
                 `}
                 key={opt.value}
                 onClick={() => updateField("dietaryPercentage", opt.value)}

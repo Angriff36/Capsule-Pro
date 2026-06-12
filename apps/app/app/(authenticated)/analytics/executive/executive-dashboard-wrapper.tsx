@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-
-import { ExecutiveDashboardClient } from "./components/executive-dashboard-client";
 import { getExecutiveKPIMetrics } from "./actions/get-executive-kpis";
+import { ExecutiveDashboardClient } from "./components/executive-dashboard-client";
 
 async function ExecutiveDashboardContent() {
   const metrics = await getExecutiveKPIMetrics();
@@ -29,7 +28,7 @@ function ExecutiveDashboardSkeleton() {
         <div className="h-4 w-32 animate-pulse rounded bg-muted" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-lg bg-muted" />
+            <div className="h-24 animate-pulse rounded-lg bg-muted" key={i} />
           ))}
         </div>
       </div>

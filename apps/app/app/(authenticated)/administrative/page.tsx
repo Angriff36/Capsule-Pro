@@ -162,13 +162,13 @@ const AdminDashboardPage = async ({
   ).length;
 
   interface DocumentRow {
-    id: string;
-    file_name: string;
-    file_type: string;
-    parse_status: string;
-    parse_error: string | null;
     created_at: Date;
     event_id: string | null;
+    file_name: string;
+    file_type: string;
+    id: string;
+    parse_error: string | null;
+    parse_status: string;
   }
 
   let recentDocuments: DocumentRow[] = [];
@@ -226,7 +226,7 @@ const AdminDashboardPage = async ({
               {formatDateRange(weekStart, weekEnd)} —{" "}
               {validationIssues === 0
                 ? "All events ready for review"
-                : `${validationIssues} event${validationIssues !== 1 ? "s" : ""} need attention`}
+                : `${validationIssues} event${validationIssues === 1 ? "" : "s"} need attention`}
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -359,14 +359,14 @@ const AdminDashboardPage = async ({
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <SectionHeader
-                  count={`${totalEvents} event${totalEvents !== 1 ? "s" : ""}`}
+                  count={`${totalEvents} event${totalEvents === 1 ? "" : "s"}`}
                   description="Events this week requiring review."
                   eyebrow="Events"
                   title="Events Overview"
                 />
                 <div className="flex items-center gap-2">
                   <div className="relative">
-                    <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                    <SearchIcon className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
                     <Input
                       className="w-64 pl-8"
                       placeholder="Search client or venue..."
@@ -379,10 +379,10 @@ const AdminDashboardPage = async ({
               {events.length === 0 ? (
                 <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
                   <CalendarDaysIcon className="mx-auto size-12 text-muted-foreground/50" />
-                  <p className="mt-4 text-ink text-lg font-medium">
+                  <p className="mt-4 font-medium text-ink text-lg">
                     No events this week
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-muted-foreground text-sm">
                     Create new events or check a different week.
                   </p>
                   <Button asChild className="mt-4">
@@ -417,10 +417,10 @@ const AdminDashboardPage = async ({
                           </Badge>
                         </div>
                         <p className="mt-2 font-semibold">{event.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {event.venueName ?? "Venue TBD"}
                         </p>
-                        <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="mt-3 flex items-center gap-4 text-muted-foreground text-sm">
                           <span className="flex items-center gap-1">
                             <CalendarDaysIcon className="size-3.5" />
                             {dateFormatter.format(event.eventDate)}

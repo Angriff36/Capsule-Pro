@@ -86,34 +86,34 @@ const getDocumentIcon = (documentType: string | null) => {
 };
 
 interface Contract {
-  id: string;
-  tenantId: string;
-  eventId: string;
+  client?: {
+    id: string;
+    name: string;
+  } | null;
   clientId: string;
   contractNumber: string | null;
-  title: string;
-  status: string;
-  documentUrl: string | null;
-  documentType: string | null;
-  notes: string | null;
-  expiresAt: Date | null;
   createdAt: Date;
-  updatedAt: Date;
+  documentType: string | null;
+  documentUrl: string | null;
   event?: {
     id: string;
     title: string;
     eventDate: Date;
   } | null;
-  client?: {
-    id: string;
-    name: string;
-  } | null;
+  eventId: string;
+  expiresAt: Date | null;
+  id: string;
+  notes: string | null;
+  status: string;
+  tenantId: string;
+  title: string;
+  updatedAt: Date;
 }
 
 interface EventOption {
+  eventDate: string;
   id: string;
   title: string;
-  eventDate: string;
 }
 
 interface ClientOption {
@@ -122,13 +122,13 @@ interface ClientOption {
 }
 
 interface ContractsPageClientProps {
+  clientsForCreate: ClientOption[];
   contracts: Contract[];
   events: EventOption[];
-  clientsForCreate: ClientOption[];
-  uniqueStatuses: string[];
+  tenantId: string;
   uniqueClients: string[];
   uniqueDocumentTypes: string[];
-  tenantId: string;
+  uniqueStatuses: string[];
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -237,16 +237,16 @@ export const ContractsPageClient = ({
 
       {/* Filters Section */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <h2 className="font-medium text-muted-foreground text-sm">Filters</h2>
         <Card className="mt-3" tone="canvas">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
             {/* Search */}
             <div className="flex-1">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Search
               </label>
               <div className="relative">
-                <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="pl-9"
                   onChange={(e) => handleSearchChange(e.target.value)}
@@ -258,7 +258,7 @@ export const ContractsPageClient = ({
 
             {/* Status Filter */}
             <div className="lg:w-48">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Status
               </label>
               <Select
@@ -285,7 +285,7 @@ export const ContractsPageClient = ({
 
             {/* Client Filter */}
             <div className="lg:w-56">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Client
               </label>
               <Select
@@ -308,7 +308,7 @@ export const ContractsPageClient = ({
 
             {/* Document Type Filter */}
             <div className="lg:w-56">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Document Type
               </label>
               <Select
@@ -347,7 +347,7 @@ export const ContractsPageClient = ({
       {/* Contracts Grid Section */}
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Contracts ({filteredContracts.length})
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -412,7 +412,7 @@ export const ContractsPageClient = ({
                         {contract.status}
                       </Badge>
                     </div>
-                    <CardTitle className="text-lg line-clamp-2">
+                    <CardTitle className="line-clamp-2 text-lg">
                       {contract.title}
                     </CardTitle>
                     {contract.notes && (
@@ -433,9 +433,13 @@ export const ContractsPageClient = ({
                         <CalendarIcon className="size-4 shrink-0" />
                         <span className="truncate">{contract.event.title}</span>
                         <span className="text-muted-foreground/60 text-xs">
-                          ({contract.event.eventDate
-                            ? dateFormatter.format(new Date(contract.event.eventDate))
-                            : "TBD"})
+                          (
+                          {contract.event.eventDate
+                            ? dateFormatter.format(
+                                new Date(contract.event.eventDate)
+                              )
+                            : "TBD"}
+                          )
                         </span>
                       </div>
                     )}

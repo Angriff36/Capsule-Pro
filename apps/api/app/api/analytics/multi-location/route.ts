@@ -13,11 +13,11 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface MultiLocationFilters {
-  locationIds?: string[];
-  startDate?: string;
   endDate?: string;
-  period?: "7d" | "30d" | "90d" | "12m";
   kpiCategories?: string[];
+  locationIds?: string[];
+  period?: "7d" | "30d" | "90d" | "12m";
+  startDate?: string;
 }
 
 /**
@@ -75,7 +75,9 @@ function getDateRange(period: "7d" | "30d" | "90d" | "12m"): {
     case "7d":
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       previousEndDate = startDate;
-      previousStartDate = new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+      previousStartDate = new Date(
+        startDate.getTime() - 7 * 24 * 60 * 60 * 1000
+      );
       break;
     case "90d":
       startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
@@ -122,7 +124,10 @@ export async function GET(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -242,7 +247,10 @@ export async function GET(request: Request) {
       Promise.all(
         locations.map(async (location) => {
           const result = await database.$queryRaw<
-            Array<{ budgeted_labor: string | null; actual_labor: string | null }>
+            Array<{
+              budgeted_labor: string | null;
+              actual_labor: string | null;
+            }>
           >(
             Prisma.sql`
             SELECT
@@ -267,7 +275,10 @@ export async function GET(request: Request) {
       Promise.all(
         locations.map(async (location) => {
           const result = await database.$queryRaw<
-            Array<{ budgeted_labor: string | null; actual_labor: string | null }>
+            Array<{
+              budgeted_labor: string | null;
+              actual_labor: string | null;
+            }>
           >(
             Prisma.sql`
             SELECT
@@ -510,13 +521,17 @@ export async function GET(request: Request) {
     // Populate current revenue
     currentRevenueRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.currentRevenue = item.revenue;
+      if (metrics) {
+        metrics.currentRevenue = item.revenue;
+      }
     });
 
     // Populate previous revenue
     previousRevenueRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.previousRevenue = item.revenue;
+      if (metrics) {
+        metrics.previousRevenue = item.revenue;
+      }
     });
 
     // Populate labor metrics
@@ -531,23 +546,31 @@ export async function GET(request: Request) {
     // Populate waste metrics
     currentWasteRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.currentWasteCost = item.wasteCost;
+      if (metrics) {
+        metrics.currentWasteCost = item.wasteCost;
+      }
     });
 
     previousWasteRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.previousWasteCost = item.wasteCost;
+      if (metrics) {
+        metrics.previousWasteCost = item.wasteCost;
+      }
     });
 
     // Populate margin metrics
     currentMarginRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.currentAvgMargin = item.avgMargin;
+      if (metrics) {
+        metrics.currentAvgMargin = item.avgMargin;
+      }
     });
 
     previousMarginRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.previousAvgMargin = item.avgMargin;
+      if (metrics) {
+        metrics.previousAvgMargin = item.avgMargin;
+      }
     });
 
     // Populate event counts
@@ -561,7 +584,9 @@ export async function GET(request: Request) {
 
     previousEventRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.previousEventCount = item.eventCount;
+      if (metrics) {
+        metrics.previousEventCount = item.eventCount;
+      }
     });
 
     // Populate inventory metrics
@@ -576,7 +601,9 @@ export async function GET(request: Request) {
     // Populate staffing metrics
     staffingRows.forEach((item) => {
       const metrics = locationMetrics.get(item.locationId);
-      if (metrics) metrics.staffCount = item.staffCount;
+      if (metrics) {
+        metrics.staffCount = item.staffCount;
+      }
     });
 
     // Calculate aggregates and KPIs
@@ -758,7 +785,8 @@ export async function GET(request: Request) {
         formatted: `${avgMarginPct.toFixed(1)}%`,
         change: 0, // Would need previous period
         changeFormatted: "average",
-        trend: avgMarginPct >= 20 ? "up" : avgMarginPct >= 10 ? "neutral" : "down",
+        trend:
+          avgMarginPct >= 20 ? "up" : avgMarginPct >= 10 ? "neutral" : "down",
         category: "financial",
         locationBreakdown: Array.from(locationMetrics.entries()).map(
           ([locationId, metrics]) => {
@@ -782,12 +810,20 @@ export async function GET(request: Request) {
         }).format(completionRate),
         change: 0,
         changeFormatted: "completion rate",
-        trend: completionRate >= 0.9 ? "up" : completionRate >= 0.75 ? "neutral" : "down",
+        trend:
+          completionRate >= 0.9
+            ? "up"
+            : completionRate >= 0.75
+              ? "neutral"
+              : "down",
         category: "operational",
         locationBreakdown: Array.from(locationMetrics.entries()).map(
           ([locationId, metrics]) => {
             const location = locations.find((l) => l.id === locationId);
-            const rate = metrics.eventCount > 0 ? metrics.completedEventCount / metrics.eventCount : 0;
+            const rate =
+              metrics.eventCount > 0
+                ? metrics.completedEventCount / metrics.eventCount
+                : 0;
             return {
               locationId,
               locationName: location?.name || "Unknown",
@@ -841,19 +877,21 @@ export async function GET(request: Request) {
         title: "Revenue per Staff Member",
         currentValue:
           totalStaffCount > 0 ? totalCurrentRevenue / totalStaffCount : 0,
-        target: 75000, // Industry benchmark
+        target: 75_000, // Industry benchmark
         formatted: new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           maximumFractionDigits: 0,
-        }).format(totalStaffCount > 0 ? totalCurrentRevenue / totalStaffCount : 0),
+        }).format(
+          totalStaffCount > 0 ? totalCurrentRevenue / totalStaffCount : 0
+        ),
         targetFormatted: new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           maximumFractionDigits: 0,
-        }).format(75000),
+        }).format(75_000),
         status:
-          totalStaffCount > 0 && totalCurrentRevenue / totalStaffCount >= 75000
+          totalStaffCount > 0 && totalCurrentRevenue / totalStaffCount >= 75_000
             ? "above"
             : "below",
         category: "productivity",
@@ -899,7 +937,8 @@ export async function GET(request: Request) {
         target: 25, // Target: 25% gross margin
         formatted: `${avgMarginPct.toFixed(1)}%`,
         targetFormatted: "≥ 25%",
-        status: avgMarginPct >= 25 ? "above" : avgMarginPct >= 15 ? "near" : "below",
+        status:
+          avgMarginPct >= 25 ? "above" : avgMarginPct >= 15 ? "near" : "below",
         category: "financial",
       },
     ];

@@ -25,26 +25,34 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface SyncStatus {
-  id: string;
-  provider: string;
   calendarName: string | null;
-  status: string;
-  lastSyncAt: string | null;
-  lastSyncStatus: string | null;
-  lastSyncError: string | null;
   enabled: boolean;
+  id: string;
+  lastSyncAt: string | null;
+  lastSyncError: string | null;
+  lastSyncStatus: string | null;
+  provider: string;
+  status: string;
 }
 
 function formatLastSync(iso: string | null): string {
-  if (!iso) return "Never";
+  if (!iso) {
+    return "Never";
+  }
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) {
+    return "Just now";
+  }
+  if (diffMin < 60) {
+    return `${diffMin}m ago`;
+  }
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH}h ago`;
+  if (diffH < 24) {
+    return `${diffH}h ago`;
+  }
   return d.toLocaleDateString();
 }
 
@@ -109,7 +117,9 @@ export function SyncClient() {
   };
 
   const handleDisconnect = async (provider: string) => {
-    if (!confirm(`Are you sure you want to disconnect ${provider}?`)) return;
+    if (!confirm(`Are you sure you want to disconnect ${provider}?`)) {
+      return;
+    }
 
     setActionLoading(`disconnect-${provider}`);
     try {
@@ -156,9 +166,8 @@ export function SyncClient() {
     }
   };
 
-  const getSyncForProvider = (providerId: string): SyncStatus | undefined => {
-    return syncs.find((s) => s.provider === providerId);
-  };
+  const getSyncForProvider = (providerId: string): SyncStatus | undefined =>
+    syncs.find((s) => s.provider === providerId);
 
   const providers = [
     { id: "google", name: "Google Calendar" },
@@ -207,7 +216,7 @@ export function SyncClient() {
 
             return (
               <div
-                className="rounded-xs border border-hairline bg-canvas p-4 space-y-3"
+                className="space-y-3 rounded-xs border border-hairline bg-canvas p-4"
                 data-slot="sync-provider"
                 key={provider.id}
               >

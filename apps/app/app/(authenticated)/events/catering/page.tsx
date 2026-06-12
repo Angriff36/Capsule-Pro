@@ -24,10 +24,14 @@ import { CateringClient } from "./catering-client";
 
 export default async function CateringOrdersPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [total, draft, confirmed, inProgress, completed, cancelled] =
     await Promise.all([
@@ -127,7 +131,7 @@ export default async function CateringOrdersPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} order${total !== 1 ? "s" : ""}`}
+            count={`${total} order${total === 1 ? "" : "s"}`}
             description="Create and manage catering orders with full lifecycle tracking."
             eyebrow="Catering"
             title="All Orders"

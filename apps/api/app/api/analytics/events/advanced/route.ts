@@ -21,28 +21,6 @@ async function getTenantIdForOrg(orgId: string): Promise<string> {
 }
 
 interface AdvancedAnalyticsResponse {
-  summary: {
-    totalEvents: number;
-    totalRevenue: number;
-    averageMargin: number;
-    averageGuestCount: number;
-    revenueTrend: "up" | "down" | "stable";
-    marginTrend: "up" | "down" | "stable";
-  };
-  profitabilityTrends: Array<{
-    period: string;
-    revenue: number;
-    margin: number;
-    events: number;
-  }>;
-  topMenuItems: Array<{
-    dishId: string;
-    dishName: string;
-    category: string | null;
-    eventCount: number;
-    avgMarginPerEvent: number;
-    totalRevenue: number;
-  }>;
   clientPreferences: Array<{
     clientId: string;
     clientName: string;
@@ -79,6 +57,28 @@ interface AdvancedAnalyticsResponse {
       mitigation: string;
     }>;
   };
+  profitabilityTrends: Array<{
+    period: string;
+    revenue: number;
+    margin: number;
+    events: number;
+  }>;
+  summary: {
+    totalEvents: number;
+    totalRevenue: number;
+    averageMargin: number;
+    averageGuestCount: number;
+    revenueTrend: "up" | "down" | "stable";
+    marginTrend: "up" | "down" | "stable";
+  };
+  topMenuItems: Array<{
+    dishId: string;
+    dishName: string;
+    category: string | null;
+    eventCount: number;
+    avgMarginPerEvent: number;
+    totalRevenue: number;
+  }>;
 }
 
 export async function GET(request: Request) {
@@ -192,7 +192,8 @@ export async function GET(request: Request) {
     const clientMap = new Map(
       clients.map((c) => [
         c.id,
-        c.company_name || `${c.first_name || ""} ${c.last_name || ""}`.trim() ||
+        c.company_name ||
+          `${c.first_name || ""} ${c.last_name || ""}`.trim() ||
           "Unknown",
       ])
     );
@@ -220,8 +221,7 @@ export async function GET(request: Request) {
       (sum, e) => sum + (profitMap.get(e.id)?.margin || 0),
       0
     );
-    const averageMargin =
-      totalEvents > 0 ? totalMargin / totalEvents : 0;
+    const averageMargin = totalEvents > 0 ? totalMargin / totalEvents : 0;
     const averageGuestCount =
       totalEvents > 0
         ? eventsWithProfit.reduce((sum, e) => sum + e.guest_count, 0) /
@@ -235,13 +235,17 @@ export async function GET(request: Request) {
 
     const firstHalfAvgRevenue =
       firstHalf.length > 0
-        ? firstHalf.reduce((sum, e) => sum + (profitMap.get(e.id)?.revenue || 0), 0) /
-          firstHalf.length
+        ? firstHalf.reduce(
+            (sum, e) => sum + (profitMap.get(e.id)?.revenue || 0),
+            0
+          ) / firstHalf.length
         : 0;
     const secondHalfAvgRevenue =
       secondHalf.length > 0
-        ? secondHalf.reduce((sum, e) => sum + (profitMap.get(e.id)?.revenue || 0), 0) /
-          secondHalf.length
+        ? secondHalf.reduce(
+            (sum, e) => sum + (profitMap.get(e.id)?.revenue || 0),
+            0
+          ) / secondHalf.length
         : 0;
 
     const revenueTrend =
@@ -253,13 +257,17 @@ export async function GET(request: Request) {
 
     const firstHalfAvgMargin =
       firstHalf.length > 0
-        ? firstHalf.reduce((sum, e) => sum + (profitMap.get(e.id)?.marginPct || 0), 0) /
-          firstHalf.length
+        ? firstHalf.reduce(
+            (sum, e) => sum + (profitMap.get(e.id)?.marginPct || 0),
+            0
+          ) / firstHalf.length
         : 0;
     const secondHalfAvgMargin =
       secondHalf.length > 0
-        ? secondHalf.reduce((sum, e) => sum + (profitMap.get(e.id)?.marginPct || 0), 0) /
-          secondHalf.length
+        ? secondHalf.reduce(
+            (sum, e) => sum + (profitMap.get(e.id)?.marginPct || 0),
+            0
+          ) / secondHalf.length
         : 0;
 
     const marginTrend =
@@ -270,10 +278,17 @@ export async function GET(request: Request) {
           : ("stable" as const);
 
     // Group by month for profitability trends
-    const monthlyData = new Map<string, { revenue: number; margin: number; count: number }>();
+    const monthlyData = new Map<
+      string,
+      { revenue: number; margin: number; count: number }
+    >();
     for (const event of eventsWithProfit) {
       const monthKey = event.event_date.toISOString().slice(0, 7);
-      const existing = monthlyData.get(monthKey) || { revenue: 0, margin: 0, count: 0 };
+      const existing = monthlyData.get(monthKey) || {
+        revenue: 0,
+        margin: 0,
+        count: 0,
+      };
       const profit = profitMap.get(event.id)!;
       monthlyData.set(monthKey, {
         revenue: existing.revenue + profit.revenue,
@@ -297,9 +312,12 @@ export async function GET(request: Request) {
       { count: number; revenue: number; margin: number; guests: number }
     >();
     for (const event of eventsWithProfit) {
-      const existing =
-        eventTypeMap.get(event.event_type) ||
-        { count: 0, revenue: 0, margin: 0, guests: 0 };
+      const existing = eventTypeMap.get(event.event_type) || {
+        count: 0,
+        revenue: 0,
+        margin: 0,
+        guests: 0,
+      };
       const profit = profitMap.get(event.id)!;
       eventTypeMap.set(event.event_type, {
         count: existing.count + 1,
@@ -343,7 +361,9 @@ export async function GET(request: Request) {
           existing.revenue += profit.revenue;
           existing.margin += profit.margin;
           existing.eventTypes.add(event.event_type);
-          if (event.venue_name) existing.venues.add(event.venue_name);
+          if (event.venue_name) {
+            existing.venues.add(event.venue_name);
+          }
         } else {
           clientMapData.set(event.client_id, {
             name: clientName,
@@ -416,10 +436,11 @@ export async function GET(request: Request) {
     const nextSeasonForecast = {
       expectedEvents: Math.round(monthlyEventRate * 3),
       expectedRevenue: totalRevenue * (3 / months),
-      confidence: (totalEvents >= 10 ? "high" : totalEvents >= 5 ? "medium" : "low") as
-        | "high"
-        | "medium"
-        | "low",
+      confidence: (totalEvents >= 10
+        ? "high"
+        : totalEvents >= 5
+          ? "medium"
+          : "low") as "high" | "medium" | "low",
     };
 
     const recommendedActions: Array<{
@@ -454,7 +475,8 @@ export async function GET(request: Request) {
         type: "cost_control",
         priority: "high",
         title: "Address Declining Margins",
-        description: "Margins have been trending down. Review food and labor costs.",
+        description:
+          "Margins have been trending down. Review food and labor costs.",
         potentialImpact: "Stabilize margins",
       });
       riskFactors.push({
@@ -465,7 +487,9 @@ export async function GET(request: Request) {
       });
     }
 
-    const topEventType = eventTypeAnalysis.sort((a, b) => b.eventCount - a.eventCount)[0];
+    const topEventType = eventTypeAnalysis.sort(
+      (a, b) => b.eventCount - a.eventCount
+    )[0];
     if (topEventType) {
       recommendedActions.push({
         type: "menu",
@@ -481,7 +505,8 @@ export async function GET(request: Request) {
         type: "venue",
         priority: "medium",
         title: "Consider Expansion",
-        description: "Both revenue and margins are trending positively. Good time to consider growth.",
+        description:
+          "Both revenue and margins are trending positively. Good time to consider growth.",
         potentialImpact: "Market share growth",
       });
     }
@@ -500,7 +525,8 @@ export async function GET(request: Request) {
         type: "pricing",
         priority: "low",
         title: "Target Larger Events",
-        description: "Average guest count is low. Consider strategies to attract larger events.",
+        description:
+          "Average guest count is low. Consider strategies to attract larger events.",
         potentialImpact: "Higher per-event revenue",
       });
     }

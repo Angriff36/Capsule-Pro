@@ -11,16 +11,16 @@ import {
 } from "../../kitchen/prep-lists/actions";
 
 export interface GenerateEventPrepListInput {
-  eventId: string;
   batchMultiplier?: number;
   dietaryRestrictions?: string[];
+  eventId: string;
 }
 
 export interface GenerateEventPrepListResult {
-  success: boolean;
+  error?: string;
   prepList?: PrepListGenerationResult;
   prepListId?: string;
-  error?: string;
+  success: boolean;
 }
 
 /**
@@ -66,7 +66,7 @@ export async function generateEventPrepList(
       data?: { prepListId?: string };
     };
 
-    if (!saveResponse.ok || !saveResult.success) {
+    if (!(saveResponse.ok && saveResult.success)) {
       return {
         success: false,
         error: saveResult.message || "Failed to save prep list",

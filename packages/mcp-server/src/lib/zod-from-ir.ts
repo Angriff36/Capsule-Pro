@@ -19,10 +19,10 @@ interface IRParameterType {
 }
 
 interface IRParameter {
+  defaultValue?: unknown;
+  modifiers?: string[];
   name: string;
   type: IRParameterType;
-  modifiers?: string[];
-  defaultValue?: unknown;
 }
 
 /**

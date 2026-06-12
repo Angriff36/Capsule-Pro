@@ -1,9 +1,9 @@
 "use server";
 
 import { database, Prisma } from "@repo/database";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { syncBattleBoardsForEvent } from "../actions/sync-battle-boards";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { type EventStatus, eventStatuses } from "../constants";
 
 /**
@@ -12,7 +12,9 @@ import { type EventStatus, eventStatuses } from "../constants";
  */
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") {
+    return;
+  }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 };
@@ -22,14 +24,18 @@ const getOptionalString = (
   key: string
 ): string | null | undefined => {
   const value = formData.get(key);
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") {
+    return;
+  }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
 
 const getNumber = (formData: FormData, key: string): number | undefined => {
   const value = getString(formData, key);
-  if (!value) return;
+  if (!value) {
+    return;
+  }
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : undefined;
 };
@@ -39,16 +45,22 @@ const getNumberOrNull = (
   key: string
 ): number | null | undefined => {
   const value = formData.get(key);
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") {
+    return;
+  }
   const trimmed = value.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {
+    return null;
+  }
   const numberValue = Number(trimmed);
   return Number.isFinite(numberValue) ? numberValue : undefined;
 };
 
 const getDate = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
-  if (!value) return;
+  if (!value) {
+    return;
+  }
   const dateValue = new Date(`${value}T12:00:00Z`);
   return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
 };
@@ -119,11 +131,21 @@ export async function updateEventForMutation(
     fields.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
 
   const missing: string[] = [];
-  if (!title.trim()) missing.push("client");
-  if (!eventType.trim()) missing.push("eventType");
-  if (!eventDate) missing.push("eventDate");
-  if (!guestCount || guestCount <= 0) missing.push("headcount");
-  if (!venueName?.trim()) missing.push("venueName");
+  if (!title.trim()) {
+    missing.push("client");
+  }
+  if (!eventType.trim()) {
+    missing.push("eventType");
+  }
+  if (!eventDate) {
+    missing.push("eventDate");
+  }
+  if (!guestCount || guestCount <= 0) {
+    missing.push("headcount");
+  }
+  if (!venueName?.trim()) {
+    missing.push("venueName");
+  }
 
   // Check menu items — read query per constitution §10
   const [menuRow] = await database.$queryRaw<Array<{ count: number }>>(
@@ -160,8 +182,10 @@ export async function updateEventForMutation(
     throw new Error("Event not found.");
   }
 
-  const clientId = getOptionalString(formData, "clientId") ?? existing.clientId ?? "";
-  const eventNumberInput = getOptionalString(formData, "eventNumber") ?? existing.eventNumber ?? "";
+  const clientId =
+    getOptionalString(formData, "clientId") ?? existing.clientId ?? "";
+  const eventNumberInput =
+    getOptionalString(formData, "eventNumber") ?? existing.eventNumber ?? "";
 
   // Governed write via Manifest (constitution §9)
   const result = await runManifestCommand({

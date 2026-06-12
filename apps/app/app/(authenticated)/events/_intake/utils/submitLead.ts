@@ -1,9 +1,9 @@
 import type { PriceEstimate, WizardFormData } from "../types/wizard";
 
 interface SubmitResult {
-  leadId: string;
   aiSummary: string;
   emailDraft: string;
+  leadId: string;
 }
 
 export async function submitLead(

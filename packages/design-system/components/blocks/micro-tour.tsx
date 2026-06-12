@@ -17,30 +17,30 @@ import { Button } from "../ui/button";
  */
 
 export interface MicroTourStep {
-  id: string;
-  title: string;
   description: string;
-  targetSelector?: string;
   icon?: React.ReactNode;
+  id: string;
+  targetSelector?: string;
+  title: string;
 }
 
 interface MicroTourProps {
-  /** Unique identifier for this tour (used for persistence) */
-  tourId: string;
-  /** Steps to show in the tour (2-4 recommended) */
-  steps: MicroTourStep[];
+  /** Auto-advance interval in ms (0 = disabled) */
+  autoAdvanceInterval?: number;
+  /** Additional class name */
+  className?: string;
   /** Whether the tour is currently active */
   isActive: boolean;
   /** Callback when tour completes or is dismissed */
   onComplete?: () => void;
   /** Callback when "Don't show again" is clicked */
   onDontShowAgain?: () => void;
+  /** Steps to show in the tour (2-4 recommended) */
+  steps: MicroTourStep[];
   /** Custom storage key prefix */
   storageKeyPrefix?: string;
-  /** Auto-advance interval in ms (0 = disabled) */
-  autoAdvanceInterval?: number;
-  /** Additional class name */
-  className?: string;
+  /** Unique identifier for this tour (used for persistence) */
+  tourId: string;
 }
 
 const STORAGE_KEY_PREFIX = "capsule-micro-tour";
@@ -56,7 +56,9 @@ function isTourDismissed(
   tourId: string,
   prefix: string = STORAGE_KEY_PREFIX
 ): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") {
+    return false;
+  }
   return localStorage.getItem(getStorageKey(tourId, prefix)) === "true";
 }
 
@@ -64,7 +66,9 @@ function dismissTour(
   tourId: string,
   prefix: string = STORAGE_KEY_PREFIX
 ): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
   localStorage.setItem(getStorageKey(tourId, prefix), "true");
 }
 
@@ -153,8 +157,8 @@ export function MicroTour({
     if (!(isActive && currentStepData.targetSelector)) {
       // Center position if no target
       setPosition({
-        top: typeof window !== "undefined" ? window.innerHeight / 2 - 100 : 200,
-        left: typeof window !== "undefined" ? window.innerWidth / 2 - 175 : 200,
+        top: typeof window === "undefined" ? 200 : window.innerHeight / 2 - 100,
+        left: typeof window === "undefined" ? 200 : window.innerWidth / 2 - 175,
       });
       setPlacement("center");
       return;
@@ -165,9 +169,9 @@ export function MicroTour({
       if (!target) {
         setPosition({
           top:
-            typeof window !== "undefined" ? window.innerHeight / 2 - 100 : 200,
+            typeof window === "undefined" ? 200 : window.innerHeight / 2 - 100,
           left:
-            typeof window !== "undefined" ? window.innerWidth / 2 - 175 : 200,
+            typeof window === "undefined" ? 200 : window.innerWidth / 2 - 175,
         });
         setPlacement("center");
         return;
@@ -214,7 +218,9 @@ export function MicroTour({
 
   // Auto-advance
   React.useEffect(() => {
-    if (!isActive || autoAdvanceInterval <= 0 || isLastStep) return;
+    if (!isActive || autoAdvanceInterval <= 0 || isLastStep) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -225,7 +231,9 @@ export function MicroTour({
 
   // Keyboard navigation
   React.useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === "Enter") {
@@ -268,7 +276,9 @@ export function MicroTour({
     onDontShowAgain?.();
   };
 
-  if (!isActive) return null;
+  if (!isActive) {
+    return null;
+  }
 
   return (
     <div
@@ -276,7 +286,7 @@ export function MicroTour({
       aria-labelledby="micro-tour-title"
       className={cn(
         "fixed z-[9999] transition-all duration-200",
-        isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95",
+        isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0",
         className
       )}
       ref={tourRef}
@@ -291,23 +301,23 @@ export function MicroTour({
       {placement !== "center" && (
         <div
           className={cn(
-            "absolute left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-background border-l border-t shadow-lg",
+            "absolute left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-t border-l bg-background shadow-lg",
             placement === "top"
-              ? "bottom-[-7px] border-b-0 border-r-0"
-              : "top-[-7px] border-b border-r"
+              ? "bottom-[-7px] border-r-0 border-b-0"
+              : "top-[-7px] border-r border-b"
           )}
         />
       )}
 
       {/* Content card */}
-      <div className="bg-background border rounded-lg shadow-lg p-4 space-y-3">
+      <div className="space-y-3 rounded-lg border bg-background p-4 shadow-lg">
         {/* Header with step indicator and close */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {currentStepData.icon || (
               <HelpCircle className="size-4 text-primary" />
             )}
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="font-medium text-muted-foreground text-xs">
               {currentStep + 1} of {steps.length}
             </span>
           </div>
@@ -324,11 +334,11 @@ export function MicroTour({
 
         {/* Step content */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold" id="micro-tour-title">
+          <h4 className="font-semibold text-sm" id="micro-tour-title">
             {currentStepData.title}
           </h4>
           <p
-            className="text-xs text-muted-foreground leading-relaxed"
+            className="text-muted-foreground text-xs leading-relaxed"
             id="micro-tour-description"
           >
             {currentStepData.description}
@@ -338,7 +348,7 @@ export function MicroTour({
         {/* Navigation */}
         <div className="flex items-center justify-between pt-2">
           <Button
-            className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+            className="h-7 px-2 text-muted-foreground text-xs hover:text-foreground"
             onClick={handleDontShowAgain}
             size="sm"
             variant="ghost"
@@ -372,7 +382,7 @@ export function MicroTour({
               className={cn(
                 "size-1.5 rounded-full transition-all",
                 index === currentStep
-                  ? "bg-primary w-4"
+                  ? "w-4 bg-primary"
                   : index < currentStep
                     ? "bg-primary/50"
                     : "bg-muted-foreground/30"

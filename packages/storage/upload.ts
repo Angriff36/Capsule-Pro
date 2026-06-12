@@ -1,15 +1,15 @@
 import { del, head, put } from "@vercel/blob";
 
 export interface StorageUploadOptions {
-  tenantId: string;
-  path: string;
   body: Buffer | Blob | File;
   contentType: string;
+  path: string;
+  tenantId: string;
 }
 
 export interface StorageUploadResult {
-  url: string;
   pathname: string;
+  url: string;
 }
 
 export async function uploadFile(

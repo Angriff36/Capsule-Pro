@@ -48,10 +48,10 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@/lib/pagination", () => ({
   clampLimit: vi.fn((v: string | null) => {
-    const n = parseInt(v || "50", 10);
+    const n = Number.parseInt(v || "50", 10);
     return Math.min(n, 200);
   }),
-  clampOffset: vi.fn((v: string | null) => parseInt(v || "0", 10)),
+  clampOffset: vi.fn((v: string | null) => Number.parseInt(v || "0", 10)),
 }));
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
@@ -107,7 +107,9 @@ vi.mock("@/lib/manifest/issue-log", () => ({
 
 // Import mocked modules
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { InvariantError } = await import("@/app/lib/invariant");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000005";
@@ -282,7 +284,9 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should create facility and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -371,7 +375,9 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should edit facility and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -444,10 +450,16 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should soft-delete facility and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "fac-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "fac-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -529,7 +541,9 @@ describe("Facility Areas Command Routes", () => {
     });
 
     it("should create area and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -609,7 +623,9 @@ describe("Facility Areas Command Routes", () => {
     });
 
     it("should update area and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -682,10 +698,16 @@ describe("Facility Areas Command Routes", () => {
     });
 
     it("should soft-delete area and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "area-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "area-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -764,10 +786,36 @@ describe("Facility Areas List Route", () => {
 
     it("should return areas for authenticated user", async () => {
       const mockAreas = [
-        { id: "area-1", venueId: "fac-001", name: "Prep Area", code: null, areaType: "prep", floor: null, description: null, squareFeet: null, status: "active", createdAt: new Date(), updatedAt: new Date() },
-        { id: "area-2", venueId: "fac-001", name: "Storage Room", code: null, areaType: "storage", floor: null, description: null, squareFeet: null, status: "active", createdAt: new Date(), updatedAt: new Date() },
+        {
+          id: "area-1",
+          venueId: "fac-001",
+          name: "Prep Area",
+          code: null,
+          areaType: "prep",
+          floor: null,
+          description: null,
+          squareFeet: null,
+          status: "active",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "area-2",
+          venueId: "fac-001",
+          name: "Storage Room",
+          code: null,
+          areaType: "storage",
+          floor: null,
+          description: null,
+          squareFeet: null,
+          status: "active",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      vi.mocked(database.facilityArea.findMany).mockResolvedValue(mockAreas as never);
+      vi.mocked(database.facilityArea.findMany).mockResolvedValue(
+        mockAreas as never
+      );
 
       const req = new NextRequest("http://localhost/api/facilities/areas/list");
       const res = await listAreas(req);
@@ -846,7 +894,9 @@ describe("Facility Areas List Route", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.facilityArea.findMany).mockRejectedValue(new Error("SQL error"));
+      vi.mocked(database.facilityArea.findMany).mockRejectedValue(
+        new Error("SQL error")
+      );
 
       const req = new NextRequest("http://localhost/api/facilities/areas/list");
       const res = await listAreas(req);
@@ -1033,7 +1083,9 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should create work order and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -1119,7 +1171,9 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should update status and return 200 via manifest command", async () => {
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
           JSON.stringify({

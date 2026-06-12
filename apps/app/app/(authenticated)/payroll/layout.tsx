@@ -52,7 +52,7 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
   const pathname = usePathname();
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <nav className="flex gap-1 overflow-x-auto pb-1">
         {navigationItems.map((item) => {
           const isActive =
@@ -61,7 +61,7 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
           return (
             <Link
               className={cn(
-                "inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
+                "inline-flex items-center whitespace-nowrap rounded-full px-4 py-1.5 font-medium text-sm transition-colors",
                 isActive
                   ? "bg-ink text-white"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"

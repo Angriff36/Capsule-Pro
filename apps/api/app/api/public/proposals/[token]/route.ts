@@ -189,7 +189,11 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       try {
         // Synthetic system-user context for public route (no Clerk auth)
         const adminUser = await database.user.findFirst({
-          where: { tenantId: proposal.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+          where: {
+            tenantId: proposal.tenantId,
+            role: { in: ["owner", "admin"] },
+            deletedAt: null,
+          },
           select: { id: true, role: true },
         });
         const systemUser = {

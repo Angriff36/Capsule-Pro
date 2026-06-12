@@ -90,7 +90,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "EmailTemplate",

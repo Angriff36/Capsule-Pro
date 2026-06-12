@@ -158,7 +158,7 @@ export default function NewEmailTemplatePage() {
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Create Email Template
           </h1>
           <p className="text-muted-foreground">
@@ -177,7 +177,7 @@ export default function NewEmailTemplatePage() {
 
       <Separator />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Form */}
         <div className="lg:col-span-2">
           <Form {...form}>
@@ -296,23 +296,23 @@ export default function NewEmailTemplatePage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Merge Fields */}
-          <div className="rounded-lg border p-4 space-y-4">
+          <div className="space-y-4 rounded-lg border p-4">
             <h3 className="font-semibold">Merge Fields</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Click to insert a merge field into your template.
             </p>
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            <div className="max-h-[300px] space-y-2 overflow-y-auto">
               {COMMON_MERGE_FIELDS.map((field) => (
                 <button
-                  className="w-full text-left p-2 rounded hover:bg-muted text-sm"
+                  className="w-full rounded p-2 text-left text-sm hover:bg-muted"
                   key={field.name}
                   onClick={() => insertMergeField(field.name)}
                   type="button"
                 >
-                  <code className="text-xs bg-muted px-1 rounded">
+                  <code className="rounded bg-muted px-1 text-xs">
                     {`{{${field.name}}}`}
                   </code>
-                  <p className="text-muted-foreground text-xs mt-1">
+                  <p className="mt-1 text-muted-foreground text-xs">
                     {field.description}
                   </p>
                 </button>
@@ -322,15 +322,15 @@ export default function NewEmailTemplatePage() {
 
           {/* Detected Fields */}
           {detectedFields.length > 0 && (
-            <div className="rounded-lg border p-4 space-y-4">
+            <div className="space-y-4 rounded-lg border p-4">
               <h3 className="font-semibold">Detected Fields</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 These merge fields were found in your template:
               </p>
               <div className="flex flex-wrap gap-1">
                 {detectedFields.map((field) => (
                   <code
-                    className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
+                    className="rounded bg-primary/10 px-2 py-1 text-primary text-xs"
                     key={field}
                   >
                     {`{{${field}}}`}
@@ -345,8 +345,8 @@ export default function NewEmailTemplatePage() {
       {/* Preview */}
       <Separator />
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Preview</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="font-semibold text-xl">Preview</h2>
+        <p className="text-muted-foreground text-sm">
           Preview with sample data (actual values will be substituted when
           sending)
         </p>
@@ -357,7 +357,7 @@ export default function NewEmailTemplatePage() {
             <TabsTrigger value="raw">Raw Template</TabsTrigger>
           </TabsList>
           <TabsContent value="preview">
-            <div className="rounded-lg border p-4 space-y-4 bg-muted/30">
+            <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-xs">Subject</Label>
                 <p className="font-medium">{preview.subject}</p>
@@ -372,7 +372,7 @@ export default function NewEmailTemplatePage() {
             </div>
           </TabsContent>
           <TabsContent value="raw">
-            <div className="rounded-lg border p-4 space-y-4 font-mono text-sm bg-muted/30">
+            <div className="space-y-4 rounded-lg border bg-muted/30 p-4 font-mono text-sm">
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-xs">Subject</Label>
                 <p>{watchSubject}</p>

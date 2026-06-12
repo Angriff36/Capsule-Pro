@@ -245,7 +245,7 @@ export default function ReceivingPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Warehouse Receiving
           </h1>
           <p className="text-muted-foreground">
@@ -272,7 +272,7 @@ export default function ReceivingPage() {
 
       {/* Purchase Order Lookup Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Purchase Order Lookup
         </h2>
         <Card tone="canvas">
@@ -319,7 +319,7 @@ export default function ReceivingPage() {
 
       {selectedPO && (
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Purchase Order Details
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -334,12 +334,12 @@ export default function ReceivingPage() {
                 <div className="space-y-4">
                   {selectedPO.items.map((item) => (
                     <div
-                      className="rounded-lg border p-4 space-y-3"
+                      className="space-y-3 rounded-lg border p-4"
                       key={item.id}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <h3 className="font-semibold">
                               {item.item_name || "Unknown Item"}
                             </h3>
@@ -357,13 +357,13 @@ export default function ReceivingPage() {
                               </div>
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             Ordered: {item.quantity_ordered} @ $
                             {item.unit_cost.toFixed(2)}/unit
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold">
+                          <p className="font-semibold text-sm">
                             ${item.total_cost.toFixed(2)}
                           </p>
                           {item.discrepancy_type && (
@@ -377,7 +377,7 @@ export default function ReceivingPage() {
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div>
                           <label
-                            className="text-sm font-medium"
+                            className="font-medium text-sm"
                             htmlFor={`qty-${item.id}`}
                           >
                             Quantity Received
@@ -399,7 +399,7 @@ export default function ReceivingPage() {
                         </div>
                         <div>
                           <label
-                            className="text-sm font-medium"
+                            className="font-medium text-sm"
                             htmlFor={`quality-${item.id}`}
                           >
                             Quality Status
@@ -435,7 +435,7 @@ export default function ReceivingPage() {
                       item.quality_status === "needs_inspection" ? (
                         <div>
                           <label
-                            className="text-sm font-medium"
+                            className="font-medium text-sm"
                             htmlFor={`discrepancy-${item.id}`}
                           >
                             Discrepancy Type
@@ -535,7 +535,7 @@ export default function ReceivingPage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-2">
+                <div className="space-y-2 border-t pt-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>${selectedPO.subtotal.toFixed(2)}</span>
@@ -561,7 +561,7 @@ export default function ReceivingPage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-2">
+                <div className="space-y-2 border-t pt-4">
                   <h4 className="font-semibold text-sm">Receiving Progress</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">

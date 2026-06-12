@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -11,10 +15,6 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  OperationalColumn,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import {
   Building2Icon,
   CheckIcon,
@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { updateClient, getAvailableTags } from "../../../actions";
+import { getAvailableTags, updateClient } from "../../../actions";
 import { TagInput } from "../../../components/tag-input";
 
 interface ContactInfoTabProps {
@@ -380,11 +380,11 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {/* Actions */}
         <div className="flex gap-2">
           <Button disabled={isLoading} onClick={handleSave}>
-            <CheckIcon className="h-4 w-4 mr-2" />
+            <CheckIcon className="mr-2 h-4 w-4" />
             Save
           </Button>
           <Button disabled={isLoading} onClick={handleCancel} variant="outline">
-            <XIcon className="h-4 w-4 mr-2" />
+            <XIcon className="mr-2 h-4 w-4" />
             Cancel
           </Button>
         </div>
@@ -395,18 +395,18 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Contact Information</h2>
+        <h2 className="font-semibold text-xl">Contact Information</h2>
         <Button onClick={handleEdit} size="sm" variant="outline">
-          <PencilIcon className="h-4 w-4 mr-2" />
+          <PencilIcon className="mr-2 h-4 w-4" />
           Edit
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Name/Company */}
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               {client.clientType === "company" ? (
                 <Building2Icon className="h-4 w-4" />
               ) : (
@@ -435,7 +435,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {/* Contact Details */}
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="font-medium text-muted-foreground text-sm">
               Contact Details
             </CardTitle>
           </CardHeader>
@@ -486,7 +486,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {/* Address */}
         <Card className="md:col-span-2" tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <MapPinIcon className="h-4 w-4" />
               Address
             </CardTitle>
@@ -502,7 +502,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {client.tags && client.tags.length > 0 && (
           <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Tags
               </CardTitle>
             </CardHeader>
@@ -522,13 +522,13 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {client.notes && (
           <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                 <FileTextIcon className="h-4 w-4" />
                 Notes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-line">{client.notes}</p>
+              <p className="whitespace-pre-line text-sm">{client.notes}</p>
             </CardContent>
           </Card>
         )}
@@ -537,7 +537,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         {(client.taxExempt || client.taxId || client.defaultPaymentTerms) && (
           <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Tax & Payment Information
               </CardTitle>
             </CardHeader>

@@ -16,23 +16,54 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) => new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -68,8 +99,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
   describe("mark-completed", () => {
     it("should reject unauthorized requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
-      const response = await dispatch("PrepListItem", "mark-completed")(makeRequest({ id: "item-001", completedByUserId: "user-001" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Unauthenticated")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-completed"
+      )(makeRequest({ id: "item-001", completedByUserId: "user-001" }));
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -77,8 +113,13 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Tenant not found"));
-      const response = await dispatch("PrepListItem", "mark-completed")(makeRequest({ id: "item-001", completedByUserId: "user-001" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Tenant not found")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-completed"
+      )(makeRequest({ id: "item-001", completedByUserId: "user-001" }));
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -86,9 +127,19 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should process valid mark-completed request", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestSuccessResponse({ result: { id: "item-001", isCompleted: true, completedByUserId: "test-user-id" }, events: [] })
+        manifestSuccessResponse({
+          result: {
+            id: "item-001",
+            isCompleted: true,
+            completedByUserId: "test-user-id",
+          },
+          events: [],
+        })
       );
-      const response = await dispatch("PrepListItem", "mark-completed")(makeRequest({ id: "item-001", completedByUserId: "test-user-id" }));
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-completed"
+      )(makeRequest({ id: "item-001", completedByUserId: "test-user-id" }));
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("success", true);
@@ -97,16 +148,26 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
   describe("mark-uncompleted", () => {
     it("should reject unauthorized requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
-      const response = await dispatch("PrepListItem", "mark-uncompleted")(makeRequest({ id: "item-001" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Unauthenticated")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-uncompleted"
+      )(makeRequest({ id: "item-001" }));
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
     });
 
     it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Tenant not found"));
-      const response = await dispatch("PrepListItem", "mark-uncompleted")(makeRequest({ id: "item-001" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Tenant not found")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-uncompleted"
+      )(makeRequest({ id: "item-001" }));
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -114,9 +175,15 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should process valid mark-uncompleted request", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestSuccessResponse({ result: { id: "item-001", isCompleted: false }, events: [] })
+        manifestSuccessResponse({
+          result: { id: "item-001", isCompleted: false },
+          events: [],
+        })
       );
-      const response = await dispatch("PrepListItem", "mark-uncompleted")(makeRequest({ id: "item-001" }));
+      const response = await dispatch(
+        "PrepListItem",
+        "mark-uncompleted"
+      )(makeRequest({ id: "item-001" }));
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("success", true);
@@ -125,16 +192,38 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
   describe("update-prep-notes", () => {
     it("should reject unauthorized requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
-      const response = await dispatch("PrepListItem", "update-prep-notes")(makeRequest({ id: "item-001", newNotes: "Chop finely", newDietarySubstitutions: "Use tofu instead" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Unauthenticated")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-prep-notes"
+      )(
+        makeRequest({
+          id: "item-001",
+          newNotes: "Chop finely",
+          newDietarySubstitutions: "Use tofu instead",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
     });
 
     it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Tenant not found"));
-      const response = await dispatch("PrepListItem", "update-prep-notes")(makeRequest({ id: "item-001", newNotes: "Chop finely", newDietarySubstitutions: "Use tofu instead" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Tenant not found")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-prep-notes"
+      )(
+        makeRequest({
+          id: "item-001",
+          newNotes: "Chop finely",
+          newDietarySubstitutions: "Use tofu instead",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -142,9 +231,25 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should process valid update-prep-notes request", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestSuccessResponse({ result: { id: "item-001", prepNotes: "Chop finely", dietarySubstitutions: "Use tofu instead" }, events: [] })
+        manifestSuccessResponse({
+          result: {
+            id: "item-001",
+            prepNotes: "Chop finely",
+            dietarySubstitutions: "Use tofu instead",
+          },
+          events: [],
+        })
       );
-      const response = await dispatch("PrepListItem", "update-prep-notes")(makeRequest({ id: "item-001", newNotes: "Chop finely", newDietarySubstitutions: "Use tofu instead" }));
+      const response = await dispatch(
+        "PrepListItem",
+        "update-prep-notes"
+      )(
+        makeRequest({
+          id: "item-001",
+          newNotes: "Chop finely",
+          newDietarySubstitutions: "Use tofu instead",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("success", true);
@@ -153,16 +258,40 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
   describe("update-quantity", () => {
     it("should reject unauthorized requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
-      const response = await dispatch("PrepListItem", "update-quantity")(makeRequest({ id: "item-001", newBaseQuantity: 15, newScaledQuantity: 30, newBaseUnit: "kg", newScaledUnit: "kg" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Unauthenticated")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-quantity"
+      )(
+        makeRequest({
+          id: "item-001",
+          newBaseQuantity: 15,
+          newScaledQuantity: 30,
+          newBaseUnit: "kg",
+          newScaledUnit: "kg",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
     });
 
     it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Tenant not found"));
-      const response = await dispatch("PrepListItem", "update-quantity")(makeRequest({ id: "item-001", newBaseQuantity: 15, newScaledQuantity: 30 }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Tenant not found")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-quantity"
+      )(
+        makeRequest({
+          id: "item-001",
+          newBaseQuantity: 15,
+          newScaledQuantity: 30,
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -170,9 +299,23 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should process valid update-quantity request", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestSuccessResponse({ result: { id: "item-001", baseQuantity: 15, scaledQuantity: 30 }, events: [] })
+        manifestSuccessResponse({
+          result: { id: "item-001", baseQuantity: 15, scaledQuantity: 30 },
+          events: [],
+        })
       );
-      const response = await dispatch("PrepListItem", "update-quantity")(makeRequest({ id: "item-001", newBaseQuantity: 15, newScaledQuantity: 30, newBaseUnit: "kg", newScaledUnit: "kg" }));
+      const response = await dispatch(
+        "PrepListItem",
+        "update-quantity"
+      )(
+        makeRequest({
+          id: "item-001",
+          newBaseQuantity: 15,
+          newScaledQuantity: 30,
+          newBaseUnit: "kg",
+          newScaledUnit: "kg",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("success", true);
@@ -181,16 +324,38 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
   describe("update-station", () => {
     it("should reject unauthorized requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
-      const response = await dispatch("PrepListItem", "update-station")(makeRequest({ id: "item-001", newStationId: "station-002", newStationName: "Cold Prep Station" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Unauthenticated")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-station"
+      )(
+        makeRequest({
+          id: "item-001",
+          newStationId: "station-002",
+          newStationName: "Cold Prep Station",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
     });
 
     it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Tenant not found"));
-      const response = await dispatch("PrepListItem", "update-station")(makeRequest({ id: "item-001", newStationId: "station-002", newStationName: "Cold Prep Station" }));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        new InvariantError("Tenant not found")
+      );
+      const response = await dispatch(
+        "PrepListItem",
+        "update-station"
+      )(
+        makeRequest({
+          id: "item-001",
+          newStationId: "station-002",
+          newStationName: "Cold Prep Station",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(401);
       expect(data).toHaveProperty("success", false);
@@ -198,9 +363,21 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should process valid update-station request", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestSuccessResponse({ result: { id: "item-001", stationId: "station-002" }, events: [] })
+        manifestSuccessResponse({
+          result: { id: "item-001", stationId: "station-002" },
+          events: [],
+        })
       );
-      const response = await dispatch("PrepListItem", "update-station")(makeRequest({ id: "item-001", newStationId: "station-002", newStationName: "Cold Prep Station" }));
+      const response = await dispatch(
+        "PrepListItem",
+        "update-station"
+      )(
+        makeRequest({
+          id: "item-001",
+          newStationId: "station-002",
+          newStationName: "Cold Prep Station",
+        })
+      );
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("success", true);

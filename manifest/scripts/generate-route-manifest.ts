@@ -31,7 +31,9 @@ function toKebabCase(value: string): string {
 function applyRoutePaths(manifest: any): any {
   const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
   const patched = routes.map((route: any) => {
-    if (!route.source || route.source.kind !== "command") return route;
+    if (!route.source || route.source.kind !== "command") {
+      return route;
+    }
     const { entity, command } = route.source;
     const commandSegment = toKebabCase(command);
     return {
@@ -48,22 +50,28 @@ function applyRoutePaths(manifest: any): any {
 function applyManifestDispatcherPathsTs(tsCode: string): string {
   let result = tsCode;
   const returnRegex = /"\/api\/([a-z0-9-]+)\/([a-z0-9-]+)"/g;
-  result = result.replace(returnRegex, (_match, entityKebab: string, command: string) => {
-    const entity =
-      Object.keys(ENTITY_DOMAIN_MAP).find(
-        (name) => toKebabCase(name) === entityKebab
-      ) ?? entityKebab;
-    return `"/api/manifest/${entity}/commands/${command}"`;
-  });
+  result = result.replace(
+    returnRegex,
+    (_match, entityKebab: string, command: string) => {
+      const entity =
+        Object.keys(ENTITY_DOMAIN_MAP).find(
+          (name) => toKebabCase(name) === entityKebab
+        ) ?? entityKebab;
+      return `"/api/manifest/${entity}/commands/${command}"`;
+    }
+  );
 
   const jsdocRegex = /POST \/api\/([a-z0-9-]+)\/([a-z0-9-]+)/g;
-  result = result.replace(jsdocRegex, (_match, entityKebab: string, command: string) => {
-    const entity =
-      Object.keys(ENTITY_DOMAIN_MAP).find(
-        (name) => toKebabCase(name) === entityKebab
-      ) ?? entityKebab;
-    return `POST /api/manifest/${entity}/commands/${command}`;
-  });
+  result = result.replace(
+    jsdocRegex,
+    (_match, entityKebab: string, command: string) => {
+      const entity =
+        Object.keys(ENTITY_DOMAIN_MAP).find(
+          (name) => toKebabCase(name) === entityKebab
+        ) ?? entityKebab;
+      return `POST /api/manifest/${entity}/commands/${command}`;
+    }
+  );
 
   return result;
 }
@@ -121,7 +129,9 @@ function main() {
   writeFileSync(manifestOut, JSON.stringify(patchedManifest, null, 2));
   // routes.ts path helpers are derived from the same IR — patch them too
   // by regenerating from the patched manifest paths
-  const patchedTsCode = applyManifestDispatcherPathsTs(routesTsResult.artifacts[0].code);
+  const patchedTsCode = applyManifestDispatcherPathsTs(
+    routesTsResult.artifacts[0].code
+  );
   writeFileSync(routesTsOut, patchedTsCode);
 
   if (format === "summary") {

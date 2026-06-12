@@ -5,7 +5,7 @@
  * - claim, start, complete, release, reassign, updateQuantity, cancel, create
  */
 
-import type { RuntimeEngine, EmittedEvent } from "@angriff36/manifest";
+import type { RuntimeEngine } from "@angriff36/manifest";
 import type { OverrideRequest } from "@angriff36/manifest/ir";
 import type { PrepTaskCommandResult } from "../types";
 

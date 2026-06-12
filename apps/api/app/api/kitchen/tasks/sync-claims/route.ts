@@ -10,21 +10,21 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 export const runtime = "nodejs";
 
 interface ClaimAction {
-  taskId: string;
   action: string;
+  taskId: string;
   timestamp: string;
 }
 
 interface SyncResult {
-  successful: Array<{ taskId: string; action: string }>;
   failed: Array<{ taskId: string; action: string; error: string }>;
+  successful: Array<{ taskId: string; action: string }>;
 }
 
 interface CommandResult {
-  success: boolean;
   error?: string;
-  policyDenial?: { policyName: string };
   guardFailure?: { index: number; formatted: string };
+  policyDenial?: { policyName: string };
+  success: boolean;
 }
 
 function getErrorMessage(result: CommandResult): string {

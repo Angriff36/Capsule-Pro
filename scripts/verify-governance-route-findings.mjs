@@ -13,8 +13,8 @@
 
 import { execSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 
@@ -49,7 +49,8 @@ const AUDIT_CMD = [
   "manifest/runtime/commands.registry.json",
   "--exemptions",
   "manifest/governance/audit-routes-exemptions.json",
-  ">",  outFile,
+  ">",
+  outFile,
   "2>/dev/null",
 ].join(" ");
 
@@ -72,10 +73,14 @@ try {
   result = JSON.parse(raw.substring(jsonStart, jsonEnd + 1));
 } catch (err) {
   log(`Failed to read/parse audit output: ${err.message}`, "red");
-  try { rmSync(tmp, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(tmp, { recursive: true, force: true });
+  } catch {}
   process.exit(1);
 } finally {
-  try { rmSync(tmp, { recursive: true, force: true }); } catch {}
+  try {
+    rmSync(tmp, { recursive: true, force: true });
+  } catch {}
 }
 
 const findings = Array.isArray(result.findings) ? result.findings : [];

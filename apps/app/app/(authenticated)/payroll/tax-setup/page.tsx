@@ -1,6 +1,15 @@
 "use client";
 
 import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -44,15 +53,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  CommandBand,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-} from "@repo/design-system/components/blocks/page-shell";
-import {
   Calculator,
   CheckCircle2,
   DollarSign,
@@ -65,6 +65,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+
 // NOTE: Keeping apiFetch for all calls — tax list/brackets/preview endpoints are custom actions with no generated client
 
 /* ------------------------------------------------------------------ */
@@ -72,29 +73,28 @@ import { apiFetch } from "@/app/lib/api";
 /* ------------------------------------------------------------------ */
 
 interface TaxConfiguration {
+  created_at: string;
   id: string;
-  tax_type: string;
+  is_active: boolean;
   jurisdiction: string;
   state_code: string | null;
-  is_active: boolean;
-  created_at: string;
+  tax_type: string;
 }
 
 interface TaxBracket {
-  min: number;
   max: number | null;
+  min: number;
   rate: number;
 }
 
 interface FicaRates {
+  medicareAdditionalRate: number;
+  medicareRate: number;
   socialSecurityRate: number;
   socialSecurityWageBase: number;
-  medicareRate: number;
-  medicareAdditionalRate: number;
 }
 
 interface BracketsResponse {
-  success: boolean;
   data: {
     taxYear: number;
     federalBrackets: {
@@ -109,17 +109,17 @@ interface BracketsResponse {
     };
     supportedJurisdictions: string[];
   };
+  success: boolean;
 }
 
 interface TaxPreviewItem {
-  type: string;
-  jurisdiction: string | null;
   amount: number;
   annualized: number;
+  jurisdiction: string | null;
+  type: string;
 }
 
 interface TaxPreviewResponse {
-  success: boolean;
   data: {
     grossAnnualIncome: number;
     filingStatus: string;
@@ -128,6 +128,7 @@ interface TaxPreviewResponse {
     totalAnnualTax: number;
     effectiveRate: number;
   };
+  success: boolean;
 }
 
 const US_STATES = [
@@ -233,9 +234,12 @@ export default function TaxSetupPage() {
       ]);
       const configsData = await configsRes.json();
       const bracketsData = await bracketsRes.json();
-      if (configsData.success)
+      if (configsData.success) {
         setConfigs(configsData.data.configurations || []);
-      if (bracketsData.success) setBrackets(bracketsData.data);
+      }
+      if (bracketsData.success) {
+        setBrackets(bracketsData.data);
+      }
     } catch (error) {
       console.error("Failed to load tax data:", error);
     } finally {
@@ -263,7 +267,9 @@ export default function TaxSetupPage() {
   };
 
   const handleAddStateTax = async () => {
-    if (!selectedState) return;
+    if (!selectedState) {
+      return;
+    }
     setShowAddState(false);
     setSelectedState("");
     await loadData();
@@ -295,7 +301,9 @@ export default function TaxSetupPage() {
 
   const runTaxPreview = async () => {
     const income = Number.parseFloat(previewIncome);
-    if (!income || income <= 0) return;
+    if (!income || income <= 0) {
+      return;
+    }
 
     setPreviewLoading(true);
     try {
@@ -309,7 +317,9 @@ export default function TaxSetupPage() {
         }),
       });
       const data = await res.json();
-      if (data.success) setPreviewResult(data.data);
+      if (data.success) {
+        setPreviewResult(data.data);
+      }
     } catch (error) {
       console.error("Tax preview failed:", error);
     } finally {
@@ -347,19 +357,19 @@ export default function TaxSetupPage() {
         <Tabs className="space-y-6" defaultValue="federal">
           <TabsList>
             <TabsTrigger value="federal">
-              <DollarSign className="h-4 w-4 mr-2" />
+              <DollarSign className="mr-2 h-4 w-4" />
               Federal
             </TabsTrigger>
             <TabsTrigger value="fica">
-              <Shield className="h-4 w-4 mr-2" />
+              <Shield className="mr-2 h-4 w-4" />
               FICA
             </TabsTrigger>
             <TabsTrigger value="state">
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="mr-2 h-4 w-4" />
               State
             </TabsTrigger>
             <TabsTrigger value="preview">
-              <Calculator className="h-4 w-4 mr-2" />
+              <Calculator className="mr-2 h-4 w-4" />
               Tax Preview
             </TabsTrigger>
           </TabsList>
@@ -395,8 +405,8 @@ export default function TaxSetupPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {brackets && (
-                  <div className="p-3 bg-muted/20 rounded-lg border border-hairline">
-                    <div className="flex items-center gap-2 text-sm text-foreground">
+                  <div className="rounded-lg border border-hairline bg-muted/20 p-3">
+                    <div className="flex items-center gap-2 text-foreground text-sm">
                       <TrendingUp className="h-4 w-4" />
                       <span>
                         Tax Year {brackets.taxYear} — Brackets &amp; Standard
@@ -430,7 +440,7 @@ export default function TaxSetupPage() {
                     </TableBody>
                   </Table>
                   {brackets && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Standard Deduction:{" "}
                       {formatCurrency(brackets.standardDeductions.single)}
                     </p>
@@ -461,7 +471,7 @@ export default function TaxSetupPage() {
                     </TableBody>
                   </Table>
                   {brackets && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Standard Deduction:{" "}
                       {formatCurrency(brackets.standardDeductions.married)}
                     </p>
@@ -497,27 +507,31 @@ export default function TaxSetupPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Employee Rate
                         </span>
                         <span className="font-medium">
                           {brackets
-                            ? formatPercent(brackets.ficaRates.socialSecurityRate)
+                            ? formatPercent(
+                                brackets.ficaRates.socialSecurityRate
+                              )
                             : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Employer Rate
                         </span>
                         <span className="font-medium">
                           {brackets
-                            ? formatPercent(brackets.ficaRates.socialSecurityRate)
+                            ? formatPercent(
+                                brackets.ficaRates.socialSecurityRate
+                              )
                             : "—"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Wage Base (Annual)
                         </span>
                         <span className="font-medium">
@@ -528,7 +542,7 @@ export default function TaxSetupPage() {
                             : "—"}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         No SS tax on wages above the wage base.
                       </p>
                     </CardContent>
@@ -540,7 +554,7 @@ export default function TaxSetupPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Employee Rate
                         </span>
                         <span className="font-medium">
@@ -550,7 +564,7 @@ export default function TaxSetupPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Employer Rate
                         </span>
                         <span className="font-medium">
@@ -560,7 +574,7 @@ export default function TaxSetupPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Additional Rate (High Earners)
                         </span>
                         <span className="font-medium">
@@ -571,7 +585,7 @@ export default function TaxSetupPage() {
                             : "—"}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         No wage base limit — applies to all earnings.
                       </p>
                     </CardContent>
@@ -602,7 +616,7 @@ export default function TaxSetupPage() {
                     size="sm"
                     variant="outline"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Add State
                   </Button>
                 </div>
@@ -612,8 +626,8 @@ export default function TaxSetupPage() {
                   <div className="py-8 text-center text-muted-foreground">
                     <p>No state tax configurations added.</p>
                     <p className="text-sm">
-                      Add states where you have employees to withhold state income
-                      tax.
+                      Add states where you have employees to withhold state
+                      income tax.
                     </p>
                   </div>
                 ) : (
@@ -638,7 +652,9 @@ export default function TaxSetupPage() {
                           </TableCell>
                           <TableCell>
                             <Badge
-                              variant={config.is_active ? "default" : "secondary"}
+                              variant={
+                                config.is_active ? "default" : "secondary"
+                              }
                             >
                               {config.is_active ? "Active" : "Inactive"}
                             </Badge>
@@ -647,7 +663,10 @@ export default function TaxSetupPage() {
                             <div className="flex justify-end gap-1">
                               <Button
                                 onClick={() =>
-                                  handleToggleActive(config.id, !config.is_active)
+                                  handleToggleActive(
+                                    config.id,
+                                    !config.is_active
+                                  )
                                 }
                                 size="sm"
                                 variant="ghost"
@@ -671,8 +690,8 @@ export default function TaxSetupPage() {
                 )}
 
                 {brackets && (
-                  <div className="mt-6 p-3 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="mt-6 rounded-lg bg-muted p-3">
+                    <p className="text-muted-foreground text-sm">
                       <strong>Supported jurisdictions:</strong>{" "}
                       {brackets.supportedJurisdictions.join(", ")}
                     </p>
@@ -730,7 +749,10 @@ export default function TaxSetupPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>State</Label>
-                    <Select onValueChange={setPreviewState} value={previewState}>
+                    <Select
+                      onValueChange={setPreviewState}
+                      value={previewState}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -748,9 +770,9 @@ export default function TaxSetupPage() {
 
                 <Button disabled={previewLoading} onClick={runTaxPreview}>
                   {previewLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Calculator className="h-4 w-4 mr-2" />
+                    <Calculator className="mr-2 h-4 w-4" />
                   )}
                   Calculate Withholding
                 </Button>
@@ -760,30 +782,30 @@ export default function TaxSetupPage() {
                     <div className="grid gap-4 md:grid-cols-3">
                       <Card className="border-dashed" tone="soft-stone">
                         <CardContent className="pt-6">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             Gross Annual
                           </p>
-                          <p className="text-2xl font-bold">
+                          <p className="font-bold text-2xl">
                             {formatCurrency(previewResult.grossAnnualIncome)}
                           </p>
                         </CardContent>
                       </Card>
                       <Card className="border-dashed" tone="soft-stone">
                         <CardContent className="pt-6">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             Total Annual Tax
                           </p>
-                          <p className="text-2xl font-bold text-red-600">
+                          <p className="font-bold text-2xl text-red-600">
                             {formatCurrency(previewResult.totalAnnualTax)}
                           </p>
                         </CardContent>
                       </Card>
                       <Card className="border-dashed" tone="soft-stone">
                         <CardContent className="pt-6">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             Effective Rate
                           </p>
-                          <p className="text-2xl font-bold">
+                          <p className="font-bold text-2xl">
                             {previewResult.effectiveRate.toFixed(1)}%
                           </p>
                         </CardContent>
@@ -853,17 +875,17 @@ export default function TaxSetupPage() {
         <Card className="border border-hairline bg-muted/20" tone="canvas">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
               <div>
                 <h3 className="font-medium text-foreground">
                   Employee W-4 Required
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Each employee&apos;s filing status and allowances are configured
-                  in their profile. Tax withholding calculations use employee W-4
-                  information during payroll processing. The payroll engine
-                  automatically computes federal, state, and FICA withholdings per
-                  pay period.
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Each employee&apos;s filing status and allowances are
+                  configured in their profile. Tax withholding calculations use
+                  employee W-4 information during payroll processing. The
+                  payroll engine automatically computes federal, state, and FICA
+                  withholdings per pay period.
                 </p>
               </div>
             </div>
@@ -872,9 +894,9 @@ export default function TaxSetupPage() {
 
         {/* Add State Dialog */}
         {showAddState && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-background rounded-lg p-6 w-full max-w-md space-y-4">
-              <h3 className="text-lg font-semibold">Add State Tax</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="w-full max-w-md space-y-4 rounded-lg bg-background p-6">
+              <h3 className="font-semibold text-lg">Add State Tax</h3>
               <div className="space-y-2">
                 <Label>Select State</Label>
                 <Select onValueChange={setSelectedState} value={selectedState}>
@@ -894,7 +916,10 @@ export default function TaxSetupPage() {
                 </Select>
               </div>
               <div className="flex justify-end gap-2">
-                <Button onClick={() => setShowAddState(false)} variant="outline">
+                <Button
+                  onClick={() => setShowAddState(false)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button disabled={!selectedState} onClick={handleAddStateTax}>
@@ -909,7 +934,9 @@ export default function TaxSetupPage() {
         <AlertDialog
           onOpenChange={(open) => {
             setDeleteDialogOpen(open);
-            if (!open) setTaxConfigToDelete(null);
+            if (!open) {
+              setTaxConfigToDelete(null);
+            }
           }}
           open={deleteDialogOpen}
         >

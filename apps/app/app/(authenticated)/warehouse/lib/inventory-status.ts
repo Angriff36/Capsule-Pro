@@ -8,9 +8,9 @@ import { invariant } from "@/app/lib/invariant";
 export type StockHealthStatus = "healthy" | "low" | "critical" | "out_of_stock";
 
 export interface InventoryItemStatus {
-  status: StockHealthStatus;
   daysUntilReorder: number | null;
   percentageOfReorderLevel: number;
+  status: StockHealthStatus;
 }
 
 export interface StockHealthConfig {

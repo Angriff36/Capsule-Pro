@@ -25,15 +25,23 @@ vi.mock("@repo/observability/log", () => ({
 }));
 vi.mock("@/lib/pagination", () => ({
   clampLimit: (v: string | null) => {
-    if (!v) return 50;
-    const n = parseInt(v, 10);
-    if (isNaN(n) || n < 1) return 50;
+    if (!v) {
+      return 50;
+    }
+    const n = Number.parseInt(v, 10);
+    if (isNaN(n) || n < 1) {
+      return 50;
+    }
     return Math.min(n, 200);
   },
   clampOffset: (v: string | null) => {
-    if (!v) return 0;
-    const n = parseInt(v, 10);
-    if (isNaN(n) || n < 0) return 0;
+    if (!v) {
+      return 0;
+    }
+    const n = Number.parseInt(v, 10);
+    if (isNaN(n) || n < 0) {
+      return 0;
+    }
     return n;
   },
 }));
@@ -44,12 +52,13 @@ vi.mock("@/lib/manifest-response", () => ({
   })),
   manifestErrorResponse: vi.fn((message, status) => ({
     status,
-    json: () => Promise.resolve({
-      success: false,
-      ...(typeof message === "string"
-        ? { message }
-        : { error: message.error }),
-    }),
+    json: () =>
+      Promise.resolve({
+        success: false,
+        ...(typeof message === "string"
+          ? { message }
+          : { error: message.error }),
+      }),
   })),
 }));
 vi.mock("@/lib/database", () => ({
@@ -75,48 +84,44 @@ const TEST_USER_ID = "user_facilities_test";
 const TEST_ORG_ID = "org_facilities_test";
 
 function createMockFacility(overrides = {} as Record<string, unknown>) {
-  return Object.assign(
-    {
-      id: "facility-001",
-      name: "Main Kitchen",
-      code: "MK-001",
-      facilityType: "kitchen",
-      addressLine1: "123 Main St",
-      addressLine2: null as string | null,
-      city: "Springfield",
-      state: "IL",
-      postalCode: "62701",
-      country: "US",
-      phone: "+1-555-0100",
-      status: "active",
-      notes: null as string | null,
-      createdAt: new Date("2026-01-01"),
-      updatedAt: new Date("2026-01-01"),
-    },
-    overrides
-  );
+  return {
+    id: "facility-001",
+    name: "Main Kitchen",
+    code: "MK-001",
+    facilityType: "kitchen",
+    addressLine1: "123 Main St",
+    addressLine2: null as string | null,
+    city: "Springfield",
+    state: "IL",
+    postalCode: "62701",
+    country: "US",
+    phone: "+1-555-0100",
+    status: "active",
+    notes: null as string | null,
+    createdAt: new Date("2026-01-01"),
+    updatedAt: new Date("2026-01-01"),
+    ...overrides,
+  };
 }
 
 function createMockAsset(overrides = {} as Record<string, unknown>) {
-  return Object.assign(
-    {
-      id: "asset-001",
-      name: "Commercial Oven",
-      assetType: "equipment",
-      serialNumber: "OV-2026-001",
-      manufacturer: "Vulcan",
-      model: "VGX-36",
-      purchaseDate: new Date("2025-06-01"),
-      purchaseCost: 15_000.0,
-      warrantyExpiry: new Date("2027-06-01"),
-      status: "active",
-      areaId: "area-001",
-      notes: null as string | null,
-      createdAt: new Date("2026-01-01"),
-      updatedAt: new Date("2026-01-01"),
-    },
-    overrides
-  );
+  return {
+    id: "asset-001",
+    name: "Commercial Oven",
+    assetType: "equipment",
+    serialNumber: "OV-2026-001",
+    manufacturer: "Vulcan",
+    model: "VGX-36",
+    purchaseDate: new Date("2025-06-01"),
+    purchaseCost: 15_000.0,
+    warrantyExpiry: new Date("2027-06-01"),
+    status: "active",
+    areaId: "area-001",
+    notes: null as string | null,
+    createdAt: new Date("2026-01-01"),
+    updatedAt: new Date("2026-01-01"),
+    ...overrides,
+  };
 }
 
 describe("Facilities List API", () => {
@@ -318,9 +323,7 @@ describe("Facilities List API", () => {
           areaId: "area-001",
         }),
       ];
-      const mockAreas = [
-        { id: "area-001", name: "Prep Area", code: "PA-001" },
-      ];
+      const mockAreas = [{ id: "area-001", name: "Prep Area", code: "PA-001" }];
 
       vi.mocked(database.facilityAsset.findMany).mockResolvedValue(
         mockAssets as never

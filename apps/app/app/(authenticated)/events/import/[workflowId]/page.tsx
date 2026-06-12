@@ -12,10 +12,14 @@ export default async function ImportWorkflowDetailPage({
   params: Promise<{ workflowId: string }>;
 }) {
   const { orgId, userId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const { workflowId } = await params;
 

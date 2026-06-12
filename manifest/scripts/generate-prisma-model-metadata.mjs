@@ -14,15 +14,21 @@
  *
  * Usage: node manifest/scripts/generate-prisma-model-metadata.mjs
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { ENTITY_TO_PRISMA_MODEL } from "./entity-domain-map.mjs";
 
 const root = resolve(process.cwd());
 const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
 const outPath = resolve(
   root,
-  "manifest/generated/runtime/prisma-model-metadata.generated.ts",
+  "manifest/generated/runtime/prisma-model-metadata.generated.ts"
 );
 
 /**
@@ -32,7 +38,9 @@ const outPath = resolve(
 function loadVersionProperties() {
   const irDir = resolve(root, "manifest/ir");
   const versionMap = new Map();
-  if (!existsSync(irDir)) return versionMap;
+  if (!existsSync(irDir)) {
+    return versionMap;
+  }
 
   const irFiles = readdirSync(irDir)
     .filter((name) => name.endsWith(".ir.json"))
@@ -72,9 +80,13 @@ const SCALARS = new Set([
 // Collect enum + model names (enums are treated as string-like scalars; model-typed
 // fields are relations and are skipped by the generic store).
 const enumNames = new Set();
-for (const m of schema.matchAll(/^enum\s+(\w+)\s*\{/gm)) enumNames.add(m[1]);
+for (const m of schema.matchAll(/^enum\s+(\w+)\s*\{/gm)) {
+  enumNames.add(m[1]);
+}
 const modelNames = new Set();
-for (const m of schema.matchAll(/^model\s+(\w+)\s*\{/gm)) modelNames.add(m[1]);
+for (const m of schema.matchAll(/^model\s+(\w+)\s*\{/gm)) {
+  modelNames.add(m[1]);
+}
 
 /** Prisma client accessor: model name with first char lowercased (e.g. Container -> container). */
 const accessorOf = (name) => name[0].toLowerCase() + name.slice(1);
@@ -99,10 +111,12 @@ while ((mm = modelRe.exec(schema)) !== null) {
     pkFields = atId[1].split(",").map((s) => s.trim());
   } else {
     const uniques = [...body.matchAll(/@@unique\(\[([^\]]+)\]\)/g)].map((u) =>
-      u[1].split(",").map((s) => s.trim()),
+      u[1].split(",").map((s) => s.trim())
     );
     const idUnique = uniques.find((arr) => arr.includes("id"));
-    if (idUnique) pkFields = idUnique;
+    if (idUnique) {
+      pkFields = idUnique;
+    }
   }
 
   const fields = [];
@@ -111,16 +125,22 @@ while ((mm = modelRe.exec(schema)) !== null) {
     const line = rawLine.trim();
     // field syntax: <name> <Type>[ <[]> ][ <?> ] <attrs...>
     const fm = line.match(/^(\w+)\s+(\w+)(\[\])?(\?)?\s*(.*)$/);
-    if (!fm) continue;
+    if (!fm) {
+      continue;
+    }
     const [, fname, ftypeRaw, listMark, optMark, attrs] = fm;
     // skip relations (model-typed) and block-level lines that slipped through
-    const isRelation =
-      modelNames.has(ftypeRaw) || /@relation\b/.test(attrs);
-    if (isRelation) continue;
+    const isRelation = modelNames.has(ftypeRaw) || /@relation\b/.test(attrs);
+    if (isRelation) {
+      continue;
+    }
     const isScalar = SCALARS.has(ftypeRaw) || enumNames.has(ftypeRaw);
-    if (!isScalar) continue;
-    if (fname === "deletedAt" || /@map\("deleted_at"\)/.test(attrs))
+    if (!isScalar) {
+      continue;
+    }
+    if (fname === "deletedAt" || /@map\("deleted_at"\)/.test(attrs)) {
       hasDeletedAt = true;
+    }
     fields.push({
       name: fname,
       irName: toIrName(fname),
@@ -231,7 +251,7 @@ export interface PrismaModelMeta {
 export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = ${JSON.stringify(
   models,
   null,
-  2,
+  2
 )};
 `;
 
@@ -243,7 +263,7 @@ writeFileSync(outPath, header + "\n" + body);
 // Contains only the accessor + field-name metadata needed for route generation.
 const jsonOutPath = resolve(
   root,
-  "manifest/generated/runtime/prisma-model-metadata.generated.json",
+  "manifest/generated/runtime/prisma-model-metadata.generated.json"
 );
 const lightweight = {};
 for (const [entityName, meta] of Object.entries(models)) {
@@ -261,7 +281,7 @@ writeFileSync(jsonOutPath, JSON.stringify(lightweight, null, 2) + "\n");
 // Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
 const bridgeOutPath = resolve(
   root,
-  "manifest/generated/runtime/entity-to-prisma-model.generated.ts",
+  "manifest/generated/runtime/entity-to-prisma-model.generated.ts"
 );
 const bridgeHeader = `// Generated from manifest/scripts/entity-domain-map.mjs - DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs
@@ -271,7 +291,7 @@ const bridgeHeader = `// Generated from manifest/scripts/entity-domain-map.mjs -
 const bridgeBody = `export const ENTITY_TO_PRISMA_MODEL: Readonly<Record<string, string>> = ${JSON.stringify(
   ENTITY_TO_PRISMA_MODEL,
   null,
-  2,
+  2
 )};
 
 /** Resolve Manifest IR entity name to Prisma model metadata key. */
@@ -282,5 +302,5 @@ export function resolvePrismaModelKey(entityName: string): string {
 writeFileSync(bridgeOutPath, bridgeHeader + "\n" + bridgeBody);
 
 process.stdout.write(
-  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\nbridge: ${bridgeOutPath}\n`,
+  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\nbridge: ${bridgeOutPath}\n`
 );

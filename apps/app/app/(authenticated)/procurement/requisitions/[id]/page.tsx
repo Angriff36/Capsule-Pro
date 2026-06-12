@@ -23,7 +23,10 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { executeCommand } from "@/app/lib/manifest-client";
-import { getPurchaseRequisition, purchaseRequisitionReject } from "@/app/lib/manifest-client.generated";
+import {
+  getPurchaseRequisition,
+  purchaseRequisitionReject,
+} from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
   formatDate,
@@ -32,21 +35,21 @@ import {
 } from "../../components/req-shared";
 
 interface Requisition {
-  id: string;
-  requisitionNumber: string;
-  status: string;
-  priority: string;
   department: string | null;
+  estimatedShipping: number;
+  estimatedTax: number;
+  estimatedTotal: number;
+  id: string;
+  justification: string | null;
+  notes: string | null;
+  priority: string;
+  rejectionReason: string | null;
   requestDate: string;
   requiredBy: string | null;
-  justification: string | null;
-  subtotal: number;
-  estimatedTax: number;
-  estimatedShipping: number;
-  estimatedTotal: number;
+  requisitionNumber: string;
+  status: string;
   submittedAt: string | null;
-  notes: string | null;
-  rejectionReason: string | null;
+  subtotal: number;
 }
 
 const WORKFLOW_ACTIONS: Record<
@@ -93,7 +96,9 @@ export default function RequisitionDetailPage() {
   };
 
   const handleAction = async (command: string) => {
-    if (!requisition) return;
+    if (!requisition) {
+      return;
+    }
     if (command === "reject") {
       setReasonText("");
       setReasonDialogOpen(true);
@@ -102,8 +107,12 @@ export default function RequisitionDetailPage() {
     setUpdating(command);
     try {
       // Convert kebab-case command to camelCase for Manifest dispatcher
-      const camelCommand = command.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-      await executeCommand("PurchaseRequisition", camelCommand, { id: requisition.id });
+      const camelCommand = command.replace(/-([a-z])/g, (_, c) =>
+        c.toUpperCase()
+      );
+      await executeCommand("PurchaseRequisition", camelCommand, {
+        id: requisition.id,
+      });
       await loadRequisition();
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
@@ -113,7 +122,9 @@ export default function RequisitionDetailPage() {
   };
 
   const confirmReject = async () => {
-    if (!(requisition && reasonText.trim())) return;
+    if (!(requisition && reasonText.trim())) {
+      return;
+    }
     setUpdating("reject");
     setReasonDialogOpen(false);
     try {
@@ -168,11 +179,11 @@ export default function RequisitionDetailPage() {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">
+            <h1 className="font-semibold text-2xl">
               {requisition.requisitionNumber}
             </h1>
             <Badge className={config.color}>
-              <Icon className="h-3 w-3 mr-1" />
+              <Icon className="mr-1 h-3 w-3" />
               {config.label}
             </Badge>
             <Badge className={priorityConfig.color} variant="outline">
@@ -194,7 +205,7 @@ export default function RequisitionDetailPage() {
               variant={action.variant || "default"}
             >
               {updating === action.command && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               {action.label}
             </Button>
@@ -206,42 +217,42 @@ export default function RequisitionDetailPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subtotal</CardTitle>
+            <CardTitle className="font-medium text-sm">Subtotal</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(Number(requisition.subtotal))}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Est. Tax</CardTitle>
+            <CardTitle className="font-medium text-sm">Est. Tax</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(Number(requisition.estimatedTax))}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Est. Shipping</CardTitle>
+            <CardTitle className="font-medium text-sm">Est. Shipping</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(Number(requisition.estimatedShipping))}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Est. Total</CardTitle>
+            <CardTitle className="font-medium text-sm">Est. Total</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(Number(requisition.estimatedTotal))}
             </div>
           </CardContent>
@@ -286,7 +297,7 @@ export default function RequisitionDetailPage() {
               <CardTitle>Justification</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {requisition.justification}
               </p>
             </CardContent>
@@ -299,7 +310,7 @@ export default function RequisitionDetailPage() {
               <CardTitle>Rejection Reason</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-red-600">
+              <p className="text-red-600 text-sm">
                 {requisition.rejectionReason}
               </p>
             </CardContent>
@@ -314,7 +325,7 @@ export default function RequisitionDetailPage() {
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{requisition.notes}</p>
+            <p className="text-muted-foreground text-sm">{requisition.notes}</p>
           </CardContent>
         </Card>
       )}
@@ -322,7 +333,9 @@ export default function RequisitionDetailPage() {
       {/* Rejection Reason Dialog */}
       <Dialog
         onOpenChange={(open) => {
-          if (!open) setReasonDialogOpen(false);
+          if (!open) {
+            setReasonDialogOpen(false);
+          }
         }}
         open={reasonDialogOpen}
       >

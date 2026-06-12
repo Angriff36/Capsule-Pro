@@ -5,11 +5,11 @@ import MenuItemCard from "../menu/MenuItemCard";
 import StepHeader from "../ui/StepHeader";
 
 interface Props {
-  formData: MenuFormData;
-  toggleMenuItem: (id: string) => void;
-  showPrice?: boolean;
-  showCost?: boolean;
   costCache?: Record<string, DishCost>;
+  formData: MenuFormData;
+  showCost?: boolean;
+  showPrice?: boolean;
+  toggleMenuItem: (id: string) => void;
 }
 
 export default function MenuSidesStep({
@@ -33,13 +33,13 @@ export default function MenuSidesStep({
       />
 
       {selectedSides.length === 0 && (
-        <div className="flex items-center gap-2 bg-amber-50 text-amber-700 rounded-lg px-4 py-3 text-sm border border-amber-100">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+        <div className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-amber-700 text-sm">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           At least one side is required.
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {sides.map((item) => (
           <MenuItemCard
             cost={costCache?.[item.id]}

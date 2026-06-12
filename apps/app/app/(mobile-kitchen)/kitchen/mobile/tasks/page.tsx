@@ -30,7 +30,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
+import {
+  kitchenTaskClaim,
+  kitchenTaskComplete,
+  kitchenTaskRelease,
+} from "@/app/lib/manifest-client.generated";
 import type {
   ApiResponse,
   BundleClaimResponse,
@@ -205,7 +209,7 @@ function MobileTaskCard({
       </div>
 
       {/* Task title */}
-      <h3 className="mb-1 text-lg font-bold text-slate-900">{task.title}</h3>
+      <h3 className="mb-1 font-bold text-lg text-slate-900">{task.title}</h3>
       {task.summary && (
         <p className="mb-3 text-slate-600 text-sm">{task.summary}</p>
       )}
@@ -215,7 +219,7 @@ function MobileTaskCard({
         <div className="mb-3 flex flex-wrap gap-1">
           {task.tags.map((tag) => (
             <span
-              className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 text-xs font-medium"
+              className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600 text-xs"
               key={tag}
             >
               {tag}
@@ -239,7 +243,7 @@ function MobileTaskCard({
       {/* Action button - LARGE for mobile */}
       {type === "available" && task.isAvailable && !isMultiSelectMode && (
         <Button
-          className="h-14 w-full text-lg font-bold"
+          className="h-14 w-full font-bold text-lg"
           disabled={isLoading || !isOnline}
           onClick={(e) => {
             e.stopPropagation();
@@ -254,7 +258,7 @@ function MobileTaskCard({
       {type === "my-tasks" && !isMultiSelectMode && (
         <div className="flex gap-2">
           <Button
-            className="h-14 flex-1 text-lg font-bold"
+            className="h-14 flex-1 font-bold text-lg"
             disabled={isLoading || !isOnline}
             onClick={(e) => {
               e.stopPropagation();
@@ -266,7 +270,7 @@ function MobileTaskCard({
           </Button>
           {task.status === "in_progress" && (
             <Button
-              className="h-14 flex-1 bg-emerald-600 text-lg font-bold hover:bg-emerald-700"
+              className="h-14 flex-1 bg-emerald-600 font-bold text-lg hover:bg-emerald-700"
               disabled={isLoading || !isOnline}
               onClick={(e) => {
                 e.stopPropagation();
@@ -439,7 +443,8 @@ export default function MobileTasksPage() {
         setActiveTab("my-tasks");
       } catch (err) {
         captureException(err);
-        const message = err instanceof Error ? err.message : "Failed to claim task";
+        const message =
+          err instanceof Error ? err.message : "Failed to claim task";
         setError(message);
       } finally {
         setIsLoading(false);
@@ -472,7 +477,8 @@ export default function MobileTasksPage() {
         await fetchMyTasks();
       } catch (err) {
         captureException(err);
-        const message = err instanceof Error ? err.message : "Failed to release task";
+        const message =
+          err instanceof Error ? err.message : "Failed to release task";
         setError(message);
       } finally {
         setIsLoading(false);
@@ -796,7 +802,7 @@ export default function MobileTasksPage() {
                   <Button className="relative" size="sm" variant="outline">
                     <Filter className="h-4 w-4" />
                     {activeFilterCount > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white">
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white">
                         {activeFilterCount}
                       </span>
                     )}
@@ -1046,9 +1052,9 @@ export default function MobileTasksPage() {
 
       {/* Floating Claim Button - only in multi-select mode with selected tasks */}
       {isMultiSelectMode && selectedTaskIds.size > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 z-50">
+        <div className="fixed right-4 bottom-20 left-4 z-50">
           <Button
-            className="h-16 w-full text-lg font-bold shadow-xl"
+            className="h-16 w-full font-bold text-lg shadow-xl"
             disabled={isLoading || !isOnline}
             onClick={handleBundleClaim}
             size="lg"

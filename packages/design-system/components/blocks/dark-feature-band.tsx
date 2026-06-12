@@ -38,13 +38,13 @@ const darkFeatureBandVariants = cva(
 
 export interface DarkFeatureBandProps
   extends VariantProps<typeof darkFeatureBandVariants> {
-  eyebrow?: ReactNode;
-  title: ReactNode;
-  description?: ReactNode;
   actions?: ReactNode;
-  media?: ReactNode;
   children?: ReactNode;
   className?: string;
+  description?: ReactNode;
+  eyebrow?: ReactNode;
+  media?: ReactNode;
+  title: ReactNode;
 }
 
 export function DarkFeatureBand({

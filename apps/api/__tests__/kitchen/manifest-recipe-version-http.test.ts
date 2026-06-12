@@ -19,27 +19,51 @@ vi.mock("@/app/lib/tenant", () => ({
   resolveCurrentUser: vi.fn(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
 
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string"
-      ? { success: false, message }
-      : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -111,11 +135,14 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
       });
 
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: true,
-          result: { id: "version-001", recipeId: "recipe-001" },
-          events: [],
-        }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "version-001", recipeId: "recipe-001" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const POST = createRecipeVersionHandler("create");
@@ -180,11 +207,14 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
       });
 
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: true,
-          result: { id: "version-001" },
-          events: [],
-        }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "version-001" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const POST = createRecipeVersionHandler("create");
@@ -214,10 +244,13 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
       });
 
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: false,
-          message: "difficulty must be between 1 and 5",
-        }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: "difficulty must be between 1 and 5",
+          }),
+          { status: 422 }
+        )
       );
 
       const POST = createRecipeVersionHandler("create");
@@ -257,10 +290,13 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
       });
 
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          success: false,
-          message: "times cannot be negative",
-        }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: "times cannot be negative",
+          }),
+          { status: 422 }
+        )
       );
 
       const POST = createRecipeVersionHandler("create");

@@ -24,20 +24,20 @@ import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 
 interface ImportResult {
-  success: number;
   errors: Array<{ row: number; message: string }>;
+  success: number;
 }
 
 interface ParsedRow {
-  row: number;
+  category?: string;
+  fsa_status?: FSAStatus;
   item_number: string;
   name: string;
-  category?: string;
-  unit_cost?: number;
   quantity_on_hand?: number;
   reorder_level?: number;
+  row: number;
   tags?: string[];
-  fsa_status?: FSAStatus;
+  unit_cost?: number;
 }
 
 const VALID_CATEGORIES = new Set(ITEM_CATEGORIES);
@@ -75,7 +75,9 @@ function parseCSVLine(line: string): string[] {
  * Parse tags from CSV string (comma-separated)
  */
 function parseTags(tagStr: string | undefined): string[] | undefined {
-  if (!tagStr || tagStr.trim() === "") return undefined;
+  if (!tagStr || tagStr.trim() === "") {
+    return;
+  }
   const tags = tagStr
     .split(",")
     .map((t) => t.trim())
@@ -313,9 +315,17 @@ export async function POST(request: NextRequest) {
         if (response.ok) {
           inserted++;
         } else {
-          const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-          const message = typeof body.message === "string" ? body.message : `HTTP ${response.status}`;
-          log.error(`[InventoryImport] Manifest create failed for row ${row.row}: ${message}`);
+          const body = (await response.json().catch(() => ({}))) as Record<
+            string,
+            unknown
+          >;
+          const message =
+            typeof body.message === "string"
+              ? body.message
+              : `HTTP ${response.status}`;
+          log.error(
+            `[InventoryImport] Manifest create failed for row ${row.row}: ${message}`
+          );
           errors.push({ row: row.row, message: `Insert failed: ${message}` });
         }
       } catch (err) {

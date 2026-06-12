@@ -1,14 +1,6 @@
 "use client";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import {
   CommandBand,
   CommandBandActions,
   CommandBandBody,
@@ -24,6 +16,13 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
@@ -77,40 +76,40 @@ import TimecardBulkActions from "./timecard-bulk-actions";
 import TimecardDetailModal from "./timecard-detail-modal";
 
 interface TimeEntry {
-  id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  employee_number: string | null;
-  location_id: string | null;
-  location_name: string | null;
-  shift_id: string | null;
-  shift_start: Date | null;
-  shift_end: Date | null;
-  clock_in: Date;
-  clock_out: Date | null;
-  break_minutes: number;
-  notes: string | null;
-  approved_by: string | null;
+  actual_hours: number | null;
   approved_at: Date | null;
+  approved_by: string | null;
   approver_first_name: string | null;
   approver_last_name: string | null;
-  scheduled_hours: number | null;
-  actual_hours: number | null;
-  weekly_hours: number | null;
-  exception_type: string | null;
-  is_overtime: boolean | null;
-  hourly_rate: number | null;
-  total_cost: number | null;
+  break_minutes: number;
+  clock_in: Date;
+  clock_out: Date | null;
   created_at: Date;
+  employee_number: string | null;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  exception_type: string | null;
+  hourly_rate: number | null;
+  id: string;
+  is_overtime: boolean | null;
+  location_id: string | null;
+  location_name: string | null;
+  notes: string | null;
+  scheduled_hours: number | null;
+  shift_end: Date | null;
+  shift_id: string | null;
+  shift_start: Date | null;
+  total_cost: number | null;
   updated_at: Date;
+  weekly_hours: number | null;
 }
 
 interface PaginationInfo {
-  page: number;
   limit: number;
+  page: number;
   total: number;
   totalPages: number;
 }
@@ -217,7 +216,9 @@ export default function TimecardsPage() {
   >(null);
   const [flagExceptionType, setFlagExceptionType] = useState("");
   const [flagExceptionNotes, setFlagExceptionNotes] = useState("");
-  const [flagExceptionBulkIds, setFlagExceptionBulkIds] = useState<string[]>([]);
+  const [flagExceptionBulkIds, setFlagExceptionBulkIds] = useState<string[]>(
+    []
+  );
 
   const fetchTimecards = useCallback(async () => {
     setLoading(true);
@@ -293,7 +294,9 @@ export default function TimecardsPage() {
   };
 
   const handleBulkApprove = async () => {
-    if (selectedEntries.size === 0) return;
+    if (selectedEntries.size === 0) {
+      return;
+    }
     setActionLoading(true);
     try {
       const response = await apiFetch("/api/timecards/bulk", {
@@ -304,7 +307,9 @@ export default function TimecardsPage() {
           approve: true,
         }),
       });
-      if (!response.ok) throw new Error("Failed to approve timecards");
+      if (!response.ok) {
+        throw new Error("Failed to approve timecards");
+      }
       toast.success(`Approved ${selectedEntries.size} timecard(s)`);
       setSelectedEntries(new Set());
       fetchTimecards();
@@ -317,7 +322,9 @@ export default function TimecardsPage() {
   };
 
   const handleBulkReject = async () => {
-    if (selectedEntries.size === 0) return;
+    if (selectedEntries.size === 0) {
+      return;
+    }
     setActionLoading(true);
     try {
       const response = await apiFetch("/api/timecards/bulk", {
@@ -328,7 +335,9 @@ export default function TimecardsPage() {
           reject: true,
         }),
       });
-      if (!response.ok) throw new Error("Failed to reject timecards");
+      if (!response.ok) {
+        throw new Error("Failed to reject timecards");
+      }
       toast.success(`Rejected ${selectedEntries.size} timecard(s)`);
       setSelectedEntries(new Set());
       fetchTimecards();
@@ -341,7 +350,9 @@ export default function TimecardsPage() {
   };
 
   const handleBulkEditRequest = () => {
-    if (selectedEntries.size === 0) return;
+    if (selectedEntries.size === 0) {
+      return;
+    }
     setEditRequestBulkIds(Array.from(selectedEntries));
     setEditRequestEntryId(null);
     setEditRequestReason("");
@@ -349,7 +360,9 @@ export default function TimecardsPage() {
   };
 
   const handleBulkFlagExceptions = () => {
-    if (selectedEntries.size === 0) return;
+    if (selectedEntries.size === 0) {
+      return;
+    }
     setFlagExceptionBulkIds(Array.from(selectedEntries));
     setFlagExceptionEntryId(null);
     setFlagExceptionType("");
@@ -439,7 +452,9 @@ export default function TimecardsPage() {
   };
 
   const handleClockOut = async () => {
-    if (!selectedTimeEntry) return;
+    if (!selectedTimeEntry) {
+      return;
+    }
     setActionLoading(true);
     try {
       const response = await apiFetch(
@@ -543,7 +558,9 @@ export default function TimecardsPage() {
           <div className="space-y-4">
             <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
             <DisplayHeading size="md">Timecards</DisplayHeading>
-            <CommandBandLede>Track, approve, and manage employee time entries.</CommandBandLede>
+            <CommandBandLede>
+              Track, approve, and manage employee time entries.
+            </CommandBandLede>
           </div>
           <CommandBandActions>
             <Button
@@ -564,19 +581,30 @@ export default function TimecardsPage() {
         <CommandBandBody>
           <MetricBand>
             <MetricCell>
-              <MetricValue>{timeEntries.filter((e) => !e.approved_at && e.clock_out).length}</MetricValue>
+              <MetricValue>
+                {
+                  timeEntries.filter((e) => !e.approved_at && e.clock_out)
+                    .length
+                }
+              </MetricValue>
               <MetricLabel>Pending</MetricLabel>
             </MetricCell>
             <MetricCell>
-              <MetricValue>{timeEntries.filter((e) => e.approved_at).length}</MetricValue>
+              <MetricValue>
+                {timeEntries.filter((e) => e.approved_at).length}
+              </MetricValue>
               <MetricLabel>Approved</MetricLabel>
             </MetricCell>
             <MetricCell>
-              <MetricValue>{timeEntries.filter((e) => e.exception_type).length}</MetricValue>
+              <MetricValue>
+                {timeEntries.filter((e) => e.exception_type).length}
+              </MetricValue>
               <MetricLabel>Exceptions</MetricLabel>
             </MetricCell>
             <MetricCell>
-              <MetricValue>{timeEntries.filter((e) => e.is_overtime).length}</MetricValue>
+              <MetricValue>
+                {timeEntries.filter((e) => e.is_overtime).length}
+              </MetricValue>
               <MetricLabel>Overtime</MetricLabel>
             </MetricCell>
           </MetricBand>
@@ -584,7 +612,7 @@ export default function TimecardsPage() {
       </CommandBand>
 
       <OperationalColumn>
-        <SectionHeader title="Filters" count={`${pagination.total} entries`} />
+        <SectionHeader count={`${pagination.total} entries`} title="Filters" />
         <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-4">
             <div className="min-w-[200px] flex-1">
@@ -775,7 +803,11 @@ export default function TimecardsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {entry.weekly_hours !== null ? (
+                          {entry.weekly_hours === null ? (
+                            <span className="text-muted-foreground text-sm">
+                              —
+                            </span>
+                          ) : (
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={
@@ -793,10 +825,6 @@ export default function TimecardsPage() {
                                 </Badge>
                               )}
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">
-                              —
-                            </span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -937,7 +965,9 @@ export default function TimecardsPage() {
       {/* Inline Edit Request Dialog */}
       <Dialog
         onOpenChange={(isOpen) => {
-          if (!isOpen) setEditRequestDialogOpen(false);
+          if (!isOpen) {
+            setEditRequestDialogOpen(false);
+          }
         }}
         open={editRequestDialogOpen}
       >
@@ -988,7 +1018,9 @@ export default function TimecardsPage() {
                         })),
                       }),
                     });
-                    if (!response.ok) throw new Error("Failed to request edits");
+                    if (!response.ok) {
+                      throw new Error("Failed to request edits");
+                    }
                     toast.success(
                       `Edit requests submitted for ${editRequestBulkIds.length} timecard(s)`
                     );
@@ -1020,7 +1052,9 @@ export default function TimecardsPage() {
       {/* Inline Flag Exception Dialog */}
       <Dialog
         onOpenChange={(isOpen) => {
-          if (!isOpen) setFlagExceptionDialogOpen(false);
+          if (!isOpen) {
+            setFlagExceptionDialogOpen(false);
+          }
         }}
         open={flagExceptionDialogOpen}
       >
@@ -1094,8 +1128,9 @@ export default function TimecardsPage() {
                         })),
                       }),
                     });
-                    if (!response.ok)
+                    if (!response.ok) {
                       throw new Error("Failed to flag exceptions");
+                    }
                     toast.success(
                       `Exceptions flagged for ${flagExceptionBulkIds.length} timecard(s)`
                     );

@@ -15,32 +15,32 @@ const VENUE_TYPES = [
   {
     value: "banquet-hall",
     label: "Banquet Hall",
-    icon: <Building className="w-4 h-4" />,
+    icon: <Building className="h-4 w-4" />,
   },
   {
     value: "private-home",
     label: "Private Home",
-    icon: <Home className="w-4 h-4" />,
+    icon: <Home className="h-4 w-4" />,
   },
   {
     value: "outdoor",
     label: "Outdoor / Garden",
-    icon: <TreePine className="w-4 h-4" />,
+    icon: <TreePine className="h-4 w-4" />,
   },
   {
     value: "warehouse-loft",
     label: "Warehouse / Loft",
-    icon: <Warehouse className="w-4 h-4" />,
+    icon: <Warehouse className="h-4 w-4" />,
   },
   {
     value: "religious",
     label: "Religious Venue",
-    icon: <Church className="w-4 h-4" />,
+    icon: <Church className="h-4 w-4" />,
   },
   {
     value: "hotel",
     label: "Hotel / Resort",
-    icon: <Hotel className="w-4 h-4" />,
+    icon: <Hotel className="h-4 w-4" />,
   },
 ];
 
@@ -66,33 +66,30 @@ export default function LogisticsStep({ formData, updateField }: Props) {
         title="Logistics"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="mb-1.5 block font-medium text-sm text-stone-700">
             Event date
           </label>
           <input
-            className="w-full rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800
-              focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-100 transition-all"
+            className="w-full rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 transition-all focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-100"
             onChange={(e) => updateField("eventDate", e.target.value)}
             type="date"
             value={formData.eventDate}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="mb-1.5 block font-medium text-sm text-stone-700">
             Date flexibility
           </label>
-          <div className="flex gap-2 mt-1">
+          <div className="mt-1 flex gap-2">
             {FLEXIBILITY_OPTIONS.map((opt) => (
               <button
-                className={`
-                  flex-1 px-3 py-3 rounded-lg text-sm font-medium border transition-all
-                  ${
-                    formData.dateFlexibility === opt.value
-                      ? "bg-stone-800 text-white border-stone-800"
-                      : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
-                  }
+                className={`flex-1 rounded-lg border px-3 py-3 font-medium text-sm transition-all ${
+                  formData.dateFlexibility === opt.value
+                    ? "border-stone-800 bg-stone-800 text-white"
+                    : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"
+                }
                 `}
                 key={opt.value}
                 onClick={() => updateField("dateFlexibility", opt.value)}
@@ -106,10 +103,10 @@ export default function LogisticsStep({ formData, updateField }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Venue type
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {VENUE_TYPES.map((venue) => (
             <SelectCard
               icon={venue.icon}
@@ -122,7 +119,7 @@ export default function LogisticsStep({ formData, updateField }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <TextInput
           label="Venue name (if known)"
           onChange={(v) => updateField("venueName", v)}

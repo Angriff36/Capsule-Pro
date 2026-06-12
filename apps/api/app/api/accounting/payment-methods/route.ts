@@ -15,7 +15,6 @@ import {
   clearSiblingDefaults,
   getDisplayInfo,
   type PaymentMethodListResponse,
-  type PaymentMethodResponse,
   parsePaginationParams,
   parsePaymentMethodFilters,
   validateCreatePaymentMethodRequest,
@@ -99,7 +98,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await requireTenantId();
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     validateCreatePaymentMethodRequest(body);
 

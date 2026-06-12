@@ -6,14 +6,14 @@
  * Policies are admin-only (see ir-admin plugin).
  */
 
+import type { EntitySummary } from "@angriff36/manifest/agent-sdk";
+import { z } from "zod";
 import {
   describeCommand,
   describeEntity,
   findMatchingCommands,
   listEntities,
 } from "../lib/agent-sdk.js";
-import type { EntitySummary } from "@angriff36/manifest/agent-sdk";
-import { z } from "zod";
 import { getAllowedCommands, getCommandAccess } from "../lib/command-policy.js";
 import {
   getCommand,
@@ -146,7 +146,9 @@ export const irIntrospectionPlugin: McpPlugin = {
         };
 
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify(result, null, 2) },
+          ],
         };
       }
     );
@@ -314,8 +316,12 @@ function _expressionToString(expr: unknown): string {
     const value = node.value;
     if (value && typeof value === "object" && "kind" in value) {
       const literal = value as { kind?: string; value?: unknown };
-      if (literal.kind === "null") return "null";
-      if (literal.kind === "string") return `"${String(literal.value ?? "")}"`;
+      if (literal.kind === "null") {
+        return "null";
+      }
+      if (literal.kind === "string") {
+        return `"${String(literal.value ?? "")}"`;
+      }
       if (literal.kind === "number" || literal.kind === "boolean") {
         return String(literal.value ?? "");
       }

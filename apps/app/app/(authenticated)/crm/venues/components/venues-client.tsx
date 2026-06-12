@@ -1,15 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
 import {
   CommandBand,
   CommandBandActions,
@@ -21,6 +11,16 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import {
   Table,
   TableBody,
@@ -43,23 +43,23 @@ import { toast } from "sonner";
 import { getVenues, type VenueFilters, type VenueType } from "../actions";
 
 interface Venue {
-  id: string;
-  tenantId: string;
-  name: string;
-  venueType: string;
   addressLine1: string | null;
   addressLine2: string | null;
-  city: string | null;
-  stateProvince: string | null;
-  postalCode: string | null;
-  countryCode: string | null;
   capacity: number | null;
+  city: string | null;
+  contactEmail: string | null;
   contactName: string | null;
   contactPhone: string | null;
-  contactEmail: string | null;
-  isActive: boolean;
-  tags: string[];
+  countryCode: string | null;
   createdAt: Date;
+  id: string;
+  isActive: boolean;
+  name: string;
+  postalCode: string | null;
+  stateProvince: string | null;
+  tags: string[];
+  tenantId: string;
+  venueType: string;
 }
 
 const VENUE_TYPES: { value: VenueType; label: string }[] = [
@@ -305,59 +305,61 @@ export function VenuesClient() {
       <OperationalColumn>
         <SectionHeader title="Filters" />
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <form className="min-w-[200px] flex-1" onSubmit={handleSearchSubmit}>
-          <div className="relative">
-            <Input
-              className="pr-10"
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search venues..."
-              value={searchInput}
-            />
-          </div>
-        </form>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4">
+          <form className="min-w-[200px] flex-1" onSubmit={handleSearchSubmit}>
+            <div className="relative">
+              <Input
+                className="pr-10"
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search venues..."
+                value={searchInput}
+              />
+            </div>
+          </form>
 
-        <Select
-          onValueChange={(value) => handleFilterChange("venueType", value)}
-          value={filters.venueType || ""}
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Venue Type" />
-          </SelectTrigger>
-          <SelectContent>
-            {VENUE_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("venueType", value)}
+            value={filters.venueType || ""}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Venue Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {VENUE_TYPES.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          onValueChange={(value) => handleFilterChange("isActive", value)}
-          value={filters.isActive === undefined ? "" : String(filters.isActive)}
-        >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="true">Active</SelectItem>
-            <SelectItem value="false">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select
+            onValueChange={(value) => handleFilterChange("isActive", value)}
+            value={
+              filters.isActive === undefined ? "" : String(filters.isActive)
+            }
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Active</SelectItem>
+              <SelectItem value="false">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {hasActiveFilters && (
-          <Button onClick={clearFilters} size="sm" variant="ghost">
-            <XIcon className="mr-2 h-4 w-4" />
-            Clear
-          </Button>
-        )}
-      </div>
+          {hasActiveFilters && (
+            <Button onClick={clearFilters} size="sm" variant="ghost">
+              <XIcon className="mr-2 h-4 w-4" />
+              Clear
+            </Button>
+          )}
+        </div>
 
-      {/* Table */}
-      <SectionHeader title="All Venues" />
-      <Table>
+        {/* Table */}
+        <SectionHeader title="All Venues" />
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -423,38 +425,38 @@ export function VenuesClient() {
           </TableBody>
         </Table>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between text-muted-foreground text-sm">
-          <p>
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} venues
-          </p>
-          <div className="flex gap-2">
-            <Button
-              disabled={pagination.page === 1}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <Button
-              disabled={pagination.page === pagination.totalPages}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Next
-            </Button>
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between text-muted-foreground text-sm">
+            <p>
+              Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+              {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+              of {pagination.total} venues
+            </p>
+            <div className="flex gap-2">
+              <Button
+                disabled={pagination.page === 1}
+                onClick={() =>
+                  setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                }
+                size="sm"
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <Button
+                disabled={pagination.page === pagination.totalPages}
+                onClick={() =>
+                  setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                }
+                size="sm"
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </OperationalColumn>
     </PageCanvas>
   );

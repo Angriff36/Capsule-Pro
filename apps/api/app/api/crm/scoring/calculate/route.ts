@@ -57,7 +57,9 @@ function leadMatchesRule(
 
   const current = lead[field as LeadScoringField];
   const currentText =
-    current instanceof Date ? current.toISOString().slice(0, 10) : String(current ?? "");
+    current instanceof Date
+      ? current.toISOString().slice(0, 10)
+      : String(current ?? "");
   const currentNumber = Number(current);
   const ruleNumber = Number(value);
 

@@ -16,8 +16,8 @@ import { Header } from "../../../../components/header";
 import { NewIngredientForm } from "../../components/new-ingredient-form-client";
 
 interface UnitOption {
-  id: number;
   code: string;
+  id: number;
   name: string;
 }
 

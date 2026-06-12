@@ -37,10 +37,10 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 // Individual tests override this with vi.doMock when they need specific behavior.
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn().mockResolvedValue(
-    new Response(
-      JSON.stringify({ success: true, result: {}, events: [] }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    )
+    new Response(JSON.stringify({ success: true, result: {}, events: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
   ),
 }));
 
@@ -62,14 +62,22 @@ vi.mock("@/lib/manifest-response", async () => {
       const body =
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            };
       return NextResponse.json(body, { status });
     },
   };
 });
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser, resolveCurrentUser } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // Minimal Decimal stand-in for mocking Prisma Decimal return values
@@ -612,7 +620,9 @@ describe("Procurement Purchase Orders API", () => {
 
     it("returns 500 when runManifestCommand throws", async () => {
       authOk();
-      vi.mocked(runManifestCommand).mockRejectedValueOnce(new Error("runtime error"));
+      vi.mocked(runManifestCommand).mockRejectedValueOnce(
+        new Error("runtime error")
+      );
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -902,7 +912,9 @@ describe("Procurement Purchase Orders API", () => {
       );
 
       // The final purchaseOrder.findFirst call throws
-      vi.mocked(database.purchaseOrder.findFirst).mockRejectedValue(new Error("db error") as never);
+      vi.mocked(database.purchaseOrder.findFirst).mockRejectedValue(
+        new Error("db error") as never
+      );
 
       const { POST } = await import(
         "@/app/api/procurement/purchase-orders/commands/update-status/route"
@@ -959,18 +971,28 @@ describe("Procurement Purchase Orders API", () => {
       );
 
       // Mock purchaseOrderItem.updateMany (quality partial)
-      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({
+        count: 1,
+      } as never);
       // Mock purchaseOrderItem.findUnique (returns the item with its inventory itemId)
       vi.mocked(database.purchaseOrderItem.findUnique).mockResolvedValue({
         itemId: ITEM_ID,
       } as never);
       // Mock inventoryItem.updateMany (increment)
-      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({
+        count: 1,
+      } as never);
       // Mock purchaseOrderItem.findMany for remaining check — Prisma returns Decimal objects
       // with .lt() method, so we use TestDecimal instances
       vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
-        { quantityReceived: new TestDecimal(4), quantityOrdered: new TestDecimal(10) },
-        { quantityReceived: new TestDecimal(5), quantityOrdered: new TestDecimal(5) },
+        {
+          quantityReceived: new TestDecimal(4),
+          quantityOrdered: new TestDecimal(10),
+        },
+        {
+          quantityReceived: new TestDecimal(5),
+          quantityOrdered: new TestDecimal(5),
+        },
       ] as never);
 
       const { POST } = await import(
@@ -1001,17 +1023,26 @@ describe("Procurement Purchase Orders API", () => {
         fn(database)
       );
 
-      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({
+        count: 1,
+      } as never);
       vi.mocked(database.purchaseOrderItem.findUnique).mockResolvedValue({
         itemId: ITEM_ID,
       } as never);
-      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({
+        count: 1,
+      } as never);
       // All items fully received → remaining = 0
       vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
-        { quantityReceived: new TestDecimal(10), quantityOrdered: new TestDecimal(10) },
+        {
+          quantityReceived: new TestDecimal(10),
+          quantityOrdered: new TestDecimal(10),
+        },
       ] as never);
       // Mock PO update to received
-      vi.mocked(database.purchaseOrder.update).mockResolvedValue({ id: PO_ID } as never);
+      vi.mocked(database.purchaseOrder.update).mockResolvedValue({
+        id: PO_ID,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/procurement/purchase-orders/commands/receive/route"
@@ -1048,9 +1079,14 @@ describe("Procurement Purchase Orders API", () => {
       );
 
       // qty=0 → route skips inventory increment
-      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({
+        count: 1,
+      } as never);
       vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
-        { quantityReceived: new TestDecimal(0), quantityOrdered: new TestDecimal(10) },
+        {
+          quantityReceived: new TestDecimal(0),
+          quantityOrdered: new TestDecimal(10),
+        },
       ] as never);
 
       const { POST } = await import(
@@ -1082,7 +1118,9 @@ describe("Procurement Purchase Orders API", () => {
       );
 
       // Both items will be skipped (missing itemId, null qty)
-      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const { POST } = await import(
         "@/app/api/procurement/purchase-orders/commands/receive/route"

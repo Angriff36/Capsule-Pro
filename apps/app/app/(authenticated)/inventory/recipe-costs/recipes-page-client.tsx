@@ -127,26 +127,26 @@ export const RecipesPageClient = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Recipes</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Recipes</CardTitle>
             <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCount}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{totalCount}</div>
+            <p className="text-muted-foreground text-xs">
               {recipes.filter((r) => r.isActive).length} active
             </p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               With Cost Data
             </CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recipesWithCost.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{recipesWithCost.length}</div>
+            <p className="text-muted-foreground text-xs">
               {((recipesWithCost.length / recipes.length) * 100).toFixed(0)}% of
               total
             </p>
@@ -154,30 +154,30 @@ export const RecipesPageClient = () => {
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Value</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(totalRecipeValue)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Sum of all recipe costs
             </p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Avg Cost/Yield
             </CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(averageCostPerYield)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Per yield unit average
             </p>
           </CardContent>
@@ -274,13 +274,13 @@ export const RecipesPageClient = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell className="text-center py-8" colSpan={8}>
+                  <TableCell className="py-8 text-center" colSpan={8}>
                     Loading recipes...
                   </TableCell>
                 </TableRow>
               ) : filteredRecipes.length === 0 ? (
                 <TableRow>
-                  <TableCell className="text-center py-8" colSpan={8}>
+                  <TableCell className="py-8 text-center" colSpan={8}>
                     No recipes found
                   </TableCell>
                 </TableRow>
@@ -291,7 +291,7 @@ export const RecipesPageClient = () => {
                       <div>
                         <div className="font-medium">{recipe.name}</div>
                         {recipe.description && (
-                          <div className="text-sm text-muted-foreground truncate max-w-md">
+                          <div className="max-w-md truncate text-muted-foreground text-sm">
                             {recipe.description}
                           </div>
                         )}
@@ -373,7 +373,7 @@ export const RecipesPageClient = () => {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)} of{" "}
           {totalCount} recipes
         </div>

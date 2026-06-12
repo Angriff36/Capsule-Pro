@@ -81,7 +81,8 @@ export const env = createEnv({
     ? (process.env as Record<string, string | undefined>)
     : {
         REALTIME_CORS_ORIGINS:
-          process.env.REALTIME_CORS_ORIGINS ?? process.env.ABLY_AUTH_CORS_ORIGINS,
+          process.env.REALTIME_CORS_ORIGINS ??
+          process.env.ABLY_AUTH_CORS_ORIGINS,
         OUTBOX_PUBLISH_TOKEN: process.env.OUTBOX_PUBLISH_TOKEN,
         CRON_SECRET: process.env.CRON_SECRET,
 

@@ -14,10 +14,10 @@ import { keys } from "./keys";
 // ─── Provider Interface ───────────────────────────────────────────────────
 
 export interface SmsProvider {
-  /** Send a single SMS message. Returns the provider message ID on success. */
-  send(to: string, message: string): Promise<string>;
   /** Provider name for logging/tracking. */
   readonly name: string;
+  /** Send a single SMS message. Returns the provider message ID on success. */
+  send(to: string, message: string): Promise<string>;
 }
 
 // ─── E.164 Validation ─────────────────────────────────────────────────────
@@ -83,7 +83,9 @@ class NoOpProvider implements SmsProvider {
 let cachedProvider: SmsProvider | null = null;
 
 function getProvider(): SmsProvider {
-  if (cachedProvider) return cachedProvider;
+  if (cachedProvider) {
+    return cachedProvider;
+  }
 
   const env = keys();
   const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = env;
@@ -104,10 +106,10 @@ function getProvider(): SmsProvider {
 // ─── Public API ───────────────────────────────────────────────────────────
 
 export interface SendSMSParams {
-  /** Recipient phone number in E.164 format */
-  to: string;
   /** Message body (max 1600 chars for Twilio) */
   message: string;
+  /** Recipient phone number in E.164 format */
+  to: string;
 }
 
 export interface SendSMSResult {

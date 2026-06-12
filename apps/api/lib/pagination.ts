@@ -50,7 +50,9 @@ export const MAX_LIMIT = 200;
  */
 export function clampLimit(raw: string | null): number {
   const parsed = Number.parseInt(raw ?? "", 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_LIMIT;
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_LIMIT;
+  }
   return Math.min(parsed, MAX_LIMIT);
 }
 
@@ -65,6 +67,8 @@ export function clampLimit(raw: string | null): number {
  */
 export function clampOffset(raw: string | null): number {
   const parsed = Number.parseInt(raw ?? "", 10);
-  if (!Number.isFinite(parsed) || parsed < 0) return 0;
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
   return parsed;
 }

@@ -86,7 +86,7 @@ export default async function MenuDetailPage({
           {/* Back navigation */}
           <div className="mb-6">
             <Link
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center text-muted-foreground text-sm hover:text-foreground"
               href="/kitchen/recipes?tab=menus"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -97,7 +97,7 @@ export default async function MenuDetailPage({
           {/* Header with Edit button */}
           <div className="mb-6 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
+              <h1 className="font-semibold text-2xl tracking-tight">
                 {menu.name}
               </h1>
               {menu.description && (
@@ -117,7 +117,7 @@ export default async function MenuDetailPage({
             {menu.category && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="font-medium text-sm">
                     Category
                   </CardTitle>
                 </CardHeader>
@@ -130,7 +130,7 @@ export default async function MenuDetailPage({
             {(menu.basePrice || menu.pricePerPerson) && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
+                  <CardTitle className="flex items-center font-medium text-sm">
                     <DollarSign className="mr-2 h-4 w-4" />
                     Pricing
                   </CardTitle>
@@ -155,7 +155,7 @@ export default async function MenuDetailPage({
             {(menu.minGuests || menu.maxGuests) && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
+                  <CardTitle className="flex items-center font-medium text-sm">
                     <Users className="mr-2 h-4 w-4" />
                     Guest Limits
                   </CardTitle>
@@ -172,7 +172,7 @@ export default async function MenuDetailPage({
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Status</CardTitle>
+                <CardTitle className="font-medium text-sm">Status</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant={menu.isActive ? "default" : "secondary"}>
@@ -192,7 +192,7 @@ export default async function MenuDetailPage({
                 <div className="space-y-4">
                   {allDietaryTags.size > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Dietary Tags</h4>
+                      <h4 className="mb-2 font-medium text-sm">Dietary Tags</h4>
                       <div className="flex flex-wrap gap-2">
                         {Array.from(allDietaryTags).map((tag) => (
                           <Badge key={tag} variant="outline">
@@ -205,7 +205,7 @@ export default async function MenuDetailPage({
 
                   {allAllergens.size > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2 flex items-center">
+                      <h4 className="mb-2 flex items-center font-medium text-sm">
                         <AlertCircle className="mr-2 h-4 w-4 text-destructive" />
                         Allergens
                       </h4>
@@ -225,7 +225,7 @@ export default async function MenuDetailPage({
 
           {/* Dishes grouped by course */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="font-bold text-2xl tracking-tight">
               Menu Dishes ({menu.dishes.length})
             </h2>
 
@@ -280,7 +280,7 @@ export default async function MenuDetailPage({
                     ))}
 
                     {dishesByCourse[course].length === 0 && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No dishes in this course.
                       </p>
                     )}

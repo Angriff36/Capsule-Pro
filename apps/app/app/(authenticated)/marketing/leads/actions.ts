@@ -3,8 +3,8 @@
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // Marketing spec FR-501: closed enum, immutable after creation.
 // `website` is reserved for the public infrastructure-allowlisted endpoint (FR-505).
@@ -13,25 +13,25 @@ const LEAD_SOURCES = ["website", "manual", "import"] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 export interface CreateLeadInput {
-  contactName: string;
+  assignedTo?: string;
   companyName?: string;
   contactEmail?: string;
+  contactName: string;
   contactPhone?: string;
-  source?: string;
-  eventType?: string;
-  eventDate?: string;
   estimatedGuests?: number;
   estimatedValue?: number;
+  eventDate?: string;
+  eventType?: string;
   notes?: string;
-  assignedTo?: string;
+  source?: string;
 }
 
 export interface CreateLeadResult {
+  duplicateReason?: "client_email" | "lead_email";
   lead: Awaited<ReturnType<typeof database.lead.create>>;
   // FR-129: when contactEmail matches an existing Client.email or Lead.contactEmail,
   // we create the lead anyway and surface a "POSSIBLE DUPLICATE" annotation.
   possibleDuplicate: boolean;
-  duplicateReason?: "client_email" | "lead_email";
 }
 
 async function detectEmailDuplicate(
@@ -40,7 +40,7 @@ async function detectEmailDuplicate(
 ): Promise<CreateLeadResult["duplicateReason"]> {
   const normalized = contactEmail.trim().toLowerCase();
   if (!normalized) {
-    return undefined;
+    return;
   }
   const clientHit = await database.client.findFirst({
     where: { tenantId, email: { equals: normalized, mode: "insensitive" } },
@@ -60,7 +60,7 @@ async function detectEmailDuplicate(
   if (leadHit) {
     return "lead_email";
   }
-  return undefined;
+  return;
 }
 
 export async function createLead(

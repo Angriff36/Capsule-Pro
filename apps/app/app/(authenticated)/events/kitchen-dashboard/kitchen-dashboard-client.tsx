@@ -181,22 +181,22 @@ const formatDuration = (milliseconds: number): string => {
 
 interface FiltersPanelProps {
   className?: string;
-  startDate: string;
-  setStartDate: (value: string) => void;
   endDate: string;
-  setEndDate: (value: string) => void;
-  selectedVenue: string;
-  setSelectedVenue: (value: string) => void;
-  venueOptions: { venues: string[]; hasUnassigned: boolean };
-  selectedStatus: string;
-  setSelectedStatus: (value: string) => void;
   eventStatuses: readonly string[];
-  selectedTags: string[];
-  tagOptions: string[];
-  onToggleTag: (tag: string) => void;
   filteredCount: number;
   hasActiveFilters: boolean;
   onResetFilters: () => void;
+  onToggleTag: (tag: string) => void;
+  selectedStatus: string;
+  selectedTags: string[];
+  selectedVenue: string;
+  setEndDate: (value: string) => void;
+  setSelectedStatus: (value: string) => void;
+  setSelectedVenue: (value: string) => void;
+  setStartDate: (value: string) => void;
+  startDate: string;
+  tagOptions: string[];
+  venueOptions: { venues: string[]; hasUnassigned: boolean };
 }
 
 function FiltersPanel({
@@ -284,7 +284,7 @@ function FiltersPanel({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-64 p-3">
             {tagOptions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No tags available yet.
               </p>
             ) : (
@@ -304,7 +304,7 @@ function FiltersPanel({
         </Popover>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {filteredCount} events matched
         </span>
         <Button
@@ -350,31 +350,33 @@ export const KitchenDashboardClient = ({
     return () => window.clearInterval(interval);
   }, []);
 
-  const parsedEvents = useMemo(() => {
-    return events.map((event) => {
-      const eventDate = new Date(event.eventDate);
-      const createdAt = new Date(event.createdAt);
-      const displayTags = event.tags
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0 && !tag.startsWith("needs:"));
-      const normalizedTags = displayTags.map((tag) => tag.toLowerCase());
-      const soldOut = normalizedTags.some((tag) =>
-        soldOutTagMatches.includes(tag)
-      );
-      const limited = normalizedTags.some((tag) =>
-        limitedTagMatches.includes(tag)
-      );
+  const parsedEvents = useMemo(
+    () =>
+      events.map((event) => {
+        const eventDate = new Date(event.eventDate);
+        const createdAt = new Date(event.createdAt);
+        const displayTags = event.tags
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0 && !tag.startsWith("needs:"));
+        const normalizedTags = displayTags.map((tag) => tag.toLowerCase());
+        const soldOut = normalizedTags.some((tag) =>
+          soldOutTagMatches.includes(tag)
+        );
+        const limited = normalizedTags.some((tag) =>
+          limitedTagMatches.includes(tag)
+        );
 
-      return {
-        ...event,
-        eventDate,
-        createdAt,
-        displayTags,
-        soldOut,
-        limited,
-      };
-    });
-  }, [events]);
+        return {
+          ...event,
+          eventDate,
+          createdAt,
+          displayTags,
+          soldOut,
+          limited,
+        };
+      }),
+    [events]
+  );
 
   const highCapacityThreshold = useMemo(() => {
     const counts = parsedEvents
@@ -543,15 +545,17 @@ export const KitchenDashboardClient = ({
     return { totalToday, liveNow, upcoming24h, soldOut };
   }, [filteredEvents, now]);
 
-  const queueEvents = useMemo(() => {
-    return [...filteredEvents].sort((a, b) => {
-      const diff = a.start.getTime() - b.start.getTime();
-      if (diff !== 0) {
-        return diff;
-      }
-      return a.createdAt.getTime() - b.createdAt.getTime();
-    });
-  }, [filteredEvents]);
+  const queueEvents = useMemo(
+    () =>
+      [...filteredEvents].sort((a, b) => {
+        const diff = a.start.getTime() - b.start.getTime();
+        if (diff !== 0) {
+          return diff;
+        }
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      }),
+    [filteredEvents]
+  );
 
   const timelineGroups = useMemo(() => {
     const groups = new Map<string, typeof filteredEvents>();
@@ -656,32 +660,32 @@ export const KitchenDashboardClient = ({
   if (events.length === 0) {
     return (
       <PageCanvas className="gap-8 pb-14">
-        <section className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-[#eeece7] px-8 py-16 sm:px-16 sm:py-20">
+        <section className="rounded-[22px] border border-[#d9d9dd] border-dashed bg-[#eeece7] px-8 py-16 sm:px-16 sm:py-20">
           <div className="mx-auto flex max-w-2xl flex-col items-start gap-6">
             <span className="inline-flex size-12 items-center justify-center rounded-full border border-[#d9d9dd] bg-white text-[#003c33]">
               <CalendarDays className="size-5" />
             </span>
-            <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+            <p className="font-mono text-[#75758a] text-[12px] uppercase tracking-[0.28em]">
               Kitchen operations / empty
             </p>
-            <h2 className="font-display text-2xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground sm:text-5xl">
+            <h2 className="font-display font-normal text-2xl text-foreground leading-[1.05] tracking-[-0.02em] sm:text-5xl">
               No events yet.
             </h2>
-            <p className="max-w-lg text-base leading-relaxed text-[#454553]">
+            <p className="max-w-lg text-[#454553] text-base leading-relaxed">
               Create your first event to start running kitchen operations with
               real data.
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <Button
                 asChild
-                className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                className="rounded-full bg-[#17171c] px-5 font-medium text-[13px] text-white hover:bg-[#17171c]/90"
                 size="sm"
               >
                 <Link href="/events/new">Create event</Link>
               </Button>
               <Button
                 asChild
-                className="rounded-full border border-[#d9d9dd] bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/70"
+                className="rounded-full border border-[#d9d9dd] bg-white px-5 font-medium text-[#17171c] text-[13px] hover:bg-white/70"
                 size="sm"
                 variant="outline"
               >
@@ -700,13 +704,13 @@ export const KitchenDashboardClient = ({
         <div className="space-y-10 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-4">
-              <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
+              <p className="font-mono text-[12px] text-white/60 uppercase tracking-[0.28em]">
                 Kitchen operations / control room
               </p>
-              <h2 className="font-display text-2xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
+              <h2 className="font-display font-normal text-2xl leading-[1.05] tracking-[-0.02em] sm:text-5xl">
                 Today &amp; the next 24 hours.
               </h2>
-              <p className="max-w-xl text-base leading-relaxed text-white/70">
+              <p className="max-w-xl text-base text-white/70 leading-relaxed">
                 Live service visibility, timeline control, and rapid actions
                 across events &mdash; in one quiet, deliberate view.
               </p>
@@ -740,7 +744,7 @@ export const KitchenDashboardClient = ({
               <div className="hidden items-center gap-2 lg:flex">
                 <Button
                   asChild
-                  className="rounded-full border border-white/30 bg-transparent px-5 text-[13px] font-medium text-white hover:bg-white/10 hover:text-white"
+                  className="rounded-full border border-white/30 bg-transparent px-5 font-medium text-[13px] text-white hover:bg-white/10 hover:text-white"
                   size="sm"
                   variant="outline"
                 >
@@ -748,7 +752,7 @@ export const KitchenDashboardClient = ({
                 </Button>
                 <Button
                   asChild
-                  className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+                  className="rounded-full bg-white px-5 font-medium text-[#17171c] text-[13px] hover:bg-white/90"
                   size="sm"
                 >
                   <Link href="/events/import">Import</Link>
@@ -758,7 +762,7 @@ export const KitchenDashboardClient = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/50">
+            <span className="font-mono text-[11px] text-white/50 uppercase tracking-[0.28em]">
               Quick filters
             </span>
             <ToggleGroup
@@ -793,7 +797,7 @@ export const KitchenDashboardClient = ({
                 High capacity
               </ToggleGroupItem>
               <ToggleGroupItem
-                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[12px] text-[#ffad9b] data-[state=on]:border-transparent data-[state=on]:bg-[#ff7759] data-[state=on]:text-white"
+                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[#ffad9b] text-[12px] data-[state=on]:border-transparent data-[state=on]:bg-[#ff7759] data-[state=on]:text-white"
                 value="sold-out"
               >
                 <Flame className="mr-1 size-3.5" />
@@ -804,37 +808,37 @@ export const KitchenDashboardClient = ({
 
           <section className="grid gap-px overflow-hidden rounded-[16px] border border-white/15 bg-white/15 sm:grid-cols-2 xl:grid-cols-4">
             <div className="flex flex-col gap-4 bg-[#003c33] p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+              <p className="font-mono text-[11px] text-white/55 uppercase tracking-[0.28em]">
                 Events today
               </p>
-              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+              <p className="font-normal text-5xl leading-none tracking-[-0.02em]">
                 {metrics.totalToday}
               </p>
               <p className="text-[12px] text-white/55">Current day coverage</p>
             </div>
             <div className="flex flex-col gap-4 bg-[#003c33] p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+              <p className="font-mono text-[11px] text-white/55 uppercase tracking-[0.28em]">
                 Live now
               </p>
-              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+              <p className="font-normal text-5xl leading-none tracking-[-0.02em]">
                 {metrics.liveNow}
               </p>
               <p className="text-[12px] text-white/55">Actively running</p>
             </div>
             <div className="flex flex-col gap-4 bg-[#003c33] p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+              <p className="font-mono text-[11px] text-white/55 uppercase tracking-[0.28em]">
                 Upcoming · 24h
               </p>
-              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+              <p className="font-normal text-5xl leading-none tracking-[-0.02em]">
                 {metrics.upcoming24h}
               </p>
               <p className="text-[12px] text-white/55">Next service window</p>
             </div>
             <div className="flex flex-col gap-4 bg-[#003c33] p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#ffad9b]">
+              <p className="font-mono text-[#ffad9b] text-[11px] uppercase tracking-[0.28em]">
                 Sold out
               </p>
-              <p className="text-5xl font-normal leading-none tracking-[-0.02em] text-[#ff7759]">
+              <p className="font-normal text-5xl text-[#ff7759] leading-none tracking-[-0.02em]">
                 {metrics.soldOut}
               </p>
               <p className="text-[12px] text-white/55">
@@ -848,13 +852,13 @@ export const KitchenDashboardClient = ({
       <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
         <aside className="hidden lg:block">
           <div className="sticky top-6 rounded-[16px] border border-[#d9d9dd] bg-[#eeece7] p-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+            <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
               Filters
             </p>
-            <h3 className="mt-2 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+            <h3 className="mt-2 font-normal text-2xl text-[#17171c] leading-tight tracking-[-0.01em]">
               Refine the view.
             </h3>
-            <div className="mt-6 border-t border-[#d9d9dd] pt-6">
+            <div className="mt-6 border-[#d9d9dd] border-t pt-6">
               {mounted ? (
                 <FiltersPanel {...filtersPanelProps} />
               ) : (
@@ -884,24 +888,24 @@ export const KitchenDashboardClient = ({
           )}
 
           {!dateRangeInvalid && filteredEvents.length === 0 && (
-            <div className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-white px-8 py-16">
+            <div className="rounded-[22px] border border-[#d9d9dd] border-dashed bg-white px-8 py-16">
               <div className="mx-auto flex max-w-md flex-col items-center gap-4 text-center">
                 <CalendarDays
                   className="size-8 text-[#75758a]"
                   strokeWidth={1.25}
                 />
-                <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                   No matches
                 </p>
-                <h3 className="text-2xl font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                <h3 className="font-normal text-2xl text-[#17171c] leading-[1.1] tracking-[-0.02em]">
                   Nothing matches these filters.
                 </h3>
-                <p className="text-[15px] leading-relaxed text-[#616161]">
+                <p className="text-[#616161] text-[15px] leading-relaxed">
                   Adjust filters to reveal upcoming operational coverage.
                 </p>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
                   <Button
-                    className="rounded-full border border-[#17171c] bg-transparent px-5 text-[13px] font-medium text-[#17171c] hover:bg-[#17171c] hover:text-white"
+                    className="rounded-full border border-[#17171c] bg-transparent px-5 font-medium text-[#17171c] text-[13px] hover:bg-[#17171c] hover:text-white"
                     onClick={handleResetFilters}
                     variant="outline"
                   >
@@ -909,7 +913,7 @@ export const KitchenDashboardClient = ({
                   </Button>
                   <Button
                     asChild
-                    className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                    className="rounded-full bg-[#17171c] px-5 font-medium text-[13px] text-white hover:bg-[#17171c]/90"
                   >
                     <Link href="/events">View all events</Link>
                   </Button>
@@ -921,26 +925,26 @@ export const KitchenDashboardClient = ({
           {!dateRangeInvalid && filteredEvents.length > 0 && (
             <>
               <section className="space-y-5">
-                <div className="flex items-end justify-between border-b border-[#d9d9dd] pb-4">
+                <div className="flex items-end justify-between border-[#d9d9dd] border-b pb-4">
                   <div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                    <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                       Live operations
                     </p>
-                    <h3 className="mt-1 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                    <h3 className="mt-1 font-normal text-2xl text-[#17171c] leading-tight tracking-[-0.01em]">
                       In window now.
                     </h3>
                   </div>
-                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
+                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[#17171c] text-[11px] uppercase tracking-[0.18em]">
                     {opsEvents.length} in 24h
                   </span>
                 </div>
 
                 {opsEvents.length === 0 ? (
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-dashed border-[#d9d9dd] bg-white px-6 py-6 text-[15px] text-[#616161]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-[#d9d9dd] border-dashed bg-white px-6 py-6 text-[#616161] text-[15px]">
                     No events are scheduled in the next 24 hours.
                     <Button
                       asChild
-                      className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                      className="rounded-full bg-[#17171c] px-5 font-medium text-[13px] text-white hover:bg-[#17171c]/90"
                       size="sm"
                     >
                       <Link href="/events/new">Create event</Link>
@@ -967,8 +971,8 @@ export const KitchenDashboardClient = ({
                             "group rounded-[22px] border border-[#d9d9dd] bg-white p-6 transition-all hover:border-[#17171c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                             event.isLive && "border-[#003c33] bg-[#edfce9]",
                             mounted
-                              ? "opacity-100 translate-y-0"
-                              : "opacity-0 translate-y-2"
+                              ? "translate-y-0 opacity-100"
+                              : "translate-y-2 opacity-0"
                           )}
                           key={event.id}
                           onClick={() => {
@@ -996,29 +1000,29 @@ export const KitchenDashboardClient = ({
                                   {operationalBadge.label}
                                 </span>
                                 {event.soldOut && (
-                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
+                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] text-white uppercase tracking-[0.18em]">
                                     Sold out
                                   </span>
                                 )}
                                 {event.limited && (
-                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
+                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[#ff7759] text-[11px] uppercase tracking-[0.18em]">
                                     Limited
                                   </span>
                                 )}
-                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
+                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[#616161] text-[11px] uppercase capitalize tracking-[0.18em]">
                                   {event.status}
                                 </span>
                               </div>
                               <div>
-                                <p className="text-[20px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                                <p className="font-normal text-[#17171c] text-[20px] leading-tight tracking-[-0.01em]">
                                   {event.title}
                                 </p>
-                                <p className="mt-1 text-[13px] text-[#75758a]">
+                                <p className="mt-1 text-[#75758a] text-[13px]">
                                   {event.eventType} ·{" "}
                                   {shortDateFormatter.format(event.eventDate)}
                                 </p>
                               </div>
-                              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#616161]">
+                              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[#616161] text-[13px]">
                                 <span className="flex items-center gap-1.5">
                                   <MapPin className="size-3.5" />
                                   {event.venueName?.trim() ||
@@ -1031,13 +1035,13 @@ export const KitchenDashboardClient = ({
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-3">
-                              <span className="inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[#75758a]">
+                              <span className="inline-flex items-center gap-1.5 font-mono text-[#75758a] text-[12px] uppercase tracking-[0.18em]">
                                 <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
                               <Button
                                 asChild
-                                className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                                className="rounded-full bg-[#17171c] px-5 font-medium text-[13px] text-white hover:bg-[#17171c]/90"
                                 onClick={(eventClick) =>
                                   eventClick.stopPropagation()
                                 }
@@ -1059,18 +1063,18 @@ export const KitchenDashboardClient = ({
               </section>
 
               <section className="space-y-5">
-                <div className="flex items-end justify-between border-b border-[#d9d9dd] pb-4">
+                <div className="flex items-end justify-between border-[#d9d9dd] border-b pb-4">
                   <div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                    <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                       {viewMode === "timeline" ? "Timeline" : "Queue"}
                     </p>
-                    <h3 className="mt-1 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                    <h3 className="mt-1 font-normal text-2xl text-[#17171c] leading-tight tracking-[-0.01em]">
                       {viewMode === "timeline"
                         ? "Service days, sequenced."
                         : "Every event, in line."}
                     </h3>
                   </div>
-                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
+                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[#17171c] text-[11px] uppercase tracking-[0.18em]">
                     {filteredEvents.length} total
                   </span>
                 </div>
@@ -1082,16 +1086,16 @@ export const KitchenDashboardClient = ({
                         className="overflow-hidden rounded-[16px] border border-[#d9d9dd] bg-white"
                         key={group.key}
                       >
-                        <div className="flex items-center justify-between border-b border-[#d9d9dd] bg-[#eeece7] px-6 py-4">
+                        <div className="flex items-center justify-between border-[#d9d9dd] border-b bg-[#eeece7] px-6 py-4">
                           <div>
-                            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                            <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                               {group.items.length} scheduled
                             </p>
-                            <p className="mt-1 text-[22px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                            <p className="mt-1 font-normal text-[#17171c] text-[22px] leading-tight tracking-[-0.01em]">
                               {dateFormatter.format(group.date)}
                             </p>
                           </div>
-                          <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#616161]">
+                          <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[#616161] text-[11px] uppercase tracking-[0.18em]">
                             All-day block
                           </span>
                         </div>
@@ -1107,10 +1111,10 @@ export const KitchenDashboardClient = ({
                             return (
                               <div
                                 className={cn(
-                                  "group relative flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d9dd] px-4 py-4 transition-colors last:border-b-0 hover:bg-[#f1f5ff]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                                  "group relative flex flex-wrap items-center justify-between gap-4 border-[#d9d9dd] border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-[#f1f5ff]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                                   mounted
-                                    ? "opacity-100 translate-y-0"
-                                    : "opacity-0 translate-y-1"
+                                    ? "translate-y-0 opacity-100"
+                                    : "translate-y-1 opacity-0"
                                 )}
                                 key={event.id}
                                 onClick={() => {
@@ -1142,7 +1146,7 @@ export const KitchenDashboardClient = ({
                                   </div>
                                   <div>
                                     <div className="flex flex-wrap items-center gap-2">
-                                      <p className="text-[16px] font-normal tracking-[-0.005em] text-[#17171c]">
+                                      <p className="font-normal text-[#17171c] text-[16px] tracking-[-0.005em]">
                                         {event.title}
                                       </p>
                                       <span
@@ -1150,39 +1154,39 @@ export const KitchenDashboardClient = ({
                                       >
                                         {operationalBadge.label}
                                       </span>
-                                      <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
+                                      <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[#616161] text-[11px] uppercase capitalize tracking-[0.18em]">
                                         {event.status}
                                       </span>
                                       {event.soldOut && (
-                                        <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
+                                        <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] text-white uppercase tracking-[0.18em]">
                                           Sold out
                                         </span>
                                       )}
                                       {event.limited && (
-                                        <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
+                                        <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[#ff7759] text-[11px] uppercase tracking-[0.18em]">
                                           Limited
                                         </span>
                                       )}
                                     </div>
-                                    <p className="mt-1 text-[13px] text-[#75758a]">
+                                    <p className="mt-1 text-[#75758a] text-[13px]">
                                       {event.eventType} ·{" "}
                                       {event.venueName?.trim() ||
                                         "No venue assigned"}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-5 text-[12px] text-[#616161]">
+                                <div className="flex items-center gap-5 text-[#616161] text-[12px]">
                                   <span className="flex items-center gap-1.5">
                                     <Users className="size-3.5" />
                                     {event.guestCount} guests
                                   </span>
-                                  <span className="hidden items-center gap-1.5 font-mono uppercase tracking-[0.18em] text-[#75758a] sm:flex">
+                                  <span className="hidden items-center gap-1.5 font-mono text-[#75758a] uppercase tracking-[0.18em] sm:flex">
                                     <CalendarDays className="size-3.5" />
                                     All-day
                                   </span>
                                   <Button
                                     asChild
-                                    className="rounded-full px-4 text-[13px] font-medium text-[#1863dc] hover:bg-transparent hover:underline"
+                                    className="rounded-full px-4 font-medium text-[#1863dc] text-[13px] hover:bg-transparent hover:underline"
                                     onClick={(eventClick) =>
                                       eventClick.stopPropagation()
                                     }
@@ -1203,11 +1207,11 @@ export const KitchenDashboardClient = ({
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-[16px] border border-[#d9d9dd] bg-white">
-                    <div className="border-b border-[#d9d9dd] bg-[#eeece7] px-6 py-4">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                    <div className="border-[#d9d9dd] border-b bg-[#eeece7] px-6 py-4">
+                      <p className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                         Sorted by service date
                       </p>
-                      <p className="mt-1 text-[22px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                      <p className="mt-1 font-normal text-[#17171c] text-[22px] leading-tight tracking-[-0.01em]">
                         Queue list
                       </p>
                     </div>
@@ -1230,8 +1234,8 @@ export const KitchenDashboardClient = ({
                             className={cn(
                               "flex flex-wrap items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-[#f1f5ff]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                               mounted
-                                ? "opacity-100 translate-y-0"
-                                : "opacity-0 translate-y-1"
+                                ? "translate-y-0 opacity-100"
+                                : "translate-y-1 opacity-0"
                             )}
                             key={event.id}
                             onClick={() => {
@@ -1254,27 +1258,27 @@ export const KitchenDashboardClient = ({
                           >
                             <div className="min-w-[240px] flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-[16px] font-normal tracking-[-0.005em] text-[#17171c]">
+                                <p className="font-normal text-[#17171c] text-[16px] tracking-[-0.005em]">
                                   {event.title}
                                 </p>
                                 <span className={operationalBadge.className}>
                                   {operationalBadge.label}
                                 </span>
-                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
+                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[#616161] text-[11px] uppercase capitalize tracking-[0.18em]">
                                   {event.status}
                                 </span>
                                 {event.soldOut && (
-                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
+                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] text-white uppercase tracking-[0.18em]">
                                     Sold out
                                   </span>
                                 )}
                                 {event.limited && (
-                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
+                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[#ff7759] text-[11px] uppercase tracking-[0.18em]">
                                     Limited
                                   </span>
                                 )}
                               </div>
-                              <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[13px] text-[#616161]">
+                              <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[#616161] text-[13px]">
                                 <span className="flex items-center gap-1.5">
                                   <CalendarDays className="size-3.5" />
                                   {shortDateFormatter.format(event.eventDate)}
@@ -1291,13 +1295,13 @@ export const KitchenDashboardClient = ({
                               </div>
                             </div>
                             <div className="flex items-center gap-5">
-                              <span className="hidden items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[#75758a] sm:flex">
+                              <span className="hidden items-center gap-1.5 font-mono text-[#75758a] text-[12px] uppercase tracking-[0.18em] sm:flex">
                                 <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
                               <Button
                                 asChild
-                                className="rounded-full px-4 text-[13px] font-medium text-[#1863dc] hover:bg-transparent hover:underline"
+                                className="rounded-full px-4 font-medium text-[#1863dc] text-[13px] hover:bg-transparent hover:underline"
                                 onClick={(eventClick) =>
                                   eventClick.stopPropagation()
                                 }
@@ -1325,16 +1329,16 @@ export const KitchenDashboardClient = ({
           onOpenChange={setDrawerOpen}
           open={drawerOpen}
         >
-          <DrawerContent className="w-[420px] border-l border-[#d9d9dd] bg-white text-[#17171c] sm:max-w-md">
+          <DrawerContent className="w-[420px] border-[#d9d9dd] border-l bg-white text-[#17171c] sm:max-w-md">
             {selectedEvent ? (
               <>
-                <DrawerHeader className="space-y-3 border-b border-[#d9d9dd] px-6 py-6">
-                  <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+                <DrawerHeader className="space-y-3 border-[#d9d9dd] border-b px-6 py-6">
+                  <p className="font-mono text-[#75758a] text-[12px] uppercase tracking-[0.28em]">
                     {selectedEvent.eventNumber
                       ? `Event / #${selectedEvent.eventNumber}`
                       : "Event / detail"}
                   </p>
-                  <DrawerTitle className="text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                  <DrawerTitle className="font-normal text-[#17171c] text-[28px] leading-[1.1] tracking-[-0.02em]">
                     {selectedEvent.title}
                   </DrawerTitle>
                   <DrawerDescription className="sr-only">
@@ -1343,7 +1347,7 @@ export const KitchenDashboardClient = ({
                       : "No event number"}
                   </DrawerDescription>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
+                    <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[#17171c] text-[11px] uppercase tracking-[0.18em]">
                       {selectedEvent.status}
                     </span>
                     <span
@@ -1358,12 +1362,12 @@ export const KitchenDashboardClient = ({
                       }
                     </span>
                     {selectedEvent.soldOut && (
-                      <span className="rounded-full border border-transparent bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
+                      <span className="rounded-full border border-transparent bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] text-white uppercase tracking-[0.18em]">
                         Sold out
                       </span>
                     )}
                     {selectedEvent.limited && (
-                      <span className="rounded-full border border-[#d9d9dd] bg-[#eeece7] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#454553]">
+                      <span className="rounded-full border border-[#d9d9dd] bg-[#eeece7] px-2.5 py-0.5 font-mono text-[#454553] text-[11px] uppercase tracking-[0.18em]">
                         Limited
                       </span>
                     )}
@@ -1373,7 +1377,7 @@ export const KitchenDashboardClient = ({
                   <div className="rounded-[16px] border border-[#d9d9dd] bg-[#eeece7]">
                     <dl className="divide-y divide-[#d9d9dd]">
                       <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                        <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                           Service date
                         </dt>
                         <dd className="font-medium text-[#17171c]">
@@ -1381,13 +1385,13 @@ export const KitchenDashboardClient = ({
                         </dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                        <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                           Time
                         </dt>
                         <dd className="font-medium text-[#17171c]">All-day</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                        <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                           Location
                         </dt>
                         <dd className="text-right font-medium text-[#17171c]">
@@ -1397,7 +1401,7 @@ export const KitchenDashboardClient = ({
                       </div>
                       {selectedEvent.venueAddress && (
                         <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                          <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                             Address
                           </dt>
                           <dd className="text-right font-medium text-[#17171c]">
@@ -1406,7 +1410,7 @@ export const KitchenDashboardClient = ({
                         </div>
                       )}
                       <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                        <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                           Guests
                         </dt>
                         {/* Capacity/RSVP fields are not available; guestCount is the only headcount signal. */}
@@ -1415,10 +1419,10 @@ export const KitchenDashboardClient = ({
                         </dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                        <dt className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.18em]">
                           Event type
                         </dt>
-                        <dd className="font-medium capitalize text-[#17171c]">
+                        <dd className="font-medium text-[#17171c] capitalize">
                           {selectedEvent.eventType}
                         </dd>
                       </div>
@@ -1427,13 +1431,13 @@ export const KitchenDashboardClient = ({
 
                   {selectedEvent.displayTags.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                      <h4 className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                         Tags
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedEvent.displayTags.map((tag) => (
                           <span
-                            className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#454553]"
+                            className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[#454553] text-[11px] uppercase tracking-[0.18em]"
                             key={tag}
                           >
                             {tag}
@@ -1445,27 +1449,27 @@ export const KitchenDashboardClient = ({
 
                   {selectedEvent.notes && (
                     <div className="space-y-3">
-                      <h4 className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                      <h4 className="font-mono text-[#75758a] text-[11px] uppercase tracking-[0.28em]">
                         Notes
                       </h4>
-                      <p className="text-sm leading-relaxed text-[#454553]">
+                      <p className="text-[#454553] text-sm leading-relaxed">
                         {selectedEvent.notes}
                       </p>
                     </div>
                   )}
                 </div>
-                <DrawerFooter className="border-t border-[#d9d9dd] px-6 py-5">
+                <DrawerFooter className="border-[#d9d9dd] border-t px-6 py-5">
                   <div className="grid gap-2">
                     <Button
                       asChild
-                      className="rounded-full bg-[#17171c] text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                      className="rounded-full bg-[#17171c] font-medium text-[13px] text-white hover:bg-[#17171c]/90"
                     >
                       <Link href={`/events/${selectedEvent.id}`}>
                         Open event
                       </Link>
                     </Button>
                     <Button
-                      className="rounded-full border border-[#d9d9dd] bg-white text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
+                      className="rounded-full border border-[#d9d9dd] bg-white font-medium text-[#17171c] text-[13px] hover:bg-[#eeece7]"
                       onClick={() => handleCopyLink(selectedEvent.id)}
                       variant="outline"
                     >
@@ -1474,7 +1478,7 @@ export const KitchenDashboardClient = ({
                     </Button>
                     <Button
                       asChild
-                      className="rounded-full border border-[#d9d9dd] bg-white text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
+                      className="rounded-full border border-[#d9d9dd] bg-white font-medium text-[#17171c] text-[13px] hover:bg-[#eeece7]"
                       variant="outline"
                     >
                       <a
@@ -1489,7 +1493,7 @@ export const KitchenDashboardClient = ({
                   </div>
                   <DrawerClose asChild>
                     <Button
-                      className="rounded-full text-[13px] font-medium text-[#75758a] hover:bg-transparent hover:text-[#17171c]"
+                      className="rounded-full font-medium text-[#75758a] text-[13px] hover:bg-transparent hover:text-[#17171c]"
                       variant="ghost"
                     >
                       Close
@@ -1500,7 +1504,7 @@ export const KitchenDashboardClient = ({
                 </DrawerFooter>
               </>
             ) : (
-              <div className="flex h-full items-center justify-center p-6 font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+              <div className="flex h-full items-center justify-center p-6 font-mono text-[#75758a] text-[12px] uppercase tracking-[0.28em]">
                 Select an event to see details.
               </div>
             )}
@@ -1508,12 +1512,12 @@ export const KitchenDashboardClient = ({
         </Drawer>
       )}
 
-      <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center justify-between gap-3 rounded-full border border-[#d9d9dd] bg-white/95 p-2 backdrop-blur md:hidden">
+      <div className="fixed right-4 bottom-4 left-4 z-40 flex items-center justify-between gap-3 rounded-full border border-[#d9d9dd] bg-white/95 p-2 backdrop-blur md:hidden">
         {mounted && (
           <Sheet onOpenChange={setFilterSheetOpen} open={filterSheetOpen}>
             <SheetTrigger asChild>
               <Button
-                className="rounded-full border border-[#d9d9dd] bg-white px-4 text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
+                className="rounded-full border border-[#d9d9dd] bg-white px-4 font-medium text-[#17171c] text-[13px] hover:bg-[#eeece7]"
                 size="sm"
                 variant="outline"
               >
@@ -1522,14 +1526,14 @@ export const KitchenDashboardClient = ({
               </Button>
             </SheetTrigger>
             <SheetContent
-              className="w-[340px] border-l border-[#d9d9dd] bg-white text-[#17171c]"
+              className="w-[340px] border-[#d9d9dd] border-l bg-white text-[#17171c]"
               side="right"
             >
-              <SheetHeader className="border-b border-[#d9d9dd] px-6 py-6">
-                <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+              <SheetHeader className="border-[#d9d9dd] border-b px-6 py-6">
+                <p className="font-mono text-[#75758a] text-[12px] uppercase tracking-[0.28em]">
                   Filters
                 </p>
-                <SheetTitle className="text-[24px] font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                <SheetTitle className="font-normal text-[#17171c] text-[24px] leading-[1.1] tracking-[-0.02em]">
                   Refine the view.
                 </SheetTitle>
               </SheetHeader>
@@ -1550,14 +1554,14 @@ export const KitchenDashboardClient = ({
           variant="outline"
         >
           <ToggleGroupItem
-            className="rounded-full border-0 px-3 text-[12px] text-[#454553] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
+            className="rounded-full border-0 px-3 text-[#454553] text-[12px] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
             value="timeline"
           >
             <LayoutGrid className="mr-1 size-3.5" />
             Timeline
           </ToggleGroupItem>
           <ToggleGroupItem
-            className="rounded-full border-0 px-3 text-[12px] text-[#454553] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
+            className="rounded-full border-0 px-3 text-[#454553] text-[12px] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
             value="queue"
           >
             <List className="mr-1 size-3.5" />
@@ -1566,7 +1570,7 @@ export const KitchenDashboardClient = ({
         </ToggleGroup>
         <Button
           asChild
-          className="rounded-full bg-[#17171c] px-4 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+          className="rounded-full bg-[#17171c] px-4 font-medium text-[13px] text-white hover:bg-[#17171c]/90"
           size="sm"
         >
           <Link href="/events/new">New event</Link>

@@ -31,10 +31,10 @@ export interface LaborCost {
 }
 
 export interface ScheduleSummaryRow {
-  shift_date: Date;
-  shift_count: number;
-  staff_count: number;
   open_count: number;
+  shift_count: number;
+  shift_date: Date;
+  staff_count: number;
 }
 
 export interface ShiftTotals {
@@ -43,11 +43,11 @@ export interface ShiftTotals {
 }
 
 export interface HappeningShiftRow {
-  shift_start: Date;
-  shift_end: Date;
   first_name: string | null;
   last_name: string | null;
   role: string | null;
+  shift_end: Date;
+  shift_start: Date;
 }
 
 export interface LeaderboardRow {
@@ -59,14 +59,14 @@ export interface LeaderboardRow {
 }
 
 export interface SchedulingMetrics {
-  currentStaff: StaffCount;
-  previousStaff: StaffCount;
-  currentHours: HoursTotal;
-  previousHours: HoursTotal;
-  openShifts: OpenShiftCount;
-  previousOpenShifts: OpenShiftCount;
   currentCost: LaborCost;
+  currentHours: HoursTotal;
+  currentStaff: StaffCount;
+  openShifts: OpenShiftCount;
   previousCost: LaborCost;
+  previousHours: HoursTotal;
+  previousOpenShifts: OpenShiftCount;
+  previousStaff: StaffCount;
 }
 
 // ============================================================================
@@ -323,8 +323,8 @@ export const getHappeningToday = cache(
     tenantId: string,
     startOfToday: Date,
     endOfToday: Date
-  ): Promise<HappeningShiftRow[]> => {
-    return timedQueryRaw<HappeningShiftRow[]>(
+  ): Promise<HappeningShiftRow[]> =>
+    timedQueryRaw<HappeningShiftRow[]>(
       Prisma.sql`
         SELECT
           s.shift_start,
@@ -357,8 +357,7 @@ export const getHappeningToday = cache(
         LIMIT 6
       `,
       "scheduling.happeningToday"
-    );
-  }
+    )
 );
 
 // ============================================================================
@@ -370,8 +369,8 @@ export const getLeaderboard = cache(
     tenantId: string,
     weekStart: Date,
     weekEnd: Date
-  ): Promise<LeaderboardRow[]> => {
-    return timedQueryRaw<LeaderboardRow[]>(
+  ): Promise<LeaderboardRow[]> =>
+    timedQueryRaw<LeaderboardRow[]>(
       Prisma.sql`
         SELECT
           s.employee_id AS "employeeId",
@@ -392,6 +391,5 @@ export const getLeaderboard = cache(
         LIMIT 3
       `,
       "scheduling.leaderboard"
-    );
-  }
+    )
 );

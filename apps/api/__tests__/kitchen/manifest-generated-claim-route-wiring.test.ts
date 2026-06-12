@@ -16,23 +16,54 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) => new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -59,25 +90,28 @@ describe("Generated PrepTask.claim route wiring", () => {
 
   it("imports route module and calls runManifestCommand with entity/command from params", async () => {
     vi.mocked(runManifestCommand).mockResolvedValueOnce(
-      new Response(JSON.stringify({
-        success: true,
-        result: { id: "task-123", status: "in_progress" },
-        events: [],
-      }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: "task-123", status: "in_progress" },
+          events: [],
+        }),
+        { status: 200 }
+      )
     );
 
-    const response = await dispatch("PrepTask", "claim")(
-      new NextRequest(
-        "http://localhost/api/manifest/PrepTask/commands/claim",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            id: "task-123",
-            userId: "user-1",
-            stationId: "station-a",
-          }),
-        }
-      )
+    const response = await dispatch(
+      "PrepTask",
+      "claim"
+    )(
+      new NextRequest("http://localhost/api/manifest/PrepTask/commands/claim", {
+        method: "POST",
+        body: JSON.stringify({
+          id: "task-123",
+          userId: "user-1",
+          stationId: "station-a",
+        }),
+      })
     );
 
     expect(typeof manifestDispatch).toBe("function");

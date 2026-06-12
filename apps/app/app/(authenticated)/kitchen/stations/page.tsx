@@ -13,13 +13,13 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
 interface StationStats {
-  station_id: string;
-  station_name: string;
-  total_tasks: number;
   completed_tasks: number;
   in_progress_tasks: number;
   open_tasks: number;
+  station_id: string;
+  station_name: string;
   team_members: number;
+  total_tasks: number;
 }
 
 // Badge variants map for stations
@@ -119,7 +119,7 @@ const KitchenStationsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Kitchen Stations
           </h1>
           <p className="text-muted-foreground">
@@ -131,7 +131,7 @@ const KitchenStationsPage = async () => {
 
         {/* Station Overview Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Station Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -187,26 +187,26 @@ const KitchenStationsPage = async () => {
                       {/* Task breakdown */}
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="rounded-lg bg-muted/50 p-2">
-                          <div className="text-lg font-bold">
+                          <div className="font-bold text-lg">
                             {station.open_tasks}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             Open
                           </div>
                         </div>
                         <div className="rounded-lg bg-muted/50 p-2">
-                          <div className="text-lg font-bold">
+                          <div className="font-bold text-lg">
                             {station.in_progress_tasks}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             In Progress
                           </div>
                         </div>
                         <div className="rounded-lg bg-muted/50 p-2">
-                          <div className="text-lg font-bold">
+                          <div className="font-bold text-lg">
                             {station.completed_tasks}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             Done
                           </div>
                         </div>
@@ -217,7 +217,7 @@ const KitchenStationsPage = async () => {
                         <div className="flex items-center gap-2 text-sm">
                           <Badge variant="outline">
                             {activeClaims} team member
-                            {activeClaims !== 1 ? "s" : ""} working
+                            {activeClaims === 1 ? "" : "s"} working
                           </Badge>
                         </div>
                       )}
@@ -231,7 +231,7 @@ const KitchenStationsPage = async () => {
 
         {/* Station Legend Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Station Tags Reference
           </h2>
           <Card tone="canvas">
@@ -243,11 +243,11 @@ const KitchenStationsPage = async () => {
                     key={key}
                   >
                     <div className="size-3 rounded-full bg-current" />
-                    <span className="text-sm font-medium">{config.label}</span>
+                    <span className="font-medium text-sm">{config.label}</span>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">
+              <p className="mt-4 text-muted-foreground text-sm">
                 Add station tags to tasks (e.g., "hot-line", "cold-prep",
                 "bakery") to see them grouped here. Tasks can have multiple
                 station tags.

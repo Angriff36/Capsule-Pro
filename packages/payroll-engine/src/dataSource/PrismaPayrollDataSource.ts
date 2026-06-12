@@ -50,7 +50,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     const activeUsers = users.filter(
       (user) => user.roleId !== null && user.roleId !== ""
     );
-    if (activeUsers.length === 0) return [];
+    if (activeUsers.length === 0) {
+      return [];
+    }
 
     const employeeIds = activeUsers.map((u) => u.id);
 

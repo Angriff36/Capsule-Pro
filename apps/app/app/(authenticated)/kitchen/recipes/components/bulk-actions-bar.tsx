@@ -24,8 +24,8 @@ import {
 } from "../actions";
 
 interface BulkActionsBarProps {
-  selectedIds: string[];
   onClearSelection: () => void;
+  selectedIds: string[];
   type: "recipes" | "dishes";
 }
 
@@ -37,7 +37,9 @@ export function BulkActionsBar({
   const [isPending, startTransition] = useTransition();
   const count = selectedIds.length;
 
-  if (count === 0) return null;
+  if (count === 0) {
+    return null;
+  }
 
   const handleBulkDelete = () => {
     startTransition(async () => {
@@ -57,7 +59,7 @@ export function BulkActionsBar({
 
   return (
     <div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2.5">
-      <span className="text-sm font-medium text-accent">
+      <span className="font-medium text-accent text-sm">
         {count} {type} selected
       </span>
       <div className="flex-1" />
@@ -109,8 +111,8 @@ export function BulkActionsBar({
 
 interface SelectableCheckboxProps {
   id: string;
-  selected: boolean;
   onToggle: (id: string) => void;
+  selected: boolean;
 }
 
 export function SelectableCheckbox({

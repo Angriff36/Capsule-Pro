@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  PageBody,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
@@ -33,17 +43,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  PageCanvas,
-  PageBody,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
-import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
@@ -64,26 +63,26 @@ import { toast } from "sonner";
 import { getAvailableTags, getClients } from "../actions";
 
 interface Client {
-  id: string;
-  tenantId: string;
+  city: string | null;
   clientType: string;
   company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
+  createdAt: Date;
   email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
   phone: string | null;
-  city: string | null;
   stateProvince: string | null;
   tags: string[];
-  createdAt: Date;
+  tenantId: string;
 }
 
 interface ClientFilters {
-  search?: string;
-  tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
+  search?: string;
   source?: string;
+  tags?: string[];
 }
 
 export function ClientsClient() {
@@ -360,7 +359,10 @@ export function ClientsClient() {
             </CommandBandLede>
           </div>
           <CommandBandActions>
-            <Button onClick={() => router.push("/crm/clients/new")} variant="on-dark">
+            <Button
+              onClick={() => router.push("/crm/clients/new")}
+              variant="on-dark"
+            >
               <PlusIcon className="mr-2 h-4 w-4" />
               New Client
             </Button>
@@ -369,227 +371,233 @@ export function ClientsClient() {
       </CommandBand>
 
       <PageBody>
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
-        <FilterIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
+          <FilterIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 
-        <form
-          className="flex flex-1 flex-wrap items-center gap-3"
-          onSubmit={handleSearchSubmit}
-        >
+          <form
+            className="flex flex-1 flex-wrap items-center gap-3"
+            onSubmit={handleSearchSubmit}
+          >
+            <Input
+              className="max-w-[200px]"
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search by name, email..."
+              type="text"
+              value={searchInput}
+            />
+            <Button size="sm" type="submit" variant="secondary">
+              Search
+            </Button>
+          </form>
+
+          <div className="h-6 w-px shrink-0 bg-border" />
+
+          <Select
+            onValueChange={(value) =>
+              handleFilterChange("clientType", value === "all" ? "" : value)
+            }
+            value={filters.clientType || "all"}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="company">Companies</SelectItem>
+              <SelectItem value="individual">Individuals</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Input
-            className="max-w-[200px]"
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name, email..."
+            className="w-[140px]"
+            onChange={(e) => handleFilterChange("source", e.target.value)}
+            placeholder="Source..."
             type="text"
-            value={searchInput}
+            value={filters.source || ""}
           />
-          <Button size="sm" type="submit" variant="secondary">
-            Search
-          </Button>
-        </form>
 
-        <div className="h-6 w-px shrink-0 bg-border" />
+          {/* Tag Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                className="w-[160px] justify-between"
+                size="sm"
+                variant={selectedTagsCount > 0 ? "default" : "outline"}
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <TagIcon className="h-4 w-4 shrink-0" />
+                  {selectedTagsCount > 0
+                    ? `${selectedTagsCount} tag${selectedTagsCount > 1 ? "s" : ""}`
+                    : "Tags"}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[220px] p-0">
+              <Command>
+                <CommandInput placeholder="Search tags..." />
+                <CommandList>
+                  <CommandEmpty>No tags found.</CommandEmpty>
+                  <CommandGroup>
+                    {availableTags.map(({ tag, count }) => (
+                      <CommandItem
+                        key={tag}
+                        onSelect={() => handleTagToggle(tag)}
+                      >
+                        <div className="flex w-full items-center gap-2">
+                          <Checkbox
+                            checked={filters.tags?.includes(tag) ?? false}
+                            className="pointer-events-none"
+                          />
+                          <span className="flex-1 truncate">{tag}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {count}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
-        <Select
-          onValueChange={(value) =>
-            handleFilterChange("clientType", value === "all" ? "" : value)
-          }
-          value={filters.clientType || "all"}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All Types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="company">Companies</SelectItem>
-            <SelectItem value="individual">Individuals</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Input
-          className="w-[140px]"
-          onChange={(e) => handleFilterChange("source", e.target.value)}
-          placeholder="Source..."
-          type="text"
-          value={filters.source || ""}
-        />
-
-        {/* Tag Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              className="w-[160px] justify-between"
-              size="sm"
-              variant={selectedTagsCount > 0 ? "default" : "outline"}
-            >
-              <span className="flex items-center gap-2 truncate">
-                <TagIcon className="h-4 w-4 shrink-0" />
-                {selectedTagsCount > 0
-                  ? `${selectedTagsCount} tag${selectedTagsCount > 1 ? "s" : ""}`
-                  : "Tags"}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-[220px] p-0">
-            <Command>
-              <CommandInput placeholder="Search tags..." />
-              <CommandList>
-                <CommandEmpty>No tags found.</CommandEmpty>
-                <CommandGroup>
-                  {availableTags.map(({ tag, count }) => (
-                    <CommandItem
-                      key={tag}
-                      onSelect={() => handleTagToggle(tag)}
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        <Checkbox
-                          checked={filters.tags?.includes(tag) ?? false}
-                          className="pointer-events-none"
-                        />
-                        <span className="flex-1 truncate">{tag}</span>
-                        <span className="text-muted-foreground text-xs">
-                          {count}
-                        </span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {hasFilters && (
-          <>
-            <div className="h-6 w-px shrink-0 bg-border" />
-            <Button onClick={clearFilters} size="sm" variant="ghost">
-              <XIcon className="mr-2 h-4 w-4" />
-              Clear
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : clients.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Building2Icon className="mb-4 h-12 w-12 text-muted-foreground" />
-          <h3 className="mb-2 font-semibold text-lg">No clients found</h3>
-          <p className="mb-4 text-muted-foreground">
-            {hasFilters
-              ? "Try adjusting your filters or search terms."
-              : "Get started by adding your first client."}
-          </p>
-          {!hasFilters && (
-            <Button onClick={() => router.push("/crm/clients/new")}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Add Client
-            </Button>
+          {hasFilters && (
+            <>
+              <div className="h-6 w-px shrink-0 bg-border" />
+              <Button onClick={clearFilters} size="sm" variant="ghost">
+                <XIcon className="mr-2 h-4 w-4" />
+                Clear
+              </Button>
+            </>
           )}
         </div>
-      ) : (
-        <>
-          {/* Results count */}
-          <div className="font-medium text-muted-foreground text-sm">
-            Showing {clients.length} of {pagination.total} clients
-          </div>
 
-          {/* Table */}
-          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      className="cursor-pointer hover:bg-muted/50"
-                      key={row.id}
-                      onClick={() => handleRowClick(row.original)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleRowClick(row.original);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
+        {/* Content */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : clients.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Building2Icon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">No clients found</h3>
+            <p className="mb-4 text-muted-foreground">
+              {hasFilters
+                ? "Try adjusting your filters or search terms."
+                : "Get started by adding your first client."}
+            </p>
+            {!hasFilters && (
+              <Button onClick={() => router.push("/crm/clients/new")}>
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Add Client
+              </Button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Results count */}
+            <div className="font-medium text-muted-foreground text-sm">
+              Showing {clients.length} of {pagination.total} clients
+            </div>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      className="h-24 text-center"
-                      colSpan={columns.length}
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <div className="text-muted-foreground text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  disabled={pagination.page === 1}
-                  onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-                  }
-                  size="sm"
-                  variant="outline"
-                >
-                  Previous
-                </Button>
-                <Button
-                  disabled={pagination.page === pagination.totalPages}
-                  onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-                  }
-                  size="sm"
-                  variant="outline"
-                >
-                  Next
-                </Button>
-              </div>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        className="cursor-pointer hover:bg-muted/50"
+                        key={row.id}
+                        onClick={() => handleRowClick(row.original)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleRowClick(row.original);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        className="h-24 text-center"
+                        colSpan={columns.length}
+                      >
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
-          )}
-        </>
-      )}
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <div className="text-muted-foreground text-sm">
+                  Page {pagination.page} of {pagination.totalPages}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    disabled={pagination.page === 1}
+                    onClick={() =>
+                      setPagination((prev) => ({
+                        ...prev,
+                        page: prev.page - 1,
+                      }))
+                    }
+                    size="sm"
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() =>
+                      setPagination((prev) => ({
+                        ...prev,
+                        page: prev.page + 1,
+                      }))
+                    }
+                    size="sm"
+                    variant="outline"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </PageBody>
     </PageCanvas>
   );

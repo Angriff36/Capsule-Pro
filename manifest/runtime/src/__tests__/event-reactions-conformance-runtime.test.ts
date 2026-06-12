@@ -20,7 +20,11 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const TENANT = "t-event-reaction";
-const USER = { id: "u-event-reaction", tenantId: TENANT, role: "admin" } as const;
+const USER = {
+  id: "u-event-reaction",
+  tenantId: TENANT,
+  role: "admin",
+} as const;
 
 class Mem implements Store {
   private readonly items = new Map<string, Record<string, unknown>>();
@@ -42,7 +46,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;

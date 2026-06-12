@@ -26,8 +26,8 @@ type SagaRunResult = {
 
 export interface ManifestUserContext {
   id: string;
-  tenantId: string;
   role: string;
+  tenantId: string;
 }
 
 export type SagaStepInput = {
@@ -36,16 +36,14 @@ export type SagaStepInput = {
 };
 
 export interface RunManifestSagaCoreParams {
+  correlationId?: string;
   saga: string;
   steps: Record<string, SagaStepInput>;
   user: ManifestUserContext;
-  correlationId?: string;
 }
 
 export interface RunManifestSagaCoreDeps {
-  createRuntime: (ctx: {
-    user: ManifestUserContext;
-  }) => Promise<RuntimeEngine>;
+  createRuntime: (ctx: { user: ManifestUserContext }) => Promise<RuntimeEngine>;
 }
 
 export type RunManifestSagaFailureKind =
@@ -55,23 +53,23 @@ export type RunManifestSagaFailureKind =
   | "runtime_error";
 
 export interface RunManifestSagaCoreSuccess {
+  events?: EmittedEvent[];
   ok: true;
   saga: string;
   status: string;
   steps: SagaStepResult[];
-  events?: EmittedEvent[];
 }
 
 export interface RunManifestSagaCoreFailure {
+  error?: unknown;
+  failedStep?: string;
+  httpStatus: number;
+  kind: RunManifestSagaFailureKind;
+  message: string;
   ok: false;
   saga: string;
-  kind: RunManifestSagaFailureKind;
-  httpStatus: number;
-  message: string;
   status?: string;
-  failedStep?: string;
   steps?: SagaStepResult[];
-  error?: unknown;
 }
 
 export type RunManifestSagaCoreResult =
@@ -105,11 +103,9 @@ export async function runManifestSagaCore(
       };
     }
 
-    const result = (await runtime.runSaga(
-      saga,
-      steps,
-      { correlationId }
-    )) as SagaRunResult;
+    const result = (await runtime.runSaga(saga, steps, {
+      correlationId,
+    })) as SagaRunResult;
 
     if (!result.success) {
       return {

@@ -55,7 +55,7 @@ export default function MenuServiceStyleStep({ formData, updateField }: Props) {
         title="How should we serve?"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {SERVICE_STYLES.map((style) => (
           <SelectCard
             description={style.description}
@@ -68,8 +68,8 @@ export default function MenuServiceStyleStep({ formData, updateField }: Props) {
       </div>
 
       {formData.serviceStyle && (
-        <div className="bg-stone-50 rounded-xl p-4 border border-stone-100">
-          <p className="text-xs text-stone-500">
+        <div className="rounded-xl border border-stone-100 bg-stone-50 p-4">
+          <p className="text-stone-500 text-xs">
             The menu items in the next steps will be filtered to show only
             dishes compatible with
             <strong className="text-stone-700">

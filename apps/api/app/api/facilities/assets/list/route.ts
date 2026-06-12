@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const assetWhere: Prisma.FacilityAssetWhereInput = {
       tenantId,
       deletedAt: null,
-      ...(status !== "all" ? { status } : {}),
+      ...(status === "all" ? {} : { status }),
       ...(assetType ? { assetType } : {}),
       ...(areaId ? { areaId } : {}),
     };

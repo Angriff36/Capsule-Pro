@@ -100,8 +100,12 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data) => new Response(JSON.stringify(data), { status: 200 })),
-  manifestErrorResponse: vi.fn((data, status = 400) => new Response(JSON.stringify(data), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data) => new Response(JSON.stringify(data), { status: 200 })
+  ),
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) => new Response(JSON.stringify(data), { status })
+  ),
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class extends Error {},
@@ -659,7 +663,11 @@ describe("Settings API", () => {
         );
         vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
-            JSON.stringify({ success: true, result: { id: "key-001" }, events: [] }),
+            JSON.stringify({
+              success: true,
+              result: { id: "key-001" },
+              events: [],
+            }),
             { status: 200 }
           )
         );
@@ -967,7 +975,11 @@ describe("Settings API", () => {
       it("should create via manifest command dispatcher", async () => {
         vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
-            JSON.stringify({ success: true, result: { id: "key-new" }, events: [] }),
+            JSON.stringify({
+              success: true,
+              result: { id: "key-new" },
+              events: [],
+            }),
             { status: 200 }
           )
         );
@@ -1147,7 +1159,11 @@ describe("Settings API", () => {
       it("should soft-delete via manifest command dispatcher", async () => {
         vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
-            JSON.stringify({ success: true, result: { id: "key-001" }, events: [] }),
+            JSON.stringify({
+              success: true,
+              result: { id: "key-001" },
+              events: [],
+            }),
             { status: 200 }
           )
         );
@@ -1516,7 +1532,9 @@ describe("Settings API", () => {
             }),
           }
         );
-        await expect(createRateLimit(request)).rejects.toThrow("Not authenticated");
+        await expect(createRateLimit(request)).rejects.toThrow(
+          "Not authenticated"
+        );
       });
     });
 

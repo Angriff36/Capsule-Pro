@@ -59,8 +59,8 @@ interface EventSummaryDisplayProps {
   eventId: string;
   eventTitle: string;
   initialSummary?: GeneratedEventSummary | null;
-  onGenerate?: () => Promise<GeneratedEventSummary>;
   onDelete?: () => Promise<void>;
+  onGenerate?: () => Promise<GeneratedEventSummary>;
 }
 
 const SEVERITY_CONFIG = {
@@ -135,8 +135,8 @@ function SummaryItemCard({ item }: { item: SummaryItem }) {
   return (
     <div className={`flex gap-3 rounded-lg border p-3 ${config.color}`}>
       <Icon className={`mt-0.5 size-5 flex-shrink-0 ${config.iconColor}`} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
           <span className="font-medium text-sm">{item.title}</span>
           {item.metric && (
             <Badge className="text-xs" variant="secondary">
@@ -551,7 +551,7 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
         </Card>
       )}
 
-      <Alert className="bg-muted/50 border-muted">
+      <Alert className="border-muted bg-muted/50">
         <InfoIcon className="size-4" />
         <span className="text-sm">
           AI-generated content may contain sensitive information. Review before
@@ -559,7 +559,7 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
         </span>
       </Alert>
 
-      <div className="prose prose-sm max-w-none dark:prose-invert">
+      <div className="prose prose-sm dark:prose-invert max-w-none">
         <p className="text-base leading-relaxed">{summary.overallSummary}</p>
       </div>
 
@@ -781,8 +781,8 @@ export function EventSummarySkeleton() {
 interface GenerateEventSummaryModalProps {
   eventId: string;
   eventTitle: string;
-  onGenerate: () => Promise<GeneratedEventSummary>;
   isOpen?: boolean;
+  onGenerate: () => Promise<GeneratedEventSummary>;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
 }
@@ -835,7 +835,7 @@ export function GenerateEventSummaryModal({
 
         <div className="space-y-4 py-4">
           <div className="rounded-lg bg-muted p-4">
-            <h4 className="font-medium text-sm mb-2">Event Details</h4>
+            <h4 className="mb-2 font-medium text-sm">Event Details</h4>
             <p className="text-sm">
               <span className="text-muted-foreground">Event:</span> {eventTitle}
             </p>

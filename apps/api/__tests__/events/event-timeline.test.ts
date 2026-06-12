@@ -68,21 +68,45 @@ vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }, { status }),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) =>
       NextResponse.json(
-        typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) =>
+      NextResponse.json(
+        typeof message === "string"
+          ? { success: false, message }
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
 });
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: mocks.runManifestCommandMock }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommandMock,
+}));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
-    if (!condition) { const err = new Error(message); err.name = "InvariantError"; throw err; }
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
   },
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -146,13 +170,15 @@ function eventParams(id: string) {
 
 function ok(data: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify({ success: true, ...data }), {
-    status, headers: { "Content-Type": "application/json" },
+    status,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
 function fail(status: number, message: string) {
   return new Response(JSON.stringify({ success: false, message }), {
-    status, headers: { "Content-Type": "application/json" },
+    status,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -291,7 +317,10 @@ describe("Event Timeline API", () => {
 
     it("creates an item and returns 200 on success", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, description: "Service", sortOrder: 30 }, events: [] })
+        ok({
+          result: { id: TEST_ITEM_ID, description: "Service", sortOrder: 30 },
+          events: [],
+        })
       );
 
       const res = await createPOST(
@@ -313,7 +342,9 @@ describe("Event Timeline API", () => {
     });
 
     it("returns 403 on policy denial", async () => {
-      mocks.runManifestCommandMock.mockResolvedValue(fail(403, "Access denied: timelineManagerOnly"));
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(403, "Access denied: timelineManagerOnly")
+      );
 
       const res = await createPOST(
         makeReq({ timelineTime: "14:30", description: "Service" })
@@ -342,7 +373,9 @@ describe("Event Timeline API", () => {
     });
 
     it("returns 500 when runtime throws", async () => {
-      mocks.runManifestCommandMock.mockRejectedValue(new Error("DB connection lost"));
+      mocks.runManifestCommandMock.mockRejectedValue(
+        new Error("DB connection lost")
+      );
 
       const res = await createPOST(
         makeReq({ timelineTime: "14:30", description: "Service" })
@@ -365,11 +398,22 @@ describe("Event Timeline API", () => {
 
     it("updates an item and returns 200 on success", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, description: "Updated", notes: "Cue music" }, events: [] })
+        ok({
+          result: {
+            id: TEST_ITEM_ID,
+            description: "Updated",
+            notes: "Cue music",
+          },
+          events: [],
+        })
       );
 
       const res = await updatePOST(
-        makeReq({ itemId: TEST_ITEM_ID, description: "Updated", notes: "Cue music" })
+        makeReq({
+          itemId: TEST_ITEM_ID,
+          description: "Updated",
+          notes: "Cue music",
+        })
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -380,7 +424,10 @@ describe("Event Timeline API", () => {
         expect.objectContaining({
           entity: "EventTimelineItem",
           command: "updateItem",
-          body: expect.objectContaining({ itemId: TEST_ITEM_ID, description: "Updated" }),
+          body: expect.objectContaining({
+            itemId: TEST_ITEM_ID,
+            description: "Updated",
+          }),
         })
       );
     });
@@ -429,7 +476,14 @@ describe("Event Timeline API", () => {
 
     it("sets completedAt when marking complete", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, isCompleted: true, completedAt: new Date().toISOString() }, events: [] })
+        ok({
+          result: {
+            id: TEST_ITEM_ID,
+            isCompleted: true,
+            completedAt: new Date().toISOString(),
+          },
+          events: [],
+        })
       );
 
       const res = await togglePOST(
@@ -444,14 +498,20 @@ describe("Event Timeline API", () => {
         expect.objectContaining({
           entity: "EventTimelineItem",
           command: "completeItem",
-          body: expect.objectContaining({ itemId: TEST_ITEM_ID, isCompleted: true }),
+          body: expect.objectContaining({
+            itemId: TEST_ITEM_ID,
+            isCompleted: true,
+          }),
         })
       );
     });
 
     it("clears completedAt when marking pending", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, isCompleted: false, completedAt: null }, events: [] })
+        ok({
+          result: { id: TEST_ITEM_ID, isCompleted: false, completedAt: null },
+          events: [],
+        })
       );
 
       const res = await togglePOST(
@@ -486,7 +546,10 @@ describe("Event Timeline API", () => {
 
     it("soft-deletes and returns 200 on success", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, deletedAt: new Date().toISOString() }, events: [] })
+        ok({
+          result: { id: TEST_ITEM_ID, deletedAt: new Date().toISOString() },
+          events: [],
+        })
       );
 
       const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
@@ -504,7 +567,9 @@ describe("Event Timeline API", () => {
     });
 
     it("returns 404 when item not found", async () => {
-      mocks.runManifestCommandMock.mockResolvedValue(fail(404, "Item not found"));
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(404, "Item not found")
+      );
 
       const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
       expect(res.status).toBe(404);
@@ -546,7 +611,10 @@ describe("Event Timeline API", () => {
   describe("Response shape", () => {
     it("success responses contain success and result", async () => {
       mocks.runManifestCommandMock.mockResolvedValue(
-        ok({ result: { id: TEST_ITEM_ID, description: "Test" }, events: [{ type: "TimelineItemCreated" }] })
+        ok({
+          result: { id: TEST_ITEM_ID, description: "Test" },
+          events: [{ type: "TimelineItemCreated" }],
+        })
       );
 
       const res = await createPOST(

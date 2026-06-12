@@ -11,63 +11,63 @@ interface RawIrProperty {
 
 interface RawIrParameter {
   name: string;
-  type: { name: string; nullable: boolean };
   required?: boolean;
+  type: { name: string; nullable: boolean };
 }
 
 interface RawIrComputedProperty {
+  expression: RawIrExpression;
   name: string;
   type: { name: string; nullable: boolean };
-  expression: RawIrExpression;
 }
 
 interface RawIrConstraint {
-  name: string;
   code: string;
   expression: RawIrExpression;
-  severity: "block" | "warn" | "info" | string;
   message?: string;
+  name: string;
   overrideable?: boolean;
+  severity: "block" | "warn" | "info" | string;
 }
 
 interface RawIrAction {
+  expression?: RawIrExpression;
   kind: string;
   target?: string;
-  expression?: RawIrExpression;
 }
 
 interface RawIrCommandDefinition {
-  name: string;
-  entity: string;
-  description?: string;
-  parameters?: RawIrParameter[];
-  guards?: RawIrExpression[];
-  constraints?: RawIrConstraint[];
   actions?: RawIrAction[];
+  constraints?: RawIrConstraint[];
+  description?: string;
   emits?: string[];
+  entity: string;
+  guards?: RawIrExpression[];
+  name: string;
+  parameters?: RawIrParameter[];
 }
 
 interface RawIrPolicy {
-  name: string;
   action: "execute" | "read" | "create" | "update" | "delete" | string;
   expression?: RawIrExpression;
   message?: string;
+  name: string;
   // Some IR builds may include explicit targets. Keep this permissive.
   targetCommands?: string[];
 }
 
 interface RawIrEntity {
-  name: string;
-  properties?: RawIrProperty[];
-  computedProperties?: RawIrComputedProperty[];
   commands?: string[];
+  computedProperties?: RawIrComputedProperty[];
   constraints?: RawIrConstraint[];
+  name: string;
   policies?: unknown[];
+  properties?: RawIrProperty[];
 }
 
 interface RawKitchenIr {
-  entities: RawIrEntity[];
   commands?: RawIrCommandDefinition[];
+  entities: RawIrEntity[];
   policies?: RawIrPolicy[];
 }
 

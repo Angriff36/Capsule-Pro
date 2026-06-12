@@ -97,7 +97,9 @@ export function containsAny(...args: unknown[]): boolean {
 export function removeTagFromString(...args: unknown[]): string {
   const tags = typeof args[0] === "string" ? args[0] : "";
   const tag = typeof args[1] === "string" ? args[1] : "";
-  if (tag === "" || tags === "") return tags;
+  if (tag === "" || tags === "") {
+    return tags;
+  }
 
   const parts = tags.split(",").filter((t) => t !== tag);
   return parts.join(",");

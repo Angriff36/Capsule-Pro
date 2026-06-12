@@ -8,8 +8,8 @@ import {
 
 interface KpiCardProps {
   label: string;
-  value: string;
   subtext?: string;
+  value: string;
 }
 
 function KpiCard({ label, value, subtext }: KpiCardProps) {
@@ -21,12 +21,12 @@ function KpiCard({ label, value, subtext }: KpiCardProps) {
       </CardHeader>
       {subtext ? (
         <CardContent>
-          <p className="text-xs text-muted-foreground">{subtext}</p>
+          <p className="text-muted-foreground text-xs">{subtext}</p>
         </CardContent>
       ) : null}
     </Card>
   );
 }
 
-export { KpiCard };
 export type { KpiCardProps };
+export { KpiCard };

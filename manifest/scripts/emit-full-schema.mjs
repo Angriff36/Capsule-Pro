@@ -20,12 +20,12 @@
  * Output: manifest/ir/candidate-schema.prisma (NEVER writes the live schema). Then `prisma validate`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
-  PILOT_OPTIONS,
-  ENTITY_SCHEMA_MAP,
   COMPOSITE_KEY,
+  ENTITY_SCHEMA_MAP,
+  PILOT_OPTIONS,
   TABLE_MAP,
 } from "./prisma-projection-options.mjs";
 
@@ -49,7 +49,9 @@ const handModelNames = new Set(
   [...liveSchema.matchAll(/^model\s+(\w+)\s*\{/gm)].map((m) => m[1])
 );
 // genuinely-new durable models = durable AND no hand twin
-const newDurable = [...durableEntities].filter((e) => !handModelNames.has(e)).sort();
+const newDurable = [...durableEntities]
+  .filter((e) => !handModelNames.has(e))
+  .sort();
 
 // --- project all durable models, extract just the new ones, post-process ---
 const result = new PrismaProjection().generate(ir, {
@@ -57,13 +59,17 @@ const result = new PrismaProjection().generate(ir, {
   options: PILOT_OPTIONS,
 });
 const generatedSrc =
-  (result.artifacts[0] && (result.artifacts[0].code || result.artifacts[0].content)) || "";
+  (result.artifacts[0] &&
+    (result.artifacts[0].code || result.artifacts[0].content)) ||
+  "";
 function extractModel(code, name) {
   const m = code.match(new RegExp(`model ${name} \\{[\\s\\S]*?\\n\\}`));
   return m ? m[0] : null;
 }
 function postProcess(block, entity) {
-  if (!block) return block;
+  if (!block) {
+    return block;
+  }
   let b = block;
   const table = TABLE_MAP[entity];
   if (table && !/@@map\(/.test(b)) {
@@ -111,7 +117,12 @@ const summary = [
   `  live hand models kept verbatim: ${handModelNames.size}`,
   `  appended NEW durable models: ${appended.length} (${appended.join(", ")})`,
   `  durable-but-not-emitted (skipped): ${missing.join(", ") || "(none)"}`,
-  `  durable WITH hand twin (left as hand model — Phase 2b): ${[...durableEntities].filter((e) => handModelNames.has(e)).sort().join(", ")}`,
+  `  durable WITH hand twin (left as hand model — Phase 2b): ${[
+    ...durableEntities,
+  ]
+    .filter((e) => handModelNames.has(e))
+    .sort()
+    .join(", ")}`,
 ];
 writeFileSync(resolve(repoRoot, ".tmp/emit-summary.txt"), summary.join("\n"));
 console.log(summary.join("\n"));

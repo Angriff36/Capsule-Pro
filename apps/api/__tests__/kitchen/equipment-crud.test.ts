@@ -47,34 +47,65 @@ vi.mock("@/lib/database", () => ({
     },
   },
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: mocks.captureException, addBreadcrumb: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: mocks.captureException,
+  addBreadcrumb: vi.fn(),
+}));
 vi.mock("@repo/observability/log", () => ({ log: { error: mocks.logError } }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: mocks.runManifestCommand }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommand,
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }, { status }),
-    manifestErrorResponse: (message: string | { error: string }, status: number) => {
-      const body = typeof message === "string" ? { success: false, message } : { success: false, ...message };
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (
+      message: string | { error: string },
+      status: number
+    ) => {
+      const body =
+        typeof message === "string"
+          ? { success: false, message }
+          : { success: false, ...message };
       return NextResponse.json(body, { status });
     },
   };
 });
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 // ── Import routes (after mocks) ──────────────────────────────────────
 const { GET: listGET } = await import("@/app/api/kitchen/equipment/list/route");
-const { GET: alertsGET } = await import("@/app/api/kitchen/equipment/alerts/route");
-const { POST: manifestDispatch } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+const { GET: alertsGET } = await import(
+  "@/app/api/kitchen/equipment/alerts/route"
+);
+const { POST: manifestDispatch } = await import(
+  "@/app/api/manifest/[entity]/commands/[command]/route"
+);
 
 function setAuth(tenantId: string | null = TENANT_A) {
   mocks.auth.mockResolvedValue({ orgId: ORG_ID, userId: USER_ID });
@@ -129,7 +160,14 @@ describe("Equipment API", () => {
     it("returns equipment list with total count", async () => {
       setAuth();
       const mockEquipment = [
-        { id: EQUIPMENT_ID, name: "Oven A", type: "oven", status: "active", workOrders: [], _count: { workOrders: 0 } },
+        {
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          type: "oven",
+          status: "active",
+          workOrders: [],
+          _count: { workOrders: 0 },
+        },
       ];
       mocks.eqFindMany.mockResolvedValue(mockEquipment);
       mocks.eqCount.mockResolvedValue(1);
@@ -153,11 +191,18 @@ describe("Equipment API", () => {
       mocks.eqFindMany.mockResolvedValue([]);
       mocks.eqCount.mockResolvedValue(0);
 
-      await listGET(makeGET("http://localhost/api/kitchen/equipment/list?status=maintenance&type=oven"));
+      await listGET(
+        makeGET(
+          "http://localhost/api/kitchen/equipment/list?status=maintenance&type=oven"
+        )
+      );
 
       expect(mocks.eqFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ status: "maintenance", type: "oven" }),
+          where: expect.objectContaining({
+            status: "maintenance",
+            type: "oven",
+          }),
         })
       );
     });
@@ -180,13 +225,31 @@ describe("Equipment API", () => {
   describe("POST /create", () => {
     it("delegates to runManifestCommand with entity Equipment and command create", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      vi.mocked(requireCurrentUser).mockResolvedValue({ id: USER_ID, tenantId: TENANT_A, role: "admin" } as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: USER_ID,
+        tenantId: TENANT_A,
+        role: "admin",
+      } as never);
 
       mocks.runManifestCommand.mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: EQUIPMENT_ID, name: "Oven A", type: "general", locationId: LOCATION_ID } }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              id: EQUIPMENT_ID,
+              name: "Oven A",
+              type: "general",
+              locationId: LOCATION_ID,
+            },
+          }),
+          { status: 200 }
+        )
       );
 
-      const res = await dispatchCmd("create", { name: "Oven A", locationId: LOCATION_ID });
+      const res = await dispatchCmd("create", {
+        name: "Oven A",
+        locationId: LOCATION_ID,
+      });
       expect(res.status).toBe(200);
 
       const json = await res.json();
@@ -203,16 +266,32 @@ describe("Equipment API", () => {
   describe("POST /update-status", () => {
     it("delegates to runManifestCommand with entity Equipment and command updateStatus", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      vi.mocked(requireCurrentUser).mockResolvedValue({ id: USER_ID, tenantId: TENANT_A, role: "admin" } as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: USER_ID,
+        tenantId: TENANT_A,
+        role: "admin",
+      } as never);
 
       mocks.runManifestCommand.mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: EQUIPMENT_ID, status: "maintenance" } }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: EQUIPMENT_ID, status: "maintenance" },
+          }),
+          { status: 200 }
+        )
       );
 
-      const res = await dispatchCmd("updateStatus", { id: EQUIPMENT_ID, status: "maintenance" });
+      const res = await dispatchCmd("updateStatus", {
+        id: EQUIPMENT_ID,
+        status: "maintenance",
+      });
       expect(res.status).toBe(200);
       expect(mocks.runManifestCommand).toHaveBeenCalledWith(
-        expect.objectContaining({ entity: "Equipment", command: "updateStatus" })
+        expect.objectContaining({
+          entity: "Equipment",
+          command: "updateStatus",
+        })
       );
     });
   });
@@ -222,16 +301,33 @@ describe("Equipment API", () => {
   describe("POST /schedule-maintenance", () => {
     it("delegates to runManifestCommand with entity Equipment and command scheduleMaintenance", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      vi.mocked(requireCurrentUser).mockResolvedValue({ id: USER_ID, tenantId: TENANT_A, role: "admin" } as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: USER_ID,
+        tenantId: TENANT_A,
+        role: "admin",
+      } as never);
 
       mocks.runManifestCommand.mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { workOrderId: "wo-1", equipmentId: EQUIPMENT_ID } }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { workOrderId: "wo-1", equipmentId: EQUIPMENT_ID },
+          }),
+          { status: 200 }
+        )
       );
 
-      const res = await dispatchCmd("scheduleMaintenance", { equipmentId: EQUIPMENT_ID, priority: "high", scheduledDate: "2026-06-01" });
+      const res = await dispatchCmd("scheduleMaintenance", {
+        equipmentId: EQUIPMENT_ID,
+        priority: "high",
+        scheduledDate: "2026-06-01",
+      });
       expect(res.status).toBe(200);
       expect(mocks.runManifestCommand).toHaveBeenCalledWith(
-        expect.objectContaining({ entity: "Equipment", command: "scheduleMaintenance" })
+        expect.objectContaining({
+          entity: "Equipment",
+          command: "scheduleMaintenance",
+        })
       );
     });
   });
@@ -241,13 +337,26 @@ describe("Equipment API", () => {
   describe("POST /record-usage", () => {
     it("delegates to runManifestCommand with entity Equipment and command recordUsage", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      vi.mocked(requireCurrentUser).mockResolvedValue({ id: USER_ID, tenantId: TENANT_A, role: "admin" } as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: USER_ID,
+        tenantId: TENANT_A,
+        role: "admin",
+      } as never);
 
       mocks.runManifestCommand.mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: EQUIPMENT_ID, usageHours: 150, addedHours: 50 } }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: EQUIPMENT_ID, usageHours: 150, addedHours: 50 },
+          }),
+          { status: 200 }
+        )
       );
 
-      const res = await dispatchCmd("recordUsage", { id: EQUIPMENT_ID, hours: 50 });
+      const res = await dispatchCmd("recordUsage", {
+        id: EQUIPMENT_ID,
+        hours: 50,
+      });
       expect(res.status).toBe(200);
 
       const json = await res.json();
@@ -267,14 +376,23 @@ describe("Equipment API", () => {
       setAuth();
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: EQUIPMENT_ID, name: "Oven A", usageHours: 100, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "connected",
-          iotDeviceId: null, nextMaintenanceDate: new Date("2027-01-01"),
-          warrantyExpiry: new Date("2028-01-01"), workOrders: [],
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          usageHours: 100,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "connected",
+          iotDeviceId: null,
+          nextMaintenanceDate: new Date("2027-01-01"),
+          warrantyExpiry: new Date("2028-01-01"),
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       expect(res.status).toBe(200);
 
       const json = await res.json();
@@ -288,14 +406,23 @@ describe("Equipment API", () => {
       setAuth();
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: EQUIPMENT_ID, name: "Oven A", usageHours: 850, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "connected",
-          iotDeviceId: null, nextMaintenanceDate: null,
-          warrantyExpiry: null, workOrders: [],
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          usageHours: 850,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "connected",
+          iotDeviceId: null,
+          nextMaintenanceDate: null,
+          warrantyExpiry: null,
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       const json = await res.json();
       expect(json.success).toBe(true);
       expect(json.alerts).toHaveLength(1);
@@ -308,14 +435,23 @@ describe("Equipment API", () => {
       setAuth();
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: EQUIPMENT_ID, name: "Oven A", usageHours: 950, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "connected",
-          iotDeviceId: null, nextMaintenanceDate: null,
-          warrantyExpiry: null, workOrders: [],
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          usageHours: 950,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "connected",
+          iotDeviceId: null,
+          nextMaintenanceDate: null,
+          warrantyExpiry: null,
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       const json = await res.json();
       expect(json.success).toBe(true);
       expect(json.alerts[0].alertType).toBe("usage_critical");
@@ -326,34 +462,60 @@ describe("Equipment API", () => {
       setAuth();
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: EQUIPMENT_ID, name: "Oven A", usageHours: 10, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "connected",
-          iotDeviceId: null, nextMaintenanceDate: new Date("2025-01-01"),
-          warrantyExpiry: null, workOrders: [],
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          usageHours: 10,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "connected",
+          iotDeviceId: null,
+          nextMaintenanceDate: new Date("2025-01-01"),
+          warrantyExpiry: null,
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       const json = await res.json();
       expect(json.success).toBe(true);
-      expect(json.alerts.some((a: { alertType: string }) => a.alertType === "maintenance_overdue")).toBe(true);
+      expect(
+        json.alerts.some(
+          (a: { alertType: string }) => a.alertType === "maintenance_overdue"
+        )
+      ).toBe(true);
     });
 
     it("detects IoT disconnection", async () => {
       setAuth();
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: EQUIPMENT_ID, name: "Oven A", usageHours: 10, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "disconnected",
-          iotDeviceId: "probe-001", nextMaintenanceDate: null,
-          warrantyExpiry: null, workOrders: [],
+          id: EQUIPMENT_ID,
+          name: "Oven A",
+          usageHours: 10,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "disconnected",
+          iotDeviceId: "probe-001",
+          nextMaintenanceDate: null,
+          warrantyExpiry: null,
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       const json = await res.json();
       expect(json.success).toBe(true);
-      expect(json.alerts.some((a: { alertType: string }) => a.alertType === "iot_disconnected")).toBe(true);
+      expect(
+        json.alerts.some(
+          (a: { alertType: string }) => a.alertType === "iot_disconnected"
+        )
+      ).toBe(true);
     });
 
     it("sorts alerts by severity (critical first)", async () => {
@@ -361,19 +523,34 @@ describe("Equipment API", () => {
       const pastDate = new Date("2024-01-01");
       mocks.eqFindMany.mockResolvedValue([
         {
-          id: "eq-1", name: "Oven", usageHours: 950, maxUsageHours: 1000,
-          condition: "good", isActive: true, connectionStatus: "disconnected",
-          iotDeviceId: "probe-1", nextMaintenanceDate: pastDate,
-          warrantyExpiry: pastDate, workOrders: [],
+          id: "eq-1",
+          name: "Oven",
+          usageHours: 950,
+          maxUsageHours: 1000,
+          condition: "good",
+          isActive: true,
+          connectionStatus: "disconnected",
+          iotDeviceId: "probe-1",
+          nextMaintenanceDate: pastDate,
+          warrantyExpiry: pastDate,
+          workOrders: [],
         },
       ]);
 
-      const res = await alertsGET(makeGET("http://localhost/api/kitchen/equipment/alerts"));
+      const res = await alertsGET(
+        makeGET("http://localhost/api/kitchen/equipment/alerts")
+      );
       const json = await res.json();
       expect(json.success).toBe(true);
-      const severities = json.alerts.map((a: { severity: string }) => a.severity);
+      const severities = json.alerts.map(
+        (a: { severity: string }) => a.severity
+      );
       let lastOrder = -1;
-      const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+      const order: Record<string, number> = {
+        critical: 0,
+        warning: 1,
+        info: 2,
+      };
       for (const sev of severities) {
         expect(order[sev]).toBeGreaterThanOrEqual(lastOrder);
         lastOrder = order[sev];

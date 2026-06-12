@@ -5,8 +5,8 @@ import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
 import { syncBattleBoardsForEvent } from "./actions/sync-battle-boards";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { createEventSchema, updateEventSchema } from "./validation";
@@ -22,7 +22,9 @@ const IMPORT_FALLBACK_NAME = "event-import";
 
 const text = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") {
+    return;
+  }
 
   const trimmed = value.trim();
   return trimmed || undefined;
@@ -33,7 +35,9 @@ const nullableText = (
   key: string
 ): string | null | undefined => {
   const value = formData.get(key);
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") {
+    return;
+  }
 
   const trimmed = value.trim();
   return trimmed || null;
@@ -256,7 +260,8 @@ export const createEvent = async (
     if (!createResult.ok) {
       console.error("[createEvent] Manifest error:", createResult.message);
       return {
-        error: createResult.message || "Failed to create event. Please try again.",
+        error:
+          createResult.message || "Failed to create event. Please try again.",
       };
     }
 
@@ -402,10 +407,7 @@ export const assignClientToEvent = async (
 
 export const deleteEvent = async (formData: FormData): Promise<void> => {
   const user = await requireCurrentUser();
-  await softDeleteEvent(
-    user,
-    required(text(formData, "eventId"), "Event id")
-  );
+  await softDeleteEvent(user, required(text(formData, "eventId"), "Event id"));
 
   revalidatePath("/events");
   redirect("/events");

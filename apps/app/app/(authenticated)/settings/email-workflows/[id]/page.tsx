@@ -99,7 +99,9 @@ export default function EditEmailWorkflowPage({
         setLoading(false);
       }
     }
-    if (id) load();
+    if (id) {
+      load();
+    }
   }, [id, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,25 +176,25 @@ export default function EditEmailWorkflowPage({
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex max-w-2xl flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button onClick={() => router.back()} size="sm" variant="ghost">
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-semibold text-2xl tracking-tight">
               Edit Workflow
             </h1>
-            <p className="text-muted-foreground mt-1">{name}</p>
+            <p className="mt-1 text-muted-foreground">{name}</p>
           </div>
         </div>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button disabled={deleting} variant="outline">
-              <TrashIcon className="h-4 w-4 mr-2" />
+              <TrashIcon className="mr-2 h-4 w-4" />
               Delete
             </Button>
           </AlertDialogTrigger>
@@ -337,7 +339,7 @@ export default function EditEmailWorkflowPage({
             <div className="flex items-center gap-3 pt-4">
               <Button disabled={submitting} type="submit">
                 {submitting && (
-                  <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Save Changes
               </Button>

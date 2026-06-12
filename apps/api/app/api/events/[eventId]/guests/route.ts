@@ -101,7 +101,10 @@ export async function POST(
 ) {
   const { eventId } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "EventGuest",
     command: "create",

@@ -11,66 +11,56 @@ export type CellValue = string | number | boolean | Date | null;
 export type DataRow = Record<string, CellValue>;
 
 export interface DateWindow {
-  start: Date;
   end: Date;
+  start: Date;
 }
 
 export interface SalesData {
-  masterEvents: DataRow[];
+  calcsFunnel: DataRow[];
   dealsLost: DataRow[];
   leadSource: DataRow[];
   mappingEventType: DataRow[];
-  calcsFunnel: DataRow[];
+  masterEvents: DataRow[];
   rawSheets: Record<string, DataRow[]>;
 }
 
 export interface WeeklyMetrics {
-  window: DateWindow;
-  revenueByEventType: Array<{ event_type: string; revenue: number }>;
+  closingRatio: number;
+  eventsWon: number;
   leadsReceived: number;
   proposalsSent: number;
-  eventsWon: number;
-  closingRatio: number;
-  trendingLost: Array<{ lost_reason: string; count: number }>;
+  revenueByEventType: Array<{ event_type: string; revenue: number }>;
   topPending: DataRow[];
+  trendingLost: Array<{ lost_reason: string; count: number }>;
+  window: DateWindow;
 }
 
 export interface MonthlyMetrics {
-  window: DateWindow;
-  totalRevenueBooked: number;
-  totalEventsClosed: number;
   averageEventValue: number;
-  leadSourceBreakdown: Array<{ lead_source: string; count: number }>;
-  salesFunnel: Array<{ stage: string; count: number }>;
   closingBySalesperson: Array<{
     salesperson: string;
     won: number;
     lost: number;
     win_rate: number;
   }>;
-  winLossTrends: Array<{ lost_reason: string; count: number }>;
-  topPackages: Array<{ package: string; revenue: number }>;
+  leadSourceBreakdown: Array<{ lead_source: string; count: number }>;
   pipelineForecast60: number;
   pipelineForecast90: number;
   revenueMomDelta: number;
-  revenueYoyDelta: number;
   revenueMomPct: number;
+  revenueYoyDelta: number;
   revenueYoyPct: number;
+  salesFunnel: Array<{ stage: string; count: number }>;
+  topPackages: Array<{ package: string; revenue: number }>;
+  totalEventsClosed: number;
+  totalRevenueBooked: number;
+  window: DateWindow;
+  winLossTrends: Array<{ lost_reason: string; count: number }>;
 }
 
 export interface QuarterlyMetrics {
-  window: DateWindow;
-  totalRevenueBooked: number;
-  totalEventsClosed: number;
   averageEventValue: number;
   avgSalesCycleDays: number;
-  segmentSummary: Array<{
-    event_type: string;
-    size_bucket: string;
-    budget_tier: string;
-    count: number;
-    revenue: number;
-  }>;
   funnelBySource: Array<{
     lead_source: string;
     Inquiries: number;
@@ -81,6 +71,8 @@ export interface QuarterlyMetrics {
     proposal_rate: number;
     win_rate: number;
   }>;
+  nextQuarterForecast: number;
+  opportunities: string[];
   pricingSummary: Array<{ metric: string; value: number }>;
   pricingTrends: Array<{
     month: Date;
@@ -88,64 +80,72 @@ export interface QuarterlyMetrics {
     avg_budget: number;
     avg_discount_rate: number;
   }>;
+  recommendations: string[];
+  segmentSummary: Array<{
+    event_type: string;
+    size_bucket: string;
+    budget_tier: string;
+    count: number;
+    revenue: number;
+  }>;
+  totalEventsClosed: number;
+  totalRevenueBooked: number;
   venuePerformance: Array<{
     venue_source: string;
     count: number;
     revenue: number;
   }>;
+  window: DateWindow;
   winLossTrends: Array<{ lost_reason: string; count: number }>;
-  nextQuarterForecast: number;
-  recommendations: string[];
-  opportunities: string[];
 }
 
 export interface AnnualMetrics {
-  window: DateWindow;
-  totalRevenueBooked: number;
-  totalEventsClosed: number;
   averageEventValue: number;
-  revenueByMonth: Array<{ month: Date; revenue: number }>;
-  revenueByEventType: Array<{ event_type: string; revenue: number }>;
-  leadSourceBreakdown: Array<{ lead_source: string; count: number }>;
-  salesFunnel: Array<{ stage: string; count: number }>;
   closingBySalesperson: Array<{
     salesperson: string;
     won: number;
     lost: number;
     win_rate: number;
   }>;
-  winLossTrends: Array<{ lost_reason: string; count: number }>;
-  topPackages: Array<{ package: string; revenue: number }>;
+  leadSourceBreakdown: Array<{ lead_source: string; count: number }>;
   pipelineForecast90: number;
+  revenueByEventType: Array<{ event_type: string; revenue: number }>;
+  revenueByMonth: Array<{ month: Date; revenue: number }>;
   revenueYoyDelta: number;
   revenueYoyPct: number;
+  salesFunnel: Array<{ stage: string; count: number }>;
+  topPackages: Array<{ package: string; revenue: number }>;
+  totalEventsClosed: number;
+  totalRevenueBooked: number;
+  window: DateWindow;
+  winLossTrends: Array<{ lost_reason: string; count: number }>;
 }
 
 export interface PeriodSummary {
-  label: string;
-  window: DateWindow;
-  leadsReceived: number;
-  qualifiedLeads: number;
-  proposalsSent: number;
-  eventsWon: number;
-  closingRatio: number;
-  revenue: number;
-  eventsClosed: number;
   averageEventValue: number;
+  closingRatio: number;
+  eventsClosed: number;
+  eventsWon: number;
+  label: string;
+  leadsReceived: number;
+  proposalsSent: number;
+  qualifiedLeads: number;
+  revenue: number;
+  window: DateWindow;
 }
 
 export interface FunnelValidationResult {
-  metric: string;
-  expected: number | null;
   actual: number | null;
   delta: number | null;
   delta_pct: number | null;
+  expected: number | null;
+  metric: string;
   status: "Pass" | "Fail" | "Missing";
 }
 
 export interface FunnelValidation {
-  results: FunnelValidationResult[];
   passed: boolean;
+  results: FunnelValidationResult[];
 }
 
 const RAW_SHEETS = [

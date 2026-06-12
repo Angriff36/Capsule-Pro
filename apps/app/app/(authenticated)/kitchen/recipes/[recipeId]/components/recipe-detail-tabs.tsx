@@ -67,63 +67,46 @@ import {
 import { NutritionFactsPanel } from "@/components/nutrition-facts-panel";
 
 interface RecipeDetailRow {
-  id: string;
-  name: string;
-  description: string | null;
   category: string | null;
-  tags: string[] | null;
+  cook_time_minutes: number | null;
+  description: string | null;
+  id: string;
+  image_url: string | null;
+  instructions: string | null;
   is_active: boolean;
+  name: string;
+  notes: string | null;
+  prep_time_minutes: number | null;
+  rest_time_minutes: number | null;
+  tags: string[] | null;
   yield_quantity: number | null;
   yield_unit: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  rest_time_minutes: number | null;
-  instructions: string | null;
-  notes: string | null;
-  image_url: string | null;
 }
 
 interface IngredientRow {
   id: string;
   name: string;
-  quantity: number;
-  unit_code: string;
   notes: string | null;
   order_index: number;
+  quantity: number;
+  unit_code: string;
 }
 
 interface RecipeVersionRow {
-  id: string;
-  version_number: number;
   created_at: string;
+  id: string;
   ingredient_count: number;
   step_count: number;
+  version_number: number;
 }
 
 interface RecipeVersionDetail {
-  id: string;
-  recipeId: string;
-  versionNumber: number;
-  createdAt: string;
-  name: string;
   category: string | null;
+  createdAt: string;
   cuisineType: string | null;
   description: string | null;
-  tags: string[];
-  yield: {
-    quantity: number;
-    unitId: number;
-    unit: string | null;
-    description: string | null;
-  };
-  times: {
-    prepMinutes: number | null;
-    cookMinutes: number | null;
-    restMinutes: number | null;
-  };
   difficultyLevel: number | null;
-  instructions: string | null;
-  notes: string | null;
+  id: string;
   ingredients: {
     id: string;
     ingredientId: string;
@@ -134,6 +117,10 @@ interface RecipeVersionDetail {
     isOptional: boolean;
     sortOrder: number;
   }[];
+  instructions: string | null;
+  name: string;
+  notes: string | null;
+  recipeId: string;
   steps: {
     id: string;
     stepNumber: number;
@@ -146,19 +133,22 @@ interface RecipeVersionDetail {
     videoUrl: string | null;
     imageUrl: string | null;
   }[];
+  tags: string[];
+  times: {
+    prepMinutes: number | null;
+    cookMinutes: number | null;
+    restMinutes: number | null;
+  };
+  versionNumber: number;
+  yield: {
+    quantity: number;
+    unitId: number;
+    unit: string | null;
+    description: string | null;
+  };
 }
 
 interface RecipeVersionCompare {
-  from: {
-    id: string;
-    versionNumber: number;
-    createdAt: string;
-  };
-  to: {
-    id: string;
-    versionNumber: number;
-    createdAt: string;
-  };
   changes: {
     base: Record<
       string,
@@ -227,19 +217,29 @@ interface RecipeVersionCompare {
       }[];
     };
   };
+  from: {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+  };
+  to: {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+  };
 }
 
 // Step interface for display (matches database schema)
 interface RecipeStepDisplay {
-  step_number: number;
-  instruction: string;
   duration_minutes: number | null;
-  temperature_value: number | null;
-  temperature_unit: string | null;
   equipment_needed: string[] | null;
+  image_url: string | null;
+  instruction: string;
+  step_number: number;
+  temperature_unit: string | null;
+  temperature_value: number | null;
   tips: string | null;
   video_url: string | null;
-  image_url: string | null;
 }
 
 // HACCP Critical Control Point temperature thresholds (Fahrenheit)
@@ -248,8 +248,8 @@ const CCP_TEMP_THRESHOLDS = {
 };
 
 interface RecipeDetailTabsProps {
-  recipe: RecipeDetailRow;
   ingredients: IngredientRow[];
+  recipe: RecipeDetailRow;
   recipeVersionId: string | null;
   steps: RecipeStepDisplay[];
 }
@@ -259,8 +259,12 @@ const formatMinutes = (minutes?: number | null) =>
 
 /** Format duration for display (e.g., "15 min" or "1h 30m") */
 const formatDuration = (minutes: number | null): string | null => {
-  if (!minutes || minutes <= 0) return null;
-  if (minutes < 60) return `${minutes} min`;
+  if (!minutes || minutes <= 0) {
+    return null;
+  }
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
@@ -271,7 +275,9 @@ const formatTemperature = (
   value: number | null,
   unit: string | null
 ): string | null => {
-  if (value === null || value === undefined) return null;
+  if (value === null || value === undefined) {
+    return null;
+  }
   const displayUnit = unit === "C" ? "°C" : "°F";
   return `${value}${displayUnit}`;
 };
@@ -281,7 +287,9 @@ const isCriticalControlPoint = (
   tempValue: number | null,
   tempUnit: string | null
 ): boolean => {
-  if (tempValue === null || tempValue === undefined) return false;
+  if (tempValue === null || tempValue === undefined) {
+    return false;
+  }
   // Convert to Fahrenheit for comparison if needed
   const tempF = tempUnit === "C" ? (tempValue * 9) / 5 + 32 : tempValue;
   return tempF >= CCP_TEMP_THRESHOLDS.min;
@@ -311,7 +319,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
     >
       {/* CCP indicator bar at top */}
       {isCCP && (
-        <div className="absolute left-0 top-0 h-full w-1 bg-amber-500" />
+        <div className="absolute top-0 left-0 h-full w-1 bg-amber-500" />
       )}
 
       <CardContent className="pt-6">
@@ -319,7 +327,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
         <div className="flex items-start gap-4">
           {/* Step number badge */}
           <div
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-semibold text-sm ${
               isCCP
                 ? "bg-amber-500 text-white"
                 : "bg-primary text-primary-foreground"
@@ -394,7 +402,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2">
-                  <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                  <div className="rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
                     {step.tips}
                   </div>
                 </CollapsibleContent>
@@ -415,7 +423,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
                 >
                   {tempVerified && <CheckCircle2 className="h-3 w-3" />}
                 </button>
-                <span className="text-sm text-amber-900">
+                <span className="text-amber-900 text-sm">
                   Temperature verified:{" "}
                   {formatTemperature(
                     step.temperature_value,
@@ -481,8 +489,8 @@ function CostingTabContent({
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <DollarSign className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">Costs not calculated</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="mb-2 font-semibold text-lg">Costs not calculated</h3>
+            <p className="text-muted-foreground text-sm">
               Add ingredients with inventory costs to see cost breakdown.
             </p>
           </div>
@@ -498,7 +506,7 @@ function CostingTabContent({
           <CardContent className="flex items-center gap-3 pt-6">
             <DollarSign className="h-5 w-5 text-muted-foreground" />
             <div>
-              <div className="text-sm text-muted-foreground">Total Cost</div>
+              <div className="text-muted-foreground text-sm">Total Cost</div>
               <div className="font-semibold">
                 {formatCurrency(costData?.totalCost || 0)}
               </div>
@@ -509,7 +517,7 @@ function CostingTabContent({
           <CardContent className="flex items-center gap-3 pt-6">
             <Users className="h-5 w-5 text-muted-foreground" />
             <div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 Cost per {yield_unit || "Yield"}
               </div>
               <div className="font-semibold">
@@ -522,7 +530,7 @@ function CostingTabContent({
           <CardContent className="flex items-center gap-3 pt-6">
             <ChefHat className="h-5 w-5 text-muted-foreground" />
             <div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 Cost per Serving
               </div>
               <div className="font-semibold">
@@ -556,7 +564,7 @@ function CostingTabContent({
                         </Badge>
                       )}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       {ingredient.quantity} {ingredient.unit} ×{" "}
                       {formatCurrency(ingredient.unitCost)}
                       {ingredient.wasteFactor !== 1 &&
@@ -747,8 +755,8 @@ function HistoryTabContent({
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <HistoryIcon className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">No versions yet</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="mb-2 font-semibold text-lg">No versions yet</h3>
+            <p className="text-muted-foreground text-sm">
               Recipe versions will appear here as the recipe is updated.
             </p>
           </div>
@@ -791,7 +799,7 @@ function HistoryTabContent({
                       <Badge variant="default">Current</Badge>
                     )}
                   </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
+                  <div className="mt-1 text-muted-foreground text-sm">
                     {new Date(version.created_at).toLocaleString()}
                   </div>
                   <div className="mt-2 flex gap-4 text-sm">
@@ -982,7 +990,7 @@ function HistoryTabContent({
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="font-medium text-muted-foreground text-sm">
                   From
                 </p>
                 <Select
@@ -1002,7 +1010,7 @@ function HistoryTabContent({
                 </Select>
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">To</p>
+                <p className="font-medium text-muted-foreground text-sm">To</p>
                 <Select
                   onValueChange={setCompareTo}
                   value={compareTo ?? undefined}
@@ -1037,7 +1045,7 @@ function HistoryTabContent({
             </div>
 
             {compareError && (
-              <p className="text-sm text-destructive">{compareError}</p>
+              <p className="text-destructive text-sm">{compareError}</p>
             )}
 
             {compareData && (
@@ -1241,7 +1249,7 @@ export function RecipeDetailTabs({
               <Badge
                 className={
                   recipe.is_active
-                    ? "bg-[var(--brand-leafy-green)]/20 text-[var(--brand-leafy-green)] border-[var(--brand-leafy-green)]/30"
+                    ? "border-[var(--brand-leafy-green)]/30 bg-[var(--brand-leafy-green)]/20 text-[var(--brand-leafy-green)]"
                     : ""
                 }
                 variant={recipe.is_active ? "default" : "secondary"}
@@ -1249,7 +1257,7 @@ export function RecipeDetailTabs({
                 {recipe.is_active ? "Active" : "Inactive"}
               </Badge>
               {recipe.category && (
-                <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0">
+                <Badge className="border-0 bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)]">
                   {recipe.category}
                 </Badge>
               )}
@@ -1268,7 +1276,7 @@ export function RecipeDetailTabs({
             tone="canvas"
           >
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                 <Clock className="h-4 w-4 text-[var(--brand-golden-zest)]" />
                 Timing
               </CardTitle>
@@ -1276,26 +1284,26 @@ export function RecipeDetailTabs({
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-muted-foreground text-xs uppercase tracking-wide">
                     Prep
                   </div>
-                  <div className="text-lg font-semibold text-foreground">
+                  <div className="font-semibold text-foreground text-lg">
                     {formatMinutes(recipe.prep_time_minutes)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-muted-foreground text-xs uppercase tracking-wide">
                     Cook
                   </div>
-                  <div className="text-lg font-semibold text-foreground">
+                  <div className="font-semibold text-foreground text-lg">
                     {formatMinutes(recipe.cook_time_minutes)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-muted-foreground text-xs uppercase tracking-wide">
                     Rest
                   </div>
-                  <div className="text-lg font-semibold text-foreground">
+                  <div className="font-semibold text-foreground text-lg">
                     {formatMinutes(recipe.rest_time_minutes)}
                   </div>
                 </div>
@@ -1309,15 +1317,15 @@ export function RecipeDetailTabs({
             tone="canvas"
           >
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                 <Users className="h-4 w-4 text-[var(--brand-leafy-green)]" />
                 Yield
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[var(--brand-leafy-green)]">
+              <div className="font-bold text-2xl text-[var(--brand-leafy-green)]">
                 {recipe.yield_quantity ?? "-"}{" "}
-                <span className="text-base font-normal text-muted-foreground">
+                <span className="font-normal text-base text-muted-foreground">
                   {recipe.yield_unit ?? ""}
                 </span>
               </div>
@@ -1333,7 +1341,7 @@ export function RecipeDetailTabs({
             tone="canvas"
           >
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
                 <ChefHat className="h-4 w-4 text-[var(--brand-spiced-orange)]" />
                 Tags
               </CardTitle>
@@ -1344,7 +1352,7 @@ export function RecipeDetailTabs({
                   .filter((t) => t.toLowerCase() !== "imported")
                   .map((tag) => (
                     <Badge
-                      className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0"
+                      className="border-0 bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)]"
                       key={tag}
                     >
                       {tag}
@@ -1359,12 +1367,12 @@ export function RecipeDetailTabs({
         {recipe.notes && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Notes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-muted-foreground">
                 {recipe.notes}
               </p>
             </CardContent>
@@ -1404,7 +1412,7 @@ export function RecipeDetailTabs({
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Instructions</CardTitle>
             {steps?.length > 0 && (
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 text-muted-foreground text-sm">
                 {/* Total duration badge */}
                 {steps?.some((s) => s.duration_minutes) && (
                   <Badge className="gap-1" variant="outline">
@@ -1455,8 +1463,8 @@ export function RecipeDetailTabs({
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <ChefHat className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">No steps yet</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="mb-2 font-semibold text-lg">No steps yet</h3>
+                <p className="text-muted-foreground text-sm">
                   Add steps to your recipe for detailed instructions.
                 </p>
               </div>
@@ -1485,7 +1493,7 @@ export function RecipeDetailTabs({
                 sodium={0}
               />
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="mt-4 text-muted-foreground text-sm">
               Nutrition data will be calculated automatically from ingredient
               nutritional information when available.
             </p>

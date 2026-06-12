@@ -11,11 +11,11 @@
  */
 
 import { database } from "@repo/database";
+import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
-import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 
 type Params = Promise<{ token: string }>;
 

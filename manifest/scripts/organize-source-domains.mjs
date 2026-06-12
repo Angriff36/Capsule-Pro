@@ -3,8 +3,8 @@
  * Move flat manifest/source/*.manifest into domain subdirs for module graph clarity.
  * Idempotent: skips files already under a domain folder.
  */
-import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { mkdirSync, readdirSync, renameSync } from "node:fs";
+import { basename, join } from "node:path";
 import { getConfigPaths } from "./read-config.mjs";
 
 const { srcDir: SOURCE_DIR } = getConfigPaths();
@@ -71,7 +71,9 @@ const DOMAIN_BY_PREFIX = [
 function resolveDomain(filename) {
   const lower = filename.toLowerCase();
   for (const [prefix, domain] of DOMAIN_BY_PREFIX) {
-    if (lower.startsWith(prefix)) return domain;
+    if (lower.startsWith(prefix)) {
+      return domain;
+    }
   }
   return "core";
 }
@@ -89,7 +91,9 @@ for (const filePath of listFlatManifests(SOURCE_DIR)) {
   const targetDir = join(SOURCE_DIR, domain);
   mkdirSync(targetDir, { recursive: true });
   const targetPath = join(targetDir, name);
-  if (filePath === targetPath) continue;
+  if (filePath === targetPath) {
+    continue;
+  }
   renameSync(filePath, targetPath);
   moved++;
   console.log(`[organize-source] ${name} -> ${domain}/`);

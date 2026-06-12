@@ -39,17 +39,21 @@ import {
 } from "./shared";
 
 interface RawTransferItem {
-  itemId?: string;
   item_id?: string;
-  quantity?: number | string;
+  itemId?: string;
   notes?: string | null;
+  quantity?: number | string;
 }
 
 /** Coerce items payload to a normalized array regardless of whether the caller
  * sent an array, a JSON string, or nothing. */
 function asTransferItems(value: unknown): RawTransferItem[] {
-  if (value == null) return [];
-  if (Array.isArray(value)) return value as RawTransferItem[];
+  if (value == null) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value as RawTransferItem[];
+  }
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
@@ -128,7 +132,9 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
 
       for (const item of items) {
         const itemId = asString(item.itemId ?? item.item_id);
-        if (!itemId) continue;
+        if (!itemId) {
+          continue;
+        }
         await tx.inventoryTransferItem.create({
           data: {
             tenantId: this.tenantId,
@@ -157,19 +163,27 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.status !== undefined) patch.status = asString(data.status);
-      if (data.approvedBy !== undefined)
+      if (data.status !== undefined) {
+        patch.status = asString(data.status);
+      }
+      if (data.approvedBy !== undefined) {
         patch.approvedBy = asNullableString(data.approvedBy);
-      if (data.shippedBy !== undefined)
+      }
+      if (data.shippedBy !== undefined) {
         patch.shippedBy = asNullableString(data.shippedBy);
-      if (data.receivedBy !== undefined)
+      }
+      if (data.receivedBy !== undefined) {
         patch.receivedBy = asNullableString(data.receivedBy);
-      if (data.shippedAt !== undefined)
+      }
+      if (data.shippedAt !== undefined) {
         patch.shippedAt = asNullableDate(data.shippedAt);
-      if (data.receivedAt !== undefined)
+      }
+      if (data.receivedAt !== undefined) {
         patch.receivedAt = asNullableDate(data.receivedAt);
-      if (data.notes !== undefined)
+      }
+      if (data.notes !== undefined) {
         patch.notes = asNullableString(data.notes);
+      }
 
       const updated = await this.prisma.inventoryTransfer.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -179,7 +193,7 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
       return this.mapToManifestEntity(updated);
     } catch (error) {
       reportOp(this, "update", error);
-      return undefined;
+      return;
     }
   }
 
@@ -234,9 +248,9 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
         itemId: (it as { itemId?: string }).itemId,
         quantity: String((it as { quantity?: unknown }).quantity ?? "0"),
         receivedQuantity:
-          (it as { receivedQuantity?: unknown }).receivedQuantity != null
-            ? String((it as { receivedQuantity: unknown }).receivedQuantity)
-            : null,
+          (it as { receivedQuantity?: unknown }).receivedQuantity == null
+            ? null
+            : String((it as { receivedQuantity: unknown }).receivedQuantity),
         notes: (it as { notes?: string | null }).notes ?? null,
       })),
     };
@@ -248,10 +262,10 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
 // ---------------------------------------------------------------------------
 
 interface Store<T> {
+  clear(): Promise<void>;
+  create(data: Partial<T>): Promise<T>;
+  delete(id: string): Promise<boolean>;
   getAll(): Promise<T[]>;
   getById(id: string): Promise<T | undefined>;
-  create(data: Partial<T>): Promise<T>;
   update(id: string, data: Partial<T>): Promise<T | undefined>;
-  delete(id: string): Promise<boolean>;
-  clear(): Promise<void>;
 }

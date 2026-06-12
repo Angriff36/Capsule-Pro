@@ -156,7 +156,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[Shipment/POST] Delegating to manifest create command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   // Map snake_case client fields to camelCase manifest fields
   const mapped: Record<string, unknown> = {};
@@ -170,10 +173,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Generate shipment number if empty/missing (guard requires non-empty)
-  if (
-    !mapped.shipmentNumber ||
-    String(mapped.shipmentNumber).trim() === ""
-  ) {
+  if (!mapped.shipmentNumber || String(mapped.shipmentNumber).trim() === "") {
     mapped.shipmentNumber = `SHP-${Date.now()}`;
   }
 
@@ -192,9 +192,15 @@ export async function POST(request: NextRequest) {
 
   // Default missing required fields (manifest requires non-null string;
   // PrismaStore converts empty string to null for nullable DB columns)
-  if (mapped.supplierId === undefined) mapped.supplierId = "";
-  if (mapped.locationId === undefined) mapped.locationId = "";
-  if (mapped.eventId === undefined) mapped.eventId = "";
+  if (mapped.supplierId === undefined) {
+    mapped.supplierId = "";
+  }
+  if (mapped.locationId === undefined) {
+    mapped.locationId = "";
+  }
+  if (mapped.eventId === undefined) {
+    mapped.eventId = "";
+  }
 
   // Coerce numeric fields
   if (mapped.shippingCost !== undefined) {

@@ -23,9 +23,15 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status"); // open, in_progress, resolved, verified
 
     const where: Record<string, unknown> = { tenantId };
-    if (eventId) where.eventId = eventId;
-    if (severity) where.severity = severity;
-    if (status) where.status = status;
+    if (eventId) {
+      where.eventId = eventId;
+    }
+    if (severity) {
+      where.severity = severity;
+    }
+    if (status) {
+      where.status = status;
+    }
 
     const actions = await database.correctiveAction.findMany({
       where,

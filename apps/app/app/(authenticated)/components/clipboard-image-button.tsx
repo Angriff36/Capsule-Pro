@@ -4,10 +4,10 @@ import { UploadIcon } from "lucide-react";
 import type { ClipboardEvent, MouseEvent } from "react";
 
 interface ClipboardImageButtonProps {
+  className?: string;
+  disabled?: boolean;
   label: string;
   onImage: (file: File) => void;
-  disabled?: boolean;
-  className?: string;
   showUploadIcon?: boolean;
 }
 

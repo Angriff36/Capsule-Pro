@@ -928,7 +928,9 @@ describe("Forecast Integration Tests", () => {
     vi.mocked(database.inventoryItem.findFirst).mockImplementation(
       (async (args: { where?: { item_number?: string } }) => {
         const sku = args?.where?.item_number;
-        if (!sku) return null;
+        if (!sku) {
+          return null;
+        }
         const index = skus.indexOf(sku);
         if (index === -1 || index % 2 !== 0) {
           throw new Error(`Item not found: ${sku}`);

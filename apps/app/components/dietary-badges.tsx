@@ -17,18 +17,18 @@ import {
 import type { DietaryTag } from "@/lib/dietary-utils";
 
 export interface DietaryBadgeProps {
-  /** Dietary tag type */
-  tag: DietaryTag | string;
-  /** Show icon alongside label */
-  showIcon?: boolean;
-  /** Size variant */
-  size?: "sm" | "md" | "lg";
+  /** Additional class names */
+  className?: string;
   /** Compact mode (icon only) */
   compact?: boolean;
   /** Custom label override */
   label?: string;
-  /** Additional class names */
-  className?: string;
+  /** Show icon alongside label */
+  showIcon?: boolean;
+  /** Size variant */
+  size?: "sm" | "md" | "lg";
+  /** Dietary tag type */
+  tag: DietaryTag | string;
 }
 
 /**
@@ -151,7 +151,7 @@ export function DietaryBadge({
 
   const content = (
     <Badge
-      className={`${config.color} ${sizeClass} font-medium border ${className}`}
+      className={`${config.color} ${sizeClass} border font-medium ${className}`}
     >
       {showIcon && <span className="mr-1">{config.icon}</span>}
       {compact ? <span className="sr-only">{displayLabel}</span> : displayLabel}
@@ -176,18 +176,18 @@ export function DietaryBadge({
 }
 
 export interface DietaryBadgesProps {
-  /** Array of dietary tags to display */
-  tags: string[];
+  /** Additional class names */
+  className?: string;
+  /** Compact mode (icons only with tooltips) */
+  compact?: boolean;
   /** Maximum number of badges to show before truncating */
   maxVisible?: number;
   /** Show icons alongside labels */
   showIcons?: boolean;
   /** Size variant */
   size?: "sm" | "md" | "lg";
-  /** Compact mode (icons only with tooltips) */
-  compact?: boolean;
-  /** Additional class names */
-  className?: string;
+  /** Array of dietary tags to display */
+  tags: string[];
 }
 
 export function DietaryBadges({
@@ -221,13 +221,13 @@ export function DietaryBadges({
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
-                className={`${sizeClasses[size]} bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600`}
+                className={`${sizeClasses[size]} border-gray-300 bg-gray-100 text-gray-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400`}
               >
                 +{remainingCount}
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <div className="flex flex-wrap gap-1 max-w-[200px]">
+              <div className="flex max-w-[200px] flex-wrap gap-1">
                 {tags.slice(maxVisible).map((tag) => (
                   <Badge className="text-xs" key={tag} variant="outline">
                     {getTagConfig(tag).label}

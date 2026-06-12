@@ -39,9 +39,36 @@ import {
 // Mock dependencies
 vi.mock("@repo/database", () => ({
   database: {
-    emailTemplate: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    emailWorkflow: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    sms_automation_rules: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    emailTemplate: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    emailWorkflow: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    sms_automation_rules: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     user: { findFirst: vi.fn(), findUnique: vi.fn(), findMany: vi.fn() },
     $queryRaw: vi.fn(),
     $transaction: vi.fn((fn) => fn({})),
@@ -62,17 +89,19 @@ vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...data }), { status })
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(JSON.stringify({ success: true, ...data }), { status })
   ),
-  manifestErrorResponse: vi.fn((data, status = 400) =>
-    new Response(
-      JSON.stringify({
-        success: false,
-        ...(typeof data === "string" ? { message: data } : data),
-      }),
-      { status }
-    )
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          ...(typeof data === "string" ? { message: data } : data),
+        }),
+        { status }
+      )
   ),
 }));
 vi.mock("@/lib/pagination", () => ({
@@ -80,7 +109,9 @@ vi.mock("@/lib/pagination", () => ({
   clampOffset: vi.fn((v) => Math.max(Number(v) || 0, 0)),
 }));
 vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: class extends Error { name = "InvariantError"; },
+  InvariantError: class extends Error {
+    name = "InvariantError";
+  },
 }));
 vi.mock("@/app/lib/webhook-dispatch", () => ({
   dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
@@ -97,7 +128,9 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
@@ -179,11 +212,11 @@ function createMockSmsRule(overrides: Record<string, unknown> = {}) {
 }
 
 /** Helper: build a success Response matching manifestSuccessResponse shape. */
-function successResponse(result: Record<string, unknown>, events: unknown[] = []): Response {
-  return NextResponse.json(
-    { success: true, result, events },
-    { status: 200 },
-  );
+function successResponse(
+  result: Record<string, unknown>,
+  events: unknown[] = []
+): Response {
+  return NextResponse.json({ success: true, result, events }, { status: 200 });
 }
 
 /** Helper: build an error Response matching manifestErrorResponse shape. */
@@ -200,7 +233,9 @@ function invariantError(message: string): Error {
 
 /** Helper: mock requireCurrentUser to reject with InvariantError (unauthenticated). */
 function mockUnauthenticated(): void {
-  vi.mocked(requireCurrentUser).mockRejectedValue(invariantError("Not authenticated") as never);
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    invariantError("Not authenticated") as never
+  );
 }
 
 // ===========================================================================
@@ -432,7 +467,9 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 401 when tenant not found (dispatcher catches InvariantError)", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(invariantError("Tenant not found") as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        invariantError("Tenant not found") as never
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -527,7 +564,9 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -634,7 +673,9 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1062,7 +1103,9 @@ describe("Communications - Email Workflows", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1146,7 +1189,9 @@ describe("Communications - Email Workflows", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1810,7 +1855,9 @@ describe("Communications - SMS Automation Rules", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(createManifestRuntime).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules",

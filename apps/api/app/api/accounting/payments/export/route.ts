@@ -22,8 +22,12 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo");
     if (dateFrom || dateTo) {
       where.createdAt = {};
-      if (dateFrom) (where.createdAt as Record<string, string>).gte = dateFrom;
-      if (dateTo) (where.createdAt as Record<string, string>).lte = dateTo;
+      if (dateFrom) {
+        (where.createdAt as Record<string, string>).gte = dateFrom;
+      }
+      if (dateTo) {
+        (where.createdAt as Record<string, string>).lte = dateTo;
+      }
     }
 
     const payments = await database.payment.findMany({

@@ -24,31 +24,31 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 export interface EventSetupChecklistProps {
+  eventDate?: Date | null;
   eventId: string;
   eventSlug?: string;
-  hasClient: boolean;
-  hasVenue: boolean;
-  hasMenu: boolean;
-  hasStaff: boolean;
-  hasPrepList: boolean;
-  hasContract: boolean;
-  hasBudget: boolean;
-  eventDate?: Date | null;
   eventStatus?: string;
-  onEditEvent?: () => void;
+  hasBudget: boolean;
+  hasClient: boolean;
+  hasContract: boolean;
+  hasMenu: boolean;
+  hasPrepList: boolean;
+  hasStaff: boolean;
+  hasVenue: boolean;
   onAssignClient?: () => void;
+  onEditEvent?: () => void;
 }
 
 interface ChecklistItem {
-  id: string;
-  label: string;
-  description: string;
+  action?: () => void;
   completed: boolean;
+  description: string;
   href: string;
   icon: React.ReactNode;
-  required: boolean;
+  id: string;
+  label: string;
   priority: "high" | "medium" | "low";
-  action?: () => void;
+  required: boolean;
 }
 
 export function EventSetupChecklist({
@@ -196,7 +196,9 @@ export function EventSetupChecklist({
   };
 
   const getDaysUntilEvent = () => {
-    if (!eventDate) return null;
+    if (!eventDate) {
+      return null;
+    }
     const now = new Date();
     const event = new Date(eventDate);
     const diffTime = event.getTime() - now.getTime();
@@ -210,21 +212,21 @@ export function EventSetupChecklist({
     <Card tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">
+          <CardTitle className="font-semibold text-lg">
             Event Setup Progress
           </CardTitle>
           {getStatusBadge()}
         </div>
-        <div className="flex items-center gap-4 mt-2">
+        <div className="mt-2 flex items-center gap-4">
           <Progress className="h-2 flex-1" value={animatedProgress} />
-          <span className="text-sm font-medium text-muted-foreground">
+          <span className="font-medium text-muted-foreground text-sm">
             {completedCount}/{totalCount}
           </span>
         </div>
         {daysUntil !== null && (
           <p
             className={cn(
-              "text-sm mt-1",
+              "mt-1 text-sm",
               daysUntil < 0
                 ? "text-red-500"
                 : daysUntil < 3
@@ -245,7 +247,7 @@ export function EventSetupChecklist({
           {items.map((item) => (
             <Link
               className={cn(
-                "flex items-center gap-3 p-2 rounded-md transition-colors",
+                "flex items-center gap-3 rounded-md p-2 transition-colors",
                 "hover:bg-accent hover:text-accent-foreground",
                 item.completed && "opacity-75",
                 item.action && "cursor-pointer"
@@ -262,7 +264,7 @@ export function EventSetupChecklist({
               }
             >
               {item.completed ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
               ) : (
                 <Circle
                   className={cn(
@@ -271,11 +273,11 @@ export function EventSetupChecklist({
                   )}
                 />
               )}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "text-sm font-medium",
+                      "font-medium text-sm",
                       !item.completed && item.required && "text-foreground"
                     )}
                   >
@@ -287,7 +289,7 @@ export function EventSetupChecklist({
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="truncate text-muted-foreground text-xs">
                   {item.description}
                 </p>
               </div>
@@ -334,7 +336,7 @@ export function EventSetupChecklistCompact({
   return (
     <div className="flex items-center gap-2">
       <Progress className="h-1.5 w-20" value={progress} />
-      <span className="text-xs text-muted-foreground">
+      <span className="text-muted-foreground text-xs">
         {completedCount}/{items.length}
       </span>
     </div>

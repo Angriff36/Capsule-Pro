@@ -78,34 +78,7 @@ export default async function ProposalDetailPage({
 
   // Type with relations as returned by getProposalById
   interface ProposalWithRelations {
-    id: string;
-    tenantId: string;
-    proposalNumber: string;
-    title: string;
-    clientId: string | null;
-    leadId: string | null;
-    eventId: string | null;
-    eventDate: string | null;
-    eventType: string | null;
-    guestCount: number | null;
-    venueName: string | null;
-    venueAddress: string | null;
-    subtotal: number | null;
-    taxRate: number | null;
-    taxAmount: number | null;
-    discountAmount: number | null;
-    total: number | null;
-    status: string | null;
-    sentAt: Date | null;
-    viewedAt: Date | null;
     acceptedAt: Date | null;
-    rejectedAt: Date | null;
-    validUntil: string | null;
-    notes: string | null;
-    termsAndConditions: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
     client?: {
       id: string;
       company_name: string | null;
@@ -118,6 +91,19 @@ export default async function ProposalDetailPage({
       stateProvince: string | null;
       postalCode: string | null;
     } | null;
+    clientId: string | null;
+    createdAt: Date;
+    deletedAt: Date | null;
+    discountAmount: number | null;
+    event?: {
+      id: string;
+      name: string;
+    } | null;
+    eventDate: string | null;
+    eventId: string | null;
+    eventType: string | null;
+    guestCount: number | null;
+    id: string;
     lead?: {
       id: string;
       company_name: string | null;
@@ -126,10 +112,7 @@ export default async function ProposalDetailPage({
       email: string | null;
       phone: string | null;
     } | null;
-    event?: {
-      id: string;
-      name: string;
-    } | null;
+    leadId: string | null;
     lineItems: Array<{
       id: string;
       sortOrder: number | null;
@@ -140,6 +123,23 @@ export default async function ProposalDetailPage({
       total: number | null;
       notes: string | null;
     }>;
+    notes: string | null;
+    proposalNumber: string;
+    rejectedAt: Date | null;
+    sentAt: Date | null;
+    status: string | null;
+    subtotal: number | null;
+    taxAmount: number | null;
+    taxRate: number | null;
+    tenantId: string;
+    termsAndConditions: string | null;
+    title: string;
+    total: number | null;
+    updatedAt: Date;
+    validUntil: string | null;
+    venueAddress: string | null;
+    venueName: string | null;
+    viewedAt: Date | null;
   }
 
   let proposal: ProposalWithRelations;
@@ -259,288 +259,298 @@ export default async function ProposalDetailPage({
       <OperationalColumn>
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-          {/* Event Details */}
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Event Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Event Date</p>
-                    <p className="font-medium">
-                      {proposal.eventDate
-                        ? format(
-                            new Date(proposal.eventDate),
-                            "EEEE, MMMM d, yyyy"
-                          )
-                        : "Not set"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Guest Count</p>
-                    <p className="font-medium">
-                      {proposal.guestCount
-                        ? proposal.guestCount.toLocaleString()
-                        : "Not set"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Event Type</p>
-                    <p className="font-medium">
-                      {proposal.eventType || "Not specified"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Venue</p>
-                    <p className="font-medium">
-                      {proposal.venueName || "Not set"}
-                      {proposal.venueAddress && (
-                        <span className="text-muted-foreground">
-                          {" "}
-                          - {proposal.venueAddress}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              {proposal.notes && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                  <p className="text-sm">{proposal.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Line Items */}
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Proposal Items</CardTitle>
-              <CardDescription>
-                Detailed breakdown of services and pricing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {proposal.lineItems.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Unit Price</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {proposal.lineItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{item.description}</p>
-                            {item.notes && (
-                              <p className="text-sm text-muted-foreground">
-                                {item.notes}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="text-xs" variant="outline">
-                            {item.itemType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.quantity}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          ${item.unitPrice.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          ${item.total?.toFixed(2) ?? "0.00"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No line items added yet
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Terms */}
-          {proposal.termsAndConditions && (
+          <div className="space-y-6 lg:col-span-2">
+            {/* Event Details */}
             <Card tone="canvas">
               <CardHeader>
-                <CardTitle>Terms & Conditions</CardTitle>
+                <CardTitle>Event Details</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm whitespace-pre-line">
-                  {proposal.termsAndConditions}
-                </p>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">
+                        Event Date
+                      </p>
+                      <p className="font-medium">
+                        {proposal.eventDate
+                          ? format(
+                              new Date(proposal.eventDate),
+                              "EEEE, MMMM d, yyyy"
+                            )
+                          : "Not set"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">
+                        Guest Count
+                      </p>
+                      <p className="font-medium">
+                        {proposal.guestCount
+                          ? proposal.guestCount.toLocaleString()
+                          : "Not set"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">
+                        Event Type
+                      </p>
+                      <p className="font-medium">
+                        {proposal.eventType || "Not specified"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">Venue</p>
+                      <p className="font-medium">
+                        {proposal.venueName || "Not set"}
+                        {proposal.venueAddress && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            - {proposal.venueAddress}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {proposal.notes && (
+                  <div>
+                    <p className="mb-1 text-muted-foreground text-sm">Notes</p>
+                    <p className="text-sm">{proposal.notes}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          )}
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Client Info */}
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Client Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Building className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Client</p>
-                  <p className="font-medium">{getClientName()}</p>
-                </div>
-              </div>
-              {getClientEmail() && (
+            {/* Line Items */}
+            <Card tone="canvas">
+              <CardHeader>
+                <CardTitle>Proposal Items</CardTitle>
+                <CardDescription>
+                  Detailed breakdown of services and pricing
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {proposal.lineItems.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Unit Price</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {proposal.lineItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{item.description}</p>
+                              {item.notes && (
+                                <p className="text-muted-foreground text-sm">
+                                  {item.notes}
+                                </p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="text-xs" variant="outline">
+                              {item.itemType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {item.quantity}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            ${item.unitPrice.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            ${item.total?.toFixed(2) ?? "0.00"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="py-8 text-center text-muted-foreground">
+                    No line items added yet
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Terms */}
+            {proposal.termsAndConditions && (
+              <Card tone="canvas">
+                <CardHeader>
+                  <CardTitle>Terms & Conditions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-line text-sm">
+                    {proposal.termsAndConditions}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Client Info */}
+            <Card tone="canvas">
+              <CardHeader>
+                <CardTitle>Client Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <Building className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{getClientEmail()}</p>
+                    <p className="text-muted-foreground text-sm">Client</p>
+                    <p className="font-medium">{getClientName()}</p>
                   </div>
                 </div>
-              )}
-              {proposal.client?.phone && (
-                <div className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{proposal.client.phone}</p>
+                {getClientEmail() && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">Email</p>
+                      <p className="font-medium">{getClientEmail()}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              {proposal.event && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Linked Event</p>
-                  <Button asChild className="p-0 h-auto" variant="link">
-                    <Link href={`/events/${proposal.event.id}`}>
-                      {proposal.event.name}
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+                {proposal.client?.phone && (
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground text-sm">Phone</p>
+                      <p className="font-medium">{proposal.client.phone}</p>
+                    </div>
+                  </div>
+                )}
+                {proposal.event && (
+                  <div>
+                    <p className="text-muted-foreground text-sm">
+                      Linked Event
+                    </p>
+                    <Button asChild className="h-auto p-0" variant="link">
+                      <Link href={`/events/${proposal.event.id}`}>
+                        {proposal.event.name}
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Pricing Summary */}
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Pricing Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">
-                  ${proposal.subtotal?.toFixed(2) ?? "0.00"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax Rate</span>
-                <span className="font-medium">{proposal.taxRate}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax Amount</span>
-                <span className="font-medium">
-                  ${proposal.taxAmount?.toFixed(2) ?? "0.00"}
-                </span>
-              </div>
-              {(proposal.discountAmount ?? 0) > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
+            {/* Pricing Summary */}
+            <Card tone="canvas">
+              <CardHeader>
+                <CardTitle>Pricing Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-medium">
-                    -${proposal.discountAmount?.toFixed(2) ?? "0.00"}
+                    ${proposal.subtotal?.toFixed(2) ?? "0.00"}
                   </span>
                 </div>
-              )}
-              <div className="border-t my-1" />
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span>${proposal.total?.toFixed(2) ?? "0.00"}</span>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax Rate</span>
+                  <span className="font-medium">{proposal.taxRate}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax Amount</span>
+                  <span className="font-medium">
+                    ${proposal.taxAmount?.toFixed(2) ?? "0.00"}
+                  </span>
+                </div>
+                {(proposal.discountAmount ?? 0) > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount</span>
+                    <span className="font-medium">
+                      -${proposal.discountAmount?.toFixed(2) ?? "0.00"}
+                    </span>
+                  </div>
+                )}
+                <div className="my-1 border-t" />
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>${proposal.total?.toFixed(2) ?? "0.00"}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Status Timeline */}
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Status Timeline</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Created</span>
-                <span className="text-sm">
-                  {format(new Date(proposal.createdAt), "MMM d, yyyy")}
-                </span>
-              </div>
-              {proposal.validUntil && (
+            {/* Status Timeline */}
+            <Card tone="canvas">
+              <CardHeader>
+                <CardTitle>Status Timeline</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Valid Until
-                  </span>
+                  <span className="text-muted-foreground text-sm">Created</span>
                   <span className="text-sm">
-                    {format(new Date(proposal.validUntil), "MMM d, yyyy")}
+                    {format(new Date(proposal.createdAt), "MMM d, yyyy")}
                   </span>
                 </div>
-              )}
-              {proposal.sentAt && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Sent</span>
-                  <span className="text-sm">
-                    {format(new Date(proposal.sentAt), "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-              {proposal.viewedAt && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Viewed</span>
-                  <span className="text-sm">
-                    {format(new Date(proposal.viewedAt), "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-              {proposal.acceptedAt && (
-                <div className="flex items-center justify-between text-green-600">
-                  <span className="text-sm font-medium">Accepted</span>
-                  <span className="text-sm font-medium">
-                    {format(new Date(proposal.acceptedAt), "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-              {proposal.rejectedAt && (
-                <div className="flex items-center justify-between text-red-600">
-                  <span className="text-sm font-medium">Rejected</span>
-                  <span className="text-sm font-medium">
-                    {format(new Date(proposal.rejectedAt), "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {proposal.validUntil && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">
+                      Valid Until
+                    </span>
+                    <span className="text-sm">
+                      {format(new Date(proposal.validUntil), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+                {proposal.sentAt && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">Sent</span>
+                    <span className="text-sm">
+                      {format(new Date(proposal.sentAt), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+                {proposal.viewedAt && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">
+                      Viewed
+                    </span>
+                    <span className="text-sm">
+                      {format(new Date(proposal.viewedAt), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+                {proposal.acceptedAt && (
+                  <div className="flex items-center justify-between text-green-600">
+                    <span className="font-medium text-sm">Accepted</span>
+                    <span className="font-medium text-sm">
+                      {format(new Date(proposal.acceptedAt), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+                {proposal.rejectedAt && (
+                  <div className="flex items-center justify-between text-red-600">
+                    <span className="font-medium text-sm">Rejected</span>
+                    <span className="font-medium text-sm">
+                      {format(new Date(proposal.rejectedAt), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </OperationalColumn>
     </PageCanvas>

@@ -106,9 +106,9 @@ export function ManifestEditorClient() {
           )}
         </div>
         {error ? (
-          <p className="mt-3 text-sm text-destructive">{error}</p>
+          <p className="mt-3 text-destructive text-sm">{error}</p>
         ) : null}
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-muted-foreground text-xs">
           Read-only explorer backed by compiled Manifest IR. Some details (like
           parameters, checks, and permission rules) are not surfaced in this IR
           build yet.

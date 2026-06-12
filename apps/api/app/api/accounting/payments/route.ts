@@ -14,13 +14,13 @@ import { database, type Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   extractIdempotencyKey,
   IdempotencyKeyError,
   lookupIdempotentResponse,
   storeIdempotentResponse,
 } from "@/lib/http-idempotency";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { translatePrismaError } from "@/lib/prisma-error";
 import {
   captureException,
@@ -282,21 +282,30 @@ export async function POST(request: NextRequest) {
       }
       if (createResult.guardFailure) {
         return NextResponse.json(
-          { error: `Guard ${createResult.guardFailure.index} failed: ${createResult.guardFailure.formatted}` },
+          {
+            error: `Guard ${createResult.guardFailure.index} failed: ${createResult.guardFailure.formatted}`,
+          },
           { status: 422 }
         );
       }
       return NextResponse.json(
-        { error: `Payment creation failed: ${createResult.error ?? "manifest rejection"}` },
+        {
+          error: `Payment creation failed: ${createResult.error ?? "manifest rejection"}`,
+        },
         { status: 500 }
       );
     }
 
     // Extract the created payment's data from the governed create result.
-    const paymentData = createResult.result as Record<string, unknown> | undefined;
-    const paymentId = createResult.instance?.id ?? String(paymentData?.id ?? "");
+    const paymentData = createResult.result as
+      | Record<string, unknown>
+      | undefined;
+    const paymentId =
+      createResult.instance?.id ?? String(paymentData?.id ?? "");
     if (!paymentId) {
-      log.error("Payment.create succeeded but no id returned", { createResult });
+      log.error("Payment.create succeeded but no id returned", {
+        createResult,
+      });
       return NextResponse.json(
         { error: "Payment created but ID not available" },
         { status: 500 }
@@ -325,7 +334,9 @@ export async function POST(request: NextRequest) {
         error: processResult.error,
       });
       return NextResponse.json(
-        { error: `Payment processing failed: ${processResult.error ?? "manifest rejection"}` },
+        {
+          error: `Payment processing failed: ${processResult.error ?? "manifest rejection"}`,
+        },
         { status: 500 }
       );
     }
@@ -361,11 +372,14 @@ export async function POST(request: NextRequest) {
         {},
         { entityName: "Payment", instanceId: paymentId }
       );
-      log.warn("Payment processed but invoice not updated (reaction may have failed)", {
-        invoiceId: body.invoiceId,
-        paymentId,
-        invoiceStatus: invoiceAfterPayment?.status,
-      });
+      log.warn(
+        "Payment processed but invoice not updated (reaction may have failed)",
+        {
+          invoiceId: body.invoiceId,
+          paymentId,
+          invoiceStatus: invoiceAfterPayment?.status,
+        }
+      );
 
       // Write activity feed entry for the partial success
       await database.activityFeed.create({
@@ -417,7 +431,11 @@ export async function POST(request: NextRequest) {
       };
 
       return NextResponse.json<PaymentResponse & { warning: string }>(
-        { ...acceptedResponse, warning: "Payment accepted but not applied to invoice — invoice may not be ready for payment application" },
+        {
+          ...acceptedResponse,
+          warning:
+            "Payment accepted but not applied to invoice — invoice may not be ready for payment application",
+        },
         { status: 201 }
       );
     }

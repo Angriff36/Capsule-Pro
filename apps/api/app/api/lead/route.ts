@@ -3,40 +3,40 @@ import { resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface WizardFormData {
-  contactName: string;
-  email: string;
-  phone: string;
+  additionalNotes: string;
+  addOns: string[];
+  barService: string;
+  budgetRange: string;
+  city: string;
   company: string;
-  eventName: string;
-  occasionType: string;
-  vibeDescription: string;
-  eventFormat: string;
-  guestCount: number;
-  guestCountCertainty: string;
-  serviceStyle: string;
+  contactName: string;
   courseCount: number;
   cuisinePreferences: string[];
+  dateFlexibility: string;
   dietaryNeeds: string[];
   dietaryPercentage: string;
+  email: string;
+  eventDate: string;
+  eventFormat: string;
+  eventName: string;
+  guestCount: number;
+  guestCountCertainty: string;
   menuNotes: string;
+  occasionType: string;
+  phone: string;
+  referralSource: string;
+  rentalsNeeded: string[];
+  serviceStyle: string;
   staffingLevel: string;
   staffingNotes: string;
-  barService: string;
-  rentalsNeeded: string[];
-  addOns: string[];
-  eventDate: string;
-  dateFlexibility: string;
-  venueType: string;
-  city: string;
   venueName: string;
-  budgetRange: string;
-  referralSource: string;
-  additionalNotes: string;
+  venueType: string;
+  vibeDescription: string;
 }
 
 interface PriceEstimate {
-  low: number;
   high: number;
+  low: number;
 }
 
 /**
@@ -48,7 +48,10 @@ interface PriceEstimate {
  */
 export async function POST(request: NextRequest): Promise<Response> {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   const { formData, estimate } = rawBody as {
     formData: WizardFormData;

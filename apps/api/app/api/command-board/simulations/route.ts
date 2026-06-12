@@ -25,8 +25,8 @@ import type {
 } from "../types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(

@@ -17,96 +17,96 @@ import {
 // ============================================================================
 
 export interface ScheduleOptimizationRequest {
-  scheduleId: string;
-  locationId: string;
-  startDate: Date;
-  endDate: Date;
   constraints: OptimizationConstraints;
+  endDate: Date;
+  locationId: string;
+  scheduleId: string;
+  startDate: Date;
 }
 
 export interface OptimizationConstraints {
+  allowOvertime?: boolean;
+  maxHoursPerEmployee?: number;
   maxLaborCost?: number;
   minSkillCoverage?: number; // 0-1, percentage of required skills to cover
-  maxHoursPerEmployee?: number;
-  requireSeniorityBalance?: boolean;
   preferFullAvailability?: boolean;
-  allowOvertime?: boolean;
+  requireSeniorityBalance?: boolean;
 }
 
 export interface ScheduleOptimizationResult {
-  scheduleId: string;
+  appliedStrategies: string[];
   optimizedAssignments: OptimizedShiftAssignment[];
+  scheduleId: string;
   summary: OptimizationSummary;
   warnings: string[];
-  appliedStrategies: string[];
 }
 
 export interface OptimizedShiftAssignment {
-  shiftId: string;
-  recommendedEmployeeId: string;
-  employeeName: string;
-  confidence: "high" | "medium" | "low";
-  reasoning: string[];
-  estimatedCost: number;
-  riskFactors: string[];
   alternatives: Array<{
     employeeId: string;
     employeeName: string;
     score: number;
   }>;
+  confidence: "high" | "medium" | "low";
+  employeeName: string;
+  estimatedCost: number;
+  reasoning: string[];
+  recommendedEmployeeId: string;
+  riskFactors: string[];
+  shiftId: string;
 }
 
 export interface OptimizationSummary {
-  totalShifts: number;
   assignedShifts: number;
-  unassignedShifts: number;
-  totalEstimatedCost: number;
   averageConfidence: number;
-  skillCoverage: number;
   seniorityBalance: number;
+  skillCoverage: number;
+  totalEstimatedCost: number;
+  totalShifts: number;
+  unassignedShifts: number;
 }
 
 export interface PerformancePredictionRequest {
   employeeId: string;
-  scheduleId?: string;
-  predictionHorizon: number; // days
   metrics: Array<
     "productivity" | "attendance" | "overtime_risk" | "skill_match"
   >;
+  predictionHorizon: number; // days
+  scheduleId?: string;
 }
 
 export interface PerformancePredictionResult {
   employeeId: string;
+  overallPerformanceScore: number;
   predictions: {
     productivity: ProductivityPrediction | null;
     attendance: AttendancePrediction | null;
     overtimeRisk: OvertimeRiskPrediction | null;
     skillMatch: SkillMatchPrediction | null;
   };
-  overallPerformanceScore: number;
   recommendations: string[];
 }
 
 export interface ProductivityPrediction {
-  predictedScore: number; // 0-100
-  trend: "improving" | "stable" | "declining";
   factors: {
     factor: string;
     impact: "positive" | "neutral" | "negative";
     weight: number;
   }[];
+  predictedScore: number; // 0-100
+  trend: "improving" | "stable" | "declining";
 }
 
 export interface AttendancePrediction {
   predictedAttendanceRate: number; // 0-1
-  riskLevel: "low" | "medium" | "high";
   riskFactors: string[];
+  riskLevel: "low" | "medium" | "high";
 }
 
 export interface OvertimeRiskPrediction {
-  riskLevel: "low" | "medium" | "high";
-  projectedOvertimeHours: number;
   contributingFactors: string[];
+  projectedOvertimeHours: number;
+  riskLevel: "low" | "medium" | "high";
 }
 
 export interface SkillMatchPrediction {
@@ -121,15 +121,13 @@ export interface SkillMatchPrediction {
 }
 
 export interface WorkforceAnalyticsData {
-  tenantId: string;
+  endDate: Date;
   locationId?: string;
   startDate: Date;
-  endDate: Date;
+  tenantId: string;
 }
 
 export interface WorkforceAnalyticsResult {
-  periodStart: Date;
-  periodEnd: Date;
   metrics: {
     totalHours: number;
     totalCost: number;
@@ -153,6 +151,8 @@ export interface WorkforceAnalyticsResult {
       gap: number;
     }>;
   };
+  periodEnd: Date;
+  periodStart: Date;
   trends: {
     costTrend: "increasing" | "stable" | "decreasing";
     productivityTrend: "improving" | "stable" | "declining";
@@ -565,7 +565,9 @@ function calculateSeniorityBalance(
   assignments: OptimizedShiftAssignment[]
 ): number {
   // Simple balance calculation - in real implementation would compare distribution
-  if (assignments.length === 0) return 0;
+  if (assignments.length === 0) {
+    return 0;
+  }
   return 0.75; // Placeholder
 }
 

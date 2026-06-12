@@ -50,9 +50,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 
 interface SearchResult {
   groups: Record<string, { items: Record<string, unknown>[]; total: number }>;
-  total: number;
-  page: number;
   limit: number;
+  page: number;
+  total: number;
 }
 
 type SItem = Record<string, unknown>;
@@ -75,7 +75,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/events/${item.id}`,
     title: (item) => (item.title as string) || `Event #${item.eventNumber}`,
     description: (item) => (
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+      <p className="flex items-center gap-2 text-muted-foreground text-sm">
         <CalendarDays className="size-4" />
         {item.eventDate
           ? dateFormatter.format(new Date(item.eventDate as string))
@@ -93,7 +93,7 @@ const GROUP_CONFIG: Record<
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
       "Unknown Client",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {[item.first_name, item.last_name].filter(Boolean).join(" ")}
         {item.company_name ? ` · ${item.company_name}` : ""}
       </p>
@@ -107,7 +107,7 @@ const GROUP_CONFIG: Record<
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
       "Unknown Contact",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.title ? `${item.title as string} · ` : ""}
         {(item.email as string) || (item.phone as string) || ""}
       </p>
@@ -119,7 +119,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/venues/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Venue",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {[item.city, item.stateProvince].filter(Boolean).join(", ")}
         {item.venueType ? ` · ${item.venueType as string}` : ""}
       </p>
@@ -132,7 +132,7 @@ const GROUP_CONFIG: Record<
     title: (item) =>
       `${item.name}${item.item_number ? ` (${item.item_number})` : ""}`,
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.category as string}
         {item.unitOfMeasure ? ` · ${item.unitOfMeasure as string}` : ""}
       </p>
@@ -144,7 +144,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/knowledge-base/${item.slug}`,
     title: (item) => (item.title as string) || "Untitled",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.category as string) || "General"}
       </p>
     ),
@@ -158,7 +158,7 @@ const GROUP_CONFIG: Record<
     },
     title: (item) => (item.title as string) || "Untitled Task",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.task_type as string) === "admin" ? "Admin" : "Kitchen"}
         {" · "}
         {item.status as string}
@@ -171,7 +171,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/kitchen/recipes/${item.id}`,
     title: (item) => (item.name as string) || "Untitled Recipe",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.category as string}
         {item.cuisineType ? ` · ${item.cuisineType as string}` : ""}
       </p>
@@ -183,7 +183,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/kitchen/dishes/${item.id}`,
     title: (item) => (item.name as string) || "Untitled Dish",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.category as string}
         {item.serviceStyle ? ` · ${item.serviceStyle as string}` : ""}
       </p>
@@ -195,7 +195,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/kitchen/equipment/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Equipment",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.type as string}
         {item.manufacturer ? ` · ${item.manufacturer as string}` : ""}
       </p>
@@ -207,7 +207,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/kitchen/ingredients/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Ingredient",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.category as string) || "Uncategorized"}
       </p>
     ),
@@ -218,7 +218,7 @@ const GROUP_CONFIG: Record<
     href: (item) => `/kitchen/menus/${item.id}`,
     title: (item) => (item.name as string) || "Untitled Menu",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.category as string) || "General"}
       </p>
     ),
@@ -232,7 +232,7 @@ const GROUP_CONFIG: Record<
       (item.contactName as string) ||
       "Unknown Lead",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.contactName as string) || ""}
         {item.source ? ` · ${(item.source as string).replace("_", " ")}` : ""}
       </p>
@@ -245,7 +245,7 @@ const GROUP_CONFIG: Record<
     title: (item) =>
       (item.title as string) || `Proposal #${item.proposalNumber}`,
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {item.proposalNumber as string}
         {item.eventType ? ` · ${item.eventType as string}` : ""}
       </p>
@@ -258,7 +258,7 @@ const GROUP_CONFIG: Record<
     title: (item) =>
       `Invoice ${item.invoiceNumber as string}` || "Unknown Invoice",
     description: (item) => (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {(item.invoiceType as string) || ""}
         {item.total ? ` · $${Number(item.total).toFixed(2)}` : ""}
       </p>
@@ -278,7 +278,9 @@ function SearchResults() {
   const limit = 10;
 
   const fetchResults = useCallback(async () => {
-    if (!q) return;
+    if (!q) {
+      return;
+    }
     setLoading(true);
     setError(null);
     analytics.capture("search:query", { query: q });
@@ -288,7 +290,9 @@ function SearchResults() {
         page: String(page),
         limit: String(limit),
       });
-      if (typeFilter !== "all") params.set("type", typeFilter);
+      if (typeFilter !== "all") {
+        params.set("type", typeFilter);
+      }
       const res = await apiFetch(`/api/search?${params}`);
       const json = await res.json();
       if (json.success) {
@@ -350,7 +354,7 @@ function SearchResults() {
               {loading
                 ? "Searching..."
                 : data
-                  ? `${data.total} result${data.total !== 1 ? "s" : ""} for "${q}"`
+                  ? `${data.total} result${data.total === 1 ? "" : "s"} for "${q}"`
                   : `Showing results for "${q}"`}
             </CommandBandLede>
           </div>
@@ -401,11 +405,13 @@ function SearchResults() {
             .filter(([, g]) => g.total > 0)
             .map(([groupKey, group]) => {
               const config = GROUP_CONFIG[groupKey];
-              if (!config) return null;
+              if (!config) {
+                return null;
+              }
               return (
                 <section className="space-y-4" key={groupKey}>
                   <SectionHeader
-                    count={`${group.total} result${group.total !== 1 ? "s" : ""}`}
+                    count={`${group.total} result${group.total === 1 ? "" : "s"}`}
                     eyebrow={config.label}
                     title={config.label}
                   />
@@ -442,7 +448,7 @@ function SearchResults() {
                 <ChevronLeft className="mr-1 size-4" />
                 Previous
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 Page {data.page}
               </span>
               <Button

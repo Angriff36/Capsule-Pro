@@ -6,12 +6,12 @@ import {
 } from "./errors.js";
 
 export interface RetryOptions {
-  maxAttempts?: number;
-  initialDelay?: number;
-  maxDelay?: number;
   backoffMultiplier?: number;
-  retryableErrors?: ErrorCode[];
+  initialDelay?: number;
+  maxAttempts?: number;
+  maxDelay?: number;
   onRetry?: (attempt: number, error: SDKError) => void;
+  retryableErrors?: ErrorCode[];
 }
 
 export class RetryManager {

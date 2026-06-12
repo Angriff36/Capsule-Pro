@@ -34,57 +34,57 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 interface Webhook {
-  id: string;
-  name: string;
-  url: string;
-  secret: string | null;
   apiKey: string | null;
-  status: string;
-  eventTypeFilters: string[];
+  consecutiveFailures: number;
+  createdAt: string;
+  customHeaders: Record<string, string> | null;
+  deletedAt: string | null;
   entityFilters: string[];
+  eventTypeFilters: string[];
+  id: string;
+  lastFailureAt: string | null;
+  lastSuccessAt: string | null;
+  lastTriggeredAt: string | null;
+  name: string;
   retryCount: number;
   retryDelayMs: number;
+  secret: string | null;
+  status: string;
   timeoutMs: number;
-  customHeaders: Record<string, string> | null;
-  consecutiveFailures: number;
-  lastTriggeredAt: string | null;
-  lastSuccessAt: string | null;
-  lastFailureAt: string | null;
-  createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
+  url: string;
 }
 
 interface DeliveryLog {
-  id: string;
-  webhookId: string;
-  eventType: string;
-  entityType: string;
-  entityId: string;
-  status: string;
   attemptNumber: number;
-  httpResponseStatus: number | null;
-  errorMessage: string | null;
-  nextRetryAt: string | null;
-  deliveredAt: string | null;
-  failedAt: string | null;
   createdAt: string;
+  deliveredAt: string | null;
+  entityId: string;
+  entityType: string;
+  errorMessage: string | null;
+  eventType: string;
+  failedAt: string | null;
+  httpResponseStatus: number | null;
+  id: string;
+  nextRetryAt: string | null;
+  status: string;
+  webhookId: string;
 }
 
 interface DlqEntry {
-  id: string;
-  webhookId: string;
-  deliveryLogId: string;
-  eventType: string;
-  entityType: string;
-  entityId: string;
-  failureReason: string | null;
-  lastAttemptAt: string | null;
   attemptCount: number;
+  deliveryLogId: string;
+  entityId: string;
+  entityType: string;
+  eventType: string;
+  failureReason: string | null;
+  id: string;
+  lastAttemptAt: string | null;
   movedToDlqAt: string;
   resolvedAt: string | null;
   reviewedBy: string | null;
   webhook?: { name: string; url: string };
+  webhookId: string;
 }
 
 type Tab = "webhooks" | "delivery-logs" | "dlq";
@@ -140,7 +140,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${c.bg}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium text-xs ${c.bg}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
@@ -338,7 +338,7 @@ function WebhookFormDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="dev-console-panel mx-4 w-full max-w-xl max-h-[90vh] overflow-y-auto">
+      <div className="dev-console-panel mx-4 max-h-[90vh] w-full max-w-xl overflow-y-auto">
         <div className="dev-console-panel-header">
           <div>
             <h2>{isEdit ? "Edit Webhook" : "Create Webhook"}</h2>
@@ -361,7 +361,7 @@ function WebhookFormDialog({
           <div className="space-y-4">
             <div>
               <label
-                className="mb-1.5 block text-xs text-slate-400"
+                className="mb-1.5 block text-slate-400 text-xs"
                 htmlFor="wh-name"
               >
                 Name
@@ -378,7 +378,7 @@ function WebhookFormDialog({
 
             <div>
               <label
-                className="mb-1.5 block text-xs text-slate-400"
+                className="mb-1.5 block text-slate-400 text-xs"
                 htmlFor="wh-url"
               >
                 Endpoint URL
@@ -396,7 +396,7 @@ function WebhookFormDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
-                  className="mb-1.5 block text-xs text-slate-400"
+                  className="mb-1.5 block text-slate-400 text-xs"
                   htmlFor="wh-secret"
                 >
                   HMAC Secret
@@ -412,7 +412,7 @@ function WebhookFormDialog({
               </div>
               <div>
                 <label
-                  className="mb-1.5 block text-xs text-slate-400"
+                  className="mb-1.5 block text-slate-400 text-xs"
                   htmlFor="wh-apikey"
                 >
                   API Key
@@ -429,7 +429,7 @@ function WebhookFormDialog({
             </div>
 
             <div>
-              <span className="mb-1.5 block text-xs text-slate-400">
+              <span className="mb-1.5 block text-slate-400 text-xs">
                 Event Type Filters
               </span>
               <div className="flex flex-wrap gap-2">
@@ -453,13 +453,13 @@ function WebhookFormDialog({
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-slate-500 text-xs">
                 Leave empty to receive all event types
               </p>
             </div>
 
             <div>
-              <span className="mb-1.5 block text-xs text-slate-400">
+              <span className="mb-1.5 block text-slate-400 text-xs">
                 Entity Filters
               </span>
               <div className="flex flex-wrap gap-2">
@@ -483,7 +483,7 @@ function WebhookFormDialog({
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-slate-500 text-xs">
                 Leave empty to receive all entity types
               </p>
             </div>
@@ -491,7 +491,7 @@ function WebhookFormDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
-                  className="mb-1.5 block text-xs text-slate-400"
+                  className="mb-1.5 block text-slate-400 text-xs"
                   htmlFor="wh-retry"
                 >
                   Max Retries
@@ -508,7 +508,7 @@ function WebhookFormDialog({
               </div>
               <div>
                 <label
-                  className="mb-1.5 block text-xs text-slate-400"
+                  className="mb-1.5 block text-slate-400 text-xs"
                   htmlFor="wh-timeout"
                 >
                   Timeout (ms)
@@ -575,7 +575,7 @@ function WebhookDetailDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="dev-console-panel mx-4 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="dev-console-panel mx-4 max-h-[90vh] w-full max-w-lg overflow-y-auto">
         <div className="dev-console-panel-header">
           <div>
             <h2>{webhook.name}</h2>
@@ -596,7 +596,7 @@ function WebhookDetailDialog({
             <StatusBadge status={webhook.status} />
 
             <span className="text-slate-500">URL</span>
-            <span className="break-all font-mono text-xs text-slate-300">
+            <span className="break-all font-mono text-slate-300 text-xs">
               {webhook.url}
             </span>
 
@@ -617,7 +617,7 @@ function WebhookDetailDialog({
               ) : (
                 (webhook.eventTypeFilters as string[]).map((f) => (
                   <span
-                    className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400"
+                    className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs"
                     key={f}
                   >
                     {f}
@@ -633,7 +633,7 @@ function WebhookDetailDialog({
               ) : (
                 (webhook.entityFilters as string[]).map((f) => (
                   <span
-                    className="inline-flex rounded-full bg-purple-500/10 px-2 py-0.5 text-xs text-purple-400"
+                    className="inline-flex rounded-full bg-purple-500/10 px-2 py-0.5 text-purple-400 text-xs"
                     key={f}
                   >
                     {f.replace(/_/g, " ")}
@@ -1021,8 +1021,8 @@ export const WebhooksClient = () => {
               <GlobeIcon className="h-5 w-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Total Webhooks</p>
-              <p className="text-xl font-semibold text-slate-200">
+              <p className="text-slate-400 text-xs">Total Webhooks</p>
+              <p className="font-semibold text-slate-200 text-xl">
                 {webhooks.length}
               </p>
             </div>
@@ -1034,8 +1034,8 @@ export const WebhooksClient = () => {
               <CheckCircleIcon className="h-5 w-5 text-green-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Active</p>
-              <p className="text-xl font-semibold text-green-400">
+              <p className="text-slate-400 text-xs">Active</p>
+              <p className="font-semibold text-green-400 text-xl">
                 {activeCount}
               </p>
             </div>
@@ -1047,8 +1047,8 @@ export const WebhooksClient = () => {
               <XCircleIcon className="h-5 w-5 text-red-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Failed Deliveries</p>
-              <p className="text-xl font-semibold text-red-400">
+              <p className="text-slate-400 text-xs">Failed Deliveries</p>
+              <p className="font-semibold text-red-400 text-xl">
                 {failedDeliveries}
               </p>
             </div>
@@ -1060,8 +1060,8 @@ export const WebhooksClient = () => {
               <AlertTriangleIcon className="h-5 w-5 text-yellow-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Dead Letter Queue</p>
-              <p className="text-xl font-semibold text-yellow-400">
+              <p className="text-slate-400 text-xs">Dead Letter Queue</p>
+              <p className="font-semibold text-xl text-yellow-400">
                 {unresolvedDlq}
               </p>
             </div>
@@ -1079,7 +1079,7 @@ export const WebhooksClient = () => {
           ] as const
         ).map((t) => (
           <button
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-md px-4 py-2 font-medium text-sm transition-colors ${
               tab === t.key
                 ? "bg-slate-700/50 text-slate-200"
                 : "text-slate-400 hover:text-slate-300"
@@ -1141,7 +1141,7 @@ export const WebhooksClient = () => {
             <div className="flex min-h-[200px] items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-                <p className="text-sm text-slate-400">Loading webhooks...</p>
+                <p className="text-slate-400 text-sm">Loading webhooks...</p>
               </div>
             </div>
           )}
@@ -1151,7 +1151,7 @@ export const WebhooksClient = () => {
               <div className="text-center">
                 <p className="text-rose-400">{whError}</p>
                 <button
-                  className="mt-4 text-sm text-blue-400 hover:underline"
+                  className="mt-4 text-blue-400 text-sm hover:underline"
                   onClick={() => {
                     fetchWebhooks().catch(() => {
                       // Retry error handled internally
@@ -1171,7 +1171,7 @@ export const WebhooksClient = () => {
                 <GlobeIcon className="h-12 w-12 text-slate-600" />
                 <div>
                   <p className="font-medium text-slate-300">No webhooks</p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-slate-500 text-sm">
                     Create an outbound webhook to receive event notifications
                   </p>
                 </div>
@@ -1214,7 +1214,7 @@ export const WebhooksClient = () => {
                       </TableCell>
                       <TableCell>
                         <span
-                          className="font-mono text-xs text-slate-400"
+                          className="font-mono text-slate-400 text-xs"
                           title={wh.url}
                         >
                           {truncateUrl(wh.url)}
@@ -1223,11 +1223,11 @@ export const WebhooksClient = () => {
                       <TableCell>
                         <div className="flex max-w-[160px] flex-wrap gap-1">
                           {(wh.eventTypeFilters as string[]).length === 0 ? (
-                            <span className="text-xs text-slate-500">All</span>
+                            <span className="text-slate-500 text-xs">All</span>
                           ) : (
                             (wh.eventTypeFilters as string[]).map((f) => (
                               <span
-                                className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400"
+                                className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs"
                                 key={f}
                               >
                                 {f}
@@ -1251,7 +1251,7 @@ export const WebhooksClient = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {formatDate(wh.lastTriggeredAt)}
                         </span>
                       </TableCell>
@@ -1380,7 +1380,7 @@ export const WebhooksClient = () => {
             <div className="flex min-h-[200px] items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-                <p className="text-sm text-slate-400">
+                <p className="text-slate-400 text-sm">
                   Loading delivery logs...
                 </p>
               </div>
@@ -1394,7 +1394,7 @@ export const WebhooksClient = () => {
                 <p className="mt-3 font-medium text-slate-300">
                   No delivery logs
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-slate-500 text-sm">
                   Logs will appear when webhooks are triggered
                 </p>
               </div>
@@ -1419,15 +1419,15 @@ export const WebhooksClient = () => {
                   {logs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell>
-                        <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
+                        <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs">
                           {log.eventType}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-300">
+                        <span className="text-slate-300 text-xs">
                           {log.entityType.replace(/_/g, " ")}
                         </span>
-                        <span className="ml-1 font-mono text-xs text-slate-500">
+                        <span className="ml-1 font-mono text-slate-500 text-xs">
                           {log.entityId.slice(0, 8)}...
                         </span>
                       </TableCell>
@@ -1435,7 +1435,7 @@ export const WebhooksClient = () => {
                         <StatusBadge status={log.status} />
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {log.attemptNumber}
                         </span>
                       </TableCell>
@@ -1455,12 +1455,12 @@ export const WebhooksClient = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="max-w-[200px] truncate text-xs text-slate-500">
+                        <span className="max-w-[200px] truncate text-slate-500 text-xs">
                           {log.errorMessage ?? "-"}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {formatDate(log.createdAt)}
                         </span>
                       </TableCell>
@@ -1471,7 +1471,7 @@ export const WebhooksClient = () => {
               {logsPagination.hasMore && (
                 <div className="flex justify-center py-3">
                   <button
-                    className="text-sm text-blue-400 hover:underline"
+                    className="text-blue-400 text-sm hover:underline"
                     onClick={() => {
                       fetchLogs().catch(() => {
                         // Pagination fetch error handled internally
@@ -1523,7 +1523,7 @@ export const WebhooksClient = () => {
             <div className="flex min-h-[200px] items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-                <p className="text-sm text-slate-400">Loading DLQ entries...</p>
+                <p className="text-slate-400 text-sm">Loading DLQ entries...</p>
               </div>
             </div>
           )}
@@ -1535,7 +1535,7 @@ export const WebhooksClient = () => {
                 <p className="mt-3 font-medium text-slate-300">
                   Dead letter queue is empty
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-slate-500 text-sm">
                   Permanently failed deliveries will appear here
                 </p>
               </div>
@@ -1560,32 +1560,32 @@ export const WebhooksClient = () => {
                   {dlqEntries.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell>
-                        <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
+                        <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs">
                           {entry.eventType}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-300">
+                        <span className="text-slate-300 text-xs">
                           {entry.entityType.replace(/_/g, " ")}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="max-w-[150px] truncate text-xs text-slate-400">
+                        <span className="max-w-[150px] truncate text-slate-400 text-xs">
                           {entry.webhook?.name ?? entry.webhookId.slice(0, 8)}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {entry.attemptCount}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="max-w-[200px] truncate text-xs text-slate-500">
+                        <span className="max-w-[200px] truncate text-slate-500 text-xs">
                           {entry.failureReason ?? "Unknown"}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {formatDate(entry.movedToDlqAt)}
                         </span>
                       </TableCell>
@@ -1638,7 +1638,7 @@ export const WebhooksClient = () => {
             <p>Outbound webhook delivery and monitoring</p>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-slate-400 md:grid-cols-3">
+        <div className="grid gap-4 text-slate-400 text-sm md:grid-cols-3">
           <div>
             <p className="mb-2 font-medium text-slate-300">Operations</p>
             <ul className="ml-4 list-disc space-y-1">

@@ -42,11 +42,18 @@ vi.mock("@/lib/manifest-response", async () => {
         },
         { status }
       ),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) =>
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) =>
       NextResponse.json(
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
@@ -56,7 +63,10 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
     if (!condition) {
@@ -120,7 +130,9 @@ describe("Client CRUD API", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = makeRequest("/api/client/create", { name: "Test Client" });
+      const request = makeRequest("/api/client/create", {
+        name: "Test Client",
+      });
       const response = await createClient(request);
 
       expect(response.status).toBe(401);
@@ -131,7 +143,10 @@ describe("Client CRUD API", () => {
     it("should create a client through manifest runtime", async () => {
       const clientResult = { id: "client-001", name: "Acme Corp" };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        makeSuccessResponse({ result: clientResult, events: [{ type: "ClientCreated" }] })
+        makeSuccessResponse({
+          result: clientResult,
+          events: [{ type: "ClientCreated" }],
+        })
       );
 
       const request = makeRequest("/api/client/create", {
@@ -159,13 +174,21 @@ describe("Client CRUD API", () => {
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied: RolePolicy" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied: RolePolicy",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
-      const request = makeRequest("/api/client/create", { name: "Denied Client" });
+      const request = makeRequest("/api/client/create", {
+        name: "Denied Client",
+      });
       const response = await createClient(request);
 
       expect(response.status).toBe(403);
@@ -173,10 +196,17 @@ describe("Client CRUD API", () => {
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard failed: Duplicate client name", diagnostics: [] }), {
-          status: 422,
-          headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard failed: Duplicate client name",
+            diagnostics: [],
+          }),
+          {
+            status: 422,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
       const request = makeRequest("/api/client/create", { name: "Duplicate" });
@@ -187,10 +217,16 @@ describe("Client CRUD API", () => {
 
     it("should return 400 on generic command failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Missing required field: name" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Missing required field: name",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
       const request = makeRequest("/api/client/create", {});
@@ -200,9 +236,13 @@ describe("Client CRUD API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime failure"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime failure")
+      );
 
-      const request = makeRequest("/api/client/create", { name: "Crash Client" });
+      const request = makeRequest("/api/client/create", {
+        name: "Crash Client",
+      });
       const response = await createClient(request);
 
       expect(response.status).toBe(500);
@@ -250,10 +290,16 @@ describe("Client CRUD API", () => {
 
     it("should return 403 on policy denial for update", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied: ManagerOnly" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied: ManagerOnly",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
       const request = makeRequest("/api/client/update", { id: "client-001" });
@@ -267,7 +313,10 @@ describe("Client CRUD API", () => {
   describe("POST /api/client/archive", () => {
     it("should archive a client through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        makeSuccessResponse({ result: { id: "client-001", status: "archived" }, events: [{ type: "ClientArchived" }] })
+        makeSuccessResponse({
+          result: { id: "client-001", status: "archived" },
+          events: [{ type: "ClientArchived" }],
+        })
       );
 
       const request = makeRequest("/api/client/archive", { id: "client-001" });
@@ -311,10 +360,15 @@ describe("Client CRUD API", () => {
   describe("POST /api/client/reactivate", () => {
     it("should reactivate an archived client", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        makeSuccessResponse({ result: { id: "client-001", status: "active" }, events: [{ type: "ClientReactivated" }] })
+        makeSuccessResponse({
+          result: { id: "client-001", status: "active" },
+          events: [{ type: "ClientReactivated" }],
+        })
       );
 
-      const request = makeRequest("/api/client/reactivate", { id: "client-001" });
+      const request = makeRequest("/api/client/reactivate", {
+        id: "client-001",
+      });
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(200);
@@ -335,7 +389,9 @@ describe("Client CRUD API", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = makeRequest("/api/client/reactivate", { id: "client-001" });
+      const request = makeRequest("/api/client/reactivate", {
+        id: "client-001",
+      });
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(401);
@@ -343,13 +399,22 @@ describe("Client CRUD API", () => {
 
     it("should return 422 on guard failure (e.g. already active)", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard failed: Client is already active", diagnostics: [] }), {
-          status: 422,
-          headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard failed: Client is already active",
+            diagnostics: [],
+          }),
+          {
+            status: 422,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
-      const request = makeRequest("/api/client/reactivate", { id: "client-001" });
+      const request = makeRequest("/api/client/reactivate", {
+        id: "client-001",
+      });
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(422);

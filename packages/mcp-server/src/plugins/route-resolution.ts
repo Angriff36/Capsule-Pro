@@ -20,9 +20,8 @@ const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
 // ---------------------------------------------------------------------------
 
 interface RouteManifest {
-  version: string;
-  generatedAt: string;
   basePath: string;
+  generatedAt: string;
   routes: Array<{
     id: string;
     path: string;
@@ -40,6 +39,7 @@ interface RouteManifest {
     auth: boolean;
     tenant: boolean;
   }>;
+  version: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +89,9 @@ function matchRoute(
     : `/${url.split("?")[0]}`;
 
   for (const route of routes) {
-    if (route.method !== method) continue;
+    if (route.method !== method) {
+      continue;
+    }
 
     const paramNames: string[] = [];
     const pattern = route.path.replace(/:([^/]+)/g, (_, name) => {

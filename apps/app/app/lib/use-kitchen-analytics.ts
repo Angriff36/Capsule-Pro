@@ -6,33 +6,33 @@ import { apiFetch } from "@/app/lib/api";
 
 // Types for kitchen analytics data
 export interface StationThroughput {
+  avgTime: string;
+  completed: number;
+  completedItems: number;
+  load: number;
+  pendingItems: number;
   stationId: string;
   stationName: string;
-  load: number;
-  completed: number;
-  avgTime: string;
   totalItems: number;
-  completedItems: number;
-  pendingItems: number;
 }
 
 export interface KitchenHealth {
+  allergenWarnings: number;
+  avgMinutes: number;
   prepListsSync: {
     rate: number;
     total: number;
     completed: number;
   };
-  allergenWarnings: number;
-  wasteAlerts: number;
   timeToCompletion: string;
-  avgMinutes: number;
+  wasteAlerts: number;
 }
 
 export interface StationTrend {
-  stationName: string;
-  total: number;
   completed: number;
   completionRate: number;
+  stationName: string;
+  total: number;
 }
 
 export interface DateTrend {
@@ -41,30 +41,30 @@ export interface DateTrend {
 }
 
 export interface TopPerformer {
+  avgMinutes: number;
+  completedTasks: number;
   employeeId: string;
   firstName: string;
   lastName: string;
-  completedTasks: number;
-  avgMinutes: number;
 }
 
 export interface KitchenAnalyticsResponse {
+  kitchenHealth: KitchenHealth;
+  stationThroughput: StationThroughput[];
   summary: {
     period: string;
     startDate: string;
     endDate: string;
     locationId: string | null;
   };
-  stationThroughput: StationThroughput[];
-  kitchenHealth: KitchenHealth;
-  trends: DateTrend[];
   topPerformers: TopPerformer[];
+  trends: DateTrend[];
 }
 
 export interface UseKitchenAnalyticsResult {
   data: KitchenAnalyticsResponse | null;
-  isLoading: boolean;
   error: string | null;
+  isLoading: boolean;
   refetch: () => Promise<void>;
 }
 

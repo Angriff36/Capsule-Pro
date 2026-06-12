@@ -7,9 +7,9 @@ import { database } from "@/lib/database";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface ActionRequest {
-  orderId: string;
   action: "approved" | "rejected";
   notes?: string;
+  orderId: string;
 }
 
 export const runtime = "nodejs";
@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
     const { orderId, action, notes } = body;
 
     if (!(orderId && action)) {
-      return NextResponse.json({ error: "Missing orderId or action" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing orderId or action" },
+        { status: 400 }
+      );
     }
 
     if (!["approved", "rejected"].includes(action)) {
@@ -40,20 +43,28 @@ export async function POST(request: NextRequest) {
     });
 
     if (!currentPO) {
-      return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Purchase order not found" },
+        { status: 404 }
+      );
     }
 
     // Validate state transition: only "submitted" can transition
     if (currentPO.status !== "submitted") {
       return NextResponse.json(
-        { error: `Cannot ${action} a purchase order with status '${currentPO.status}'. Only 'submitted' orders can be approved or rejected.` },
+        {
+          error: `Cannot ${action} a purchase order with status '${currentPO.status}'. Only 'submitted' orders can be approved or rejected.`,
+        },
         { status: 400 }
       );
     }
 
     // Delegate governed mutation to Manifest runtime
     const command = action === "approved" ? "approve" : "reject";
-    const commandBody: Record<string, unknown> = { id: orderId, userId: user.id };
+    const commandBody: Record<string, unknown> = {
+      id: orderId,
+      userId: user.id,
+    };
     if (action === "rejected" && notes) {
       commandBody.reason = notes;
     }
@@ -126,6 +137,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     captureException(error);
     log.error("Error processing approval action:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

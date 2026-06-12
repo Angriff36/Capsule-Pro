@@ -27,10 +27,10 @@ export const runtime = "nodejs";
 type ImportType = "recipes" | "dishes" | "prep-lists";
 
 interface ImportSummary {
+  created: string[]; // human-readable summary of what was created
+  errors: string[];
   imported: number;
   skipped: number;
-  errors: string[];
-  created: string[]; // human-readable summary of what was created
 }
 
 interface CsvRow {
@@ -98,20 +98,26 @@ const trimOpt = (val: string | undefined): string | null => {
 
 const parseIntOpt = (val: string | undefined): number | null => {
   const trimmed = val?.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {
+    return null;
+  }
   const parsed = Number.parseInt(trimmed, 10);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
 const parseDecimalOpt = (val: string | undefined): number | null => {
   const trimmed = val?.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {
+    return null;
+  }
   const parsed = Number.parseFloat(trimmed);
   return Number.isFinite(parsed) ? parsed : null;
 };
 
 const parseListOpt = (val: string | undefined, separator = ";"): string[] => {
-  if (!val?.trim()) return [];
+  if (!val?.trim()) {
+    return [];
+  }
   return val
     .split(separator)
     .map((v) => v.trim())
@@ -309,18 +315,17 @@ async function importDishes(
             description: trimOpt(row.description) ?? "",
             category: trimOpt(row.category) ?? "",
             serviceStyle: trimOpt(row.service_style) ?? "",
-            portionSizeDescription:
-              trimOpt(row.portion_size_description) ?? "",
+            portionSizeDescription: trimOpt(row.portion_size_description) ?? "",
             dietaryTags: parseListOpt(row.dietary_tags),
             allergens: parseListOpt(row.allergens),
             pricePerPerson:
-              pricePerPerson != null
-                ? new Prisma.Decimal(pricePerPerson).toFixed(2)
-                : "0.00",
+              pricePerPerson == null
+                ? "0.00"
+                : new Prisma.Decimal(pricePerPerson).toFixed(2),
             costPerPerson:
-              costPerPerson != null
-                ? new Prisma.Decimal(costPerPerson).toFixed(2)
-                : "0.00",
+              costPerPerson == null
+                ? "0.00"
+                : new Prisma.Decimal(costPerPerson).toFixed(2),
             minPrepLeadDays: parseIntOpt(row.min_prep_lead_days) ?? 0,
             maxPrepLeadDays: parseIntOpt(row.max_prep_lead_days) ?? 0,
           },
@@ -366,7 +371,9 @@ async function importPrepLists(
   const groups = new Map<string, CsvRow[]>();
   for (const row of rows) {
     const listName = trimOpt(row.prep_list_name) ?? "__unnamed__";
-    if (!groups.has(listName)) groups.set(listName, []);
+    if (!groups.has(listName)) {
+      groups.set(listName, []);
+    }
     groups.get(listName)!.push(row);
   }
 
@@ -380,8 +387,9 @@ async function importPrepLists(
           where: { tenantId, eventNumber, deletedAt: null },
           select: { id: true },
         });
-        if (event) eventId = event.id;
-        else {
+        if (event) {
+          eventId = event.id;
+        } else {
           summary.errors.push(
             `"${listName}": Event #${eventNumber} not found, prep list skipped`
           );

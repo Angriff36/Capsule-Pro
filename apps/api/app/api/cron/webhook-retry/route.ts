@@ -14,7 +14,6 @@
  */
 
 import { database } from "@repo/database";
-import { toJson } from "@/lib/prisma-utils";
 import {
   determineNextStatus,
   sendWebhook,
@@ -24,6 +23,7 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { toJson } from "@/lib/prisma-utils";
 
 // Force dynamic rendering — this route reads Authorization headers at runtime
 // and calls the database. Static optimization would fail at build time.

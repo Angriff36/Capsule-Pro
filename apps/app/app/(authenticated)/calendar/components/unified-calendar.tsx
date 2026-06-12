@@ -69,25 +69,25 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end?: Date;
-  type: "event" | "shift" | "timeoff";
-  status?: string;
+  assignedTo?: string;
   color?: string;
   details?: string;
-  location?: string;
-  assignedTo?: string;
+  end?: Date;
   guestCount?: number;
+  id: string;
+  location?: string;
+  start: Date;
+  status?: string;
+  title: string;
+  type: "event" | "shift" | "timeoff";
 }
 
 interface UnifiedCalendarProps {
-  tenantId: string;
+  initialDate?: Date;
   initialEvents?: CalendarEvent[];
   initialShifts?: unknown[];
   initialTimeOff?: unknown[];
-  initialDate?: Date;
+  tenantId: string;
 }
 
 // Tokenized color scheme for calendar entry types (FR-103)
@@ -110,8 +110,8 @@ const DRAGGABLE_EVENT_TYPES = ["event", "shift"];
 // Draggable event card wrapper
 interface DraggableEventProps {
   event: CalendarEvent;
-  onClick: (event: CalendarEvent) => void;
   isDayView?: boolean;
+  onClick: (event: CalendarEvent) => void;
 }
 
 function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
@@ -126,11 +126,7 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
     // Non-draggable events (timeoff)
     return (
       <button
-        className={`
-          px-2 py-1 rounded text-xs cursor-pointer truncate
-          ${EVENT_COLORS[event.type] || "bg-gray-500"}
-          text-white
-          ${isDayView ? "py-2 text-sm" : ""}
+        className={`cursor-pointer truncate rounded px-2 py-1 text-xs ${EVENT_COLORS[event.type] || "bg-gray-500"}text-white ${isDayView ? "py-2 text-sm" : ""}
         `}
         onClick={() => onClick(event)}
         title={event.title}
@@ -143,11 +139,7 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
 
   return (
     <button
-      className={`
-          px-2 py-1 rounded text-xs cursor-grab truncate
-        ${EVENT_COLORS[event.type] || "bg-gray-500"}
-        text-white
-        ${isDayView ? "py-2 text-sm" : ""}
+      className={`cursor-grab truncate rounded px-2 py-1 text-xs ${EVENT_COLORS[event.type] || "bg-gray-500"}text-white ${isDayView ? "py-2 text-sm" : ""}
         ${isDragging ? "opacity-50 ring-2 ring-[var(--ds-calendar-event)]" : "hover:opacity-90"}
       `}
       onClick={() => onClick(event)}
@@ -158,7 +150,7 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
       {...listeners}
     >
       <span className="flex items-center gap-1">
-        <GripVertical className="w-3 h-3 opacity-60 flex-shrink-0" />
+        <GripVertical className="h-3 w-3 flex-shrink-0 opacity-60" />
         {format(event.start, "HH:mm")} {event.title}
       </span>
     </button>
@@ -167,12 +159,12 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
 
 // Droppable day cell wrapper
 interface DroppableDayCellProps {
-  day: Date;
-  isCurrentMonth: boolean;
-  isCurrentDay: boolean;
-  view: "month" | "week" | "day";
-  children: React.ReactNode;
   activeEvent: CalendarEvent | null;
+  children: React.ReactNode;
+  day: Date;
+  isCurrentDay: boolean;
+  isCurrentMonth: boolean;
+  view: "month" | "week" | "day";
 }
 
 function DroppableDayCell({
@@ -192,14 +184,10 @@ function DroppableDayCell({
 
   return (
     <div
-      className={`
-        border rounded-lg transition-colors
-        ${view === "day" ? "min-h-[500px] p-4" : "min-h-[120px] p-2"}
+      className={`rounded-lg border transition-colors ${view === "day" ? "min-h-[500px] p-4" : "min-h-[120px] p-2"}
         ${isCurrentMonth ? "bg-white" : "bg-muted/20"}
         ${isCurrentDay ? "ring-2 ring-[var(--ds-calendar-shift)]" : "border-hairline"}
-        ${isActiveTarget ? "ring-2 ring-[var(--ds-calendar-event)] bg-muted/20" : ""}
-        hover:border-hairline
-      `}
+        ${isActiveTarget ? "bg-muted/20 ring-2 ring-[var(--ds-calendar-event)]" : ""}hover:border-hairline`}
       ref={setNodeRef}
     >
       {children}
@@ -232,7 +220,9 @@ export function UnifiedCalendar({
     return initialDate ?? new Date();
   });
   const [view, setView] = useState<"month" | "week" | "day">(() => {
-    if (urlView === "week" || urlView === "day") return urlView;
+    if (urlView === "week" || urlView === "day") {
+      return urlView;
+    }
     return "month";
   });
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
@@ -289,7 +279,9 @@ export function UnifiedCalendar({
   const syncUrlParams = useCallback(
     (newView: string, newDate: Date, newFilters: string[]) => {
       const params = new URLSearchParams();
-      if (newView !== "month") params.set("view", newView);
+      if (newView !== "month") {
+        params.set("view", newView);
+      }
       const today = new Date();
       if (!isSameDay(newDate, today)) {
         params.set("date", format(newDate, "yyyy-MM-dd"));
@@ -337,16 +329,18 @@ export function UnifiedCalendar({
   }, [currentDate, filters]);
 
   // Filter events
-  const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      const matchesFilter = filters.includes(event.type);
-      const matchesSearch =
-        !searchQuery ||
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.details?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesFilter && matchesSearch;
-    });
-  }, [events, filters, searchQuery]);
+  const filteredEvents = useMemo(
+    () =>
+      events.filter((event) => {
+        const matchesFilter = filters.includes(event.type);
+        const matchesSearch =
+          !searchQuery ||
+          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          event.details?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesFilter && matchesSearch;
+      }),
+    [events, filters, searchQuery]
+  );
 
   // Get events for a specific day (includes cross-day shifts/timeoff spanning midnight)
   const getEventsForDay = (day: Date) => {
@@ -356,7 +350,9 @@ export function UnifiedCalendar({
       const eventStart = event.start;
 
       // Event starts on this day
-      if (isSameDay(eventStart, day)) return true;
+      if (isSameDay(eventStart, day)) {
+        return true;
+      }
 
       // Cross-day: event started before this day and (has no end, or ends on/after this day)
       if (event.end) {
@@ -633,19 +629,19 @@ export function UnifiedCalendar({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Header Controls */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between border-b p-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Button onClick={prevPeriod} size="icon" variant="ghost">
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
             <Button onClick={nextPeriod} size="icon" variant="ghost">
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-semibold text-xl">
             {format(currentDate, "MMMM yyyy")}
           </h2>
           <Button onClick={goToToday} size="sm" variant="outline">
@@ -676,10 +672,10 @@ export function UnifiedCalendar({
       </div>
 
       {/* Check Availability Bar */}
-      <div className="flex items-center gap-4 p-4 border-b bg-muted/50">
+      <div className="flex items-center gap-4 border-b bg-muted/50 p-4">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-foreground" />
-          <span className="text-sm font-medium text-foreground">
+          <Search className="h-4 w-4 text-foreground" />
+          <span className="font-medium text-foreground text-sm">
             Check Availability:
           </span>
         </div>
@@ -695,10 +691,10 @@ export function UnifiedCalendar({
               className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ${availabilityStatusBackground}`}
             >
               <availabilityStatus.icon
-                className={`w-4 h-4 ${availabilityStatus.color}`}
+                className={`h-4 w-4 ${availabilityStatus.color}`}
               />
               <span
-                className={`text-sm font-medium ${availabilityStatus.color}`}
+                className={`font-medium text-sm ${availabilityStatus.color}`}
               >
                 {availabilityStatus.label}
               </span>
@@ -706,7 +702,7 @@ export function UnifiedCalendar({
           )}
           {availabilityResults && availabilityResults.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Scheduled:</span>
+              <span className="text-gray-500 text-xs">Scheduled:</span>
               {availabilityResults.slice(0, 3).map((event) => (
                 <Badge
                   className="text-xs"
@@ -717,7 +713,7 @@ export function UnifiedCalendar({
                 </Badge>
               ))}
               {availabilityResults.length > 3 && (
-                <span className="text-xs text-gray-400">
+                <span className="text-gray-400 text-xs">
                   +{availabilityResults.length - 3} more
                 </span>
               )}
@@ -732,17 +728,17 @@ export function UnifiedCalendar({
               size="sm"
               variant="ghost"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </Button>
           )}
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="flex items-center gap-4 p-4 border-b bg-muted/20">
+      <div className="flex items-center gap-4 border-b bg-muted/20 p-4">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-500">Filters:</span>
+          <Filter className="h-4 w-4 text-gray-500" />
+          <span className="text-gray-500 text-sm">Filters:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {Object.entries(EVENT_TYPE_LABELS).map(([type, label]) => (
@@ -776,16 +772,16 @@ export function UnifiedCalendar({
         >
           {/* Day Headers */}
           <div
-            className={`grid gap-1 mb-2 ${view === "day" ? "grid-cols-1" : "grid-cols-7"}`}
+            className={`mb-2 grid gap-1 ${view === "day" ? "grid-cols-1" : "grid-cols-7"}`}
           >
             {view === "day" ? (
-              <div className="text-center text-sm font-medium text-gray-500 py-2">
+              <div className="py-2 text-center font-medium text-gray-500 text-sm">
                 {format(currentDate, "EEEE, MMMM d, yyyy")}
               </div>
             ) : (
               ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
-                  className="text-center text-sm font-medium text-gray-500 py-2"
+                  className="py-2 text-center font-medium text-gray-500 text-sm"
                   key={day}
                 >
                   {day}
@@ -796,7 +792,7 @@ export function UnifiedCalendar({
 
           {/* Calendar Days */}
           <div
-            className={`grid auto-rows-fr gap-1 min-h-[600px] ${calendarGridColumnsClass}`}
+            className={`grid min-h-[600px] auto-rows-fr gap-1 ${calendarGridColumnsClass}`}
           >
             {calendarDays.map((day) => {
               const dayEvents = getEventsForDay(day);
@@ -815,11 +811,9 @@ export function UnifiedCalendar({
                   key={day.toISOString()}
                   view={view}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="mb-1 flex items-center justify-between">
                     <span
-                      className={`
-                      text-sm font-medium
-                      ${isCurrentDay ? "bg-emerald-500 text-white w-7 h-7 rounded-full flex items-center justify-center" : ""}
+                      className={`font-medium text-sm ${isCurrentDay ? "flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white" : ""}
                       ${isCurrentMonth ? "text-gray-700" : "text-gray-400"}
                     `}
                     >
@@ -828,7 +822,7 @@ export function UnifiedCalendar({
                         : format(day, "d")}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-gray-400 text-xs">
                         {dayEvents.length}
                       </span>
                     )}
@@ -850,7 +844,7 @@ export function UnifiedCalendar({
                     {dayEvents.length >
                       (view === "day" ? 50 : view === "week" ? 8 : 4) && (
                       <button
-                        className="text-xs text-ink/60 pl-1 underline-offset-2 hover:underline hover:text-ink"
+                        className="pl-1 text-ink/60 text-xs underline-offset-2 hover:text-ink hover:underline"
                         onClick={() =>
                           setOverflowDialog({
                             open: true,
@@ -876,12 +870,7 @@ export function UnifiedCalendar({
           <DragOverlay>
             {activeEvent ? (
               <div
-                className={`
-                  px-2 py-1 rounded text-xs truncate border border-hairline
-                  ${EVENT_COLORS[activeEvent.type] || "bg-gray-500"}
-                  text-white
-                  ring-2 ring-[var(--ds-calendar-event)]
-                `}
+                className={`truncate rounded border border-hairline px-2 py-1 text-xs ${EVENT_COLORS[activeEvent.type] || "bg-gray-500"}text-white ring-2 ring-[var(--ds-calendar-event)]`}
               >
                 {format(activeEvent.start, "HH:mm")} {activeEvent.title}
               </div>
@@ -896,7 +885,7 @@ export function UnifiedCalendar({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span
-                className={`w-3 h-3 rounded-full ${EVENT_COLORS[selectedEvent?.type || "event"]}`}
+                className={`h-3 w-3 rounded-full ${EVENT_COLORS[selectedEvent?.type || "event"]}`}
               />
               {selectedEvent?.title}
             </DialogTitle>
@@ -907,7 +896,7 @@ export function UnifiedCalendar({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-gray-500" />
+              <Calendar className="h-4 w-4 text-gray-500" />
               <span>
                 {selectedEvent?.start &&
                   format(selectedEvent.start, "EEEE, MMMM d, yyyy")}
@@ -916,7 +905,7 @@ export function UnifiedCalendar({
 
             {selectedEvent?.end && (
               <div className="flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-gray-500" />
+                <Clock className="h-4 w-4 text-gray-500" />
                 <span>
                   {format(selectedEvent.start, "h:mm a")} -{" "}
                   {format(selectedEvent.end, "h:mm a")}
@@ -926,27 +915,27 @@ export function UnifiedCalendar({
 
             {selectedEvent?.location && (
               <div className="flex items-center gap-2 text-sm">
-                <MapPin className="w-4 h-4 text-gray-500" />
+                <MapPin className="h-4 w-4 text-gray-500" />
                 <span>{selectedEvent.location}</span>
               </div>
             )}
 
             {selectedEvent?.assignedTo && (
               <div className="flex items-center gap-2 text-sm">
-                <Users className="w-4 h-4 text-gray-500" />
+                <Users className="h-4 w-4 text-gray-500" />
                 <span>{selectedEvent.assignedTo}</span>
               </div>
             )}
 
             {selectedEvent?.guestCount && (
               <div className="flex items-center gap-2 text-sm">
-                <PartyPopper className="w-4 h-4 text-gray-500" />
+                <PartyPopper className="h-4 w-4 text-gray-500" />
                 <span>{selectedEvent.guestCount} guests</span>
               </div>
             )}
 
             {selectedEvent?.details && (
-              <div className="text-sm text-gray-600 pt-2 border-t">
+              <div className="border-t pt-2 text-gray-600 text-sm">
                 {selectedEvent.details}
               </div>
             )}
@@ -958,7 +947,7 @@ export function UnifiedCalendar({
             )}
           </div>
 
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <Button onClick={() => setShowEventDialog(false)} variant="outline">
               Close
             </Button>
@@ -977,7 +966,7 @@ export function UnifiedCalendar({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-500" />
+              <Calendar className="h-5 w-5 text-blue-500" />
               Reschedule Event
             </DialogTitle>
             <DialogDescription>
@@ -986,22 +975,22 @@ export function UnifiedCalendar({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="p-4 bg-muted/20 rounded-lg space-y-3">
+            <div className="space-y-3 rounded-lg bg-muted/20 p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Event:</span>
+                <span className="text-gray-500 text-sm">Event:</span>
                 <span className="font-medium">
                   {rescheduleDialog.event?.title}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Current date:</span>
+                <span className="text-gray-500 text-sm">Current date:</span>
                 <span className="font-medium">
                   {rescheduleDialog.event?.start &&
                     format(rescheduleDialog.event.start, "EEEE, MMMM d, yyyy")}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">New date:</span>
+                <span className="text-gray-500 text-sm">New date:</span>
                 <span className="font-medium text-blue-600">
                   {rescheduleDialog.newDate &&
                     format(rescheduleDialog.newDate, "EEEE, MMMM d, yyyy")}
@@ -1009,7 +998,7 @@ export function UnifiedCalendar({
               </div>
             </div>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-gray-500 text-sm">
               The event time (
               {rescheduleDialog.event?.start &&
                 format(rescheduleDialog.event.start, "h:mm a")}
@@ -1069,7 +1058,7 @@ export function UnifiedCalendar({
                       : `/staff/time-off/${e.id}`,
                 pills: (
                   <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ${
                       e.type === "event"
                         ? "bg-[var(--ds-calendar-event-light)] text-blue-700"
                         : e.type === "shift"
@@ -1107,31 +1096,31 @@ export function UnifiedCalendar({
 // Loading skeleton
 export function UnifiedCalendarSkeleton() {
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <div className="h-8 w-48 bg-muted/50 rounded animate-pulse" />
+        <div className="h-8 w-48 animate-pulse rounded bg-muted/50" />
         <div className="flex gap-2">
-          <div className="h-8 w-20 bg-muted/50 rounded animate-pulse" />
-          <div className="h-8 w-20 bg-muted/50 rounded animate-pulse" />
+          <div className="h-8 w-20 animate-pulse rounded bg-muted/50" />
+          <div className="h-8 w-20 animate-pulse rounded bg-muted/50" />
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1">
         {[...new Array(7)].map((_, i) => (
           <div
-            className="h-8 bg-muted/50 rounded animate-pulse"
+            className="h-8 animate-pulse rounded bg-muted/50"
             key={`header-${i}`}
           />
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1 auto-rows-fr min-h-[600px]">
+      <div className="grid min-h-[600px] auto-rows-fr grid-cols-7 gap-1">
         {[...new Array(35)].map((_, i) => (
           <div
-            className="border rounded-lg p-2 bg-muted/20 animate-pulse"
+            className="animate-pulse rounded-lg border bg-muted/20 p-2"
             key={`cell-${i}`}
           >
-            <div className="h-6 w-6 bg-muted/50 rounded mb-2" />
-            <div className="h-4 w-full bg-muted/50 rounded mb-1" />
-            <div className="h-4 w-2/3 bg-muted/50 rounded" />
+            <div className="mb-2 h-6 w-6 rounded bg-muted/50" />
+            <div className="mb-1 h-4 w-full rounded bg-muted/50" />
+            <div className="h-4 w-2/3 rounded bg-muted/50" />
           </div>
         ))}
       </div>

@@ -9,11 +9,11 @@ import {
 } from "@/middleware/api-key-auth";
 
 export interface AuthContext {
+  apiKeyContext?: ApiKeyContext;
+  authMethod: "session" | "api_key";
+  error?: Response;
   tenantId: string;
   userId: string | null;
-  authMethod: "session" | "api_key";
-  apiKeyContext?: ApiKeyContext;
-  error?: Response;
 }
 
 const BEARER_PREFIX = "Bearer ";

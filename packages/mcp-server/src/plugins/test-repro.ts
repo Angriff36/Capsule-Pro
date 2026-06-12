@@ -28,18 +28,18 @@ const FAILURE_PATTERN =
 
 // Test runner
 interface TestResult {
-  runId: string;
-  passed: number;
+  coverage?: Record<string, unknown>;
+  duration: number;
   failed: number;
-  skipped: number;
   failures: Array<{
     testName: string;
     file: string;
     error: string;
     stack?: string;
   }>;
-  duration: number;
-  coverage?: Record<string, unknown>;
+  passed: number;
+  runId: string;
+  skipped: number;
 }
 
 async function runTests(
@@ -66,8 +66,12 @@ async function runTests(
 
     // These env vars are placeholders in case your test runner reads them.
     // If you have a different convention, update here.
-    if (testPath) env.TEST_PATH = testPath;
-    if (pattern) env.TEST_PATTERN = pattern;
+    if (testPath) {
+      env.TEST_PATH = testPath;
+    }
+    if (pattern) {
+      env.TEST_PATTERN = pattern;
+    }
 
     if (coverage) {
       args.push("--coverage");
@@ -112,12 +116,15 @@ async function runTests(
       const failedMatch = stdout.match(FAILED_PATTERN);
       const skippedMatch = stdout.match(SKIPPED_PATTERN);
 
-      if (passedMatch)
+      if (passedMatch) {
         result.passed = Number.parseInt(passedMatch[1] ?? "0", 10);
-      if (failedMatch)
+      }
+      if (failedMatch) {
         result.failed = Number.parseInt(failedMatch[1] ?? "0", 10);
-      if (skippedMatch)
+      }
+      if (skippedMatch) {
         result.skipped = Number.parseInt(skippedMatch[1] ?? "0", 10);
+      }
 
       // Extract failure details (best-effort)
       FAILURE_PATTERN.lastIndex = 0;
@@ -167,21 +174,21 @@ async function runTests(
 
 // Repro recorder
 interface ReproStep {
-  tool: string;
-  input: Record<string, unknown>;
   expected?: string;
+  input: Record<string, unknown>;
   observed?: string;
+  tool: string;
 }
 
 interface ReproCase {
-  reproId: string;
-  title: string;
+  createdAt: string;
   description?: string;
-  steps: ReproStep[];
   expected?: string;
   observed?: string;
-  createdAt: string;
+  reproId: string;
   savedAt: string;
+  steps: ReproStep[];
+  title: string;
 }
 
 function recordRepro(

@@ -58,7 +58,7 @@ export default function ServiceStyleStep({ formData, updateField }: Props) {
         title="How should we serve?"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {SERVICE_STYLES.map((style) => (
           <SelectCard
             description={style.description}
@@ -74,13 +74,12 @@ export default function ServiceStyleStep({ formData, updateField }: Props) {
         formData.serviceStyle !== "drop-off" &&
         formData.serviceStyle !== "cocktail-reception" && (
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-3">
+            <label className="mb-3 block font-medium text-sm text-stone-700">
               How many courses?
             </label>
             <div className="flex items-center gap-4">
               <button
-                className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center
-                text-stone-600 hover:bg-stone-100 transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 text-stone-600 transition-colors hover:bg-stone-100"
                 onClick={() =>
                   updateField(
                     "courseCount",
@@ -89,19 +88,18 @@ export default function ServiceStyleStep({ formData, updateField }: Props) {
                 }
                 type="button"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="h-4 w-4" />
               </button>
               <div className="text-center">
-                <span className="text-3xl font-light text-stone-800">
+                <span className="font-light text-3xl text-stone-800">
                   {formData.courseCount}
                 </span>
-                <span className="text-sm text-stone-400 ml-2">
+                <span className="ml-2 text-sm text-stone-400">
                   {formData.courseCount === 1 ? "course" : "courses"}
                 </span>
               </div>
               <button
-                className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center
-                text-stone-600 hover:bg-stone-100 transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 text-stone-600 transition-colors hover:bg-stone-100"
                 onClick={() =>
                   updateField(
                     "courseCount",
@@ -110,10 +108,10 @@ export default function ServiceStyleStep({ formData, updateField }: Props) {
                 }
                 type="button"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-stone-400 mt-2">
+            <p className="mt-2 text-stone-400 text-xs">
               3 courses is standard (appetizer, entree, dessert)
             </p>
           </div>

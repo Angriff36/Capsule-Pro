@@ -13,8 +13,8 @@ import Link from "next/link";
 import type { NavigationItem } from "./navigation-config";
 
 interface DesktopNavProps {
-  navigationItems: NavigationItem[];
   dictionary: Dictionary;
+  navigationItems: NavigationItem[];
 }
 
 export function DesktopNav({ navigationItems, dictionary }: DesktopNavProps) {

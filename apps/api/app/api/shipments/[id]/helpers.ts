@@ -2,54 +2,54 @@
  * Helper functions for shipment route handlers
  */
 
-import { database, Prisma, type ShipmentStatus } from "@repo/database";
+import { database } from "@repo/database";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface ShipmentUpdateInput {
-  shipment_number?: string;
-  status?: string;
-  event_id?: string | null;
-  supplier_id?: string | null;
-  location_id?: string | null;
-  scheduled_date?: string | null;
-  shipped_date?: string | null;
-  estimated_delivery_date?: string | null;
   actual_delivery_date?: string | null;
+  carrier?: string | null;
+  delivered_by?: string | null;
+  estimated_delivery_date?: string | null;
+  event_id?: string | null;
+  internal_notes?: string | null;
+  location_id?: string | null;
+  notes?: string | null;
+  received_by?: string | null;
+  reference?: string | null;
+  scheduled_date?: string | null;
+  shipment_number?: string;
+  shipped_date?: string | null;
   shipping_cost?: number | null;
+  shipping_method?: string | null;
+  signature?: string | null;
+  status?: string;
+  supplier_id?: string | null;
   total_value?: number | null;
   tracking_number?: string | null;
-  carrier?: string | null;
-  shipping_method?: string | null;
-  delivered_by?: string | null;
-  received_by?: string | null;
-  signature?: string | null;
-  notes?: string | null;
-  internal_notes?: string | null;
-  reference?: string | null;
 }
 
 export interface ShipmentUpdateData {
-  shipmentNumber?: string;
-  status?: string;
-  eventId?: string | null;
-  supplierId?: string | null;
-  locationId?: string | null;
-  scheduledDate?: Date | null;
-  shippedDate?: Date | null;
-  estimatedDeliveryDate?: Date | null;
   actualDeliveryDate?: Date | null;
+  carrier?: string | null;
+  deliveredBy?: string | null;
+  estimatedDeliveryDate?: Date | null;
+  eventId?: string | null;
+  internalNotes?: string | null;
+  locationId?: string | null;
+  notes?: string | null;
+  receivedBy?: string | null;
+  reference?: string | null;
+  scheduledDate?: Date | null;
+  shipmentNumber?: string;
+  shippedDate?: Date | null;
   shippingCost?: string | null;
+  shippingMethod?: string | null;
+  signature?: string | null;
+  status?: string;
+  supplierId?: string | null;
   totalValue?: string | null;
   trackingNumber?: string | null;
-  carrier?: string | null;
-  shippingMethod?: string | null;
-  deliveredBy?: string | null;
-  receivedBy?: string | null;
-  signature?: string | null;
-  notes?: string | null;
-  internalNotes?: string | null;
-  reference?: string | null;
 }
 
 export interface ExistingShipment {
@@ -200,7 +200,11 @@ export async function updateShipmentRaw(
   tenantId: string,
   shipmentId: string,
   updateData: ShipmentUpdateData,
-  user: { id: string; tenantId: string; role: string } = { id: "system", tenantId, role: "admin" }
+  user: { id: string; tenantId: string; role: string } = {
+    id: "system",
+    tenantId,
+    role: "admin",
+  }
 ): Promise<void> {
   await runManifestCommandCore(
     {
@@ -222,7 +226,8 @@ export async function updateShipmentRaw(
         carrier: updateData.carrier ?? "",
         shippingMethod: updateData.shippingMethod ?? "",
         estimatedDeliveryDate: updateData.estimatedDeliveryDate,
-        shippingCost: updateData.shippingCost != null ? Number(updateData.shippingCost) : 0,
+        shippingCost:
+          updateData.shippingCost == null ? 0 : Number(updateData.shippingCost),
         notes: updateData.notes ?? "",
         // Fields below are NOT declared in the Shipment "update" command params,
         // so the runtime ignores them. They are included for completeness so that
@@ -235,7 +240,8 @@ export async function updateShipmentRaw(
         scheduledDate: updateData.scheduledDate,
         shippedDate: updateData.shippedDate,
         actualDeliveryDate: updateData.actualDeliveryDate,
-        totalValue: updateData.totalValue != null ? Number(updateData.totalValue) : 0,
+        totalValue:
+          updateData.totalValue == null ? 0 : Number(updateData.totalValue),
         deliveredBy: updateData.deliveredBy,
         receivedBy: updateData.receivedBy,
         signature: updateData.signature,

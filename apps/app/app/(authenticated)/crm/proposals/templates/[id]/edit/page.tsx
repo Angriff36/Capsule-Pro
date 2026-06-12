@@ -35,22 +35,22 @@ import { toast } from "sonner";
 import { getProposalTemplateById, updateProposalTemplate } from "../../actions";
 
 interface BrandingState {
+  accentColor: string;
+  fontFamily: string;
   logoUrl: string;
   primaryColor: string;
   secondaryColor: string;
-  accentColor: string;
-  fontFamily: string;
 }
 
 interface LineItem {
-  sortOrder: number;
-  itemType: string;
   category: string;
   description: string;
+  itemType: string;
+  notes?: string;
   quantity: number;
+  sortOrder: number;
   unitOfMeasure?: string;
   unitPrice: number;
-  notes?: string;
 }
 
 const fontFamilies = [
@@ -220,7 +220,10 @@ export default function EditProposalTemplatePage() {
             primaryColor: branding.primaryColor.trim() || null,
             secondaryColor: branding.secondaryColor.trim() || null,
             accentColor: branding.accentColor.trim() || null,
-            fontFamily: branding.fontFamily === "__default__" ? null : branding.fontFamily.trim() || null,
+            fontFamily:
+              branding.fontFamily === "__default__"
+                ? null
+                : branding.fontFamily.trim() || null,
           },
         });
 

@@ -36,10 +36,10 @@ import {
 import type { VarianceReport } from "@/app/lib/manifest-types.generated";
 
 interface InitialMetrics {
-  total: number;
+  approved: number;
   pending: number;
   reviewed: number;
-  approved: number;
+  total: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -69,7 +69,9 @@ const STATUS_CONFIG: Record<
 };
 
 function formatDecimal(value: number | string | null | undefined): string {
-  if (value == null) return "0.000";
+  if (value == null) {
+    return "0.000";
+  }
   return Number(value).toLocaleString("en-US", {
     minimumFractionDigits: 3,
     maximumFractionDigits: 3,
@@ -77,12 +79,16 @@ function formatDecimal(value: number | string | null | undefined): string {
 }
 
 function formatPct(value: number | string | null | undefined): string {
-  if (value == null) return "0.0%";
+  if (value == null) {
+    return "0.0%";
+  }
   return `${Number(value).toFixed(1)}%`;
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "--";
+  if (!iso) {
+    return "--";
+  }
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -99,8 +105,8 @@ interface ReviewForm {
 }
 
 interface ApproveForm {
-  adjustmentType: string;
   adjustmentAmount: string;
+  adjustmentType: string;
 }
 
 const EMPTY_REVIEW: ReviewForm = { notes: "" };
@@ -133,8 +139,12 @@ export function VarianceReportsClient({
         page,
         limit: 25,
       };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (searchQuery) params.search = searchQuery;
+      if (statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
 
       const result = await listVarianceReports(params);
       setReports(result.data);
@@ -159,7 +169,9 @@ export function VarianceReportsClient({
   };
 
   const handleReview = async () => {
-    if (!reviewTarget) return;
+    if (!reviewTarget) {
+      return;
+    }
     setActioning(reviewTarget.id);
     try {
       await varianceReportReview({
@@ -180,7 +192,9 @@ export function VarianceReportsClient({
   };
 
   const handleApprove = async () => {
-    if (!approveTarget) return;
+    if (!approveTarget) {
+      return;
+    }
     setActioning(approveTarget.id);
     try {
       await varianceReportApprove({
@@ -208,7 +222,7 @@ export function VarianceReportsClient({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -251,7 +265,7 @@ export function VarianceReportsClient({
       )}
 
       {!isLoading && reports.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No variance reports found. Reports are generated when cycle count
           sessions are finalized.
         </div>
@@ -259,7 +273,7 @@ export function VarianceReportsClient({
 
       {!isLoading && reports.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_100px_100px_100px_90px_90px_90px_100px_130px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_100px_100px_100px_90px_90px_90px_100px_130px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Item</span>
             <span className="text-right">Expected</span>
             <span className="text-right">Counted</span>
@@ -282,12 +296,12 @@ export function VarianceReportsClient({
               Number(report.variancePct) < -10;
             return (
               <div
-                className="grid grid-cols-[1fr_100px_100px_100px_90px_90px_90px_100px_130px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                className="grid grid-cols-[1fr_100px_100px_100px_90px_90px_90px_100px_130px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                 key={report.id}
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{report.itemName}</p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-muted-foreground text-xs">
                     {report.itemNumber}
                   </p>
                 </div>
@@ -424,7 +438,7 @@ export function VarianceReportsClient({
             </div>
           )}
           <div className="py-2">
-            <label className="text-sm font-medium">Review Notes</label>
+            <label className="font-medium text-sm">Review Notes</label>
             <textarea
               className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onChange={(e) =>
@@ -489,7 +503,7 @@ export function VarianceReportsClient({
           )}
           <div className="grid gap-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Adjustment Type</label>
+              <label className="font-medium text-sm">Adjustment Type</label>
               <Select
                 onValueChange={(v) =>
                   setApproveForm((f) => ({ ...f, adjustmentType: v }))
@@ -510,7 +524,7 @@ export function VarianceReportsClient({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Adjustment Amount</label>
+              <label className="font-medium text-sm">Adjustment Amount</label>
               <Input
                 onChange={(e) =>
                   setApproveForm((f) => ({

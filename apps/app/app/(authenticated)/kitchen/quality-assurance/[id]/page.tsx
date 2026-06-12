@@ -90,10 +90,10 @@ export default async function CorrectiveActionDetailPage({
   const status = statusConfig[action.status] ?? statusConfig.open;
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       {/* Back link */}
       <Link
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+        className="inline-flex w-fit items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
         href="/kitchen/quality-assurance"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -108,9 +108,9 @@ export default async function CorrectiveActionDetailPage({
               className={`h-5 w-5 ${status.color}`}
               icon={status.icon}
             />
-            <h1 className="text-2xl font-bold">{action.title}</h1>
+            <h1 className="font-bold text-2xl">{action.title}</h1>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <span>{action.actionNumber}</span>
             <span>|</span>
             <span>
@@ -140,13 +140,13 @@ export default async function CorrectiveActionDetailPage({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
               <AlertTriangle className={`h-3.5 w-3.5 ${severity.color}`} />
               Severity
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${severity.color}`}>
+            <div className={`font-bold text-2xl ${severity.color}`}>
               {severity.label}
             </div>
           </CardContent>
@@ -154,13 +154,13 @@ export default async function CorrectiveActionDetailPage({
 
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
               <Shield className="h-3.5 w-3.5 text-blue-500" />
               Status
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${status.color}`}>
+            <div className={`font-bold text-2xl ${status.color}`}>
               {status.label}
             </div>
           </CardContent>
@@ -168,13 +168,13 @@ export default async function CorrectiveActionDetailPage({
 
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
               <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               Due Date
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {action.dueDate
                 ? format(new Date(action.dueDate), "MMM d, yyyy")
                 : "-"}
@@ -183,20 +183,20 @@ export default async function CorrectiveActionDetailPage({
               new Date(action.dueDate) < new Date() &&
               action.status !== "resolved" &&
               action.status !== "verified" && (
-                <p className="text-xs text-red-500">Overdue</p>
+                <p className="text-red-500 text-xs">Overdue</p>
               )}
           </CardContent>
         </Card>
 
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
               <User className="h-3.5 w-3.5 text-muted-foreground" />
               Assigned To
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {action.assignedTo ? action.assignedTo.slice(0, 8) : "Unassigned"}
             </div>
           </CardContent>
@@ -212,11 +212,11 @@ export default async function CorrectiveActionDetailPage({
           </CardHeader>
           <CardContent>
             {action.description ? (
-              <p className="text-sm whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-sm">
                 {action.description}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No description provided.
               </p>
             )}
@@ -230,9 +230,9 @@ export default async function CorrectiveActionDetailPage({
           </CardHeader>
           <CardContent>
             {action.rootCause ? (
-              <p className="text-sm whitespace-pre-wrap">{action.rootCause}</p>
+              <p className="whitespace-pre-wrap text-sm">{action.rootCause}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No root cause documented.
               </p>
             )}
@@ -248,11 +248,11 @@ export default async function CorrectiveActionDetailPage({
           </CardHeader>
           <CardContent>
             {action.immediateAction ? (
-              <p className="text-sm whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-sm">
                 {action.immediateAction}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No immediate action documented.
               </p>
             )}
@@ -266,11 +266,11 @@ export default async function CorrectiveActionDetailPage({
           </CardHeader>
           <CardContent>
             {action.preventiveAction ? (
-              <p className="text-sm whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-sm">
                 {action.preventiveAction}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No preventive action documented.
               </p>
             )}

@@ -308,10 +308,24 @@ describe("POST /api/public/contracts/[token]/sign", () => {
     // Mock runManifestCommand for both governed writes (ContractSignature.create + EventContract.sign)
     mockRunManifestCommand
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, result: { id: SIGNATURE_ID }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: SIGNATURE_ID },
+            events: [],
+          }),
+          { status: 200 }
+        )
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, result: { id: CONTRACT_ID, status: "signed" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: CONTRACT_ID, status: "signed" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
     // Mock the read-back of signature for response
@@ -341,7 +355,8 @@ describe("POST /api/public/contracts/[token]/sign", () => {
     expect(json.signature.signerName).toBe("Jane Doe");
 
     // Verify ContractSignature.create was dispatched with IP address
-    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(1,
+    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
         entity: "ContractSignature",
         command: "create",
@@ -352,7 +367,8 @@ describe("POST /api/public/contracts/[token]/sign", () => {
     );
 
     // Verify EventContract.sign was dispatched
-    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(2,
+    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         entity: "EventContract",
         command: "sign",
@@ -497,10 +513,24 @@ describe("POST /api/public/contracts/[token]/sign", () => {
 
     mockRunManifestCommand
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, result: { id: SIGNATURE_ID }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: SIGNATURE_ID },
+            events: [],
+          }),
+          { status: 200 }
+        )
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, result: { id: CONTRACT_ID, status: "signed" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: CONTRACT_ID, status: "signed" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
     vi.mocked(database.contractSignature.findFirst).mockResolvedValueOnce({
@@ -884,7 +914,14 @@ describe("POST /api/public/proposals/[token]/respond", () => {
 
     // Mock runManifestCommand for Proposal.accept (governed write)
     mockRunManifestCommand.mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "accepted" }, events: [] }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: PROPOSAL_ID, status: "accepted" },
+          events: [],
+        }),
+        { status: 200 }
+      )
     );
 
     const res = await proposalRespond(
@@ -939,7 +976,14 @@ describe("POST /api/public/proposals/[token]/respond", () => {
 
     // Mock runManifestCommand for Proposal.reject (governed write)
     mockRunManifestCommand.mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "rejected" }, events: [] }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: PROPOSAL_ID, status: "rejected" },
+          events: [],
+        }),
+        { status: 200 }
+      )
     );
 
     const res = await proposalRespond(
@@ -1181,7 +1225,14 @@ describe("POST /api/public/proposals/[token]/respond", () => {
 
     // Mock runManifestCommand for Proposal.accept (governed write)
     mockRunManifestCommand.mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "accepted" }, events: [] }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: PROPOSAL_ID, status: "accepted" },
+          events: [],
+        }),
+        { status: 200 }
+      )
     );
 
     await proposalRespond(

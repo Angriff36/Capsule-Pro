@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -15,12 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  OperationalColumn,
-  PageBody,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import { useState } from "react";
 import {
   type FinanceAlert,
@@ -50,12 +50,12 @@ function LoadingSkeleton() {
               {[1, 2, 3].map((i) => (
                 <Card className="animate-pulse" key={i}>
                   <CardHeader>
-                    <div className="h-6 bg-muted rounded w-24" />
+                    <div className="h-6 w-24 rounded bg-muted" />
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded w-32" />
-                      <div className="h-3 bg-muted rounded w-24" />
+                      <div className="h-4 w-32 rounded bg-muted" />
+                      <div className="h-3 w-24 rounded bg-muted" />
                     </div>
                   </CardContent>
                 </Card>
@@ -72,12 +72,12 @@ function ErrorState({ error, refetch }: { error: Error; refetch: () => void }) {
   return (
     <PageCanvas>
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <p className="text-lg font-medium text-destructive">
+        <p className="font-medium text-destructive text-lg">
           Failed to load finance analytics
         </p>
-        <p className="text-sm text-muted-foreground mt-2">{error.message}</p>
+        <p className="mt-2 text-muted-foreground text-sm">{error.message}</p>
         <button
-          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          className="mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
           onClick={() => refetch()}
           type="button"
         >
@@ -99,7 +99,7 @@ function LocationSelect({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium" htmlFor="location-select">
+      <label className="font-medium text-sm" htmlFor="location-select">
         Location:
       </label>
       <Select onValueChange={setSelectedLocationId} value={selectedLocationId}>
@@ -128,7 +128,7 @@ function PeriodSelect({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium" htmlFor="period-select">
+      <label className="font-medium text-sm" htmlFor="period-select">
         Period:
       </label>
       <Select
@@ -166,7 +166,7 @@ function PerformanceOverview({
               <CardTitle>{item.value}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">{item.trend}</p>
+              <p className="text-muted-foreground text-xs">{item.trend}</p>
             </CardContent>
           </Card>
         ))}

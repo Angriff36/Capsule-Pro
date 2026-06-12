@@ -15,14 +15,14 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
 interface Invoice {
+  amountDue: number | string;
+  createdAt: string;
+  dueDate: string;
   id: string;
   invoiceNumber: string;
   invoiceType: string;
   status: string;
   total: number | string;
-  amountDue: number | string;
-  dueDate: string;
-  createdAt: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -56,7 +56,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
+          <h1 className="font-bold text-2xl tracking-tight">Invoices</h1>
           <p className="text-muted-foreground">Manage and track all invoices</p>
         </div>
         <Button onClick={() => router.push("/accounting/invoices/new")}>
@@ -68,9 +68,9 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
       {invoices.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No invoices yet</h3>
-            <p className="text-muted-foreground text-sm mt-1">
+            <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="font-medium text-lg">No invoices yet</h3>
+            <p className="mt-1 text-muted-foreground text-sm">
               Create your first invoice to get started
             </p>
           </CardContent>
@@ -91,7 +91,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{inv.invoiceNumber}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {formatDate(inv.createdAt)} · Due{" "}
                         {formatDate(inv.dueDate)}
                       </p>
@@ -112,7 +112,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                     <div className="text-right">
                       <p className="font-medium">{formatCurrency(inv.total)}</p>
                       {Number(inv.amountDue) > 0 && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           Due: {formatCurrency(inv.amountDue)}
                         </p>
                       )}

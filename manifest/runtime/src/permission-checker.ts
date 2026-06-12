@@ -18,19 +18,19 @@
 export type Permission = string;
 
 export interface PermissionCheckOptions {
-  /** The user's role (e.g., "admin", "manager", "staff", "kitchen_staff") */
-  userRole: string;
   /** The permission to check (e.g., "events.create") */
   permission: Permission;
   /** Optional role policy data for direct checking (skips DB lookup) */
   rolePolicies?: RolePolicyData[];
+  /** The user's role (e.g., "admin", "manager", "staff", "kitchen_staff") */
+  userRole: string;
 }
 
 export interface RolePolicyData {
+  isActive: boolean;
+  permissions: Permission[];
   roleId: string;
   roleName: string;
-  permissions: Permission[];
-  isActive: boolean;
 }
 
 /**
@@ -306,7 +306,10 @@ export function getAvailablePermissions(): Record<
   const result: Record<
     PermissionCategory,
     { action: PermissionAction; permission: Permission; description: string }[]
-  > = {} as Record<PermissionCategory, { action: PermissionAction; permission: Permission; description: string }[]>;
+  > = {} as Record<
+    PermissionCategory,
+    { action: PermissionAction; permission: Permission; description: string }[]
+  >;
 
   for (const [category, actions] of Object.entries(PERMISSION_CATEGORIES)) {
     result[category as PermissionCategory] = actions.map((action) => ({

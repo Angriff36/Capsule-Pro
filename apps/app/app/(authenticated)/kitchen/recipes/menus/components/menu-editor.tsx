@@ -41,8 +41,8 @@ interface MenuEditorProps {
 }
 
 interface SelectedDish {
-  dish: DishSummary;
   course: string | null;
+  dish: DishSummary;
 }
 
 const COURSE_OPTIONS = [
@@ -143,7 +143,7 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
       <div className="grid gap-6">
         {/* Basic Info Section */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Menu Information</h2>
+          <h2 className="font-semibold text-lg">Menu Information</h2>
 
           <div className="grid gap-2">
             <Label htmlFor="name">Menu Name *</Label>
@@ -179,7 +179,7 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
 
         {/* Pricing Section */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Pricing</h2>
+          <h2 className="font-semibold text-lg">Pricing</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
@@ -234,8 +234,8 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
 
         {/* Dishes Section */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Select Dishes</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-semibold text-lg">Select Dishes</h2>
+          <p className="text-muted-foreground text-sm">
             Choose dishes to include in this menu and assign them to courses
           </p>
 
@@ -408,7 +408,7 @@ function DishesSelector({
                   </SelectTrigger>
                   <SelectContent>
                     {recipes.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground">
+                      <div className="p-2 text-muted-foreground text-sm">
                         No recipes available
                       </div>
                     ) : (
@@ -422,7 +422,7 @@ function DishesSelector({
                   </SelectContent>
                 </Select>
                 {recipes.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     No recipes found.{" "}
                     <Link
                       className="text-primary underline"
@@ -443,7 +443,7 @@ function DishesSelector({
                 />
               </div>
               {createError && (
-                <p className="text-sm text-destructive">{createError}</p>
+                <p className="text-destructive text-sm">{createError}</p>
               )}
             </div>
             <DialogFooter>
@@ -466,14 +466,14 @@ function DishesSelector({
         </Dialog>
       </div>
 
-      <div className="border rounded-md">
+      <div className="rounded-md border">
         <div className="max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="p-4 text-center text-muted-foreground text-sm">
               Loading dishes...
             </div>
           ) : filteredDishes.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="p-4 text-center text-muted-foreground text-sm">
               {searchQuery
                 ? "No dishes found matching your search"
                 : "No dishes available. Click 'New Dish' to create one."}
@@ -489,7 +489,7 @@ function DishesSelector({
                 );
 
                 return (
-                  <div className="p-4 space-y-2" key={dish.id}>
+                  <div className="space-y-2 p-4" key={dish.id}>
                     <div className="flex items-start gap-3">
                       <Checkbox
                         checked={isSelected}
@@ -499,12 +499,12 @@ function DishesSelector({
                       <div className="flex-1 space-y-1">
                         <div className="font-medium">{dish.name}</div>
                         {dish.description && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {dish.description}
                           </div>
                         )}
                         {dish.category && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {dish.category}
                           </div>
                         )}
@@ -544,8 +544,8 @@ function DishesSelector({
       </div>
 
       {selectedDishes.length > 0 && (
-        <div className="text-sm text-muted-foreground">
-          {selectedDishes.length} dish{selectedDishes.length !== 1 ? "es" : ""}{" "}
+        <div className="text-muted-foreground text-sm">
+          {selectedDishes.length} dish{selectedDishes.length === 1 ? "" : "es"}{" "}
           selected
         </div>
       )}

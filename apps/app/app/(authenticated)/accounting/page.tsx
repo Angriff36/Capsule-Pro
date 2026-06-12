@@ -31,7 +31,9 @@ import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 function formatDate(value: Date | null) {
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -47,7 +49,9 @@ function getClientLabel(
     last_name: string | null;
   } | null
 ) {
-  if (!client) return "No client";
+  if (!client) {
+    return "No client";
+  }
 
   const personName = [client.first_name, client.last_name]
     .filter(Boolean)
@@ -86,10 +90,14 @@ const moduleLinks = [
 
 export default async function AccountingPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const now = new Date();
 
@@ -277,13 +285,13 @@ export default async function AccountingPage() {
           />
 
           {recentInvoices.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+            <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
               No invoices yet. Start in the invoices module to create your first
               billing record.
             </div>
           ) : (
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-              <div className="grid grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr] gap-4 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="grid grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr] gap-4 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                 <span>Invoice</span>
                 <span>Client / Event</span>
                 <span>Status</span>
@@ -291,7 +299,7 @@ export default async function AccountingPage() {
               </div>
               {recentInvoices.map((invoice) => (
                 <div
-                  className="grid grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr] gap-4 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                  className="grid grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr] gap-4 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                   key={invoice.id}
                 >
                   <div className="space-y-1">
@@ -334,7 +342,7 @@ export default async function AccountingPage() {
           />
 
           {recentPayments.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+            <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
               No payments recorded yet.
             </div>
           ) : (
@@ -349,7 +357,7 @@ export default async function AccountingPage() {
                       <div className="font-medium text-ink">
                         {formatCurrency(Number(payment.amount))}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         {getClientLabel(payment.client)}
                       </div>
                     </div>
@@ -357,7 +365,7 @@ export default async function AccountingPage() {
                       {payment.status.replaceAll("_", " ")}
                     </StatusPill>
                   </div>
-                  <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+                  <div className="mt-4 space-y-1 text-muted-foreground text-sm">
                     <div>Invoice {payment.invoice.invoiceNumber}</div>
                     <div>{payment.methodType.replaceAll("_", " ")}</div>
                     <div>
@@ -397,7 +405,7 @@ export default async function AccountingPage() {
                   </div>
                   <div className="mt-4 space-y-2">
                     <div className="font-medium text-ink">{link.label}</div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {link.description}
                     </p>
                   </div>

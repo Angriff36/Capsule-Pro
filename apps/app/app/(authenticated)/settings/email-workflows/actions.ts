@@ -11,35 +11,35 @@ import { runManifestCommand } from "@/lib/manifest-command";
 export type EmailTriggerType = email_trigger_type;
 
 export interface EmailWorkflowRow {
-  id: string;
-  name: string;
-  triggerType: EmailTriggerType;
-  triggerConfig: unknown;
+  createdAt: Date;
   emailTemplateId: string | null;
-  recipientConfig: unknown;
+  id: string;
   isActive: boolean;
   lastTriggeredAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  name: string;
+  recipientConfig: unknown;
   templateName?: string | null;
+  triggerConfig: unknown;
+  triggerType: EmailTriggerType;
+  updatedAt: Date;
 }
 
 export interface CreateEmailWorkflowInput {
-  name: string;
-  triggerType: EmailTriggerType;
-  triggerConfig?: unknown;
   emailTemplateId?: string | null;
-  recipientConfig?: unknown;
   isActive?: boolean;
+  name: string;
+  recipientConfig?: unknown;
+  triggerConfig?: unknown;
+  triggerType: EmailTriggerType;
 }
 
 export interface UpdateEmailWorkflowInput {
-  name?: string;
-  triggerType?: EmailTriggerType;
-  triggerConfig?: unknown;
   emailTemplateId?: string | null;
-  recipientConfig?: unknown;
   isActive?: boolean;
+  name?: string;
+  recipientConfig?: unknown;
+  triggerConfig?: unknown;
+  triggerType?: EmailTriggerType;
 }
 
 export async function getEmailWorkflows(
@@ -197,9 +197,9 @@ export async function updateEmailWorkflow(
   // UI historically did partial updates, so merge the partial input over the
   // current row before invoking, preserving any field the caller didn't supply.
   const emailTemplateId =
-    input.emailTemplateId !== undefined
-      ? (input.emailTemplateId ?? "")
-      : (existing.emailTemplateId ?? "");
+    input.emailTemplateId === undefined
+      ? (existing.emailTemplateId ?? "")
+      : (input.emailTemplateId ?? "");
 
   const result = await runManifestCommand({
     entity: "EmailWorkflow",

@@ -34,24 +34,30 @@ const STATUS_TO_COMMAND: Record<string, string> = {
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     const currentUser = await resolveCurrentUser(request);
 
     const { orderId, status } = await request.json();
-    if (!(orderId && status))
+    if (!(orderId && status)) {
       return manifestErrorResponse("orderId and status required", 400);
+    }
 
     // Verify current status allows transition (read bypasses Manifest runtime per constitution §10)
     const current = await database.$queryRaw<Array<{ status: string }>>`
       SELECT status FROM tenant_inventory.purchase_orders
       WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid AND deleted_at IS NULL
     `;
-    if (!current.length)
+    if (!current.length) {
       return manifestErrorResponse("PO not found", 404);
+    }
 
     const currentStatus = current[0].status;
     const allowed = VALID_TRANSITIONS[currentStatus] || [];
@@ -71,7 +77,9 @@ export async function POST(request: NextRequest) {
       user: { id: userId, tenantId, role: currentUser.role },
     });
 
-    if (result.status >= 400) return result;
+    if (result.status >= 400) {
+      return result;
+    }
 
     // Read updated PO for response (reads bypass runtime)
     const order = await database.purchaseOrder.findFirst({

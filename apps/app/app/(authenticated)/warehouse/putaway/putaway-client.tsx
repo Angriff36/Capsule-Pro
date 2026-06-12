@@ -26,21 +26,21 @@ import { apiFetch } from "@/app/lib/api";
 type PutawayStatus = "pending" | "in_progress" | "completed";
 
 interface PutawayTask {
+  category: string;
+  destinationLocationId: string;
+  destinationLocationName: string;
+  destinationStorageType: string;
   id: string;
   itemId: string;
   itemName: string;
   itemNumber: string;
-  category: string;
-  unitOfMeasure: string;
+  notes: string | null;
   quantity: number;
-  unitCost: number;
   source: string;
-  destinationLocationId: string;
-  destinationLocationName: string;
-  destinationStorageType: string;
   status: PutawayStatus;
   transactionDate: string;
-  notes: string | null;
+  unitCost: number;
+  unitOfMeasure: string;
 }
 
 interface StorageLocation {
@@ -50,9 +50,9 @@ interface StorageLocation {
 }
 
 interface PutawayMetrics {
-  pendingTasks: number;
   completedToday: number;
   locationsUsed: number;
+  pendingTasks: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,9 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
         ...(locationFilter !== "all" && { locationId: locationFilter }),
       });
       const res = await apiFetch(`/api/warehouse/putaway?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch putaway tasks");
+      if (!res.ok) {
+        throw new Error("Failed to fetch putaway tasks");
+      }
       const data = await res.json();
       setTasks(data.tasks ?? []);
       setLocations(data.locations ?? []);
@@ -111,14 +113,13 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
     fetchTasks();
   }, [fetchTasks]);
 
-  const formatDate = (d: string) => {
-    return new Intl.DateTimeFormat("en-US", {
+  const formatDate = (d: string) =>
+    new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date(d));
-  };
 
   return (
     <div className="space-y-4">
@@ -173,7 +174,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
         <div className="overflow-x-auto rounded-lg border border-hairline">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-hairline bg-soft-stone">
+              <tr className="border-hairline border-b bg-soft-stone">
                 <th className="px-4 py-3 text-left font-medium text-ink/70">
                   Item
                 </th>
@@ -197,7 +198,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
             <tbody>
               {tasks.map((task) => (
                 <tr
-                  className="border-b border-hairline last:border-0 hover:bg-soft-stone/50 transition-colors"
+                  className="border-hairline border-b transition-colors last:border-0 hover:bg-soft-stone/50"
                   key={task.id}
                 >
                   <td className="px-4 py-3">
@@ -206,12 +207,12 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
                         {task.itemName}
                       </span>
                       {task.itemNumber && (
-                        <span className="ml-2 text-xs text-ink/50">
+                        <span className="ml-2 text-ink/50 text-xs">
                           {task.itemNumber}
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-ink/50">{task.category}</div>
+                    <div className="text-ink/50 text-xs">{task.category}</div>
                   </td>
                   <td className="px-4 py-3 text-ink/70">{task.source}</td>
                   <td className="px-4 py-3">
@@ -222,7 +223,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
                       </span>
                     </div>
                     {task.destinationStorageType && (
-                      <div className="text-xs text-ink/50 ml-5">
+                      <div className="ml-5 text-ink/50 text-xs">
                         {task.destinationStorageType}
                       </div>
                     )}
@@ -247,7 +248,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
 
       {/* Summary footer */}
       {!isLoading && tasks.length > 0 && (
-        <div className="flex items-center justify-between text-xs text-ink/50">
+        <div className="flex items-center justify-between text-ink/50 text-xs">
           <span>
             {tasks.length} task{tasks.length === 1 ? "" : "s"} shown
           </span>

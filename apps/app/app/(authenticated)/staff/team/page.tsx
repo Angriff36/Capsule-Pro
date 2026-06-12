@@ -35,14 +35,14 @@ import { AutoRegisterStaff } from "./components/auto-register-staff";
 import { EditStaffDialog } from "./components/edit-staff-dialog";
 
 interface EmployeeRow {
-  id: string;
+  createdAt: Date;
   email: string;
+  employmentType: string;
   firstName: string;
+  id: string;
+  isActive: boolean;
   lastName: string;
   role: string;
-  isActive: boolean;
-  employmentType: string;
-  createdAt: Date;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {

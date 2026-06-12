@@ -11,23 +11,23 @@ const TEMPERATURE = 0.7;
 const TARGET_WORD_COUNT = 250;
 
 interface MenuFormData {
-  occasionType: string;
-  season: string;
-  guestCount: number;
-  serviceStyle: string;
-  menuDirection: string;
-  selectedItems: string[];
-  dietaryCoverageNeeds: string[];
-  dietaryCounts: Record<string, number>;
   addOnSelections: string[];
   barService: string;
+  dietaryCounts: Record<string, number>;
+  dietaryCoverageNeeds: string[];
+  guestCount: number;
+  menuDirection: string;
   notes: string;
+  occasionType: string;
+  season: string;
+  selectedItems: string[];
+  serviceStyle: string;
 }
 
 interface MenuItemInfo {
-  name: string;
   category: string;
   dietaryFlags: string[];
+  name: string;
 }
 
 async function generateMenuStory(

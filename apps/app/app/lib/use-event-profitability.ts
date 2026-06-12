@@ -12,55 +12,58 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { listEventProfitabilities, getEventProfitability } from "@/app/lib/manifest-client.generated";
+import {
+  getEventProfitability,
+  listEventProfitabilities,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types — mirrors the EventProfitability Prisma model in tenant_events schema
 // ---------------------------------------------------------------------------
 
 export interface EventProfitabilityRecord {
-  id: string;
-  tenantId: string;
-  eventId: string;
-  budgetedRevenue: number;
-  budgetedFoodCost: number;
-  budgetedLaborCost: number;
-  budgetedOverhead: number;
-  budgetedTotalCost: number;
-  budgetedGrossMargin: number;
-  budgetedGrossMarginPct: number;
-  actualRevenue: number;
   actualFoodCost: number;
-  actualLaborCost: number;
-  actualOverhead: number;
-  actualTotalCost: number;
   actualGrossMargin: number;
   actualGrossMarginPct: number;
-  revenueVariance: number;
-  foodCostVariance: number;
-  laborCostVariance: number;
-  totalCostVariance: number;
-  marginVariancePct: number;
+  actualLaborCost: number;
+  actualOverhead: number;
+  actualRevenue: number;
+  actualTotalCost: number;
+  budgetedFoodCost: number;
+  budgetedGrossMargin: number;
+  budgetedGrossMarginPct: number;
+  budgetedLaborCost: number;
+  budgetedOverhead: number;
+  budgetedRevenue: number;
+  budgetedTotalCost: number;
   calculatedAt: string;
   calculationMethod: string;
-  notes: string | null;
   createdAt: string;
-  updatedAt: string;
   event?: {
     id: string;
     title: string;
     eventDate: string | null;
   } | null;
+  eventId: string;
+  foodCostVariance: number;
+  id: string;
+  laborCostVariance: number;
+  marginVariancePct: number;
+  notes: string | null;
+  revenueVariance: number;
+  tenantId: string;
+  totalCostVariance: number;
+  updatedAt: string;
 }
 
 export interface ProfitabilitySummary {
-  totalActualRevenue: number;
-  totalBudgetedRevenue: number;
-  totalActualCost: number;
-  totalBudgetedCost: number;
   averageMarginPct: number;
-  underperformingCount: number;
   recordCount: number;
+  totalActualCost: number;
+  totalActualRevenue: number;
+  totalBudgetedCost: number;
+  totalBudgetedRevenue: number;
+  underperformingCount: number;
 }
 
 // ---------------------------------------------------------------------------

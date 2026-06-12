@@ -16,10 +16,14 @@ export async function GET(
 ) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     const { id } = await params;
 
@@ -38,7 +42,9 @@ export async function GET(
       },
     });
 
-    if (!vendor) return manifestErrorResponse("Vendor not found", 404);
+    if (!vendor) {
+      return manifestErrorResponse("Vendor not found", 404);
+    }
 
     // Count active catalog items (separate query — no relation on InventorySupplier)
     const catalogItemCount = await database.vendorCatalog.count({

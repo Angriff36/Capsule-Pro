@@ -8,11 +8,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
-import { toJson } from "@/lib/prisma-utils";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { toJson } from "@/lib/prisma-utils";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
@@ -38,17 +38,17 @@ const VALID_ENTITY_TYPES = [
 ];
 
 interface UpdateWebhookRequest {
-  name?: string;
-  url?: string;
-  secret?: string;
   apiKey?: string;
-  eventTypeFilters?: WebhookEventType[];
+  customHeaders?: Record<string, string>;
   entityFilters?: string[];
-  status?: WebhookStatus;
+  eventTypeFilters?: WebhookEventType[];
+  name?: string;
   retryCount?: number;
   retryDelayMs?: number;
+  secret?: string;
+  status?: WebhookStatus;
   timeoutMs?: number;
-  customHeaders?: Record<string, string>;
+  url?: string;
 }
 
 export async function GET(
@@ -211,8 +211,7 @@ export async function PUT(
       updateData.timeoutMs = body.timeoutMs;
     }
     if (body.customHeaders !== undefined) {
-      updateData.customHeaders =
-        toJson(body.customHeaders);
+      updateData.customHeaders = toJson(body.customHeaders);
     }
 
     const webhook = await database.outboundWebhook.update({

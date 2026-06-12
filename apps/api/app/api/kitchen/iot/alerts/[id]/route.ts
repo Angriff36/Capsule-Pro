@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!currentUser) {
       return NextResponse.json(
         { error: "User not found in database" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!(status && ["acknowledged", "resolved"].includes(status))) {
       return NextResponse.json(
         { error: "Status must be 'acknowledged' or 'resolved'" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (existing.status === "resolved") {
       return NextResponse.json(
         { error: "Alert is already resolved" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -102,7 +102,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     log.error("Update IoT alert error:", error);
     return NextResponse.json(
       { error: "Failed to update alert" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

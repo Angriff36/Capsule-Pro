@@ -111,7 +111,7 @@ const EventGuestsPage = async ({ params }: EventGuestsPageProps) => {
     (g) => g.rsvpStatus.toLowerCase() === "pending"
   ).length;
   const capacityRemaining =
-    event.maxCapacity !== null ? event.maxCapacity - confirmed : null;
+    event.maxCapacity === null ? null : event.maxCapacity - confirmed;
 
   const atCapacity =
     event.maxCapacity !== null && confirmed >= event.maxCapacity;
@@ -144,7 +144,7 @@ const EventGuestsPage = async ({ params }: EventGuestsPageProps) => {
     {
       label: "Capacity left",
       value:
-        capacityRemaining !== null ? String(capacityRemaining) : "Unlimited",
+        capacityRemaining === null ? "Unlimited" : String(capacityRemaining),
       delta: atCapacity ? "At capacity" : null,
       note: atCapacity ? "Confirmed guests meet or exceed max capacity" : null,
     },

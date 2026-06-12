@@ -41,40 +41,39 @@ const formatCurrency = (v: number | null) =>
 import { useState } from "react";
 
 interface TimeEntry {
-  id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  employee_number: string | null;
-  location_id: string | null;
-  location_name: string | null;
-  shift_id: string | null;
-  shift_start: Date | null;
-  shift_end: Date | null;
-  clock_in: Date;
-  clock_out: Date | null;
-  break_minutes: number;
-  notes: string | null;
-  approved_by: string | null;
+  actual_hours: number | null;
   approved_at: Date | null;
+  approved_by: string | null;
   approver_first_name: string | null;
   approver_last_name: string | null;
-  scheduled_hours: number | null;
-  actual_hours: number | null;
+  break_minutes: number;
+  clock_in: Date;
+  clock_out: Date | null;
+  created_at: Date;
+  employee_number: string | null;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
   exception_type: string | null;
   hourly_rate: number | null;
+  id: string;
+  location_id: string | null;
+  location_name: string | null;
+  notes: string | null;
+  scheduled_hours: number | null;
+  shift_end: Date | null;
+  shift_id: string | null;
+  shift_start: Date | null;
   total_cost: number | null;
-  created_at: Date;
   updated_at: Date;
 }
 
 interface TimecardDetailModalProps {
-  timeEntry: TimeEntry | null;
-  open: boolean;
-  onClose: () => void;
   onApprove: () => void;
+  onClockOut: () => void;
+  onClose: () => void;
   onEditRequest: (
     reason: string,
     requestedChanges?: {
@@ -84,7 +83,8 @@ interface TimecardDetailModalProps {
     }
   ) => void;
   onFlagException: (type: string, notes: string) => void;
-  onClockOut: () => void;
+  open: boolean;
+  timeEntry: TimeEntry | null;
 }
 
 function formatHours(value: number | null) {

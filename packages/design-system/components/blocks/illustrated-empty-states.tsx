@@ -50,7 +50,9 @@ import {
  * Determines if a role can create content
  */
 function canRoleCreate(role: UserRole | undefined): boolean {
-  if (!role) return false;
+  if (!role) {
+    return false;
+  }
   const viewerRoles: UserRole[] = ["staff"];
   return !viewerRoles.includes(role);
 }
@@ -94,7 +96,7 @@ function EmptyListIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +183,7 @@ function NoSearchResultsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -189,13 +191,13 @@ function NoSearchResultsIllustration() {
       <circle className="fill-muted/20" cx="100" cy="80" r="60" />
       {/* Magnifying glass */}
       <circle
-        className="stroke-border stroke-8 fill-none"
+        className="fill-none stroke-8 stroke-border"
         cx="85"
         cy="75"
         r="28"
       />
       <line
-        className="stroke-border stroke-8"
+        className="stroke-8 stroke-border"
         strokeLinecap="round"
         x1="105"
         x2="130"
@@ -204,7 +206,7 @@ function NoSearchResultsIllustration() {
       />
       {/* X mark */}
       <line
-        className="stroke-destructive/50 stroke-4"
+        className="stroke-4 stroke-destructive/50"
         strokeLinecap="round"
         x1="75"
         x2="95"
@@ -212,7 +214,7 @@ function NoSearchResultsIllustration() {
         y2="85"
       />
       <line
-        className="stroke-destructive/50 stroke-4"
+        className="stroke-4 stroke-destructive/50"
         strokeLinecap="round"
         x1="95"
         x2="75"
@@ -221,14 +223,14 @@ function NoSearchResultsIllustration() {
       />
       {/* Question marks floating */}
       <text
-        className="fill-muted-foreground/30 text-lg font-bold"
+        className="fill-muted-foreground/30 font-bold text-lg"
         x="140"
         y="50"
       >
         ?
       </text>
       <text
-        className="fill-muted-foreground/30 text-lg font-bold"
+        className="fill-muted-foreground/30 font-bold text-lg"
         x="45"
         y="110"
       >
@@ -245,7 +247,7 @@ function NoNotificationsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -268,7 +270,7 @@ function NoNotificationsIllustration() {
       {/* Checkmark indicating "all caught up" */}
       <circle className="fill-green-500/20" cx="140" cy="50" r="12" />
       <path
-        className="stroke-green-500 stroke-2 fill-none"
+        className="fill-none stroke-2 stroke-green-500"
         d="M134 50 L138 54 L146 46"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -284,7 +286,7 @@ function NoClientsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -374,7 +376,7 @@ function NoClientsIllustration() {
       {/* Plus sign */}
       <circle className="fill-primary/20" cx="150" cy="45" r="10" />
       <path
-        className="stroke-primary stroke-2"
+        className="stroke-2 stroke-primary"
         d="M150 40 L150 50 M145 45 L155 45"
         strokeLinecap="round"
       />
@@ -389,7 +391,7 @@ function NoTasksIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -414,7 +416,7 @@ function NoTasksIllustration() {
       />
       {/* Checkboxes (empty) */}
       <rect
-        className="fill-muted-foreground/20 stroke-muted-foreground/30 stroke-2"
+        className="fill-muted-foreground/20 stroke-2 stroke-muted-foreground/30"
         height="12"
         rx="2"
         width="12"
@@ -438,7 +440,7 @@ function NoTasksIllustration() {
         y="58"
       />
       <rect
-        className="fill-muted-foreground/20 stroke-muted-foreground/30 stroke-2"
+        className="fill-muted-foreground/20 stroke-2 stroke-muted-foreground/30"
         height="12"
         rx="2"
         width="12"
@@ -462,7 +464,7 @@ function NoTasksIllustration() {
         y="78"
       />
       <rect
-        className="fill-muted-foreground/20 stroke-muted-foreground/30 stroke-2"
+        className="fill-muted-foreground/20 stroke-2 stroke-muted-foreground/30"
         height="12"
         rx="2"
         width="12"
@@ -496,7 +498,7 @@ function NoInventoryIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -508,16 +510,16 @@ function NoInventoryIllustration() {
         d="M60 70 L100 50 L140 70 L140 110 L100 130 L60 110 Z"
       />
       <path
-        className="stroke-muted-foreground/30 stroke-2 fill-none"
+        className="fill-none stroke-2 stroke-muted-foreground/30"
         d="M60 70 L100 90 L140 70"
       />
       <path
-        className="stroke-muted-foreground/30 stroke-2 fill-none"
+        className="fill-none stroke-2 stroke-muted-foreground/30"
         d="M100 90 L100 130"
       />
       {/* Lid open slightly */}
       <path
-        className="stroke-border stroke-3 fill-none"
+        className="fill-none stroke-3 stroke-border"
         d="M60 70 L60 50 L100 30 L140 50 L140 70"
       />
     </svg>
@@ -531,7 +533,7 @@ function NoShipmentsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -576,7 +578,7 @@ function NoEventsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -678,7 +680,7 @@ function NoRecipesIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -747,7 +749,7 @@ function NoDataIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -788,7 +790,7 @@ function NoDataIllustration() {
       />
       {/* Baseline */}
       <line
-        className="stroke-border stroke-2"
+        className="stroke-2 stroke-border"
         x1="50"
         x2="150"
         y1="125"
@@ -805,7 +807,7 @@ function NoAuditLogsIllustration() {
   return (
     <svg
       aria-hidden="true"
-      className="w-48 h-38 text-muted-foreground/50"
+      className="h-38 w-48 text-muted-foreground/50"
       fill="none"
       viewBox="0 0 200 160"
       xmlns="http://www.w3.org/2000/svg"
@@ -826,7 +828,7 @@ function NoAuditLogsIllustration() {
         d="M120 60 L140 50 L140 90 C140 105 130 115 120 120 C110 115 100 105 100 90 L100 50 Z"
       />
       <path
-        className="stroke-border stroke-2 fill-none"
+        className="fill-none stroke-2 stroke-border"
         d="M120 60 L135 52 L135 88 C135 100 127 108 120 112 C113 108 105 100 105 88 L105 52 Z"
       />
     </svg>
@@ -841,12 +843,12 @@ function NoAuditLogsIllustration() {
  * Shared props for ambient animation in empty states
  */
 interface AmbientAnimationOptions {
-  /** Enable ambient animation for the empty state */
-  enableAmbientAnimation?: boolean;
-  /** Ambient animation variant */
-  ambientVariant?: AmbientAnimationProps["variant"];
   /** Ambient animation intensity (0-1) */
   ambientIntensity?: number;
+  /** Ambient animation variant */
+  ambientVariant?: AmbientAnimationProps["variant"];
+  /** Enable ambient animation for the empty state */
+  enableAmbientAnimation?: boolean;
 }
 
 /**
@@ -854,18 +856,18 @@ interface AmbientAnimationOptions {
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface EmptyListStateProps {
-  itemName?: string;
-  onCreate?: () => void;
+  ambientIntensity?: number;
+  ambientVariant?: AmbientAnimationProps["variant"];
   createButtonText?: string;
   description?: string;
+  /** Ambient animation options */
+  enableAmbientAnimation?: boolean;
+  itemName?: string;
+  onCreate?: () => void;
   /** User role for role-aware messaging */
   userRole?: UserRole;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
-  /** Ambient animation options */
-  enableAmbientAnimation?: boolean;
-  ambientVariant?: AmbientAnimationProps["variant"];
-  ambientIntensity?: number;
 }
 
 export function EmptyListState({
@@ -907,7 +909,7 @@ export function EmptyListState({
       )}
       {!messaging.showCta && (
         <EmptyContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to add content</span>
           </div>
@@ -935,9 +937,9 @@ export function EmptyListState({
  * NoSearchResultsState - No search results with filter clear option
  */
 interface NoSearchResultsStateProps {
-  searchQuery?: string;
   onClearFilters?: () => void;
   searchableItemName?: string;
+  searchQuery?: string;
 }
 
 export function NoSearchResultsState({
@@ -995,14 +997,14 @@ export function NoNotificationsState() {
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoClientsStateProps {
-  onCreateClient?: () => void;
+  activityContext?: UserActivityContext;
+  customSuggestions?: PromptSuggestion[];
   description?: string;
+  onCreateClient?: () => void;
+  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
-  activityContext?: UserActivityContext;
-  customSuggestions?: PromptSuggestion[];
-  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
 }
@@ -1058,7 +1060,7 @@ export function NoClientsState({
             Add client
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to add clients</span>
           </div>
@@ -1073,16 +1075,16 @@ export function NoClientsState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoTasksStateProps {
-  taskType?: string;
-  onClaimTask?: () => void;
-  onCreateTask?: () => void;
-  description?: string;
-  /** Enable dynamic prompt suggestions */
-  showSuggestions?: boolean;
-  userRole?: UserRole;
   activityContext?: UserActivityContext;
   customSuggestions?: PromptSuggestion[];
+  description?: string;
+  onClaimTask?: () => void;
+  onCreateTask?: () => void;
   onSuggestionClick?: (suggestion: PromptSuggestion) => void;
+  /** Enable dynamic prompt suggestions */
+  showSuggestions?: boolean;
+  taskType?: string;
+  userRole?: UserRole;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
 }
@@ -1147,7 +1149,7 @@ export function NoTasksState({
             )}
           </>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to create tasks</span>
           </div>
@@ -1162,14 +1164,14 @@ export function NoTasksState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoInventoryStateProps {
-  onAddItem?: () => void;
+  activityContext?: UserActivityContext;
+  customSuggestions?: PromptSuggestion[];
   description?: string;
+  onAddItem?: () => void;
+  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
-  activityContext?: UserActivityContext;
-  customSuggestions?: PromptSuggestion[];
-  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
 }
@@ -1222,7 +1224,7 @@ export function NoInventoryState({
             Add item
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to add inventory</span>
           </div>
@@ -1237,14 +1239,14 @@ export function NoInventoryState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoShipmentsStateProps {
-  onCreateShipment?: () => void;
+  activityContext?: UserActivityContext;
+  customSuggestions?: PromptSuggestion[];
   description?: string;
+  onCreateShipment?: () => void;
+  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
-  activityContext?: UserActivityContext;
-  customSuggestions?: PromptSuggestion[];
-  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
 }
@@ -1297,7 +1299,7 @@ export function NoShipmentsState({
             Create shipment
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to create shipments</span>
           </div>
@@ -1312,21 +1314,21 @@ export function NoShipmentsState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoEventsStateProps {
-  onCreateEvent?: () => void;
+  activityContext?: UserActivityContext;
+  ambientIntensity?: number;
+  ambientVariant?: AmbientAnimationProps["variant"];
+  customSuggestions?: PromptSuggestion[];
   dateRange?: string;
   description?: string;
+  /** Enable ambient animation for the empty state */
+  enableAmbientAnimation?: boolean;
+  onCreateEvent?: () => void;
+  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
-  activityContext?: UserActivityContext;
-  customSuggestions?: PromptSuggestion[];
-  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
   /** Custom description for viewers (non-admin/non-creator roles) */
   viewerDescription?: string;
-  /** Enable ambient animation for the empty state */
-  enableAmbientAnimation?: boolean;
-  ambientVariant?: AmbientAnimationProps["variant"];
-  ambientIntensity?: number;
 }
 
 const VIEWER_EVENT_MESSAGE =
@@ -1381,7 +1383,7 @@ export function NoEventsState({
             Create event
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to create events</span>
           </div>
@@ -1410,8 +1412,8 @@ export function NoEventsState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoRecipesStateProps {
-  onCreateRecipe?: () => void;
   description?: string;
+  onCreateRecipe?: () => void;
   /** User role for role-aware messaging */
   userRole?: UserRole;
   /** Custom description for viewers (non-admin/non-creator roles) */
@@ -1456,7 +1458,7 @@ export function NoRecipesState({
       )}
       {!canCreate && (
         <EmptyContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to add recipes</span>
           </div>
@@ -1470,13 +1472,13 @@ export function NoRecipesState({
  * NoDataState - Generic no data state for analytics/reports
  */
 interface NoDataStateProps {
-  dataDescription?: string;
   actionButton?: React.ReactNode;
+  ambientIntensity?: number;
+  ambientVariant?: AmbientAnimationProps["variant"];
+  dataDescription?: string;
   description?: string;
   /** Enable ambient animation for the empty state */
   enableAmbientAnimation?: boolean;
-  ambientVariant?: AmbientAnimationProps["variant"];
-  ambientIntensity?: number;
 }
 
 export function NoDataState({
@@ -1522,8 +1524,8 @@ export function NoDataState({
  * NoAuditLogsState - No audit logs with filter clear option
  */
 interface NoAuditLogsStateProps {
-  onClearFilters?: () => void;
   description?: string;
+  onClearFilters?: () => void;
 }
 
 export function NoAuditLogsState({
@@ -1559,8 +1561,8 @@ export function NoAuditLogsState({
  * Role-aware: Viewers see messaging explaining content will appear when admin adds it
  */
 interface NoPrepListsStateProps {
-  onCreateList?: () => void;
   description?: string;
+  onCreateList?: () => void;
   /** User role for role-aware messaging */
   userRole?: UserRole;
   /** Custom description for viewers (non-admin/non-creator roles) */
@@ -1605,7 +1607,7 @@ export function NoPrepListsState({
       )}
       {!canCreate && (
         <EmptyContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
             <span>Contact an admin to create prep lists</span>
           </div>
@@ -1619,8 +1621,8 @@ export function NoPrepListsState({
  * FilteredEmptyState - Empty state with applied filters
  */
 interface FilteredEmptyStateProps {
-  onClearFilters: () => void;
   itemName?: string;
+  onClearFilters: () => void;
 }
 
 export function FilteredEmptyState({
@@ -1669,19 +1671,19 @@ export type {
 
 // Export all components
 export {
-  // Illustrations
-  EmptyListIllustration,
-  NoSearchResultsIllustration,
-  NoNotificationsIllustration,
-  NoClientsIllustration,
-  NoTasksIllustration,
-  NoInventoryIllustration,
-  NoShipmentsIllustration,
-  NoEventsIllustration,
-  NoRecipesIllustration,
-  NoDataIllustration,
-  NoAuditLogsIllustration,
   // Ambient Animation
   AmbientAnimation,
+  // Illustrations
+  EmptyListIllustration,
+  NoAuditLogsIllustration,
+  NoClientsIllustration,
+  NoDataIllustration,
+  NoEventsIllustration,
+  NoInventoryIllustration,
+  NoNotificationsIllustration,
+  NoRecipesIllustration,
+  NoSearchResultsIllustration,
+  NoShipmentsIllustration,
+  NoTasksIllustration,
   withAmbientAnimation,
 };

@@ -17,7 +17,7 @@ const KitchenTeamPage = () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Kitchen Team
           </h1>
           <p className="text-muted-foreground">
@@ -29,7 +29,7 @@ const KitchenTeamPage = () => {
 
         {/* Team Management Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Team Management
           </h2>
           <Card tone="canvas">
@@ -59,7 +59,7 @@ const KitchenTeamPage = () => {
 
         {/* Features Overview Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Features Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
@@ -70,8 +70,8 @@ const KitchenTeamPage = () => {
                   Onboarding
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <ul className="list-disc pl-4 space-y-1">
+              <CardContent className="text-muted-foreground text-sm">
+                <ul className="list-disc space-y-1 pl-4">
                   <li>Add new team members</li>
                   <li>Set up roles and permissions</li>
                   <li>Assign station skills</li>
@@ -87,8 +87,8 @@ const KitchenTeamPage = () => {
                   Role Management
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <ul className="list-disc pl-4 space-y-1">
+              <CardContent className="text-muted-foreground text-sm">
+                <ul className="list-disc space-y-1 pl-4">
                   <li>Define kitchen roles</li>
                   <li>Set skill requirements</li>
                   <li>Configure certifications</li>
@@ -104,8 +104,8 @@ const KitchenTeamPage = () => {
                   Station Assignments
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <ul className="list-disc pl-4 space-y-1">
+              <CardContent className="text-muted-foreground text-sm">
+                <ul className="list-disc space-y-1 pl-4">
                   <li>Assign staff to stations</li>
                   <li>Track station coverage</li>
                   <li>Manage lead positions</li>
@@ -118,7 +118,7 @@ const KitchenTeamPage = () => {
 
         {/* Common Tasks Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Common Tasks
           </h2>
           <Card tone="canvas">

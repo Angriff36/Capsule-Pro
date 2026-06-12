@@ -262,7 +262,11 @@ export async function commitEventBoardDrafts(
       // Seeded with the event's existing active assignments; grows as this
       // batch creates new ones (so within-batch duplicates resolve to the row
       // created by the first draft).
-      const activeStaff = await deps.loadActiveStaff(tx, eventId, user.tenantId);
+      const activeStaff = await deps.loadActiveStaff(
+        tx,
+        eventId,
+        user.tenantId
+      );
       const staffRecordByMember = new Map<string, string | null>(
         activeStaff.map((row) => [row.staffMemberId, row.id])
       );

@@ -20,39 +20,39 @@ export type ServiceStyle =
   | "cocktail-reception";
 
 export interface MenuCatalogItem {
+  category: MenuCategory;
+  compatibleStyles: ServiceStyle[];
+  description: string;
+  dietaryFlags: DietaryFlag[];
   id: string;
   name: string;
-  description: string;
-  category: MenuCategory;
-  dietaryFlags: DietaryFlag[];
-  compatibleStyles: ServiceStyle[];
-  seasons: Season[];
   pricePerPerson: number;
+  seasons: Season[];
 }
 
 export interface MenuFormData {
-  occasionType: string;
-  season: Season;
-  guestCount: number;
-  serviceStyle: ServiceStyle | "";
-  menuDirection: string;
-  selectedItems: string[];
-  dietaryCoverageNeeds: DietaryFlag[];
-  dietaryCounts: Record<DietaryFlag, number>;
   addOnSelections: string[];
   barService: string;
+  dietaryCounts: Record<DietaryFlag, number>;
+  dietaryCoverageNeeds: DietaryFlag[];
+  guestCount: number;
+  menuDirection: string;
   notes: string;
+  occasionType: string;
+  season: Season;
+  selectedItems: string[];
+  serviceStyle: ServiceStyle | "";
 }
 
 export interface MenuConstraintResult {
-  valid: boolean;
   errors: string[];
+  valid: boolean;
   warnings: string[];
 }
 
 export interface IngredientRollup {
-  name: string;
   costPerPortion: number;
+  name: string;
   unit: string;
 }
 

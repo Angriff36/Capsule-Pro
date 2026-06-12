@@ -44,15 +44,16 @@ import { Header } from "../../../components/header";
 import { DependencyAnalysisDialog } from "./dependency-analysis-dialog";
 
 interface TrashItem {
-  id: string;
-  entity: string;
-  tenantId: string;
   deletedAt: string;
   displayName: string;
+  entity: string;
   hasDependents: boolean;
+  id: string;
+  tenantId: string;
 }
 
 interface TrashListResponse {
+  entityTypes: Array<{ value: string; label: string }>;
   items: TrashItem[];
   pagination: {
     page: number;
@@ -60,22 +61,9 @@ interface TrashListResponse {
     total: number;
     totalPages: number;
   };
-  entityTypes: Array<{ value: string; label: string }>;
 }
 
 export interface DependencyAnalysis {
-  entity: {
-    id: string;
-    type: string;
-    displayName: string;
-  };
-  summary: {
-    totalDependents: number;
-    deletedDependents: number;
-    activeDependents: number;
-    canRestore: boolean;
-    recommendedAction: "restore" | "cascade_restore" | "cannot_restore";
-  };
   dependents: Array<{
     node: {
       id: string;
@@ -91,6 +79,11 @@ export interface DependencyAnalysis {
       description: string;
     };
   }>;
+  entity: {
+    id: string;
+    type: string;
+    displayName: string;
+  };
   restorePlan?: {
     steps: Array<{
       entityId: string;
@@ -101,13 +94,20 @@ export interface DependencyAnalysis {
     }>;
     warnings: string[];
   };
+  summary: {
+    totalDependents: number;
+    deletedDependents: number;
+    activeDependents: number;
+    canRestore: boolean;
+    recommendedAction: "restore" | "cascade_restore" | "cannot_restore";
+  };
 }
 
 interface RestoreResult {
-  success: boolean;
-  restored: Array<{ id: string; type: string; displayName: string }>;
   failed: Array<{ id: string; type: string; error: string }>;
+  restored: Array<{ id: string; type: string; displayName: string }>;
   skipped: Array<{ id: string; type: string; reason: string }>;
+  success: boolean;
 }
 
 export function TrashPageClient({
@@ -363,11 +363,18 @@ export function TrashPageClient({
       "Shipment",
     ];
 
-    if (eventEntities.includes(entity)) return "bg-muted/50 text-foreground";
-    if (clientEntities.includes(entity)) return "bg-muted/50 text-foreground";
-    if (kitchenEntities.includes(entity)) return "bg-muted/50 text-foreground";
-    if (inventoryEntities.includes(entity))
+    if (eventEntities.includes(entity)) {
       return "bg-muted/50 text-foreground";
+    }
+    if (clientEntities.includes(entity)) {
+      return "bg-muted/50 text-foreground";
+    }
+    if (kitchenEntities.includes(entity)) {
+      return "bg-muted/50 text-foreground";
+    }
+    if (inventoryEntities.includes(entity)) {
+      return "bg-muted/50 text-foreground";
+    }
     return "bg-muted/50 text-foreground";
   };
 
@@ -436,7 +443,7 @@ export function TrashPageClient({
               {/* Entity Type Filter */}
               <div className="flex items-center gap-2">
                 <label
-                  className="text-sm text-muted-foreground"
+                  className="text-muted-foreground text-sm"
                   htmlFor="entity-type-filter"
                 >
                   Entity Type:
@@ -460,10 +467,10 @@ export function TrashPageClient({
               </div>
 
               {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+              <div className="relative max-w-md flex-1">
+                <SearchIcon className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
                 <input
-                  className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-9 w-full rounded-md border border-input bg-background pr-3 pl-8 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   id="search-input"
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search deleted items..."
@@ -474,7 +481,7 @@ export function TrashPageClient({
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <span>
                 Showing {items.length} of {pagination.total} deleted items
               </span>
@@ -498,9 +505,9 @@ export function TrashPageClient({
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 {restoreResult.success ? (
-                  <CheckIcon className="size-5 text-green-600 mt-0.5" />
+                  <CheckIcon className="mt-0.5 size-5 text-green-600" />
                 ) : (
-                  <AlertTriangleIcon className="size-5 text-red-600 mt-0.5" />
+                  <AlertTriangleIcon className="mt-0.5 size-5 text-red-600" />
                 )}
                 <div className="flex-1">
                   <h4 className="font-medium">
@@ -584,8 +591,8 @@ export function TrashPageClient({
                   <TableRow>
                     <TableCell className="h-32 text-center" colSpan={5}>
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <Trash2Icon className="size-12 mb-2 opacity-50" />
-                        <p className="text-lg font-medium">No items in trash</p>
+                        <Trash2Icon className="mb-2 size-12 opacity-50" />
+                        <p className="font-medium text-lg">No items in trash</p>
                         <p className="text-sm">
                           {searchQuery || selectedEntityType !== "all"
                             ? "Try adjusting your filters"
@@ -660,7 +667,7 @@ export function TrashPageClient({
         {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               Page {pagination.page} of {pagination.totalPages}
             </div>
             <div className="flex items-center gap-2">

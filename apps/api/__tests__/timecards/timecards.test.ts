@@ -95,7 +95,10 @@ vi.mock("@/lib/manifest-response", async () => {
     manifestErrorResponse: (
       message:
         | string
-        | ({ error: string; diagnostics?: unknown[] } & Record<string, unknown>),
+        | ({ error: string; diagnostics?: unknown[] } & Record<
+            string,
+            unknown
+          >),
       status: number
     ) => {
       const body =
@@ -131,7 +134,9 @@ vi.mock("@/lib/manifest/issue-log", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 import {
@@ -251,7 +256,9 @@ function mockAuthenticatedUser() {
 /** Helper to make requireCurrentUser throw InvariantError (mapped to 401 by dispatcher) */
 async function mockUnauthenticated() {
   const { InvariantError } = await import("@/app/lib/invariant");
-  vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized")
+  );
 }
 
 describe("Timecards API", () => {
@@ -519,7 +526,14 @@ describe("Timecards API", () => {
 
     it("should clock in successfully through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "entry-new" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "entry-new" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -543,14 +557,25 @@ describe("Timecards API", () => {
           entity: "TimeEntry",
           command: "clockIn",
           body: expect.objectContaining({ employeeId: "emp-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "ManagerOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "ManagerOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -571,7 +596,18 @@ describe("Timecards API", () => {
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard 0 failed: Employee already has an active time entry", kind: "guard_failed", guardFailure: { index: 0, formatted: "Employee already has an active time entry" } }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard 0 failed: Employee already has an active time entry",
+            kind: "guard_failed",
+            guardFailure: {
+              index: 0,
+              formatted: "Employee already has an active time entry",
+            },
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -588,14 +624,19 @@ describe("Timecards API", () => {
       expect(response.status).toBe(422);
       const body = await response.json();
       expect(body.error).toContain("Guard 0 failed");
-      expect(body.error).toContain(
-        "Employee already has an active time entry"
-      );
+      expect(body.error).toContain("Employee already has an active time entry");
     });
 
     it("should return 400 when command fails without policy/guard", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Invalid employee", kind: "command_failed" }), { status: 400 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Invalid employee",
+            kind: "command_failed",
+          }),
+          { status: 400 }
+        )
       );
 
       const request = new NextRequest(
@@ -615,7 +656,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -674,7 +717,14 @@ describe("Timecards API", () => {
 
     it("should clock out successfully through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "entry-001", clockOut: "2026-04-28T17:00:00Z" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "entry-001", clockOut: "2026-04-28T17:00:00Z" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -698,14 +748,28 @@ describe("Timecards API", () => {
           entity: "TimeEntry",
           command: "clockOut",
           body: expect.objectContaining({ id: "entry-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 422 on guard failure (already clocked out)", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard 0 failed: Time entry is already clocked out", kind: "guard_failed", guardFailure: { index: 0, formatted: "Time entry is already clocked out" } }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard 0 failed: Time entry is already clocked out",
+            kind: "guard_failed",
+            guardFailure: {
+              index: 0,
+              formatted: "Time entry is already clocked out",
+            },
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -727,7 +791,15 @@ describe("Timecards API", () => {
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "SelfClockOutOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "SelfClockOutOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -747,7 +819,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -793,7 +867,14 @@ describe("Timecards API", () => {
 
     it("should add entry successfully through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "entry-manual-001" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "entry-manual-001" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -822,14 +903,28 @@ describe("Timecards API", () => {
           entity: "TimeEntry",
           command: "addEntry",
           body: expect.objectContaining({ employeeId: "emp-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard 0 failed: clockOut must be after clockIn", kind: "guard_failed", guardFailure: { index: 0, formatted: "clockOut must be after clockIn" } }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard 0 failed: clockOut must be after clockIn",
+            kind: "guard_failed",
+            guardFailure: {
+              index: 0,
+              formatted: "clockOut must be after clockIn",
+            },
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -1051,7 +1146,14 @@ describe("Timecards API", () => {
 
     it("should approve an edit request through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "edit-001", status: "approved" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "edit-001", status: "approved" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -1078,14 +1180,25 @@ describe("Timecards API", () => {
           entity: "TimecardEditRequest",
           command: "approve",
           body: expect.objectContaining({ id: "edit-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "ManagerOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "ManagerOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -1109,7 +1222,18 @@ describe("Timecards API", () => {
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard 0 failed: Edit request is already processed", kind: "guard_failed", guardFailure: { index: 0, formatted: "Edit request is already processed" } }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard 0 failed: Edit request is already processed",
+            kind: "guard_failed",
+            guardFailure: {
+              index: 0,
+              formatted: "Edit request is already processed",
+            },
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -1134,7 +1258,14 @@ describe("Timecards API", () => {
 
     it("should return 400 when command fails without policy/guard", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Edit request not found", kind: "command_failed" }), { status: 400 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Edit request not found",
+            kind: "command_failed",
+          }),
+          { status: 400 }
+        )
       );
 
       const request = new NextRequest(
@@ -1157,7 +1288,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1205,7 +1338,14 @@ describe("Timecards API", () => {
 
     it("should reject an edit request through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "edit-001", status: "rejected" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "edit-001", status: "rejected" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -1231,15 +1371,29 @@ describe("Timecards API", () => {
         expect.objectContaining({
           entity: "TimecardEditRequest",
           command: "reject",
-          body: expect.objectContaining({ id: "edit-001", reason: "Not justified" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          body: expect.objectContaining({
+            id: "edit-001",
+            reason: "Not justified",
+          }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "ManagerOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "ManagerOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -1260,7 +1414,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1485,7 +1641,14 @@ describe("Timecards API", () => {
 
     it("should approve a time-off request through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "tor-001", status: "approved" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "tor-001", status: "approved" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -1512,14 +1675,25 @@ describe("Timecards API", () => {
           entity: "TimeOffRequest",
           command: "approve",
           body: expect.objectContaining({ id: "tor-001" }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "ManagerOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "ManagerOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -1541,7 +1715,18 @@ describe("Timecards API", () => {
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Guard 0 failed: Request is already processed", kind: "guard_failed", guardFailure: { index: 0, formatted: "Request is already processed" } }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Guard 0 failed: Request is already processed",
+            kind: "guard_failed",
+            guardFailure: {
+              index: 0,
+              formatted: "Request is already processed",
+            },
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -1562,7 +1747,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1610,7 +1797,14 @@ describe("Timecards API", () => {
 
     it("should reject a time-off request through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "tor-001", status: "rejected" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "tor-001", status: "rejected" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -1643,14 +1837,25 @@ describe("Timecards API", () => {
             id: "tor-001",
             reason: "Insufficient staffing",
           }),
-          user: expect.objectContaining({ id: TEST_USER_ID, tenantId: TEST_TENANT_ID }),
+          user: expect.objectContaining({
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+          }),
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Access denied", kind: "policy_denied", policyDenial: { policyName: "ManagerOnlyPolicy" } }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Access denied",
+            kind: "policy_denied",
+            policyDenial: { policyName: "ManagerOnlyPolicy" },
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -1672,7 +1877,14 @@ describe("Timecards API", () => {
 
     it("should return 400 when command fails without policy/guard", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, error: "Request not found", kind: "command_failed" }), { status: 400 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: "Request not found",
+            kind: "command_failed",
+          }),
+          { status: 400 }
+        )
       );
 
       const request = new NextRequest(
@@ -1695,7 +1907,9 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

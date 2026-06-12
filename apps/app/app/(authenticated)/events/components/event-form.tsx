@@ -10,11 +10,11 @@ import type { CreateEventState } from "../actions";
 import { eventStatuses } from "../constants";
 
 interface EventFormProps {
-  event?: Event | null;
   action: (
     prevState: CreateEventState,
     formData: FormData
   ) => Promise<CreateEventState>;
+  event?: Event | null;
   submitLabel: string;
   templateDefaults?: {
     eventType?: string;
@@ -62,7 +62,7 @@ export const EventForm = ({
   return (
     <form action={formAction} className="flex flex-col gap-6">
       {state?.error && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive text-sm">
           {state.error}
         </div>
       )}
@@ -92,7 +92,7 @@ export const EventForm = ({
             readOnly={!isEdit}
           />
           {!isEdit && (
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="font-normal text-muted-foreground text-xs">
               Assigned automatically when the event is created
             </span>
           )}

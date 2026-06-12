@@ -35,19 +35,19 @@ import {
   type InventoryItemWithStatus,
   ITEM_CATEGORIES,
   type ItemCategory,
+  listSuppliers,
   type Supplier,
   UNITS_OF_MEASURE,
   type UnitOfMeasure,
-  listSuppliers,
   type UpdateInventoryItemRequest,
   updateInventoryItem,
 } from "../../../../lib/inventory";
 
 interface CreateInventoryItemModalProps {
-  open: boolean;
+  editItem?: InventoryItemWithStatus | null;
   onClose: () => void;
   onCreated: () => void;
-  editItem?: InventoryItemWithStatus | null;
+  open: boolean;
 }
 
 export const CreateInventoryItemModal = ({

@@ -19,11 +19,11 @@ export interface PushTokenResponse {
 }
 
 export interface NotificationPreferences {
+  eventReminder: boolean;
+  inventoryAlert: boolean;
+  scheduleChange: boolean;
   taskAssigned: boolean;
   taskCompleted: boolean;
-  eventReminder: boolean;
-  scheduleChange: boolean;
-  inventoryAlert: boolean;
 }
 
 /**

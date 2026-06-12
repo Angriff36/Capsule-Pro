@@ -255,7 +255,15 @@ const baseConfig: NextConfig = withToolbar(
       },
       // Map .js imports → .ts source for transpiled workspace packages that use ESM-style
       // import extensions (e.g. `import './foo.js'` where foo.ts is the actual file)
-      resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
+      resolveExtensions: [
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs",
+        ".json",
+      ],
     },
     experimental: {
       optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
@@ -263,9 +271,14 @@ const baseConfig: NextConfig = withToolbar(
         bodySizeLimit: "2mb",
         // Allow Tailscale proxy origins for Server Actions in dev/staging.
         // Vercel production uses the deployment domain automatically.
-        ...(process.env.VERCEL !== "1"
-          ? { allowedOrigins: ["*.tail78dd9e.ts.net", "pop-os.tail78dd9e.ts.net"] }
-          : {}),
+        ...(process.env.VERCEL === "1"
+          ? {}
+          : {
+              allowedOrigins: [
+                "*.tail78dd9e.ts.net",
+                "pop-os.tail78dd9e.ts.net",
+              ],
+            }),
       },
     },
     // Enable source maps only when they can be uploaded to Sentry.
@@ -372,7 +385,7 @@ const baseConfig: NextConfig = withToolbar(
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval' " : ""}https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:`,
+                `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "production" ? "" : "'unsafe-eval' "}https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:`,
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",

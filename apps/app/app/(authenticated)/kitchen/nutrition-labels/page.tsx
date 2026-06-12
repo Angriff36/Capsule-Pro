@@ -14,19 +14,16 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface Recipe {
+  createdAt: string;
+  hasNutritionData: boolean;
   id: string;
+  ingredientCount: number;
   name: string;
   yield: number;
-  ingredientCount: number;
-  hasNutritionData: boolean;
-  createdAt: string;
 }
 
 interface NutritionLabel {
-  recipeId: string;
-  recipeName: string;
-  servingSize: string;
-  servingsPerRecipe: number;
+  disclaimer: string;
   nutrition: {
     calories: number;
     totalFat: number;
@@ -44,8 +41,11 @@ interface NutritionLabel {
     iron: number;
   };
   percentDailyValue: Record<string, number>;
+  recipeId: string;
+  recipeName: string;
+  servingSize: string;
+  servingsPerRecipe: number;
   unknownIngredients: string[];
-  disclaimer: string;
 }
 
 export default function NutritionLabelsPage() {
@@ -120,37 +120,37 @@ export default function NutritionLabelsPage() {
     isIndented = false
   ) => (
     <div
-      className={`flex justify-between py-1 ${isIndented ? "pl-4" : "border-t border-gray-200"}`}
+      className={`flex justify-between py-1 ${isIndented ? "pl-4" : "border-gray-200 border-t"}`}
     >
       <span className={`${isIndented ? "text-sm" : "font-medium"}`}>
         {isIndented ? "  " : ""}
         {label}
       </span>
       <span className="flex gap-4">
-        <span className="text-right w-20">
+        <span className="w-20 text-right">
           {value}
           {unit}
         </span>
         {percentDV !== undefined && (
-          <span className="text-right w-12 font-medium">{percentDV}%</span>
+          <span className="w-12 text-right font-medium">{percentDV}%</span>
         )}
       </span>
     </div>
   );
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+        <h1 className="flex items-center gap-2 font-semibold text-2xl tracking-tight">
           <FileText className="h-8 w-8" />
           Nutrition Labels
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="mt-2 text-muted-foreground">
           Generate FDA-compliant nutrition labels for your recipes
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recipe List */}
         <Card tone="canvas">
           <CardHeader>
@@ -167,18 +167,18 @@ export default function NutritionLabelsPage() {
                 ))}
               </div>
             ) : recipes.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="py-8 text-center text-muted-foreground">
+                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>
                   No recipes found. Create recipes first to generate nutrition
                   labels.
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+              <div className="max-h-[600px] space-y-2 overflow-y-auto">
                 {recipes.map((recipe) => (
                   <div
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`cursor-pointer rounded-lg border p-3 transition-colors ${
                       selectedRecipe?.id === recipe.id
                         ? "border-primary bg-primary/5"
                         : "hover:bg-muted/50"
@@ -189,7 +189,7 @@ export default function NutritionLabelsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{recipe.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {recipe.ingredientCount} ingredients • Serves{" "}
                           {recipe.yield || 1}
                         </p>
@@ -228,18 +228,18 @@ export default function NutritionLabelsPage() {
           <CardContent>
             {generating ? (
               <div className="flex items-center justify-center py-12">
-                <Sparkles className="h-8 w-8 animate-pulse mr-2" />
+                <Sparkles className="mr-2 h-8 w-8 animate-pulse" />
                 <span>Calculating nutrition...</span>
               </div>
             ) : nutritionLabel ? (
-              <div className="bg-white border-2 border-black p-4 font-mono text-sm">
+              <div className="border-2 border-black bg-white p-4 font-mono text-sm">
                 {/* Header */}
-                <div className="text-2xl font-semibold border-b-4 border-black pb-1">
+                <div className="border-black border-b-4 pb-1 font-semibold text-2xl">
                   Nutrition Facts
                 </div>
 
                 <div className="py-2">
-                  <div className="text-lg font-bold">
+                  <div className="font-bold text-lg">
                     {nutritionLabel.recipeName}
                   </div>
                   <div className="text-sm">{nutritionLabel.servingSize}</div>
@@ -248,14 +248,14 @@ export default function NutritionLabelsPage() {
                   </div>
                 </div>
 
-                <div className="border-t-8 border-black">
-                  <div className="text-right text-xs pb-1">
+                <div className="border-black border-t-8">
+                  <div className="pb-1 text-right text-xs">
                     Amount Per Serving
                   </div>
                 </div>
 
                 {/* Calories */}
-                <div className="border-t-4 border-black py-1">
+                <div className="border-black border-t-4 py-1">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Calories</span>
                     <span>{nutritionLabel.nutrition.calories}</span>
@@ -263,7 +263,7 @@ export default function NutritionLabelsPage() {
                 </div>
 
                 {/* Daily Value Header */}
-                <div className="border-t border-gray-200 py-1 text-right text-sm font-medium">
+                <div className="border-gray-200 border-t py-1 text-right font-medium text-sm">
                   % Daily Value*
                 </div>
 
@@ -352,14 +352,14 @@ export default function NutritionLabelsPage() {
                 )}
 
                 {/* Footer */}
-                <div className="border-t-4 border-black mt-2 pt-2 text-xs">
+                <div className="mt-2 border-black border-t-4 pt-2 text-xs">
                   * Percent Daily Values are based on a 2,000 calorie diet.
                 </div>
 
                 {/* Unknown Ingredients Warning */}
                 {nutritionLabel.unknownIngredients.length > 0 && (
-                  <div className="mt-4 p-2 bg-muted/50 border border-hairline rounded text-xs">
-                    <div className="flex items-center gap-1 text-foreground font-medium mb-1">
+                  <div className="mt-4 rounded border border-hairline bg-muted/50 p-2 text-xs">
+                    <div className="mb-1 flex items-center gap-1 font-medium text-foreground">
                       <AlertTriangle className="h-3 w-3" />
                       Missing nutrition data
                     </div>
@@ -371,13 +371,13 @@ export default function NutritionLabelsPage() {
                 )}
 
                 {/* Disclaimer */}
-                <div className="mt-4 text-xs text-muted-foreground italic">
+                <div className="mt-4 text-muted-foreground text-xs italic">
                   {nutritionLabel.disclaimer}
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="py-12 text-center text-muted-foreground">
+                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>Select a recipe to generate a nutrition label</p>
               </div>
             )}

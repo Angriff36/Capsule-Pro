@@ -21,15 +21,15 @@
 
 import { execSync } from "node:child_process";
 import {
-  readFileSync,
-  writeFileSync,
-  unlinkSync,
-  mkdirSync,
   existsSync,
+  mkdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
 } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
@@ -48,7 +48,9 @@ const strict = argv.includes("--strict");
 
 function getArgValue(flag) {
   const idx = argv.indexOf(flag);
-  if (idx === -1 || idx + 1 >= argv.length) return null;
+  if (idx === -1 || idx + 1 >= argv.length) {
+    return null;
+  }
   return argv[idx + 1];
 }
 
@@ -76,19 +78,31 @@ function loadGitBaseline() {
   const tmpFile = join(tmpdir(), `ir-baseline-${Date.now()}.json`);
   try {
     // Pipe to temp file to avoid ENOBUFS on large IR files (Windows)
-    execSync(
-      `git show HEAD:manifest/ir/kitchen.ir.json > "${tmpFile}"`,
-      { cwd: PROJECT_ROOT, encoding: "utf8", timeout: 30000, shell: true }
-    );
+    execSync(`git show HEAD:manifest/ir/kitchen.ir.json > "${tmpFile}"`, {
+      cwd: PROJECT_ROOT,
+      encoding: "utf8",
+      timeout: 30_000,
+      shell: true,
+    });
     const raw = readFileSync(tmpFile, "utf8");
     return JSON.parse(raw);
   } catch (err) {
     // May be untracked or first commit — fall back to self-comparison
-    console.log("  Note: Could not load git HEAD baseline (file may be untracked).");
-    console.log("        Comparing current IR against itself (expect zero changes).");
+    console.log(
+      "  Note: Could not load git HEAD baseline (file may be untracked)."
+    );
+    console.log(
+      "        Comparing current IR against itself (expect zero changes)."
+    );
     return null;
   } finally {
-    try { if (existsSync(tmpFile)) unlinkSync(tmpFile); } catch { /* ignore */ }
+    try {
+      if (existsSync(tmpFile)) {
+        unlinkSync(tmpFile);
+      }
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -97,7 +111,12 @@ function loadGitBaseline() {
 // ---------------------------------------------------------------------------
 async function main() {
   console.log("IR semantic drift detection");
-  console.log("Mode:", strict ? "STRICT (exit 1 on any change)" : "REPORT (exit 1 on unacknowledged breaking)");
+  console.log(
+    "Mode:",
+    strict
+      ? "STRICT (exit 1 on any change)"
+      : "REPORT (exit 1 on unacknowledged breaking)"
+  );
 
   // 1. Load current IR
   console.log("\n[1/5] Loading current IR...");
@@ -141,10 +160,13 @@ async function main() {
     const bcMod = await import("@angriff36/manifest/breaking-change");
     classifyBreakingChanges = bcMod.classifyBreakingChanges;
     if (typeof classifyBreakingChanges !== "function") {
-      classifyBreakingChanges = bcMod.default?.classifyBreakingChanges || bcMod.default;
+      classifyBreakingChanges =
+        bcMod.default?.classifyBreakingChanges || bcMod.default;
     }
   } catch (err) {
-    console.error("  ERROR: Could not import @angriff36/manifest/breaking-change");
+    console.error(
+      "  ERROR: Could not import @angriff36/manifest/breaking-change"
+    );
     console.error(`    ${err.message}`);
     console.error("  Ensure @angriff36/manifest@2.2.0+ is installed.");
     process.exit(1);
@@ -155,16 +177,22 @@ async function main() {
     process.exit(1);
   }
   if (typeof classifyBreakingChanges !== "function") {
-    console.error("  ERROR: classifyBreakingChanges is not a function. Got:", typeof classifyBreakingChanges);
+    console.error(
+      "  ERROR: classifyBreakingChanges is not a function. Got:",
+      typeof classifyBreakingChanges
+    );
     process.exit(1);
   }
 
   // 4. Compute diff and classify
   const diffReport = diffIR(baselineIR, currentIR);
-  console.log("  Diff computed:", diffReport.summary.hasChanges ? "CHANGES DETECTED" : "NO CHANGES");
+  console.log(
+    "  Diff computed:",
+    diffReport.summary.hasChanges ? "CHANGES DETECTED" : "NO CHANGES"
+  );
 
   // Load acknowledgments
-  let ackFile = undefined;
+  let ackFile;
   if (existsSync(ackFilePath)) {
     try {
       const raw = JSON.parse(readFileSync(ackFilePath, "utf8"));
@@ -174,7 +202,9 @@ async function main() {
       } else if (raw.acknowledged) {
         ackFile = raw;
       }
-      console.log(`  Loaded ${ackFile.acknowledged.length} acknowledged changes`);
+      console.log(
+        `  Loaded ${ackFile.acknowledged.length} acknowledged changes`
+      );
     } catch {
       console.log("  Warning: Could not parse ack file, treating as empty");
     }
@@ -229,9 +259,7 @@ async function main() {
     for (const change of classified.unacknowledged) {
       console.log(`    ${change.path} (${change.category})`);
     }
-    console.log(
-      `\n  To acknowledge, add entries to ${ackFilePath}`
-    );
+    console.log(`\n  To acknowledge, add entries to ${ackFilePath}`);
   } else if (classified.summary.breaking > 0) {
     console.log(
       `\n  All ${classified.summary.breaking} breaking changes are acknowledged.`
@@ -259,7 +287,9 @@ async function main() {
 
   // Write JSON report
   console.log("\n[5/5] Writing report...");
-  if (!existsSync(REPORTS_DIR)) mkdirSync(REPORTS_DIR, { recursive: true });
+  if (!existsSync(REPORTS_DIR)) {
+    mkdirSync(REPORTS_DIR, { recursive: true });
+  }
 
   const report = {
     timestamp: new Date().toISOString(),
@@ -267,15 +297,14 @@ async function main() {
     baseline: baselinePath || "git:HEAD:manifest/ir/kitchen.ir.json",
     current: DEFAULT_IR_PATH,
     diffSummary: diffReport.summary,
-    classified: classified,
+    classified,
     exitCode: 0,
   };
 
   // Determine exit code
-  const shouldFail =
-    strict
-      ? classified.summary.total > 0
-      : classified.unacknowledged.length > 0;
+  const shouldFail = strict
+    ? classified.summary.total > 0
+    : classified.unacknowledged.length > 0;
 
   report.exitCode = shouldFail ? 1 : 0;
 

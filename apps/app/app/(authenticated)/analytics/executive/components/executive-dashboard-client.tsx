@@ -1,13 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   MetricCardBlock,
   type TrendDirection,
@@ -20,11 +12,19 @@ import {
   DisplayHeading,
   MonoLabel,
   OperationalColumn,
-  PageCanvas,
   PageBody,
+  PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { type ExecutiveKPIMetrics } from "../actions/get-executive-kpis";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import Link from "next/link";
+import type { ExecutiveKPIMetrics } from "../actions/get-executive-kpis";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -108,8 +108,8 @@ export function ExecutiveDashboardClient({
         </CommandBandHeader>
         <CommandBandActions>
           <Link
+            className="text-muted-foreground text-sm hover:text-foreground"
             href="/analytics"
-            className="text-sm text-muted-foreground hover:text-foreground"
           >
             View All Analytics
           </Link>
@@ -122,35 +122,39 @@ export function ExecutiveDashboardClient({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCardBlock
               description="Current Month Revenue"
-              value={currencyFormatter.format(metrics.revenue.currentMonth)}
               detail={`${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}% vs last month`}
               trend={metrics.revenue.trend}
               trendColor={getTrendColor(metrics.revenue.trend)}
+              value={currencyFormatter.format(metrics.revenue.currentMonth)}
             />
             <MetricCardBlock
               description="Year-to-Date Revenue"
-              value={currencyFormatter.format(metrics.revenue.ytd)}
               detail={`${ytdGrowthPct >= 0 ? "+" : ""}${ytdGrowthPct.toFixed(1)}% vs last year`}
-              trend={ytdGrowthPct > 5 ? "up" : ytdGrowthPct < -5 ? "down" : "neutral"}
+              trend={
+                ytdGrowthPct > 5 ? "up" : ytdGrowthPct < -5 ? "down" : "neutral"
+              }
+              value={currencyFormatter.format(metrics.revenue.ytd)}
             />
             <MetricCardBlock
               description="Revenue Forecast"
-              value={currencyFormatter.format(metrics.revenue.forecast)}
               detail="Based on current trend"
               trend="neutral"
+              value={currencyFormatter.format(metrics.revenue.forecast)}
             />
             <MetricCardBlock
               description="Monthly Average"
+              detail="Year-to-date average"
+              trend="neutral"
               value={currencyFormatter.format(
                 metrics.revenue.byMonth.length > 0
                   ? metrics.revenue.ytd /
                       metrics.revenue.byMonth.filter(
-                        (m) => new Date(m.month) >= new Date(new Date().getFullYear(), 0, 1)
+                        (m) =>
+                          new Date(m.month) >=
+                          new Date(new Date().getFullYear(), 0, 1)
                       ).length
                   : 0
               )}
-              detail="Year-to-date average"
-              trend="neutral"
             />
           </div>
 
@@ -158,30 +162,30 @@ export function ExecutiveDashboardClient({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCardBlock
               description="Overall Utilization"
-              value={`${metrics.utilization.overall.toFixed(0)}%`}
               detail="Budget vs actual usage"
               trend={metrics.utilization.trend}
               trendColor={getTrendColor(metrics.utilization.trend, true)}
+              value={`${metrics.utilization.overall.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Kitchen Staffing"
-              value={`${metrics.utilization.kitchen.toFixed(0)}%`}
               detail="Labor efficiency"
               trend={metrics.utilization.trend}
               trendColor={getTrendColor(metrics.utilization.trend, true)}
+              value={`${metrics.utilization.kitchen.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Staff Utilization"
-              value={`${metrics.utilization.staff.toFixed(0)}%`}
               detail="Active vs available"
               trend={metrics.utilization.trend}
               trendColor={getTrendColor(metrics.utilization.trend, true)}
+              value={`${metrics.utilization.staff.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Equipment Uptime"
-              value={`${metrics.utilization.equipment.toFixed(0)}%`}
               detail="Operational readiness"
               trend="neutral"
+              value={`${metrics.utilization.equipment.toFixed(0)}%`}
             />
           </div>
 
@@ -189,21 +193,21 @@ export function ExecutiveDashboardClient({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <MetricCardBlock
               description="Gross Margin"
-              value={`${metrics.profitability.grossMargin.toFixed(1)}%`}
               detail="Average across all events"
               trend={metrics.profitability.trend}
+              value={`${metrics.profitability.grossMargin.toFixed(1)}%`}
             />
             <MetricCardBlock
               description="Net Profit Margin"
-              value={`${metrics.profitability.netProfit.toFixed(1)}%`}
               detail="After all expenses"
               trend={metrics.profitability.trend}
+              value={`${metrics.profitability.netProfit.toFixed(1)}%`}
             />
             <MetricCardBlock
               description="EBITDA Margin"
-              value={`${metrics.profitability.ebitda.toFixed(1)}%`}
               detail="Operating performance"
               trend={metrics.profitability.trend}
+              value={`${metrics.profitability.ebitda.toFixed(1)}%`}
             />
           </div>
 
@@ -211,27 +215,27 @@ export function ExecutiveDashboardClient({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCardBlock
               description="Pipeline Value"
-              value={currencyFormatter.format(metrics.pipeline.totalValue)}
               detail={`${metrics.pipeline.qualifiedLeads} qualified leads`}
               trend={metrics.pipeline.trend}
+              value={currencyFormatter.format(metrics.pipeline.totalValue)}
             />
             <MetricCardBlock
               description="Proposals Sent"
-              value={numberFormatter.format(metrics.pipeline.proposalsSent)}
               detail="Active proposals"
               trend={metrics.pipeline.trend}
+              value={numberFormatter.format(metrics.pipeline.proposalsSent)}
             />
             <MetricCardBlock
               description="Win Rate"
-              value={`${metrics.pipeline.winRate.toFixed(0)}%`}
               detail="Conversion rate"
               trend={metrics.pipeline.trend}
+              value={`${metrics.pipeline.winRate.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Avg Sales Cycle"
-              value={`${metrics.pipeline.avgSalesCycle.toFixed(0)} days`}
               detail="Lead to close"
               trend="neutral"
+              value={`${metrics.pipeline.avgSalesCycle.toFixed(0)} days`}
             />
           </div>
 
@@ -239,39 +243,44 @@ export function ExecutiveDashboardClient({
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCardBlock
               description="On-Time Delivery"
-              value={`${metrics.operationalHealth.onTimeDeliveryRate.toFixed(0)}%`}
               detail="Events delivered on schedule"
               trend={metrics.operationalHealth.trend}
+              value={`${metrics.operationalHealth.onTimeDeliveryRate.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Staff Retention"
-              value={`${metrics.operationalHealth.staffRetentionRate.toFixed(0)}%`}
               detail="12-month retention rate"
               trend={metrics.operationalHealth.trend}
+              value={`${metrics.operationalHealth.staffRetentionRate.toFixed(0)}%`}
             />
             <MetricCardBlock
               description="Food Waste"
-              value={`${metrics.operationalHealth.foodWastePercentage.toFixed(1)}%`}
               detail="Of food cost"
-              trend={metrics.operationalHealth.foodWastePercentage < 3 ? "up" : "down"}
+              trend={
+                metrics.operationalHealth.foodWastePercentage < 3
+                  ? "up"
+                  : "down"
+              }
               trendColor={
                 metrics.operationalHealth.foodWastePercentage < 3
                   ? "text-green-600"
                   : "text-red-600"
               }
+              value={`${metrics.operationalHealth.foodWastePercentage.toFixed(1)}%`}
             />
             <MetricCardBlock
               description="Health Score"
+              detail="Overall operational score"
+              trend={metrics.operationalHealth.trend}
               value={
                 (
                   (metrics.operationalHealth.onTimeDeliveryRate * 0.3 +
                     metrics.operationalHealth.staffRetentionRate * 0.5 +
-                    (100 - metrics.operationalHealth.foodWastePercentage) * 0.2) /
+                    (100 - metrics.operationalHealth.foodWastePercentage) *
+                      0.2) /
                   100
                 ).toFixed(0) + "%"
               }
-              detail="Overall operational score"
-              trend={metrics.operationalHealth.trend}
             />
           </div>
 
@@ -279,7 +288,9 @@ export function ExecutiveDashboardClient({
           <Card>
             <CardHeader>
               <CardTitle>Key Takeaways</CardTitle>
-              <CardDescription>Automated insights based on current metrics</CardDescription>
+              <CardDescription>
+                Automated insights based on current metrics
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm">
@@ -297,8 +308,8 @@ export function ExecutiveDashboardClient({
                     <span className="text-red-600">↓</span>
                     <span>
                       <strong>Revenue Decline:</strong> Revenue decreased{" "}
-                      {Math.abs(revenueChangePct).toFixed(0)}% compared to last month.
-                      Review pipeline and sales activity.
+                      {Math.abs(revenueChangePct).toFixed(0)}% compared to last
+                      month. Review pipeline and sales activity.
                     </span>
                   </li>
                 )}
@@ -306,8 +317,8 @@ export function ExecutiveDashboardClient({
                   <li className="flex items-start gap-2">
                     <span className="text-amber-600">⚠</span>
                     <span>
-                      <strong>Margin Alert:</strong> Gross margin is below 20%. Review
-                      pricing strategy and cost control.
+                      <strong>Margin Alert:</strong> Gross margin is below 20%.
+                      Review pricing strategy and cost control.
                     </span>
                   </li>
                 )}
@@ -316,8 +327,8 @@ export function ExecutiveDashboardClient({
                     <span className="text-amber-600">⚠</span>
                     <span>
                       <strong>Conversion Rate:</strong> Win rate is{" "}
-                      {metrics.pipeline.winRate.toFixed(0)}%. Consider reviewing proposal
-                      quality and pricing.
+                      {metrics.pipeline.winRate.toFixed(0)}%. Consider reviewing
+                      proposal quality and pricing.
                     </span>
                   </li>
                 )}
@@ -326,8 +337,8 @@ export function ExecutiveDashboardClient({
                     <span className="text-amber-600">⚠</span>
                     <span>
                       <strong>Waste Management:</strong> Food waste is{" "}
-                      {metrics.operationalHealth.foodWastePercentage.toFixed(1)}%. Implement
-                      tighter inventory controls.
+                      {metrics.operationalHealth.foodWastePercentage.toFixed(1)}
+                      %. Implement tighter inventory controls.
                     </span>
                   </li>
                 )}
@@ -336,12 +347,13 @@ export function ExecutiveDashboardClient({
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
                       <span>
-                        <strong>Strong Performance:</strong> Excellent on-time delivery
-                        rate and healthy margins. Operations are running efficiently.
+                        <strong>Strong Performance:</strong> Excellent on-time
+                        delivery rate and healthy margins. Operations are
+                        running efficiently.
                       </span>
                     </li>
                   )}
-                </ul>
+              </ul>
             </CardContent>
           </Card>
         </OperationalColumn>

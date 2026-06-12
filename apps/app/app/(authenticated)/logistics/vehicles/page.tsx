@@ -26,6 +26,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -36,14 +44,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -67,19 +67,19 @@ import {
 import { createVehicle } from "../actions";
 
 interface Vehicle {
+  assigned_drivers: number;
+  capacity_volume: number | null;
+  capacity_weight: number | null;
+  fuel_type: string | null;
   id: string;
   make: string;
-  model: string;
-  year: number | null;
-  plate_number: string | null;
-  vin: string | null;
-  capacity_weight: number | null;
-  capacity_volume: number | null;
-  fuel_type: string | null;
   mileage: number | null;
-  status: string;
+  model: string;
   notes: string | null;
-  assigned_drivers: number;
+  plate_number: string | null;
+  status: string;
+  vin: string | null;
+  year: number | null;
 }
 
 const STATUS_CONFIG: Record<
@@ -192,7 +192,9 @@ export default function VehiclesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!(form.make.trim() && form.model.trim())) return;
+    if (!(form.make.trim() && form.model.trim())) {
+      return;
+    }
     setSaving(true);
     try {
       if (editing) {
@@ -221,13 +223,21 @@ export default function VehiclesPage() {
         const fd = new FormData();
         fd.set("make", form.make);
         fd.set("model", form.model);
-        if (form.year) fd.set("year", form.year);
+        if (form.year) {
+          fd.set("year", form.year);
+        }
         fd.set("plateNumber", form.plateNumber);
         fd.set("vin", form.vin);
-        if (form.capacityWeight) fd.set("capacityWeight", form.capacityWeight);
-        if (form.capacityVolume) fd.set("capacityVolume", form.capacityVolume);
+        if (form.capacityWeight) {
+          fd.set("capacityWeight", form.capacityWeight);
+        }
+        if (form.capacityVolume) {
+          fd.set("capacityVolume", form.capacityVolume);
+        }
         fd.set("fuelType", form.fuelType);
-        if (form.mileage) fd.set("mileage", form.mileage);
+        if (form.mileage) {
+          fd.set("mileage", form.mileage);
+        }
         fd.set("status", form.status);
         fd.set("notes", form.notes);
         await createVehicle(fd);
@@ -273,13 +283,13 @@ export default function VehiclesPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Vehicles</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Vehicles</h1>
           <p className="text-muted-foreground">
             Manage fleet vehicles, capacity, and maintenance status.
           </p>
         </div>
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Vehicle
         </Button>
       </div>
@@ -294,7 +304,7 @@ export default function VehiclesPage() {
           return (
             <Card key={status} tone="soft-stone">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="font-medium text-sm">
                   {config.label}
                 </CardTitle>
                 <config.icon
@@ -310,7 +320,7 @@ export default function VehiclesPage() {
                 />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{count}</div>
+                <div className="font-bold text-2xl">{count}</div>
               </CardContent>
             </Card>
           );
@@ -328,12 +338,14 @@ export default function VehiclesPage() {
                 </EmptyMedia>
                 <EmptyTitle>No vehicles yet</EmptyTitle>
                 <EmptyDescription>
-                  Add fleet vehicles to manage capacity, maintenance status, and driver assignments.
+                  Add fleet vehicles to manage capacity, maintenance status, and
+                  driver assignments.
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <p className="text-muted-foreground text-xs">
-                  Click <strong>Add Vehicle</strong> above to register your first vehicle.
+                  Click <strong>Add Vehicle</strong> above to register your
+                  first vehicle.
                 </p>
               </EmptyContent>
             </Empty>
@@ -347,7 +359,7 @@ export default function VehiclesPage() {
             const Icon = config.icon;
             return (
               <Card
-                className="hover:border-primary/40 transition-shadow"
+                className="transition-shadow hover:border-primary/40"
                 key={vehicle.id}
                 tone="canvas"
               >
@@ -358,8 +370,8 @@ export default function VehiclesPage() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <span className="font-semibold">
                           {vehicle.year ? `${vehicle.year} ` : ""}
                           {vehicle.make} {vehicle.model}
@@ -372,7 +384,7 @@ export default function VehiclesPage() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
                         {vehicle.plate_number && (
                           <span>{vehicle.plate_number}</span>
                         )}

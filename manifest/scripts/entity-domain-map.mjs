@@ -18,8 +18,8 @@
 // module; that rewire is a follow-up. This module is the canonical home.
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Load auto-generated Prisma model metadata (produced by generate-prisma-model-metadata.mjs).
 // Keys are Prisma MODEL names; values include the Prisma client accessor.
@@ -27,9 +27,18 @@ import { dirname, join } from "node:path";
 const here = dirname(fileURLToPath(import.meta.url));
 let _prismaMetadata = null;
 function loadPrismaMetadata() {
-  if (_prismaMetadata) return _prismaMetadata;
+  if (_prismaMetadata) {
+    return _prismaMetadata;
+  }
   try {
-    const jsonPath = join(here, "..", "runtime", "src", "generated", "prisma-model-metadata.generated.json");
+    const jsonPath = join(
+      here,
+      "..",
+      "runtime",
+      "src",
+      "generated",
+      "prisma-model-metadata.generated.json"
+    );
     _prismaMetadata = JSON.parse(readFileSync(jsonPath, "utf8"));
   } catch {
     _prismaMetadata = {};
@@ -41,21 +50,21 @@ function loadPrismaMetadata() {
 // Used by resolveAccessor() to look up the correct metadata entry.
 // Each entry verified against schema.prisma (constitution: never invent accessors).
 export const ENTITY_TO_PRISMA_MODEL = {
-  EventImportWorkflow: "EventImport",      // model EventImport @@map("event_imports")
-  BankAccount: "EmployeeBankAccount",       // model EmployeeBankAccount @@map("employee_bank_accounts")
-  LogisticsRoute: "DeliveryRoute",          // model DeliveryRoute @@map("delivery_routes")
-  Document: "documents",                    // snake_case model name
+  EventImportWorkflow: "EventImport", // model EventImport @@map("event_imports")
+  BankAccount: "EmployeeBankAccount", // model EmployeeBankAccount @@map("employee_bank_accounts")
+  LogisticsRoute: "DeliveryRoute", // model DeliveryRoute @@map("delivery_routes")
+  Document: "documents", // snake_case model name
   SmsAutomationRule: "sms_automation_rules", // snake_case model name
-  EventTimelineItem: "EventTimeline",       // model EventTimeline @map("event_timeline") — different name
-  StorageLocation: "storage_locations",     // snake_case model name
-  BulkCombineRule: "bulk_combine_rules",    // snake_case model name
-  MethodVideo: "method_videos",             // snake_case model name
-  PrepListImport: "prep_list_imports",       // snake_case model name
-  QACorrectiveAction: "CorrectiveAction",   // PascalCase model CorrectiveAction (schema.prisma:5961)
-  QATemperatureLog: "TemperatureLog",       // PascalCase model TemperatureLog (schema.prisma:5929)
-  TaskBundleItem: "task_bundle_items",       // snake_case model name
-  TaskBundle: "task_bundles",               // snake_case model name
-  OpenShift: "open_shifts",                 // snake_case model name
+  EventTimelineItem: "EventTimeline", // model EventTimeline @map("event_timeline") — different name
+  StorageLocation: "storage_locations", // snake_case model name
+  BulkCombineRule: "bulk_combine_rules", // snake_case model name
+  MethodVideo: "method_videos", // snake_case model name
+  PrepListImport: "prep_list_imports", // snake_case model name
+  QACorrectiveAction: "CorrectiveAction", // PascalCase model CorrectiveAction (schema.prisma:5961)
+  QATemperatureLog: "TemperatureLog", // PascalCase model TemperatureLog (schema.prisma:5929)
+  TaskBundleItem: "task_bundle_items", // snake_case model name
+  TaskBundle: "task_bundles", // snake_case model name
+  OpenShift: "open_shifts", // snake_case model name
 };
 
 // Maps each Manifest entity to its domain directory under apps/api/app/api/.
@@ -270,7 +279,9 @@ export const ENTITY_DOMAIN_MAP = {
 // Must stay byte-for-byte equivalent so the producer can locate the exact `database.<naive>`
 // token the projection emitted.
 export function toCamelCase(value) {
-  if (!value) return value;
+  if (!value) {
+    return value;
+  }
   return value[0].toLowerCase() + value.slice(1);
 }
 
@@ -332,23 +343,43 @@ export const ENTITY_ACCESSOR_OVERRIDES = {
 //   raw `deleted_at` column: Document, SmsAutomationRule, StorageLocation, OnboardingTask, EventFollowup.
 //   CrmScoringRule and EventFollowup now have deleted_at columns (added 2026-06-08).
 export const ENTITY_FIELD_OVERRIDES = {
-  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  EventFollowup: {
+    tenantId: "tenant_id",
+    createdAt: "created_at",
+    deletedAt: "deleted_at",
+  },
   ActionMilestone: { tenantId: "tenant_id", createdAt: "created_at" },
   DisciplinaryAction: { tenantId: "tenant_id", createdAt: "created_at" },
   OnboardingCompletion: { tenantId: "tenant_id", createdAt: "created_at" },
-  OnboardingTask: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  OnboardingTask: {
+    tenantId: "tenant_id",
+    createdAt: "created_at",
+    deletedAt: "deleted_at",
+  },
   PerformanceReview: { tenantId: "tenant_id", createdAt: "created_at" },
   ReorderSuggestion: { createdAt: "created_at" },
   ForecastInput: { createdAt: null },
   InventoryForecast: { createdAt: null },
-  SampleData: { createdAt: null },  // no created-at column; uses seededAt/clearedAt instead
+  SampleData: { createdAt: null }, // no created-at column; uses seededAt/clearedAt instead
 
   // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
   // exposed that these models also use raw `tenant_id` + `created_at` (no @map). Verified
   // 2026-06-03 against schema.prisma (all 9 have raw tenant_id + created_at columns).
-  Document: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
-  SmsAutomationRule: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
-  StorageLocation: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  Document: {
+    tenantId: "tenant_id",
+    createdAt: "created_at",
+    deletedAt: "deleted_at",
+  },
+  SmsAutomationRule: {
+    tenantId: "tenant_id",
+    createdAt: "created_at",
+    deletedAt: "deleted_at",
+  },
+  StorageLocation: {
+    tenantId: "tenant_id",
+    createdAt: "created_at",
+    deletedAt: "deleted_at",
+  },
   BulkCombineRule: { tenantId: "tenant_id", createdAt: "created_at" },
   MethodVideo: { tenantId: "tenant_id", createdAt: "created_at" },
   PrepListImport: { tenantId: "tenant_id", createdAt: "created_at" },
@@ -401,12 +432,17 @@ export function resolveAccessor(entityName) {
   const naive = toCamelCase(entityName);
 
   // 1. Hard overrides take precedence (edge cases + drop list)
-  if (Object.prototype.hasOwnProperty.call(ENTITY_ACCESSOR_OVERRIDES, entityName)) {
+  if (Object.hasOwn(ENTITY_ACCESSOR_OVERRIDES, entityName)) {
     const override = ENTITY_ACCESSOR_OVERRIDES[entityName];
     if (override === null) {
       return { naive, accessor: null, drop: true, overridden: false };
     }
-    return { naive, accessor: override, drop: false, overridden: override !== naive };
+    return {
+      naive,
+      accessor: override,
+      drop: false,
+      overridden: override !== naive,
+    };
   }
 
   // 2. Auto-derive from generated Prisma metadata
@@ -440,7 +476,9 @@ export function resolveDetailSegment(entityName) {
  */
 export function applyFieldOverrides(content, entityName) {
   const overrides = entityName ? ENTITY_FIELD_OVERRIDES[entityName] : undefined;
-  if (!overrides) return { content, rewrites: [] };
+  if (!overrides) {
+    return { content, rewrites: [] };
+  }
   let out = content;
   const rewrites = [];
 
@@ -450,7 +488,9 @@ export function applyFieldOverrides(content, entityName) {
       /(\n[^\S\n]*)tenantId(,?)(?=\s*\n)/g,
       `$1${overrides.tenantId}: tenantId$2`
     );
-    if (out !== before) rewrites.push(`where.tenantId → ${overrides.tenantId}`);
+    if (out !== before) {
+      rewrites.push(`where.tenantId → ${overrides.tenantId}`);
+    }
   }
 
   if (overrides.createdAt === null) {
@@ -468,7 +508,9 @@ export function applyFieldOverrides(content, entityName) {
       /(orderBy:\s*\{\s*)createdAt(\s*:\s*"desc")/g,
       `$1${overrides.createdAt}$2`
     );
-    if (out !== before) rewrites.push(`orderBy.createdAt → ${overrides.createdAt}`);
+    if (out !== before) {
+      rewrites.push(`orderBy.createdAt → ${overrides.createdAt}`);
+    }
   }
 
   if (overrides.deletedAt === null) {
@@ -483,11 +525,10 @@ export function applyFieldOverrides(content, entityName) {
   } else if (overrides.deletedAt) {
     // Legacy snake_case model: rewrite the `where` soft-delete field name.
     const before = out;
-    out = out.replace(
-      /deletedAt(\s*:\s*null)/g,
-      `${overrides.deletedAt}$1`
-    );
-    if (out !== before) rewrites.push(`where.deletedAt → ${overrides.deletedAt}`);
+    out = out.replace(/deletedAt(\s*:\s*null)/g, `${overrides.deletedAt}$1`);
+    if (out !== before) {
+      rewrites.push(`where.deletedAt → ${overrides.deletedAt}`);
+    }
   }
 
   return { content: out, rewrites };

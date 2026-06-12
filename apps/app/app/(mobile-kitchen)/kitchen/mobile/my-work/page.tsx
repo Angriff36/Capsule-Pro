@@ -18,7 +18,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskComplete, kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
+import {
+  kitchenTaskComplete,
+  kitchenTaskRelease,
+  kitchenTaskStart,
+} from "@/app/lib/manifest-client.generated";
 import type { OfflineQueueItem, Task } from "../types";
 import { priorityConfig } from "../types";
 
@@ -137,7 +141,7 @@ function WorkTaskCard({
       </div>
 
       {/* Task title */}
-      <h3 className="mb-1 text-lg font-bold text-slate-900">{task.title}</h3>
+      <h3 className="mb-1 font-bold text-lg text-slate-900">{task.title}</h3>
       {task.summary && (
         <p className="mb-3 text-slate-600 text-sm">{task.summary}</p>
       )}
@@ -147,7 +151,7 @@ function WorkTaskCard({
         <div className="mb-3 flex flex-wrap gap-1">
           {task.tags.map((tag) => (
             <span
-              className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 text-xs font-medium"
+              className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600 text-xs"
               key={tag}
             >
               {tag}
@@ -160,7 +164,7 @@ function WorkTaskCard({
       <div className="flex gap-2">
         {!isActive && (
           <Button
-            className="h-12 flex-1 text-base font-bold"
+            className="h-12 flex-1 font-bold text-base"
             disabled={isLoading || !isOnline}
             onClick={() => onStart(task.id)}
             variant="default"
@@ -171,7 +175,7 @@ function WorkTaskCard({
         )}
         {isActive && (
           <Button
-            className="h-12 flex-1 bg-emerald-600 text-base font-bold hover:bg-emerald-700"
+            className="h-12 flex-1 bg-emerald-600 font-bold text-base hover:bg-emerald-700"
             disabled={isLoading || !isOnline}
             onClick={() => onComplete(task.id)}
           >
@@ -395,7 +399,7 @@ export default function MobileMyWorkPage() {
         <div>
           <h1 className="font-bold text-2xl text-slate-900">My Work</h1>
           <p className="text-slate-500 text-sm">
-            {totalTasks} task{totalTasks !== 1 ? "s" : ""} assigned
+            {totalTasks} task{totalTasks === 1 ? "" : "s"} assigned
           </p>
         </div>
         <Button

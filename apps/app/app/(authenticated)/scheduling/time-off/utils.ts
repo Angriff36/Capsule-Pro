@@ -28,7 +28,7 @@ export function calculateDuration(start: Date, end: Date): string {
     const hours = Math.floor(
       (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
     );
-    return `${days} day${days !== 1 ? "s" : ""}${hours > 0 ? ` ${hours}h` : ""}`;
+    return `${days} day${days === 1 ? "" : "s"}${hours > 0 ? ` ${hours}h` : ""}`;
   }
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
   if (hours > 0) {

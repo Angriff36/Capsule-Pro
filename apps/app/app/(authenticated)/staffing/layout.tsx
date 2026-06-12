@@ -31,7 +31,7 @@ const StaffingLayout = ({ children }: StaffingLayoutProperties) => {
         <div className="mx-auto max-w-7xl">
           <MonoLabel tone="dark">Staffing</MonoLabel>
           <DisplayHeading className="mt-2">Staffing</DisplayHeading>
-          <p className="mt-2 text-sm leading-relaxed text-white/70">
+          <p className="mt-2 text-sm text-white/70 leading-relaxed">
             Manage shifts, availability, and AI-powered coverage
             recommendations.
           </p>
@@ -49,7 +49,7 @@ const StaffingLayout = ({ children }: StaffingLayoutProperties) => {
               return (
                 <Link
                   className={cn(
-                    "inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
+                    "inline-flex items-center whitespace-nowrap rounded-full px-4 py-1.5 font-medium text-sm transition-colors",
                     isActive
                       ? "bg-ink text-white"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"

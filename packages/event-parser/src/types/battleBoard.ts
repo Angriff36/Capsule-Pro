@@ -2,67 +2,67 @@
 // Based on Event-Battle-Board JSON schema "mangia-battle-board@1"
 
 export interface BattleBoardMeta {
+  eventDate: string;
   eventName: string;
   eventNumber: string;
-  eventDate: string;
-  staffRestrooms: string;
-  staffParking: string;
   lastUpdatedISO?: string;
+  staffParking: string;
+  staffRestrooms: string;
 }
 
 export interface BattleBoardStaff {
   name: string;
   role: string;
-  shiftStart: string; // 12-hour format: "3:30 PM"
   shiftEnd: string; // 12-hour format: "11:59 PM"
+  shiftStart: string; // 12-hour format: "3:30 PM"
   station: string;
 }
 
 export interface BattleBoardLayout {
-  type: string;
   instructions: string;
   linkedMapImage?: string;
+  type: string;
 }
 
 export type TimelineStyle = "setup" | "service" | "breakdown" | "other";
 
 export interface BattleBoardTimeline {
-  time: string;
-  item: string;
-  team: string;
-  location: string;
-  style: TimelineStyle | string;
-  notes: string;
   hl: boolean; // highlight
+  item: string;
+  location: string;
+  notes: string;
+  style: TimelineStyle | string;
+  team: string;
+  time: string;
 }
 
 export interface BattleBoardAttachment {
   label: string;
   name: string;
-  type: string;
   size: number;
   src: string;
+  type: string;
 }
 
 export interface BattleBoardTask {
-  id: string;
-  name: string;
-  description: string;
   category: string;
-  defaultTeam: string;
   defaultLocation: string;
   defaultStyle: TimelineStyle;
+  defaultTeam: string;
+  description: string;
+  id: string;
+  name: string;
 }
 
 export interface BattleBoardData {
-  schema?: string;
-  version?: string;
-  meta: BattleBoardMeta;
-  staff: BattleBoardStaff[];
-  layouts: BattleBoardLayout[];
-  timeline: BattleBoardTimeline[];
   attachments: BattleBoardAttachment[];
+  layouts: BattleBoardLayout[];
+  meta: BattleBoardMeta;
+  schema?: string;
+  staff: BattleBoardStaff[];
   taskLibrary?: BattleBoardTask[];
+  timeline: BattleBoardTimeline[];
+  version?: string;
 }
 
 // Partial update interface for format-specific adapters

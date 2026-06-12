@@ -59,22 +59,22 @@ export const COURSES = [
 export type CourseId = (typeof COURSES)[number]["id"];
 
 export interface MenuDishEntry {
-  id: string; // Unique ID for drag-and-drop
+  allergens: string[];
+  costPerPerson: number | null;
+  course: CourseId;
+  dietaryTags: string[];
   dishId: string;
   dishName: string;
-  course: CourseId;
-  sortOrder: number;
+  id: string; // Unique ID for drag-and-drop
   isOptional: boolean;
-  dietaryTags: string[];
-  allergens: string[];
   pricePerPerson: number | null;
-  costPerPerson: number | null;
+  sortOrder: number;
 }
 
 interface MenuBuilderEditorProps {
   availableDishes: DishWithCost[];
-  selectedDishes: MenuDishEntry[];
   onChange: (dishes: MenuDishEntry[]) => void;
+  selectedDishes: MenuDishEntry[];
 }
 
 // Generate unique ID for drag-and-drop
@@ -83,7 +83,9 @@ const generateId = () =>
 
 // Calculate margin percentage
 const calculateMargin = (price: number | null, cost: number | null) => {
-  if (!(price && cost) || price === 0) return null;
+  if (!(price && cost) || price === 0) {
+    return null;
+  }
   return ((price - cost) / price) * 100;
 };
 
@@ -101,7 +103,9 @@ export function MenuBuilderEditor({
 
   // Filter dishes by search
   const filteredDishes = useMemo(() => {
-    if (!searchQuery.trim()) return availableDishes;
+    if (!searchQuery.trim()) {
+      return availableDishes;
+    }
     const query = searchQuery.toLowerCase();
     return availableDishes.filter(
       (dish) =>
@@ -234,10 +238,14 @@ export function MenuBuilderEditor({
       e.preventDefault();
       setDragOverCourse(null);
 
-      if (!draggedItem) return;
+      if (!draggedItem) {
+        return;
+      }
 
       const entry = selectedDishes.find((d) => d.id === draggedItem);
-      if (!entry) return;
+      if (!entry) {
+        return;
+      }
 
       if (entry.course !== targetCourse) {
         changeCourse(draggedItem, targetCourse);
@@ -254,14 +262,14 @@ export function MenuBuilderEditor({
   }, []);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Dish Selector Panel */}
       <div className="lg:col-span-1">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Available Dishes</CardTitle>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="pl-9"
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -272,7 +280,7 @@ export function MenuBuilderEditor({
           </CardHeader>
           <CardContent className="max-h-[500px] overflow-y-auto p-0">
             {unselectedDishes.length === 0 ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">
+              <div className="p-4 text-center text-muted-foreground text-sm">
                 {searchQuery
                   ? "No dishes match your search"
                   : "All dishes have been added"}
@@ -281,22 +289,22 @@ export function MenuBuilderEditor({
               <div className="divide-y">
                 {unselectedDishes.map((dish) => (
                   <div
-                    className="p-3 hover:bg-muted/50 flex items-start justify-between gap-2"
+                    className="flex items-start justify-between gap-2 p-3 hover:bg-muted/50"
                     key={dish.id}
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-sm">
                         {dish.name}
                       </div>
                       {dish.category && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {dish.category}
                         </div>
                       )}
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="mt-1 flex flex-wrap gap-1">
                         {dish.dietaryTags.slice(0, 3).map((tag) => (
                           <Badge
-                            className="text-[10px] px-1 py-0"
+                            className="px-1 py-0 text-[10px]"
                             key={tag}
                             variant="outline"
                           >
@@ -305,7 +313,7 @@ export function MenuBuilderEditor({
                         ))}
                         {dish.allergens.slice(0, 2).map((allergen) => (
                           <Badge
-                            className="text-[10px] px-1 py-0"
+                            className="px-1 py-0 text-[10px]"
                             key={allergen}
                             variant="destructive"
                           >
@@ -314,8 +322,8 @@ export function MenuBuilderEditor({
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-xs text-muted-foreground mr-1">
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="mr-1 text-muted-foreground text-xs">
                         {formatCurrency(dish.pricePerPerson, {
                           nullDisplay: "-",
                         })}
@@ -338,7 +346,7 @@ export function MenuBuilderEditor({
       </div>
 
       {/* Course Sections Panel */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="space-y-4 lg:col-span-2">
         {COURSES.map((course) => {
           const courseDishes = dishesByCourse[course.id];
           const isExpanded = expandedCourses.has(course.id);
@@ -358,13 +366,13 @@ export function MenuBuilderEditor({
                 tone="canvas"
               >
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 py-3">
+                  <CardHeader className="cursor-pointer py-3 hover:bg-muted/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Badge className={course.color}>{course.label}</Badge>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {courseDishes.length} dish
-                          {courseDishes.length !== 1 ? "es" : ""}
+                          {courseDishes.length === 1 ? "" : "es"}
                         </span>
                       </div>
                       <ChevronDown
@@ -376,7 +384,7 @@ export function MenuBuilderEditor({
                 <CollapsibleContent>
                   <CardContent className="pt-0">
                     {courseDishes.length === 0 ? (
-                      <div className="py-8 text-center text-sm text-muted-foreground border-2 border-dashed rounded-lg">
+                      <div className="rounded-lg border-2 border-dashed py-8 text-center text-muted-foreground text-sm">
                         Drag dishes here or add from the panel
                       </div>
                     ) : (
@@ -390,17 +398,17 @@ export function MenuBuilderEditor({
 
                           return (
                             <div
-                              className={`flex items-center gap-2 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-opacity ${isDragging ? "opacity-50" : ""}`}
+                              className={`flex items-center gap-2 rounded-lg border bg-card p-3 transition-opacity hover:bg-muted/50 ${isDragging ? "opacity-50" : ""}`}
                               draggable
                               key={entry.id}
                               onDragEnd={handleDragEnd}
                               onDragStart={(e) => handleDragStart(e, entry.id)}
                             >
-                              <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
+                              <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />
 
-                              <div className="flex-1 min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium text-sm truncate">
+                                  <span className="truncate font-medium text-sm">
                                     {entry.dishName}
                                   </span>
                                   {entry.isOptional && (
@@ -412,10 +420,10 @@ export function MenuBuilderEditor({
                                     </Badge>
                                   )}
                                 </div>
-                                <div className="flex flex-wrap gap-1 mt-1">
+                                <div className="mt-1 flex flex-wrap gap-1">
                                   {entry.dietaryTags.slice(0, 3).map((tag) => (
                                     <Badge
-                                      className="text-[10px] px-1 py-0"
+                                      className="px-1 py-0 text-[10px]"
                                       key={tag}
                                       variant="outline"
                                     >
@@ -424,17 +432,17 @@ export function MenuBuilderEditor({
                                   ))}
                                   {entry.allergens.length > 0 && (
                                     <Badge
-                                      className="text-[10px] px-1 py-0"
+                                      className="px-1 py-0 text-[10px]"
                                       variant="destructive"
                                     >
                                       {entry.allergens.length} allergen
-                                      {entry.allergens.length !== 1 ? "s" : ""}
+                                      {entry.allergens.length === 1 ? "" : "s"}
                                     </Badge>
                                   )}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-3 shrink-0">
+                              <div className="flex shrink-0 items-center gap-3">
                                 <div className="text-right text-xs">
                                   <div className="text-muted-foreground">
                                     Cost:{" "}
@@ -469,7 +477,7 @@ export function MenuBuilderEditor({
                                   }
                                   value={entry.course}
                                 >
-                                  <SelectTrigger className="w-28 h-8 text-xs">
+                                  <SelectTrigger className="h-8 w-28 text-xs">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>

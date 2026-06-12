@@ -11,14 +11,14 @@ import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Fragment, type ReactNode } from "react";
 
 interface HeaderBreadcrumbItem {
-  label: string;
   href?: string;
+  label: string;
 }
 
 interface HeaderProps {
-  pages: string[] | HeaderBreadcrumbItem[];
-  page: string;
   children?: ReactNode;
+  page: string;
+  pages: string[] | HeaderBreadcrumbItem[];
 }
 
 function isBreadcrumbItem(

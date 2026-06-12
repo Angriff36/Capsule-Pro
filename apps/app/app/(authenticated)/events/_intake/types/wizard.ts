@@ -1,50 +1,55 @@
 export interface WizardFormData {
-  contactName: string;
-  email: string;
-  phone: string;
+  additionalNotes: string;
+  addOns: string[];
+  barService: string;
+  budgetRange: string;
+  city: string;
   company: string;
-  eventName: string;
-  occasionType: string;
-  vibeDescription: string;
-  eventFormat: string;
-  guestCount: number;
-  guestCountCertainty: string;
-  serviceStyle: string;
+  contactName: string;
   courseCount: number;
   cuisinePreferences: string[];
+  dateFlexibility: string;
   dietaryNeeds: string[];
   dietaryPercentage: string;
+  email: string;
+  eventDate: string;
+  eventFormat: string;
+  eventName: string;
+  guestCount: number;
+  guestCountCertainty: string;
   menuNotes: string;
+  occasionType: string;
+  phone: string;
+  referralSource: string;
+  rentalsNeeded: string[];
+  serviceStyle: string;
   staffingLevel: string;
   staffingNotes: string;
-  barService: string;
-  rentalsNeeded: string[];
-  addOns: string[];
-  eventDate: string;
-  dateFlexibility: string;
-  venueType: string;
-  city: string;
   venueName: string;
-  budgetRange: string;
-  referralSource: string;
-  additionalNotes: string;
+  venueType: string;
+  vibeDescription: string;
 }
 
 export interface PriceEstimate {
-  low: number;
   high: number;
+  low: number;
 }
 
 export interface WizardStep {
-  id: string;
-  title: string;
-  subtitle: string;
   icon: string;
+  id: string;
+  subtitle: string;
+  title: string;
 }
 
 export interface WebhookPayload {
-  lead_id: string;
-  timestamp: string;
+  ai_summary: string;
+  budget: {
+    client_range: string;
+    estimated_low: number;
+    estimated_high: number;
+    estimate_disclaimer: string;
+  };
   contact: {
     name: string;
     email: string;
@@ -64,6 +69,15 @@ export interface WebhookPayload {
     venue_name: string;
     city: string;
   };
+  extras: {
+    bar_service: string;
+    rentals: string[];
+    add_ons: string[];
+  };
+  followup_email_draft: string;
+  lead_id: string;
+  notes: string;
+  referral_source: string;
   service: {
     style: string;
     course_count: number;
@@ -76,19 +90,5 @@ export interface WebhookPayload {
     level: string;
     notes: string;
   };
-  extras: {
-    bar_service: string;
-    rentals: string[];
-    add_ons: string[];
-  };
-  budget: {
-    client_range: string;
-    estimated_low: number;
-    estimated_high: number;
-    estimate_disclaimer: string;
-  };
-  notes: string;
-  referral_source: string;
-  ai_summary: string;
-  followup_email_draft: string;
+  timestamp: string;
 }

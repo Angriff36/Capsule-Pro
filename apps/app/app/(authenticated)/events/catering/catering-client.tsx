@@ -33,49 +33,49 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  cateringOrderConfirm,
-  cateringOrderStartPrep,
-  cateringOrderMarkComplete,
   cateringOrderCancel,
+  cateringOrderConfirm,
   cateringOrderCreate,
+  cateringOrderMarkComplete,
+  cateringOrderStartPrep,
   listCateringOrders,
 } from "@/app/lib/manifest-client.generated";
 
 interface CateringOrder {
-  id: string;
-  orderNumber: string;
+  createdAt: string;
   customerId: string;
-  eventId: string | null;
-  status: string;
-  orderDate: string;
   deliveryDate: string;
   deliveryTime: string;
-  subtotal: string;
-  tax: string;
-  discount: string;
-  serviceCharge: string;
-  total: string;
-  depositRequired: boolean;
   depositAmount: string | null;
   depositPaid: boolean;
-  venueName: string | null;
-  venueCity: string | null;
-  venueState: string | null;
-  guestCount: number;
+  depositRequired: boolean;
   dietaryRestrictions: string | null;
-  staffRequired: number | null;
+  discount: string;
+  eventId: string | null;
+  guestCount: number;
+  id: string;
+  orderDate: string;
+  orderNumber: string;
+  serviceCharge: string;
   staffAssigned: number | null;
-  createdAt: string;
+  staffRequired: number | null;
+  status: string;
+  subtotal: string;
+  tax: string;
+  total: string;
   updatedAt: string;
+  venueCity: string | null;
+  venueName: string | null;
+  venueState: string | null;
 }
 
 interface InitialMetrics {
-  total: number;
-  draft: number;
-  confirmed: number;
-  inProgress: number;
-  completed: number;
   cancelled: number;
+  completed: number;
+  confirmed: number;
+  draft: number;
+  inProgress: number;
+  total: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -166,8 +166,12 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
         page,
         limit: 25,
       };
-      if (statusFilter !== "all") query.status = statusFilter;
-      if (searchQuery) query.search = searchQuery;
+      if (statusFilter !== "all") {
+        query.status = statusFilter;
+      }
+      if (searchQuery) {
+        query.search = searchQuery;
+      }
 
       const result = await listCateringOrders(query);
       setOrders(result.data as unknown as CateringOrder[]);
@@ -193,11 +197,16 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
 
   const handleStatusAction = async (order: CateringOrder) => {
     const action = NEXT_ACTION[order.status];
-    if (!action) return;
+    if (!action) {
+      return;
+    }
     setActioning(order.id);
     try {
       // Typed command client → canonical dispatcher.
-      const commandMap: Record<string, (input: Record<string, unknown>) => Promise<unknown>> = {
+      const commandMap: Record<
+        string,
+        (input: Record<string, unknown>) => Promise<unknown>
+      > = {
         confirm: cateringOrderConfirm,
         startPrep: cateringOrderStartPrep,
         markComplete: cateringOrderMarkComplete,
@@ -216,7 +225,9 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
   };
 
   const handleCancel = async () => {
-    if (!cancelTarget) return;
+    if (!cancelTarget) {
+      return;
+    }
     setActioning(cancelTarget.id);
     try {
       await cateringOrderCancel({
@@ -282,7 +293,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -330,14 +341,14 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
       )}
 
       {!isLoading && orders.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No catering orders found. Create your first order to get started.
         </div>
       )}
 
       {!isLoading && orders.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Order</span>
             <span>Delivery</span>
             <span className="text-right">Total</span>
@@ -354,12 +365,12 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
             const nextAction = NEXT_ACTION[order.status];
             return (
               <div
-                className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                 key={order.id}
               >
                 <div className="min-w-0">
-                  <p className="font-medium truncate">{order.orderNumber}</p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="truncate font-medium">{order.orderNumber}</p>
+                  <p className="truncate text-muted-foreground text-xs">
                     {order.venueName ?? "No venue"}
                     {order.venueCity ? `, ${order.venueCity}` : ""}
                   </p>
@@ -437,7 +448,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
       )}
 
       <Dialog onOpenChange={setCreateOpen} open={createOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Catering Order</DialogTitle>
             <DialogDescription>
@@ -447,7 +458,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Customer ID</label>
+                <label className="font-medium text-sm">Customer ID</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, customerId: e.target.value }))
@@ -457,7 +468,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Guest Count</label>
+                <label className="font-medium text-sm">Guest Count</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, guestCount: e.target.value }))
@@ -470,7 +481,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Delivery Date</label>
+                <label className="font-medium text-sm">Delivery Date</label>
                 <DatePicker
                   onChange={(e) =>
                     setForm((f) => ({ ...f, deliveryDate: e.target.value }))
@@ -479,7 +490,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Delivery Time</label>
+                <label className="font-medium text-sm">Delivery Time</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, deliveryTime: e.target.value }))
@@ -491,7 +502,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Venue Name</label>
+                <label className="font-medium text-sm">Venue Name</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, venueName: e.target.value }))
@@ -501,7 +512,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Venue City</label>
+                <label className="font-medium text-sm">Venue City</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, venueCity: e.target.value }))
@@ -512,7 +523,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="font-medium text-sm">
                 Special Instructions
               </label>
               <Textarea
@@ -528,7 +539,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="font-medium text-sm">
                 Dietary Restrictions
               </label>
               <Input
@@ -544,7 +555,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Subtotal ($)</label>
+                <label className="font-medium text-sm">Subtotal ($)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, subtotal: e.target.value }))
@@ -556,7 +567,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tax ($)</label>
+                <label className="font-medium text-sm">Tax ($)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, tax: e.target.value }))
@@ -568,7 +579,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="font-medium text-sm">
                   Service Charge ($)
                 </label>
                 <Input

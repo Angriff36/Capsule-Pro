@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "50");
 
     const where: any = { tenantId, deletedAt: null };
-    if (status) where.status = status;
+    if (status) {
+      where.status = status;
+    }
     if (date) {
       const dateObj = new Date(date);
       where.scheduledDate = dateObj;

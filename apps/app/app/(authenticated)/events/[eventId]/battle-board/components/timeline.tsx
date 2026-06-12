@@ -66,10 +66,10 @@ import { DependencyLines } from "./dependency-lines";
 import { TaskModal } from "./task-modal";
 
 interface TimelineProps {
-  eventId: string;
   eventDate: Date;
-  initialTasks: TimelineTask[];
+  eventId: string;
   initialStaff: StaffMember[];
+  initialTasks: TimelineTask[];
 }
 
 const MINUTES_PER_HOUR = 60;
@@ -80,9 +80,9 @@ const MIN_TASK_WIDTH = 30;
 
 interface TaskAction {
   id: string;
-  type: "create" | "update" | "delete";
-  previousState?: TimelineTask;
   newState?: TimelineTask;
+  previousState?: TimelineTask;
+  type: "create" | "update" | "delete";
 }
 
 export function Timeline({
@@ -487,7 +487,7 @@ export function Timeline({
       ).length;
 
       toast.success(
-        `Critical path calculated: ${criticalCount} critical task${criticalCount !== 1 ? "s" : ""} identified`
+        `Critical path calculated: ${criticalCount} critical task${criticalCount === 1 ? "" : "s"} identified`
       );
     } catch (error) {
       console.error("Failed to calculate critical path:", error);
@@ -1030,7 +1030,9 @@ export function Timeline({
 
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) cancelDeleteTask();
+          if (!open) {
+            cancelDeleteTask();
+          }
         }}
         open={deleteDialogOpen}
       >
@@ -1063,7 +1065,7 @@ export function Timeline({
             </DialogDescription>
           </DialogHeader>
           <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <SearchIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pl-9"
               onChange={(e) => setStaffSearch(e.target.value)}

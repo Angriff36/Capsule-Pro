@@ -82,7 +82,7 @@ const KitchenTasksPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Kitchen Tasks
           </h1>
           <p className="text-muted-foreground">
@@ -95,14 +95,14 @@ const KitchenTasksPage = async () => {
 
         {/* Performance Overview Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Performance Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-4">
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Total Tasks</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="font-bold text-2xl">
                   {tasks.length}
                 </CardTitle>
               </CardHeader>
@@ -110,7 +110,7 @@ const KitchenTasksPage = async () => {
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Open</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="font-bold text-2xl">
                   {tasks.filter((t) => t.status === "open").length}
                 </CardTitle>
               </CardHeader>
@@ -118,7 +118,7 @@ const KitchenTasksPage = async () => {
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>In Progress</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="font-bold text-2xl">
                   {tasks.filter((t) => t.status === "in_progress").length}
                 </CardTitle>
               </CardHeader>
@@ -126,7 +126,7 @@ const KitchenTasksPage = async () => {
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>My Claims</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="font-bold text-2xl">
                   {myClaims.length}
                 </CardTitle>
               </CardHeader>
@@ -136,7 +136,7 @@ const KitchenTasksPage = async () => {
 
         {/* Tasks Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             All Kitchen Tasks
           </h2>
           <Card tone="canvas">
@@ -201,7 +201,7 @@ const KitchenTasksPage = async () => {
                           <TableCell>
                             <div className="font-medium">{task.title}</div>
                             {task.summary && (
-                              <div className="text-sm text-muted-foreground line-clamp-1">
+                              <div className="line-clamp-1 text-muted-foreground text-sm">
                                 {task.summary}
                               </div>
                             )}
@@ -229,7 +229,7 @@ const KitchenTasksPage = async () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm">
                               <Clock className="size-3" />
                               {format(new Date(task.createdAt), "MMM d")}
                             </div>

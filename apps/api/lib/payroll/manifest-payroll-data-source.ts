@@ -13,13 +13,17 @@
  */
 
 import { database } from "@repo/database";
-import type { PayrollAudit, PayrollPeriod, PayrollRecord } from "@repo/payroll-engine";
-import { PrismaPayrollDataSource } from "@repo/payroll-engine";
+import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
 import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
-import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
+import type {
+  PayrollAudit,
+  PayrollPeriod,
+  PayrollRecord,
+} from "@repo/payroll-engine";
+import { PrismaPayrollDataSource } from "@repo/payroll-engine";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 /**
  * Build the deps object expected by runManifestCommandCore.
@@ -34,8 +38,13 @@ import { log } from "@repo/observability/log";
  */
 function makeCoreDeps(prismaOverride?: PrismaTransactionClient) {
   return {
-    createRuntime: ({ user, entityName }: { user: ManifestUserContext; entityName: string }) =>
-      createManifestRuntime({ user, entityName, prismaOverride }),
+    createRuntime: ({
+      user,
+      entityName,
+    }: {
+      user: ManifestUserContext;
+      entityName: string;
+    }) => createManifestRuntime({ user, entityName, prismaOverride }),
   };
 }
 
@@ -116,7 +125,9 @@ export class ManifestPayrollDataSource extends PrismaPayrollDataSource {
    * Maps to PayrollRun.create → PayrollRun.process → loop PayrollLineItem.create.
    */
   override async savePayrollRecords(records: PayrollRecord[]): Promise<void> {
-    if (records.length === 0) return;
+    if (records.length === 0) {
+      return;
+    }
 
     const periodId = records[0].periodId;
 
@@ -204,15 +215,19 @@ export class ManifestPayrollDataSource extends PrismaPayrollDataSource {
                 grossPay: record.grossPay.toFixed(2),
                 netPay: record.netPay.toFixed(2),
                 totalDeductions: record.totalDeductions.toFixed(2),
-                hoursWorked: (record.hoursRegular + record.hoursOvertime).toFixed(2),
+                hoursWorked: (
+                  record.hoursRegular + record.hoursOvertime
+                ).toFixed(2),
                 hoursRegular: record.hoursRegular.toFixed(2),
                 hoursOvertime: record.hoursOvertime.toFixed(2),
-                rateRegular: record.hoursRegular > 0
-                  ? (record.regularPay / record.hoursRegular).toFixed(2)
-                  : "0",
-                rateOvertime: record.hoursOvertime > 0
-                  ? (record.overtimePay / record.hoursOvertime).toFixed(2)
-                  : "0",
+                rateRegular:
+                  record.hoursRegular > 0
+                    ? (record.regularPay / record.hoursRegular).toFixed(2)
+                    : "0",
+                rateOvertime:
+                  record.hoursOvertime > 0
+                    ? (record.overtimePay / record.hoursOvertime).toFixed(2)
+                    : "0",
               },
               user: this.#user,
             },

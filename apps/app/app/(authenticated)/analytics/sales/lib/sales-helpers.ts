@@ -69,10 +69,7 @@ export const getColumnsFromRows = (rows: DataRow[]) => {
   return Array.from(columns);
 };
 
-export const getDateRange = (
-  rows: DataRow[],
-  column: string | null
-) => {
+export const getDateRange = (rows: DataRow[], column: string | null) => {
   if (!column) {
     return null;
   }
@@ -174,10 +171,10 @@ export const findRowLabel = (row: DataRow): string | null => {
 // ---------------------------------------------------------------------------
 
 interface ReportSummary {
+  highlights?: string[];
+  kpis: KpiCardProps[];
   title: string;
   windowLabel: string;
-  kpis: KpiCardProps[];
-  highlights?: string[];
 }
 
 export const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {

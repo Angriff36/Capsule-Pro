@@ -29,16 +29,19 @@ import {
 import { Loader2, Plus, UserMinus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { eventStaffAssign, eventStaffUnassign } from "@/app/lib/manifest-client.generated";
+import {
+  eventStaffAssign,
+  eventStaffUnassign,
+} from "@/app/lib/manifest-client.generated";
 
 interface Assignment {
-  id: string;
   employeeId: string;
   employeeName: string;
+  endTime: string | null;
+  id: string;
+  notes: string | null;
   role: string;
   startTime: string | null;
-  endTime: string | null;
-  notes: string | null;
 }
 
 interface AvailableEmployee {
@@ -238,13 +241,13 @@ export function EventStaffClient({
     <div className="space-y-6">
       {/* Assign staff dialog */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {assignments.length} assigned, {available.length} available
         </div>
         <Dialog onOpenChange={setAssignOpen} open={assignOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" /> Assign Staff
+              <Plus className="mr-1 h-4 w-4" /> Assign Staff
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -308,7 +311,7 @@ export function EventStaffClient({
                   onClick={handleAssign}
                 >
                   {isPending && (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                   )}
                   Assign
                 </Button>
@@ -356,10 +359,10 @@ export function EventStaffClient({
                     <TableCell>
                       <Badge variant="secondary">{assignment.role}</Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {formatTime(assignment.startTime)}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {formatTime(assignment.endTime)}
                     </TableCell>
                     <TableCell>
@@ -367,7 +370,7 @@ export function EventStaffClient({
                         {statusCfg.label}
                       </Badge>
                     </TableCell>
-                    <TableCell className="max-w-40 truncate text-sm text-muted-foreground">
+                    <TableCell className="max-w-40 truncate text-muted-foreground text-sm">
                       {assignment.notes || "\u2014"}
                     </TableCell>
                     <TableCell className="text-right">
@@ -414,12 +417,12 @@ export function EventStaffClient({
       {/* Available employees pool */}
       {available.length > 0 && (
         <section className="space-y-3">
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+          <h3 className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
             Available employees ({available.length})
           </h3>
           <div className="flex flex-wrap gap-2">
             {available.map((emp) => (
-              <Badge className="py-1.5 px-3" key={emp.id} variant="outline">
+              <Badge className="px-3 py-1.5" key={emp.id} variant="outline">
                 {emp.name}
                 <span className="ml-1.5 text-muted-foreground">
                   ({emp.role})

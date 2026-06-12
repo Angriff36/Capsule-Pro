@@ -13,14 +13,14 @@ type Json =
     };
 
 interface LiveblocksUserInfo {
-  [key: string]: Json | undefined;
-  name?: string;
   avatar?: string;
+  name?: string;
+  [key: string]: Json | undefined;
 }
 
 interface AuthenticateOptions {
-  userId: string;
   orgId: string;
+  userId: string;
   userInfo?: LiveblocksUserInfo;
 }
 

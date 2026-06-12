@@ -14,7 +14,7 @@
  * 10. Large payload roundtrips
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createAesGcmEncryptionProvider } from "../encryption-provider";
 
 /** Generate a valid 64-char hex key for testing. */
@@ -33,15 +33,15 @@ describe("createAesGcmEncryptionProvider", () => {
 
   afterEach(() => {
     // Restore original env
-    if (originalEnv !== undefined) {
-      process.env.ENCRYPTION_KEY = originalEnv;
-    } else {
+    if (originalEnv === undefined) {
       delete process.env.ENCRYPTION_KEY;
-    }
-    if (originalEnvPrev !== undefined) {
-      process.env.ENCRYPTION_KEY_PREVIOUS = originalEnvPrev;
     } else {
+      process.env.ENCRYPTION_KEY = originalEnv;
+    }
+    if (originalEnvPrev === undefined) {
       delete process.env.ENCRYPTION_KEY_PREVIOUS;
+    } else {
+      process.env.ENCRYPTION_KEY_PREVIOUS = originalEnvPrev;
     }
   });
 
@@ -80,7 +80,9 @@ describe("createAesGcmEncryptionProvider", () => {
   });
 
   describe("encrypt/decrypt roundtrip", () => {
-    let provider: NonNullable<ReturnType<typeof createAesGcmEncryptionProvider>>;
+    let provider: NonNullable<
+      ReturnType<typeof createAesGcmEncryptionProvider>
+    >;
 
     beforeEach(() => {
       process.env.ENCRYPTION_KEY = testKey();
@@ -90,7 +92,10 @@ describe("createAesGcmEncryptionProvider", () => {
     it("preserves plaintext through encrypt then decrypt", async () => {
       const plaintext = "Hello, World!";
       const encrypted = await provider.encrypt(plaintext);
-      const decrypted = await provider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await provider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe(plaintext);
     });
 
@@ -108,28 +113,40 @@ describe("createAesGcmEncryptionProvider", () => {
 
     it("handles empty string", async () => {
       const encrypted = await provider.encrypt("");
-      const decrypted = await provider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await provider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe("");
     });
 
     it("handles unicode characters", async () => {
       const plaintext = "日本語テスト 🎉 Ñoño café";
       const encrypted = await provider.encrypt(plaintext);
-      const decrypted = await provider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await provider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe(plaintext);
     });
 
     it("handles large payloads", async () => {
       const plaintext = "x".repeat(10_000);
       const encrypted = await provider.encrypt(plaintext);
-      const decrypted = await provider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await provider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe(plaintext);
     });
 
     it("handles JSON-like strings", async () => {
       const plaintext = '{"nested":{"key":"value with \\"quotes\\"","num":42}}';
       const encrypted = await provider.encrypt(plaintext);
-      const decrypted = await provider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await provider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe(plaintext);
     });
 
@@ -156,7 +173,10 @@ describe("createAesGcmEncryptionProvider", () => {
       })!;
 
       // Should decrypt with the old keyId using previousKey
-      const decrypted = await rotatedProvider.decrypt(encrypted.ciphertext, encrypted.keyId);
+      const decrypted = await rotatedProvider.decrypt(
+        encrypted.ciphertext,
+        encrypted.keyId
+      );
       expect(decrypted).toBe("sensitive data");
     });
 
@@ -183,9 +203,9 @@ describe("createAesGcmEncryptionProvider", () => {
         encryptionKey: testKey(),
       })!;
 
-      await expect(
-        provider.decrypt("aabbccdd", "unknown1"),
-      ).rejects.toThrow(/unknown keyId "unknown1"/);
+      await expect(provider.decrypt("aabbccdd", "unknown1")).rejects.toThrow(
+        /unknown keyId "unknown1"/
+      );
     });
 
     it("throws on tampered ciphertext (auth tag mismatch)", async () => {
@@ -198,7 +218,7 @@ describe("createAesGcmEncryptionProvider", () => {
       const tampered = encrypted.ciphertext.slice(0, -4) + "ffff";
 
       await expect(
-        provider.decrypt(tampered, encrypted.keyId),
+        provider.decrypt(tampered, encrypted.keyId)
       ).rejects.toThrow();
     });
   });

@@ -46,19 +46,19 @@ import {
 // ---------------------------------------------------------------------------
 
 interface Interaction {
+  createdAt: Date | string;
+  description: string | null;
+  followUpCompleted: boolean | null;
+  followUpDate: Date | string | null;
   id: string;
+  interactionDate: Date | string | null;
   interactionType: string | null;
   subject: string | null;
-  description: string | null;
-  interactionDate: Date | string | null;
-  followUpDate: Date | string | null;
-  followUpCompleted: boolean | null;
-  createdAt: Date | string;
 }
 
 interface LeadDetailClientProps {
-  lead: Lead;
   interactions: Interaction[];
+  lead: Lead;
 }
 
 // ---------------------------------------------------------------------------
@@ -160,7 +160,7 @@ export function LeadDetailClient({
       {isConverted && lead.convertedToClientId && (
         <div className="flex items-center gap-2 rounded-[22px] border border-hairline bg-soft-stone px-4 py-3">
           <UserCheck className="size-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Converted to client on{" "}
             {lead.convertedAt ? formatDate(lead.convertedAt) : "unknown date"}
           </span>
@@ -233,23 +233,23 @@ export function LeadDetailClient({
               icon={<Users className="size-4" />}
               label="Estimated guests"
               value={
-                lead.estimatedGuests != null
-                  ? String(lead.estimatedGuests)
-                  : undefined
+                lead.estimatedGuests == null
+                  ? undefined
+                  : String(lead.estimatedGuests)
               }
             />
             <InfoRow
               icon={<DollarSign className="size-4" />}
               label="Estimated value"
               value={
-                lead.estimatedValue != null
-                  ? new Intl.NumberFormat("en-US", {
+                lead.estimatedValue == null
+                  ? undefined
+                  : new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0,
                     }).format(lead.estimatedValue)
-                  : undefined
               }
             />
           </div>
@@ -261,7 +261,7 @@ export function LeadDetailClient({
         <section className="space-y-3">
           <SectionHeader title="Notes" />
           <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas p-4">
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+            <p className="whitespace-pre-wrap text-muted-foreground text-sm">
               {lead.notes}
             </p>
           </div>
@@ -272,9 +272,9 @@ export function LeadDetailClient({
       <section className="space-y-3">
         <SectionHeader title={`Interactions (${interactions.length})`} />
         {interactions.length === 0 ? (
-          <div className="flex flex-col items-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-12 text-center">
+          <div className="flex flex-col items-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-12 text-center">
             <MessageSquare className="mb-3 size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No interactions logged yet.
             </p>
           </div>
@@ -290,7 +290,7 @@ export function LeadDetailClient({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
+                    <span className="font-medium text-sm">
                       {interaction.subject ||
                         interaction.interactionType ||
                         "Interaction"}
@@ -302,11 +302,11 @@ export function LeadDetailClient({
                     )}
                   </div>
                   {interaction.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-muted-foreground text-sm">
                       {interaction.description}
                     </p>
                   )}
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-muted-foreground text-xs">
                     {formatDate(interaction.createdAt)}
                     {interaction.followUpDate &&
                       !interaction.followUpCompleted && (
@@ -346,11 +346,11 @@ function InfoRow({
     <div className="flex items-center gap-3 bg-canvas px-4 py-3">
       {icon && <span className="shrink-0 text-muted-foreground">{icon}</span>}
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
           {label}
         </p>
         {href ? (
-          <a className="text-sm text-foreground hover:underline" href={href}>
+          <a className="text-foreground text-sm hover:underline" href={href}>
             {displayValue}
           </a>
         ) : (

@@ -61,19 +61,19 @@ export function EventsTab({ clientId }: EventsTabProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-xl font-semibold">
+      <h2 className="font-semibold text-xl">
         Event History ({pagination.total})
       </h2>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="py-8 text-center text-muted-foreground">
           Loading events...
         </div>
       ) : events.length === 0 ? (
         <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No events yet</h3>
+            <CalendarIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">No events yet</h3>
             <p className="text-muted-foreground">
               This client hasn't been associated with any events yet.
             </p>
@@ -92,7 +92,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
                     <div className="font-medium">
                       Order #{event.orderNumber}
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 text-muted-foreground text-sm">
                       <Badge className="text-xs" variant="outline">
                         {event.order_status}
                       </Badge>
@@ -107,7 +107,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
                         {Number(event.totalAmount.toString()).toLocaleString()}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {new Date(event.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -129,7 +129,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
             <div className="text-center">
               <Button onClick={loadMore} variant="outline">
                 Load More
-                <ChevronRightIcon className="h-4 w-4 ml-2" />
+                <ChevronRightIcon className="ml-2 h-4 w-4" />
               </Button>
             </div>
           )}

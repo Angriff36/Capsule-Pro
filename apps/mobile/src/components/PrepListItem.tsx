@@ -11,8 +11,8 @@ import type { PrepListItem as PrepListItemType } from "../types";
 
 interface PrepListItemProps {
   item: PrepListItemType;
-  onToggleComplete: (item: PrepListItemType) => void;
   onAddNote: (item: PrepListItemType) => void;
+  onToggleComplete: (item: PrepListItemType) => void;
 }
 
 export default function PrepListItem({

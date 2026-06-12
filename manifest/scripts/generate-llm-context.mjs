@@ -18,8 +18,8 @@
  * Output: manifest/generated/llm-context/
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -35,8 +35,15 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 // llm-context projection is not in package exports — import directly from dist.
 // Same approach as generate-kysely.mjs and generate-mermaid.mjs.
 const generatorPath = join(
-  root, "node_modules", "@angriff36", "manifest",
-  "dist", "manifest", "projections", "llm-context", "generator.js"
+  root,
+  "node_modules",
+  "@angriff36",
+  "manifest",
+  "dist",
+  "manifest",
+  "projections",
+  "llm-context",
+  "generator.js"
 );
 const generatorUrl = import.meta.resolve(
   `file://${generatorPath.replace(/\\/g, "/")}`
@@ -60,7 +67,9 @@ function generateSurface(surface, opts, filename) {
   if (result.diagnostics?.length > 0) {
     for (const d of result.diagnostics) {
       if (d.severity === "error") {
-        console.error(`  [llm-context] ${d.severity}: ${d.code} — ${d.message}`);
+        console.error(
+          `  [llm-context] ${d.severity}: ${d.code} — ${d.message}`
+        );
       } else {
         console.warn(`  [llm-context] ${d.severity}: ${d.message}`);
       }
@@ -81,7 +90,9 @@ function generateSurface(surface, opts, filename) {
   const ctx = JSON.parse(code);
   const entityCount = ctx.entities?.length ?? 0;
   const commandCount = ctx.commands?.length ?? 0;
-  console.log(`  ${surface}: ${entityCount} entities, ${commandCount} commands, ${sizeKB.toFixed(1)} KB → ${outPath}`);
+  console.log(
+    `  ${surface}: ${entityCount} entities, ${commandCount} commands, ${sizeKB.toFixed(1)} KB → ${outPath}`
+  );
 }
 
 // ── Summary (lightweight, no expressions, no raw IR) ──
@@ -90,11 +101,17 @@ generateSurface("llm-context.summary", {}, "manifest-context-summary.json");
 
 // ── Full context (with expressions, without raw IR) ──
 console.log("[llm-context] Generating full context...");
-generateSurface("llm-context.full", { includeRawIR: false }, "manifest-context-full.json");
+generateSurface(
+  "llm-context.full",
+  { includeRawIR: false },
+  "manifest-context-full.json"
+);
 
 // ── Raw IR passthrough ──
 console.log("[llm-context] Generating raw IR...");
 generateSurface("llm-context.ir", {}, "manifest-ir.json");
 
 // ── Summary ──
-console.log(`\n[llm-context] Done. ${filesWritten} file(s) written to ${OUT_DIR}`);
+console.log(
+  `\n[llm-context] Done. ${filesWritten} file(s) written to ${OUT_DIR}`
+);

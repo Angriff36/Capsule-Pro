@@ -26,18 +26,18 @@ import {
 } from "../components/po-shared";
 
 interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  vendor_name: string | null;
-  status: string;
-  order_date: string;
-  expected_delivery_date: string | null;
   actual_delivery_date: string | null;
+  expected_delivery_date: string | null;
+  id: string;
+  item_count: number;
+  notes: string | null;
+  order_date: string;
+  pending_items: number;
+  po_number: string;
+  status: string;
   subtotal: number;
   total: number;
-  item_count: number;
-  pending_items: number;
-  notes: string | null;
+  vendor_name: string | null;
 }
 
 export default function PurchaseOrdersPage() {
@@ -62,16 +62,18 @@ export default function PurchaseOrdersPage() {
     }
   };
 
-  const filtered = useMemo(() => {
-    return orders.filter((o) => {
-      const matchesTab = activeTab === "all" || o.status === activeTab;
-      const matchesSearch =
-        !searchQuery ||
-        o.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [orders, activeTab, searchQuery]);
+  const filtered = useMemo(
+    () =>
+      orders.filter((o) => {
+        const matchesTab = activeTab === "all" || o.status === activeTab;
+        const matchesSearch =
+          !searchQuery ||
+          o.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          o.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesTab && matchesSearch;
+      }),
+    [orders, activeTab, searchQuery]
+  );
 
   if (loading) {
     return (
@@ -85,7 +87,7 @@ export default function PurchaseOrdersPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Purchase Orders
           </h1>
           <p className="text-muted-foreground">
@@ -94,7 +96,7 @@ export default function PurchaseOrdersPage() {
         </div>
         <Link href="/procurement/purchase-orders/new">
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             New Purchase Order
           </Button>
         </Link>
@@ -109,7 +111,7 @@ export default function PurchaseOrdersPage() {
             return (
               <Card key={status}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="font-medium text-sm">
                     {config.label}
                   </CardTitle>
                   <config.icon
@@ -117,7 +119,7 @@ export default function PurchaseOrdersPage() {
                   />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{count}</div>
+                  <div className="font-bold text-2xl">{count}</div>
                 </CardContent>
               </Card>
             );
@@ -127,7 +129,7 @@ export default function PurchaseOrdersPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -140,7 +142,7 @@ export default function PurchaseOrdersPage() {
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="all"
           >
             All ({orders.length})
@@ -157,7 +159,7 @@ export default function PurchaseOrdersPage() {
             const count = orders.filter((o) => o.status === s).length;
             return count > 0 ? (
               <TabsTrigger
-                className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+                className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
                 key={s}
                 value={s}
               >
@@ -170,7 +172,7 @@ export default function PurchaseOrdersPage() {
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No purchase orders found.</p>
               </CardContent>
             </Card>
@@ -182,7 +184,7 @@ export default function PurchaseOrdersPage() {
                 const Icon = config.icon;
                 return (
                   <Card
-                    className="hover:border-primary/40 transition-shadow"
+                    className="transition-shadow hover:border-primary/40"
                     key={order.id}
                   >
                     <CardContent className="p-4">
@@ -192,8 +194,8 @@ export default function PurchaseOrdersPage() {
                         >
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <Link
                               className="font-semibold hover:underline"
                               href={`/procurement/purchase-orders/${order.id}`}
@@ -210,7 +212,7 @@ export default function PurchaseOrdersPage() {
                                 </Badge>
                               )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             {order.vendor_name && (
                               <span>{order.vendor_name}</span>
                             )}
@@ -232,7 +234,7 @@ export default function PurchaseOrdersPage() {
                         </div>
                         <Link href={`/procurement/purchase-orders/${order.id}`}>
                           <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="mr-1 h-4 w-4" />
                             View
                           </Button>
                         </Link>

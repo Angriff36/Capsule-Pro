@@ -34,9 +34,8 @@ import {
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
 interface AutoAssignmentModalProps {
-  open: boolean;
   onClose: () => void;
-  shiftId: string;
+  open: boolean;
   shiftDetails?: {
     title?: string;
     startTime?: Date;
@@ -44,6 +43,7 @@ interface AutoAssignmentModalProps {
     locationName?: string;
     role?: string;
   };
+  shiftId: string;
 }
 
 export function AutoAssignmentModal({
@@ -147,15 +147,14 @@ export function AutoAssignmentModal({
     return first || last || employee.email;
   };
 
-  const formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleString("en-US", {
+  const formatDateTime = (date: Date) =>
+    new Date(date).toLocaleString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   const canAssign = selectedSuggestion || data?.bestMatch;
   const hasSuggestions = data && data.suggestions.length > 0;
@@ -163,7 +162,7 @@ export function AutoAssignmentModal({
 
   return (
     <Dialog onOpenChange={onClose} open={open}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserCheckIcon className="h-5 w-5" />
@@ -171,7 +170,7 @@ export function AutoAssignmentModal({
           </DialogTitle>
           <DialogDescription>
             {shiftDetails && (
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-2">
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 {shiftDetails.title && (
                   <span>
                     <strong>{shiftDetails.title}</strong>
@@ -221,7 +220,7 @@ export function AutoAssignmentModal({
             <AlertTriangleIcon className="h-4 w-4" />
             <AlertDescription>
               No eligible employees found for this shift. This could be because:
-              <ul className="list-disc list-inside mt-2 space-y-1">
+              <ul className="mt-2 list-inside list-disc space-y-1">
                 <li>No employees are available during this time</li>
                 <li>Required skills don't match any employee profiles</li>
                 <li>All eligible employees have conflicting shifts</li>
@@ -243,13 +242,13 @@ export function AutoAssignmentModal({
 
             {/* Quick Actions */}
             {data.canAutoAssign && data.bestMatch && (
-              <div className="flex items-center gap-2 p-3 bg-muted/20 rounded-lg border border-hairline">
+              <div className="flex items-center gap-2 rounded-lg border border-hairline bg-muted/20 p-3">
                 <CheckIcon className="h-5 w-5 text-primary" />
                 <div className="flex-1">
                   <div className="font-medium text-foreground">
                     High Confidence Match Available
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     {formatEmployeeName(data.bestMatch.employee)} is the best
                     fit with a score of {Math.round(data.bestMatch.score)}
                   </div>
@@ -261,12 +260,12 @@ export function AutoAssignmentModal({
                 >
                   {assigning ? (
                     <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                       Assigning...
                     </>
                   ) : (
                     <>
-                      <UserCheckIcon className="h-4 w-4 mr-2" />
+                      <UserCheckIcon className="mr-2 h-4 w-4" />
                       Auto-Assign
                     </>
                   )}
@@ -279,9 +278,9 @@ export function AutoAssignmentModal({
             {/* Suggestions Grid */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">
+                <h3 className="font-medium text-sm">
                   {data.suggestions.length} Suggestion
-                  {data.suggestions.length !== 1 ? "s" : ""}
+                  {data.suggestions.length === 1 ? "" : "s"}
                 </h3>
                 <Button
                   disabled={loading}
@@ -289,7 +288,7 @@ export function AutoAssignmentModal({
                   size="sm"
                   variant="ghost"
                 >
-                  <RefreshCwIcon className="h-4 w-4 mr-2" />
+                  <RefreshCwIcon className="mr-2 h-4 w-4" />
                   Refresh
                 </Button>
               </div>
@@ -315,7 +314,7 @@ export function AutoAssignmentModal({
 
             {/* Manual Assignment Actions */}
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 {selectedSuggestion ? (
                   <span>
                     Selected:{" "}
@@ -337,12 +336,12 @@ export function AutoAssignmentModal({
                 >
                   {assigning ? (
                     <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                       Assigning...
                     </>
                   ) : (
                     <>
-                      <UserCheckIcon className="h-4 w-4 mr-2" />
+                      <UserCheckIcon className="mr-2 h-4 w-4" />
                       Force Assign
                     </>
                   )}
@@ -360,12 +359,12 @@ export function AutoAssignmentModal({
                 >
                   {assigning ? (
                     <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                       Assigning...
                     </>
                   ) : (
                     <>
-                      <CheckIcon className="h-4 w-4 mr-2" />
+                      <CheckIcon className="mr-2 h-4 w-4" />
                       Assign Selected
                     </>
                   )}

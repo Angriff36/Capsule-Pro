@@ -43,17 +43,17 @@ const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
 
 interface PayrollPeriodRow {
   id: string;
-  period_start: Date;
   period_end: Date;
+  period_start: Date;
   status: string;
 }
 
 interface PayrollRunRow {
-  total_gross: string | null;
-  total_deductions: string | null;
-  total_net: string | null;
-  status: string;
   run_date: Date;
+  status: string;
+  total_deductions: string | null;
+  total_gross: string | null;
+  total_net: string | null;
 }
 
 interface HeadcountRow {
@@ -61,12 +61,12 @@ interface HeadcountRow {
 }
 
 interface PendingApprovalRow {
-  id: string;
-  employeeId: string;
-  status: string;
   created_at: Date;
+  employeeId: string;
   first_name: string;
+  id: string;
   last_name: string;
+  status: string;
 }
 
 interface MissingRateRow {
@@ -74,35 +74,40 @@ interface MissingRateRow {
 }
 
 const fetchPayrollData = async (tenantId: string) => {
-  const [periodRecords, runRecords, activeHeadcount, approvalRecords, missingRateCount] =
-    await Promise.all([
-      database.payrollPeriod.findMany({
-        where: { tenantId, deletedAt: null, status: "open" },
-        orderBy: { periodEnd: "asc" },
-        take: 1,
-      }),
-      database.payrollRun.findMany({
-        where: { tenantId, deletedAt: null },
-        orderBy: { runDate: "desc" },
-        take: 1,
-      }),
-      database.user.count({
-        where: { tenantId, deletedAt: null, isActive: true },
-      }),
-      database.timecardApproval.findMany({
-        where: { tenantId, deletedAt: null, status: "pending" },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      database.user.count({
-        where: {
-          tenantId,
-          deletedAt: null,
-          isActive: true,
-          hourlyRate: null,
-        },
-      }),
-    ]);
+  const [
+    periodRecords,
+    runRecords,
+    activeHeadcount,
+    approvalRecords,
+    missingRateCount,
+  ] = await Promise.all([
+    database.payrollPeriod.findMany({
+      where: { tenantId, deletedAt: null, status: "open" },
+      orderBy: { periodEnd: "asc" },
+      take: 1,
+    }),
+    database.payrollRun.findMany({
+      where: { tenantId, deletedAt: null },
+      orderBy: { runDate: "desc" },
+      take: 1,
+    }),
+    database.user.count({
+      where: { tenantId, deletedAt: null, isActive: true },
+    }),
+    database.timecardApproval.findMany({
+      where: { tenantId, deletedAt: null, status: "pending" },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    database.user.count({
+      where: {
+        tenantId,
+        deletedAt: null,
+        isActive: true,
+        hourlyRate: null,
+      },
+    }),
+  ]);
 
   const approvalEmployees = await database.user.findMany({
     where: {
@@ -141,7 +146,9 @@ const fetchPayrollData = async (tenantId: string) => {
       last_name: employee?.lastName ?? "",
     };
   });
-  const missingRateRows: MissingRateRow[] = [{ count: BigInt(missingRateCount) }];
+  const missingRateRows: MissingRateRow[] = [
+    { count: BigInt(missingRateCount) },
+  ];
 
   return { periodRows, runRows, headcountRows, approvalRows, missingRateRows };
 };
@@ -267,7 +274,7 @@ const PayrollOverviewPage = async () => {
 
           <div className="rounded-[22px] border border-hairline bg-canvas p-6">
             {approvalRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="py-4 text-center text-muted-foreground text-sm">
                 No pending timecard approvals.
               </p>
             ) : (
@@ -283,7 +290,7 @@ const PayrollOverviewPage = async () => {
                       </p>
                       <Badge variant="secondary">{approval.status}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Submitted {dateTimeFormatter.format(approval.created_at)}
                     </p>
                   </div>
@@ -303,7 +310,7 @@ const PayrollOverviewPage = async () => {
 
           <div className="rounded-[22px] border border-hairline bg-canvas p-6">
             {payrollRisks.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-4">
+              <p className="py-4 text-center text-muted-foreground text-sm">
                 No payroll risks detected.
               </p>
             ) : (

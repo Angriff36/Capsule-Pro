@@ -11,11 +11,11 @@ interface SearchGroup {
 }
 
 interface SearchResponse {
-  success: true;
   groups: Record<string, SearchGroup>;
-  total: number;
-  page: number;
   limit: number;
+  page: number;
+  success: true;
+  total: number;
 }
 
 const MAX_QUERY_LENGTH = 200;

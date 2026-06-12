@@ -11,7 +11,7 @@
  *   - ir.commands[].constraints[]  → command-level constraints
  *   - Each constraint: { name, severity, overrideable (bool|undefined) }
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { loadMergedPrecompiledIR } from "../runtime/loadManifests";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,7 +45,9 @@ describe("Overrideable Constraints — Exact Set", () => {
 
     // Command-level
     for (const cmd of commands) {
-      if (!cmd) continue;
+      if (!cmd) {
+        continue;
+      }
       for (const c of cmd.constraints ?? []) {
         if (c.overrideable) {
           overrideable.push(`${cmd.entity}.${cmd.name}.${c.name}`);
@@ -148,14 +150,18 @@ describe("Overrideable Constraints — Non-overrideable remainder", () => {
     for (const entity of entities) {
       for (const c of entity.constraints ?? []) {
         if (c.overrideable && !overrideableNames.has(c.name)) {
-          violations.push(`entity ${entity.name}.${c.name} (overrideable=true)`);
+          violations.push(
+            `entity ${entity.name}.${c.name} (overrideable=true)`
+          );
         }
       }
     }
 
     // Command-level
     for (const cmd of commands) {
-      if (!cmd) continue;
+      if (!cmd) {
+        continue;
+      }
       for (const c of cmd.constraints ?? []) {
         if (c.overrideable && !overrideableNames.has(c.name)) {
           violations.push(
@@ -196,7 +202,9 @@ describe("Overrideable Constraints — Severity check", () => {
 
     // Command-level
     for (const cmd of commands) {
-      if (!cmd) continue;
+      if (!cmd) {
+        continue;
+      }
       for (const c of cmd.constraints ?? []) {
         if (c.overrideable) {
           overrideable.push({

@@ -6,12 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
  * A single stat item configuration
  */
 export interface ClientStatItem {
+  /** Optional icon component to display */
+  icon?: React.ComponentType<{ className?: string }>;
   /** The label for the stat (e.g., "Total Events") */
   label: string;
   /** The value to display (e.g., "42", "$1,234") */
   value: string | number;
-  /** Optional icon component to display */
-  icon?: React.ComponentType<{ className?: string }>;
 }
 
 /**
@@ -40,19 +40,19 @@ export function ClientQuickStatsBlock({
   className?: string;
 }) {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 ${className || ""}`}>
+    <div className={`grid grid-cols-1 gap-4 md:grid-cols-4 ${className || ""}`}>
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 {stat.label}
               </CardTitle>
-              {Icon && <Icon className="text-muted-foreground size-4" />}
+              {Icon && <Icon className="size-4 text-muted-foreground" />}
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 {typeof stat.value === "number"
                   ? stat.value.toLocaleString()
                   : stat.value}

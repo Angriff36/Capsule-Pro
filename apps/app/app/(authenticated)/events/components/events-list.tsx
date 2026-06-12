@@ -110,11 +110,18 @@ export function EventsList({ events }: { events: EventListItem[] }) {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return events.filter((event) => {
-      if (statusFilter !== "all" && event.status !== statusFilter) return false;
-      if (typeFilter !== "all" && event.eventType !== typeFilter) return false;
-      if (dateFilter !== "all" && !isInRange(event.eventDate, dateFilter))
+      if (statusFilter !== "all" && event.status !== statusFilter) {
         return false;
-      if (!query) return true;
+      }
+      if (typeFilter !== "all" && event.eventType !== typeFilter) {
+        return false;
+      }
+      if (dateFilter !== "all" && !isInRange(event.eventDate, dateFilter)) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
 
       const haystack = [
         event.title,
@@ -155,13 +162,13 @@ export function EventsList({ events }: { events: EventListItem[] }) {
         pills: (
           <>
             <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[event.status] ?? "bg-slate-100 text-slate-600"}`}
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${STATUS_COLORS[event.status] ?? "bg-slate-100 text-slate-600"}`}
             >
               {event.status}
             </span>
             {event.eventType && event.eventType !== "event" && (
               <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${TYPE_COLORS[event.eventType] ?? "bg-slate-50 text-slate-600"}`}
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${TYPE_COLORS[event.eventType] ?? "bg-slate-50 text-slate-600"}`}
               >
                 {event.eventType}
               </span>
@@ -238,7 +245,7 @@ export function EventsList({ events }: { events: EventListItem[] }) {
       </div>
 
       <ResearchTable
-        caption={`${filtered.length} event${filtered.length !== 1 ? "s" : ""}`}
+        caption={`${filtered.length} event${filtered.length === 1 ? "" : "s"}`}
         linkComponent={({ href, className, children }) => (
           <Link className={className} href={href}>
             {children}

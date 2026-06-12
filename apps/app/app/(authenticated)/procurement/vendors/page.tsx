@@ -103,7 +103,9 @@ export default function VendorsPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       await vendorCreate(form);
@@ -126,7 +128,9 @@ export default function VendorsPage() {
       });
       loadVendors();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create vendor");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create vendor"
+      );
     } finally {
       setSaving(false);
     }
@@ -138,19 +142,25 @@ export default function VendorsPage() {
   };
 
   const confirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     try {
       await vendorRemove({ id: deleteTarget.id });
       loadVendors();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete vendor");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete vendor"
+      );
     } finally {
       setDeleteTarget(null);
     }
   };
 
   const filtered = useMemo(() => {
-    if (!searchQuery) return vendors;
+    if (!searchQuery) {
+      return vendors;
+    }
     const q = searchQuery.toLowerCase();
     return vendors.filter(
       (v) =>
@@ -179,7 +189,7 @@ export default function VendorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Vendors</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Vendors</h1>
           <p className="text-muted-foreground">
             Manage suppliers and vendor relationships.
           </p>
@@ -187,18 +197,18 @@ export default function VendorsPage() {
         <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Vendor
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Vendor</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {/* Basic Info */}
               <div className="grid gap-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">
+                <h3 className="font-semibold text-muted-foreground text-sm">
                   Basic Information
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -287,7 +297,7 @@ export default function VendorsPage() {
 
               {/* Address */}
               <div className="grid gap-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">
+                <h3 className="font-semibold text-muted-foreground text-sm">
                   Address
                 </h3>
                 <div className="space-y-2">
@@ -382,7 +392,7 @@ export default function VendorsPage() {
                   disabled={!form.name.trim() || saving}
                   onClick={handleCreate}
                 >
-                  {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create Vendor
                 </Button>
               </div>
@@ -395,29 +405,29 @@ export default function VendorsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Vendors</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Vendors</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{vendors.length}</div>
+            <div className="font-bold text-2xl">{vendors.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Catalog Items</CardTitle>
+            <CardTitle className="font-medium text-sm">Catalog Items</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCatalogItems}</div>
+            <div className="font-bold text-2xl">{totalCatalogItems}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
+            <CardTitle className="font-medium text-sm">Avg Rating</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {vendors.length
                 ? (
                     vendors.reduce(
@@ -431,13 +441,13 @@ export default function VendorsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Total Contacts
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {vendors.reduce((sum, v) => sum + v.contact_count, 0)}
             </div>
           </CardContent>
@@ -446,7 +456,7 @@ export default function VendorsPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -459,7 +469,7 @@ export default function VendorsPage() {
       {filtered.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <Building2 className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p>
               {vendors.length === 0
                 ? "No vendors yet. Add your first vendor to get started."
@@ -471,7 +481,7 @@ export default function VendorsPage() {
         <div className="space-y-3">
           {filtered.map((vendor) => (
             <Card
-              className="hover:border-primary/40 transition-shadow"
+              className="transition-shadow hover:border-primary/40"
               key={vendor.id}
             >
               <CardContent className="p-4">
@@ -479,8 +489,8 @@ export default function VendorsPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-foreground">
                     <Building2 className="h-5 w-5" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-2">
                       <Link
                         className="font-semibold hover:underline"
                         href={`/procurement/vendors/${vendor.id}`}
@@ -496,7 +506,7 @@ export default function VendorsPage() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                    <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
                       {vendor.contact_person && (
                         <span>{vendor.contact_person}</span>
                       )}
@@ -525,7 +535,7 @@ export default function VendorsPage() {
                       </Button>
                     </Link>
                     <Button
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
                       onClick={(e) => handleDelete(vendor, e)}
                       size="sm"
                       variant="ghost"
@@ -543,7 +553,9 @@ export default function VendorsPage() {
       {/* Delete Confirmation */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         open={!!deleteTarget}
       >

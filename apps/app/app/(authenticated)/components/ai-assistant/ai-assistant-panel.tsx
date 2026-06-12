@@ -48,7 +48,9 @@ export function AiAssistantPanel() {
 
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading) {
+      return;
+    }
     sendMessage({ text: trimmed });
     setInput("");
   }, [input, isLoading, sendMessage]);
@@ -76,11 +78,11 @@ export function AiAssistantPanel() {
 
   return (
     <div
-      className={`fixed bottom-6 right-20 z-50 flex flex-col w-[400px] max-md:w-full max-md:right-0 max-md:left-0 max-md:bottom-0 max-md:rounded-b-none h-[600px] max-md:h-[80vh] rounded-2xl border bg-background overflow-hidden transition-all duration-200 ${panelTranslate}`}
+      className={`fixed right-20 bottom-6 z-50 flex h-[600px] w-[400px] flex-col overflow-hidden rounded-2xl border bg-background transition-all duration-200 max-md:right-0 max-md:bottom-0 max-md:left-0 max-md:h-[80vh] max-md:w-full max-md:rounded-b-none ${panelTranslate}`}
       style={{ visibility: isOpen ? "visible" : "hidden" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex shrink-0 items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center gap-2">
           <SparklesIcon className="h-4 w-4 text-primary" />
           <span className="font-semibold text-sm">Capsule AI</span>
@@ -115,16 +117,16 @@ export function AiAssistantPanel() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
         {isEmpty ? (
-          <div className="flex flex-col gap-3 h-full justify-center">
-            <p className="text-sm text-muted-foreground text-center">
+          <div className="flex h-full flex-col justify-center gap-3">
+            <p className="text-center text-muted-foreground text-sm">
               Ask me anything about {formatModuleLabel(currentModule)}
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap justify-center gap-2">
               {quickPrompts.map((qp) => (
                 <button
-                  className="text-xs px-3 py-1.5 rounded-full border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+                  className="rounded-full border border-border px-3 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
                   key={qp.label}
                   onClick={() => handleQuickPrompt(qp.prompt)}
                   type="button"
@@ -143,11 +145,15 @@ export function AiAssistantPanel() {
                   .map((p) => ("text" in p ? (p.text as string) : ""))
                   .join("") ?? "";
 
-              if (!textContent && m.role !== "user") return null;
+              if (!textContent && m.role !== "user") {
+                return null;
+              }
 
               const displayText = m.role === "user" ? textContent : textContent;
 
-              if (!displayText) return null;
+              if (!displayText) {
+                return null;
+              }
 
               return (
                 <div
@@ -178,7 +184,7 @@ export function AiAssistantPanel() {
             })}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-xl px-3 py-2 text-sm text-muted-foreground">
+                <div className="rounded-xl bg-muted px-3 py-2 text-muted-foreground text-sm">
                   <span className="animate-pulse">...</span>
                 </div>
               </div>
@@ -189,10 +195,10 @@ export function AiAssistantPanel() {
       </div>
 
       {/* Input */}
-      <div className="border-t px-3 py-2 shrink-0 bg-background">
-        <div className="flex gap-2 items-end">
+      <div className="shrink-0 border-t bg-background px-3 py-2">
+        <div className="flex items-end gap-2">
           <textarea
-            className="flex-1 resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 min-h-[60px] max-h-[120px]"
+            className="max-h-[120px] min-h-[60px] flex-1 resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask anything… (⌘↵ to send)"

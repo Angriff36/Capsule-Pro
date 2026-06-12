@@ -9,7 +9,6 @@
  */
 
 import { database, type Prisma, type webhook_event_type } from "@repo/database";
-import { toJson } from "@/lib/prisma-utils";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -19,13 +18,14 @@ import {
 } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
+import { toJson } from "@/lib/prisma-utils";
 
 interface DispatchWebhooksParams {
-  tenantId: string;
-  entityType: string;
-  entityId: string;
   action: webhook_event_type;
   data: Record<string, unknown>;
+  entityId: string;
+  entityType: string;
+  tenantId: string;
 }
 
 export async function dispatchWebhooks({

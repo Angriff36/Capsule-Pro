@@ -13,11 +13,11 @@ import type { ReactNode } from "react";
  * monochrome status pill described in DESIGN.md §Components / Buttons.
  */
 export interface AgentConsoleCardProps {
-  title?: ReactNode;
-  eyebrow?: ReactNode;
-  statusItems?: ReactNode[];
   children: ReactNode;
   className?: string;
+  eyebrow?: ReactNode;
+  statusItems?: ReactNode[];
+  title?: ReactNode;
 }
 
 export function AgentConsoleCard({

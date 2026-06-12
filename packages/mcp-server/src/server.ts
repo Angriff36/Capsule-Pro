@@ -28,8 +28,8 @@ const TENANT_PLUGINS: McpPlugin[] = [
 const ADMIN_PLUGINS: McpPlugin[] = [irAdminPlugin];
 
 export interface CreateServerOptions {
-  mode: ServerMode;
   identity: McpIdentity;
+  mode: ServerMode;
 }
 
 export async function createServer(
@@ -50,9 +50,7 @@ export async function createServer(
   });
 
   const plugins =
-    mode === "admin"
-      ? [...TENANT_PLUGINS, ...ADMIN_PLUGINS]
-      : TENANT_PLUGINS;
+    mode === "admin" ? [...TENANT_PLUGINS, ...ADMIN_PLUGINS] : TENANT_PLUGINS;
 
   for (const plugin of plugins) {
     await plugin.register({ server, identity, mode });

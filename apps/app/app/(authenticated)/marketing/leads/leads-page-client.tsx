@@ -142,10 +142,10 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
   // Empty state
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+      <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
         <UserPlus className="mb-4 size-10 text-muted-foreground" />
-        <h3 className="text-lg font-medium">No leads yet</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h3 className="font-medium text-lg">No leads yet</h3>
+        <p className="mt-1 text-muted-foreground text-sm">
           Start tracking potential clients by creating your first lead.
         </p>
         <Button asChild className="mt-4" size="sm">
@@ -160,7 +160,7 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
       {/* Search + filter bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -171,7 +171,7 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
         <div className="flex flex-wrap gap-1.5">
           {STATUS_FILTERS.map((filter) => (
             <button
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${
                 statusFilter === filter.value
                   ? "bg-ink text-white"
                   : "border border-hairline bg-canvas text-muted-foreground hover:bg-soft-stone"
@@ -202,7 +202,7 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
       {/* Leads table */}
       <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_120px_130px_100px_100px_44px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="grid grid-cols-[1fr_120px_130px_100px_100px_44px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
           <span>Lead</span>
           <span>Status</span>
           <span>Event date</span>
@@ -213,7 +213,7 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
 
         {/* Table rows */}
         {filteredLeads.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-12 text-center text-muted-foreground text-sm">
             {searchQuery || statusFilter !== "all"
               ? "No leads match your filters."
               : "No leads found."}
@@ -244,7 +244,7 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
                     )}
                   </div>
                   {lead.companyName && (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate text-muted-foreground text-xs">
                       {lead.companyName}
                       {lead.source && (
                         <span className="ml-1 opacity-60">

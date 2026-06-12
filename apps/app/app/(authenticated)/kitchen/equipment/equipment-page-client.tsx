@@ -18,14 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
 import {
   Empty,
   EmptyContent,
@@ -34,6 +26,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import {
   AlertTriangle,
   Bell,
@@ -47,43 +47,49 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
-import { equipmentCreate, equipmentScheduleMaintenance, facilityWorkOrderCreate, listEquipments, listFacilityWorkOrders } from "@/app/lib/manifest-client.generated";
+import {
+  equipmentCreate,
+  equipmentScheduleMaintenance,
+  facilityWorkOrderCreate,
+  listEquipments,
+  listFacilityWorkOrders,
+} from "@/app/lib/manifest-client.generated";
 
 interface Equipment {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
   condition: string;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  nextMaintenanceDate?: Date;
-  usageHours: number;
-  maxUsageHours: number;
+  id: string;
   locationId: string;
+  manufacturer?: string;
+  maxUsageHours: number;
+  model?: string;
+  name: string;
+  nextMaintenanceDate?: Date;
+  serialNumber?: string;
+  status: string;
+  type: string;
+  usageHours: number;
 }
 
 interface WorkOrder {
-  id: string;
+  createdAt: Date;
+  description?: string;
   equipmentId: string;
   equipmentName: string;
+  id: string;
+  priority: string;
+  scheduledDate?: Date;
+  status: string;
   title: string;
   type: string;
-  priority: string;
-  status: string;
-  description?: string;
-  scheduledDate?: Date;
-  createdAt: Date;
 }
 
 interface EquipmentAlert {
+  alertType: string;
   equipmentId: string;
   equipmentName: string;
-  alertType: string;
-  severity: string;
   message: string;
   recommendedAction: string;
+  severity: string;
 }
 
 const severityColors: Record<string, string> = {
@@ -262,15 +268,16 @@ export function EquipmentPageClient() {
   }
 
   async function handleScheduleMaintenance() {
-    if (!selectedEquipment) return;
+    if (!selectedEquipment) {
+      return;
+    }
     if (!maintenanceForm.title.trim()) {
       toast.error("Title is required");
       return;
     }
     setSubmitting(true);
     try {
-      await equipmentScheduleMaintenance({
-          });
+      await equipmentScheduleMaintenance({});
       toast.success("Maintenance scheduled successfully");
       setIsScheduleDialogOpen(false);
       setMaintenanceForm({
@@ -297,11 +304,11 @@ export function EquipmentPageClient() {
     setSubmitting(true);
     try {
       await facilityWorkOrderCreate({
-            title: workOrderForm.title,
-            priority: workOrderForm.priority,
-            description: workOrderForm.description || undefined,
-            scheduledDate: workOrderForm.scheduledDate || undefined,
-          });
+        title: workOrderForm.title,
+        priority: workOrderForm.priority,
+        description: workOrderForm.description || undefined,
+        scheduledDate: workOrderForm.scheduledDate || undefined,
+      });
       toast.success("Work order created successfully");
       setIsNewWorkOrderOpen(false);
       setWorkOrderForm({
@@ -321,14 +328,16 @@ export function EquipmentPageClient() {
   }
 
   async function handleUpdateStatus() {
-    if (!selectedWorkOrder) return;
+    if (!selectedWorkOrder) {
+      return;
+    }
     setSubmitting(true);
     try {
       await executeCommand("FacilityWorkOrder", "updateStatus", {
-            workOrderId: selectedWorkOrder.id,
-            status: statusForm.status,
-            notes: statusForm.notes || undefined,
-          });
+        workOrderId: selectedWorkOrder.id,
+        status: statusForm.status,
+        notes: statusForm.notes || undefined,
+      });
       toast.success("Status updated successfully");
       setIsUpdateStatusOpen(false);
       setStatusForm({ status: "in_progress", notes: "" });
@@ -385,10 +394,10 @@ export function EquipmentPageClient() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Equipment Maintenance
           </h1>
           <p className="text-muted-foreground">
@@ -585,7 +594,7 @@ export function EquipmentPageClient() {
 
       {/* Alert Summary */}
       {alertSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card
             className={
               alertSummary.bySeverity.critical > 0
@@ -595,48 +604,48 @@ export function EquipmentPageClient() {
             tone="canvas"
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Critical
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="font-bold text-2xl text-red-600">
                 {alertSummary.bySeverity.critical}
               </div>
             </CardContent>
           </Card>
           <Card tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Warning
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="font-bold text-2xl text-orange-600">
                 {alertSummary.bySeverity.warning}
               </div>
             </CardContent>
           </Card>
           <Card tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Info
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="font-bold text-2xl text-yellow-600">
                 {alertSummary.bySeverity.info}
               </div>
             </CardContent>
           </Card>
           <Card tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="font-medium text-muted-foreground text-sm">
                 Total Equipment
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{equipment.length}</div>
+              <div className="font-bold text-2xl">{equipment.length}</div>
             </CardContent>
           </Card>
         </div>
@@ -684,12 +693,14 @@ export function EquipmentPageClient() {
                     </EmptyMedia>
                     <EmptyTitle>No equipment yet</EmptyTitle>
                     <EmptyDescription>
-                      Add kitchen equipment to track maintenance schedules, usage hours, and condition.
+                      Add kitchen equipment to track maintenance schedules,
+                      usage hours, and condition.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <p className="text-muted-foreground text-xs">
-                      Click <strong>Add Equipment</strong> above to register your first piece of equipment.
+                      Click <strong>Add Equipment</strong> above to register
+                      your first piece of equipment.
                     </p>
                   </EmptyContent>
                 </Empty>
@@ -699,7 +710,7 @@ export function EquipmentPageClient() {
                     const usagePercent = getUsagePercentage(equip);
                     return (
                       <div
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                         key={equip.id}
                       >
                         <div className="flex-1">
@@ -725,7 +736,7 @@ export function EquipmentPageClient() {
                             </Badge>
                             <Badge variant="outline">{equip.type}</Badge>
                           </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <div className="mt-2 flex items-center gap-4 text-muted-foreground text-sm">
                             {equip.manufacturer && (
                               <span>{equip.manufacturer}</span>
                             )}
@@ -752,7 +763,7 @@ export function EquipmentPageClient() {
                               </div>
                             )}
                           </div>
-                          <div className="mt-2 w-full bg-secondary rounded-full h-2">
+                          <div className="mt-2 h-2 w-full rounded-full bg-secondary">
                             <div
                               className={`h-2 rounded-full ${
                                 usagePercent >= 90
@@ -828,11 +839,11 @@ export function EquipmentPageClient() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   Loading work orders...
                 </div>
               ) : workOrders.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   No work orders found. Create a work order to track equipment
                   repairs.
                 </div>
@@ -840,7 +851,7 @@ export function EquipmentPageClient() {
                 <div className="space-y-4">
                   {workOrders.map((order) => (
                     <div
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                       key={order.id}
                     >
                       <div className="flex-1">
@@ -860,13 +871,13 @@ export function EquipmentPageClient() {
                             {order.status.replace(/_/g, " ")}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="mt-1 text-muted-foreground text-sm">
                           Equipment: {order.equipmentName}
                         </p>
                         {order.description && (
-                          <p className="text-sm mt-2">{order.description}</p>
+                          <p className="mt-2 text-sm">{order.description}</p>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        <div className="mt-2 flex items-center gap-4 text-muted-foreground text-sm">
                           <span>Created: {formatDate(order.createdAt)}</span>
                           {order.scheduledDate && (
                             <span>
@@ -927,19 +938,19 @@ export function EquipmentPageClient() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   Loading alerts...
                 </div>
               ) : alerts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckIcon className="mx-auto h-12 w-12 text-green-500 mb-4" />
+                <div className="py-8 text-center text-muted-foreground">
+                  <CheckIcon className="mx-auto mb-4 h-12 w-12 text-green-500" />
                   No alerts at this time. Your equipment is in good standing.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {alerts.map((alert, index) => (
                     <div
-                      className="p-4 border rounded-lg border-l-4"
+                      className="rounded-lg border border-l-4 p-4"
                       key={`${alert.equipmentId}-${alert.alertType}-${index}`}
                       style={{
                         borderLeftColor:
@@ -954,7 +965,7 @@ export function EquipmentPageClient() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="mb-2 flex items-center gap-3">
                             <h3 className="font-semibold">
                               {alert.equipmentName}
                             </h3>
@@ -971,8 +982,8 @@ export function EquipmentPageClient() {
                               {alert.alertType.replace(/_/g, " ")}
                             </Badge>
                           </div>
-                          <p className="text-sm mb-2">{alert.message}</p>
-                          <p className="text-sm font-medium text-muted-foreground">
+                          <p className="mb-2 text-sm">{alert.message}</p>
+                          <p className="font-medium text-muted-foreground text-sm">
                             Recommendation: {alert.recommendedAction}
                           </p>
                         </div>
@@ -1115,7 +1126,7 @@ export function EquipmentPageClient() {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Status
                   </p>
                   <Badge
@@ -1129,7 +1140,7 @@ export function EquipmentPageClient() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Condition
                   </p>
                   <Badge
@@ -1143,16 +1154,16 @@ export function EquipmentPageClient() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Type
                   </p>
                   <p className="text-sm">{selectedEquipment.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Location
                   </p>
-                  <p className="text-sm font-mono text-xs">
+                  <p className="font-mono text-sm text-xs">
                     {selectedEquipment.locationId}
                   </p>
                 </div>
@@ -1161,7 +1172,7 @@ export function EquipmentPageClient() {
                 selectedEquipment.model ||
                 selectedEquipment.serialNumber) && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Product Information</h4>
+                  <h4 className="mb-2 font-medium">Product Information</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {selectedEquipment.manufacturer && (
                       <div>
@@ -1189,7 +1200,7 @@ export function EquipmentPageClient() {
                 </div>
               )}
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Usage</h4>
+                <h4 className="mb-2 font-medium">Usage</h4>
                 <div className="flex items-center gap-4 text-sm">
                   <span>
                     {selectedEquipment.usageHours.toFixed(1)} /{" "}
@@ -1199,7 +1210,7 @@ export function EquipmentPageClient() {
                     ({getUsagePercentage(selectedEquipment).toFixed(1)}%)
                   </span>
                 </div>
-                <div className="mt-2 w-full bg-secondary rounded-full h-2">
+                <div className="mt-2 h-2 w-full rounded-full bg-secondary">
                   <div
                     className={`h-2 rounded-full ${
                       getUsagePercentage(selectedEquipment) >= 90
@@ -1219,18 +1230,18 @@ export function EquipmentPageClient() {
               </div>
               {selectedEquipment.nextMaintenanceDate && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Next Maintenance</h4>
+                  <h4 className="mb-2 font-medium">Next Maintenance</h4>
                   <p className="text-sm">
                     {formatDate(selectedEquipment.nextMaintenanceDate)}
                   </p>
                 </div>
               )}
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Related Work Orders</h4>
+                <h4 className="mb-2 font-medium">Related Work Orders</h4>
                 {workOrders.filter(
                   (wo) => wo.equipmentId === selectedEquipment.id
                 ).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No work orders for this equipment.
                   </p>
                 ) : (
@@ -1239,7 +1250,7 @@ export function EquipmentPageClient() {
                       .filter((wo) => wo.equipmentId === selectedEquipment.id)
                       .map((wo) => (
                         <div
-                          className="flex items-center justify-between p-2 border rounded text-sm"
+                          className="flex items-center justify-between rounded border p-2 text-sm"
                           key={wo.id}
                         >
                           <div>
@@ -1400,7 +1411,7 @@ export function EquipmentPageClient() {
               </select>
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">Notes</Label>
+              <Label className="pt-2 text-right">Notes</Label>
               <textarea
                 className="col-span-3 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 onChange={(e) =>
@@ -1440,7 +1451,7 @@ export function EquipmentPageClient() {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Status
                   </p>
                   <Badge variant="secondary">
@@ -1448,7 +1459,7 @@ export function EquipmentPageClient() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Priority
                   </p>
                   <Badge
@@ -1462,13 +1473,13 @@ export function EquipmentPageClient() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Type
                   </p>
                   <p className="text-sm">{selectedWorkOrder.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="font-medium text-muted-foreground text-sm">
                     Equipment
                   </p>
                   <p className="text-sm">{selectedWorkOrder.equipmentName}</p>
@@ -1476,12 +1487,12 @@ export function EquipmentPageClient() {
               </div>
               {selectedWorkOrder.description && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Description</h4>
+                  <h4 className="mb-2 font-medium">Description</h4>
                   <p className="text-sm">{selectedWorkOrder.description}</p>
                 </div>
               )}
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Timeline</h4>
+                <h4 className="mb-2 font-medium">Timeline</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className="text-muted-foreground">Created: </span>
@@ -1521,7 +1532,7 @@ export function EquipmentPageClient() {
           {selectedAlert && (
             <div className="space-y-4 py-4">
               <div
-                className="p-3 border rounded-lg border-l-4"
+                className="rounded-lg border border-l-4 p-3"
                 style={{
                   borderLeftColor:
                     selectedAlert.severity === "critical"
@@ -1542,13 +1553,13 @@ export function EquipmentPageClient() {
                 >
                   {selectedAlert.severity}
                 </Badge>
-                <p className="text-sm mt-2">{selectedAlert.message}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">
+                <p className="mt-2 text-sm">{selectedAlert.message}</p>
+                <p className="mt-1 font-medium text-muted-foreground text-sm">
                   Recommendation: {selectedAlert.recommendedAction}
                 </p>
               </div>
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Actions</h4>
+                <h4 className="mb-3 font-medium">Actions</h4>
                 <div className="space-y-2">
                   <Button
                     className="w-full justify-start"

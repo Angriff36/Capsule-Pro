@@ -17,8 +17,12 @@ import { toast } from "sonner";
 import { deleteEventById } from "../actions";
 
 interface DeleteEventButtonProps {
+  className?: string;
   eventId: string;
   eventTitle: string;
+  /** When true, show icon-only button (for list cards). */
+  iconOnly?: boolean;
+  size?: "default" | "sm" | "lg" | "icon";
   variant?:
     | "default"
     | "ghost"
@@ -26,10 +30,6 @@ interface DeleteEventButtonProps {
     | "link"
     | "outline"
     | "secondary";
-  size?: "default" | "sm" | "lg" | "icon";
-  className?: string;
-  /** When true, show icon-only button (for list cards). */
-  iconOnly?: boolean;
 }
 
 export function DeleteEventButton({

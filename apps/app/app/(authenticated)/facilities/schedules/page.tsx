@@ -68,7 +68,10 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { facilityScheduleEdit, facilityScheduleRemove } from "@/app/lib/manifest-client.generated";
+import {
+  facilityScheduleEdit,
+  facilityScheduleRemove,
+} from "@/app/lib/manifest-client.generated";
 import {
   completeSchedule,
   createPMSchedule,
@@ -78,30 +81,30 @@ import {
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
-  id: string;
-  scheduleNumber: string;
   areaId: string | null;
-  equipmentId: string | null;
-  title: string;
+  assignedTo: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
   description: string | null;
+  equipmentId: string | null;
+  estimatedCost: { toNumber(): number } | null;
+  estimatedHours: { toNumber(): number } | null;
   frequency: string;
+  id: string;
   intervalDays: number;
   lastCompletedAt: Date | null;
   nextDueAt: Date;
-  assignedTo: string | null;
-  estimatedHours: { toNumber(): number } | null;
-  estimatedCost: { toNumber(): number } | null;
+  scheduleNumber: string;
   status: string;
-  createdAt: Date;
   tenantId: string;
+  title: string;
   updatedAt: Date;
-  deletedAt: Date | null;
 }
 
 interface Asset {
+  assetType: string;
   id: string;
   name: string;
-  assetType: string;
   status: string;
 }
 
@@ -196,7 +199,9 @@ export default function SchedulesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return;
+    if (!form.title.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       if (editing) {
@@ -219,7 +224,10 @@ export default function SchedulesPage() {
           estimatedCost: form.estimatedCost
             ? Number.parseFloat(form.estimatedCost)
             : undefined,
-          equipmentId: form.equipmentId === "__none__" ? undefined : form.equipmentId || undefined,
+          equipmentId:
+            form.equipmentId === "__none__"
+              ? undefined
+              : form.equipmentId || undefined,
         });
         await loadData();
         setShowDialog(false);
@@ -274,9 +282,8 @@ export default function SchedulesPage() {
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
-  const getSchedulesForDay = (day: Date) => {
-    return schedules.filter((s) => isSameDay(new Date(s.nextDueAt), day));
-  };
+  const getSchedulesForDay = (day: Date) =>
+    schedules.filter((s) => isSameDay(new Date(s.nextDueAt), day));
 
   const selectedDaySchedules = selectedDate
     ? getSchedulesForDay(selectedDate)
@@ -297,7 +304,7 @@ export default function SchedulesPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-semibold text-2xl tracking-tight">
               PM Schedules
             </h1>
             <p className="text-muted-foreground">
@@ -311,17 +318,17 @@ export default function SchedulesPage() {
             >
               <TabsList>
                 <TabsTrigger value="cards">
-                  <LayoutGrid className="h-4 w-4 mr-1" />
+                  <LayoutGrid className="mr-1 h-4 w-4" />
                   Cards
                 </TabsTrigger>
                 <TabsTrigger value="calendar">
-                  <Calendar className="h-4 w-4 mr-1" />
+                  <Calendar className="mr-1 h-4 w-4" />
                   Calendar
                 </TabsTrigger>
               </TabsList>
             </Tabs>
             <Button onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Schedule
             </Button>
           </div>
@@ -374,11 +381,11 @@ export default function SchedulesPage() {
               </CardHeader>
               <CardContent>
                 {/* Day headers */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
+                <div className="mb-2 grid grid-cols-7 gap-1">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
-                        className="text-center text-xs font-medium text-muted-foreground py-2"
+                        className="py-2 text-center font-medium text-muted-foreground text-xs"
                         key={day}
                       >
                         {day}
@@ -400,25 +407,21 @@ export default function SchedulesPage() {
 
                     return (
                       <button
-                        className={`
-                          min-h-[80px] p-1 rounded-lg border text-left transition-colors
-                          ${isCurrentMonth ? "bg-white" : "bg-muted/20 text-muted-foreground"}
+                        className={`min-h-[80px] rounded-lg border p-1 text-left transition-colors ${isCurrentMonth ? "bg-white" : "bg-muted/20 text-muted-foreground"}
                           ${isCurrentDay ? "ring-2 ring-primary" : "border-hairline"}
-                          ${isSelected ? "bg-primary/10 border-primary" : ""}
-                          hover:border-hairline
-                        `}
+                          ${isSelected ? "border-primary bg-primary/10" : ""}hover:border-hairline`}
                         key={day.toISOString()}
                         onClick={() => setSelectedDate(day)}
                       >
                         <div
-                          className={`text-sm font-medium mb-1 ${isCurrentDay ? "text-primary" : ""}`}
+                          className={`mb-1 font-medium text-sm ${isCurrentDay ? "text-primary" : ""}`}
                         >
                           {format(day, "d")}
                         </div>
                         <div className="space-y-0.5 overflow-hidden">
                           {daySchedules.slice(0, 2).map((s) => (
                             <div
-                              className={`text-[10px] px-1 py-0.5 rounded truncate ${
+                              className={`truncate rounded px-1 py-0.5 text-[10px] ${
                                 hasOverdue
                                   ? "bg-red-100 text-red-700"
                                   : "bg-muted/50 text-foreground"
@@ -430,7 +433,7 @@ export default function SchedulesPage() {
                             </div>
                           ))}
                           {daySchedules.length > 2 && (
-                            <div className="text-[10px] text-muted-foreground pl-1">
+                            <div className="pl-1 text-[10px] text-muted-foreground">
                               +{daySchedules.length - 2} more
                             </div>
                           )}
@@ -453,7 +456,7 @@ export default function SchedulesPage() {
               </CardHeader>
               <CardContent>
                 {selectedDate && selectedDaySchedules.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No schedules due this day.
                   </p>
                 ) : selectedDate ? (
@@ -462,11 +465,11 @@ export default function SchedulesPage() {
                       const isOverdue = new Date(s.nextDueAt) < now;
                       return (
                         <div
-                          className={`p-2 rounded border ${isOverdue ? "border-red-300 bg-red-50" : "border-hairline"}`}
+                          className={`rounded border p-2 ${isOverdue ? "border-red-300 bg-red-50" : "border-hairline"}`}
                           key={s.id}
                         >
                           <div className="font-medium text-sm">{s.title}</div>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="mt-1 flex items-center gap-2">
                             <Badge
                               className={
                                 frequencyColors[s.frequency] || "bg-muted/20"
@@ -485,7 +488,7 @@ export default function SchedulesPage() {
                             size="sm"
                           >
                             {completing === s.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                             ) : null}
                             Complete
                           </Button>
@@ -494,7 +497,7 @@ export default function SchedulesPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Click a day to see schedules.
                   </p>
                 )}
@@ -552,45 +555,45 @@ export default function SchedulesPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground">
+                    <div className="font-mono text-muted-foreground text-xs">
                       {schedule.scheduleNumber}
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Frequency
                         </span>
                         <span
-                          className={`text-xs px-2 py-1 rounded ${frequencyColors[schedule.frequency] || "bg-muted/20"}`}
+                          className={`rounded px-2 py-1 text-xs ${frequencyColors[schedule.frequency] || "bg-muted/20"}`}
                         >
                           {schedule.frequency}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Next Due
                         </span>
                         <span
-                          className={`text-sm ${isOverdue ? "text-red-600 font-medium" : ""}`}
+                          className={`text-sm ${isOverdue ? "font-medium text-red-600" : ""}`}
                         >
                           {new Date(schedule.nextDueAt).toLocaleDateString()}
                         </span>
                       </div>
                       {linkedAsset && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-muted-foreground text-sm">
                             Equipment
                           </span>
-                          <span className="text-sm flex items-center gap-1">
+                          <span className="flex items-center gap-1 text-sm">
                             <Wrench className="h-3 w-3" /> {linkedAsset.name}
                           </span>
                         </div>
                       )}
                       {schedule.estimatedHours && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-muted-foreground text-sm">
                             Est. Hours
                           </span>
                           <span className="text-sm">
@@ -600,7 +603,7 @@ export default function SchedulesPage() {
                       )}
                       {schedule.estimatedCost && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-muted-foreground text-sm">
                             Est. Cost
                           </span>
                           <span className="text-sm">
@@ -617,7 +620,7 @@ export default function SchedulesPage() {
                         size="sm"
                       >
                         {completing === schedule.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                         ) : null}
                         Complete
                       </Button>
@@ -781,7 +784,9 @@ export default function SchedulesPage() {
         <AlertDialog
           onOpenChange={(open) => {
             setDeleteDialogOpen(open);
-            if (!open) setScheduleToDelete(null);
+            if (!open) {
+              setScheduleToDelete(null);
+            }
           }}
           open={deleteDialogOpen}
         >
@@ -802,7 +807,9 @@ export default function SchedulesPage() {
                 className="bg-red-600 hover:bg-red-700"
                 disabled={deleting === scheduleToDelete?.id}
                 onClick={() => {
-                  if (scheduleToDelete) handleDelete(scheduleToDelete.id);
+                  if (scheduleToDelete) {
+                    handleDelete(scheduleToDelete.id);
+                  }
                 }}
               >
                 {deleting === scheduleToDelete?.id ? (

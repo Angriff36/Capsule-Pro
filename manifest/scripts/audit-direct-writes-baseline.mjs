@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Baseline-and-block-new wrapper around the Capsule-local direct-write audit.
  *
@@ -60,10 +61,10 @@
  *   --baseline <path> Override the baseline path.
  */
 
-import fs from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,15 +74,30 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const args = process.argv.slice(2);
 const opts = {
   saveBaseline: false,
-  reportPath: path.join(ROOT, "manifest", "reports", "direct-writes", "direct-writes.json"),
-  baselinePath: path.join(ROOT, "manifest", "governance", "baselines", "direct-writes.json"),
+  reportPath: path.join(
+    ROOT,
+    "manifest",
+    "reports",
+    "direct-writes",
+    "direct-writes.json"
+  ),
+  baselinePath: path.join(
+    ROOT,
+    "manifest",
+    "governance",
+    "baselines",
+    "direct-writes.json"
+  ),
 };
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
-  if (a === "--save-baseline") opts.saveBaseline = true;
-  else if (a === "--report") opts.reportPath = path.resolve(args[++i]);
-  else if (a === "--baseline") opts.baselinePath = path.resolve(args[++i]);
-  else if (a === "-h" || a === "--help") {
+  if (a === "--save-baseline") {
+    opts.saveBaseline = true;
+  } else if (a === "--report") {
+    opts.reportPath = path.resolve(args[++i]);
+  } else if (a === "--baseline") {
+    opts.baselinePath = path.resolve(args[++i]);
+  } else if (a === "-h" || a === "--help") {
     console.log(
       "Usage: node scripts/manifest/audit-direct-writes-baseline.mjs [--save-baseline] [--report path] [--baseline path]"
     );
@@ -107,7 +123,9 @@ const audit = spawnSync(
   { cwd: ROOT, stdio: ["ignore", "inherit", "inherit"] }
 );
 if (audit.status !== 0) {
-  console.error("[direct-write-baseline] Underlying audit exited non-zero; aborting.");
+  console.error(
+    "[direct-write-baseline] Underlying audit exited non-zero; aborting."
+  );
   process.exit(audit.status ?? 2);
 }
 
@@ -120,13 +138,25 @@ const report = JSON.parse(reportRaw);
 function buildViolationSet(rep) {
   const set = new Set();
   for (const f of rep.findings || []) {
-    if (f.classification !== "reported") continue;
-    if (f.bypassed) continue;
-    if (f.deprecatedAlias) continue;
-    if (!f.touchesGovernedEntity) continue;
+    if (f.classification !== "reported") {
+      continue;
+    }
+    if (f.bypassed) {
+      continue;
+    }
+    if (f.deprecatedAlias) {
+      continue;
+    }
+    if (!f.touchesGovernedEntity) {
+      continue;
+    }
     for (const h of f.hits || []) {
-      if (!h.governedEntity) continue;
-      if (!h.method) continue;
+      if (!h.governedEntity) {
+        continue;
+      }
+      if (!h.method) {
+        continue;
+      }
       set.add(packKey(f.file, h.governedEntity, h.method));
     }
   }
@@ -140,13 +170,20 @@ if (opts.saveBaseline) {
   const violations = Array.from(currentSet)
     .map(unpackKey)
     .sort((a, b) => {
-      if (a.file !== b.file) return a.file.localeCompare(b.file);
-      if (a.entity !== b.entity) return a.entity.localeCompare(b.entity);
+      if (a.file !== b.file) {
+        return a.file.localeCompare(b.file);
+      }
+      if (a.entity !== b.entity) {
+        return a.entity.localeCompare(b.entity);
+      }
       return a.method.localeCompare(b.method);
     });
   const baseline = {
     generatedAt: new Date().toISOString(),
-    capturedFromReport: path.relative(ROOT, opts.reportPath).split(path.sep).join("/"),
+    capturedFromReport: path
+      .relative(ROOT, opts.reportPath)
+      .split(path.sep)
+      .join("/"),
     keyShape: ["file", "entity", "method"],
     note:
       "Baseline of Capsule-local direct-write audit findings. Each entry is a " +
@@ -158,7 +195,10 @@ if (opts.saveBaseline) {
     violations,
   };
   await fs.mkdir(path.dirname(opts.baselinePath), { recursive: true });
-  await fs.writeFile(opts.baselinePath, JSON.stringify(baseline, null, 2) + "\n");
+  await fs.writeFile(
+    opts.baselinePath,
+    JSON.stringify(baseline, null, 2) + "\n"
+  );
   console.log(
     `[direct-write-baseline] Saved baseline with ${baseline.count} (file, entity, method) triple(s) to ${path.relative(ROOT, opts.baselinePath)}`
   );
@@ -182,40 +222,62 @@ const baselineSet = new Set(
 // 6. Diff: anything in current that's not in baseline.
 const newFindings = [];
 for (const k of currentSet) {
-  if (!baselineSet.has(k)) newFindings.push(unpackKey(k));
+  if (!baselineSet.has(k)) {
+    newFindings.push(unpackKey(k));
+  }
 }
 newFindings.sort((a, b) => {
-  if (a.file !== b.file) return a.file.localeCompare(b.file);
-  if (a.entity !== b.entity) return a.entity.localeCompare(b.entity);
+  if (a.file !== b.file) {
+    return a.file.localeCompare(b.file);
+  }
+  if (a.entity !== b.entity) {
+    return a.entity.localeCompare(b.entity);
+  }
   return a.method.localeCompare(b.method);
 });
 
 // 7. Resolved entries (in baseline but no longer current) — informational only.
 const resolved = [];
 for (const k of baselineSet) {
-  if (!currentSet.has(k)) resolved.push(unpackKey(k));
+  if (!currentSet.has(k)) {
+    resolved.push(unpackKey(k));
+  }
 }
 
 // 8. Output + exit.
 console.log("");
 console.log("[direct-write-baseline] Constitution §2 direct-write debt report");
-console.log(`  Baseline (file, entity, method) triple count : ${baselineDoc.count}`);
-console.log(`  Current  (file, entity, method) triple count : ${currentSet.size}`);
-console.log(`  New since baseline                            : ${newFindings.length}`);
-console.log(`  Resolved since baseline                       : ${resolved.length}`);
+console.log(
+  `  Baseline (file, entity, method) triple count : ${baselineDoc.count}`
+);
+console.log(
+  `  Current  (file, entity, method) triple count : ${currentSet.size}`
+);
+console.log(
+  `  New since baseline                            : ${newFindings.length}`
+);
+console.log(
+  `  Resolved since baseline                       : ${resolved.length}`
+);
 
 if (resolved.length > 0) {
   console.log("");
-  console.log("[direct-write-baseline] Resolved (regenerate baseline with --save-baseline to drop these):");
+  console.log(
+    "[direct-write-baseline] Resolved (regenerate baseline with --save-baseline to drop these):"
+  );
   for (const v of resolved.slice(0, 20)) {
     console.log(`  ${v.file}  [${v.entity}.${v.method}]`);
   }
-  if (resolved.length > 20) console.log(`  ...and ${resolved.length - 20} more.`);
+  if (resolved.length > 20) {
+    console.log(`  ...and ${resolved.length - 20} more.`);
+  }
 }
 
 if (newFindings.length > 0) {
   console.log("");
-  console.log("[direct-write-baseline] ::error::NEW direct-write violations not in baseline:");
+  console.log(
+    "[direct-write-baseline] ::error::NEW direct-write violations not in baseline:"
+  );
   for (const v of newFindings) {
     console.log(`  ${v.file}  [${v.entity}.${v.method}]`);
   }

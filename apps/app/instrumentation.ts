@@ -24,7 +24,11 @@ export async function register() {
 
 export const onRequestError = (
   error: Error & { digest?: string },
-  request: { path: string; method: string; headers: Record<string, string | string[]> },
+  request: {
+    path: string;
+    method: string;
+    headers: Record<string, string | string[]>;
+  },
   context: {
     routerKind: "Pages Router" | "App Router";
     routePath: string;

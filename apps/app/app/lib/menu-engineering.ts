@@ -6,77 +6,80 @@ import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
 export interface MenuEngineeringSummary {
-  period: string;
-  startDate: string;
+  averageMarginPercent: number;
   endDate: string;
   locationId: string | null;
-  totalDishes: number;
-  totalOrders: number;
-  totalRevenue: number;
-  totalCost: number;
-  totalContributionMargin: number;
-  averageMarginPercent: number;
-  topPerformingDish: {
-    id: string;
-    name: string;
-    contributionMargin: number;
-  } | null;
   lowPerformingDish: {
     id: string;
     name: string;
     contributionMargin: number;
   } | null;
-}
-
-export interface MenuItemAnalysis {
-  dishId: string;
-  dishName: string;
-  category: string | null;
-  pricePerPerson: string | null;
-  costPerPerson: string | null;
-  totalOrders: number;
-  totalGuestsServed: number;
-  totalRevenue: number;
+  period: string;
+  startDate: string;
+  topPerformingDish: {
+    id: string;
+    name: string;
+    contributionMargin: number;
+  } | null;
+  totalContributionMargin: number;
   totalCost: number;
-  contributionMargin: number;
-  marginPercent: number;
-  popularityScore: number;
-  quadrant: "star" | "plowhorse" | "puzzle" | "dog";
-}
-
-export interface CategoryAnalysis {
-  category: string;
   totalDishes: number;
   totalOrders: number;
   totalRevenue: number;
-  totalContributionMargin: number;
+}
+
+export interface MenuItemAnalysis {
+  category: string | null;
+  contributionMargin: number;
+  costPerPerson: string | null;
+  dishId: string;
+  dishName: string;
+  marginPercent: number;
+  popularityScore: number;
+  pricePerPerson: string | null;
+  quadrant: "star" | "plowhorse" | "puzzle" | "dog";
+  totalCost: number;
+  totalGuestsServed: number;
+  totalOrders: number;
+  totalRevenue: number;
+}
+
+export interface CategoryAnalysis {
   averageMarginPercent: number;
+  category: string;
   topDish: string | null;
+  totalContributionMargin: number;
+  totalDishes: number;
+  totalOrders: number;
+  totalRevenue: number;
 }
 
 export interface MenuEngineeringData {
-  summary: MenuEngineeringSummary;
-  menuItems: MenuItemAnalysis[];
   categoryAnalysis: CategoryAnalysis[];
-  recommendations: string[];
+  menuItems: MenuItemAnalysis[];
   quadrantDistribution: {
     star: number;
     plowhorse: number;
     puzzle: number;
     dog: number;
   };
+  recommendations: string[];
+  summary: MenuEngineeringSummary;
 }
 
 export interface UseMenuEngineeringOptions {
-  period?: "7d" | "30d" | "90d" | "12m" | string;
-  locationId?: string;
   enabled?: boolean;
+  locationId?: string;
+  period?: "7d" | "30d" | "90d" | "12m" | string;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const expectRecord = (value: unknown, path: string): Record<string, unknown> => {
+const expectRecord = (
+  value: unknown,
+  path: string
+): Record<string, unknown> => {
   invariant(isRecord(value), `${path} must be an object`);
   return value;
 };
@@ -92,25 +95,42 @@ const expectString = (value: unknown, path: string): string => {
 };
 
 const expectNumber = (value: unknown, path: string): number => {
-  invariant(typeof value === "number" && Number.isFinite(value), `${path} must be a number`);
+  invariant(
+    typeof value === "number" && Number.isFinite(value),
+    `${path} must be a number`
+  );
   return value;
 };
 
 const expectStringOrNull = (value: unknown, path: string): string | null => {
-  if (value === null) return null;
+  if (value === null) {
+    return null;
+  }
   return expectString(value, path);
 };
 
-const readContributionMargin = (record: Record<string, unknown>, path: string): number => {
+const readContributionMargin = (
+  record: Record<string, unknown>,
+  path: string
+): number => {
   if ("contributionMargin" in record) {
-    return expectNumber(record.contributionMargin, `${path}.contributionMargin`);
+    return expectNumber(
+      record.contributionMargin,
+      `${path}.contributionMargin`
+    );
   }
-  return expectNumber(record.contribution_margin, `${path}.contribution_margin`);
+  return expectNumber(
+    record.contribution_margin,
+    `${path}.contribution_margin`
+  );
 };
 
 function parseMenuItemAnalysis(item: unknown, index: number): MenuItemAnalysis {
   const record = expectRecord(item, `menuItems[${index}]`);
-  const quadrantValue = expectString(record.quadrant, `menuItems[${index}].quadrant`);
+  const quadrantValue = expectString(
+    record.quadrant,
+    `menuItems[${index}].quadrant`
+  );
   invariant(
     quadrantValue === "star" ||
       quadrantValue === "plowhorse" ||
@@ -122,16 +142,43 @@ function parseMenuItemAnalysis(item: unknown, index: number): MenuItemAnalysis {
   return {
     dishId: expectString(record.dishId, `menuItems[${index}].dishId`),
     dishName: expectString(record.dishName, `menuItems[${index}].dishName`),
-    category: expectStringOrNull(record.category, `menuItems[${index}].category`),
-    pricePerPerson: expectStringOrNull(record.pricePerPerson, `menuItems[${index}].pricePerPerson`),
-    costPerPerson: expectStringOrNull(record.costPerPerson, `menuItems[${index}].costPerPerson`),
-    totalOrders: expectNumber(record.totalOrders, `menuItems[${index}].totalOrders`),
-    totalGuestsServed: expectNumber(record.totalGuestsServed, `menuItems[${index}].totalGuestsServed`),
-    totalRevenue: expectNumber(record.totalRevenue, `menuItems[${index}].totalRevenue`),
+    category: expectStringOrNull(
+      record.category,
+      `menuItems[${index}].category`
+    ),
+    pricePerPerson: expectStringOrNull(
+      record.pricePerPerson,
+      `menuItems[${index}].pricePerPerson`
+    ),
+    costPerPerson: expectStringOrNull(
+      record.costPerPerson,
+      `menuItems[${index}].costPerPerson`
+    ),
+    totalOrders: expectNumber(
+      record.totalOrders,
+      `menuItems[${index}].totalOrders`
+    ),
+    totalGuestsServed: expectNumber(
+      record.totalGuestsServed,
+      `menuItems[${index}].totalGuestsServed`
+    ),
+    totalRevenue: expectNumber(
+      record.totalRevenue,
+      `menuItems[${index}].totalRevenue`
+    ),
     totalCost: expectNumber(record.totalCost, `menuItems[${index}].totalCost`),
-    contributionMargin: expectNumber(record.contributionMargin, `menuItems[${index}].contributionMargin`),
-    marginPercent: expectNumber(record.marginPercent, `menuItems[${index}].marginPercent`),
-    popularityScore: expectNumber(record.popularityScore, `menuItems[${index}].popularityScore`),
+    contributionMargin: expectNumber(
+      record.contributionMargin,
+      `menuItems[${index}].contributionMargin`
+    ),
+    marginPercent: expectNumber(
+      record.marginPercent,
+      `menuItems[${index}].marginPercent`
+    ),
+    popularityScore: expectNumber(
+      record.popularityScore,
+      `menuItems[${index}].popularityScore`
+    ),
     quadrant: quadrantValue,
   };
 }
@@ -140,7 +187,9 @@ function parseDishSummary(
   dish: unknown,
   path: string
 ): MenuEngineeringSummary["topPerformingDish"] {
-  if (dish === null) return null;
+  if (dish === null) {
+    return null;
+  }
   const record = expectRecord(dish, path);
   return {
     id: expectString(record.id, `${path}.id`),
@@ -164,19 +213,43 @@ function parseMenuEngineeringSummary(summary: unknown): MenuEngineeringSummary {
       record.totalContributionMargin,
       "summary.totalContributionMargin"
     ),
-    averageMarginPercent: expectNumber(record.averageMarginPercent, "summary.averageMarginPercent"),
-    topPerformingDish: parseDishSummary(record.topPerformingDish, "summary.topPerformingDish"),
-    lowPerformingDish: parseDishSummary(record.lowPerformingDish, "summary.lowPerformingDish"),
+    averageMarginPercent: expectNumber(
+      record.averageMarginPercent,
+      "summary.averageMarginPercent"
+    ),
+    topPerformingDish: parseDishSummary(
+      record.topPerformingDish,
+      "summary.topPerformingDish"
+    ),
+    lowPerformingDish: parseDishSummary(
+      record.lowPerformingDish,
+      "summary.lowPerformingDish"
+    ),
   };
 }
 
-function parseCategoryAnalysis(category: unknown, index: number): CategoryAnalysis {
+function parseCategoryAnalysis(
+  category: unknown,
+  index: number
+): CategoryAnalysis {
   const record = expectRecord(category, `categoryAnalysis[${index}]`);
   return {
-    category: expectString(record.category, `categoryAnalysis[${index}].category`),
-    totalDishes: expectNumber(record.totalDishes, `categoryAnalysis[${index}].totalDishes`),
-    totalOrders: expectNumber(record.totalOrders, `categoryAnalysis[${index}].totalOrders`),
-    totalRevenue: expectNumber(record.totalRevenue, `categoryAnalysis[${index}].totalRevenue`),
+    category: expectString(
+      record.category,
+      `categoryAnalysis[${index}].category`
+    ),
+    totalDishes: expectNumber(
+      record.totalDishes,
+      `categoryAnalysis[${index}].totalDishes`
+    ),
+    totalOrders: expectNumber(
+      record.totalOrders,
+      `categoryAnalysis[${index}].totalOrders`
+    ),
+    totalRevenue: expectNumber(
+      record.totalRevenue,
+      `categoryAnalysis[${index}].totalRevenue`
+    ),
     totalContributionMargin: expectNumber(
       record.totalContributionMargin,
       `categoryAnalysis[${index}].totalContributionMargin`
@@ -185,27 +258,47 @@ function parseCategoryAnalysis(category: unknown, index: number): CategoryAnalys
       record.averageMarginPercent,
       `categoryAnalysis[${index}].averageMarginPercent`
     ),
-    topDish: expectStringOrNull(record.topDish, `categoryAnalysis[${index}].topDish`),
+    topDish: expectStringOrNull(
+      record.topDish,
+      `categoryAnalysis[${index}].topDish`
+    ),
   };
 }
 
-export function parseMenuEngineeringResponse(payload: unknown): MenuEngineeringData {
+export function parseMenuEngineeringResponse(
+  payload: unknown
+): MenuEngineeringData {
   const root = expectRecord(payload, "payload");
-  const quadrantDistribution = expectRecord(root.quadrantDistribution, "quadrantDistribution");
+  const quadrantDistribution = expectRecord(
+    root.quadrantDistribution,
+    "quadrantDistribution"
+  );
 
   return {
     summary: parseMenuEngineeringSummary(root.summary),
-    menuItems: expectArray(root.menuItems, "menuItems").map(parseMenuItemAnalysis),
-    categoryAnalysis: expectArray(root.categoryAnalysis, "categoryAnalysis").map(
-      parseCategoryAnalysis
+    menuItems: expectArray(root.menuItems, "menuItems").map(
+      parseMenuItemAnalysis
     ),
-    recommendations: expectArray(root.recommendations, "recommendations").map((item, index) =>
-      expectString(item, `recommendations[${index}]`)
+    categoryAnalysis: expectArray(
+      root.categoryAnalysis,
+      "categoryAnalysis"
+    ).map(parseCategoryAnalysis),
+    recommendations: expectArray(root.recommendations, "recommendations").map(
+      (item, index) => expectString(item, `recommendations[${index}]`)
     ),
     quadrantDistribution: {
-      star: expectNumber(quadrantDistribution.star, "quadrantDistribution.star"),
-      plowhorse: expectNumber(quadrantDistribution.plowhorse, "quadrantDistribution.plowhorse"),
-      puzzle: expectNumber(quadrantDistribution.puzzle, "quadrantDistribution.puzzle"),
+      star: expectNumber(
+        quadrantDistribution.star,
+        "quadrantDistribution.star"
+      ),
+      plowhorse: expectNumber(
+        quadrantDistribution.plowhorse,
+        "quadrantDistribution.plowhorse"
+      ),
+      puzzle: expectNumber(
+        quadrantDistribution.puzzle,
+        "quadrantDistribution.puzzle"
+      ),
       dog: expectNumber(quadrantDistribution.dog, "quadrantDistribution.dog"),
     },
   };
@@ -216,9 +309,13 @@ export async function fetchMenuEngineering(
 ): Promise<MenuEngineeringData> {
   const { period = "30d", locationId } = options;
   const params = new URLSearchParams({ period });
-  if (locationId) params.set("locationId", locationId);
+  if (locationId) {
+    params.set("locationId", locationId);
+  }
 
-  const response = await apiFetch(`/api/analytics/menu-engineering?${params.toString()}`);
+  const response = await apiFetch(
+    `/api/analytics/menu-engineering?${params.toString()}`
+  );
   if (!response.ok) {
     const error = await response
       .json()
@@ -242,7 +339,9 @@ export function useMenuEngineering(options: UseMenuEngineeringOptions = {}) {
   const refetch = useCallback(() => setTick((value) => value + 1), []);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     let cancelled = false;
     setIsLoading(true);
@@ -250,7 +349,9 @@ export function useMenuEngineering(options: UseMenuEngineeringOptions = {}) {
 
     fetchMenuEngineering({ period, locationId })
       .then((result) => {
-        if (!cancelled) setData(result);
+        if (!cancelled) {
+          setData(result);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -258,7 +359,9 @@ export function useMenuEngineering(options: UseMenuEngineeringOptions = {}) {
         }
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       });
 
     return () => {

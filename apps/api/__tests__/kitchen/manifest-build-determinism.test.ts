@@ -146,7 +146,9 @@ describe("Test A: commands.json determinism", () => {
           b: { entity: string; command: string }
         ) => {
           const entityCmp = a.entity.localeCompare(b.entity);
-          if (entityCmp !== 0) return entityCmp;
+          if (entityCmp !== 0) {
+            return entityCmp;
+          }
           return a.command.localeCompare(b.command);
         }
       );
@@ -204,7 +206,9 @@ describe("Test B: generated route content determinism", () => {
 
     for (const cmd of commands) {
       const domain = ENTITY_DOMAIN_MAP[cmd.entity];
-      if (!domain) continue;
+      if (!domain) {
+        continue;
+      }
 
       const kebabCommand = toKebabCase(cmd.command);
       const routePath = join(
@@ -214,10 +218,14 @@ describe("Test B: generated route content determinism", () => {
         kebabCommand,
         "route.ts"
       );
-      if (!existsSync(routePath)) continue;
+      if (!existsSync(routePath)) {
+        continue;
+      }
 
       const content = readFileSync(routePath, "utf8");
-      if (!hasGeneratedMarker(content)) continue;
+      if (!hasGeneratedMarker(content)) {
+        continue;
+      }
 
       const hasValidPostExport =
         /export\s+(?:async\s+)?function\s+POST\s*\(/.test(content) ||
@@ -240,7 +248,9 @@ describe("Test C: manual GET routes untouched by generator", () => {
 
     for (const domain of domains) {
       const domainDir = join(API_DIR, domain);
-      if (!existsSync(domainDir)) continue;
+      if (!existsSync(domainDir)) {
+        continue;
+      }
 
       const topRoute = join(domainDir, "route.ts");
       if (existsSync(topRoute)) {
@@ -308,15 +318,23 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
 
     for (const [entity, domain] of domains) {
       const commandsDir = join(API_DIR, domain, "commands");
-      if (!existsSync(commandsDir)) continue;
+      if (!existsSync(commandsDir)) {
+        continue;
+      }
 
       for (const entry of readdirSync(commandsDir, { withFileTypes: true })) {
-        if (!entry.isDirectory()) continue;
+        if (!entry.isDirectory()) {
+          continue;
+        }
         const routeFile = join(commandsDir, entry.name, "route.ts");
-        if (!existsSync(routeFile)) continue;
+        if (!existsSync(routeFile)) {
+          continue;
+        }
 
         const content = readFileSync(routeFile, "utf8");
-        if (!hasGeneratedMarker(content)) continue;
+        if (!hasGeneratedMarker(content)) {
+          continue;
+        }
 
         const kebabId = `${entity}.${entry.name}`;
         const routeRel = `${domain}/commands/${entry.name}/route.ts`;
@@ -339,7 +357,10 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
   it("unified dispatcher route exists", () => {
     // All commands now route through a single dynamic dispatcher at
     // app/api/manifest/[entity]/commands/[command]/route.ts
-    const dispatcherRoute = join(API_DIR, "manifest/[entity]/commands/[command]/route.ts");
+    const dispatcherRoute = join(
+      API_DIR,
+      "manifest/[entity]/commands/[command]/route.ts"
+    );
     expect(
       existsSync(dispatcherRoute),
       "Unified dispatcher route must exist"
@@ -347,7 +368,10 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
   });
 
   it("unified dispatcher route exports POST handler", () => {
-    const dispatcherRoute = join(API_DIR, "manifest/[entity]/commands/[command]/route.ts");
+    const dispatcherRoute = join(
+      API_DIR,
+      "manifest/[entity]/commands/[command]/route.ts"
+    );
     const content = readFileSync(dispatcherRoute, "utf8");
     expect(content).toContain("export async function POST");
     expect(content).toContain("runManifestCommand");

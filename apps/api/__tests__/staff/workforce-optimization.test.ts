@@ -132,10 +132,7 @@ function mockSuccess(
 
 function mockFailure(message: string, status = 400) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    new Response(
-      JSON.stringify({ success: false, message }),
-      { status }
-    )
+    new Response(JSON.stringify({ success: false, message }), { status })
   );
 }
 
@@ -189,11 +186,7 @@ describe("WorkforceOptimization Commands API", () => {
     },
   ];
 
-  describe.each(COMMANDS)("command $name", ({
-    name,
-    command,
-    sampleBody,
-  }) => {
+  describe.each(COMMANDS)("command $name", ({ name, command, sampleBody }) => {
     it(`returns 401 when requireCurrentUser throws InvariantError [${name}]`, async () => {
       unauthed();
       const res = await dispatch(postRequest(sampleBody), makeContext(command));

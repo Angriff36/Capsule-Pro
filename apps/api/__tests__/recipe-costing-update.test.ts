@@ -99,8 +99,12 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
       ] as never);
 
     // Mock Prisma ORM writes (the route now uses these instead of $executeRaw)
-    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
-    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",
@@ -141,8 +145,12 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
       ] as never);
 
     // Mock Prisma ORM writes
-    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
-    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",
@@ -193,8 +201,12 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
         },
       ] as never);
 
-    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
-    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",

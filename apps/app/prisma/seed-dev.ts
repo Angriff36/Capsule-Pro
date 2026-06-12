@@ -5,8 +5,8 @@ import ws from "ws";
 
 interface AccountRecord {
   id: string;
-  slug: string;
   name: string;
+  slug: string;
 }
 
 const invariant = (condition: unknown, message: string): asserts condition => {
@@ -18,7 +18,7 @@ const invariant = (condition: unknown, message: string): asserts condition => {
 const optionalEnv = (key: string): string | undefined => {
   const value = process.env[key];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(value.trim().length > 0, `${key} must not be empty`);
   return value;

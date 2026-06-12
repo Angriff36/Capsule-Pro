@@ -20,30 +20,30 @@ export type ManifestConstraintOutcome = ConstraintOutcome;
 
 /** Structural mirror of the Manifest OverrideRequest input. */
 export interface ManifestOverrideRequest {
+  authorizedBy: string;
   constraintCode: string;
   reason: string;
-  authorizedBy: string;
   timestamp: number;
 }
 
 export interface ManifestUserContext {
   id: string;
-  tenantId: string;
   role: string;
+  tenantId: string;
 }
 
 export interface RunManifestCommandParams {
-  entity: string;
-  command: string;
   body: Record<string, unknown>;
+  command: string;
+  entity: string;
+  instanceId?: string;
+  overrideRequests?: ManifestOverrideRequest[];
   /**
    * Kept for call-site compatibility/documentation. The API dispatcher
    * re-resolves the acting user from the forwarded session; this value is not
    * transmitted.
    */
   user: ManifestUserContext;
-  instanceId?: string;
-  overrideRequests?: ManifestOverrideRequest[];
 }
 
 export type RunManifestCommandFailureKind =
@@ -56,26 +56,26 @@ export type RunManifestCommandFailureKind =
   | "runtime_error";
 
 export interface RunManifestCommandSuccess {
-  ok: true;
-  entity: string;
   command: string;
-  result: unknown;
-  events?: unknown[];
   constraintOutcomes?: ManifestConstraintOutcome[];
+  entity: string;
+  events?: unknown[];
   noop?: boolean;
+  ok: true;
+  result: unknown;
 }
 
 export interface RunManifestCommandFailure {
-  ok: false;
-  entity: string;
   command: string;
-  kind: RunManifestCommandFailureKind;
-  httpStatus: number;
-  message: string;
-  policyDenial?: unknown;
-  guardFailure?: unknown;
   constraintOutcomes?: ManifestConstraintOutcome[];
+  entity: string;
   error?: unknown;
+  guardFailure?: unknown;
+  httpStatus: number;
+  kind: RunManifestCommandFailureKind;
+  message: string;
+  ok: false;
+  policyDenial?: unknown;
 }
 
 export type RunManifestCommandResult =

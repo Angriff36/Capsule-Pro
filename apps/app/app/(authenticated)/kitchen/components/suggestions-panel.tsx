@@ -24,12 +24,12 @@ import type {
 } from "../lib/suggestions-types";
 
 interface SuggestionsPanelProps {
-  suggestions: SuggestedAction[];
   isLoading?: boolean;
-  onDismiss?: (suggestionId: string) => void;
-  onRefresh?: () => void;
   onAction?: (suggestion: SuggestedAction) => void;
   onClose?: () => void;
+  onDismiss?: (suggestionId: string) => void;
+  onRefresh?: () => void;
+  suggestions: SuggestedAction[];
 }
 
 const priorityConfig: Record<
@@ -63,7 +63,7 @@ export function SuggestionsPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-hairline bg-soft-stone/40 px-4 py-3">
+      <div className="flex items-center justify-between border-hairline border-b bg-soft-stone/40 px-4 py-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-action-blue" />
           <h2 className="font-semibold text-ink text-sm">
@@ -136,7 +136,7 @@ export function SuggestionsPanel({
                           <PriorityIcon className="h-4 w-4" />
                         </div>
                         <div className="flex-1">
-                          <CardTitle className="text-sm font-medium">
+                          <CardTitle className="font-medium text-sm">
                             {suggestion.title}
                           </CardTitle>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -175,7 +175,7 @@ export function SuggestionsPanel({
 
                     {suggestion.estimatedImpact ? (
                       <div className="flex items-start gap-2 rounded-md bg-muted/50 px-2 py-1.5">
-                        <Calendar className="mt-0.5 h-3 w-3 text-muted-foreground shrink-0" />
+                        <Calendar className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
                         <span className="text-muted-foreground text-xs">
                           <span className="font-medium">Impact:</span>{" "}
                           {suggestion.estimatedImpact}

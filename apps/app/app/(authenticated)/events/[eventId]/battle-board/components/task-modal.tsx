@@ -24,12 +24,12 @@ import { createTimelineTask } from "../actions/tasks";
 import type { StaffMember, TimelineTask } from "../types";
 
 interface TaskModalProps {
+  eventDate: Date;
+  eventId: string;
   isOpen: boolean;
   onClose: () => void;
-  eventId: string;
-  eventDate: Date;
-  staff: StaffMember[];
   onTaskCreated?: (task: TimelineTask) => void;
+  staff: StaffMember[];
 }
 
 const CATEGORIES = [

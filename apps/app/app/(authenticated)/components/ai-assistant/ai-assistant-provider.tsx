@@ -12,13 +12,13 @@ import {
 import { getModuleKeyFromPathname, type ModuleKey } from "../module-nav";
 
 interface AiAssistantContextValue {
-  isOpen: boolean;
-  isMinimized: boolean;
-  currentModule: ModuleKey;
-  toggle: () => void;
-  open: () => void;
   close: () => void;
+  currentModule: ModuleKey;
+  isMinimized: boolean;
+  isOpen: boolean;
   minimize: () => void;
+  open: () => void;
+  toggle: () => void;
 }
 
 const AiAssistantContext = createContext<AiAssistantContextValue | null>(null);

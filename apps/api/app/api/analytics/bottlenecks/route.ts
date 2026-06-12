@@ -1,12 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import type { BottleneckAnalysis } from "@repo/manifest-runtime/bottleneck-detector";
 import {
   BottleneckCategory,
   createBottleneckDetector,
 } from "@repo/manifest-runtime/bottleneck-detector";
-import type { BottleneckAnalysis } from "@repo/manifest-runtime/bottleneck-detector";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * GET /api/analytics/bottlenecks
@@ -62,10 +62,13 @@ export async function GET(request: Request) {
         bottlenecks,
         summary: {
           total: bottlenecks.length,
-          bySeverity: bottlenecks.reduce((acc: Record<string, number>, b) => {
-            acc[b.severity] = (acc[b.severity] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>),
+          bySeverity: bottlenecks.reduce(
+            (acc: Record<string, number>, b) => {
+              acc[b.severity] = (acc[b.severity] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>
+          ),
           byCategory: {
             ...createEmptyCategoryCounts(),
             [category as BottleneckCategory]: bottlenecks.length,

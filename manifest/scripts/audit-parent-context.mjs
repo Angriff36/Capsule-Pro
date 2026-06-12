@@ -24,9 +24,9 @@
  *   pnpm manifest:audit-parent-context:strict   # exit 1 on unallowlisted violations
  */
 
-import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
@@ -62,7 +62,9 @@ export const EXCLUDED_FIELDS = new Set([
 
 function scalarTypeName(type) {
   const name = type?.name;
-  if (!name || name === "array" || name === "list") return null;
+  if (!name || name === "array" || name === "list") {
+    return null;
+  }
   return name;
 }
 
@@ -82,12 +84,16 @@ export function scanParentContextViolations(ir, allowlist = {}) {
     const belongsTo = (child.relationships ?? []).filter(
       (r) => r.kind === "belongsTo" || r.kind === "ref"
     );
-    if (belongsTo.length === 0) continue;
+    if (belongsTo.length === 0) {
+      continue;
+    }
 
     const createCmd = commands.find(
       (c) => c.entity === child.name && c.name === "create"
     );
-    if (!createCmd) continue;
+    if (!createCmd) {
+      continue;
+    }
 
     const childProps = new Map(
       (child.properties ?? []).map((p) => [p.name, scalarTypeName(p.type)])
@@ -96,7 +102,9 @@ export function scanParentContextViolations(ir, allowlist = {}) {
 
     for (const rel of belongsTo) {
       const parent = entitiesByName.get(rel.target);
-      if (!parent) continue;
+      if (!parent) {
+        continue;
+      }
       const parentProps = new Map(
         (parent.properties ?? []).map((p) => [p.name, scalarTypeName(p.type)])
       );
@@ -104,17 +112,33 @@ export function scanParentContextViolations(ir, allowlist = {}) {
       const localFk = [...fkFields].find((f) => f !== "tenantId");
 
       for (const param of createCmd.parameters ?? []) {
-        if (!param.required) continue;
+        if (!param.required) {
+          continue;
+        }
         const name = param.name;
-        if (EXCLUDED_FIELDS.has(name)) continue;
-        if (fkFields.has(name)) continue; // the linkage FK is expected input
-        if (allowedFields.has(name)) continue;
+        if (EXCLUDED_FIELDS.has(name)) {
+          continue;
+        }
+        if (fkFields.has(name)) {
+          continue; // the linkage FK is expected input
+        }
+        if (allowedFields.has(name)) {
+          continue;
+        }
 
         const paramType = scalarTypeName(param.type);
-        if (!paramType) continue;
-        if (!parentProps.has(name)) continue; // parent must own it
-        if (parentProps.get(name) !== paramType) continue; // type-compatible only
-        if (!childProps.has(name)) continue; // child must actually store it
+        if (!paramType) {
+          continue;
+        }
+        if (!parentProps.has(name)) {
+          continue; // parent must own it
+        }
+        if (parentProps.get(name) !== paramType) {
+          continue; // type-compatible only
+        }
+        if (!childProps.has(name)) {
+          continue; // child must actually store it
+        }
 
         violations.push({
           child: child.name,
@@ -132,7 +156,9 @@ export function scanParentContextViolations(ir, allowlist = {}) {
 }
 
 function loadJson(path, fallback) {
-  if (!existsSync(path)) return fallback;
+  if (!existsSync(path)) {
+    return fallback;
+  }
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
@@ -140,7 +166,9 @@ function main() {
   const strict = process.argv.includes("--strict");
   const ir = loadJson(IR_PATH, null);
   if (!ir) {
-    console.error(`[audit-parent-context] IR not found at ${IR_PATH}. Run pnpm manifest:compile.`);
+    console.error(
+      `[audit-parent-context] IR not found at ${IR_PATH}. Run pnpm manifest:compile.`
+    );
     process.exit(2);
   }
   const allowlist = loadJson(ALLOWLIST_PATH, {}).overrides ?? {};
@@ -162,7 +190,8 @@ function main() {
           "| Child | Parent | Required field | FK |",
           "|---|---|---|---|",
           ...violations.map(
-            (v) => `| ${v.child} | ${v.parent} | ${v.field} | ${v.fkField ?? ""} |`
+            (v) =>
+              `| ${v.child} | ${v.parent} | ${v.field} | ${v.fkField ?? ""} |`
           ),
         ]
       : ["No child `create` command requires a parent-inferable field. ✅"]),
@@ -177,7 +206,9 @@ function main() {
 
   console.log(`[audit-parent-context] ${violations.length} violation(s):`);
   for (const v of violations) {
-    console.log(`  - ${v.child}.create requires "${v.field}" inferable from ${v.parent} (fk: ${v.fkField})`);
+    console.log(
+      `  - ${v.child}.create requires "${v.field}" inferable from ${v.parent} (fk: ${v.fkField})`
+    );
   }
   if (strict) {
     process.exit(1);

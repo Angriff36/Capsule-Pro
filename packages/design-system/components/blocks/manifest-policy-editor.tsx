@@ -78,7 +78,9 @@ export function ManifestPolicyEditor({
     id: string,
     expression: string
   ) => {
-    if (!onValidateExpression) return;
+    if (!onValidateExpression) {
+      return;
+    }
 
     setValidating((prev) => new Set(prev).add(id));
     try {
@@ -181,7 +183,7 @@ export function ManifestPolicyEditor({
           {entity.constraints.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="font-medium text-sm">
                   Entity-Level Rules
                 </CardTitle>
                 <CardDescription>
@@ -216,7 +218,7 @@ export function ManifestPolicyEditor({
             command.constraints.length > 0 ? (
               <Card key={command.name}>
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="font-medium text-sm">
                     {command.name} Rules
                   </CardTitle>
                   <CardDescription>
@@ -261,9 +263,9 @@ export function ManifestPolicyEditor({
                   open={expandedItems.has(`guard-${command.name}`)}
                 >
                   <CardHeader className="cursor-pointer">
-                    <CollapsibleTrigger className="flex items-center justify-between w-full">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between">
                       <div>
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 font-medium text-sm">
                           <Shield className="h-4 w-4" />
                           {command.name} Checks
                         </CardTitle>
@@ -361,24 +363,24 @@ function CommandCard({
     <Card>
       <Collapsible onOpenChange={onToggle} open={expanded}>
         <CardHeader className="cursor-pointer">
-          <CollapsibleTrigger className="flex items-center justify-between w-full">
+          <CollapsibleTrigger className="flex w-full items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Code className="h-4 w-4" />
                 {command.name}
                 {command.description && (
-                  <span className="text-sm font-normal text-muted-foreground">
+                  <span className="font-normal text-muted-foreground text-sm">
                     {command.description}
                   </span>
                 )}
               </CardTitle>
               <CardDescription>
                 {command.guards.length} guard
-                {command.guards.length !== 1 ? "s" : ""} •{" "}
+                {command.guards.length === 1 ? "" : "s"} •{" "}
                 {command.constraints.length} constraint
-                {command.constraints.length !== 1 ? "s" : ""} •{" "}
+                {command.constraints.length === 1 ? "" : "s"} •{" "}
                 {command.emittedEvents.length} event
-                {command.emittedEvents.length !== 1 ? "s" : ""}
+                {command.emittedEvents.length === 1 ? "" : "s"}
               </CardDescription>
             </div>
             {expanded ? (
@@ -393,7 +395,7 @@ function CommandCard({
             {/* Parameters */}
             {command.parameters.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Parameters</h4>
+                <h4 className="mb-2 font-medium text-sm">Parameters</h4>
                 <div className="flex flex-wrap gap-2">
                   {command.parameters.map((param) => (
                     <Badge key={param.name} variant="secondary">
@@ -409,7 +411,7 @@ function CommandCard({
             {/* Guards */}
             {command.guards.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">
+                <h4 className="mb-2 font-medium text-sm">
                   Checks (Preconditions)
                 </h4>
                 <div className="space-y-2">
@@ -429,7 +431,7 @@ function CommandCard({
             {/* Constraints */}
             {command.constraints.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Rules</h4>
+                <h4 className="mb-2 font-medium text-sm">Rules</h4>
                 <div className="space-y-2">
                   {command.constraints.map((constraint) => (
                     <ConstraintItem
@@ -446,7 +448,7 @@ function CommandCard({
             {/* Mutations */}
             {command.mutations.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Mutations</h4>
+                <h4 className="mb-2 font-medium text-sm">Mutations</h4>
                 <div className="space-y-1 text-sm">
                   {command.mutations.map((mutation, index) => (
                     <div
@@ -463,7 +465,7 @@ function CommandCard({
             {/* Events */}
             {command.emittedEvents.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Emitted Events</h4>
+                <h4 className="mb-2 font-medium text-sm">Emitted Events</h4>
                 <div className="flex flex-wrap gap-2">
                   {command.emittedEvents.map((event) => (
                     <Badge key={event} variant="outline">
@@ -482,9 +484,9 @@ function CommandCard({
 
 // Constraint Item Component
 interface ConstraintItemProps {
+  commandName?: string;
   constraint: ConstraintDetail;
   entityName: string;
-  commandName?: string;
   onValidate?: (expression: string) => void;
   validating?: boolean;
   validationResult?: { passed: boolean; message?: string };
@@ -525,7 +527,7 @@ function ConstraintItem({
   return (
     <Alert className={config.bg}>
       <Icon className={`h-4 w-4 ${config.color}`} />
-      <div className="flex items-start justify-between w-full">
+      <div className="flex w-full items-start justify-between">
         <div className="flex-1">
           <AlertTitle className="flex items-center gap-2">
             {constraint.name}
@@ -536,7 +538,7 @@ function ConstraintItem({
           {constraint.message && (
             <AlertDescription>{constraint.message}</AlertDescription>
           )}
-          <div className="mt-2 font-mono text-xs bg-muted p-2 rounded">
+          <div className="mt-2 rounded bg-muted p-2 font-mono text-xs">
             {constraint.expression}
           </div>
           {constraint.details && Object.keys(constraint.details).length > 0 && (
@@ -554,9 +556,9 @@ function ConstraintItem({
             variant={validationResult.passed ? "default" : "destructive"}
           >
             {validationResult.passed ? (
-              <CheckCircle2 className="h-3 w-3 mr-1" />
+              <CheckCircle2 className="mr-1 h-3 w-3" />
             ) : (
-              <X className="h-3 w-3 mr-1" />
+              <X className="mr-1 h-3 w-3" />
             )}
             {validationResult.passed ? "Valid" : "Invalid"}
           </Badge>
@@ -568,9 +570,9 @@ function ConstraintItem({
 
 // Guard Item Component
 interface GuardItemProps {
-  guard: GuardDetail;
-  entityName: string;
   commandName: string;
+  entityName: string;
+  guard: GuardDetail;
   index: number;
   onValidate?: (expression: string) => void;
   validating?: boolean;
@@ -596,16 +598,16 @@ function GuardItem({
             {guard.message}
           </AlertDescription>
         )}
-        <div className="mt-2 font-mono text-xs bg-muted p-2 rounded">
+        <div className="mt-2 rounded bg-muted p-2 font-mono text-xs">
           {guard.expression}
         </div>
       </div>
       {validationResult && (
         <Badge variant={validationResult.passed ? "default" : "destructive"}>
           {validationResult.passed ? (
-            <CheckCircle2 className="h-3 w-3 mr-1" />
+            <CheckCircle2 className="mr-1 h-3 w-3" />
           ) : (
-            <X className="h-3 w-3 mr-1" />
+            <X className="mr-1 h-3 w-3" />
           )}
           {validationResult.passed ? "Valid" : "Invalid"}
         </Badge>
@@ -616,8 +618,8 @@ function GuardItem({
 
 // Policy Card Component
 interface PolicyCardProps {
-  policy: PolicyDetail;
   entityName: string;
+  policy: PolicyDetail;
 }
 
 function PolicyCard({ policy, entityName }: PolicyCardProps) {
@@ -638,15 +640,15 @@ function PolicyCard({ policy, entityName }: PolicyCardProps) {
       <CardContent>
         <div className="space-y-3">
           <div>
-            <span className="text-sm font-medium">Expression:</span>
-            <div className="mt-1 font-mono text-sm bg-muted p-3 rounded">
+            <span className="font-medium text-sm">Expression:</span>
+            <div className="mt-1 rounded bg-muted p-3 font-mono text-sm">
               {policy.expression || "No expression defined"}
             </div>
           </div>
           {policy.message && (
             <div>
-              <span className="text-sm font-medium">Message:</span>
-              <p className="text-sm text-muted-foreground mt-1">
+              <span className="font-medium text-sm">Message:</span>
+              <p className="mt-1 text-muted-foreground text-sm">
                 {policy.message}
               </p>
             </div>

@@ -24,11 +24,11 @@ import type {
 } from "@angriff36/manifest";
 
 interface RunCommandOptions {
-  entityName?: string;
-  instanceId?: string;
-  correlationId?: string;
   causationId?: string;
+  correlationId?: string;
+  entityName?: string;
   idempotencyKey?: string;
+  instanceId?: string;
 }
 
 type DispatchCommand = (
@@ -38,123 +38,123 @@ type DispatchCommand = (
 ) => Promise<CommandResult>;
 
 export interface PrepDemandDiagnostic {
-  stage: string;
-  reason: string;
-  prepListId?: string;
-  tenantId?: string;
-  requisitionId?: string;
   detail?: Record<string, unknown>;
+  prepListId?: string;
+  reason: string;
+  requisitionId?: string;
+  stage: string;
+  tenantId?: string;
 }
 
 export interface PrepInventoryDemandMiddlewareOptions {
-  /** Manifest store provider already bound to the runtime. */
-  storeProvider: (entityName: string) => Store | undefined;
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
   dispatchCommand: DispatchCommand;
-  /** Optional system actor used in inventory reservation payloads. */
-  systemUserId?: string;
   /** Structured skip/outcome reporting. Default logs via console.warn. */
   onDiagnostic?: (diag: PrepDemandDiagnostic) => void;
+  /** Manifest store provider already bound to the runtime. */
+  storeProvider: (entityName: string) => Store | undefined;
+  /** Optional system actor used in inventory reservation payloads. */
+  systemUserId?: string;
 }
 
 interface EventPayload {
+  eventId?: unknown;
   prepListId?: unknown;
   tenantId?: unknown;
-  eventId?: unknown;
 }
 
 interface PrepListItemLike {
   id?: unknown;
-  tenantId?: unknown;
-  prepListId?: unknown;
   ingredientId?: unknown;
   ingredientName?: unknown;
+  prepListId?: unknown;
   scaledQuantity?: unknown;
   scaledUnit?: unknown;
+  tenantId?: unknown;
 }
 
 interface PrepListLike {
-  id?: unknown;
-  tenantId?: unknown;
   eventId?: unknown;
+  id?: unknown;
   name?: unknown;
+  tenantId?: unknown;
 }
 
 interface InventoryItemLike {
   id?: unknown;
-  tenantId?: unknown;
   item_number?: unknown;
   name?: unknown;
-  unitOfMeasure?: unknown;
-  unitCost?: unknown;
   supplierId?: unknown;
+  tenantId?: unknown;
+  unitCost?: unknown;
+  unitOfMeasure?: unknown;
 }
 
 interface InventorySupplierLike {
   id?: unknown;
-  tenantId?: unknown;
-  name?: unknown;
-  supplierNumber?: unknown;
   isActive?: unknown;
+  name?: unknown;
   qualificationStatus?: unknown;
+  supplierNumber?: unknown;
   tags?: unknown;
+  tenantId?: unknown;
 }
 
 interface VendorCatalogLike {
-  id?: unknown;
-  tenantId?: unknown;
-  supplierId?: unknown;
-  itemNumber?: unknown;
-  itemName?: unknown;
   baseUnitCost?: unknown;
   currency?: unknown;
-  unitOfMeasure?: unknown;
+  deletedAt?: unknown;
+  id?: unknown;
+  isActive?: unknown;
+  itemName?: unknown;
+  itemNumber?: unknown;
   leadTimeDays?: unknown;
   minimumOrderQuantity?: unknown;
   orderMultiple?: unknown;
-  isActive?: unknown;
+  supplierId?: unknown;
   supplierSku?: unknown;
   tags?: unknown;
-  deletedAt?: unknown;
+  tenantId?: unknown;
+  unitOfMeasure?: unknown;
 }
 
 interface RequisitionLike {
+  createdAt?: unknown;
+  deletedAt?: unknown;
   id?: unknown;
-  tenantId?: unknown;
   itemCategory?: unknown;
-  status?: unknown;
   justification?: unknown;
   notes?: unknown;
-  deletedAt?: unknown;
-  createdAt?: unknown;
+  status?: unknown;
+  tenantId?: unknown;
 }
 
 interface RequisitionItemLike {
+  deletedAt?: unknown;
+  estimatedTotalCost?: unknown;
+  estimatedUnitCost?: unknown;
   id?: unknown;
-  tenantId?: unknown;
-  requisitionId?: unknown;
   itemId?: unknown;
   itemName?: unknown;
+  notes?: unknown;
   quantityRequested?: unknown;
-  estimatedUnitCost?: unknown;
-  estimatedTotalCost?: unknown;
+  requisitionId?: unknown;
+  specifications?: unknown;
   suggestedVendorId?: unknown;
   suggestedVendorName?: unknown;
-  specifications?: unknown;
-  notes?: unknown;
-  deletedAt?: unknown;
+  tenantId?: unknown;
 }
 
 interface ProcurementLine {
+  catalog: VendorCatalogLike | undefined;
   itemId: string;
   itemName: string;
   quantity: number;
-  unitName: string;
-  unitCost: number;
-  totalCost: number;
   supplierId: string;
   supplierName: string;
-  catalog: VendorCatalogLike | undefined;
+  totalCost: number;
+  unitCost: number;
+  unitName: string;
 }
 
 /** Marker recorded in the consolidated draft's notes per ingested prep list. */
@@ -232,12 +232,13 @@ export function createPrepInventoryDemandMiddleware(
               ?.tenantId
           );
         const eventId =
-          asNonEmptyString(payload.eventId) ?? asNonEmptyString(prepList?.eventId);
+          asNonEmptyString(payload.eventId) ??
+          asNonEmptyString(prepList?.eventId);
 
-        if (!tenantId || !eventId) {
+        if (!(tenantId && eventId)) {
           onDiagnostic({
             stage: "resolve",
-            reason: `missing ${!tenantId ? "tenantId" : "eventId"} for finalized prep list`,
+            reason: `missing ${tenantId ? "eventId" : "tenantId"} for finalized prep list`,
             prepListId,
             tenantId,
           });
@@ -287,7 +288,8 @@ export function createPrepInventoryDemandMiddleware(
         if (sourceItems.length === 0) {
           onDiagnostic({
             stage: "demand",
-            reason: "finalized prep list has no PrepListItem rows — nothing to reserve or order",
+            reason:
+              "finalized prep list has no PrepListItem rows — nothing to reserve or order",
             prepListId,
             tenantId,
           });
@@ -300,7 +302,8 @@ export function createPrepInventoryDemandMiddleware(
           if (!inventoryItemId || quantity === undefined) {
             onDiagnostic({
               stage: "reserve",
-              reason: "prep item skipped: missing ingredientId or non-positive scaledQuantity",
+              reason:
+                "prep item skipped: missing ingredientId or non-positive scaledQuantity",
               prepListId,
               tenantId,
               detail: {
@@ -322,7 +325,9 @@ export function createPrepInventoryDemandMiddleware(
               entityName: "InventoryItem",
               instanceId: inventoryItemId,
               correlationId:
-                asNonEmptyString((ctx as { correlationId?: unknown }).correlationId) ??
+                asNonEmptyString(
+                  (ctx as { correlationId?: unknown }).correlationId
+                ) ??
                 asNonEmptyString(event.subject?.id) ??
                 prepListId,
               causationId: event.name,
@@ -407,11 +412,13 @@ async function consolidateUsFoodsDraft(options: {
   const inventoryStore = storeProvider("InventoryItem");
 
   if (
-    !requisitionStore ||
-    !requisitionItemStore ||
-    !supplierStore ||
-    !catalogStore ||
-    !inventoryStore
+    !(
+      requisitionStore &&
+      requisitionItemStore &&
+      supplierStore &&
+      catalogStore &&
+      inventoryStore
+    )
   ) {
     onDiagnostic({
       stage: "stores",
@@ -472,9 +479,9 @@ async function consolidateUsFoodsDraft(options: {
       continue; // already reported in the reserve loop
     }
 
-    const inventoryItem = (await inventoryStore.getById(
-      inventoryItemId
-    )) as InventoryItemLike | undefined;
+    const inventoryItem = (await inventoryStore.getById(inventoryItemId)) as
+      | InventoryItemLike
+      | undefined;
     if (asNonEmptyString(inventoryItem?.tenantId) !== tenantId) {
       skippedLines += 1;
       onDiagnostic({
@@ -482,7 +489,10 @@ async function consolidateUsFoodsDraft(options: {
         reason: "ingredient has no tenant inventory item — line skipped",
         prepListId,
         tenantId,
-        detail: { ingredientId: inventoryItemId, ingredientName: item.ingredientName },
+        detail: {
+          ingredientId: inventoryItemId,
+          ingredientName: item.ingredientName,
+        },
       });
       continue;
     }
@@ -497,7 +507,10 @@ async function consolidateUsFoodsDraft(options: {
           "ingredient matched no US Foods catalog entry and is not supplier-mapped — line skipped",
         prepListId,
         tenantId,
-        detail: { ingredientId: inventoryItemId, ingredientName: item.ingredientName },
+        detail: {
+          ingredientId: inventoryItemId,
+          ingredientName: item.ingredientName,
+        },
       });
       continue;
     }
@@ -563,7 +576,9 @@ async function consolidateUsFoodsDraft(options: {
         asNonEmptyString(row.status) === "draft" &&
         row.deletedAt == null
     )
-    .sort((a, b) => String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? "")))[0];
+    .sort((a, b) =>
+      String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""))
+    )[0];
 
   let requisitionId = asNonEmptyString(openDraft?.id);
   let existingNotes = String(openDraft?.notes ?? "");
@@ -630,7 +645,9 @@ async function consolidateUsFoodsDraft(options: {
   const finalLines = new Map<string, { quantity: number; unitCost: number }>();
   for (const row of existingItems) {
     const itemId = asNonEmptyString(row.itemId);
-    if (!itemId) continue;
+    if (!itemId) {
+      continue;
+    }
     finalLines.set(itemId, {
       quantity: asNonNegativeNumber(row.quantityRequested) ?? 0,
       unitCost: asNonNegativeNumber(row.estimatedUnitCost) ?? 0,
@@ -657,7 +674,8 @@ async function consolidateUsFoodsDraft(options: {
             asNonEmptyString(line.catalog?.supplierSku) ??
             asNonEmptyString(line.catalog?.itemNumber) ??
             "",
-          notes: `${String(existing.notes ?? "")} | +${line.quantity} ${line.unitName} from prep ${prepListId.slice(0, 8)}`.trim(),
+          notes:
+            `${String(existing.notes ?? "")} | +${line.quantity} ${line.unitName} from prep ${prepListId.slice(0, 8)}`.trim(),
         },
         {
           entityName: "PurchaseRequisitionItem",
@@ -677,7 +695,10 @@ async function consolidateUsFoodsDraft(options: {
         });
         return emittedEvents;
       }
-      finalLines.set(line.itemId, { quantity: mergedQty, unitCost: line.unitCost });
+      finalLines.set(line.itemId, {
+        quantity: mergedQty,
+        unitCost: line.unitCost,
+      });
       mergedCount += 1;
     } else {
       const itemResult = await dispatchCommand(
@@ -716,7 +737,10 @@ async function consolidateUsFoodsDraft(options: {
         });
         return emittedEvents;
       }
-      finalLines.set(line.itemId, { quantity: line.quantity, unitCost: line.unitCost });
+      finalLines.set(line.itemId, {
+        quantity: line.quantity,
+        unitCost: line.unitCost,
+      });
       createdCount += 1;
     }
   }
@@ -740,7 +764,8 @@ async function consolidateUsFoodsDraft(options: {
       estimatedTax: 0,
       estimatedShipping: 0,
       estimatedTotal: subtotal,
-      notes: `${existingNotes ? `${existingNotes} ` : ""}${prepMarker(prepListId)} ${prepListName} (event ${eventId})`.trim(),
+      notes:
+        `${existingNotes ? `${existingNotes} ` : ""}${prepMarker(prepListId)} ${prepListName} (event ${eventId})`.trim(),
     },
     {
       entityName: "PurchaseRequisition",
@@ -804,7 +829,9 @@ function findCatalogEntry(
   inventoryItem: InventoryItemLike | undefined,
   prepItem: PrepListItemLike
 ): VendorCatalogLike | undefined {
-  const inventoryNumber = normalizeSku(asNonEmptyString(inventoryItem?.item_number));
+  const inventoryNumber = normalizeSku(
+    asNonEmptyString(inventoryItem?.item_number)
+  );
   const inventoryName = normalizeName(asNonEmptyString(inventoryItem?.name));
   const prepName = normalizeName(asNonEmptyString(prepItem.ingredientName));
 
@@ -814,7 +841,8 @@ function findCatalogEntry(
     const catalogName = normalizeName(asNonEmptyString(entry.itemName));
     return (
       (!!inventoryNumber &&
-        (catalogNumber === inventoryNumber || catalogSku === inventoryNumber)) ||
+        (catalogNumber === inventoryNumber ||
+          catalogSku === inventoryNumber)) ||
       (!!inventoryName && catalogName === inventoryName) ||
       (!!prepName && catalogName === prepName)
     );
@@ -840,14 +868,14 @@ function asNonEmptyString(value: unknown): string | undefined {
 
 function asPositiveNumber(value: unknown): number | undefined {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    return undefined;
+    return;
   }
   return value;
 }
 
 function asNonNegativeNumber(value: unknown): number | undefined {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    return undefined;
+    return;
   }
   return value;
 }

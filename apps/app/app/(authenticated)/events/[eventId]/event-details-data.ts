@@ -48,29 +48,29 @@ export const getEvent = cache(async (tenantId: string, eventId: string) => {
  * Counts total RSVPs for the event.
  * @tier 1 (Independent)
  */
-export const getRsvpCount = cache(async (tenantId: string, eventId: string) => {
-  return database.eventGuest.count({
+export const getRsvpCount = cache(async (tenantId: string, eventId: string) =>
+  database.eventGuest.count({
     where: {
       tenantId,
       eventId,
       deletedAt: null,
     },
-  });
-});
+  })
+);
 
 interface EventDishRow {
-  linkId: string;
-  dishId: string;
-  name: string;
   category: string | null;
-  recipeId: string | null;
-  recipeName: string | null;
+  costPerPerson: Prisma.Decimal | null;
   course: string | null;
-  quantityServings: number;
   dietaryTags: string[] | null;
+  dishId: string;
+  linkId: string;
+  name: string;
   presentationImageUrl: string | null;
   pricePerPerson: Prisma.Decimal | null;
-  costPerPerson: Prisma.Decimal | null;
+  quantityServings: number;
+  recipeId: string | null;
+  recipeName: string | null;
 }
 
 /**
@@ -78,15 +78,14 @@ interface EventDishRow {
  * @tier 1 (Independent)
  */
 export const getEventStaffCount = cache(
-  async (tenantId: string, eventId: string) => {
-    return database.eventStaff.count({
+  async (tenantId: string, eventId: string) =>
+    database.eventStaff.count({
       where: {
         tenantId,
         eventId,
         deletedAt: null,
       },
-    });
-  }
+    })
 );
 
 /**
@@ -178,13 +177,13 @@ export const getEventDishes = cache(
 );
 
 interface PrepTaskRow {
+  dueByDate: unknown;
   id: string;
+  isEventFinish: unknown;
   name: string;
-  status: string;
   quantityTotal: number;
   servingsTotal: number | null;
-  dueByDate: unknown;
-  isEventFinish: unknown;
+  status: string;
 }
 
 /**
@@ -223,13 +222,13 @@ export const getPrepTasksRaw = cache(
 );
 
 interface PrepListRow {
+  batchMultiplier: Prisma.Decimal;
+  finalizedAt: Date | null;
+  generatedAt: Date;
   id: string;
   name: string;
   status: string;
   totalItems: number;
-  batchMultiplier: Prisma.Decimal;
-  generatedAt: Date;
-  finalizedAt: Date | null;
 }
 
 /**
@@ -268,8 +267,8 @@ export const getEventPrepLists = cache(
  * @tier 1 (Independent)
  */
 export const getRelatedEvents = cache(
-  async (tenantId: string, eventId: string) => {
-    return database.event.findMany({
+  async (tenantId: string, eventId: string) =>
+    database.event.findMany({
       where: {
         tenantId,
         deletedAt: null,
@@ -293,8 +292,7 @@ export const getRelatedEvents = cache(
         featuredMediaUrl: true,
         tags: true,
       },
-    });
-  }
+    })
 );
 
 // ============================================================================
@@ -302,15 +300,15 @@ export const getRelatedEvents = cache(
 // ============================================================================
 
 interface RecipeVersionRow {
+  cookTimeMinutes: number | null;
+  instructions: string | null;
+  prepTimeMinutes: number | null;
   recipeId: string;
   recipeName: string;
+  restTimeMinutes: number | null;
   versionId: string;
   yieldQuantity: Prisma.Decimal;
   yieldUnitCode: string | null;
-  instructions: string | null;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
-  restTimeMinutes: number | null;
 }
 
 /**
@@ -377,13 +375,13 @@ export const getRelatedGuestCounts = cache(
 // ============================================================================
 
 interface RecipeIngredientRow {
-  recipeVersionId: string;
   ingredientId: string;
   ingredientName: string;
-  quantity: Prisma.Decimal;
-  unitCode: string | null;
-  preparationNotes: string | null;
   isOptional: boolean;
+  preparationNotes: string | null;
+  quantity: Prisma.Decimal;
+  recipeVersionId: string;
+  unitCode: string | null;
 }
 
 /**
@@ -422,13 +420,13 @@ export const getRecipeIngredients = cache(
 );
 
 interface RecipeStepRow {
+  durationMinutes: number | null;
+  equipmentNeeded: string[];
+  instruction: string;
   recipeVersionId: string;
   stepNumber: number;
-  instruction: string;
-  durationMinutes: number | null;
-  temperatureValue: Prisma.Decimal | null;
   temperatureUnit: string | null;
-  equipmentNeeded: string[];
+  temperatureValue: Prisma.Decimal | null;
   tips: string | null;
 }
 
@@ -468,8 +466,8 @@ export const getRecipeSteps = cache(
 // ============================================================================
 
 interface InventoryItemRow {
-  inventoryItemId: string;
   ingredientId: string;
+  inventoryItemId: string;
   itemName: string;
   parLevel: Prisma.Decimal | null;
 }

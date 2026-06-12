@@ -7,8 +7,8 @@ import { Header } from "../../../components/header";
 import { NewRecipeForm } from "../components/new-recipe-form-client";
 
 interface UnitRow {
-  id: number;
   code: string;
+  id: number;
   name: string;
 }
 

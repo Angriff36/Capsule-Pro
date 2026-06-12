@@ -3,40 +3,40 @@
 export type TimelinePhase = "setup" | "service" | "teardown" | "other";
 
 export interface EventTimelineEntry {
-  label: string;
-  time?: string;
-  endTime?: string;
-  minutes?: number;
-  endMinutes?: number;
   description?: string;
+  endMinutes?: number;
+  endTime?: string;
+  label: string;
+  minutes?: number;
   phase: TimelinePhase;
   raw: string;
+  time?: string;
 }
 
 export interface EventContact {
-  name: string;
-  role?: string;
-  phone?: string;
   email?: string;
+  name: string;
   notes?: string;
+  phone?: string;
+  role?: string;
 }
 
 export interface EventVenue {
-  name: string;
   address: string;
   geo?: { lat: number; lng: number };
+  name: string;
 }
 
 export interface EventTimes {
-  start: string;
   end: string;
+  start: string;
 }
 
 export interface MenuQuantityDetail {
-  value: number;
-  unit: string;
   label?: string;
   raw?: string;
+  unit: string;
+  value: number;
 }
 
 export type ServiceLocation =
@@ -47,107 +47,107 @@ export type ServiceLocation =
   | "other";
 
 export interface MenuItem {
+  allergens: string[];
+  badges?: string[];
   category: string;
   categoryPath?: string[];
   group?: string;
-  serviceLocation?: ServiceLocation;
-  badges?: string[];
-  sortOrder?: number;
   name: string;
-  rawName?: string;
+  preparationNotes?: string;
   qty: {
     value: number;
     unit: string;
   };
   quantityDetails?: MenuQuantityDetail[];
-  warnings?: string[];
-  allergens: string[];
+  rawName?: string;
+  serviceLocation?: ServiceLocation;
+  sortOrder?: number;
   specials: string[];
-  preparationNotes?: string;
+  warnings?: string[];
 }
 
 export interface StaffShift {
+  actualHours?: number;
   name: string;
   position: string;
+  rate: number;
+  scheduledHours: number;
   scheduledIn: string;
   scheduledOut: string;
-  scheduledHours: number;
-  actualHours?: number;
-  rate: number;
   tasks?: string[];
 }
 
 export type FlagSeverity = "low" | "medium" | "high" | "critical";
 
 export interface Flag {
-  code: string;
-  severity: FlagSeverity;
-  message: string;
-  evidenceRef: string[];
   autoResolution?: string;
+  code: string;
+  evidenceRef: string[];
+  message: string;
   resolved: boolean;
+  severity: FlagSeverity;
 }
 
 export type EvidenceType = "extraction" | "validation" | "inference";
 
 export interface Evidence {
-  id: string;
-  type: EvidenceType;
-  source: string;
-  data: unknown;
   confidence: number;
+  data: unknown;
+  id: string;
+  source: string;
   timestamp: string;
+  type: EvidenceType;
 }
 
 export type EventStatus = "draft" | "validated" | "approved" | "completed";
 
 export interface ParsedEvent {
-  id: string;
-  number: string;
+  allergens: string[];
   client: string;
   date: string;
-  venue: EventVenue;
-  times: EventTimes;
+  evidence: Evidence[];
+  flags: Flag[];
   headcount: number;
-  serviceStyle: string;
+  id: string;
+  keyContacts?: EventContact[];
   kits: string[];
   menuSections: MenuItem[];
-  allergens: string[];
-  keyContacts?: EventContact[];
   notes?: string[];
-  timeline?: EventTimelineEntry[];
+  number: string;
   rawTimeline?: string[];
+  serviceStyle: string;
   staffing: StaffShift[];
-  flags: Flag[];
-  evidence: Evidence[];
   status: EventStatus;
+  timeline?: EventTimelineEntry[];
+  times: EventTimes;
+  venue: EventVenue;
 }
 
 export interface ParsedEventResult {
+  confidence: number;
   event: ParsedEvent;
-  warnings: string[];
   flags: Flag[];
   reviewItems: string[];
-  confidence: number;
+  warnings: string[];
 }
 
 export interface ParsedFile {
-  id: string;
-  name: string;
-  type: "pdf" | "csv";
-  size: number;
-  parsedAt: string;
-  extractedData: unknown;
   confidence: number;
   errors: string[];
+  extractedData: unknown;
+  id: string;
+  name: string;
+  parsedAt: string;
+  size: number;
+  type: "pdf" | "csv";
 }
 
 export interface ReviewQueueItem {
-  id: string;
   eventId: string;
-  type: "validation" | "ambiguity" | "conflict";
+  id: string;
   issue: string;
-  suggestedResolution?: string;
-  requiresHuman: boolean;
   priority: number;
+  requiresHuman: boolean;
+  suggestedResolution?: string;
+  type: "validation" | "ambiguity" | "conflict";
 }

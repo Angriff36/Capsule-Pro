@@ -6,10 +6,10 @@ import { captureException } from "@sentry/nextjs";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
 interface StationMapping {
+  color: string;
+  icon: string;
   stationId: string;
   stationName: string;
-  icon: string;
-  color: string;
 }
 
 const PREP_STATIONS: StationMapping[] = [
@@ -46,51 +46,50 @@ const PREP_STATIONS: StationMapping[] = [
 ];
 
 export interface IngredientItem {
-  ingredientId: string;
-  ingredientName: string;
-  category: string | null;
+  allergens: string[];
   baseQuantity: number;
   baseUnit: string;
-  scaledQuantity: number;
-  scaledUnit: string;
+  category: string | null;
   dietarySubstitutions: string[];
+  ingredientId: string;
+  ingredientName: string;
   isOptional: boolean;
   preparationNotes: string | null;
-  allergens: string[];
+  scaledQuantity: number;
+  scaledUnit: string;
 }
 
 interface RecipeInfo {
+  category: string | null;
+  cookTimeMinutes: number | null;
   id: string;
   name: string;
+  prepTimeMinutes: number | null;
+  tags: string[];
   versionId: string;
   yieldQuantity: number;
   yieldUnit: string;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
-  category: string | null;
-  tags: string[];
 }
 
 interface DishInfo {
+  course: string | null;
+  dietaryTags: string[];
   id: string;
+  minPrepLeadDays: number;
   name: string;
+  quantityServings: number;
   recipeId: string | null;
   recipeInfo: RecipeInfo | null;
-  minPrepLeadDays: number;
-  dietaryTags: string[];
   servingPortion: number;
-  course: string | null;
-  quantityServings: number;
 }
 
 export interface StationPrepList {
+  color: string;
+  estimatedTime: number;
+  icon: string;
+  ingredients: IngredientItem[];
   stationId: string;
   stationName: string;
-  icon: string;
-  color: string;
-  totalIngredients: number;
-  estimatedTime: number;
-  ingredients: IngredientItem[];
   tasks: Array<{
     id: string;
     name: string;
@@ -98,26 +97,27 @@ export interface StationPrepList {
     status: string;
     priority: number;
   }>;
+  totalIngredients: number;
 }
 
 export interface PrepListGenerationResult {
-  eventId: string;
-  eventTitle: string;
-  eventDate: Date;
-  guestCount: number;
   batchMultiplier: number;
   dietaryRestrictions: string[];
-  stationLists: StationPrepList[];
-  totalIngredients: number;
-  totalEstimatedTime: number;
+  eventDate: Date;
+  eventId: string;
+  eventTitle: string;
   generatedAt: Date;
+  guestCount: number;
+  stationLists: StationPrepList[];
+  totalEstimatedTime: number;
+  totalIngredients: number;
 }
 
 interface GeneratePrepListInput {
-  eventId: string;
   batchMultiplier?: number;
-  dietaryRestrictions?: string[];
   customInstructions?: string;
+  dietaryRestrictions?: string[];
+  eventId: string;
 }
 
 export async function generatePrepList(

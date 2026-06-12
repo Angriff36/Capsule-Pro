@@ -17,8 +17,8 @@
  *   - Detail: 400 for composite-PK entities (ENTITY_DETAIL_DROP)
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ── Mocks ──────────────────────────────────────────────────────
 
@@ -42,9 +42,9 @@ vi.mock("@/app/lib/tenant", () => ({
 // ── Imports (after mocks) ──────────────────────────────────────
 
 import { database } from "@repo/database";
-import { requireCurrentUser } from "@/app/lib/tenant";
-import { GET as listGet } from "@/app/api/manifest/[entity]/route";
 import { GET as detailGet } from "@/app/api/manifest/[entity]/[id]/route";
+import { GET as listGet } from "@/app/api/manifest/[entity]/route";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -63,23 +63,30 @@ function authedUser(user = TEST_USER) {
 }
 
 function unauthed() {
-  vi.mocked(requireCurrentUser).mockRejectedValue(new Error("Not authenticated"));
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new Error("Not authenticated")
+  );
 }
 
-function listRequest(entity: string, params?: { page?: number; limit?: number }) {
+function listRequest(
+  entity: string,
+  params?: { page?: number; limit?: number }
+) {
   const search = new URLSearchParams();
-  if (params?.page) search.set("page", String(params.page));
-  if (params?.limit) search.set("limit", String(params.limit));
+  if (params?.page) {
+    search.set("page", String(params.page));
+  }
+  if (params?.limit) {
+    search.set("limit", String(params.limit));
+  }
   const qs = search.toString();
   return new NextRequest(
-    `https://api.test/api/manifest/${entity}${qs ? `?${qs}` : ""}`,
+    `https://api.test/api/manifest/${entity}${qs ? `?${qs}` : ""}`
   );
 }
 
 function detailRequest(entity: string, id: string) {
-  return new NextRequest(
-    `https://api.test/api/manifest/${entity}/${id}`,
-  );
+  return new NextRequest(`https://api.test/api/manifest/${entity}/${id}`);
 }
 
 async function parseJson(res: Response) {
@@ -151,10 +158,9 @@ describe("Generic Manifest read routes", () => {
         findMany: vi.fn().mockResolvedValue([]),
       };
 
-      const res = await listGet(
-        listRequest("Event", { page: 3, limit: 10 }),
-        { params: Promise.resolve({ entity: "Event" }) },
-      );
+      const res = await listGet(listRequest("Event", { page: 3, limit: 10 }), {
+        params: Promise.resolve({ entity: "Event" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await parseJson(res);
@@ -178,10 +184,9 @@ describe("Generic Manifest read routes", () => {
         findMany: vi.fn().mockResolvedValue([]),
       };
 
-      const res = await listGet(
-        listRequest("Event", { limit: 999 }),
-        { params: Promise.resolve({ entity: "Event" }) },
-      );
+      const res = await listGet(listRequest("Event", { limit: 999 }), {
+        params: Promise.resolve({ entity: "Event" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await parseJson(res);
@@ -249,7 +254,8 @@ describe("Generic Manifest read routes", () => {
 
       // Verify the where clause uses snake_case tenant_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const findManyCall = (database as any).documents.findMany.mock.calls[0][0];
+      const findManyCall = (database as any).documents.findMany.mock
+        .calls[0][0];
       expect(findManyCall.where.tenant_id).toBe(TEST_TENANT);
     });
   });
@@ -347,10 +353,9 @@ describe("Generic Manifest read routes", () => {
         }),
       };
 
-      const res = await detailGet(
-        detailRequest("BankAccount", "bank-1"),
-        { params: Promise.resolve({ entity: "BankAccount", id: "bank-1" }) },
-      );
+      const res = await detailGet(detailRequest("BankAccount", "bank-1"), {
+        params: Promise.resolve({ entity: "BankAccount", id: "bank-1" }),
+      });
 
       expect(res.status).toBe(200);
     });
@@ -382,7 +387,8 @@ describe("Generic Manifest read routes", () => {
       expect(res.status).toBe(200);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const findFirstCall = (database as any).documents.findFirst.mock.calls[0][0];
+      const findFirstCall = (database as any).documents.findFirst.mock
+        .calls[0][0];
       expect(findFirstCall.where.tenant_id).toBe(TEST_TENANT);
       expect(findFirstCall.where.id).toBe("doc-1");
     });

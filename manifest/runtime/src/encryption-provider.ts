@@ -24,7 +24,12 @@
  *   the runtime to identify which key encrypted a given value
  */
 
-import { createCipheriv, createDecipheriv, randomBytes, createHash } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+} from "node:crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12; // 96-bit IV for GCM
@@ -44,8 +49,12 @@ function deriveKeyId(key: Buffer): string {
  * Validates length and hex format. Returns null if missing or invalid.
  */
 function parseKey(envValue: string | undefined): Buffer | null {
-  if (!envValue) return null;
-  if (!/^[0-9a-fA-F]{64}$/.test(envValue)) return null;
+  if (!envValue) {
+    return null;
+  }
+  if (!/^[0-9a-fA-F]{64}$/.test(envValue)) {
+    return null;
+  }
   return Buffer.from(envValue, "hex");
 }
 
@@ -75,9 +84,16 @@ export interface AesGcmEncryptionProviderOptions {
  * ```
  */
 export function createAesGcmEncryptionProvider(
-  opts?: AesGcmEncryptionProviderOptions,
-): { encrypt: (plaintext: string) => Promise<{ ciphertext: string; keyId: string }>; decrypt: (ciphertext: string, keyId: string) => Promise<string> } | null {
-  const key = opts ? Buffer.from(opts.encryptionKey, "hex") : parseKey(process.env.ENCRYPTION_KEY);
+  opts?: AesGcmEncryptionProviderOptions
+): {
+  encrypt: (
+    plaintext: string
+  ) => Promise<{ ciphertext: string; keyId: string }>;
+  decrypt: (ciphertext: string, keyId: string) => Promise<string>;
+} | null {
+  const key = opts
+    ? Buffer.from(opts.encryptionKey, "hex")
+    : parseKey(process.env.ENCRYPTION_KEY);
 
   if (!key || key.length !== KEY_BYTES) {
     // No valid key — encryption disabled. The runtime will store plaintext.
@@ -85,7 +101,9 @@ export function createAesGcmEncryptionProvider(
   }
 
   const keyId = deriveKeyId(key);
-  const previousKey = opts?.previousKey ? Buffer.from(opts.previousKey, "hex") : parseKey(process.env.ENCRYPTION_KEY_PREVIOUS);
+  const previousKey = opts?.previousKey
+    ? Buffer.from(opts.previousKey, "hex")
+    : parseKey(process.env.ENCRYPTION_KEY_PREVIOUS);
 
   // Build a keyId -> key lookup for decryption (supports rotation)
   const keyLookup = new Map<string, Buffer>();
@@ -95,7 +113,9 @@ export function createAesGcmEncryptionProvider(
   }
 
   return {
-    async encrypt(plaintext: string): Promise<{ ciphertext: string; keyId: string }> {
+    async encrypt(
+      plaintext: string
+    ): Promise<{ ciphertext: string; keyId: string }> {
       const iv = randomBytes(IV_BYTES);
       const cipher = createCipheriv(ALGORITHM, key, iv);
 
@@ -119,8 +139,8 @@ export function createAesGcmEncryptionProvider(
       if (!decryptionKey) {
         throw new Error(
           `EncryptionProvider: unknown keyId "${kid}". ` +
-          `Available keyIds: ${[...keyLookup.keys()].join(", ")}. ` +
-          `If you rotated ENCRYPTION_KEY, set ENCRYPTION_KEY_PREVIOUS to the old key.`,
+            `Available keyIds: ${[...keyLookup.keys()].join(", ")}. ` +
+            "If you rotated ENCRYPTION_KEY, set ENCRYPTION_KEY_PREVIOUS to the old key."
         );
       }
 

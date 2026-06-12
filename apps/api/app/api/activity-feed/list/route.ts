@@ -2,36 +2,36 @@
 // Provides a unified feed of all system events, entity changes, AI plan approvals, and collaborator actions
 
 import { auth } from "@repo/auth/server";
+import type { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { type Prisma } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
 export interface ActivityFeedItem {
-  id: string;
-  tenantId: string;
-  activityType: string;
-  entityType: string | null;
-  entityId: string | null;
   action: string;
-  title: string;
+  activityType: string;
+  correlationId: string | null;
+  createdAt: Date;
   description: string | null;
+  entityId: string | null;
+  entityType: string | null;
+  id: string;
+  importance: string;
   metadata: unknown;
+  parentId: string | null;
   performedBy: string | null;
   performerName: string | null;
-  correlationId: string | null;
-  parentId: string | null;
-  sourceType: string | null;
   sourceId: string | null;
-  importance: string;
+  sourceType: string | null;
+  tenantId: string;
+  title: string;
   visibility: string;
-  createdAt: Date;
 }
 
 interface ActivityFeedResponse {

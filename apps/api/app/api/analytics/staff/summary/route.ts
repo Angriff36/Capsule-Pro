@@ -6,67 +6,67 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface EmployeePerformanceRaw {
+  attended_shifts: string;
+  avg_duration_hours: string;
+  client_interactions: string;
+  completed_tasks: string;
   employee_id: string;
+  event_participation: string;
   first_name: string;
   last_name: string;
-  role: string;
-  total_tasks: string;
-  completed_tasks: string;
-  avg_duration_hours: string;
   on_time_tasks: string;
-  total_shifts: string;
-  attended_shifts: string;
-  punctual_shifts: string;
-  total_hours: string;
   progress_count: string;
+  punctual_shifts: string;
   rework_count: string;
-  client_interactions: string;
-  event_participation: string;
+  role: string;
+  total_hours: string;
+  total_shifts: string;
+  total_tasks: string;
 }
 
 interface EmployeeMetrics {
+  attendanceRate: number;
+  clientInteractions: number;
+  efficiencyScore: number;
   employeeId: string;
+  eventParticipation: number;
   firstName: string;
   lastName: string;
+  onTimeTaskRate: number;
+  punctualityRate: number;
+  qualityScore: number;
   role: string;
   taskCompletionRate: number;
-  qualityScore: number;
-  efficiencyScore: number;
-  attendanceRate: number;
-  punctualityRate: number;
-  onTimeTaskRate: number;
   totalHoursWorked: number;
-  clientInteractions: number;
-  eventParticipation: number;
 }
 
 interface MonthlyTrend {
-  month: string;
-  avg_task_completion_rate: string;
-  avg_quality_score: string;
   avg_efficiency_score: string;
+  avg_quality_score: string;
+  avg_task_completion_rate: string;
+  month: string;
 }
 
 interface ProcessedTrend {
-  month: string;
-  avgTaskCompletionRate: number;
-  avgQualityScore: number;
   avgEfficiencyScore: number;
+  avgQualityScore: number;
+  avgTaskCompletionRate: number;
+  month: string;
 }
 
 interface TopPerformer {
+  category: string;
   employeeId: string;
   name: string;
   score: number;
-  category: string;
 }
 
 interface RoleMetrics {
-  role: string;
-  employeeCount: number;
-  avgTaskCompletionRate: number;
-  avgQualityScore: number;
   avgEfficiencyScore: number;
+  avgQualityScore: number;
+  avgTaskCompletionRate: number;
+  employeeCount: number;
+  role: string;
 }
 
 function getDateFromPeriod(period: string): Date {
@@ -256,11 +256,11 @@ function processEmployeeMetrics(
 }
 
 interface AverageMetrics {
-  taskCompletionRate: number;
   attendanceRate: number;
+  efficiencyScore: number;
   punctualityRate: number;
   qualityScore: number;
-  efficiencyScore: number;
+  taskCompletionRate: number;
 }
 
 function calculateAverageMetrics(employees: EmployeeMetrics[]): AverageMetrics {
@@ -361,15 +361,15 @@ function processMonthlyTrends(trends: MonthlyTrend[]): ProcessedTrend[] {
 }
 
 interface SummaryResponse {
-  totalEmployees: number;
-  averageTaskCompletionRate: number;
   averageAttendanceRate: number;
+  averageEfficiencyScore: number;
   averagePunctualityRate: number;
   averageQualityScore: number;
-  averageEfficiencyScore: number;
-  topPerformers: TopPerformer[];
+  averageTaskCompletionRate: number;
   metricsByRole: RoleMetrics[];
   monthlyTrends: ProcessedTrend[];
+  topPerformers: TopPerformer[];
+  totalEmployees: number;
 }
 
 function buildSummaryResponse(

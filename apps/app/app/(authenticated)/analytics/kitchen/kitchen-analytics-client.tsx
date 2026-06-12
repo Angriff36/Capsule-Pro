@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -29,16 +39,6 @@ import {
   getCompletionColor,
   useKitchenAnalytics,
 } from "./lib/use-kitchen-analytics";
-import {
-  CommandBand,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 
 const AnalyticsKitchenPage = () => {
   const { data, isLoading, error } = useKitchenAnalytics({ period: "30d" });
@@ -103,7 +103,7 @@ const AnalyticsKitchenPage = () => {
           <Card className="border-destructive/50 bg-destructive/10">
             <CardContent className="flex items-center gap-2 p-6">
               <AlertCircle className="size-5 text-destructive" />
-              <p className="text-sm text-destructive-foreground">
+              <p className="text-destructive-foreground text-sm">
                 Failed to load kitchen analytics. Please try again later.
               </p>
             </CardContent>
@@ -146,7 +146,7 @@ const AnalyticsKitchenPage = () => {
       </CommandBand>
 
       <OperationalColumn>
-          <SectionHeader title="Performance Overview" />
+        <SectionHeader title="Performance Overview" />
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Station Throughput */}
           <Card className="space-y-3">
@@ -161,7 +161,7 @@ const AnalyticsKitchenPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {stationThroughput.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8 text-sm">
+                <p className="py-8 text-center text-muted-foreground text-sm">
                   No station data available for the selected period.
                 </p>
               ) : (
@@ -203,7 +203,7 @@ const AnalyticsKitchenPage = () => {
                         />
                       </div>
                     </div>
-                    <div className="flex justify-between text-muted-foreground text-xs pt-1">
+                    <div className="flex justify-between pt-1 text-muted-foreground text-xs">
                       <span>{station.completedItems} completed</span>
                       <span>{station.pendingItems} pending</span>
                     </div>
@@ -328,12 +328,12 @@ const AnalyticsKitchenPage = () => {
                       className="flex items-center gap-3 rounded-lg border p-3"
                       key={performer.employeeId}
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
                         {performer.firstName[0]}
                         {performer.lastName[0]}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-sm">
                           {performer.firstName} {performer.lastName}
                         </p>
                         <p className="text-muted-foreground text-xs">
@@ -406,7 +406,7 @@ const AnalyticsKitchenPage = () => {
                 <Card className="lg:col-span-2">
                   <CardHeader>
                     <CardTitle>Station Completion Rate Trends</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Daily completion rate percentage by station over time
                     </p>
                   </CardHeader>
@@ -422,20 +422,18 @@ const AnalyticsKitchenPage = () => {
                         />
                         <XAxis
                           axisLine={false}
-                          className="text-xs fill-muted-foreground"
+                          className="fill-muted-foreground text-xs"
                           dataKey="date"
                           tickLine={false}
                         />
                         <YAxis
                           axisLine={false}
-                          className="text-xs fill-muted-foreground"
+                          className="fill-muted-foreground text-xs"
                           domain={[0, 100]}
                           tickLine={false}
                         />
                         <ChartTooltipContent
-                          labelFormatter={(label) => {
-                            return `Date: ${label}`;
-                          }}
+                          labelFormatter={(label) => `Date: ${label}`}
                         />
                         {stationNames.map((stationName) => (
                           <Line

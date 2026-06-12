@@ -5,43 +5,45 @@
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sunday, 1=Monday, etc.
 
 export interface EmployeeAvailability {
-  id: string;
-  tenant_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  created_at: Date;
   day_of_week: number;
-  start_time: string; // HH:MM format
-  end_time: string; // HH:MM format
-  is_available: boolean;
   effective_from: Date; // YYYY-MM-DD
   effective_until: Date | null; // YYYY-MM-DD or null for ongoing
-  created_at: Date;
+  employee_email: string;
+  employee_first_name: string | null;
+  employee_id: string;
+  employee_last_name: string | null;
+  employee_role: string;
+  end_time: string; // HH:MM format
+  id: string;
+  is_available: boolean;
+  start_time: string; // HH:MM format
+  tenant_id: string;
   updated_at: Date;
 }
 
 export interface CreateAvailabilityInput {
-  employeeId: string;
   dayOfWeek: DayOfWeek;
-  startTime: string; // HH:MM format (24-hour)
-  endTime: string; // HH:MM format (24-hour)
-  isAvailable?: boolean; // defaults to true
   effectiveFrom?: string; // YYYY-MM-DD format, defaults to today
   effectiveUntil?: string | null; // YYYY-MM-DD format or null for ongoing
+  employeeId: string;
+  endTime: string; // HH:MM format (24-hour)
+  isAvailable?: boolean; // defaults to true
+  startTime: string; // HH:MM format (24-hour)
 }
 
 export interface UpdateAvailabilityInput {
   dayOfWeek?: DayOfWeek;
-  startTime?: string;
-  endTime?: string;
-  isAvailable?: boolean;
   effectiveFrom?: string;
   effectiveUntil?: string | null;
+  endTime?: string;
+  isAvailable?: boolean;
+  startTime?: string;
 }
 
 export interface CreateBatchAvailabilityInput {
+  effectiveFrom?: string; // YYYY-MM-DD format, defaults to today
+  effectiveUntil?: string | null; // YYYY-MM-DD format or null for ongoing
   employeeId: string;
   patterns: Array<{
     dayOfWeek: DayOfWeek;
@@ -49,17 +51,15 @@ export interface CreateBatchAvailabilityInput {
     endTime: string;
     isAvailable?: boolean;
   }>;
-  effectiveFrom?: string; // YYYY-MM-DD format, defaults to today
-  effectiveUntil?: string | null; // YYYY-MM-DD format or null for ongoing
 }
 
 export interface AvailabilityFilters {
-  employeeId?: string;
   dayOfWeek?: DayOfWeek;
   effectiveDate?: string; // Filter availability effective on this date
+  employeeId?: string;
   isActive?: boolean; // Filter currently active availability
-  page?: number;
   limit?: number;
+  page?: number;
 }
 
 export interface AvailabilityListResponse {
@@ -73,22 +73,22 @@ export interface AvailabilityListResponse {
 }
 
 export interface EmployeeAvailabilityForDate {
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  is_available: boolean;
   day_of_week: number;
-  start_time: string;
+  employee_email: string;
+  employee_first_name: string | null;
+  employee_id: string;
+  employee_last_name: string | null;
+  employee_role: string;
   end_time: string;
+  is_available: boolean;
+  start_time: string;
 }
 
 export interface EmployeesAvailabilityQuery {
   employeeIds?: string[]; // Specific employees to query
-  startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   includeTimeOff?: boolean; // Also include time-off requests
+  startDate: string; // YYYY-MM-DD
 }
 
 export interface EmployeeAvailabilityWithTimeOff

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error — .mjs audit script, run via vitest's ESM loader
 import { scanParentContextViolations } from "../../../scripts/audit-parent-context.mjs";
@@ -41,12 +41,16 @@ describe("parent-context audit — committed IR is clean under the allowlist", (
     const raw = scanParentContextViolations(ir, {});
     // The whole point of the fix: BattleBoard inherits event context, so it is
     // never a violator regardless of allowlisting.
-    expect(raw.find((v: { child: string }) => v.child === "BattleBoard")).toBeUndefined();
+    expect(
+      raw.find((v: { child: string }) => v.child === "BattleBoard")
+    ).toBeUndefined();
   });
 
   it("every allowlisted entry corresponds to a real detected case (no dead allowlist)", () => {
     const raw = scanParentContextViolations(ir, {});
-    const detected = new Set(raw.map((v: { child: string; field: string }) => `${v.child}.${v.field}`));
+    const detected = new Set(
+      raw.map((v: { child: string; field: string }) => `${v.child}.${v.field}`)
+    );
     for (const [entity, entry] of Object.entries(allowlist)) {
       for (const field of entry.fields) {
         expect(detected.has(`${entity}.${field}`)).toBe(true);
@@ -63,8 +67,16 @@ describe("parent-context audit — the gate actually bites", () => {
         name: "Event",
         properties: [
           { name: "id", type: { name: "string" }, modifiers: ["required"] },
-          { name: "tenantId", type: { name: "string" }, modifiers: ["required"] },
-          { name: "eventDate", type: { name: "datetime" }, modifiers: ["required"] },
+          {
+            name: "tenantId",
+            type: { name: "string" },
+            modifiers: ["required"],
+          },
+          {
+            name: "eventDate",
+            type: { name: "datetime" },
+            modifiers: ["required"],
+          },
         ],
         relationships: [],
         commands: ["create"],
@@ -73,7 +85,11 @@ describe("parent-context audit — the gate actually bites", () => {
         name: "PlannedChild",
         properties: [
           { name: "id", type: { name: "string" }, modifiers: ["required"] },
-          { name: "tenantId", type: { name: "string" }, modifiers: ["required"] },
+          {
+            name: "tenantId",
+            type: { name: "string" },
+            modifiers: ["required"],
+          },
           { name: "eventId", type: { name: "string" }, modifiers: [] },
           { name: "eventDate", type: { name: "datetime" }, modifiers: [] },
         ],
@@ -82,7 +98,10 @@ describe("parent-context audit — the gate actually bites", () => {
             name: "event",
             kind: "belongsTo",
             target: "Event",
-            foreignKey: { fields: ["tenantId", "eventId"], references: ["tenantId", "id"] },
+            foreignKey: {
+              fields: ["tenantId", "eventId"],
+              references: ["tenantId", "id"],
+            },
           },
         ],
         commands: ["create"],
@@ -113,7 +132,9 @@ describe("parent-context audit — the gate actually bites", () => {
 
   it("does NOT flag the FK itself (eventId is expected linkage input)", () => {
     const violations = scanParentContextViolations(plantedIR, {});
-    expect(violations.find((v: { field: string }) => v.field === "eventId")).toBeUndefined();
+    expect(
+      violations.find((v: { field: string }) => v.field === "eventId")
+    ).toBeUndefined();
   });
 
   it("a documented override silences the violation", () => {

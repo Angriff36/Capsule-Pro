@@ -2,9 +2,9 @@
 
 import { database, type WasteEntry } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -219,8 +219,11 @@ export const updateWasteEntry = async (
       id: entryId,
       quantity: quantity ?? Number(existing.quantity),
       unitId: unitId ?? existing.unitId ?? 0,
-      locationId: locationId !== undefined ? (locationId ?? "") : (existing.locationId ?? ""),
-      notes: notes !== undefined ? (notes ?? "") : (existing.notes ?? ""),
+      locationId:
+        locationId === undefined
+          ? (existing.locationId ?? "")
+          : (locationId ?? ""),
+      notes: notes === undefined ? (existing.notes ?? "") : (notes ?? ""),
       unitCost: unitCost ?? Number(existing.unitCost),
     },
     user: { id: user.id, tenantId, role: user.role },

@@ -1,8 +1,8 @@
 interface StatCardProperties {
   label: string;
-  value: string;
   trend?: string;
   trendTone?: "positive" | "neutral" | "negative";
+  value: string;
 }
 
 const trendStyles: Record<string, string> = {

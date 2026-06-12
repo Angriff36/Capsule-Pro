@@ -68,14 +68,19 @@ export async function PUT(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "EmployeeCertification",
     command: "update",
     body: {
       id,
-      certificationType: rawBody.certificationType || rawBody.certification_type,
-      certificationName: rawBody.certificationName || rawBody.certification_name,
+      certificationType:
+        rawBody.certificationType || rawBody.certification_type,
+      certificationName:
+        rawBody.certificationName || rawBody.certification_name,
       issuedDate: rawBody.issuedDate || rawBody.issued_date,
       expiryDate: rawBody.expiryDate || rawBody.expiry_date || "",
       documentUrl: rawBody.documentUrl || rawBody.document_url || "",

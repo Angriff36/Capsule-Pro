@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const facilityWhere: Prisma.FacilityWhereInput = {
       tenantId,
       deletedAt: null,
-      ...(status !== "all" ? { status } : {}),
+      ...(status === "all" ? {} : { status }),
       ...(facilityType ? { facilityType } : {}),
     };
     const facilityRecords = await database.facility.findMany({

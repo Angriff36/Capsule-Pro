@@ -6,28 +6,26 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface VersionMeta {
+  createdAt: string;
   id: string;
   versionNumber: number;
-  createdAt: string;
 }
 
 interface IngredientSnapshot {
   ingredientId: string;
+  isOptional: boolean;
   name: string;
+  preparationNotes: string | null;
   quantity: number;
   unit: string | null;
-  preparationNotes: string | null;
-  isOptional: boolean;
 }
 
 interface StepSnapshot {
-  stepNumber: number;
   instruction: string;
+  stepNumber: number;
 }
 
 interface RecipeVersionCompare {
-  from: VersionMeta;
-  to: VersionMeta;
   changes: {
     base: Record<
       string,
@@ -56,6 +54,8 @@ interface RecipeVersionCompare {
       }[];
     };
   };
+  from: VersionMeta;
+  to: VersionMeta;
 }
 
 export async function GET(

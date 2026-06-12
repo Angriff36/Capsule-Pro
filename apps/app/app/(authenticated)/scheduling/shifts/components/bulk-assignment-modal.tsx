@@ -35,14 +35,14 @@ import {
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
 interface BulkAssignmentModalProps {
-  open: boolean;
-  onClose: () => void;
   filters?: {
     scheduleId?: string;
     locationId?: string;
     startDate?: string;
     endDate?: string;
   };
+  onClose: () => void;
+  open: boolean;
   shiftIds?: string[];
 }
 
@@ -167,11 +167,11 @@ export function BulkAssignmentModal({
 
       if (successCount > 0) {
         toast.success(
-          `Successfully assigned ${successCount} shift${successCount !== 1 ? "s" : ""}`,
+          `Successfully assigned ${successCount} shift${successCount === 1 ? "" : "s"}`,
           {
             description:
               failureCount > 0
-                ? `${failureCount} shift${failureCount !== 1 ? "s" : ""} failed to assign`
+                ? `${failureCount} shift${failureCount === 1 ? "" : "s"} failed to assign`
                 : undefined,
           }
         );
@@ -179,7 +179,7 @@ export function BulkAssignmentModal({
 
       if (failureCount > 0) {
         toast.error(
-          `${failureCount} shift${failureCount !== 1 ? "s" : ""} failed to assign`
+          `${failureCount} shift${failureCount === 1 ? "" : "s"} failed to assign`
         );
       }
 
@@ -252,15 +252,14 @@ export function BulkAssignmentModal({
     return first || last || employee.email;
   };
 
-  const _formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleString("en-US", {
+  const _formatDateTime = (date: Date) =>
+    new Date(date).toLocaleString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   const hasData = data && data.results.length > 0;
   const hasSelected = selectedShifts.size > 0;
@@ -273,7 +272,7 @@ export function BulkAssignmentModal({
 
   return (
     <Dialog onOpenChange={onClose} open={open}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserCheckIcon className="h-5 w-5" />
@@ -316,35 +315,35 @@ export function BulkAssignmentModal({
         {hasData && !loading && (
           <>
             {/* Summary */}
-            <div className="flex items-center justify-between p-4 bg-muted/20 rounded-lg border border-hairline">
+            <div className="flex items-center justify-between rounded-lg border border-hairline bg-muted/20 p-4">
               <div className="flex gap-6">
                 <div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     Total Shifts
                   </div>
-                  <div className="text-2xl font-bold">{data.summary.total}</div>
+                  <div className="font-bold text-2xl">{data.summary.total}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     Auto-Assignable
                   </div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="font-bold text-2xl text-primary">
                     {data.summary.canAutoAssign}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     Has Suggestions
                   </div>
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="font-bold text-2xl text-yellow-600">
                     {data.summary.hasSuggestions}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     No Suggestions
                   </div>
-                  <div className="text-2xl font-bold text-muted-foreground">
+                  <div className="font-bold text-2xl text-muted-foreground">
                     {data.summary.noSuggestions}
                   </div>
                 </div>
@@ -355,7 +354,7 @@ export function BulkAssignmentModal({
                 size="sm"
                 variant="outline"
               >
-                <RefreshCwIcon className="h-4 w-4 mr-2" />
+                <RefreshCwIcon className="mr-2 h-4 w-4" />
                 Refresh
               </Button>
             </div>
@@ -371,12 +370,12 @@ export function BulkAssignmentModal({
                   onCheckedChange={handleSelectAll}
                 />
                 <label
-                  className="text-sm font-medium cursor-pointer"
+                  className="cursor-pointer font-medium text-sm"
                   htmlFor="select-all"
                 >
                   Select All with Suggestions
                 </label>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   ({selectedShifts.size} selected)
                 </span>
               </div>
@@ -400,12 +399,12 @@ export function BulkAssignmentModal({
 
                 return (
                   <div
-                    className="border rounded-lg overflow-hidden"
+                    className="overflow-hidden rounded-lg border"
                     key={result.shiftId}
                   >
                     {/* Shift Header */}
                     <div
-                      className={`p-3 flex items-center justify-between cursor-pointer hover:bg-muted/50 ${
+                      className={`flex cursor-pointer items-center justify-between p-3 hover:bg-muted/50 ${
                         isSelected ? "bg-primary/5" : ""
                       }`}
                       onClick={() => toggleExpand(result.shiftId)}
@@ -430,7 +429,7 @@ export function BulkAssignmentModal({
                             <div className="font-medium">
                               Shift {result.shiftId.slice(0, 8)}
                             </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                               {canAutoAssign && result.bestMatch
                                 ? `Best: ${formatEmployeeName(result.bestMatch.employee)} (${Math.round(result.bestMatch.score)})`
                                 : hasSuggestions
@@ -442,7 +441,7 @@ export function BulkAssignmentModal({
                       </div>
                       <div className="flex items-center gap-2">
                         {canAutoAssign && (
-                          <Badge className="bg-muted/50 text-foreground border border-hairline">
+                          <Badge className="border border-hairline bg-muted/50 text-foreground">
                             Auto-Ready
                           </Badge>
                         )}
@@ -457,7 +456,7 @@ export function BulkAssignmentModal({
 
                     {/* Expanded Content */}
                     {isExpanded && (
-                      <div className="p-3 border-t bg-muted/20">
+                      <div className="border-t bg-muted/20 p-3">
                         {result.laborBudgetWarning && (
                           <Alert className="mb-3" variant="destructive">
                             <AlertTriangleIcon className="h-4 w-4" />
@@ -507,11 +506,11 @@ export function BulkAssignmentModal({
 
             {/* Actions */}
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 {hasSelected ? (
                   <span>
                     <strong>{selectedShifts.size}</strong> shift
-                    {selectedShifts.size !== 1 ? "s" : ""} selected
+                    {selectedShifts.size === 1 ? "" : "s"} selected
                   </span>
                 ) : (
                   <span>Select shifts to assign</span>
@@ -532,12 +531,12 @@ export function BulkAssignmentModal({
                 >
                   {assigning ? (
                     <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                       Assigning...
                     </>
                   ) : (
                     <>
-                      <UserCheckIcon className="h-4 w-4 mr-2" />
+                      <UserCheckIcon className="mr-2 h-4 w-4" />
                       Assign Selected ({selectedShifts.size})
                     </>
                   )}

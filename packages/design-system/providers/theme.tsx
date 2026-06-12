@@ -1,5 +1,5 @@
 export {
   ThemeProvider,
-  useTheme,
   type ThemeProviderProps,
+  useTheme,
 } from "./theme-provider";

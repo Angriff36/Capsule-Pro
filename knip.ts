@@ -11,7 +11,7 @@ const config: KnipConfig = {
     "**/.next/**",
     "**/.turbo/**",
     "**/dist/**",
-    "**/coverage/**"
+    "**/coverage/**",
   ],
 
   ignoreFiles: [
@@ -21,7 +21,7 @@ const config: KnipConfig = {
     "**/.next/**",
     "**/.turbo/**",
     "**/dist/**",
-    "**/coverage/**"
+    "**/coverage/**",
   ],
 
   playwright: false,
@@ -41,10 +41,8 @@ const config: KnipConfig = {
     duplicates: "warn",
     enumMembers: "warn",
     namespaceMembers: "warn",
-    catalog: "warn"
-  }
+    catalog: "warn",
+  },
 };
 
 export default config;
-
-

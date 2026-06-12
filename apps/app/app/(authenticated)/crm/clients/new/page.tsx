@@ -93,8 +93,7 @@ function buildClientCreatePayload(
     taxExempt: formData.taxExempt,
     taxId: str(formData.taxId),
     notes: str(formData.notes),
-    tags:
-      formData.tags.length > 0 ? JSON.stringify(formData.tags) : "",
+    tags: formData.tags.length > 0 ? JSON.stringify(formData.tags) : "",
     source: str(formData.source),
     assignedTo: "",
   };
@@ -129,9 +128,7 @@ export default function NewClientPage() {
   });
 
   useEffect(() => {
-    getAvailableTags().then((tags) =>
-      setAvailableTags(tags.map((t) => t.tag))
-    );
+    getAvailableTags().then((tags) => setAvailableTags(tags.map((t) => t.tag)));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,10 +139,7 @@ export default function NewClientPage() {
       toast.error("Company name is required for company clients");
       return;
     }
-    if (
-      clientType === "individual" &&
-      !formData.first_name.trim()
-    ) {
+    if (clientType === "individual" && !formData.first_name.trim()) {
       toast.error("First name is required for individual clients");
       return;
     }
@@ -177,7 +171,7 @@ export default function NewClientPage() {
           <CommandBandLede>Add a new client to your CRM.</CommandBandLede>
         </CommandBandHeader>
         <CommandBandActions>
-          <Button asChild variant="on-dark" size="icon">
+          <Button asChild size="icon" variant="on-dark">
             <Link href="/crm/clients">
               <ArrowLeftIcon className="h-4 w-4" />
             </Link>
@@ -229,7 +223,7 @@ export default function NewClientPage() {
 
             {/* Name */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">
+              <h3 className="font-medium text-lg">
                 {clientType === "company" ? "Company Info" : "Personal Info"}
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
@@ -282,7 +276,7 @@ export default function NewClientPage() {
 
             {/* Contact */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Contact Information</h3>
+              <h3 className="font-medium text-lg">Contact Information</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -327,7 +321,7 @@ export default function NewClientPage() {
 
             {/* Address */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Address</h3>
+              <h3 className="font-medium text-lg">Address</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="addressLine1">Address Line 1</Label>
@@ -418,7 +412,7 @@ export default function NewClientPage() {
 
             {/* Financial */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Financial Details</h3>
+              <h3 className="font-medium text-lg">Financial Details</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="defaultPaymentTerms">
@@ -470,14 +464,12 @@ export default function NewClientPage() {
 
             {/* Notes & Tags */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Additional Information</h3>
+              <h3 className="font-medium text-lg">Additional Information</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label>Tags</Label>
                   <TagInput
-                    onChange={(tags) =>
-                      setFormData({ ...formData, tags })
-                    }
+                    onChange={(tags) => setFormData({ ...formData, tags })}
                     placeholder="Add a tag…"
                     suggestions={availableTags}
                     value={formData.tags}

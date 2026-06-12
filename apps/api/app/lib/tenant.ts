@@ -43,12 +43,12 @@ export const requireTenantId = async (): Promise<string> => {
 
 /** Minimal user record returned by requireCurrentUser */
 export interface CurrentUser {
-  id: string;
-  tenantId: string;
-  role: string;
   email: string;
   firstName: string;
+  id: string;
   lastName: string;
+  role: string;
+  tenantId: string;
 }
 
 /**

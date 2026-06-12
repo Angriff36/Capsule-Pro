@@ -13,41 +13,41 @@ import { RecipeDetailEditButton } from "./components/recipe-detail-edit-button";
 import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
 interface RecipeDetailRow {
-  id: string;
-  name: string;
-  description: string | null;
   category: string | null;
-  tags: string[] | null;
+  cook_time_minutes: number | null;
+  description: string | null;
+  id: string;
+  image_url: string | null;
+  instructions: string | null;
   is_active: boolean;
+  name: string;
+  notes: string | null;
+  prep_time_minutes: number | null;
+  rest_time_minutes: number | null;
+  tags: string[] | null;
   yield_quantity: number | null;
   yield_unit: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  rest_time_minutes: number | null;
-  instructions: string | null;
-  notes: string | null;
-  image_url: string | null;
 }
 
 interface IngredientRow {
   id: string;
   name: string;
-  quantity: number;
-  unit_code: string;
   notes: string | null;
   order_index: number;
+  quantity: number;
+  unit_code: string;
 }
 
 interface RecipeStepRow {
-  step_number: number;
-  instruction: string;
   duration_minutes: number | null;
-  temperature_value: number | null;
-  temperature_unit: string | null;
   equipment_needed: string[] | null;
+  image_url: string | null;
+  instruction: string;
+  step_number: number;
+  temperature_unit: string | null;
+  temperature_value: number | null;
   tips: string | null;
   video_url: string | null;
-  image_url: string | null;
 }
 
 const formatMinutes = (minutes?: number | null) =>
@@ -248,7 +248,7 @@ const RecipeDetailPage = async ({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{recipe.name}</h1>
+              <h1 className="font-bold text-2xl">{recipe.name}</h1>
               <Badge variant={recipe.is_active ? "default" : "secondary"}>
                 {recipe.is_active ? "Active" : "Inactive"}
               </Badge>
@@ -275,7 +275,7 @@ const RecipeDetailPage = async ({
             <CardContent className="flex items-center gap-3 pt-6">
               <Clock className="h-5 w-5 text-muted-foreground" />
               <div>
-                <div className="text-sm text-muted-foreground">Prep Time</div>
+                <div className="text-muted-foreground text-sm">Prep Time</div>
                 <div className="font-semibold">
                   {formatMinutes(recipe.prep_time_minutes)}
                 </div>
@@ -286,7 +286,7 @@ const RecipeDetailPage = async ({
             <CardContent className="flex items-center gap-3 pt-6">
               <ChefHat className="h-5 w-5 text-muted-foreground" />
               <div>
-                <div className="text-sm text-muted-foreground">Cook Time</div>
+                <div className="text-muted-foreground text-sm">Cook Time</div>
                 <div className="font-semibold">
                   {formatMinutes(recipe.cook_time_minutes)}
                 </div>
@@ -297,7 +297,7 @@ const RecipeDetailPage = async ({
             <CardContent className="flex items-center gap-3 pt-6">
               <Users className="h-5 w-5 text-muted-foreground" />
               <div>
-                <div className="text-sm text-muted-foreground">Yield</div>
+                <div className="text-muted-foreground text-sm">Yield</div>
                 <div className="font-semibold">
                   {recipe.yield_quantity ?? "-"} {recipe.yield_unit ?? ""}
                 </div>
@@ -308,7 +308,7 @@ const RecipeDetailPage = async ({
             <CardContent className="flex items-center gap-3 pt-6">
               <Badge className="h-5 w-5" />
               <div>
-                <div className="text-sm text-muted-foreground">Difficulty</div>
+                <div className="text-muted-foreground text-sm">Difficulty</div>
                 <div className="font-semibold">Medium</div>
               </div>
             </CardContent>

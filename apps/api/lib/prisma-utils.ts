@@ -1,4 +1,4 @@
-import { Prisma } from "@repo/database";
+import type { Prisma } from "@repo/database";
 
 /**
  * Safely cast a value to Prisma's InputJsonValue type.

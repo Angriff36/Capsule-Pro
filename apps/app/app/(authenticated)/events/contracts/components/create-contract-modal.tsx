@@ -36,9 +36,9 @@ import { toast } from "sonner";
 import { eventContractCreate } from "@/app/lib/manifest-client.generated";
 
 interface EventOption {
+  eventDate: string;
   id: string;
   title: string;
-  eventDate: string;
 }
 
 interface ClientOption {
@@ -47,10 +47,10 @@ interface ClientOption {
 }
 
 interface CreateContractModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  events: EventOption[];
   clients: ClientOption[];
+  events: EventOption[];
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
 export function CreateContractModal({
@@ -85,15 +85,23 @@ export function CreateContractModal({
 
   const validate = useCallback(() => {
     const newErrors: Record<string, string> = {};
-    if (!eventId) newErrors.eventId = "Event is required";
-    if (!clientId) newErrors.clientId = "Client is required";
-    if (!title.trim()) newErrors.title = "Title is required";
+    if (!eventId) {
+      newErrors.eventId = "Event is required";
+    }
+    if (!clientId) {
+      newErrors.clientId = "Client is required";
+    }
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [eventId, clientId, title]);
 
   const handleSubmit = useCallback(async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -105,7 +113,9 @@ export function CreateContractModal({
         documentUrl: "",
         documentType: "",
         notes: notes.trim() || undefined,
-        expiresAt: expiresAt ? new Date(expiresAt).getTime().toString() : undefined,
+        expiresAt: expiresAt
+          ? new Date(expiresAt).getTime().toString()
+          : undefined,
       });
 
       const contractId = result?.id;

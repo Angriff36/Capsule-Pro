@@ -99,7 +99,10 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "ClientInteraction",
     command: "create",

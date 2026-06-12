@@ -1,7 +1,7 @@
 import { database } from "@repo/database";
 import { getChannelName, type RealtimeEventBase } from "@repo/realtime";
-import { publish as publishToChannel } from "@/lib/realtime/pubsub";
 import { env } from "@/env";
+import { publish as publishToChannel } from "@/lib/realtime/pubsub";
 
 interface PublishRequest {
   limit?: number;
@@ -73,23 +73,23 @@ function getMessageSize(message: unknown): number {
  * Prisma doesn't expose SKIP LOCKED, so we use raw SQL.
  */
 interface RawOutboxEvent {
-  id: string;
-  tenant_id: string;
-  aggregate_type: string;
   aggregate_id: string;
-  event_type: string;
-  payload: unknown;
-  status: string;
-  error: string | null;
+  aggregate_type: string;
   created_at: Date;
+  error: string | null;
+  event_type: string;
+  id: string;
+  payload: unknown;
   published_at: Date | null;
+  status: string;
+  tenant_id: string;
 }
 
 interface PublishOutcome {
-  published: number;
   failed: number;
-  skipped: number;
   oldestPendingSeconds: number;
+  published: number;
+  skipped: number;
 }
 
 async function runPublishLoop(limit: number): Promise<PublishOutcome> {

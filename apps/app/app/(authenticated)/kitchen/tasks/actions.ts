@@ -1,16 +1,16 @@
 "use server";
 
 import {
+  database,
   type KitchenTask,
   type KitchenTaskClaim,
   type KitchenTaskProgress,
   type KitchenTaskStatus,
-  database,
 } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -207,7 +207,9 @@ export const updateKitchenTask = async (
       body: { id: taskId, title },
       user: userCtx,
     });
-    if (!r.ok) throw new Error(r.message || "Failed to update task title");
+    if (!r.ok) {
+      throw new Error(r.message || "Failed to update task title");
+    }
   }
 
   if (summary !== undefined) {
@@ -217,7 +219,9 @@ export const updateKitchenTask = async (
       body: { id: taskId, summary: summary || "" },
       user: userCtx,
     });
-    if (!r.ok) throw new Error(r.message || "Failed to update task summary");
+    if (!r.ok) {
+      throw new Error(r.message || "Failed to update task summary");
+    }
   }
 
   if (priority && priority >= 1 && priority <= 5) {
@@ -227,7 +231,9 @@ export const updateKitchenTask = async (
       body: { id: taskId, priority },
       user: userCtx,
     });
-    if (!r.ok) throw new Error(r.message || "Failed to update task priority");
+    if (!r.ok) {
+      throw new Error(r.message || "Failed to update task priority");
+    }
   }
 
   if (dueDate) {
@@ -237,7 +243,9 @@ export const updateKitchenTask = async (
       body: { id: taskId, dueDate },
       user: userCtx,
     });
-    if (!r.ok) throw new Error(r.message || "Failed to update task due date");
+    if (!r.ok) {
+      throw new Error(r.message || "Failed to update task due date");
+    }
   }
 
   const task = await database.kitchenTask.findFirst({
@@ -288,7 +296,9 @@ export const updateKitchenTaskStatus = async (
         body: { id: taskId, userId: user.id },
         user: userCtx,
       });
-      if (!r.ok) throw new Error(r.message || "Failed to start task");
+      if (!r.ok) {
+        throw new Error(r.message || "Failed to start task");
+      }
       break;
     }
     case "done": {
@@ -298,27 +308,41 @@ export const updateKitchenTaskStatus = async (
         body: { id: taskId, userId: user.id },
         user: userCtx,
       });
-      if (!r.ok) throw new Error(r.message || "Failed to complete task");
+      if (!r.ok) {
+        throw new Error(r.message || "Failed to complete task");
+      }
       break;
     }
     case "canceled": {
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "cancel",
-        body: { id: taskId, reason: "Status changed to cancelled", canceledBy: user.id },
+        body: {
+          id: taskId,
+          reason: "Status changed to cancelled",
+          canceledBy: user.id,
+        },
         user: userCtx,
       });
-      if (!r.ok) throw new Error(r.message || "Failed to cancel task");
+      if (!r.ok) {
+        throw new Error(r.message || "Failed to cancel task");
+      }
       break;
     }
     case "open": {
       const r = await runManifestCommand({
         entity: "KitchenTask",
         command: "release",
-        body: { id: taskId, userId: user.id, reason: "Status changed back to open" },
+        body: {
+          id: taskId,
+          userId: user.id,
+          reason: "Status changed back to open",
+        },
         user: userCtx,
       });
-      if (!r.ok) throw new Error(r.message || "Failed to release task");
+      if (!r.ok) {
+        throw new Error(r.message || "Failed to release task");
+      }
       break;
     }
     default:
@@ -417,7 +441,9 @@ export const claimTask = async (
     user: userCtx,
   });
   if (!createClaimResult.ok) {
-    throw new Error(createClaimResult.message || "Failed to create claim record");
+    throw new Error(
+      createClaimResult.message || "Failed to create claim record"
+    );
   }
 
   const claimId = (createClaimResult.result as { id?: string } | null)?.id;

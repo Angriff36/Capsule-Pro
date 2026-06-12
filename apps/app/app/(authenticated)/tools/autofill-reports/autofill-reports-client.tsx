@@ -85,56 +85,55 @@ import {
 // ---------------------------------------------------------------------------
 
 interface EventReport {
-  id: string;
+  createdAt: string;
   eventId: string;
   eventName: string;
+  id: string;
   reportType: string;
   status: "draft" | "complete" | "reviewed";
-  createdAt: string;
 }
-
 
 interface ParsedMenuItem {
   name: string;
-  quantity: number;
   notes: string | null;
+  quantity: number;
 }
 
 interface ParsedStaffShift {
-  role: string;
   name: string;
+  role: string;
   time: string;
 }
 
 interface ParsedEventDetails {
-  eventName: string | null;
   eventDate: string | null;
+  eventName: string | null;
   guestCount: number | null;
   venue: string | null;
 }
 
 interface ParsedDocument {
-  menuItems: ParsedMenuItem[];
-  staffShifts: ParsedStaffShift[];
   eventDetails: ParsedEventDetails;
+  menuItems: ParsedMenuItem[];
   rawText?: string;
+  staffShifts: ParsedStaffShift[];
 }
 
 interface WasteSummary {
+  avgCostPerEntry: number;
+  entryCount: number;
   totalCost: number;
   totalQuantity: number;
-  entryCount: number;
-  avgCostPerEntry: number;
 }
 
 interface WasteEntry {
+  cost: number;
   id: string;
   itemName: string;
   quantity: number;
-  unit: string;
-  cost: number;
   reason: string;
   recordedAt: string;
+  unit: string;
 }
 
 interface WasteReportResponse {
@@ -152,7 +151,9 @@ interface WasteReportResponse {
 // ---------------------------------------------------------------------------
 
 function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return "--";
+  if (!dateStr) {
+    return "--";
+  }
   return new Date(dateStr).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -210,10 +211,10 @@ function StatCard({
           <Icon className="h-4 w-4 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-2xl font-bold leading-none">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="font-bold text-2xl leading-none">{value}</p>
+          <p className="text-muted-foreground text-sm">{label}</p>
           {subtext && (
-            <p className="text-xs text-muted-foreground/70">{subtext}</p>
+            <p className="text-muted-foreground/70 text-xs">{subtext}</p>
           )}
         </div>
       </CardContent>
@@ -362,8 +363,8 @@ function EventReportsTab() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No event reports yet</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-lg">No event reports yet</p>
+            <p className="text-muted-foreground text-sm">
               Generate your first event report to review pre-event checklists.
             </p>
           </CardContent>
@@ -391,7 +392,7 @@ function EventReportsTab() {
                       <Badge variant="outline">{report.reportType}</Badge>
                     </TableCell>
                     <TableCell>{reportStatusBadge(report.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {formatDate(report.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
@@ -433,12 +434,14 @@ function EventReportsTab() {
                 id="event-id"
                 onChange={(e) => setSelectedEventId(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreate();
+                  if (e.key === "Enter") {
+                    handleCreate();
+                  }
                 }}
                 placeholder="Enter event ID..."
                 value={selectedEventId}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Enter the ID of the event to generate a report for.
               </p>
             </div>
@@ -463,11 +466,11 @@ function EventReportsTab() {
 // ---------------------------------------------------------------------------
 
 interface EventSearchResult {
-  id: string;
-  title: string;
   eventDate: string | null;
   guestCount: number | null;
+  id: string;
   status: string;
+  title: string;
 }
 
 function DocumentParserTab() {
@@ -547,7 +550,9 @@ function DocumentParserTab() {
     setEventSearchLoading(true);
     try {
       const result = await listEvents({ search: query, limit: 10 });
-      setEventSearchResults((result.data ?? []) as unknown as EventSearchResult[]);
+      setEventSearchResults(
+        (result.data ?? []) as unknown as EventSearchResult[]
+      );
     } catch {
       setEventSearchResults([]);
     } finally {
@@ -570,7 +575,9 @@ function DocumentParserTab() {
 
   const handleApplySection = useCallback(
     async (section: string) => {
-      if (!parsed) return;
+      if (!parsed) {
+        return;
+      }
 
       if (!selectedEventId) {
         pendingSection.current = section;
@@ -585,10 +592,18 @@ function DocumentParserTab() {
           const updatePayload: Record<string, unknown> = {
             id: selectedEventId,
           };
-          if (details.eventName) updatePayload.title = details.eventName;
-          if (details.eventDate) updatePayload.eventDate = details.eventDate;
-          if (details.guestCount) updatePayload.guestCount = details.guestCount;
-          if (details.venue) updatePayload.venueName = details.venue;
+          if (details.eventName) {
+            updatePayload.title = details.eventName;
+          }
+          if (details.eventDate) {
+            updatePayload.eventDate = details.eventDate;
+          }
+          if (details.guestCount) {
+            updatePayload.guestCount = details.guestCount;
+          }
+          if (details.venue) {
+            updatePayload.venueName = details.venue;
+          }
 
           await eventUpdate(updatePayload);
           toast.success("Event details applied", {
@@ -613,7 +628,7 @@ function DocumentParserTab() {
             }
           }
           toast.success(
-            `${created} menu item${created !== 1 ? "s" : ""} applied`,
+            `${created} menu item${created === 1 ? "" : "s"} applied`,
             {
               description:
                 errors.length > 0
@@ -626,14 +641,13 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const shift of parsed.staffShifts) {
             try {
-              await scheduleShiftCreate({
-              });
+              await scheduleShiftCreate({});
               created++;
             } catch {
               errors.push(shift.name);
             }
           }
-          toast.success(`${created} shift${created !== 1 ? "s" : ""} created`, {
+          toast.success(`${created} shift${created === 1 ? "" : "s"} created`, {
             description:
               errors.length > 0
                 ? `Failed: ${errors.join(", ")}`
@@ -665,13 +679,13 @@ function DocumentParserTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div
-            className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-muted-foreground/50"
+            className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted-foreground/25 border-dashed p-8 transition-colors hover:border-muted-foreground/50"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
             <Upload className="h-8 w-8 text-muted-foreground/60" />
             <div className="text-center">
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 Drag and drop your file here, or
               </p>
               <Button
@@ -683,7 +697,7 @@ function DocumentParserTab() {
                 Browse Files
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Supports PDF and CSV files
             </p>
             <input
@@ -699,8 +713,8 @@ function DocumentParserTab() {
             <div className="flex items-center justify-between rounded-md border bg-muted/30 px-4 py-2">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{file.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="font-medium text-sm">{file.name}</span>
+                <span className="text-muted-foreground text-xs">
                   ({(file.size / 1024).toFixed(1)} KB)
                 </span>
               </div>
@@ -760,7 +774,7 @@ function DocumentParserTab() {
                   Applying to: <strong>{selectedEventName}</strong>
                 </span>
               ) : (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   No event selected — click &quot;Apply to Event&quot; to pick
                   one
                 </span>
@@ -824,7 +838,7 @@ function DocumentParserTab() {
                     type="button"
                   >
                     <span className="font-medium">{event.title}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {formatDate(event.eventDate)}
                     </span>
                   </button>
@@ -834,7 +848,7 @@ function DocumentParserTab() {
             {!eventSearchLoading &&
               eventSearchQuery.length >= 2 &&
               eventSearchResults.length === 0 && (
-                <p className="py-4 text-center text-sm text-muted-foreground">
+                <p className="py-4 text-center text-muted-foreground text-sm">
                   No events found
                 </p>
               )}
@@ -893,7 +907,7 @@ function DocumentParserTab() {
               <CardContent>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">
+                    <p className="font-medium text-muted-foreground text-xs">
                       Event Name
                     </p>
                     <p className="text-sm">
@@ -901,7 +915,7 @@ function DocumentParserTab() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">
+                    <p className="font-medium text-muted-foreground text-xs">
                       Event Date
                     </p>
                     <p className="text-sm">
@@ -911,7 +925,7 @@ function DocumentParserTab() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">
+                    <p className="font-medium text-muted-foreground text-xs">
                       Guest Count
                     </p>
                     <p className="text-sm">
@@ -919,7 +933,7 @@ function DocumentParserTab() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">
+                    <p className="font-medium text-muted-foreground text-xs">
                       Venue
                     </p>
                     <p className="text-sm">
@@ -973,7 +987,7 @@ function DocumentParserTab() {
                           {item.name}
                         </TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {item.notes ?? "--"}
                         </TableCell>
                       </TableRow>
@@ -1028,7 +1042,7 @@ function DocumentParserTab() {
                         <TableCell className="font-medium">
                           {shift.name}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {shift.time}
                         </TableCell>
                       </TableRow>
@@ -1046,10 +1060,10 @@ function DocumentParserTab() {
               <Card>
                 <CardContent className="py-8 text-center">
                   <FileText className="mx-auto mb-3 h-8 w-8 text-muted-foreground/60" />
-                  <p className="text-sm font-medium">
+                  <p className="font-medium text-sm">
                     No structured data extracted
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     The document was parsed but no menu items, staff shifts, or
                     event details were found.
                   </p>
@@ -1066,8 +1080,8 @@ function DocumentParserTab() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <FileSpreadsheet className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">No document parsed</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-2 font-medium text-sm">No document parsed</p>
+            <p className="text-muted-foreground text-sm">
               Upload a PDF or CSV file and click &quot;Parse Document&quot; to
               extract event data for autofill.
             </p>
@@ -1125,7 +1139,7 @@ function WasteReportsTab() {
       {/* Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Group By</Label>
+          <Label className="font-medium text-sm">Group By</Label>
           <Select onValueChange={setGroupBy} value={groupBy}>
             <SelectTrigger className="w-40">
               <SelectValue />
@@ -1233,10 +1247,10 @@ function WasteReportsTab() {
                   className="flex flex-col items-center gap-1 rounded-md border px-4 py-2"
                   key={t.period}
                 >
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {t.period}
                   </span>
-                  <span className="text-sm font-semibold">
+                  <span className="font-semibold text-sm">
                     {formatCurrency(t.cost)}
                   </span>
                 </div>
@@ -1273,14 +1287,14 @@ function WasteReportsTab() {
                       {entry.itemName}
                     </TableCell>
                     <TableCell>{entry.quantity}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {entry.unit}
                     </TableCell>
                     <TableCell>{formatCurrency(entry.cost)}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{entry.reason}</Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {formatDate(entry.recordedAt)}
                     </TableCell>
                   </TableRow>
@@ -1298,8 +1312,8 @@ function WasteReportsTab() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <BarChart3 className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">No waste data</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-2 font-medium text-sm">No waste data</p>
+            <p className="text-muted-foreground text-sm">
               Waste entries will appear here once kitchen waste data is
               recorded.
             </p>

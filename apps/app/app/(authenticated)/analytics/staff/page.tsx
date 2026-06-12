@@ -210,10 +210,7 @@ const AnalyticsStaffPage = async () => {
     }
 
     current.eventAssignments += 1;
-    updateLastActivity(
-      assignment.staffMemberId,
-      assignment.createdAt
-    );
+    updateLastActivity(assignment.staffMemberId, assignment.createdAt);
   }
 
   for (const interaction of clientInteractions) {

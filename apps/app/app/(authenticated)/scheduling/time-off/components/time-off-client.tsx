@@ -50,10 +50,10 @@ import { TimeOffDetailModal } from "./time-off-detail-modal";
 import { TimeOffForm } from "./time-off-form";
 
 interface Employee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
   email: string;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
   role: string;
 }
 
@@ -150,7 +150,12 @@ export function TimeOffClient() {
   useEffect(() => {
     fetchTimeOffRequests(pagination.page, pagination.limit);
     fetchFilterOptions();
-  }, [fetchTimeOffRequests, pagination.page, pagination.limit, fetchFilterOptions]);
+  }, [
+    fetchTimeOffRequests,
+    pagination.page,
+    pagination.limit,
+    fetchFilterOptions,
+  ]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {

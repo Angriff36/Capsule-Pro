@@ -33,14 +33,14 @@ export function FinancialStatsHoverCardBlock() {
         >
           <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           <div>
-            <div className="text-2xl font-bold">$45.2k</div>
-            <div className="text-sm text-muted-foreground">Monthly Revenue</div>
+            <div className="font-bold text-2xl">$45.2k</div>
+            <div className="text-muted-foreground text-sm">Monthly Revenue</div>
           </div>
         </button>
       </HoverCardTrigger>
       <HoverCardContent className="w-80">
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold">Revenue Breakdown</h4>
+          <h4 className="font-semibold text-sm">Revenue Breakdown</h4>
           <div className="space-y-2 text-sm">
             {metrics.map((metric) => {
               const Icon = metric.icon;
@@ -61,12 +61,12 @@ export function FinancialStatsHoverCardBlock() {
             })}
             <div className="flex items-center justify-between pt-2">
               <span className="text-muted-foreground">Net Profit</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-bold text-emerald-600 text-lg dark:text-emerald-400">
                 $45.2k
               </span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">+18.2% vs. last month</p>
+          <p className="text-muted-foreground text-xs">+18.2% vs. last month</p>
         </div>
       </HoverCardContent>
     </HoverCard>

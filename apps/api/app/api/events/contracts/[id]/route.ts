@@ -92,8 +92,16 @@ export async function PUT(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "EventContract", command: "update", body: { ...rawBody, id, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "EventContract",
+    command: "update",
+    body: { ...rawBody, id, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }
 
 /**
@@ -106,5 +114,10 @@ export async function DELETE(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  return runManifestCommand({ entity: "EventContract", command: "softDelete", body: { id, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  return runManifestCommand({
+    entity: "EventContract",
+    command: "softDelete",
+    body: { id, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

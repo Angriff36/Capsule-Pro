@@ -53,14 +53,13 @@ export type TrendDirection = "up" | "down" | "neutral";
 
 export interface MetricCardBlockProps {
   /**
+   * Optional CSS class for the Card
+   */
+  className?: string;
+  /**
    * The label/description for the metric (displayed in CardDescription)
    */
   description: React.ReactNode;
-
-  /**
-   * The primary value to display (displayed in CardTitle)
-   */
-  value: React.ReactNode;
 
   /**
    * Optional detail content to display below the value
@@ -75,21 +74,21 @@ export interface MetricCardBlockProps {
   trend?: TrendDirection;
 
   /**
-   * Optional custom color class for the value
-   * e.g., "text-emerald-600", "text-red-600"
-   */
-  valueColor?: string;
-
-  /**
    * Optional custom color class for trend indicator
    * Defaults to green for "up", red for "down"
    */
   trendColor?: string;
 
   /**
-   * Optional CSS class for the Card
+   * The primary value to display (displayed in CardTitle)
    */
-  className?: string;
+  value: React.ReactNode;
+
+  /**
+   * Optional custom color class for the value
+   * e.g., "text-emerald-600", "text-red-600"
+   */
+  valueColor?: string;
 
   /**
    * Optional size variant for the value
@@ -128,7 +127,7 @@ export function MetricCardBlock({
   className,
   valueSize = "text-2xl",
 }: MetricCardBlockProps) {
-  const trendIndicator = trend !== undefined ? getTrendIndicator(trend) : null;
+  const trendIndicator = trend === undefined ? null : getTrendIndicator(trend);
 
   return (
     <Card className={className}>

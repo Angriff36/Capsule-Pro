@@ -21,46 +21,46 @@ export type EmailStatus =
   | "bounced";
 
 export interface EmailRecipient {
+  clientId?: string;
   email: string;
   employeeId?: string;
-  clientId?: string;
   name?: string;
 }
 
 export interface SendEmailOptions {
-  tenantId: string;
+  body: string;
   notificationType: string;
   recipients: EmailRecipient[];
   subject: string;
-  body: string;
-  workflowId?: string;
   templateData?: Record<string, string | number | undefined>;
+  tenantId: string;
+  workflowId?: string;
 }
 
 export interface SendEmailResult {
-  success: boolean;
-  logId?: string;
   error?: string;
+  logId?: string;
   status: EmailStatus;
+  success: boolean;
 }
 
 export interface EmailLogEntry {
+  createdAt: Date;
+  deliveredAt?: Date;
+  errorMessage?: string;
+  failedAt?: Date;
   id: string;
-  tenantId: string;
-  workflowId?: string;
+  notificationType: string;
+  openedAt?: Date;
   recipientEmail: string;
   recipientId?: string;
   recipientType?: string;
-  subject: string;
-  notificationType: string;
-  status: EmailStatus;
   resendId?: string;
-  errorMessage?: string;
   sentAt?: Date;
-  deliveredAt?: Date;
-  openedAt?: Date;
-  failedAt?: Date;
-  createdAt: Date;
+  status: EmailStatus;
+  subject: string;
+  tenantId: string;
+  workflowId?: string;
 }
 
 // Email validation regex - top level for performance
@@ -228,7 +228,9 @@ async function batchCheckOptInStatus(
     .map((r) => r.employeeId)
     .filter((id): id is string => !!id);
 
-  if (employeeIds.length === 0) return new Set();
+  if (employeeIds.length === 0) {
+    return new Set();
+  }
 
   const preferences = await database.notification_preferences.findMany({
     where: {

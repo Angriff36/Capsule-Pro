@@ -40,13 +40,13 @@ import { useMemo, useState } from "react";
 type TemplateType = "event" | "vendor";
 
 interface ContractTemplate {
+  createdAt: string;
+  description: string | null;
   id: string;
+  lastModified: string;
   name: string;
   type: TemplateType;
-  description: string | null;
   usageCount: number;
-  lastModified: string;
-  createdAt: string;
 }
 
 interface TemplatesClientProps {
@@ -114,9 +114,9 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
       {/* Search and actions bar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink/40" />
           <input
-            className="w-full rounded-md border border-hairline bg-canvas py-2 pl-10 pr-4 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-[var(--ds-coral-soft)]"
+            className="w-full rounded-md border border-hairline bg-canvas py-2 pr-4 pl-10 text-ink text-sm placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-[var(--ds-coral-soft)]"
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search templates..."
             type="text"
@@ -141,7 +141,7 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium text-ink"
+                  className="font-medium text-ink text-sm"
                   htmlFor="template-name"
                 >
                   Template Name
@@ -153,7 +153,7 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium text-ink"
+                  className="font-medium text-ink text-sm"
                   htmlFor="template-type"
                 >
                   Type
@@ -170,7 +170,7 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium text-ink"
+                  className="font-medium text-ink text-sm"
                   htmlFor="template-desc"
                 >
                   Description
@@ -234,7 +234,7 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
       ) : (
         <>
           <MonoLabel className="text-ink/50">
-            {filtered.length} template{filtered.length !== 1 ? "s" : ""}
+            {filtered.length} template{filtered.length === 1 ? "" : "s"}
           </MonoLabel>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filtered.map((template) => {
@@ -253,7 +253,7 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
                       </h3>
                     </div>
                     <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${config.badgeClass}`}
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium text-xs ${config.badgeClass}`}
                     >
                       {config.label}
                     </span>
@@ -265,12 +265,12 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between border-t border-hairline pt-3">
-                    <span className="ds-mono text-xs text-ink/50">
+                  <div className="flex items-center justify-between border-hairline border-t pt-3">
+                    <span className="ds-mono text-ink/50 text-xs">
                       Used {template.usageCount} time
-                      {template.usageCount !== 1 ? "s" : ""}
+                      {template.usageCount === 1 ? "" : "s"}
                     </span>
-                    <span className="ds-mono text-xs text-ink/50">
+                    <span className="ds-mono text-ink/50 text-xs">
                       {formatDate(template.lastModified)}
                     </span>
                   </div>

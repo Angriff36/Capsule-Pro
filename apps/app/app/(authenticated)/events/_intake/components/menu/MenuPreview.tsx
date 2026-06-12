@@ -12,12 +12,12 @@ import type { DishCost, MenuFormData } from "../../types/menu";
 import { formatCurrency } from "../../utils/webhookPayload";
 
 interface Props {
+  costCache?: Record<string, DishCost>;
   formData: MenuFormData;
   menuStory?: string;
-  showPrice?: boolean;
-  showCost?: boolean;
-  costCache?: Record<string, DishCost>;
   perPersonTotal?: number;
+  showCost?: boolean;
+  showPrice?: boolean;
 }
 
 export default function MenuPreview({
@@ -36,19 +36,19 @@ export default function MenuPreview({
 
   return (
     <div className="space-y-6">
-      <div className="text-center pb-4 border-b border-stone-200">
-        <h3 className="text-xl font-light text-stone-800 tracking-tight">
+      <div className="border-stone-200 border-b pb-4 text-center">
+        <h3 className="font-light text-stone-800 text-xl tracking-tight">
           {direction ? direction.label : "Custom"} Menu
         </h3>
-        <p className="text-xs text-stone-400 mt-1">
+        <p className="mt-1 text-stone-400 text-xs">
           {formData.guestCount} guests | {formData.season} |{" "}
           {formData.serviceStyle?.replace(/-/g, " ")}
         </p>
       </div>
 
       {menuStory && (
-        <div className="bg-stone-50 rounded-xl p-5 border border-stone-100">
-          <p className="text-sm text-stone-600 leading-relaxed italic">
+        <div className="rounded-xl border border-stone-100 bg-stone-50 p-5">
+          <p className="text-sm text-stone-600 italic leading-relaxed">
             {menuStory}
           </p>
         </div>
@@ -56,10 +56,12 @@ export default function MenuPreview({
 
       {CATEGORY_ORDER.map((cat) => {
         const catItems = grouped[cat];
-        if (!catItems || catItems.length === 0) return null;
+        if (!catItems || catItems.length === 0) {
+          return null;
+        }
         return (
           <div key={cat}>
-            <h4 className="text-xs uppercase tracking-wider text-stone-400 font-medium mb-3 border-b border-stone-100 pb-2">
+            <h4 className="mb-3 border-stone-100 border-b pb-2 font-medium text-stone-400 text-xs uppercase tracking-wider">
               {CATEGORY_LABELS[cat]}
             </h4>
             <div className="space-y-3">
@@ -75,24 +77,24 @@ export default function MenuPreview({
                     key={item.id}
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-stone-800">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-sm text-stone-800">
                           {item.name}
                         </span>
                         {item.dietaryFlags.map((flag) => (
                           <span
-                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-stone-100 text-stone-500"
+                            className="rounded bg-stone-100 px-1.5 py-0.5 font-semibold text-[10px] text-stone-500"
                             key={flag}
                           >
                             {getDietaryLabel(flag)}
                           </span>
                         ))}
                       </div>
-                      <p className="text-xs text-stone-400 mt-0.5">
+                      <p className="mt-0.5 text-stone-400 text-xs">
                         {item.description}
                       </p>
                       {showCost && cost && (
-                        <p className="text-xs text-stone-400 mt-1">
+                        <p className="mt-1 text-stone-400 text-xs">
                           COGS: {formatCurrency(cost.costPerPortion)} | Margin:{" "}
                           {formatCurrency(margin!)} (
                           {Math.round((margin! / item.pricePerPerson) * 100)}%)
@@ -100,7 +102,7 @@ export default function MenuPreview({
                       )}
                     </div>
                     {showPrice && (
-                      <span className="text-xs font-medium text-stone-500 whitespace-nowrap">
+                      <span className="whitespace-nowrap font-medium text-stone-500 text-xs">
                         {formatCurrency(item.pricePerPerson)}/pp
                       </span>
                     )}
@@ -113,18 +115,18 @@ export default function MenuPreview({
       })}
 
       {showPrice && perPersonTotal !== undefined && (
-        <div className="pt-4 border-t border-stone-200 flex items-center justify-between">
-          <span className="text-sm font-medium text-stone-700">
+        <div className="flex items-center justify-between border-stone-200 border-t pt-4">
+          <span className="font-medium text-sm text-stone-700">
             Estimated per person
           </span>
-          <span className="text-lg font-light text-stone-800">
+          <span className="font-light text-lg text-stone-800">
             {formatCurrency(perPersonTotal)}
           </span>
         </div>
       )}
 
       {formData.barService && formData.barService !== "none" && (
-        <div className="text-xs text-stone-400 bg-stone-50 rounded-lg px-4 py-3 border border-stone-100">
+        <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3 text-stone-400 text-xs">
           Bar service: {formData.barService.replace(/-/g, " ")}
         </div>
       )}

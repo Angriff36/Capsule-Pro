@@ -10,8 +10,8 @@ import type { AccountType } from "@repo/database";
  * Chart of Account list filters
  */
 export interface AccountListFilters {
-  includeInactive?: boolean;
   accountType?: AccountType;
+  includeInactive?: boolean;
   parentId?: string;
   search?: string;
 }
@@ -20,38 +20,38 @@ export interface AccountListFilters {
  * Create Chart of Account request
  */
 export interface CreateAccountRequest {
-  accountNumber: string;
   accountName: string;
+  accountNumber: string;
   accountType: AccountType;
-  parentId?: string;
   description?: string;
+  parentId?: string;
 }
 
 /**
  * Update Chart of Account request
  */
 export interface UpdateAccountRequest {
-  accountNumber?: string;
   accountName?: string;
+  accountNumber?: string;
   accountType?: AccountType;
-  parentId?: string;
   description?: string;
   isActive?: boolean;
+  parentId?: string;
 }
 
 /**
  * Chart of Account response
  */
 export interface AccountResponse {
-  tenantId: string;
-  id: string;
-  accountNumber: string;
   accountName: string;
+  accountNumber: string;
   accountType: AccountType;
-  parentId: string | null;
-  isActive: boolean;
-  description: string | null;
   createdAt: Date;
+  description: string | null;
+  id: string;
+  isActive: boolean;
+  parentId: string | null;
+  tenantId: string;
   updatedAt: Date;
 }
 
@@ -66,6 +66,6 @@ export interface AccountWithChildren extends AccountResponse {
  * Account validation error response
  */
 export interface AccountErrorResponse {
-  message: string;
   field?: string;
+  message: string;
 }

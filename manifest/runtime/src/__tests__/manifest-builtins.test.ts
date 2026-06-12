@@ -121,7 +121,9 @@ describe("custom builtins — pure functions", () => {
 
   describe("removeTagFromString", () => {
     it("removes a tag from the middle of a comma-separated string", () => {
-      expect(removeTagFromString("urgent,cleanup,prep", "cleanup")).toBe("urgent,prep");
+      expect(removeTagFromString("urgent,cleanup,prep", "cleanup")).toBe(
+        "urgent,prep"
+      );
     });
 
     it("removes a tag from the start", () => {
@@ -137,7 +139,9 @@ describe("custom builtins — pure functions", () => {
     });
 
     it("returns original string when tag is not found", () => {
-      expect(removeTagFromString("urgent,cleanup", "missing")).toBe("urgent,cleanup");
+      expect(removeTagFromString("urgent,cleanup", "missing")).toBe(
+        "urgent,cleanup"
+      );
     });
 
     it("returns empty string when tags input is empty", () => {
@@ -149,14 +153,23 @@ describe("custom builtins — pure functions", () => {
     });
 
     it("removes all occurrences of duplicate tag", () => {
-      expect(removeTagFromString("urgent,cleanup,urgent", "urgent")).toBe("cleanup");
+      expect(removeTagFromString("urgent,cleanup,urgent", "urgent")).toBe(
+        "cleanup"
+      );
     });
   });
 
   it("createCustomBuiltins registers exactly the six project helpers", () => {
     const map = createCustomBuiltins();
     expect([...map.keys()].sort()).toEqual(
-      ["addDays", "containsAny", "daysBetween", "hoursBetween", "percent", "removeTagFromString"].sort()
+      [
+        "addDays",
+        "containsAny",
+        "daysBetween",
+        "hoursBetween",
+        "percent",
+        "removeTagFromString",
+      ].sort()
     );
   });
 });

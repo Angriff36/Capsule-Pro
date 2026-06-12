@@ -18,10 +18,11 @@
  * These tests pin all four behaviours so a regression in the runtime
  * engine's versioning logic is caught immediately.
  */
-import { RuntimeEngine, type Store } from "@angriff36/manifest";
+
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { RuntimeEngine, type Store } from "@angriff36/manifest";
 import { beforeEach, describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -55,7 +56,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -87,8 +90,11 @@ function makeProvider(): {
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
   return new RuntimeEngine(
     ir,
-    { tenantId: TENANT, user: { id: "u1", tenantId: TENANT, role: "inventory_manager" } },
-    { storeProvider: provider },
+    {
+      tenantId: TENANT,
+      user: { id: "u1", tenantId: TENANT, role: "inventory_manager" },
+    },
+    { storeProvider: provider }
   );
 }
 
@@ -125,13 +131,18 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
   });
 
   /** Helper: create an item and return the engine + created instance id. */
-  async function createItem(engineOverride?: RuntimeEngine): Promise<{ id: string; engine: RuntimeEngine }> {
+  async function createItem(
+    engineOverride?: RuntimeEngine
+  ): Promise<{ id: string; engine: RuntimeEngine }> {
     const engine = engineOverride ?? newEngine(provider);
     const result = await engine.runCommand("create", CREATE_INPUT, {
       entityName: "InventoryItem",
     });
 
-    expect(result.success, `create should succeed: ${JSON.stringify(result)}`).toBe(true);
+    expect(
+      result.success,
+      `create should succeed: ${JSON.stringify(result)}`
+    ).toBe(true);
     const id = (result as { result: { id: string } }).result.id;
     expect(id).toBeTruthy();
     return { id, engine };
@@ -164,9 +175,11 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     const adjust1 = await engine.runCommand(
       "adjust",
       { quantity: -5, reason: "spillage", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
-    expect(adjust1.success, `first adjust: ${JSON.stringify(adjust1)}`).toBe(true);
+    expect(adjust1.success, `first adjust: ${JSON.stringify(adjust1)}`).toBe(
+      true
+    );
 
     const after1 = await store.getById(id);
     expect(after1.version).toBe(2);
@@ -176,9 +189,11 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     const adjust2 = await engine.runCommand(
       "adjust",
       { quantity: 10, reason: "found stock", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
-    expect(adjust2.success, `second adjust: ${JSON.stringify(adjust2)}`).toBe(true);
+    expect(adjust2.success, `second adjust: ${JSON.stringify(adjust2)}`).toBe(
+      true
+    );
 
     const after2 = await store.getById(id);
     expect(after2.version).toBe(3);
@@ -207,7 +222,7 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     await engine.runCommand(
       "adjust",
       { quantity: -3, reason: "audit correction", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
 
     const store = stores.get("InventoryItem")!;
@@ -252,7 +267,7 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     await engine.runCommand(
       "adjust",
       { quantity: -3, reason: "first", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
 
     // Stale attempt with version=1 → returns undefined (conflict)
@@ -268,9 +283,12 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     const retry = await engine2.runCommand(
       "adjust",
       { quantity: -2, reason: "retry with fresh engine", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
-    expect(retry.success, `retry should succeed: ${JSON.stringify(retry)}`).toBe(true);
+    expect(
+      retry.success,
+      `retry should succeed: ${JSON.stringify(retry)}`
+    ).toBe(true);
 
     const store = stores.get("InventoryItem")!;
     const row = await store.getById(id);
@@ -293,7 +311,7 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     await engine.runCommand(
       "adjust",
       { quantity: 1, reason: "tick", userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
 
     const afterAdjust = (await store.getById(id)).versionAt;
@@ -311,7 +329,7 @@ describe("InventoryItem optimistic concurrency (versionProperty)", () => {
     const result = await engine.runCommand(
       "restock",
       { quantity: 50, costPerUnit: 2.0, userId: "u1", id },
-      { entityName: "InventoryItem", instanceId: id },
+      { entityName: "InventoryItem", instanceId: id }
     );
     expect(result.success, `restock: ${JSON.stringify(result)}`).toBe(true);
 

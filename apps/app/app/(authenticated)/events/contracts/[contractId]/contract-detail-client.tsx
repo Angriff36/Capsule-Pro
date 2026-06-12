@@ -59,25 +59,17 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  contractSignatureCreate,
   eventContractCancel,
   eventContractExpire,
   eventContractMarkViewed,
   eventContractSend,
   eventContractSign,
   eventContractSoftDelete,
-  contractSignatureCreate,
 } from "@/app/lib/manifest-client.generated";
 import { SignaturePad } from "../components/signature-pad";
 
 interface ContractDetailClientProps {
-  contract: EventContract;
-  event: {
-    id: string;
-    title: string;
-    eventDate: Date;
-    eventNumber: string | null;
-    venueName: string | null;
-  } | null;
   client: {
     id: string;
     company_name: string | null;
@@ -86,24 +78,32 @@ interface ContractDetailClientProps {
     email: string | null;
     phone: string | null;
   } | null;
+  contract: EventContract;
+  event: {
+    id: string;
+    title: string;
+    eventDate: Date;
+    eventNumber: string | null;
+    venueName: string | null;
+  } | null;
   signatures: ContractSignature[];
 }
 
 type ContractStatus = "draft" | "pending" | "signed" | "expired" | "cancelled";
 
 interface HistoryEntry {
-  id: string;
-  type: "audit" | "signature";
   action?: string;
+  createdAt?: Date;
+  id: string;
+  newValues?: Record<string, unknown> | null;
+  oldValues?: Record<string, unknown> | null;
   performedBy?: string | null;
   performerFirstName?: string | null;
   performerLastName?: string | null;
-  oldValues?: Record<string, unknown> | null;
-  newValues?: Record<string, unknown> | null;
-  createdAt?: Date;
-  signerName?: string;
-  signerEmail?: string | null;
   signedAt?: Date;
+  signerEmail?: string | null;
+  signerName?: string;
+  type: "audit" | "signature";
 }
 
 const statusConfig: Record<
@@ -275,7 +275,10 @@ export function ContractDetailClient({
             await eventContractExpire(input);
             break;
           case "cancelled":
-            await eventContractCancel({ ...input, reason: "Status update via API" });
+            await eventContractCancel({
+              ...input,
+              reason: "Status update via API",
+            });
             break;
           case "draft":
             await eventContractMarkViewed(input);
@@ -431,16 +434,23 @@ export function ContractDetailClient({
     dateStyle: "medium",
     timeStyle: "short",
   });
-  const _dateOnlyFmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+  const _dateOnlyFmt = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+  });
   const safeFmt = (
     fmt: Intl.DateTimeFormat,
     value: Date | string | number | null | undefined
   ): string => {
-    if (value == null) return "—";
+    if (value == null) {
+      return "—";
+    }
     const d = value instanceof Date ? value : new Date(value);
     return Number.isNaN(d.getTime()) ? "—" : fmt.format(d);
   };
-  const dateFormatter = { format: (v: Date | string | number | null | undefined) => safeFmt(_dateTimeFmt, v) };
+  const dateFormatter = {
+    format: (v: Date | string | number | null | undefined) =>
+      safeFmt(_dateTimeFmt, v),
+  };
 
   const isExpired =
     contract.expiresAt && new Date(contract.expiresAt) < new Date();
@@ -569,7 +579,7 @@ export function ContractDetailClient({
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="grid gap-1">
-                <label className="text-muted-foreground text-sm font-medium">
+                <label className="font-medium text-muted-foreground text-sm">
                   Contract Title
                 </label>
                 <p className="font-medium">{contract.title}</p>
@@ -579,7 +589,7 @@ export function ContractDetailClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <label className="text-muted-foreground text-sm font-medium">
+                    <label className="font-medium text-muted-foreground text-sm">
                       Event
                     </label>
                     <p className="font-medium">{event.title}</p>
@@ -599,7 +609,7 @@ export function ContractDetailClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <label className="text-muted-foreground text-sm font-medium">
+                    <label className="font-medium text-muted-foreground text-sm">
                       Client
                     </label>
                     <p className="font-medium">{clientName}</p>
@@ -621,7 +631,7 @@ export function ContractDetailClient({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-1">
-                  <label className="text-muted-foreground text-sm font-medium">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Created
                   </label>
                   <p className="text-sm">
@@ -629,7 +639,7 @@ export function ContractDetailClient({
                   </p>
                 </div>
                 <div className="grid gap-1">
-                  <label className="text-muted-foreground text-sm font-medium">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Updated
                   </label>
                   <p className="text-sm">
@@ -642,7 +652,7 @@ export function ContractDetailClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <label className="text-muted-foreground text-sm font-medium">
+                    <label className="font-medium text-muted-foreground text-sm">
                       Expires
                     </label>
                     <p
@@ -663,10 +673,10 @@ export function ContractDetailClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <label className="text-muted-foreground text-sm font-medium">
+                    <label className="font-medium text-muted-foreground text-sm">
                       Notes
                     </label>
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="whitespace-pre-wrap text-sm">
                       {contract.notes}
                     </p>
                   </div>
@@ -684,7 +694,7 @@ export function ContractDetailClient({
               </CardTitle>
               <CardDescription>
                 {signatures.length} signature
-                {signatures.length !== 1 ? "s" : ""} captured
+                {signatures.length === 1 ? "" : "s"} captured
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -855,7 +865,7 @@ export function ContractDetailClient({
               </div>
             ) : (
               <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+                <div className="absolute top-0 bottom-0 left-4 w-px bg-border" />
                 <div className="space-y-4">
                   {history.map((entry) => (
                     <div
@@ -915,7 +925,7 @@ export function ContractDetailClient({
                                         {String(entry.oldValues.status)}
                                       </span>{" "}
                                       →{" "}
-                                      <span className="capitalize font-medium">
+                                      <span className="font-medium capitalize">
                                         {String(entry.newValues.status)}
                                       </span>
                                     </p>

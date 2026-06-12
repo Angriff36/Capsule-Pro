@@ -12,6 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -21,14 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   AlertTriangle,
@@ -39,22 +39,26 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { listFacilityWorkOrders, facilityWorkOrderStart, facilityWorkOrderComplete } from "@/app/lib/manifest-client.generated";
+import {
+  facilityWorkOrderComplete,
+  facilityWorkOrderStart,
+  listFacilityWorkOrders,
+} from "@/app/lib/manifest-client.generated";
 import { createWorkOrder } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface WorkOrder {
-  id: string;
-  work_order_number: string;
-  priority: string;
-  title: string;
-  status: string;
-  work_order_type: string;
-  description: string | null;
   assigned_to: string | null;
   assigned_vendor: string | null;
-  scheduled_date: string | null;
+  description: string | null;
+  id: string;
+  priority: string;
   reported_at: string;
+  scheduled_date: string | null;
+  status: string;
+  title: string;
+  work_order_number: string;
+  work_order_type: string;
 }
 
 const STATUS_FLOW: Record<string, string[]> = {
@@ -117,17 +121,19 @@ export default function FacilitiesWorkOrdersPage() {
 
   const handleCreateWorkOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.title.trim()) return;
+    if (!createForm.title.trim()) {
+      return;
+    }
 
     setCreating(true);
     try {
-      const result = await createWorkOrder({
+      const result = (await createWorkOrder({
         title: createForm.title,
         description: createForm.description || undefined,
         priority: createForm.priority,
         workOrderType: createForm.workOrderType,
         scheduledDate: createForm.scheduledDate || undefined,
-      }) as Record<string, unknown>;
+      })) as Record<string, unknown>;
       setWorkOrders((prev) => [
         {
           id: (result.id as string) ?? "",
@@ -197,7 +203,9 @@ export default function FacilitiesWorkOrdersPage() {
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!completingWorkOrder) return;
+    if (!completingWorkOrder) {
+      return;
+    }
     setUpdatingStatus(completingWorkOrder.id);
     try {
       await facilityWorkOrderComplete({
@@ -240,7 +248,9 @@ export default function FacilitiesWorkOrdersPage() {
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "Not scheduled";
+    if (!dateStr) {
+      return "Not scheduled";
+    }
     return new Date(dateStr).toLocaleDateString();
   };
 
@@ -248,16 +258,16 @@ export default function FacilitiesWorkOrdersPage() {
     <div className="space-y-6">
       <FacilitiesNavigation />
 
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="container mx-auto space-y-6 py-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Work Orders</h1>
+            <h1 className="font-bold text-2xl">Work Orders</h1>
             <p className="text-muted-foreground">
               Track maintenance issues, repairs, and inspections
             </p>
           </div>
           <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             New Work Order
           </Button>
         </div>
@@ -292,12 +302,14 @@ export default function FacilitiesWorkOrdersPage() {
                       </EmptyMedia>
                       <EmptyTitle>No work orders yet</EmptyTitle>
                       <EmptyDescription>
-                        Create work orders to track maintenance issues, repairs, and inspections.
+                        Create work orders to track maintenance issues, repairs,
+                        and inspections.
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
                       <p className="text-muted-foreground text-xs">
-                        Click <strong>New Work Order</strong> above to report your first issue.
+                        Click <strong>New Work Order</strong> above to report
+                        your first issue.
                       </p>
                     </EmptyContent>
                   </Empty>
@@ -314,12 +326,12 @@ export default function FacilitiesWorkOrdersPage() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               {getStatusIcon(wo.status)}
-                              <span className="font-mono text-sm text-muted-foreground">
+                              <span className="font-mono text-muted-foreground text-sm">
                                 {wo.work_order_number}
                               </span>
                               <span className="font-medium">{wo.title}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-3 text-muted-foreground text-sm">
                               <span className="capitalize">
                                 {wo.work_order_type}
                               </span>
@@ -355,7 +367,7 @@ export default function FacilitiesWorkOrdersPage() {
                                 }
                               >
                                 {updatingStatus === wo.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                                 ) : null}
                                 {nextStatus === "in_progress"
                                   ? "Start"
@@ -617,7 +629,7 @@ export default function FacilitiesWorkOrdersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-muted-foreground">Status</Label>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="mt-1 flex items-center gap-2">
                     {getStatusIcon(viewWorkOrder.status)}
                     <span className="capitalize">
                       {viewWorkOrder.status.replace("_", " ")}
@@ -660,7 +672,7 @@ export default function FacilitiesWorkOrdersPage() {
                   <p className="text-sm">{viewWorkOrder.description}</p>
                 </div>
               )}
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Reported: {new Date(viewWorkOrder.reported_at).toLocaleString()}
               </div>
             </div>

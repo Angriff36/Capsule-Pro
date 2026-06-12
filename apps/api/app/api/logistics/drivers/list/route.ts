@@ -15,10 +15,14 @@ import { clampLimit, clampOffset } from "@/lib/pagination";
 export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");

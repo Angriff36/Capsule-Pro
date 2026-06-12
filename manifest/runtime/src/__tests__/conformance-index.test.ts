@@ -13,7 +13,7 @@
  *
  * This file IS the conformance test index required by Constitution S17.
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { loadMergedPrecompiledIR } from "../runtime/loadManifests";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,7 +131,9 @@ describe("Conformance Index — Event Emission (§5)", () => {
     }
 
     // Allow up to 5% for intentional edge cases
-    expect(silent.length).toBeLessThanOrEqual(Math.max(commands.length * 0.05, 10));
+    expect(silent.length).toBeLessThanOrEqual(
+      Math.max(commands.length * 0.05, 10)
+    );
   });
 });
 
@@ -145,11 +147,11 @@ describe("Conformance Index — State Machine Coverage (§8)", () => {
       const props = entity.properties ?? [];
       const hasStatus = props.some(
         (p: { name: string }) =>
-          p.name === "status" ||
-          p.name === "state" ||
-          p.name.endsWith("Status")
+          p.name === "status" || p.name === "state" || p.name.endsWith("Status")
       );
-      if (!hasStatus) continue;
+      if (!hasStatus) {
+        continue;
+      }
 
       const hasTransitions =
         entity.transitions && entity.transitions.length > 0;

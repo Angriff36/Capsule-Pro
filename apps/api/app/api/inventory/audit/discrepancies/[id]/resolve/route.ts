@@ -67,40 +67,40 @@ interface RouteContext {
 }
 
 interface ResolveDiscrepancyBody {
-  reviewNotes?: string;
-  adjustmentType?: AdjustmentType;
   adjustmentAmount?: number;
-  rootCause?: string;
+  adjustmentType?: AdjustmentType;
   resolutionNotes?: string;
+  reviewNotes?: string;
+  rootCause?: string;
   skipReview?: boolean;
 }
 
 interface DiscrepancyResponse {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity: number;
-  countedQuantity: number;
-  variance: number;
-  variancePct: number;
   accuracyScore: number;
-  status: DiscrepancyStatus;
-  severity: DiscrepancySeverity;
-  adjustmentType: string | null;
   adjustmentAmount: number | null;
   adjustmentDate: string | null;
-  notes: string | null;
-  rootCause: string | null;
-  resolutionNotes: string | null;
-  resolvedById: string | null;
-  resolvedAt: string | null;
-  generatedAt: string;
+  adjustmentType: string | null;
+  countedQuantity: number;
   createdAt: string;
+  expectedQuantity: number;
+  generatedAt: string;
+  id: string;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
+  notes: string | null;
+  reportType: string;
+  resolutionNotes: string | null;
+  resolvedAt: string | null;
+  resolvedById: string | null;
+  rootCause: string | null;
+  sessionId: string;
+  severity: DiscrepancySeverity;
+  status: DiscrepancyStatus;
+  tenantId: string;
   updatedAt: string;
+  variance: number;
+  variancePct: number;
 }
 
 function formatDiscrepancy(report: {
@@ -373,7 +373,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         id,
         tenantId,
       });
-      return handleCommandError(resolveResult, currentUser.role, "UpdateDiscrepancy");
+      return handleCommandError(
+        resolveResult,
+        currentUser.role,
+        "UpdateDiscrepancy"
+      );
     }
 
     // Read back the updated report for the response (constitution §10 — reads bypass Manifest).

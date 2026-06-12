@@ -17,8 +17,8 @@ import { toast } from "sonner";
 interface BattleBoardEmailDialogProps {
   eventId: string;
   eventName: string;
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
 export function BattleBoardEmailDialog({

@@ -66,11 +66,18 @@ export function EmailWorkflowsClient() {
     setLoading(true);
     try {
       const filters: Parameters<typeof getEmailWorkflows>[0] = {};
-      if (search) filters.search = search;
-      if (triggerFilter !== "all")
+      if (search) {
+        filters.search = search;
+      }
+      if (triggerFilter !== "all") {
         filters.triggerType = triggerFilter as EmailTriggerType;
-      if (statusFilter === "active") filters.isActive = true;
-      if (statusFilter === "inactive") filters.isActive = false;
+      }
+      if (statusFilter === "active") {
+        filters.isActive = true;
+      }
+      if (statusFilter === "inactive") {
+        filters.isActive = false;
+      }
 
       const data = await getEmailWorkflows(filters);
       setWorkflows(data);
@@ -105,7 +112,9 @@ export function EmailWorkflowsClient() {
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setDeleting(true);
     try {
       await deleteEmailWorkflow(deleteTarget.id);
@@ -128,16 +137,16 @@ export function EmailWorkflowsClient() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Email Workflows
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground">
             Automate email notifications based on event triggers
           </p>
         </div>
         <Button asChild>
           <Link href="/settings/email-workflows/new">
-            <PlusIcon className="h-4 w-4 mr-2" />
+            <PlusIcon className="mr-2 h-4 w-4" />
             New Workflow
           </Link>
         </Button>
@@ -146,15 +155,15 @@ export function EmailWorkflowsClient() {
       <Separator />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="rounded-md bg-muted/50 p-2">
               <MailIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Workflows</p>
-              <p className="text-2xl font-semibold">{workflows.length}</p>
+              <p className="text-muted-foreground text-sm">Total Workflows</p>
+              <p className="font-semibold text-2xl">{workflows.length}</p>
             </div>
           </div>
         </Card>
@@ -164,8 +173,8 @@ export function EmailWorkflowsClient() {
               <ZapIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-semibold">{activeCount}</p>
+              <p className="text-muted-foreground text-sm">Active</p>
+              <p className="font-semibold text-2xl">{activeCount}</p>
             </div>
           </div>
         </Card>
@@ -175,8 +184,8 @@ export function EmailWorkflowsClient() {
               <PowerIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Inactive</p>
-              <p className="text-2xl font-semibold">{inactiveCount}</p>
+              <p className="text-muted-foreground text-sm">Inactive</p>
+              <p className="font-semibold text-2xl">{inactiveCount}</p>
             </div>
           </div>
         </Card>
@@ -186,7 +195,7 @@ export function EmailWorkflowsClient() {
       <div className="flex items-center gap-3 rounded-lg border p-3">
         <FilterIcon className="h-4 w-4 text-muted-foreground" />
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <SearchIcon className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearch(e.target.value)}
@@ -234,23 +243,23 @@ export function EmailWorkflowsClient() {
         </div>
       ) : workflows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <MailIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-medium">No email workflows</h3>
-          <p className="text-muted-foreground mt-1 max-w-md">
+          <MailIcon className="mb-4 h-12 w-12 text-muted-foreground/50" />
+          <h3 className="font-medium text-lg">No email workflows</h3>
+          <p className="mt-1 max-w-md text-muted-foreground">
             Create automated email workflows to send notifications when events
             are confirmed, tasks completed, or on custom schedules.
           </p>
           <Button asChild className="mt-4">
             <Link href="/settings/email-workflows/new">
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Create Workflow
             </Link>
           </Button>
         </div>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">
-            {workflows.length} workflow{workflows.length !== 1 ? "s" : ""} found
+          <p className="text-muted-foreground text-sm">
+            {workflows.length} workflow{workflows.length === 1 ? "" : "s"} found
           </p>
           <div className="rounded-md border">
             <Table>
@@ -377,7 +386,7 @@ export function EmailWorkflowsClient() {
               variant="destructive"
             >
               {deleting && (
-                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>

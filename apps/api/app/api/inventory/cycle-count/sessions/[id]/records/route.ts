@@ -10,15 +10,14 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { resolveCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(
@@ -194,7 +193,10 @@ export async function POST(
     sessionId,
   });
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "CycleCountRecord",
     command: "create",

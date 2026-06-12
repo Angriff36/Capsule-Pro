@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCommandsRegistry, type RegistryEntry } from "../commands-registry.js";
+import { getCommandsRegistry } from "../commands-registry.js";
 
 describe("commands-registry", () => {
   it("returns a non-empty array", () => {

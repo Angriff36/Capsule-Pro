@@ -71,10 +71,10 @@ const AdministrativeKanbanPage = async () => {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Operational Kanban
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Keep critical cross-functional requests visible and moving.
           </p>
         </div>
@@ -99,7 +99,7 @@ const AdministrativeKanbanPage = async () => {
               </CardHeader>
               <CardContent className="space-y-3 overflow-hidden">
                 {columnTasks.length === 0 ? (
-                  <div className="rounded-md border border-dashed border-border/60 p-3 text-sm text-muted-foreground">
+                  <div className="rounded-md border border-border/60 border-dashed p-3 text-muted-foreground text-sm">
                     No tasks yet.
                   </div>
                 ) : (
@@ -109,7 +109,7 @@ const AdministrativeKanbanPage = async () => {
                       key={task.id}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-semibold leading-tight">
+                        <h2 className="font-semibold text-sm leading-tight">
                           {task.title}
                         </h2>
                         {task.category ? (
@@ -117,11 +117,11 @@ const AdministrativeKanbanPage = async () => {
                         ) : null}
                       </div>
                       {task.description ? (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {task.description}
                         </p>
                       ) : null}
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-muted-foreground text-xs">
                         <span>{task.ownerName}</span>
                         <span>
                           {task.dueDate
@@ -131,7 +131,7 @@ const AdministrativeKanbanPage = async () => {
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge
-                          className="w-fit text-[11px] font-semibold"
+                          className="w-fit font-semibold text-[11px]"
                           variant={priorityVariant[task.priority] ?? "outline"}
                         >
                           {task.priority} priority

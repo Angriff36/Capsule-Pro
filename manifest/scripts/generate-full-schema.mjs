@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * generate-full-schema.mjs -- Phase 2 of Task 2.5
  *
@@ -18,11 +19,10 @@
  * Usage: node manifest/scripts/generate-full-schema.mjs
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
-import { resolve, dirname } from "node:path";
 import { execSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -31,8 +31,14 @@ const PROJECT_ROOT = resolve(__dirname, "../..");
 // Paths
 const IR_PATH = resolve(PROJECT_ROOT, "manifest/ir/kitchen.ir.json");
 const OPTIONS_PATH = resolve(__dirname, "prisma-options.generated.json");
-const COMMITTED_SCHEMA = resolve(PROJECT_ROOT, "packages/database/prisma/schema.prisma");
-const OUTPUT_PATH = resolve(PROJECT_ROOT, "manifest/ir/generated-schema.prisma");
+const COMMITTED_SCHEMA = resolve(
+  PROJECT_ROOT,
+  "packages/database/prisma/schema.prisma"
+);
+const OUTPUT_PATH = resolve(
+  PROJECT_ROOT,
+  "manifest/ir/generated-schema.prisma"
+);
 const PROJ_PATH = resolve(
   PROJECT_ROOT,
   "manifest/runtime/node_modules/@angriff36/manifest/dist/manifest/projections/prisma/generator.js"
@@ -89,8 +95,9 @@ const artifacts = result.artifacts || [];
 const diagnostics = result.diagnostics || [];
 
 const schemaArtifact =
-  artifacts.find((a) => a.id === "prisma.schema" || (a.pathHint || "").endsWith(".prisma")) ||
-  artifacts[0];
+  artifacts.find(
+    (a) => a.id === "prisma.schema" || (a.pathHint || "").endsWith(".prisma")
+  ) || artifacts[0];
 
 if (!schemaArtifact) {
   console.error("ERROR: No schema artifact returned from PrismaProjection");
@@ -106,7 +113,13 @@ for (const d of diagnostics) {
   diagByCode[d.code] = (diagByCode[d.code] || 0) + 1;
 }
 
-console.log("  " + generatedModelCount + " models generated, " + diagnostics.length + " diagnostics");
+console.log(
+  "  " +
+    generatedModelCount +
+    " models generated, " +
+    diagnostics.length +
+    " diagnostics"
+);
 for (const [code, count] of Object.entries(diagByCode)) {
   console.log("    " + code + ": " + count);
 }
@@ -120,23 +133,35 @@ for (const [code, count] of Object.entries(diagByCode)) {
 console.log("\nPost-processing...");
 const insertions = []; // { pos, text }
 
-for (const [entityName, uniqueGroups] of Object.entries(rawOpts._uniqueIndexes)) {
+for (const [entityName, uniqueGroups] of Object.entries(
+  rawOpts._uniqueIndexes
+)) {
   for (const uniqueFields of uniqueGroups) {
-    const fields = Array.isArray(uniqueFields) ? uniqueFields : uniqueFields.fields;
+    const fields = Array.isArray(uniqueFields)
+      ? uniqueFields
+      : uniqueFields.fields;
     const uniqueAttr = "@@unique([" + fields.join(", ") + "])";
 
     // Find the model block start (after the opening {)
     const modelStart = generatedCode.indexOf("model " + entityName + " {");
-    if (modelStart === -1) continue;
+    if (modelStart === -1) {
+      continue;
+    }
 
     const openBrace = modelStart + ("model " + entityName + " {").length - 1;
     // Find the matching closing brace using depth-aware matching
     let depth = 1; // we start after the opening {
     let i = openBrace + 1;
     while (i < generatedCode.length) {
-      if (generatedCode[i] === "{") depth++;
-      if (generatedCode[i] === "}") depth--;
-      if (depth === 0) break;
+      if (generatedCode[i] === "{") {
+        depth++;
+      }
+      if (generatedCode[i] === "}") {
+        depth--;
+      }
+      if (depth === 0) {
+        break;
+      }
       i++;
     }
     const modelEnd = i; // position of the closing }
@@ -153,9 +178,7 @@ for (const [entityName, uniqueGroups] of Object.entries(rawOpts._uniqueIndexes))
 insertions.sort((a, b) => b.pos - a.pos);
 for (const { pos, text } of insertions) {
   generatedCode =
-    generatedCode.substring(0, pos) +
-    text +
-    generatedCode.substring(pos);
+    generatedCode.substring(0, pos) + text + generatedCode.substring(pos);
 }
 console.log("  @@unique injected: " + insertions.length);
 
@@ -185,9 +208,15 @@ while ((dupMatch = dupFieldRegex.exec(generatedCode)) !== null) {
   let depth = 1;
   let i = openBrace + 1;
   while (i < generatedCode.length) {
-    if (generatedCode[i] === "{") depth++;
-    if (generatedCode[i] === "}") depth--;
-    if (depth === 0) break;
+    if (generatedCode[i] === "{") {
+      depth++;
+    }
+    if (generatedCode[i] === "}") {
+      depth--;
+    }
+    if (depth === 0) {
+      break;
+    }
     i++;
   }
   const modelBlock = generatedCode.substring(openBrace + 1, i);
@@ -198,7 +227,13 @@ while ((dupMatch = dupFieldRegex.exec(generatedCode)) !== null) {
   const relationArrayFields = new Set(); // field names that are relation arrays
   for (let li = 0; li < modelLines.length; li++) {
     const trimmedLine = modelLines[li].trim();
-    if (!trimmedLine || trimmedLine.startsWith("//") || trimmedLine.startsWith("@@")) continue;
+    if (
+      !trimmedLine ||
+      trimmedLine.startsWith("//") ||
+      trimmedLine.startsWith("@@")
+    ) {
+      continue;
+    }
     // Match relation array: fieldName SomeType[] (with or without @relation)
     const relArrMatch = trimmedLine.match(/^(\w+)\s+\w+\[\]/);
     if (relArrMatch) {
@@ -217,7 +252,10 @@ while ((dupMatch = dupFieldRegex.exec(generatedCode)) !== null) {
     if (relationArrayFields.has(fieldName)) {
       const oldLine = modelLines[lineIdx];
       // Replace the field name (first word on the line, after optional whitespace)
-      const newLine = oldLine.replace(new RegExp("^(\\s+)" + fieldName + "\\b"), "$1" + fieldName + "Data");
+      const newLine = oldLine.replace(
+        new RegExp("^(\\s+)" + fieldName + "\\b"),
+        "$1" + fieldName + "Data"
+      );
       modelLines[lineIdx] = newLine;
       dupFieldFixes++;
     }
@@ -245,9 +283,15 @@ while ((stripMatch = stripRegex.exec(generatedCode)) !== null) {
   let depth = 1;
   let i = openBrace + 1;
   while (i < generatedCode.length) {
-    if (generatedCode[i] === "{") depth++;
-    if (generatedCode[i] === "}") depth--;
-    if (depth === 0) break;
+    if (generatedCode[i] === "{") {
+      depth++;
+    }
+    if (generatedCode[i] === "}") {
+      depth--;
+    }
+    if (depth === 0) {
+      break;
+    }
     i++;
   }
   const modelBlock = generatedCode.substring(openBrace + 1, i);
@@ -257,9 +301,13 @@ while ((stripMatch = stripRegex.exec(generatedCode)) !== null) {
   const actualFields = new Set();
   for (const line of modelLines) {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@")) continue;
+    if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@")) {
+      continue;
+    }
     const fm = trimmed.match(/^(\w+)\s+\S/);
-    if (fm) actualFields.add(fm[1]);
+    if (fm) {
+      actualFields.add(fm[1]);
+    }
   }
 
   // Check each @@index and @@unique line and mark invalid ones for removal
@@ -305,7 +353,7 @@ const DB_TYPE_MAP = {
   Date: "DateTime",
   Timestamptz: "DateTime",
   Timestamp: "DateTime",
-  Time: "String",   // Prisma has no Time type; keep String but strip @db.Time
+  Time: "String", // Prisma has no Time type; keep String but strip @db.Time
   SmallInt: "Int",
   Integer: "Int",
   BigInt: "BigInt",
@@ -329,9 +377,15 @@ while ((match5d = modelRegex5d.exec(generatedCode)) !== null) {
   let depth = 1;
   let idx = openBrace + 1;
   while (idx < generatedCode.length) {
-    if (generatedCode[idx] === "{") depth++;
-    if (generatedCode[idx] === "}") depth--;
-    if (depth === 0) break;
+    if (generatedCode[idx] === "{") {
+      depth++;
+    }
+    if (generatedCode[idx] === "}") {
+      depth--;
+    }
+    if (depth === 0) {
+      break;
+    }
     idx++;
   }
   const modelBlock = generatedCode.substring(openBrace + 1, idx);
@@ -341,8 +395,12 @@ while ((match5d = modelRegex5d.exec(generatedCode)) !== null) {
   for (let li = 0; li < modelLines.length; li++) {
     const line = modelLines[li];
     // Match field lines with @db.Type annotations
-    const dbMatch = line.match(/^(\s+)(\w+)\s+(String|Int|Float|Boolean|DateTime|Decimal|Json|BigInt)(\??)\s+.*@db\.(\w+(?:\([^)]*\))?)/);
-    if (!dbMatch) continue;
+    const dbMatch = line.match(
+      /^(\s+)(\w+)\s+(String|Int|Float|Boolean|DateTime|Decimal|Json|BigInt)(\??)\s+.*@db\.(\w+(?:\([^)]*\))?)/
+    );
+    if (!dbMatch) {
+      continue;
+    }
     const [, , fieldName, currentType, , dbTypeRaw] = dbMatch;
     const dbTypeBase = dbTypeRaw.replace(/\(.*\)$/, "");
     const expectedType = DB_TYPE_MAP[dbTypeBase];
@@ -385,14 +443,16 @@ for (let i = 0; i < lines.length; i++) {
   const line = lines[i];
   // Fix @default("") on non-String fields → remove @default entirely
   if (line.includes('@default("")')) {
-    const typeMatch = line.match(/^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/);
+    const typeMatch = line.match(
+      /^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/
+    );
     if (typeMatch) {
       lines[i] = line.replace(/\s*@default\(""\)/, "");
       genDefaultFixCount++;
     }
   }
   // Fix @default(0) on String fields → @default("")
-  if (line.includes('@default(0)')) {
+  if (line.includes("@default(0)")) {
     const typeMatch = line.match(/^\s+\w+\s+(String)(\??)/);
     if (typeMatch) {
       lines[i] = line.replace(/@default\(0\)/, '@default("")');
@@ -400,7 +460,7 @@ for (let i = 0; i < lines.length; i++) {
     }
   }
   // Fix @default(0) on DateTime fields → remove @default entirely
-  if (line.includes('@default(0)')) {
+  if (line.includes("@default(0)")) {
     const typeMatch = line.match(/^\s+\w+\s+(DateTime)(\??)/);
     if (typeMatch) {
       lines[i] = line.replace(/\s*@default\(0\)/, "");
@@ -414,7 +474,9 @@ generatedCode = generatedCode.replace(
   /(\s+\w+\s+(?:Int|Float)\??(?:\s+\S+)?)\s+@default\("([0-9.]+)"\)/g,
   (_match, prefix, val) => {
     genDefaultFixCount++;
-    return prefix.trimEnd() + " @default(" + Math.floor(parseFloat(val)) + ")";
+    return (
+      prefix.trimEnd() + " @default(" + Math.floor(Number.parseFloat(val)) + ")"
+    );
   }
 );
 // Fix @default(0) on String fields → @default("")
@@ -454,9 +516,15 @@ while ((match5f = modelRegex5f.exec(generatedCode)) !== null) {
   let depth = 1;
   let idx = openBrace + 1;
   while (idx < generatedCode.length) {
-    if (generatedCode[idx] === "{") depth++;
-    if (generatedCode[idx] === "}") depth--;
-    if (depth === 0) break;
+    if (generatedCode[idx] === "{") {
+      depth++;
+    }
+    if (generatedCode[idx] === "}") {
+      depth--;
+    }
+    if (depth === 0) {
+      break;
+    }
     idx++;
   }
   const modelBlock = generatedCode.substring(openBrace + 1, idx);
@@ -466,7 +534,10 @@ while ((match5f = modelRegex5f.exec(generatedCode)) !== null) {
   for (const line of modelLines) {
     const trimmed = line.trim();
     // Strip relation lines: fieldName Type? @relation(...) or fieldName Type[] @relation(...)
-    if (trimmed.includes("@relation(") && /^\w+\s+\w+(\[\]|\??)/.test(trimmed)) {
+    if (
+      trimmed.includes("@relation(") &&
+      /^\w+\s+\w+(\[\]|\??)/.test(trimmed)
+    ) {
       strippedRelLines++;
       continue;
     }
@@ -517,16 +588,24 @@ console.log("  @db.Time stripped: " + strippedDbTime);
     let depth = 1;
     let idx = openBrace + 1;
     while (idx < generatedCode.length) {
-      if (generatedCode[idx] === "{") depth++;
-      if (generatedCode[idx] === "}") depth--;
-      if (depth === 0) break;
+      if (generatedCode[idx] === "{") {
+        depth++;
+      }
+      if (generatedCode[idx] === "}") {
+        depth--;
+      }
+      if (depth === 0) {
+        break;
+      }
       idx++;
     }
     const block = generatedCode.substring(startIdx, idx + 1);
     const mapMatch = block.match(/@@map\("([^"]+)"\)/);
     if (mapMatch) {
       modelTableMap.set(modelName, mapMatch[1]);
-      if (!tableModelsMap.has(mapMatch[1])) tableModelsMap.set(mapMatch[1], []);
+      if (!tableModelsMap.has(mapMatch[1])) {
+        tableModelsMap.set(mapMatch[1], []);
+      }
       tableModelsMap.get(mapMatch[1]).push(modelName);
     }
   }
@@ -540,9 +619,11 @@ console.log("  @db.Time stripped: " + strippedDbTime);
       // Keep the "canonical" model and remove the alias.
       // Heuristic: the alias entity is the one listed in ENTITY_ACCESSOR_OVERRIDES
       // (it maps to a different Prisma model name). The canonical entity maps directly.
-      const canonical = models.find(m => !ENTITY_ACCESSOR_OVERRIDES[m]);
-      const toRemove = canonical ? models.filter(m => m !== canonical) : models.slice(1);
-      toRemove.forEach(m => modelsToRemove.add(m));
+      const canonical = models.find((m) => !ENTITY_ACCESSOR_OVERRIDES[m]);
+      const toRemove = canonical
+        ? models.filter((m) => m !== canonical)
+        : models.slice(1);
+      toRemove.forEach((m) => modelsToRemove.add(m));
     }
   }
 
@@ -551,14 +632,22 @@ console.log("  @db.Time stripped: " + strippedDbTime);
     for (const modelName of modelsToRemove) {
       const startPattern = "model " + modelName + " {";
       const startIdx = generatedCode.indexOf(startPattern);
-      if (startIdx === -1) continue;
+      if (startIdx === -1) {
+        continue;
+      }
       const openBrace = startIdx + startPattern.length - 1;
       let depth = 1;
       let idx = openBrace + 1;
       while (idx < generatedCode.length) {
-        if (generatedCode[idx] === "{") depth++;
-        if (generatedCode[idx] === "}") depth--;
-        if (depth === 0) break;
+        if (generatedCode[idx] === "{") {
+          depth++;
+        }
+        if (generatedCode[idx] === "}") {
+          depth--;
+        }
+        if (depth === 0) {
+          break;
+        }
         idx++;
       }
       // Remove the model block plus surrounding whitespace
@@ -567,7 +656,13 @@ console.log("  @db.Time stripped: " + strippedDbTime);
       generatedCode = before + "\n" + after;
     }
   }
-  console.log("  Duplicate-table models deduplicated: " + modelsToRemove.size + " removed (" + dupTableCount + " table conflicts)");
+  console.log(
+    "  Duplicate-table models deduplicated: " +
+      modelsToRemove.size +
+      " removed (" +
+      dupTableCount +
+      " table conflicts)"
+  );
   if (modelsToRemove.size > 0) {
     console.log("    Removed: " + [...modelsToRemove].join(", "));
   }
@@ -582,7 +677,9 @@ const header = committedSchema.substring(0, firstModelIdx);
 // Build the complete schemas list from both generated and committed
 const allSchemas = new Set(Object.values(rawOpts.multiSchema.entitySchema));
 allSchemas.add("public");
-const committedSchemasMatch = committedSchema.match(/schemas\s*=\s*\[([^\]]+)\]/);
+const committedSchemasMatch = committedSchema.match(
+  /schemas\s*=\s*\[([^\]]+)\]/
+);
 if (committedSchemasMatch) {
   for (const s of committedSchemasMatch[1].split(",")) {
     allSchemas.add(s.trim().replace(/"/g, ""));
@@ -591,7 +688,7 @@ if (committedSchemasMatch) {
 const sortedSchemas = [...allSchemas].sort();
 const updatedHeader = header.replace(
   /schemas\s*=\s*\[[^\]]+\]/,
-  'schemas = [' + sortedSchemas.map((s) => '"' + s + '"').join(", ") + ']'
+  "schemas = [" + sortedSchemas.map((s) => '"' + s + '"').join(", ") + "]"
 );
 
 // ---------------------------------------------------------------------------
@@ -600,7 +697,9 @@ const updatedHeader = header.replace(
 // Enums are scattered among models in the committed schema.
 // We need to collect them all and place them after the header.
 const enumBlocks = [];
-for (const enumMatch of committedSchema.matchAll(/^enum\s+(\w+)\s*\{[\s\S]*?\n\}/gm)) {
+for (const enumMatch of committedSchema.matchAll(
+  /^enum\s+(\w+)\s*\{[\s\S]*?\n\}/gm
+)) {
   enumBlocks.push(enumMatch[0]);
 }
 console.log("\nHeader: " + enumBlocks.length + " enums + datasource/generator");
@@ -612,7 +711,9 @@ console.log("  Schemas: " + sortedSchemas.join(", "));
 const committedModelNames = [
   ...committedSchema.matchAll(/^model\s+(\w+)\s*\{/gm),
 ].map((m) => m[1]);
-const infraModels = committedModelNames.filter((name) => !irEntityNames.has(name));
+const infraModels = committedModelNames.filter(
+  (name) => !irEntityNames.has(name)
+);
 
 // ---------------------------------------------------------------------------
 // 6a. Collect @@map table names from generated models to avoid duplicates
@@ -633,15 +734,23 @@ console.log("  Generated @@map tables: " + generatedTableNames.size);
 function extractModelBlock(schemaText, modelName) {
   const startPattern = "model " + modelName + " {";
   const startIdx = schemaText.indexOf(startPattern);
-  if (startIdx === -1) return null;
+  if (startIdx === -1) {
+    return null;
+  }
 
   const openBrace = startIdx + startPattern.length - 1;
   let depth = 1; // we start after the opening {
   let i = openBrace + 1;
   while (i < schemaText.length) {
-    if (schemaText[i] === "{") depth++;
-    if (schemaText[i] === "}") depth--;
-    if (depth === 0) break;
+    if (schemaText[i] === "{") {
+      depth++;
+    }
+    if (schemaText[i] === "}") {
+      depth--;
+    }
+    if (depth === 0) {
+      break;
+    }
     i++;
   }
   return schemaText.substring(startIdx, i + 1);
@@ -665,10 +774,16 @@ for (const name of infraModels) {
     infraMissing.push(name);
   }
 }
-console.log("\nInfra-core: " + infraBlocks.length + " pass-through models appended");
+console.log(
+  "\nInfra-core: " + infraBlocks.length + " pass-through models appended"
+);
 if (infraDeduped.length > 0) {
-  console.log("  Deduplicated (table covered by generated model): " + infraDeduped.length);
-  for (const d of infraDeduped) console.log("    " + d);
+  console.log(
+    "  Deduplicated (table covered by generated model): " + infraDeduped.length
+  );
+  for (const d of infraDeduped) {
+    console.log("    " + d);
+  }
 }
 if (infraMissing.length > 0) {
   console.log("  Missing (extract failed): " + infraMissing.join(", "));
@@ -725,7 +840,7 @@ for (let bi = 0; bi < infraBlocks.length; bi++) {
     /(\s+\w+\s+(?:Int|Float|Decimal)\??\s+.*)@default\("([0-9.]+)"\)/g,
     (_match, prefix, val) => {
       defaultFixCount++;
-      return prefix + "@default(" + Math.floor(parseFloat(val)) + ")";
+      return prefix + "@default(" + Math.floor(Number.parseFloat(val)) + ")";
     }
   );
   // Fix @default("") on Int/Float fields → remove the @default entirely
@@ -753,7 +868,15 @@ const output =
   "\n";
 
 const totalModels = (output.match(/^model /gm) || []).length;
-console.log("\nTotal: " + totalModels + " models (" + generatedModelCount + " generated + " + infraBlocks.length + " infra)");
+console.log(
+  "\nTotal: " +
+    totalModels +
+    " models (" +
+    generatedModelCount +
+    " generated + " +
+    infraBlocks.length +
+    " infra)"
+);
 
 // ---------------------------------------------------------------------------
 // 8b. Final default fix on the assembled output
@@ -766,7 +889,9 @@ for (let i = 0; i < outputLines.length; i++) {
   const line = outputLines[i];
   // Fix @default("") on non-String fields → strip @default
   if (line.includes('@default("")')) {
-    const typeMatch = line.match(/^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/);
+    const typeMatch = line.match(
+      /^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/
+    );
     if (typeMatch) {
       outputLines[i] = line.replace(/\s*@default\(""\)/, "");
       finalDefaultFixes++;
@@ -791,7 +916,9 @@ for (let i = 0; i < outputLines.length; i++) {
 }
 const finalOutput = outputLines.join("\n");
 if (finalDefaultFixes > 0) {
-  console.log("  Final default fixes on assembled output: " + finalDefaultFixes);
+  console.log(
+    "  Final default fixes on assembled output: " + finalDefaultFixes
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -805,15 +932,12 @@ console.log("Output: " + OUTPUT_PATH);
 // ---------------------------------------------------------------------------
 console.log("\nValidating...");
 try {
-  execSync(
-    'npx prisma validate --schema="' + OUTPUT_PATH + '"',
-    {
-      cwd: PROJECT_ROOT,
-      stdio: "pipe",
-      timeout: 60000,
-      env: { ...process.env },
-    }
-  );
+  execSync('npx prisma validate --schema="' + OUTPUT_PATH + '"', {
+    cwd: PROJECT_ROOT,
+    stdio: "pipe",
+    timeout: 60_000,
+    env: { ...process.env },
+  });
   console.log("prisma validate passed");
 } catch (err) {
   const stdout = (err.stdout && err.stdout.toString()) || "";
@@ -834,9 +958,25 @@ try {
 // Summary
 // ---------------------------------------------------------------------------
 console.log("\n======== SUMMARY ========");
-console.log("PrismaProjection: " + generatedModelCount + " models generated, " + diagnostics.length + " diagnostics");
+console.log(
+  "PrismaProjection: " +
+    generatedModelCount +
+    " models generated, " +
+    diagnostics.length +
+    " diagnostics"
+);
 console.log("Post-process: " + insertions.length + " @@unique injected");
 console.log("Header: " + enumBlocks.length + " enums + datasource/generator");
-console.log("Infra-core: " + infraBlocks.length + " pass-through models appended");
-console.log("Total: " + totalModels + " models (" + generatedModelCount + " generated + " + infraBlocks.length + " infra)");
+console.log(
+  "Infra-core: " + infraBlocks.length + " pass-through models appended"
+);
+console.log(
+  "Total: " +
+    totalModels +
+    " models (" +
+    generatedModelCount +
+    " generated + " +
+    infraBlocks.length +
+    " infra)"
+);
 console.log("Output: " + OUTPUT_PATH);

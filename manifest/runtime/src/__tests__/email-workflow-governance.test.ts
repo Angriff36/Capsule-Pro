@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -166,7 +166,7 @@ function fullCreateBody(overrides: Record<string, unknown> = {}) {
 
 async function createWorkflow(
   engine: RuntimeEngine,
-  overrides: Record<string, unknown> = {},
+  overrides: Record<string, unknown> = {}
 ) {
   return runManifestCommandCore(
     { createRuntime: async () => engine },
@@ -175,7 +175,7 @@ async function createWorkflow(
       command: "create",
       body: fullCreateBody(overrides),
       user: { ...USER },
-    },
+    }
   );
 }
 
@@ -214,8 +214,14 @@ describe("EmailWorkflow.create — governed write persists the full UI field sur
       string,
       unknown
     >;
-    expect(stored.triggerConfig).toEqual({ delayMinutes: 45, weekendsOnly: true });
-    expect(stored.recipientConfig).toEqual({ type: "employee", roles: ["server"] });
+    expect(stored.triggerConfig).toEqual({
+      delayMinutes: 45,
+      weekendsOnly: true,
+    });
+    expect(stored.recipientConfig).toEqual({
+      type: "employee",
+      roles: ["server"],
+    });
   });
 
   it("rejects a blank name (guard parity with the server action invariant)", async () => {
@@ -247,7 +253,7 @@ describe("EmailWorkflow.update — must be able to change triggerType", () => {
           isActive: true,
         },
         user: { ...USER },
-      },
+      }
     );
 
     expect(updated.ok).toBe(true);
@@ -272,7 +278,7 @@ describe("EmailWorkflow.setActive — partial toggle does not clobber other fiel
         command: "setActive",
         body: { id, isActive: false },
         user: { ...USER },
-      },
+      }
     );
 
     expect(toggled.ok).toBe(true);
@@ -296,7 +302,12 @@ describe("EmailWorkflow.softDelete — governed soft delete", () => {
 
     const deleted = await runManifestCommandCore(
       { createRuntime: async () => engine },
-      { entity: "EmailWorkflow", command: "softDelete", body: { id }, user: { ...USER } },
+      {
+        entity: "EmailWorkflow",
+        command: "softDelete",
+        body: { id },
+        user: { ...USER },
+      }
     );
     expect(deleted.ok).toBe(true);
 
@@ -315,7 +326,7 @@ describe("EmailWorkflow.softDelete — governed soft delete", () => {
         command: "setActive",
         body: { id, isActive: true },
         user: { ...USER },
-      },
+      }
     );
     expect(afterUpdate.ok).toBe(false);
   });
@@ -330,7 +341,10 @@ describe("EmailWorkflow.recordTriggered — stamps lastTriggeredAt for cron call
     const id = created.ok ? (created.result as { id: string }).id : "";
 
     // lastTriggeredAt starts null
-    const before = (await engine.getInstance("EmailWorkflow", id)) as Record<string, unknown>;
+    const before = (await engine.getInstance("EmailWorkflow", id)) as Record<
+      string,
+      unknown
+    >;
     expect(before.lastTriggeredAt).toBeFalsy();
 
     const result = await runManifestCommandCore(
@@ -340,11 +354,14 @@ describe("EmailWorkflow.recordTriggered — stamps lastTriggeredAt for cron call
         command: "recordTriggered",
         body: { id },
         user: { ...SYSTEM_USER },
-      },
+      }
     );
 
     expect(result.ok).toBe(true);
-    const stored = (await engine.getInstance("EmailWorkflow", id)) as Record<string, unknown>;
+    const stored = (await engine.getInstance("EmailWorkflow", id)) as Record<
+      string,
+      unknown
+    >;
     expect(stored.lastTriggeredAt).toBeTruthy();
     // Other fields untouched
     expect(stored.name).toBe("Welcome Email");
@@ -359,7 +376,12 @@ describe("EmailWorkflow.recordTriggered — stamps lastTriggeredAt for cron call
     // Soft-delete first
     await runManifestCommandCore(
       { createRuntime: async () => engine },
-      { entity: "EmailWorkflow", command: "softDelete", body: { id }, user: { ...USER } },
+      {
+        entity: "EmailWorkflow",
+        command: "softDelete",
+        body: { id },
+        user: { ...USER },
+      }
     );
 
     const result = await runManifestCommandCore(
@@ -369,7 +391,7 @@ describe("EmailWorkflow.recordTriggered — stamps lastTriggeredAt for cron call
         command: "recordTriggered",
         body: { id },
         user: { ...SYSTEM_USER },
-      },
+      }
     );
     expect(result.ok).toBe(false);
   });

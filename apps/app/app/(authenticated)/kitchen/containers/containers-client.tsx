@@ -39,34 +39,34 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  listContainers,
   containerCreate,
-  containerUpdate,
   containerDeactivate,
+  containerUpdate,
+  listContainers,
 } from "@/app/lib/manifest-client.generated";
 
 interface ContainerRecord {
-  id: string;
-  name: string;
-  containerType: string;
-  sizeDescription: string | null;
+  capacityPortions: number | null;
   capacityVolumeMl: string | null;
   capacityWeightG: string | null;
-  capacityPortions: number | null;
-  isReusable: boolean;
-  isActive: boolean;
-  locationId: string | null;
+  containerType: string;
   createdAt: string;
+  id: string;
+  isActive: boolean;
+  isReusable: boolean;
+  locationId: string | null;
+  name: string;
+  sizeDescription: string | null;
   updatedAt: string;
 }
 
 interface InitialMetrics {
-  total: number;
   active: number;
+  byType: { containerType: string; count: number }[];
+  disposable: number;
   inactive: number;
   reusable: number;
-  disposable: number;
-  byType: { containerType: string; count: number }[];
+  total: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -203,13 +203,18 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
         containerType: form.containerType,
         isReusable: form.isReusable,
       };
-      if (form.sizeDescription) payload.sizeDescription = form.sizeDescription;
-      if (form.capacityVolumeMl)
+      if (form.sizeDescription) {
+        payload.sizeDescription = form.sizeDescription;
+      }
+      if (form.capacityVolumeMl) {
         payload.capacityVolumeMl = Number(form.capacityVolumeMl);
-      if (form.capacityWeightG)
+      }
+      if (form.capacityWeightG) {
         payload.capacityWeightG = Number(form.capacityWeightG);
-      if (form.capacityPortions)
+      }
+      if (form.capacityPortions) {
         payload.capacityPortions = Number(form.capacityPortions);
+      }
 
       await containerCreate(payload);
       toast.success("Container created");
@@ -224,7 +229,9 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
   };
 
   const handleEdit = async () => {
-    if (!editTarget) return;
+    if (!editTarget) {
+      return;
+    }
     setActioning(editTarget.id);
     try {
       const payload: Record<string, unknown> = {
@@ -233,17 +240,26 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
         containerType: form.containerType,
         isReusable: form.isReusable,
       };
-      if (form.sizeDescription) payload.sizeDescription = form.sizeDescription;
-      else payload.sizeDescription = null;
-      if (form.capacityVolumeMl)
+      if (form.sizeDescription) {
+        payload.sizeDescription = form.sizeDescription;
+      } else {
+        payload.sizeDescription = null;
+      }
+      if (form.capacityVolumeMl) {
         payload.capacityVolumeMl = Number(form.capacityVolumeMl);
-      else payload.capacityVolumeMl = null;
-      if (form.capacityWeightG)
+      } else {
+        payload.capacityVolumeMl = null;
+      }
+      if (form.capacityWeightG) {
         payload.capacityWeightG = Number(form.capacityWeightG);
-      else payload.capacityWeightG = null;
-      if (form.capacityPortions)
+      } else {
+        payload.capacityWeightG = null;
+      }
+      if (form.capacityPortions) {
         payload.capacityPortions = Number(form.capacityPortions);
-      else payload.capacityPortions = null;
+      } else {
+        payload.capacityPortions = null;
+      }
 
       await containerUpdate(payload);
       toast.success("Container updated");
@@ -260,7 +276,9 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
   };
 
   const handleDeactivate = async () => {
-    if (!deactivateTarget) return;
+    if (!deactivateTarget) {
+      return;
+    }
     setActioning(deactivateTarget.id);
     try {
       await containerDeactivate({ id: deactivateTarget.id });
@@ -296,7 +314,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -366,14 +384,14 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       )}
 
       {!isLoading && containers.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No containers yet. Create your first container to get started.
         </div>
       )}
 
       {!isLoading && containers.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_120px_130px_100px_90px_130px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_130px_100px_90px_130px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Name</span>
             <span>Type</span>
             <span>Capacity</span>
@@ -387,12 +405,12 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
               : STATUS_CONFIG.inactive;
             return (
               <div
-                className="grid grid-cols-[1fr_120px_130px_100px_90px_130px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                className="grid grid-cols-[1fr_120px_130px_100px_90px_130px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                 key={container.id}
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{container.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-muted-foreground text-xs">
                     {container.sizeDescription ?? "No size description"}
                   </p>
                 </div>
@@ -468,7 +486,9 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       {/* Create Dialog */}
       <Dialog
         onOpenChange={(open) => {
-          if (!open) resetForm();
+          if (!open) {
+            resetForm();
+          }
           setCreateOpen(open);
         }}
         open={createOpen}
@@ -482,7 +502,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name *</label>
+              <label className="font-medium text-sm">Name *</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, name: e.target.value }))
@@ -492,7 +512,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Container Type *</label>
+              <label className="font-medium text-sm">Container Type *</label>
               <Select
                 onValueChange={(v) =>
                   setForm((f) => ({ ...f, containerType: v }))
@@ -512,7 +532,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Size Description</label>
+              <label className="font-medium text-sm">Size Description</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, sizeDescription: e.target.value }))
@@ -523,7 +543,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Volume (ml)</label>
+                <label className="font-medium text-sm">Volume (ml)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, capacityVolumeMl: e.target.value }))
@@ -534,7 +554,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Weight (g)</label>
+                <label className="font-medium text-sm">Weight (g)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, capacityWeightG: e.target.value }))
@@ -545,7 +565,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Portions</label>
+                <label className="font-medium text-sm">Portions</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -569,7 +589,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 }
                 type="checkbox"
               />
-              <label className="text-sm font-medium" htmlFor="create-reusable">
+              <label className="font-medium text-sm" htmlFor="create-reusable">
                 Reusable
               </label>
             </div>
@@ -607,7 +627,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name *</label>
+              <label className="font-medium text-sm">Name *</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, name: e.target.value }))
@@ -617,7 +637,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Container Type *</label>
+              <label className="font-medium text-sm">Container Type *</label>
               <Select
                 onValueChange={(v) =>
                   setForm((f) => ({ ...f, containerType: v }))
@@ -637,7 +657,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Size Description</label>
+              <label className="font-medium text-sm">Size Description</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, sizeDescription: e.target.value }))
@@ -648,7 +668,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Volume (ml)</label>
+                <label className="font-medium text-sm">Volume (ml)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, capacityVolumeMl: e.target.value }))
@@ -659,7 +679,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Weight (g)</label>
+                <label className="font-medium text-sm">Weight (g)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, capacityWeightG: e.target.value }))
@@ -670,7 +690,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Portions</label>
+                <label className="font-medium text-sm">Portions</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -694,7 +714,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
                 }
                 type="checkbox"
               />
-              <label className="text-sm font-medium" htmlFor="edit-reusable">
+              <label className="font-medium text-sm" htmlFor="edit-reusable">
                 Reusable
               </label>
             </div>
@@ -725,7 +745,9 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       {/* Deactivate Confirmation */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeactivateTarget(null);
+          if (!open) {
+            setDeactivateTarget(null);
+          }
         }}
         open={!!deactivateTarget}
       >

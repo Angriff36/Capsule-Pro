@@ -1,5 +1,6 @@
 "use client";
 
+import { PageCanvas } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
@@ -13,7 +14,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { PageCanvas } from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertTriangleIcon,
   ArrowLeftIcon,
@@ -41,58 +41,58 @@ type PayrollRunStatus =
   | "failed";
 
 interface PayrollRun {
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  createdAt: Date;
+  employeeCount: number;
   id: string;
-  tenantId: string;
+  paidAt: Date | null;
   payrollPeriodId: string;
+  periodEnd: Date | null;
+  periodStart: Date | null;
   runDate: Date;
   status: PayrollRunStatus;
-  totalGross: number;
+  tenantId: string;
   totalDeductions: number;
+  totalGross: number;
   totalNet: number;
-  approvedBy: string | null;
-  approvedAt: Date | null;
-  paidAt: Date | null;
-  createdAt: Date;
   updatedAt: Date;
-  periodStart: Date | null;
-  periodEnd: Date | null;
-  employeeCount: number;
 }
 
 interface PayrollLineItem {
-  id: string;
-  payrollRunId: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  hoursRegular: number;
-  hoursOvertime: number;
-  rateRegular: number;
-  rateOvertime: number;
-  grossPay: number;
-  deductions: Record<string, number>;
-  netPay: number;
   createdAt: Date;
+  deductions: Record<string, number>;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  grossPay: number;
+  hoursOvertime: number;
+  hoursRegular: number;
+  id: string;
+  netPay: number;
+  payrollRunId: string;
+  rateOvertime: number;
+  rateRegular: number;
   updatedAt: Date;
 }
 
 interface ApprovalHistoryEntry {
-  id: string;
   action: string;
+  createdAt: Date;
+  id: string;
+  newValues: Record<string, unknown> | null;
+  oldValues: Record<string, unknown> | null;
   performedBy: string | null;
   performerFirstName: string | null;
   performerLastName: string | null;
-  oldValues: Record<string, unknown> | null;
-  newValues: Record<string, unknown> | null;
-  createdAt: Date;
 }
 
 interface PayrollRunDetailResponse {
+  approvalHistory: ApprovalHistoryEntry[];
   data: PayrollRun;
   lineItems: PayrollLineItem[];
-  approvalHistory: ApprovalHistoryEntry[];
 }
 
 interface PayrollRunDetailClientProps {
@@ -316,8 +316,8 @@ export default function PayrollRunDetailClient({
   if (!runData) {
     return (
       <Card className="p-12 text-center">
-        <AlertTriangleIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground text-lg">Payroll run not found</p>
+        <AlertTriangleIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+        <p className="text-lg text-muted-foreground">Payroll run not found</p>
         <Button
           className="mt-4"
           onClick={() => router.push("/payroll/runs")}
@@ -337,107 +337,107 @@ export default function PayrollRunDetailClient({
   return (
     <PageCanvas>
       <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => router.push("/payroll/runs")}
-            size="sm"
-            variant="ghost"
-          >
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-display text-3xl sm:text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground">
-                Payroll Run Details
-              </h1>
-              {getStatusBadge(runData.status)}
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Run ID: {runId.slice(0, 8)}...
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {["completed", "approved", "paid"].includes(runData.status) && (
-            <Button onClick={handleExportReport} size="sm" variant="outline">
-              <DownloadIcon className="mr-2 h-4 w-4" />
-              Export Report
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => router.push("/payroll/runs")}
+              size="sm"
+              variant="ghost"
+            >
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
+              Back
             </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Payroll Run Details */}
-      <PayrollRunDetails run={runData} />
-
-      {/* Approval Workflow Panel */}
-      <ApprovalWorkflowPanel
-        actionLoading={actionLoading}
-        canApprove={canApprove}
-        canFinalize={canFinalize}
-        canReject={canReject}
-        onApprove={handleApprove}
-        onFinalize={handleFinalize}
-        onReject={() => setRejectDialogOpen(true)}
-        run={runData}
-      />
-
-      {/* Payroll Line Items Table */}
-      <PayrollLineItemsTable lineItems={lineItems} runId={runId} />
-
-      {/* Approval History Timeline */}
-      {approvalHistory.length > 0 && (
-        <ApprovalHistoryTimeline approvalHistory={approvalHistory} />
-      )}
-
-      {/* Reject Dialog */}
-      <Dialog onOpenChange={setRejectDialogOpen} open={rejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <XCircleIcon className="h-5 w-5 text-destructive" />
-              Reject Payroll Run
-            </DialogTitle>
-            <DialogDescription>
-              This action will reject the payroll run and prevent payment
-              processing. Please provide a reason for the rejection.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="rejectReason">Reason for Rejection</Label>
-              <Input
-                id="rejectReason"
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Describe the issue with this payroll run..."
-                value={rejectReason}
-              />
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="font-display font-normal text-3xl text-foreground leading-[1.05] tracking-[-0.02em] sm:text-4xl">
+                  Payroll Run Details
+                </h1>
+                {getStatusBadge(runData.status)}
+              </div>
+              <p className="text-muted-foreground text-sm">
+                Run ID: {runId.slice(0, 8)}...
+              </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              disabled={actionLoading}
-              onClick={() => setRejectDialogOpen(false)}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={actionLoading || !rejectReason.trim()}
-              onClick={handleReject}
-              variant="destructive"
-            >
-              {actionLoading && (
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Reject Payroll Run
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex items-center gap-2">
+            {["completed", "approved", "paid"].includes(runData.status) && (
+              <Button onClick={handleExportReport} size="sm" variant="outline">
+                <DownloadIcon className="mr-2 h-4 w-4" />
+                Export Report
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Payroll Run Details */}
+        <PayrollRunDetails run={runData} />
+
+        {/* Approval Workflow Panel */}
+        <ApprovalWorkflowPanel
+          actionLoading={actionLoading}
+          canApprove={canApprove}
+          canFinalize={canFinalize}
+          canReject={canReject}
+          onApprove={handleApprove}
+          onFinalize={handleFinalize}
+          onReject={() => setRejectDialogOpen(true)}
+          run={runData}
+        />
+
+        {/* Payroll Line Items Table */}
+        <PayrollLineItemsTable lineItems={lineItems} runId={runId} />
+
+        {/* Approval History Timeline */}
+        {approvalHistory.length > 0 && (
+          <ApprovalHistoryTimeline approvalHistory={approvalHistory} />
+        )}
+
+        {/* Reject Dialog */}
+        <Dialog onOpenChange={setRejectDialogOpen} open={rejectDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <XCircleIcon className="h-5 w-5 text-destructive" />
+                Reject Payroll Run
+              </DialogTitle>
+              <DialogDescription>
+                This action will reject the payroll run and prevent payment
+                processing. Please provide a reason for the rejection.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="rejectReason">Reason for Rejection</Label>
+                <Input
+                  id="rejectReason"
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Describe the issue with this payroll run..."
+                  value={rejectReason}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                disabled={actionLoading}
+                onClick={() => setRejectDialogOpen(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={actionLoading || !rejectReason.trim()}
+                onClick={handleReject}
+                variant="destructive"
+              >
+                {actionLoading && (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Reject Payroll Run
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PageCanvas>
   );

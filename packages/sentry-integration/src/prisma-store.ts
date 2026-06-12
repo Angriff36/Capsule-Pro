@@ -134,8 +134,7 @@ export class PrismaJobStore implements JobQueueStore {
       issueTitle: job.issueTitle,
       issueUrl: job.issueUrl,
       status: job.status,
-      payloadSnapshot:
-        job.payloadSnapshot as SentryIssueAlertPayload,
+      payloadSnapshot: job.payloadSnapshot as SentryIssueAlertPayload,
       branchName: job.branchName,
       prUrl: job.prUrl,
       prNumber: job.prNumber,
@@ -153,6 +152,5 @@ export class PrismaJobStore implements JobQueueStore {
 /**
  * Create a Prisma-backed job store
  */
-export const createPrismaJobStore = (prisma: PrismaClient): PrismaJobStore => {
-  return new PrismaJobStore(prisma);
-};
+export const createPrismaJobStore = (prisma: PrismaClient): PrismaJobStore =>
+  new PrismaJobStore(prisma);

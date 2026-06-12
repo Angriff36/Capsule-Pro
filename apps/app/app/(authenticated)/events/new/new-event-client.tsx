@@ -65,11 +65,11 @@ export function NewEventClient({ orgId }: NewEventClientProps) {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{selectedTemplate.name}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     Template Applied
                   </span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1">
                     <UsersIcon className="h-3 w-3" />
                     {selectedTemplate.defaultGuestCount} guests
@@ -113,7 +113,7 @@ export function NewEventClient({ orgId }: NewEventClientProps) {
               <SparklesIcon className="h-4 w-4" />
               Choose a Template
             </Button>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-muted-foreground text-sm">
               Start with a pre-configured template for common event types, or
               fill in the form below.
             </p>
@@ -146,9 +146,7 @@ function EventFormWithDefaults({
   const wrappedAction = async (
     prevState: CreateEventState,
     formData: FormData
-  ) => {
-    return createEvent(prevState, formData);
-  };
+  ) => createEvent(prevState, formData);
 
   // Pass template defaults to pre-fill form fields
   return (

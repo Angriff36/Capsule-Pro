@@ -11,9 +11,13 @@ const CONSENT_KEY = "capsule-pro:analytics-consent";
 type ConsentState = "undecided" | "granted" | "denied";
 
 function readConsent(): ConsentState {
-  if (typeof window === "undefined") return "undecided";
+  if (typeof window === "undefined") {
+    return "undecided";
+  }
   const stored = localStorage.getItem(CONSENT_KEY);
-  if (stored === "granted" || stored === "denied") return stored;
+  if (stored === "granted" || stored === "denied") {
+    return stored;
+  }
   return "undecided";
 }
 
@@ -72,7 +76,9 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
     const key = env.NEXT_PUBLIC_POSTHOG_KEY;
     const host = env.NEXT_PUBLIC_POSTHOG_HOST;
 
-    if (!(key && host)) return;
+    if (!(key && host)) {
+      return;
+    }
 
     posthog.init(key, {
       api_host: host,
@@ -96,10 +102,12 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
     };
   }, []);
 
-  if (!client) return <>{children}</>;
+  if (!client) {
+    return <>{children}</>;
+  }
 
   return <PHProvider client={client}>{children}</PHProvider>;
 };
 
-export { CONSENT_KEY };
 export type { ConsentState };
+export { CONSENT_KEY };

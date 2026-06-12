@@ -8,7 +8,15 @@
  */
 
 import { NextRequest } from "next/server";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { GET } from "@/app/api/knowledge-base/entries/list/route";
 import { POST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
@@ -50,16 +58,27 @@ vi.mock("@/app/lib/tenant", () => ({
   resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
-    if (!condition) { const err = new Error(message); err.name = "InvariantError"; throw err; }
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
   },
 }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 // manifest-response needs to be mocked because it uses NextResponse under the
 // hood but we want deterministic shape assertions in the test.
@@ -421,7 +440,9 @@ describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", ()
   let reqCU: typeof import("@/app/lib/tenant")["requireCurrentUser"];
 
   beforeAll(async () => {
-    ({ runManifestCommand: runCmd } = await import("@/lib/manifest/execute-command"));
+    ({ runManifestCommand: runCmd } = await import(
+      "@/lib/manifest/execute-command"
+    ));
     ({ requireCurrentUser: reqCU } = await import("@/app/lib/tenant"));
   });
 
@@ -429,9 +450,17 @@ describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", ()
     vi.clearAllMocks();
     vi.mocked(reqCU).mockResolvedValue(KB_CURRENT_USER as never);
     vi.mocked(runCmd).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "test-id" }, events: [] }), {
-        status: 200, headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: "test-id" },
+          events: [],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
   });
 
@@ -451,7 +480,10 @@ describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", ()
   });
 
   it("should delegate to runManifestCommand with correct entity/command", async () => {
-    const req = makePostRequest({ slug: "onboarding-guide", title: "Onboarding Guide" });
+    const req = makePostRequest({
+      slug: "onboarding-guide",
+      title: "Onboarding Guide",
+    });
     const res = await kbCreate(req);
 
     expect(res.status).toBe(200);
@@ -459,7 +491,10 @@ describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", ()
       expect.objectContaining({
         entity: "KnowledgeBaseEntry",
         command: "create",
-        body: expect.objectContaining({ slug: "onboarding-guide", title: "Onboarding Guide" }),
+        body: expect.objectContaining({
+          slug: "onboarding-guide",
+          title: "Onboarding Guide",
+        }),
         user: { id: KB_USER_ID, tenantId: KB_TENANT_ID, role: "admin" },
       })
     );
@@ -467,9 +502,13 @@ describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", ()
 
   it("should return 403 on policy denial", async () => {
     vi.mocked(runCmd).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Access denied: AdminOnly" }), {
-        status: 403, headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({ success: false, message: "Access denied: AdminOnly" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
 
     const req = makePostRequest({ slug: "test", title: "Test" });

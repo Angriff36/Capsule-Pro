@@ -120,10 +120,13 @@ export async function GET(request: Request) {
     Record<string, { sent: number; opened: number }>
   >((acc, log) => {
     const wId = log.workflowId || "unlinked";
-    if (!acc[wId]) acc[wId] = { sent: 0, opened: 0 };
+    if (!acc[wId]) {
+      acc[wId] = { sent: 0, opened: 0 };
+    }
     acc[wId].sent++;
-    if (log.status === "opened" || log.status === "delivered")
+    if (log.status === "opened" || log.status === "delivered") {
       acc[wId].opened++;
+    }
     return acc;
   }, {});
 

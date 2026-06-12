@@ -23,20 +23,20 @@ import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface StaffRole {
-  role: string;
   count: number;
   hourlyRate: number;
   hoursNeeded: number;
   notes: string;
+  role: string;
 }
 
 interface StaffingRecommendation {
   eventType: string;
   guestCount: number;
-  totalStaff: number;
-  totalLaborCost: number;
-  roles: StaffRole[];
   notes: string[];
+  roles: StaffRole[];
+  totalLaborCost: number;
+  totalStaff: number;
 }
 
 export function StaffingRecommendationsClient() {
@@ -74,9 +74,9 @@ export function StaffingRecommendationsClient() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Staffing Recommendations
         </h1>
         <p className="text-muted-foreground">
@@ -94,9 +94,9 @@ export function StaffingRecommendationsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Guest Count</label>
+              <label className="font-medium text-sm">Guest Count</label>
               <Input
                 min={1}
                 onChange={(e) => setGuestCount(Number(e.target.value))}
@@ -106,7 +106,7 @@ export function StaffingRecommendationsClient() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Event Type</label>
+              <label className="font-medium text-sm">Event Type</label>
               <Select onValueChange={setEventType} value={eventType}>
                 <SelectTrigger>
                   <SelectValue />
@@ -121,7 +121,7 @@ export function StaffingRecommendationsClient() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Service Style</label>
+              <label className="font-medium text-sm">Service Style</label>
               <Select onValueChange={setServiceStyle} value={serviceStyle}>
                 <SelectTrigger>
                   <SelectValue />
@@ -136,7 +136,7 @@ export function StaffingRecommendationsClient() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Duration (hours)</label>
+              <label className="font-medium text-sm">Duration (hours)</label>
               <Input
                 min={1}
                 onChange={(e) => setDuration(Number(e.target.value))}
@@ -166,15 +166,15 @@ export function StaffingRecommendationsClient() {
 
       {recommendation && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card tone="canvas">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="font-medium text-muted-foreground text-sm">
                   Total Staff
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold flex items-center gap-2">
+                <div className="flex items-center gap-2 font-semibold text-2xl">
                   <Users className="h-6 w-6" />
                   {recommendation.totalStaff}
                 </div>
@@ -182,24 +182,24 @@ export function StaffingRecommendationsClient() {
             </Card>
             <Card tone="canvas">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="font-medium text-muted-foreground text-sm">
                   Estimated Labor Cost
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold">
+                <div className="font-semibold text-2xl">
                   ${recommendation.totalLaborCost.toLocaleString()}
                 </div>
               </CardContent>
             </Card>
             <Card tone="canvas">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="font-medium text-muted-foreground text-sm">
                   Staff-to-Guest Ratio
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold">
+                <div className="font-semibold text-2xl">
                   1:
                   {Math.round(
                     recommendation.guestCount / recommendation.totalStaff
@@ -218,7 +218,7 @@ export function StaffingRecommendationsClient() {
               <div className="space-y-4">
                 {recommendation.roles.map((role, i) => (
                   <div
-                    className="flex items-center justify-between p-4 border border-hairline rounded-md"
+                    className="flex items-center justify-between rounded-md border border-hairline p-4"
                     key={`${role.role}-${i}`}
                   >
                     <div className="flex-1">
@@ -230,12 +230,12 @@ export function StaffingRecommendationsClient() {
                         <Badge variant="secondary">×{role.count}</Badge>
                       </div>
                       {role.notes && (
-                        <p className="text-sm text-muted-foreground mt-1 ml-8">
+                        <p className="mt-1 ml-8 text-muted-foreground text-sm">
                           {role.notes}
                         </p>
                       )}
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
+                    <div className="text-right text-muted-foreground text-sm">
                       <div>${role.hourlyRate}/hr</div>
                       <div>{role.hoursNeeded}h each</div>
                       <div className="font-medium text-foreground">

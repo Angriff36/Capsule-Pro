@@ -32,26 +32,23 @@ export type ActionHandler =
   | { type: "external"; url: string };
 
 export interface SuggestedAction {
-  id: string;
-  tenantId: string;
-  type: SuggestionType;
-  category: SuggestionCategory;
-  priority: SuggestionPriority;
-  title: string;
-  description: string;
-  context?: Record<string, unknown>;
   action: ActionHandler;
-  estimatedImpact?: string;
+  category: SuggestionCategory;
+  context?: Record<string, unknown>;
   createdAt: Date | string;
-  expiresAt?: Date | string;
+  description: string;
   dismissed: boolean;
+  estimatedImpact?: string;
+  expiresAt?: Date | string;
+  id: string;
   metadata?: Record<string, unknown>;
+  priority: SuggestionPriority;
+  tenantId: string;
+  title: string;
+  type: SuggestionType;
 }
 
 export interface SuggestionsResponse {
-  suggestions: SuggestedAction[];
-  summary: string;
-  generatedAt: Date | string;
   context?: {
     timeframe: "today" | "week" | "month";
     boardId?: string;
@@ -60,4 +57,7 @@ export interface SuggestionsResponse {
     incompleteTasks?: number;
     inventoryAlerts?: number;
   };
+  generatedAt: Date | string;
+  suggestions: SuggestedAction[];
+  summary: string;
 }

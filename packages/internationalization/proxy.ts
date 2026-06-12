@@ -5,20 +5,21 @@ import languine from "./languine.json" with { type: "json" };
 
 const locales = [languine.locale.source, ...languine.locale.targets];
 
-const I18nMiddleware: ReturnType<typeof createI18nMiddleware> = createI18nMiddleware({
-  locales,
-  defaultLocale: "en",
-  urlMappingStrategy: "rewriteDefault",
-  resolveLocaleFromRequest: (request) => {
-    const headers = Object.fromEntries(request.headers.entries());
-    const negotiator = new Negotiator({ headers });
-    const acceptedLanguages = negotiator.languages();
+const I18nMiddleware: ReturnType<typeof createI18nMiddleware> =
+  createI18nMiddleware({
+    locales,
+    defaultLocale: "en",
+    urlMappingStrategy: "rewriteDefault",
+    resolveLocaleFromRequest: (request) => {
+      const headers = Object.fromEntries(request.headers.entries());
+      const negotiator = new Negotiator({ headers });
+      const acceptedLanguages = negotiator.languages();
 
-    const matchedLocale = matchLocale(acceptedLanguages, locales, "en");
+      const matchedLocale = matchLocale(acceptedLanguages, locales, "en");
 
-    return matchedLocale;
-  },
-});
+      return matchedLocale;
+    },
+  });
 
 // Re-export the middleware. The request type is intentionally inferred from
 // next-international so this module does not import directly from `next/*`

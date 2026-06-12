@@ -6,7 +6,6 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { toJson } from "@/lib/prisma-utils";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -18,16 +17,17 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { toJson } from "@/lib/prisma-utils";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
 type WebhookEventType = (typeof VALID_EVENT_TYPES)[number];
 
 interface TriggerWebhookRequest {
-  eventType: WebhookEventType;
-  entityType: string;
-  entityId: string;
   data: Record<string, unknown>;
+  entityId: string;
+  entityType: string;
+  eventType: WebhookEventType;
 }
 
 /**

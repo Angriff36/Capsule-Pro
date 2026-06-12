@@ -18,9 +18,9 @@ import { toast } from "sonner";
 import { sendProposal } from "../actions";
 
 interface SendProposalButtonProps {
-  proposalId: string;
   clientEmail?: string | null;
   clientName?: string | null;
+  proposalId: string;
 }
 
 export function SendProposalButton({

@@ -35,7 +35,9 @@ export default function AuthenticatedError({
   const isDbError = DB_ERROR_PATTERN.test(message);
 
   useEffect(() => {
-    if (isNextHTTPErrorFallback(error)) return;
+    if (isNextHTTPErrorFallback(error)) {
+      return;
+    }
     console.error("[AuthenticatedError]", message);
     captureException(error, {
       tags: {
@@ -57,7 +59,7 @@ export default function AuthenticatedError({
         <h2 className="font-semibold text-destructive">
           {isDbError ? "Database unavailable" : "Something went wrong"}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">{message}</p>
+        <p className="mt-2 text-muted-foreground text-sm">{message}</p>
         {isDbError && (
           <p className="mt-2 text-muted-foreground text-xs">
             Neon: use the <strong>pooled</strong> connection string from the
@@ -66,7 +68,7 @@ export default function AuthenticatedError({
           </p>
         )}
         <button
-          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+          className="mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm hover:bg-primary/90"
           onClick={reset}
           type="button"
         >

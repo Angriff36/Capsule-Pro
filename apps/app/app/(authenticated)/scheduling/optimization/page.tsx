@@ -16,10 +16,14 @@ import { OptimizationDashboard } from "./optimization-client";
 
 export default async function WorkforceOptimizationPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   return (
     <PageCanvas>

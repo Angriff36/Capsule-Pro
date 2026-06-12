@@ -2,8 +2,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { PrepList } from "../types";
 
 interface PrepListCardProps {
-  prepList: PrepList;
   onPress: (prepList: PrepList) => void;
+  prepList: PrepList;
 }
 
 function getCompletionPercentage(list: PrepList): number {

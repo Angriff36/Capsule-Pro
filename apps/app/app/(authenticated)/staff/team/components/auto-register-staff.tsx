@@ -37,11 +37,11 @@ export const AutoRegisterStaff = () => {
 
   if (status === "loading") {
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         Setting up your account...
       </div>
     );
   }
 
-  return <div className="text-sm text-red-500">{message}</div>;
+  return <div className="text-red-500 text-sm">{message}</div>;
 };

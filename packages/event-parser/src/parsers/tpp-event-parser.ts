@@ -118,10 +118,10 @@ interface Section {
 }
 
 interface QuantityParseResult {
-  primaryQuantity: { value: number; unit: string };
   details: MenuQuantityDetail[];
-  specials: string[];
   prepInstructions: string[];
+  primaryQuantity: { value: number; unit: string };
+  specials: string[];
   warnings: string[];
 }
 
@@ -703,11 +703,11 @@ function isLikelyUnit(value: string): boolean {
 
 function buildPreparationNotes(lines: string[]): string | undefined {
   if (lines.length === 0) {
-    return undefined;
+    return;
   }
   const formatted = lines.map((line) => toSentenceCase(line)).filter(Boolean);
   if (formatted.length === 0) {
-    return undefined;
+    return;
   }
   return formatted.join(" ");
 }
@@ -1040,7 +1040,7 @@ function formatMinutesLabel(
   value: number | null | undefined
 ): string | undefined {
   if (value === null || value === undefined) {
-    return undefined;
+    return;
   }
   const minutesInDay = ((value % (24 * 60)) + 24 * 60) % (24 * 60);
   const hours24 = Math.floor(minutesInDay / 60);

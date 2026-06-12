@@ -35,42 +35,42 @@ import * as React from "react";
 
 // Types for the version control system
 export interface EntityVersion {
-  id: string;
-  versionNumber: number;
+  approvedAt: string | null;
+  approvedBy: string | null;
   changeReason: string | null;
   changeSummary: string | null;
   changeType: "create" | "update" | "restore" | "approve" | "auto";
-  isApproved: boolean;
   createdAt: string;
   createdBy: string;
-  approvedBy: string | null;
-  approvedAt: string | null;
+  id: string;
+  isApproved: boolean;
+  versionNumber: number;
 }
 
 export interface VersionedEntity {
-  id: string;
-  entityType: string;
+  createdAt: string;
+  currentVersionId: string | null;
   entityId: string;
   entityName: string;
+  entityType: string;
+  id: string;
   isLocked: boolean;
-  currentVersionId: string | null;
-  createdAt: string;
   updatedAt: string;
 }
 
 export interface VersionHistoryProps {
-  versionedEntity: VersionedEntity;
-  versions: EntityVersion[];
+  currentUserCanApprove?: boolean;
+  currentUserCanEdit?: boolean;
   isLoading?: boolean;
+  onCompareVersions?: (versionA: string, versionB: string) => void;
+  onLockToggle?: (entityId: string, lock: boolean) => Promise<void>;
+  onVersionApprove?: (versionId: string) => Promise<void>;
   onVersionRestore?: (
     versionId: string,
     changeReason?: string
   ) => Promise<void>;
-  onVersionApprove?: (versionId: string) => Promise<void>;
-  onLockToggle?: (entityId: string, lock: boolean) => Promise<void>;
-  onCompareVersions?: (versionA: string, versionB: string) => void;
-  currentUserCanEdit?: boolean;
-  currentUserCanApprove?: boolean;
+  versionedEntity: VersionedEntity;
+  versions: EntityVersion[];
 }
 
 const changeTypeColors: Record<
@@ -113,7 +113,9 @@ export function VersionHistory({
   };
 
   const handleRestoreConfirm = async () => {
-    if (!(pendingRestoreVersion && onVersionRestore)) return;
+    if (!(pendingRestoreVersion && onVersionRestore)) {
+      return;
+    }
 
     setRestoring(true);
     try {
@@ -129,7 +131,9 @@ export function VersionHistory({
   };
 
   const handleApprove = async (versionId: string) => {
-    if (!onVersionApprove) return;
+    if (!onVersionApprove) {
+      return;
+    }
 
     setApproving((prev) => ({ ...prev, [versionId]: true }));
     try {
@@ -140,7 +144,9 @@ export function VersionHistory({
   };
 
   const handleLockToggle = async () => {
-    if (!onLockToggle) return;
+    if (!onLockToggle) {
+      return;
+    }
 
     setTogglingLock(true);
     try {
@@ -196,12 +202,12 @@ export function VersionHistory({
               >
                 {versionedEntity.isLocked ? (
                   <>
-                    <Unlock className="h-4 w-4 mr-2" />
+                    <Unlock className="mr-2 h-4 w-4" />
                     Unlock
                   </>
                 ) : (
                   <>
-                    <Lock className="h-4 w-4 mr-2" />
+                    <Lock className="mr-2 h-4 w-4" />
                     Lock
                   </>
                 )}
@@ -216,7 +222,7 @@ export function VersionHistory({
             {[1, 2, 3].map((i) => (
               <div className="flex items-center gap-4" key={i}>
                 <Skeleton className="h-12 w-12 rounded-full" />
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-3 w-48" />
                 </div>
@@ -224,8 +230,8 @@ export function VersionHistory({
             ))}
           </div>
         ) : versions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <GitBranch className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <GitBranch className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p>No versions found for this entity.</p>
           </div>
         ) : (
@@ -234,15 +240,15 @@ export function VersionHistory({
               {versions.map((version, index) => (
                 <React.Fragment key={version.id}>
                   <div
-                    className={`flex gap-4 p-3 rounded-lg border transition-colors ${
+                    className={`flex gap-4 rounded-lg border p-3 transition-colors ${
                       selectedVersions.includes(version.id)
-                        ? "bg-accent border-accent"
+                        ? "border-accent bg-accent"
                         : "bg-card hover:bg-accent/50"
                     }`}
                   >
                     <div className="flex flex-col items-center">
                       <button
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                        className={`flex h-8 w-8 items-center justify-center rounded-full font-medium text-sm transition-colors ${
                           selectedVersions.includes(version.id)
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted hover:bg-muted-foreground/20"
@@ -252,13 +258,13 @@ export function VersionHistory({
                         {version.versionNumber}
                       </button>
                       {index < versions.length - 1 && (
-                        <div className="w-0.5 h-full bg-border min-h-[2rem]" />
+                        <div className="h-full min-h-[2rem] w-0.5 bg-border" />
                       )}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-start justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={
                               changeTypeColors[version.changeType]?.variant ||
@@ -308,17 +314,17 @@ export function VersionHistory({
                       </div>
 
                       {version.changeReason && (
-                        <p className="text-sm font-medium">
+                        <p className="font-medium text-sm">
                           {version.changeReason}
                         </p>
                       )}
                       {version.changeSummary && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="line-clamp-2 text-muted-foreground text-sm">
                           {version.changeSummary}
                         </p>
                       )}
 
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <div className="mt-2 flex items-center gap-4 text-muted-foreground text-xs">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatDistanceToNow(new Date(version.createdAt), {
@@ -377,8 +383,8 @@ export function VersionHistory({
 
 // Version comparison dialog component
 export interface VersionCompareDialogProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  open: boolean;
   versionA: EntityVersion | null;
   versionB: EntityVersion | null;
 }
@@ -401,11 +407,11 @@ export function VersionCompareDialog({
         </AlertDialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <h4 className="font-medium mb-2">
+            <h4 className="mb-2 font-medium">
               Version {versionA?.versionNumber}
             </h4>
             {versionA && (
-              <div className="text-sm space-y-1">
+              <div className="space-y-1 text-sm">
                 <p className="text-muted-foreground">
                   {versionA.changeReason || "No reason provided"}
                 </p>
@@ -418,11 +424,11 @@ export function VersionCompareDialog({
             )}
           </div>
           <div>
-            <h4 className="font-medium mb-2">
+            <h4 className="mb-2 font-medium">
               Version {versionB?.versionNumber}
             </h4>
             {versionB && (
-              <div className="text-sm space-y-1">
+              <div className="space-y-1 text-sm">
                 <p className="text-muted-foreground">
                   {versionB.changeReason || "No reason provided"}
                 </p>

@@ -3,10 +3,32 @@
 import "server-only";
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface ExecutiveKPIMetrics {
+  operationalHealth: {
+    onTimeDeliveryRate: number;
+    customerSatisfactionScore: number;
+    staffRetentionRate: number;
+    foodWastePercentage: number;
+    trend: "up" | "down" | "neutral";
+  };
+  pipeline: {
+    totalValue: number;
+    qualifiedLeads: number;
+    proposalsSent: number;
+    winRate: number;
+    avgSalesCycle: number;
+    trend: "up" | "down" | "neutral";
+  };
+  profitability: {
+    grossMargin: number;
+    netProfit: number;
+    ebitda: number;
+    trend: "up" | "down" | "neutral";
+    byMonth: Array<{ month: string; margin: number }>;
+  };
   revenue: {
     currentMonth: number;
     previousMonth: number;
@@ -23,58 +45,36 @@ export interface ExecutiveKPIMetrics {
     equipment: number;
     trend: "up" | "down" | "neutral";
   };
-  profitability: {
-    grossMargin: number;
-    netProfit: number;
-    ebitda: number;
-    trend: "up" | "down" | "neutral";
-    byMonth: Array<{ month: string; margin: number }>;
-  };
-  pipeline: {
-    totalValue: number;
-    qualifiedLeads: number;
-    proposalsSent: number;
-    winRate: number;
-    avgSalesCycle: number;
-    trend: "up" | "down" | "neutral";
-  };
-  operationalHealth: {
-    onTimeDeliveryRate: number;
-    customerSatisfactionScore: number;
-    staffRetentionRate: number;
-    foodWastePercentage: number;
-    trend: "up" | "down" | "neutral";
-  };
 }
 
 interface RevenueRow {
+  forecast: string | number | null;
   month: string;
   revenue: string | number;
-  forecast: string | number | null;
 }
 
 interface UtilizationRow {
-  budgeted_labor: string | number;
   actual_labor: string | number;
+  budgeted_labor: string | number;
 }
 
 interface ProfitabilityRow {
-  month: string;
   gross_margin_pct: string | number;
+  month: string;
 }
 
 interface PipelineRow {
-  total_value: string | number;
-  qualified_count: string | number;
-  proposals_sent: string | number;
-  won_count: string | number;
   avg_days_to_close: string | number | null;
+  proposals_sent: string | number;
+  qualified_count: string | number;
+  total_value: string | number;
+  won_count: string | number;
 }
 
 interface OperationalHealthRow {
   on_time_rate: string | number;
-  satisfaction_score: string | number;
   retention_rate: string | number;
+  satisfaction_score: string | number;
   waste_pct: string | number;
 }
 
@@ -269,7 +269,9 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
     revenueByMonth.find(
       (r) =>
         r.month ===
-        new Date(now.getFullYear(), now.getMonth() - 1).toISOString().slice(0, 7)
+        new Date(now.getFullYear(), now.getMonth() - 1)
+          .toISOString()
+          .slice(0, 7)
     )?.revenue ?? 0;
 
   const ytdRevenue = revenueByMonth
@@ -279,7 +281,8 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
   const lastYearYtdRevenue = revenueByMonth
     .filter(
       (r) =>
-        new Date(r.month) >= lastYearStart && new Date(r.month) < currentYearStart
+        new Date(r.month) >= lastYearStart &&
+        new Date(r.month) < currentYearStart
     )
     .reduce((sum, r) => sum + r.revenue, 0);
 
@@ -290,16 +293,22 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
         ? "down"
         : "neutral";
 
-  const revenueForecast = ytdRevenue * (1 + (ytdRevenue / lastYearYtdRevenue - 1) / 2);
+  const revenueForecast =
+    ytdRevenue * (1 + (ytdRevenue / lastYearYtdRevenue - 1) / 2);
 
   // Process utilization data
   const utilization = utilizationData[0];
   const budgetedLabor = Number(utilization?.budgeted_labor ?? 0);
   const actualLabor = Number(utilization?.actual_labor ?? 0);
-  const overallUtilization = budgetedLabor > 0 ? (actualLabor / budgetedLabor) * 100 : 0;
+  const overallUtilization =
+    budgetedLabor > 0 ? (actualLabor / budgetedLabor) * 100 : 0;
 
   const utilizationTrend: "up" | "down" | "neutral" =
-    overallUtilization > 85 ? "down" : overallUtilization < 70 ? "up" : "neutral";
+    overallUtilization > 85
+      ? "down"
+      : overallUtilization < 70
+        ? "up"
+        : "neutral";
 
   // Process profitability data
   const profitabilityByMonth = profitabilityData.map((row) => ({
@@ -314,7 +323,7 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
   const profitabilityTrend: "up" | "down" | "neutral" =
     profitabilityByMonth.length >= 2
       ? profitabilityByMonth[profitabilityByMonth.length - 1].margin >
-          profitabilityByMonth[profitabilityByMonth.length - 2].margin
+        profitabilityByMonth[profitabilityByMonth.length - 2].margin
         ? "up"
         : profitabilityByMonth[profitabilityByMonth.length - 1].margin <
             profitabilityByMonth[profitabilityByMonth.length - 2].margin
@@ -331,7 +340,8 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
   const winRate = proposalsSent > 0 ? (wonCount / proposalsSent) * 100 : 0;
   const avgSalesCycle = Number(pipeline?.avg_days_to_close ?? 0);
 
-  const pipelineTrend: "up" | "down" | "neutral" = winRate > 30 ? "up" : winRate < 20 ? "down" : "neutral";
+  const pipelineTrend: "up" | "down" | "neutral" =
+    winRate > 30 ? "up" : winRate < 20 ? "down" : "neutral";
 
   // Process operational health data
   const health = operationalHealthData[0];

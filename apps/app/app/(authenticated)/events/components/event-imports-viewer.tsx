@@ -21,11 +21,11 @@ import { useMemo, useState } from "react";
 import { apiFetch, apiUrl } from "@/app/lib/api";
 
 interface ImportFile {
-  id: string;
-  file_name: string;
-  mime_type: string;
-  file_size: number;
   created_at: Date;
+  file_name: string;
+  file_size: number;
+  id: string;
+  mime_type: string;
 }
 
 type CsvRow = string[];

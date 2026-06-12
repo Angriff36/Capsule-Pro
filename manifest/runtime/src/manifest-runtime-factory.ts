@@ -14,6 +14,7 @@
  * @packageDocumentation
  */
 
+import { randomUUID } from "node:crypto";
 import type {
   CommandResult,
   EmittedEvent,
@@ -21,13 +22,18 @@ import type {
   RuntimeEngine,
   RuntimeOptions,
 } from "@angriff36/manifest";
-import { randomUUID } from "node:crypto";
 import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
-import { createCustomBuiltins } from "./manifest-builtins";
 import { createAesGcmEncryptionProvider } from "./encryption-provider";
+import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
+// LIVE schema metadata (NOT the IR-projection manifest-prisma-store-metadata):
+// the projection metadata describes the IR-projected schema whose delegates
+// (e.g. "event_staffs") don't exist on the live PrismaClient — GenericPrismaStore
+// threw at construction for 173/191 entities. See build-prisma-store-options.mjs.
+import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
+import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createIdentityMiddleware,
   createPrepInventoryDemandMiddleware,
@@ -40,14 +46,12 @@ import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
-import { loadMergedPrecompiledIR, loadPrecompiledIR, verifyProvenanceHash } from "./runtime/loadManifests";
+import {
+  loadMergedPrecompiledIR,
+  loadPrecompiledIR,
+  verifyProvenanceHash,
+} from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
-import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
-// LIVE schema metadata (NOT the IR-projection manifest-prisma-store-metadata):
-// the projection metadata describes the IR-projected schema whose delegates
-// (e.g. "event_staffs") don't exist on the live PrismaClient — GenericPrismaStore
-// threw at construction for 173/191 entities. See build-prisma-store-options.mjs.
-import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -67,14 +71,14 @@ import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generat
  * centralized structural cast for all PrismaClient-shaped parameters.
  */
 export interface PrismaLike {
+  // biome-ignore lint/suspicious/noExplicitAny: Prisma has overloaded $transaction signatures.
+  $transaction: (fn: (tx: any) => Promise<any>) => Promise<any>;
   user: {
     findFirst: (args: {
       where: { id: string; tenantId: string; deletedAt: null };
       select: { role: true };
     }) => Promise<{ role: string | null } | null>;
   };
-  // biome-ignore lint/suspicious/noExplicitAny: Prisma has overloaded $transaction signatures.
-  $transaction: (fn: (tx: any) => Promise<any>) => Promise<any>;
 }
 
 /**
@@ -109,15 +113,15 @@ export type PrismaTransactionClient = {
  * the assertion narrow and auditable.
  */
 function asStoreClient<TPrisma>(
-  prisma: PrismaLike | PrismaTransactionClient,
+  prisma: PrismaLike | PrismaTransactionClient
 ): TPrisma {
   return prisma as TPrisma;
 }
 
 /** Minimal structured logger the factory needs. */
 export interface ManifestRuntimeLogger {
-  info: (message: string, meta?: Record<string, unknown>) => void;
   error: (message: string, meta?: Record<string, unknown>) => void;
+  info: (message: string, meta?: Record<string, unknown>) => void;
 }
 
 /**
@@ -128,6 +132,11 @@ export interface ManifestRuntimeLogger {
  * `strictFunctionTypes` contravariance checks.
  */
 export interface ManifestTelemetryHooks {
+  onCommandExecuted?(
+    command: Readonly<IRCommand>,
+    result: Readonly<CommandResult>,
+    entityName?: string
+  ): void | Promise<void>;
   onConstraintEvaluated?(
     outcome: unknown,
     commandName: string,
@@ -139,36 +148,16 @@ export interface ManifestTelemetryHooks {
     outcome: unknown,
     commandName: string
   ): void;
-  onCommandExecuted?(
-    command: Readonly<IRCommand>,
-    result: Readonly<CommandResult>,
-    entityName?: string
-  ): void | Promise<void>;
 }
 
 /** Dependencies injected by the calling app. */
 export interface CreateManifestRuntimeDeps {
-  /** Prisma client instance (the app's singleton). */
-  prisma: PrismaLike;
-  /**
-   * Optional Prisma override for transaction-aware operations.
-   * When provided (typically a transaction client from $transaction callback),
-   * ALL internal Prisma operations use this client instead of `prisma`.
-   * This enables atomic multi-entity writes in composite routes.
-   */
-  prismaOverride?: PrismaTransactionClient;
-  /** Structured logger. */
-  log: ManifestRuntimeLogger;
   /** Error capture function (e.g. Sentry.captureException). Returns event id. */
   // The second parameter uses `never` so that Sentry's
   // `(err: unknown, hint?: ExclusiveEventHintOrCaptureContext) => string`
   // is assignable under strictFunctionTypes contravariance rules.
   // `never` is the bottom type — every concrete type satisfies it.
   captureException: (err: unknown, context?: never) => unknown;
-  /** Telemetry hooks for observability. */
-  telemetry?: ManifestTelemetryHooks;
-  /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
-  idempotency?: { failureTtlMs?: number };
 
   // -- Forwarded RuntimeOptions (Task 7.6) --
   // These are passthrough fields that the engine supports but the factory
@@ -177,14 +166,6 @@ export interface CreateManifestRuntimeDeps {
 
   /** Throw on effect boundaries (useful in testing). */
   deterministicMode?: boolean;
-  /** Limit expression evaluation depth/steps (guard against pathological expressions). */
-  evaluationLimits?: { maxExpressionDepth?: number; maxEvaluationSteps?: number };
-  /** Feature-flag resolver for the `flag()` builtin. Without it, `flag()` returns false. */
-  flagProvider?: (name: string) => unknown;
-  /** Per-command profiling toggle + callback. */
-  profiling?: { enabled?: boolean; onProfileComplete?: (profile: unknown) => void; detailed?: boolean };
-  /** Require IR provenance hash verification on first engine creation. */
-  requireValidProvenance?: boolean;
   /**
    * Field-level encryption provider for `encrypted` property modifier.
    * When supplied, properties marked `encrypted` in .manifest source are
@@ -196,16 +177,46 @@ export interface CreateManifestRuntimeDeps {
     encrypt(plaintext: string): Promise<{ ciphertext: string; keyId: string }>;
     decrypt(ciphertext: string, keyId: string): Promise<string>;
   };
+  /** Limit expression evaluation depth/steps (guard against pathological expressions). */
+  evaluationLimits?: {
+    maxExpressionDepth?: number;
+    maxEvaluationSteps?: number;
+  };
+  /** Feature-flag resolver for the `flag()` builtin. Without it, `flag()` returns false. */
+  flagProvider?: (name: string) => unknown;
+  /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
+  idempotency?: { failureTtlMs?: number };
+  /** Structured logger. */
+  log: ManifestRuntimeLogger;
+  /** Prisma client instance (the app's singleton). */
+  prisma: PrismaLike;
+  /**
+   * Optional Prisma override for transaction-aware operations.
+   * When provided (typically a transaction client from $transaction callback),
+   * ALL internal Prisma operations use this client instead of `prisma`.
+   * This enables atomic multi-entity writes in composite routes.
+   */
+  prismaOverride?: PrismaTransactionClient;
+  /** Per-command profiling toggle + callback. */
+  profiling?: {
+    enabled?: boolean;
+    onProfileComplete?: (profile: unknown) => void;
+    detailed?: boolean;
+  };
+  /** Require IR provenance hash verification on first engine creation. */
+  requireValidProvenance?: boolean;
+  /** Telemetry hooks for observability. */
+  telemetry?: ManifestTelemetryHooks;
 }
 
 /** Context passed by the caller describing the acting user. */
 export interface ManifestRuntimeContext {
+  entityName?: string;
   user: {
     id: string;
     tenantId: string;
     role?: string;
   };
-  entityName?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -265,17 +276,19 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
  */
 const EXCLUDED_FROM_GENERIC_STORE: ReadonlySet<string> = new Set([]);
 
-function modelHasTenantScope(meta: (typeof PRISMA_MODEL_METADATA)[string]): boolean {
+function modelHasTenantScope(
+  meta: (typeof PRISMA_MODEL_METADATA)[string]
+): boolean {
   return meta.fields.some(
     (f) =>
-      f.irName === "tenantId" ||
-      f.name === "tenantId" ||
-      f.name === "tenant_id",
+      f.irName === "tenantId" || f.name === "tenantId" || f.name === "tenant_id"
   );
 }
 
 function pkShapeOk(pk: string[]): boolean {
-  if (pk.length === 1 && pk[0] === "id") return true;
+  if (pk.length === 1 && pk[0] === "id") {
+    return true;
+  }
   if (pk.length === 2 && pk.includes("id")) {
     return pk.some((p) => p === "tenantId" || p === "tenant_id");
   }
@@ -421,10 +434,7 @@ export async function createManifestRuntime(
     entityName: string
   ) => {
     if (hasTypedStore(entityName)) {
-      const outboxWriter = createPrismaOutboxWriter(
-        entityName,
-        user.tenantId
-      );
+      const outboxWriter = createPrismaOutboxWriter(entityName, user.tenantId);
 
       const config: PrismaStoreConfig = {
         prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prismaForWrites),
@@ -448,7 +458,10 @@ export async function createManifestRuntime(
       );
     }
     return new PrismaJsonStore({
-      prisma: asStoreClient<ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]>(prismaForWrites),
+      prisma:
+        asStoreClient<
+          ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]
+        >(prismaForWrites),
       tenantId: user.tenantId,
       entityType: entityName,
     });
@@ -482,7 +495,10 @@ export async function createManifestRuntime(
   //    re-enable the default store creation.
   const idempotencyStore = deps.idempotency
     ? new PrismaIdempotencyStore({
-        prisma: asStoreClient<ConstructorParameters<typeof PrismaIdempotencyStore>[0]["prisma"]>(prismaForWrites),
+        prisma:
+          asStoreClient<
+            ConstructorParameters<typeof PrismaIdempotencyStore>[0]["prisma"]
+          >(prismaForWrites),
         tenantId: user.tenantId,
       })
     : undefined;
@@ -579,7 +595,9 @@ export async function createManifestRuntime(
       ...(auditSink ? { auditSink } : {}),
       ...(outboxStore ? { outboxStore } : {}),
       ...(approvalStore ? { approvalStore } : {}),
-      ...(deps.deterministicMode !== undefined && { deterministicMode: deps.deterministicMode }),
+      ...(deps.deterministicMode !== undefined && {
+        deterministicMode: deps.deterministicMode,
+      }),
       // The engine's evaluation budget is shared across a command's ENTIRE
       // synchronous cascade (reactions + middleware dispatches re-enter
       // runCommand under the outer command's budget — initEvalBudget is
@@ -587,7 +605,9 @@ export async function createManifestRuntime(
       // EventConfirmed -> prep-list seed -> N PrepListItem.create, leaving
       // partially-applied mutates. 250k keeps the runaway-expression bound
       // while giving legitimate cascades ~25x headroom.
-      evaluationLimits: deps.evaluationLimits ?? { maxEvaluationSteps: 250_000 },
+      evaluationLimits: deps.evaluationLimits ?? {
+        maxEvaluationSteps: 250_000,
+      },
       ...(deps.profiling && { profiling: deps.profiling }),
       ...(deps.flagProvider && { flagProvider: deps.flagProvider }),
       ...(encryptionProvider && { encryptionProvider }),

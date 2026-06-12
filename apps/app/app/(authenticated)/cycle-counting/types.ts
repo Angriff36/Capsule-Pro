@@ -20,137 +20,137 @@ export type VarianceReportStatus =
 export type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
 export interface CycleCountSession {
+  approvedById: string | null;
+  completedAt: Date | null;
+  countedItems: number;
+  countType: CycleCountSessionType;
+  createdAt: Date;
+  createdById: string;
+  deletedAt: Date | null;
+  finalizedAt: Date | null;
   id: string;
-  tenantId: string;
   locationId: string;
+  notes: string | null;
+  scheduledDate: Date | null;
   sessionId: string;
   sessionName: string;
-  countType: CycleCountSessionType;
-  scheduledDate: Date | null;
   startedAt: Date | null;
-  completedAt: Date | null;
-  finalizedAt: Date | null;
   status: CycleCountSessionStatus;
+  tenantId: string;
   totalItems: number;
-  countedItems: number;
   totalVariance: number;
-  variancePercentage: number;
-  notes: string | null;
-  createdById: string;
-  approvedById: string | null;
-  createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
+  variancePercentage: number;
 }
 
 export interface CycleCountRecord {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  storageLocationId: string;
-  expectedQuantity: number;
-  countedQuantity: number;
-  variance: number;
-  variancePct: number;
+  barcode: string | null;
   countDate: Date;
   countedById: string;
-  barcode: string | null;
-  notes: string | null;
-  isVerified: boolean;
-  verifiedById: string | null;
-  verifiedAt: Date | null;
-  syncStatus: SyncStatus;
-  offlineId: string | null;
+  countedQuantity: number;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
+  expectedQuantity: number;
+  id: string;
+  isVerified: boolean;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
+  notes: string | null;
+  offlineId: string | null;
+  sessionId: string;
+  storageLocationId: string;
+  syncStatus: SyncStatus;
+  tenantId: string;
+  updatedAt: Date;
+  variance: number;
+  variancePct: number;
+  verifiedAt: Date | null;
+  verifiedById: string | null;
 }
 
 export interface VarianceReport {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity: number;
-  countedQuantity: number;
-  variance: number;
-  variancePct: number;
   accuracyScore: number;
-  status: VarianceReportStatus;
-  adjustmentType: string | null;
   adjustmentAmount: number | null;
   adjustmentDate: Date | null;
-  notes: string | null;
-  generatedAt: Date;
+  adjustmentType: string | null;
+  countedQuantity: number;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
+  expectedQuantity: number;
+  generatedAt: Date;
+  id: string;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
+  notes: string | null;
+  reportType: string;
+  sessionId: string;
+  status: VarianceReportStatus;
+  tenantId: string;
+  updatedAt: Date;
+  variance: number;
+  variancePct: number;
 }
 
 export interface CycleCountAuditLog {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  recordId: string | null;
   action: string;
-  entityType: string;
-  entityId: string;
-  oldValue: Record<string, unknown> | null;
-  newValue: Record<string, unknown> | null;
-  performedById: string;
-  ipAddress: string | null;
-  userAgent: string | null;
   createdAt: Date;
+  entityId: string;
+  entityType: string;
+  id: string;
+  ipAddress: string | null;
+  newValue: Record<string, unknown> | null;
+  oldValue: Record<string, unknown> | null;
+  performedById: string;
+  recordId: string | null;
+  sessionId: string;
+  tenantId: string;
+  userAgent: string | null;
 }
 
 export interface CreateSessionInput {
-  locationId: string;
-  sessionName: string;
   countType: CycleCountSessionType;
-  scheduledDate?: Date;
+  locationId: string;
   notes?: string;
+  scheduledDate?: Date;
+  sessionName: string;
 }
 
 export interface UpdateSessionInput {
+  approvedById?: string;
   id: string;
+  notes?: string;
   sessionName?: string;
   status?: CycleCountSessionStatus;
-  notes?: string;
-  approvedById?: string;
 }
 
 export interface CreateRecordInput {
-  sessionId: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  storageLocationId: string;
-  expectedQuantity: number;
-  countedQuantity: number;
   barcode?: string;
+  countedQuantity: number;
+  expectedQuantity: number;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
   notes?: string;
   offlineId?: string;
+  sessionId: string;
+  storageLocationId: string;
   syncStatus?: SyncStatus;
 }
 
 export interface UpdateRecordInput {
-  id: string;
   countedQuantity?: number;
-  notes?: string;
+  id: string;
   isVerified?: boolean;
+  notes?: string;
   syncStatus?: SyncStatus;
 }
 
 export interface FinalizeSessionInput {
-  sessionId: string;
   approvedById: string;
   notes?: string;
+  sessionId: string;
 }
 
 export interface SyncRecordsInput {
@@ -170,19 +170,19 @@ export interface SyncRecordsInput {
 }
 
 export interface SessionResult {
-  success: boolean;
-  session?: CycleCountSession;
   error?: string;
+  session?: CycleCountSession;
+  success: boolean;
 }
 
 export interface RecordResult {
-  success: boolean;
-  record?: CycleCountRecord;
   error?: string;
+  record?: CycleCountRecord;
+  success: boolean;
 }
 
 export interface FinalizeResult {
-  success: boolean;
-  sessionId?: string;
   error?: string;
+  sessionId?: string;
+  success: boolean;
 }

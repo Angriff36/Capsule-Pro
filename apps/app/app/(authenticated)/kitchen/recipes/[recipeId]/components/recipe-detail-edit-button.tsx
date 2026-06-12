@@ -20,8 +20,6 @@ import {
 import { RecipeEditModal } from "../../components/recipe-edit-modal";
 
 interface CompositeRouteResponse {
-  success: boolean;
-  message?: string;
   constraintOutcomes?: ConstraintOutcome[];
   data?: {
     version: unknown;
@@ -30,14 +28,16 @@ interface CompositeRouteResponse {
     newVersionNumber: number;
     events: unknown[];
   };
+  message?: string;
+  success: boolean;
 }
 
 interface ModalIngredient {
   id?: string;
   name: string;
+  notes?: string;
   quantity: string;
   unit: string;
-  notes?: string;
 }
 
 interface ModalStep {

@@ -7,7 +7,7 @@
  * Includes the entity type, entity ID, and projection ID.
  */
 export interface EntityFocus {
-  entityType: string;
   entityId: string;
+  entityType: string;
   projectionId: string;
 }

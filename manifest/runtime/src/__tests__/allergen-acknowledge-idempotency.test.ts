@@ -157,9 +157,9 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
 
     expect(res.ok).toBe(true);
     expect((res as { noop?: boolean }).noop).toBeFalsy();
-    expect(eventNames(res).filter((n) => n.includes("Acknowledged"))).toHaveLength(
-      1
-    );
+    expect(
+      eventNames(res).filter((n) => n.includes("Acknowledged"))
+    ).toHaveLength(1);
   });
 
   it("second acknowledge is a no-op: success, noop=true, NO duplicate event", async () => {
@@ -167,7 +167,12 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
     const id = await createWarning(engine);
 
     await run(engine, "acknowledge", { acknowledgedBy: "u1" }, id);
-    const second = await run(engine, "acknowledge", { acknowledgedBy: "u1" }, id);
+    const second = await run(
+      engine,
+      "acknowledge",
+      { acknowledgedBy: "u1" },
+      id
+    );
 
     // Success, not a 422 — the user never sees a state-machine error.
     expect(second.ok).toBe(true);
@@ -187,7 +192,12 @@ describe("AllergenWarning.acknowledge — idempotent no-op", () => {
 
     // escalate is NOT an idempotent action; escalating an acknowledged warning
     // is a real disallowed transition and must still be blocked.
-    const res = await run(engine, "escalate", { escalatedTo: "chef", reason: "x" }, id);
+    const res = await run(
+      engine,
+      "escalate",
+      { escalatedTo: "chef", reason: "x" },
+      id
+    );
 
     expect(res.ok).toBe(false);
     expect((res as { kind: string }).kind).toBe("guard_failed");

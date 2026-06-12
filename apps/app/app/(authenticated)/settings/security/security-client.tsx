@@ -44,33 +44,38 @@ import {
 import { AlertCircle, Eye, Key, Loader2, Shield, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiKeyRevoke, getRolePolicy, listApiKeies, listRolePolicies } from "@/app/lib/manifest-client.generated";
+import {
+  apiKeyRevoke,
+  getRolePolicy,
+  listApiKeies,
+  listRolePolicies,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface ApiKey {
-  id: string;
-  name: string;
-  keyPrefix: string;
-  scopes: string[];
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  revokedAt: string | null;
-  createdByUserId: string | null;
   createdAt: string;
+  createdByUserId: string | null;
+  expiresAt: string | null;
+  id: string;
+  keyPrefix: string;
+  lastUsedAt: string | null;
+  name: string;
+  revokedAt: string | null;
+  scopes: string[];
   updatedAt: string;
 }
 
 interface RolePolicy {
-  id: string;
-  name: string;
-  description: string | null;
-  policyType: string | null;
-  isActive: boolean;
-  tenantId: string | null;
   deletedAt: string | null;
+  description: string | null;
+  id: string;
+  isActive: boolean;
+  name: string;
+  policyType: string | null;
+  tenantId: string | null;
 }
 
 interface RolePolicyDetail extends RolePolicy {}
@@ -178,7 +183,7 @@ function ApiKeyDetailDialog({
             <span className="text-muted-foreground">Scopes</span>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {apiKey.scopes.length === 0 ? (
-                <span className="text-xs text-muted-foreground italic">
+                <span className="text-muted-foreground text-xs italic">
                   No scopes assigned
                 </span>
               ) : (
@@ -249,7 +254,7 @@ function RolePolicyDetailDialog({
       );
     }
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Failed to load policy details.
       </p>
     );
@@ -306,7 +311,7 @@ function RevokeKeyDialog({
         {apiKey && (
           <div className="rounded-md border bg-muted/50 p-3 text-sm">
             <span className="font-medium">{apiKey.name}</span>
-            <span className="ml-2 font-mono text-xs text-muted-foreground">
+            <span className="ml-2 font-mono text-muted-foreground text-xs">
               ({apiKey.keyPrefix}...)
             </span>
           </div>
@@ -353,8 +358,8 @@ function EmptyState({
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <Icon className="h-10 w-10 text-muted-foreground/50" />
       <div>
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground/75">{description}</p>
+        <p className="font-medium text-muted-foreground text-sm">{title}</p>
+        <p className="text-muted-foreground/75 text-xs">{description}</p>
       </div>
     </div>
   );
@@ -490,14 +495,14 @@ export function SecurityClient() {
               <TableRow key={apiKey.id}>
                 <TableCell className="font-medium">{apiKey.name}</TableCell>
                 <TableCell>
-                  <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
                     {apiKey.keyPrefix}...
                   </code>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {apiKey.scopes.length === 0 ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         None
                       </span>
                     ) : (

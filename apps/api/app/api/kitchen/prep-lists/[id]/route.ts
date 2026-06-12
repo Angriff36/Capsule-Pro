@@ -7,8 +7,6 @@ import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export interface StationGroup {
-  stationId: string;
-  stationName: string;
   items: Array<{
     id: string;
     stationId: string | null;
@@ -32,6 +30,8 @@ export interface StationGroup {
     completedAt: Date | null;
     completedBy: string | null;
   }>;
+  stationId: string;
+  stationName: string;
 }
 
 /**
@@ -186,7 +186,10 @@ export async function PATCH(
   });
 
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "PrepList",
@@ -215,7 +218,10 @@ export async function DELETE(
   });
 
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "PrepList",

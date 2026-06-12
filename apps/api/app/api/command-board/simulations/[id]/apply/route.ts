@@ -444,12 +444,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       for (const mod of delta.modified_projections) {
         // Find the source projection by entity_id
         const simProj = simulatedProjections.find((p) => p.id === mod.id);
-        if (!simProj) continue;
+        if (!simProj) {
+          continue;
+        }
 
         const sourceProj = originalProjections.find(
           (p) => p.entity_id === simProj.entity_id
         );
-        if (!sourceProj) continue;
+        if (!sourceProj) {
+          continue;
+        }
 
         // Map field names
         const fieldMapping: Record<string, string> = {

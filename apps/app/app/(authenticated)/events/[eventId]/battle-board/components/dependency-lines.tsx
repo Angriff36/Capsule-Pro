@@ -4,14 +4,14 @@ import { useMemo } from "react";
 import type { TimelineTask } from "../types";
 
 interface DependencyLinesProps {
-  tasks: TimelineTask[];
   eventDate: Date;
   showDependencies: boolean;
-  zoom: number;
   taskPositions: Map<
     string,
     { left: number; top: number; width: number; height: number }
   >;
+  tasks: TimelineTask[];
+  zoom: number;
 }
 
 const ROW_HEIGHT = 48;

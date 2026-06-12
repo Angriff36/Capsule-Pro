@@ -47,10 +47,14 @@ function getCurrentWeekRange() {
 
 export default async function LeaderboardPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const { start, end } = getCurrentWeekRange();
   const shiftCounts = await database.scheduleShift.groupBy({
@@ -71,7 +75,9 @@ export default async function LeaderboardPage() {
     },
     select: { id: true, firstName: true, lastName: true, role: true },
   });
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
   const leaderboard: LeaderboardRow[] = shiftCounts
     .map((row) => {
       const employee = employeesById.get(row.employeeId);
@@ -123,7 +129,7 @@ export default async function LeaderboardPage() {
 
           {leaderboard.length === 0 ? (
             <OperationalRow density="compact">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No shift activity yet this week. The board fills as people claim
                 open shifts.
               </p>
@@ -138,7 +144,7 @@ export default async function LeaderboardPage() {
                 return (
                   <OperationalRow density="comfortable" key={person.employeeId}>
                     <div className="flex items-center gap-4">
-                      <span className="w-10 text-right font-mono text-2xl tabular-nums text-muted-foreground">
+                      <span className="w-10 text-right font-mono text-2xl text-muted-foreground tabular-nums">
                         #{index + 1}
                       </span>
                       <Avatar className="size-12">

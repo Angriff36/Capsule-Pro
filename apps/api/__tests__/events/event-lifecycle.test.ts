@@ -66,9 +66,11 @@ vi.mock("@sentry/nextjs", () => ({
 vi.mock("@/lib/manifest/execute-command", async () => {
   const { NextResponse: NR } = await import("next/server");
   return {
-    runManifestCommand: vi.fn().mockResolvedValue(
-      NR.json({ ok: true, data: { id: "manifest-created" } }, { status: 201 })
-    ),
+    runManifestCommand: vi
+      .fn()
+      .mockResolvedValue(
+        NR.json({ ok: true, data: { id: "manifest-created" } }, { status: 201 })
+      ),
   };
 });
 
@@ -635,7 +637,10 @@ describe("Event Budget API", () => {
         role: "admin",
       } as any);
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ ok: true, data: { id: "new-budget-001" } }), { status: 201, headers: { "Content-Type": "application/json" } })
+        new Response(
+          JSON.stringify({ ok: true, data: { id: "new-budget-001" } }),
+          { status: 201, headers: { "Content-Type": "application/json" } }
+        )
       );
 
       const request = createMockRequest(
@@ -666,7 +671,10 @@ describe("Event Budget API", () => {
         role: "admin",
       } as any);
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ ok: true }), { status: 201, headers: { "Content-Type": "application/json" } })
+        new Response(JSON.stringify({ ok: true }), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        })
       );
 
       const request = createMockRequest(
@@ -695,7 +703,10 @@ describe("Event Budget API", () => {
       } as any);
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ ok: false, error: "Constraint violated: budget amount must be non-negative" }),
+          JSON.stringify({
+            ok: false,
+            error: "Constraint violated: budget amount must be non-negative",
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -704,7 +715,10 @@ describe("Event Budget API", () => {
         "http://localhost:3000/api/events/budgets",
         {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, totalBudgetAmount: -500 }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            totalBudgetAmount: -500,
+          }),
         }
       );
 
@@ -723,7 +737,10 @@ describe("Event Budget API", () => {
         "http://localhost:3000/api/events/budgets",
         {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, totalBudgetAmount: 1000 }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            totalBudgetAmount: 1000,
+          }),
         }
       );
 

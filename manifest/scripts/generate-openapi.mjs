@@ -16,8 +16,8 @@
  *
  * Task 5.3 — OpenAPI projection evaluation + wiring.
  */
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -31,7 +31,9 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 const entityNames = ir.entities.map((e) => e.name);
 
 // ── Generate raw spec ──
-const { OpenApiProjection } = await import("@angriff36/manifest/projections/openapi");
+const { OpenApiProjection } = await import(
+  "@angriff36/manifest/projections/openapi"
+);
 const projection = new OpenApiProjection();
 const genResult = projection.generate(ir, {
   surface: "openapi.spec",
@@ -44,7 +46,12 @@ const genResult = projection.generate(ir, {
         "Auto-generated API specification for Capsule-Pro — a catering and events management platform. " +
         "All mutations go through the Manifest runtime dispatcher. Reads bypass runtime per constitution §10.",
     },
-    servers: [{ url: "https://pop-os.tail78dd9e.ts.net/api/manifest", description: "Dev (Tailscale)" }],
+    servers: [
+      {
+        url: "https://pop-os.tail78dd9e.ts.net/api/manifest",
+        description: "Dev (Tailscale)",
+      },
+    ],
     includeAuth: true,
     includeTenant: true,
     includeConstraintErrors: true,
@@ -82,7 +89,11 @@ for (const [path, methods] of Object.entries(spec.paths || {})) {
   // Heuristic: a path with exactly 3+ segments under basePath where the last
   // segment is a literal (not {id}) and the method is POST only → it's a command.
   const segments = fixed.split("/").filter(Boolean);
-  if (segments.length >= 3 && methods.post && Object.keys(methods).length === 1) {
+  if (
+    segments.length >= 3 &&
+    methods.post &&
+    Object.keys(methods).length === 1
+  ) {
     const last = segments[segments.length - 1];
     // Skip if already has /commands/ segment or if last is {id}
     if (last !== "{id}" && !fixed.includes("/commands/")) {
@@ -111,7 +122,13 @@ writeFileSync(OUT_JSON, JSON.stringify(spec, null, 2));
 const pathCount = Object.keys(fixedPaths).length;
 const schemaCount = Object.keys(spec.components?.schemas || {}).length;
 
-console.log(`[openapi] Generated spec: ${pathCount} paths, ${schemaCount} schemas`);
-console.log(`[openapi] Entities: ${entityNames.length}, Commands: ${ir.commands?.length || 0}`);
-console.log(`[openapi] Path rewrites: ${listRewrites} list fixes, ${commandRewrites} command fixes`);
+console.log(
+  `[openapi] Generated spec: ${pathCount} paths, ${schemaCount} schemas`
+);
+console.log(
+  `[openapi] Entities: ${entityNames.length}, Commands: ${ir.commands?.length || 0}`
+);
+console.log(
+  `[openapi] Path rewrites: ${listRewrites} list fixes, ${commandRewrites} command fixes`
+);
 console.log(`[openapi] Output: ${OUT_JSON}`);

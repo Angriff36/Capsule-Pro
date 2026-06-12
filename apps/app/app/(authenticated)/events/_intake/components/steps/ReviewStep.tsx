@@ -56,23 +56,25 @@ function SummaryRow({
   label: string;
   value: string;
 }) {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-stone-100 last:border-0">
-      <span className="text-stone-400 mt-0.5">{icon}</span>
-      <div className="flex-1 min-w-0">
-        <span className="text-xs text-stone-400 uppercase tracking-wider">
+    <div className="flex items-start gap-3 border-stone-100 border-b py-3 last:border-0">
+      <span className="mt-0.5 text-stone-400">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <span className="text-stone-400 text-xs uppercase tracking-wider">
           {label}
         </span>
-        <p className="text-sm text-stone-700 mt-0.5">{value}</p>
+        <p className="mt-0.5 text-sm text-stone-700">{value}</p>
       </div>
     </div>
   );
 }
 
 interface Props {
-  formData: WizardFormData;
   estimate: PriceEstimate;
+  formData: WizardFormData;
 }
 
 export default function ReviewStep({ formData, estimate }: Props) {
@@ -94,9 +96,9 @@ export default function ReviewStep({ formData, estimate }: Props) {
 
       <PriceEstimateBadge estimate={estimate} />
 
-      <div className="bg-white rounded-xl border border-stone-200 p-6">
+      <div className="rounded-xl border border-stone-200 bg-white p-6">
         <SummaryRow
-          icon={<Sparkles className="w-4 h-4" />}
+          icon={<Sparkles className="h-4 w-4" />}
           label="Occasion"
           value={[
             OCCASION_LABELS[formData.occasionType] || formData.occasionType,
@@ -107,13 +109,13 @@ export default function ReviewStep({ formData, estimate }: Props) {
         />
         {formData.vibeDescription && (
           <SummaryRow
-            icon={<Sparkles className="w-4 h-4" />}
+            icon={<Sparkles className="h-4 w-4" />}
             label="Vision & Vibe"
             value={formData.vibeDescription}
           />
         )}
         <SummaryRow
-          icon={<Users className="w-4 h-4" />}
+          icon={<Users className="h-4 w-4" />}
           label="Guests & Format"
           value={[
             `~${formData.guestCount} guests`,
@@ -123,7 +125,7 @@ export default function ReviewStep({ formData, estimate }: Props) {
             .join(" / ")}
         />
         <SummaryRow
-          icon={<UtensilsCrossed className="w-4 h-4" />}
+          icon={<UtensilsCrossed className="h-4 w-4" />}
           label="Service Style"
           value={[
             SERVICE_LABELS[formData.serviceStyle] || formData.serviceStyle,
@@ -133,7 +135,7 @@ export default function ReviewStep({ formData, estimate }: Props) {
             .join(" / ")}
         />
         <SummaryRow
-          icon={<ChefHat className="w-4 h-4" />}
+          icon={<ChefHat className="h-4 w-4" />}
           label="Cuisine & Dietary"
           value={[
             formData.cuisinePreferences.join(", "),
@@ -145,14 +147,14 @@ export default function ReviewStep({ formData, estimate }: Props) {
             .join(" | ")}
         />
         <SummaryRow
-          icon={<UserCheck className="w-4 h-4" />}
+          icon={<UserCheck className="h-4 w-4" />}
           label="Staffing"
           value={
             STAFFING_LABELS[formData.staffingLevel] || formData.staffingLevel
           }
         />
         <SummaryRow
-          icon={<Wine className="w-4 h-4" />}
+          icon={<Wine className="h-4 w-4" />}
           label="Bar & Extras"
           value={[
             BAR_LABELS[formData.barService] || formData.barService,
@@ -163,7 +165,7 @@ export default function ReviewStep({ formData, estimate }: Props) {
             .join(" | ")}
         />
         <SummaryRow
-          icon={<MapPin className="w-4 h-4" />}
+          icon={<MapPin className="h-4 w-4" />}
           label="Logistics"
           value={[
             formData.eventDate,
@@ -176,24 +178,24 @@ export default function ReviewStep({ formData, estimate }: Props) {
         />
         {formData.additionalNotes && (
           <SummaryRow
-            icon={<FileText className="w-4 h-4" />}
+            icon={<FileText className="h-4 w-4" />}
             label="Notes"
             value={formData.additionalNotes}
           />
         )}
       </div>
 
-      <div className="bg-stone-50 rounded-xl p-4 border border-stone-100">
+      <div className="rounded-xl border border-stone-100 bg-stone-50 p-4">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-4 h-4 text-stone-500" />
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-stone-200">
+            <FileText className="h-4 w-4 text-stone-500" />
           </div>
           <div>
             <p className="text-sm text-stone-600">
               Submitting to{" "}
               <strong className="text-stone-800">{formData.email}</strong>
             </p>
-            <p className="text-xs text-stone-400 mt-1">
+            <p className="mt-1 text-stone-400 text-xs">
               Our team will review your inquiry and follow up within 1 business
               day. The estimate shown is non-binding and for reference only.
             </p>

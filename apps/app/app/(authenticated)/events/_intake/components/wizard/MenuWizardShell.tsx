@@ -24,8 +24,8 @@ import StepNavigation from "./StepNavigation";
 
 interface Props {
   costProvider?: CostDataProvider;
-  pricingConfig?: MenuPricingConfig;
   ownerViewConfig?: OwnerViewConfig;
+  pricingConfig?: MenuPricingConfig;
 }
 
 export default function MenuWizardShell({
@@ -188,20 +188,20 @@ export default function MenuWizardShell({
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
-      <header className="bg-white/80 backdrop-blur-md border-b border-stone-100 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-stone-100 border-b bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-stone-800 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-4 h-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800">
+              <BookOpen className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-semibold text-stone-800 tracking-tight hidden sm:block">
+            <span className="hidden font-semibold text-sm text-stone-800 tracking-tight sm:block">
               Menu Composer
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             {selectedCount > 0 && (
-              <div className="flex items-center gap-2 text-xs text-stone-500 bg-stone-50 rounded-full px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-full bg-stone-50 px-3 py-1.5 text-stone-500 text-xs">
                 <span>
                   {selectedCount} {selectedCount === 1 ? "item" : "items"}
                 </span>
@@ -214,21 +214,19 @@ export default function MenuWizardShell({
             )}
             {ownerEnabled && (
               <button
-                className={`
-                  flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all
-                  ${
-                    ownerView
-                      ? "bg-stone-800 text-white border-stone-800"
-                      : "bg-white text-stone-500 border-stone-200 hover:border-stone-400"
-                  }
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                  ownerView
+                    ? "border-stone-800 bg-stone-800 text-white"
+                    : "border-stone-200 bg-white text-stone-500 hover:border-stone-400"
+                }
                 `}
                 onClick={() => setOwnerView(!ownerView)}
                 type="button"
               >
                 {ownerView ? (
-                  <EyeOff className="w-3 h-3" />
+                  <EyeOff className="h-3 w-3" />
                 ) : (
-                  <Eye className="w-3 h-3" />
+                  <Eye className="h-3 w-3" />
                 )}
                 {ownerView ? "Hide Costs" : "Owner View"}
               </button>
@@ -237,7 +235,7 @@ export default function MenuWizardShell({
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4">
+      <div className="mx-auto max-w-4xl px-4 pt-6 pb-4 sm:px-6">
         <ProgressBar
           currentStep={menu.currentStep}
           onStepClick={menu.goToStep}
@@ -245,8 +243,8 @@ export default function MenuWizardShell({
         />
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 md:p-10">
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 md:py-10">
+        <div className="rounded-2xl border border-stone-100 bg-white p-6 shadow-sm md:p-10">
           <div className="animate-fadeIn" key={menu.currentStep}>
             {renderStep()}
           </div>
@@ -265,8 +263,8 @@ export default function MenuWizardShell({
         </div>
       </main>
 
-      <footer className="text-center py-8 px-4">
-        <p className="text-xs text-stone-300">
+      <footer className="px-4 py-8 text-center">
+        <p className="text-stone-300 text-xs">
           Menu items are subject to seasonal availability. Final selections
           confirmed with your event coordinator.
         </p>

@@ -30,45 +30,45 @@ type DiscrepancyStatus = "pending" | "reviewed" | "approved" | "adjusted";
 type DiscrepancySeverity = "low" | "medium" | "high" | "critical";
 
 interface DiscrepancyListItem {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity: number;
-  countedQuantity: number;
-  variance: number;
-  variancePct: number;
   accuracyScore: number;
-  status: DiscrepancyStatus;
-  severity: DiscrepancySeverity;
-  adjustmentType: string | null;
   adjustmentAmount: number | null;
   adjustmentDate: string | null;
-  notes: string | null;
-  rootCause: string | null;
-  resolutionNotes: string | null;
-  resolvedById: string | null;
-  resolvedAt: string | null;
-  generatedAt: string;
+  adjustmentType: string | null;
+  countedQuantity: number;
   createdAt: string;
+  expectedQuantity: number;
+  generatedAt: string;
+  id: string;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
+  notes: string | null;
+  reportType: string;
+  resolutionNotes: string | null;
+  resolvedAt: string | null;
+  resolvedById: string | null;
+  rootCause: string | null;
+  sessionId: string;
+  severity: DiscrepancySeverity;
+  status: DiscrepancyStatus;
+  tenantId: string;
   updatedAt: string;
+  variance: number;
+  variancePct: number;
 }
 
 interface DiscrepanciesQueryParams {
-  status?: DiscrepancyStatus;
-  severity?: DiscrepancySeverity;
-  itemId?: string;
-  sessionId?: string;
   dateFrom?: string;
   dateTo?: string;
-  search?: string;
-  page?: number;
+  itemId?: string;
   limit?: number;
+  page?: number;
+  search?: string;
+  sessionId?: string;
+  severity?: DiscrepancySeverity;
   sortBy?: "createdAt" | "variancePct" | "itemName";
   sortOrder?: "asc" | "desc";
+  status?: DiscrepancyStatus;
 }
 
 function toNumber(
@@ -129,30 +129,30 @@ function buildWhereClause(
   return where;
 }
 interface VarianceReportRecord {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity: { toNumber: () => number };
-  countedQuantity: { toNumber: () => number };
-  variance: { toNumber: () => number };
-  variancePct: { toNumber: () => number };
   accuracyScore: { toNumber: () => number };
-  status: string;
-  adjustmentType: string | null;
   adjustmentAmount: { toNumber: () => number } | null;
   adjustmentDate: Date | null;
-  notes: string | null;
-  rootCause: string | null;
-  resolutionNotes: string | null;
-  resolvedById: string | null;
-  resolvedAt: Date | null;
-  generatedAt: Date;
+  adjustmentType: string | null;
+  countedQuantity: { toNumber: () => number };
   createdAt: Date;
+  expectedQuantity: { toNumber: () => number };
+  generatedAt: Date;
+  id: string;
+  itemId: string;
+  itemName: string;
+  itemNumber: string;
+  notes: string | null;
+  reportType: string;
+  resolutionNotes: string | null;
+  resolvedAt: Date | null;
+  resolvedById: string | null;
+  rootCause: string | null;
+  sessionId: string;
+  status: string;
+  tenantId: string;
   updatedAt: Date;
+  variance: { toNumber: () => number };
+  variancePct: { toNumber: () => number };
 }
 
 function mapReportToDiscrepancy(

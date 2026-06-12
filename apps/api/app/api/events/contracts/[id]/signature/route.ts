@@ -22,6 +22,14 @@ export async function POST(
 ) {
   const { id: contractId } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "ContractSignature", command: "create", body: { ...rawBody, contractId, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "ContractSignature",
+    command: "create",
+    body: { ...rawBody, contractId, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

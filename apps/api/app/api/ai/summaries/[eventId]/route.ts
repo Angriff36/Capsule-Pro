@@ -17,16 +17,11 @@ const TARGET_WORD_COUNT = 300; // Target 200-400 words
 const WORD_COUNT_REGEX = /\s+/;
 
 interface EventSummaryData {
-  id: string;
-  title: string;
-  eventType: string;
-  eventDate: Date;
-  guestCount: number;
-  status: string;
-  venueName: string | null;
-  venueAddress: string | null;
-  notes: string | null;
-  tags: string[];
+  allergenWarnings: Array<{
+    severity: string;
+    allergens: string[];
+    notes: string | null;
+  }>;
   client: {
     first_name: string | null;
     last_name: string | null;
@@ -41,16 +36,21 @@ interface EventSummaryData {
     allergens: string[];
     dietaryTags: string[];
   }>;
+  eventDate: Date;
+  eventType: string;
+  guestCount: number;
+  id: string;
+  notes: string | null;
   staffAssignments: Array<{
     role: string | null;
     shiftStart: Date | null;
     shiftEnd: Date | null;
   }>;
-  allergenWarnings: Array<{
-    severity: string;
-    allergens: string[];
-    notes: string | null;
-  }>;
+  status: string;
+  tags: string[];
+  title: string;
+  venueAddress: string | null;
+  venueName: string | null;
 }
 
 async function getEventDataForSummary(
@@ -284,7 +284,7 @@ ${dishNames.length > 0 ? dishNames.join(", ") : "No menu items specified"}
 ${hasAllergens ? `**ALLERGENS PRESENT:** ${allergenList.join(", ")}` : ""}
 ${dietaryTags.length > 0 ? `**Dietary Options:** ${dietaryTags.join(", ")}` : ""}
 
-**Staffing:** ${staffCount} assignment${staffCount !== 1 ? "s" : ""}
+**Staffing:** ${staffCount} assignment${staffCount === 1 ? "" : "s"}
 
 ${eventData.allergenWarnings.length > 0 ? `**CRITICAL ALLERGEN WARNINGS:** ${eventData.allergenWarnings.map((w) => `${w.severity}: ${w.allergens.join(", ")}${w.notes ? ` - ${w.notes}` : ""}`).join("; ")}` : ""}
 
@@ -352,13 +352,13 @@ function generateFallbackSummary(eventData: EventSummaryData): {
 
   // Build basic summary
   let summary = `${eventData.title} is a ${eventData.eventType} event scheduled for ${eventDateStr}`;
-  summary += ` for ${eventData.guestCount} guest${eventData.guestCount !== 1 ? "s" : ""}.`;
+  summary += ` for ${eventData.guestCount} guest${eventData.guestCount === 1 ? "" : "s"}.`;
   if (eventData.venueName) {
     summary += ` The event will be held at ${eventData.venueName}.`;
   }
 
   if (dishNames.length > 0) {
-    summary += ` Menu includes ${dishNames.length} dish${dishNames.length !== 1 ? "es" : ""}: ${dishNames.slice(0, 5).join(", ")}${dishNames.length > 5 ? ", and more" : ""}.`;
+    summary += ` Menu includes ${dishNames.length} dish${dishNames.length === 1 ? "" : "es"}: ${dishNames.slice(0, 5).join(", ")}${dishNames.length > 5 ? ", and more" : ""}.`;
   }
 
   if (hasAllergens) {
@@ -393,7 +393,7 @@ function generateFallbackSummary(eventData: EventSummaryData): {
   }
   if (eventData.allergenWarnings.length > 0) {
     criticalInfo.push(
-      `${eventData.allergenWarnings.length} active allergen warning${eventData.allergenWarnings.length !== 1 ? "s" : ""}`
+      `${eventData.allergenWarnings.length} active allergen warning${eventData.allergenWarnings.length === 1 ? "" : "s"}`
     );
   }
 

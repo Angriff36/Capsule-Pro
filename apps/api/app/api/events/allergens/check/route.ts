@@ -10,16 +10,16 @@ const UUID_REGEX =
 
 // Define types
 interface CheckAllergensRequest {
-  eventId: string;
   dishIds?: string[];
+  eventId: string;
 }
 
 interface AllergenConflict {
-  guestId: string;
-  guestName: string;
+  allergens: string[];
   dishId: string;
   dishName: string;
-  allergens: string[];
+  guestId: string;
+  guestName: string;
   severity: "critical" | "warning";
   type: "allergen_conflict" | "dietary_conflict";
 }
@@ -34,17 +34,17 @@ interface CheckAllergensResponse {
 }
 
 interface GuestDietaryInfo {
-  id: string;
-  guestName: string;
-  dietaryRestrictions: string[] | null;
   allergenRestrictions: string[] | null;
+  dietaryRestrictions: string[] | null;
+  guestName: string;
+  id: string;
 }
 
 interface DishDietaryInfo {
-  id: string;
-  name: string;
   allergens: string[];
   dietaryTags: string[];
+  id: string;
+  name: string;
 }
 
 interface ConflictCheckResult {

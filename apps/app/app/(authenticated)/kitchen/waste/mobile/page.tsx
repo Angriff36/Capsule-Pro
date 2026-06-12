@@ -24,24 +24,24 @@ import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
 interface WasteReason {
+  category: string;
   id: string;
   name: string;
-  category: string;
 }
 
 interface InventoryItem {
+  currentStock?: number;
   id: string;
   name: string;
   unit: string;
-  currentStock?: number;
 }
 
 interface WasteEntryFormData {
   itemId: string;
-  quantity: number;
-  reasonId: string;
   location: string;
   notes: string;
+  quantity: number;
+  reasonId: string;
 }
 
 const locationOptions = [
@@ -236,7 +236,7 @@ export default function WasteLoggingMobilePage() {
       <Header page="Log Waste" pages={["Kitchen Ops"]} />
 
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-soft-stone px-4 py-2">
+        <div className="flex items-center justify-center gap-2 border-hairline border-b bg-soft-stone px-4 py-2">
           <WifiOff className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="font-medium text-ink">
             You're offline. Entry will sync when you reconnect.
@@ -245,7 +245,7 @@ export default function WasteLoggingMobilePage() {
       )}
 
       {syncQueue.length > 0 && (
-        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-pale-blue/50 px-4 py-2">
+        <div className="flex items-center justify-center gap-2 border-hairline border-b bg-pale-blue/50 px-4 py-2">
           <Wifi className="h-4 w-4 shrink-0 text-action-blue" />
           <span className="font-medium text-ink">
             {syncQueue.length} entry pending sync
@@ -414,7 +414,7 @@ export default function WasteLoggingMobilePage() {
               {/* Success Message */}
               {successMessage && (
                 <div className="rounded-lg bg-emerald-900/10 p-3">
-                  <p className="text-emerald-800 text-sm font-medium">
+                  <p className="font-medium text-emerald-800 text-sm">
                     {successMessage}
                   </p>
                 </div>

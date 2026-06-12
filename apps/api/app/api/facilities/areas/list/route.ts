@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       deletedAt: null,
       ...(venueId ? { venueId } : {}),
       ...(areaType ? { areaType } : {}),
-      ...(status !== "all" ? { status } : {}),
+      ...(status === "all" ? {} : { status }),
     };
     const areaRecords = await database.facilityArea.findMany({
       where: areaWhere,

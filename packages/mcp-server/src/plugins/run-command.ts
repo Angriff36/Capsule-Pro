@@ -6,10 +6,7 @@
  */
 
 import { z } from "zod";
-import {
-  getCommandAccess,
-  isCommandAvailable,
-} from "../lib/command-policy.js";
+import { getCommandAccess, isCommandAvailable } from "../lib/command-policy.js";
 import { createMcpRuntime } from "../lib/runtime-factory.js";
 import type { McpPlugin, PluginContext } from "../types.js";
 
@@ -62,8 +59,8 @@ export const runCommandPlugin: McpPlugin = {
                 type: "text" as const,
                 text:
                   `Command ${entity}.${command} is not available via MCP ` +
-                  `(policy: DENY). Add to packages/mcp-server/src/lib/command-policy.ts ` +
-                  `via PR review to enable.`,
+                  "(policy: DENY). Add to packages/mcp-server/src/lib/command-policy.ts " +
+                  "via PR review to enable.",
               },
             ],
             isError: true,

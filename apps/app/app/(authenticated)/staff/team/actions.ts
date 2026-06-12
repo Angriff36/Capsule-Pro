@@ -23,8 +23,8 @@ const ROLE_VALUES = roleOptions.map((option) => option.value);
 const EMPLOYMENT_VALUES = employmentTypeOptions.map((option) => option.value);
 
 export interface ActionState {
-  status: "idle" | "error" | "success";
   message?: string;
+  status: "idle" | "error" | "success";
 }
 
 const readText = (formData: FormData, key: string) => {
@@ -299,12 +299,8 @@ export const updateStaffMember = async (
         lastName,
         phone: existing.phone ?? "",
         employmentType,
-        hourlyRate: existing.hourlyRate
-          ? Number(existing.hourlyRate)
-          : 0,
-        salaryAnnual: existing.salaryAnnual
-          ? Number(existing.salaryAnnual)
-          : 0,
+        hourlyRate: existing.hourlyRate ? Number(existing.hourlyRate) : 0,
+        salaryAnnual: existing.salaryAnnual ? Number(existing.salaryAnnual) : 0,
         avatarUrl: existing.avatarUrl ?? "",
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
@@ -334,7 +330,21 @@ export const updateStaffMember = async (
 
     // Governed write: User.deactivate or User.reactivate if isActive changed.
     if (isActive !== existing.isActive) {
-      if (!isActive) {
+      if (isActive) {
+        // Governed write: User.reactivate (constitution §9).
+        const reactivateResult = await runManifestCommand({
+          entity: "User",
+          command: "reactivate",
+          body: { userId: id },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+
+        if (!reactivateResult.ok) {
+          throw new Error(
+            reactivateResult.message || "Failed to reactivate staff member."
+          );
+        }
+      } else {
         const deactivateResult = await runManifestCommand({
           entity: "User",
           command: "deactivate",
@@ -348,20 +358,6 @@ export const updateStaffMember = async (
         if (!deactivateResult.ok) {
           throw new Error(
             deactivateResult.message || "Failed to deactivate staff member."
-          );
-        }
-      } else {
-        // Governed write: User.reactivate (constitution §9).
-        const reactivateResult = await runManifestCommand({
-          entity: "User",
-          command: "reactivate",
-          body: { userId: id },
-          user: { id: user.id, tenantId: user.tenantId, role: user.role },
-        });
-
-        if (!reactivateResult.ok) {
-          throw new Error(
-            reactivateResult.message || "Failed to reactivate staff member."
           );
         }
       }

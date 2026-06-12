@@ -20,13 +20,13 @@
  *
  * This is a scoping/parity harness for the Phase 2 pilot, NOT the eventual schema generator.
  */
-import { readFileSync, existsSync } from "node:fs";
-import { pathToFileURL } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import {
-  PILOT_OPTIONS,
-  ENTITY_SCHEMA_MAP,
   COMPOSITE_KEY,
+  ENTITY_SCHEMA_MAP,
+  PILOT_OPTIONS,
 } from "./prisma-projection-options.mjs";
 
 const repoRoot = resolve(process.cwd());
@@ -46,9 +46,15 @@ function fail(msg) {
   console.error(`[generate-prisma-schema] ${msg}`);
   process.exit(1);
 }
-if (!entityArg) fail("usage: generate-prisma-schema.mjs <Entity> [--raw]");
-if (!existsSync(IR_PATH)) fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:compile'.`);
-if (!existsSync(PKG_PRISMA)) fail(`PrismaProjection not found at ${PKG_PRISMA}.`);
+if (!entityArg) {
+  fail("usage: generate-prisma-schema.mjs <Entity> [--raw]");
+}
+if (!existsSync(IR_PATH)) {
+  fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:compile'.`);
+}
+if (!existsSync(PKG_PRISMA)) {
+  fail(`PrismaProjection not found at ${PKG_PRISMA}.`);
+}
 
 const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 const { PrismaProjection } = await import(pathToFileURL(PKG_PRISMA).href);
@@ -60,15 +66,21 @@ try {
     options: PILOT_OPTIONS,
   });
 } catch (e) {
-  fail(`projection threw: ${e?.message}\n${(e?.stack || "").split("\n").slice(0, 6).join("\n")}`);
+  fail(
+    `projection threw: ${e?.message}\n${(e?.stack || "").split("\n").slice(0, 6).join("\n")}`
+  );
 }
 
 const artifacts = result.artifacts || [];
-const diagnostics = (result.diagnostics || []).filter((d) => d.entity === entityArg);
-const schemaArtifact = artifacts.find(
-  (a) => (a.id || "").includes("prisma") || (a.pathHint || "").includes("schema")
+const diagnostics = (result.diagnostics || []).filter(
+  (d) => d.entity === entityArg
 );
-const generatedAll = (schemaArtifact && (schemaArtifact.code || schemaArtifact.content)) || "";
+const schemaArtifact = artifacts.find(
+  (a) =>
+    (a.id || "").includes("prisma") || (a.pathHint || "").includes("schema")
+);
+const generatedAll =
+  (schemaArtifact && (schemaArtifact.code || schemaArtifact.content)) || "";
 
 function extractModel(code, name) {
   const m = code.match(new RegExp(`model ${name} \\{[\\s\\S]*?\\n\\}`));
@@ -83,7 +95,9 @@ function extractModel(code, name) {
  * Read-only transform on a string; does not touch any file.
  */
 function postProcess(modelBlock, entityName) {
-  if (!modelBlock) return modelBlock;
+  if (!modelBlock) {
+    return modelBlock;
+  }
   let block = modelBlock;
   const key = COMPOSITE_KEY[entityName];
   if (key && /\n\s*@@id\(/.test(block) === false) {
@@ -105,19 +119,21 @@ const finalModel = postProcess(rawModel, entityArg);
 console.log(`=== generate-prisma-schema: ${entityArg} ===`);
 if (diagnostics.length) {
   console.log(`\ndiagnostics (${diagnostics.length}):`);
-  for (const d of diagnostics) console.log(`  [${d.severity}] ${d.code}: ${d.message}`);
+  for (const d of diagnostics) {
+    console.log(`  [${d.severity}] ${d.code}: ${d.message}`);
+  }
 }
 
 if (flags.has("--raw")) {
-  console.log(`\n--- RAW projection output (before Capsule post-process) ---`);
-  console.log(rawModel || `[not emitted — store target may be non-durable]`);
+  console.log("\n--- RAW projection output (before Capsule post-process) ---");
+  console.log(rawModel || "[not emitted — store target may be non-durable]");
 }
 
-console.log(`\n--- GENERATED + post-process ---`);
-console.log(finalModel || `[not emitted]`);
+console.log("\n--- GENERATED + post-process ---");
+console.log(finalModel || "[not emitted]");
 
 if (existsSync(SCHEMA_PATH)) {
   const committed = extractModel(readFileSync(SCHEMA_PATH, "utf8"), entityArg);
-  console.log(`\n--- COMMITTED (packages/database/prisma/schema.prisma) ---`);
+  console.log("\n--- COMMITTED (packages/database/prisma/schema.prisma) ---");
   console.log(committed || `[no 'model ${entityArg}' — name drift?]`);
 }

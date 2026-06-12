@@ -189,7 +189,11 @@ export async function POST(request: Request) {
 
   // Build synthetic system-user context for Manifest commands (webhook has no Clerk auth)
   const adminUser = await database.user.findFirst({
-    where: { tenantId: supplier.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    where: {
+      tenantId: supplier.tenantId,
+      role: { in: ["owner", "admin"] },
+      deletedAt: null,
+    },
     select: { id: true, role: true },
   });
   const systemUser = {

@@ -1,7 +1,6 @@
 "use client";
 
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
-import { useTheme } from "../providers/theme";
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import { useTheme } from "../providers/theme";
 
 const themes = [
   { label: "Light", value: "light" },
@@ -29,7 +29,7 @@ export const ModeToggle = () => {
     return (
       <Button
         aria-hidden
-        className="opacity-0 pointer-events-none shrink-0"
+        className="pointer-events-none shrink-0 opacity-0"
         size="icon"
         variant="ghost"
       />

@@ -60,7 +60,9 @@ export async function GET(request: Request) {
     },
     select: { id: true, firstName: true, lastName: true, email: true },
   });
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const certifications = certificationRecords.map((cert) => {
@@ -102,14 +104,19 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "EmployeeCertification",
     command: "create",
     body: {
       employeeId: rawBody.employeeId || rawBody.employee_id,
-      certificationType: rawBody.certificationType || rawBody.certification_type,
-      certificationName: rawBody.certificationName || rawBody.certification_name,
+      certificationType:
+        rawBody.certificationType || rawBody.certification_type,
+      certificationName:
+        rawBody.certificationName || rawBody.certification_name,
       issuedDate: rawBody.issuedDate || rawBody.issued_date,
       expiryDate: rawBody.expiryDate || rawBody.expiry_date || "",
       documentUrl: rawBody.documentUrl || rawBody.document_url || "",

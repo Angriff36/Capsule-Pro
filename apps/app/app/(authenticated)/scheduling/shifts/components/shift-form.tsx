@@ -30,31 +30,31 @@ import {
 } from "../actions";
 
 interface Shift {
-  id?: string;
-  schedule_id?: string;
   employeeId?: string;
+  id?: string;
   location_id?: string;
-  shift_start?: string;
-  shift_end?: string;
-  role_during_shift?: string | null;
   notes?: string | null;
+  role_during_shift?: string | null;
+  schedule_id?: string;
+  shift_end?: string;
+  shift_start?: string;
 }
 
 interface ShiftFormProps {
-  shift?: Shift | null;
-  scheduleId?: string;
-  onSuccess?: () => void;
   onCancel?: () => void;
+  onSuccess?: () => void;
+  scheduleId?: string;
+  shift?: Shift | null;
 }
 
 interface Employee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
   email: string;
-  role: string;
-  is_active: boolean;
+  first_name: string | null;
   hasConflictingShift?: boolean;
+  id: string;
+  is_active: boolean;
+  last_name: string | null;
+  role: string;
 }
 
 interface Location {
@@ -69,11 +69,11 @@ interface Schedule {
 }
 
 interface Event {
-  id: string;
-  title: string;
   eventDate: Date;
   eventType: string;
+  id: string;
   status: string;
+  title: string;
 }
 
 const formatDateTimeLocal = (dateStr: string | undefined) => {
@@ -121,7 +121,9 @@ export function ShiftForm({
     allowOverlap: false,
     ignoreAvailabilityWarning: false,
   });
-  const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
+  const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(
+    null
+  );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -250,7 +252,8 @@ export function ShiftForm({
       roleDuringShift: formData.roleDuringShift || undefined,
       notes: formData.notes || undefined,
       allowOverlap: formData.allowOverlap || undefined,
-      ignoreAvailabilityWarning: formData.ignoreAvailabilityWarning || undefined,
+      ignoreAvailabilityWarning:
+        formData.ignoreAvailabilityWarning || undefined,
     };
 
     try {
@@ -277,7 +280,10 @@ export function ShiftForm({
             typeof w === "object" && w.code === "availability_warning"
         );
         if (availabilityWarn && typeof availabilityWarn === "object") {
-          setAvailabilityWarning(availabilityWarn.message || "Employee may not be available for this shift.");
+          setAvailabilityWarning(
+            availabilityWarn.message ||
+              "Employee may not be available for this shift."
+          );
         } else {
           setAvailabilityWarning(null);
         }
@@ -368,7 +374,7 @@ export function ShiftForm({
             </SelectContent>
           </Select>
           {errors.scheduleId && (
-            <p className="text-sm text-destructive">{errors.scheduleId}</p>
+            <p className="text-destructive text-sm">{errors.scheduleId}</p>
           )}
         </div>
 
@@ -419,7 +425,7 @@ export function ShiftForm({
             </SelectContent>
           </Select>
           {errors.locationId && (
-            <p className="text-sm text-destructive">{errors.locationId}</p>
+            <p className="text-destructive text-sm">{errors.locationId}</p>
           )}
         </div>
 
@@ -457,10 +463,10 @@ export function ShiftForm({
           </Select>
           <div className="flex items-center gap-2">
             {errors.employeeId && (
-              <p className="text-sm text-destructive">{errors.employeeId}</p>
+              <p className="text-destructive text-sm">{errors.employeeId}</p>
             )}
             {hasConflicts && (
-              <p className="text-sm text-orange-600">
+              <p className="text-orange-600 text-sm">
                 This employee has a conflicting shift. Enable "Allow Overlap" to
                 proceed.
               </p>
@@ -469,7 +475,7 @@ export function ShiftForm({
           {availableEmployees.length > 0 &&
             availableEmployees.length < employees.length && (
               <button
-                className="text-sm text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground text-sm hover:text-foreground"
                 onClick={() => setShowAllEmployees(!showAllEmployees)}
                 type="button"
               >
@@ -504,7 +510,7 @@ export function ShiftForm({
             value={formData.shiftStart}
           />
           {errors.shiftStart && (
-            <p className="text-sm text-destructive">{errors.shiftStart}</p>
+            <p className="text-destructive text-sm">{errors.shiftStart}</p>
           )}
         </div>
 
@@ -519,7 +525,7 @@ export function ShiftForm({
             value={formData.shiftEnd}
           />
           {errors.shiftEnd && (
-            <p className="text-sm text-destructive">{errors.shiftEnd}</p>
+            <p className="text-destructive text-sm">{errors.shiftEnd}</p>
           )}
         </div>
 
@@ -557,10 +563,10 @@ export function ShiftForm({
         {/* Availability Warning Override */}
         {availabilityWarning && (
           <div className="flex flex-col gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 md:col-span-2">
-            <p className="text-sm font-medium text-orange-800">
+            <p className="font-medium text-orange-800 text-sm">
               Availability Warning
             </p>
-            <p className="text-sm text-orange-700">{availabilityWarning}</p>
+            <p className="text-orange-700 text-sm">{availabilityWarning}</p>
             <label className="flex items-center gap-2">
               <input
                 checked={formData.ignoreAvailabilityWarning}
@@ -573,7 +579,7 @@ export function ShiftForm({
                 }
                 type="checkbox"
               />
-              <span className="text-sm text-orange-700">
+              <span className="text-orange-700 text-sm">
                 Override: schedule outside employee&apos;s availability window
               </span>
             </label>

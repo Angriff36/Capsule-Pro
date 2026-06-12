@@ -23,11 +23,11 @@ export function GuestManagementSection({
     <section className="space-y-4" id="guests">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="text-muted-foreground text-xs uppercase tracking-[0.25em]">
             Guests & RSVPs
           </p>
-          <h2 className="text-2xl font-semibold">Guest management</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-semibold text-2xl">Guest management</h2>
+          <p className="text-muted-foreground text-sm">
             Manage RSVPs, dietary restrictions, and seating preferences.
           </p>
         </div>

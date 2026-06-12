@@ -3,8 +3,8 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { env } from "@/env";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { env } from "@/env";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 type Provider = (typeof SUPPORTED_PROVIDERS)[number];
@@ -129,9 +129,7 @@ export async function POST(request: NextRequest) {
 
     if (action === "initiate") {
       const clientId =
-        provider === "google"
-          ? env.GOOGLE_CLIENT_ID
-          : env.MICROSOFT_CLIENT_ID;
+        provider === "google" ? env.GOOGLE_CLIENT_ID : env.MICROSOFT_CLIENT_ID;
 
       if (!clientId) {
         return NextResponse.json(

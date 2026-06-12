@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { describe, expect, it } from "vitest";
 
-const repoRoot = path.resolve(__dirname, "../../../");
+const repoRoot = path.resolve(import.meta.dirname, "../../../");
 
 /**
  * Known pre-existing raw SQL write sites that have not yet been migrated to
@@ -94,7 +94,9 @@ const startsWithWriteStatement = (argumentSource: string) => {
 };
 
 const isKnownViolation = (relativeFile: string) =>
-  KNOWN_VIOLATIONS.some((known) => relativeFile.replace(/\\/g, "/").startsWith(known));
+  KNOWN_VIOLATIONS.some((known) =>
+    relativeFile.replace(/\\/g, "/").startsWith(known)
+  );
 
 describe("raw SQL write guardrail", () => {
   it("keeps application source free of raw write SQL calls", () => {

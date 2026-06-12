@@ -57,10 +57,7 @@ describe("manifest command dispatch latency", () => {
   });
 
   it("measures kitchen.ir.json cold + warm load", () => {
-    const irPath = resolve(
-      ROOT,
-      "manifest/ir/kitchen.ir.json"
-    );
+    const irPath = resolve(ROOT, "manifest/ir/kitchen.ir.json");
 
     // ── Cold read + parse ──
     const tCold = performance.now();

@@ -24,20 +24,8 @@ import type {
  * Implement this interface to connect to your database
  */
 export interface PayrollDataSource {
-  getEmployees(tenantId: string): Promise<Employee[]>;
-  getRoles(tenantId: string): Promise<Role[]>;
-  getTimeEntries(
-    tenantId: string,
-    periodStart: Date,
-    periodEnd: Date
-  ): Promise<TimeEntryInput[]>;
-  getTipPools(tenantId: string, periodId: string): Promise<TipPool[]>;
   getDeductions(tenantId: string): Promise<Deduction[]>;
-
-  // Save operations
-  savePayrollPeriod(period: PayrollPeriod): Promise<void>;
-  savePayrollRecords(records: PayrollRecord[]): Promise<void>;
-  savePayrollAudit(audit: PayrollAudit): Promise<void>;
+  getEmployees(tenantId: string): Promise<Employee[]>;
 
   // Lookup operations
   getPayrollPeriod(
@@ -48,6 +36,18 @@ export interface PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollRecord[]>;
+  getRoles(tenantId: string): Promise<Role[]>;
+  getTimeEntries(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<TimeEntryInput[]>;
+  getTipPools(tenantId: string, periodId: string): Promise<TipPool[]>;
+  savePayrollAudit(audit: PayrollAudit): Promise<void>;
+
+  // Save operations
+  savePayrollPeriod(period: PayrollPeriod): Promise<void>;
+  savePayrollRecords(records: PayrollRecord[]): Promise<void>;
 }
 
 /**

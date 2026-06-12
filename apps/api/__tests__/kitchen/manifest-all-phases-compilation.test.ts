@@ -18,7 +18,7 @@
  * These are real compilation tests — no mocks, no DB, just file reads + IR compilation.
  */
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
@@ -32,10 +32,7 @@ import { inMemoryStoreProvider } from "../test-helpers";
 // logic is tested in integration tests that wire a Prisma-backed storeProvider.
 // NOTE: storeProvider is the THIRD ctor arg (RuntimeOptions), not the context.
 
-const MANIFEST_DIR = join(
-  process.cwd(),
-  "../../manifest/source"
-);
+const MANIFEST_DIR = join(process.cwd(), "../../manifest/source");
 
 // The flat source/ root was restructured into domain subdirectories
 // (2026-06-10, "Flat source/ → domain subdirs"). Index every *.manifest once
@@ -68,10 +65,6 @@ function resolveManifestPath(manifestName: string): string {
 // ---------------------------------------------------------------------------
 
 interface ManifestSpec {
-  /** Manifest file name (without .manifest extension) */
-  manifest: string;
-  /** Phase label for grouping */
-  phase: string;
   /** Entities expected in the IR, each with their expected commands */
   entities: Array<{
     name: string;
@@ -82,6 +75,10 @@ interface ManifestSpec {
    * When set, compilation failure is expected and documented.
    */
   knownCompilerIssue?: string;
+  /** Manifest file name (without .manifest extension) */
+  manifest: string;
+  /** Phase label for grouping */
+  phase: string;
 }
 
 /**

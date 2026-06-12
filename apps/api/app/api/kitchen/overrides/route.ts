@@ -9,18 +9,18 @@ import { runManifestCommand } from "@/lib/manifest/execute-command";
  * Override authorization request body
  */
 interface OverrideAuthorizationRequest {
-  /** Constraint code being overridden */
-  constraintCode: string;
-  /** Reason for the override */
-  reason: string;
-  /** Additional details for the override */
-  details?: string;
   /** The command being executed with this override */
   command: string;
-  /** Entity type being operated on */
-  entityType: string;
+  /** Constraint code being overridden */
+  constraintCode: string;
+  /** Additional details for the override */
+  details?: string;
   /** Entity ID being operated on */
   entityId: string;
+  /** Entity type being operated on */
+  entityType: string;
+  /** Reason for the override */
+  reason: string;
 }
 
 /**
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   if (!(constraintCode && reason && command && entityType && entityId)) {
     return NextResponse.json(
       { message: "Missing required fields" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   if (!currentUser) {
     return NextResponse.json(
       { message: "User not found in database" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
           "You don't have permission to override constraints. Please contact a manager.",
         requiresManager: true,
       },
-      { status: 403 },
+      { status: 403 }
     );
   }
 
@@ -106,9 +106,7 @@ export async function POST(request: Request) {
 
   if (!auditLogged) {
     captureException(
-      new Error(
-        `Override audit Manifest command failed: ${result.status}`,
-      ),
+      new Error(`Override audit Manifest command failed: ${result.status}`)
     );
   }
 
@@ -178,7 +176,7 @@ export async function GET(request: Request) {
   if (!(entityType && entityId)) {
     return NextResponse.json(
       { message: "entityType and entityId are required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 

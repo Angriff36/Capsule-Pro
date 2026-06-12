@@ -31,23 +31,23 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 interface ApiKey {
-  id: string;
-  name: string;
-  keyPrefix: string;
-  scopes: string[];
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  revokedAt: string | null;
-  createdByUserId: string | null;
   createdAt: string;
+  createdByUserId: string | null;
+  expiresAt: string | null;
+  id: string;
+  keyPrefix: string;
+  lastUsedAt: string | null;
+  name: string;
+  revokedAt: string | null;
+  scopes: string[];
   updatedAt: string;
 }
 
 interface ApiKeyListResponse {
-  success: boolean;
-  result?: { apiKeys: ApiKey[] };
   apiKeys?: ApiKey[];
   keys?: ApiKey[];
+  result?: { apiKeys: ApiKey[] };
+  success: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -75,21 +75,21 @@ function StatusBadge({ status }: { status: "active" | "expired" | "revoked" }) {
   switch (status) {
     case "active":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 font-medium text-green-400 text-xs">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
           Active
         </span>
       );
     case "expired":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 font-medium text-red-400 text-xs">
           <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
           Expired
         </span>
       );
     case "revoked":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-medium text-slate-400">
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-1 font-medium text-slate-400 text-xs">
           <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
           Revoked
         </span>
@@ -224,7 +224,7 @@ function DetailDialog({
             </span>
 
             <span className="text-slate-500">ID</span>
-            <span className="font-mono text-xs text-slate-400">
+            <span className="font-mono text-slate-400 text-xs">
               {apiKey.id}
             </span>
 
@@ -235,7 +235,7 @@ function DetailDialog({
               ) : (
                 apiKey.scopes.map((scope) => (
                   <span
-                    className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400"
+                    className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs"
                     key={scope}
                   >
                     {scope}
@@ -284,7 +284,7 @@ function DetailDialog({
             {apiKey.createdByUserId && (
               <>
                 <span className="text-slate-500">Created By</span>
-                <span className="font-mono text-xs text-slate-400">
+                <span className="font-mono text-slate-400 text-xs">
                   {apiKey.createdByUserId}
                 </span>
               </>
@@ -424,7 +424,7 @@ function CreateKeyDialog({
 
           <div className="mt-4 rounded-md bg-slate-900/80 p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">
+              <span className="font-medium text-slate-400 text-xs">
                 Plain Key
               </span>
               <button
@@ -439,7 +439,7 @@ function CreateKeyDialog({
                 Copy
               </button>
             </div>
-            <code className="block break-all font-mono text-sm text-green-400">
+            <code className="block break-all font-mono text-green-400 text-sm">
               {createdPlainKey}
             </code>
           </div>
@@ -479,7 +479,7 @@ function CreateKeyDialog({
           <div className="space-y-4">
             <div>
               <label
-                className="mb-1.5 block text-xs text-slate-400"
+                className="mb-1.5 block text-slate-400 text-xs"
                 htmlFor="api-key-name"
               >
                 Key Name
@@ -495,7 +495,7 @@ function CreateKeyDialog({
             </div>
 
             <div>
-              <span className="mb-1.5 block text-xs text-slate-400">
+              <span className="mb-1.5 block text-slate-400 text-xs">
                 Scopes
               </span>
               <div className="flex flex-wrap gap-2">
@@ -582,7 +582,7 @@ function RotateKeyResultDialog({
 
         <div className="mt-4 rounded-md bg-slate-900/80 p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">
+            <span className="font-medium text-slate-400 text-xs">
               New Plain Key
             </span>
             <button
@@ -597,7 +597,7 @@ function RotateKeyResultDialog({
               Copy
             </button>
           </div>
-          <code className="block break-all font-mono text-sm text-green-400">
+          <code className="block break-all font-mono text-green-400 text-sm">
             {plainKey}
           </code>
         </div>
@@ -810,7 +810,7 @@ export const ApiKeysClient = () => {
           <div className="flex min-h-[200px] items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-              <p className="text-sm text-slate-400">Loading API keys...</p>
+              <p className="text-slate-400 text-sm">Loading API keys...</p>
             </div>
           </div>
         )}
@@ -821,7 +821,7 @@ export const ApiKeysClient = () => {
             <div className="text-center">
               <p className="text-rose-400">{error}</p>
               <button
-                className="mt-4 text-sm text-blue-400 hover:underline"
+                className="mt-4 text-blue-400 text-sm hover:underline"
                 onClick={() => {
                   fetchApiKeys().catch(() => {
                     // Retry error handled internally
@@ -842,7 +842,7 @@ export const ApiKeysClient = () => {
               <KeyRoundIcon className="h-12 w-12 text-slate-600" />
               <div>
                 <p className="font-medium text-slate-300">No API keys</p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-slate-500 text-sm">
                   Create an API key to authenticate external services
                 </p>
               </div>
@@ -884,18 +884,18 @@ export const ApiKeysClient = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-mono text-xs text-slate-400">
+                        <span className="font-mono text-slate-400 text-xs">
                           {key.keyPrefix}...
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex max-w-[200px] flex-wrap gap-1">
                           {key.scopes.length === 0 ? (
-                            <span className="text-xs text-slate-500">None</span>
+                            <span className="text-slate-500 text-xs">None</span>
                           ) : (
                             key.scopes.slice(0, 2).map((scope) => (
                               <span
-                                className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400"
+                                className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-400 text-xs"
                                 key={scope}
                               >
                                 {scope}
@@ -903,7 +903,7 @@ export const ApiKeysClient = () => {
                             ))
                           )}
                           {key.scopes.length > 2 && (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-slate-500 text-xs">
                               +{key.scopes.length - 2}
                             </span>
                           )}
@@ -913,14 +913,14 @@ export const ApiKeysClient = () => {
                         <StatusBadge status={status} />
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {key.lastUsedAt
                             ? formatDate(key.lastUsedAt)
                             : "Never"}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-slate-400 text-xs">
                           {formatDate(key.createdAt)}
                         </span>
                       </TableCell>
@@ -989,7 +989,7 @@ export const ApiKeysClient = () => {
             <p>Managing authentication for external integrations</p>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-slate-400 md:grid-cols-3">
+        <div className="grid gap-4 text-slate-400 text-sm md:grid-cols-3">
           <div>
             <p className="mb-2 font-medium text-slate-300">Key Operations</p>
             <ul className="ml-4 list-disc space-y-1">

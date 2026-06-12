@@ -4,9 +4,7 @@ import { keys } from "./keys";
 
 const env = keys();
 const hasSentryUploadConfig =
-  env.SENTRY_ORG &&
-  env.SENTRY_PROJECT &&
-  env.SENTRY_AUTH_TOKEN;
+  env.SENTRY_ORG && env.SENTRY_PROJECT && env.SENTRY_AUTH_TOKEN;
 
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
   org: env.SENTRY_ORG,

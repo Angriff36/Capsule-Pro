@@ -59,7 +59,10 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   // If status is being changed, use the specific status command
   if (rawBody.status) {

@@ -1,6 +1,6 @@
-import { withSentryConfig } from "@sentry/nextjs";
 import { config, withAnalyzer } from "@repo/next-config";
 import { withLogging, withSentry } from "@repo/observability/next-config";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
@@ -11,8 +11,9 @@ const baseConfig: NextConfig = withLogging({
   distDir,
   async headers() {
     const corsHeaders =
-      process.env.NODE_ENV !== "production"
-        ? [
+      process.env.NODE_ENV === "production"
+        ? []
+        : [
             {
               key: "Access-Control-Allow-Origin",
               value: "http://127.0.0.1:2221",
@@ -26,8 +27,7 @@ const baseConfig: NextConfig = withLogging({
               value: "Content-Type,Authorization,X-Requested-With",
             },
             { key: "Access-Control-Allow-Credentials", value: "true" },
-          ]
-        : [];
+          ];
 
     const routes: Array<{
       source: string;
@@ -115,7 +115,7 @@ const baseConfig: NextConfig = withLogging({
     "pdfjs-dist/legacy/build/pdf.worker.mjs",
     "pdfkit",
     "@repo/sales-reporting",
-  ]
+  ],
 });
 
 const withVercel = (config: NextConfig): NextConfig =>
@@ -139,9 +139,7 @@ export default withSentryConfig(nextConfig, {
   // Don't fail the deploy if source-map upload / release creation 403s
   // (e.g. SENTRY_AUTH_TOKEN missing release scope). Best-effort monitoring.
   errorHandler: (error) => {
-    console.warn(
-      `[sentry] build step failed (non-fatal): ${error.message}`
-    );
+    console.warn(`[sentry] build step failed (non-fatal): ${error.message}`);
   },
 
   // For all available options, see:
@@ -168,5 +166,5 @@ export default withSentryConfig(nextConfig, {
       // Automatically tree-shake Sentry logger statements to reduce bundle size
       removeDebugLogging: true,
     },
-  }
+  },
 });

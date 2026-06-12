@@ -37,8 +37,8 @@ vi.mock("@repo/database", () => ({
 
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { createLead } from "../../app/(authenticated)/marketing/leads/actions";
 
 const leadFindFirst = database.lead.findFirst as ReturnType<typeof vi.fn>;

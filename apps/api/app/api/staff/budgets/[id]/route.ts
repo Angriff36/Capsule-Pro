@@ -47,7 +47,10 @@ export async function PUT(
 ) {
   const { id } = await context.params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "LaborBudget",
     command: "update",
@@ -56,7 +59,8 @@ export async function PUT(
       locationId: rawBody.locationId || "",
       periodStart: rawBody.periodStart || "",
       periodEnd: rawBody.periodEnd || "",
-      budgetTarget: rawBody.budgetTarget ?? rawBody.budgetAmount ?? rawBody.amount ?? 0,
+      budgetTarget:
+        rawBody.budgetTarget ?? rawBody.budgetAmount ?? rawBody.amount ?? 0,
       budgetType: rawBody.budgetType || rawBody.type || "weekly",
       description: rawBody.description ?? rawBody.notes ?? "",
     },

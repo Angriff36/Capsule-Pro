@@ -109,7 +109,10 @@ export async function POST(
         updated++;
       } else {
         failed++;
-        const body = await result.clone().json().catch(() => ({}));
+        const body = await result
+          .clone()
+          .json()
+          .catch(() => ({}));
         const msg = body.message || body.error || `HTTP ${result.status}`;
         errors.push(`Event ${eventId}: ${msg}`);
         log.error("updateBudget command failed", { eventId, error: msg });

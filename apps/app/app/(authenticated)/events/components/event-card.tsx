@@ -26,19 +26,19 @@ const statusVariantMap = {
 } as const;
 
 export interface EventCardEvent {
-  id: string;
-  title: string;
-  eventNumber: string | null;
-  status: string;
-  eventType: string;
   eventDate: string;
+  eventNumber: string | null;
+  eventType: string;
   guestCount: number;
-  venueName: string | null;
-  tags: string[];
   hasClient: boolean;
+  hasContract: boolean;
   hasMenu: boolean;
   hasPrepList: boolean;
-  hasContract: boolean;
+  id: string;
+  status: string;
+  tags: string[];
+  title: string;
+  venueName: string | null;
 }
 
 export function EventCard({ event }: { event: EventCardEvent }) {
@@ -69,7 +69,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
                   {event.eventNumber ?? "Unassigned"}
                 </span>
                 <span className="text-muted-foreground/40">•</span>
-                <CardDescription className="capitalize text-muted-foreground">
+                <CardDescription className="text-muted-foreground capitalize">
                   {event.eventType}
                 </CardDescription>
               </div>
@@ -103,7 +103,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
               <span className="truncate">{event.guestCount} guests</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <MapPinIcon className="size-3.5 shrink-0" />
             <span className="line-clamp-1">
               {event.venueName ?? "No venue assigned"}
@@ -113,21 +113,21 @@ export function EventCard({ event }: { event: EventCardEvent }) {
             <div className="flex flex-wrap gap-1.5 pt-1">
               {displayTags.slice(0, 3).map((tag) => (
                 <span
-                  className="inline-flex items-center rounded-md bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+                  className="inline-flex items-center rounded-md bg-muted/50 px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground"
                   key={tag}
                 >
                   {tag}
                 </span>
               ))}
               {displayTags.length > 3 && (
-                <span className="inline-flex items-center rounded-md bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                <span className="inline-flex items-center rounded-md bg-muted/50 px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground">
                   +{displayTags.length - 3}
                 </span>
               )}
             </div>
           )}
-          <div className="pt-2 mt-2 border-t border-border">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-2 border-border border-t pt-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
               <Progress className="h-1.5 flex-1" value={progressPercent} />
               <span>{setupProgress}/4</span>
             </div>

@@ -8,18 +8,16 @@ interface RecipeFavoriteButtonProps {
 
 export const RecipeFavoriteButton = ({
   recipeName,
-}: RecipeFavoriteButtonProps) => {
-  return (
-    <button
-      aria-label={`Favorite ${recipeName}`}
-      className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-full bg-background/90 text-rose-500 border border-hairline transition-all hover:scale-110 hover:bg-background active:scale-95"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      type="button"
-    >
-      <HeartIcon className="size-5" />
-    </button>
-  );
-};
+}: RecipeFavoriteButtonProps) => (
+  <button
+    aria-label={`Favorite ${recipeName}`}
+    className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-full border border-hairline bg-background/90 text-rose-500 transition-all hover:scale-110 hover:bg-background active:scale-95"
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }}
+    type="button"
+  >
+    <HeartIcon className="size-5" />
+  </button>
+);

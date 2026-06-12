@@ -1,12 +1,12 @@
 import {
-  PageCanvas,
   CommandBand,
   CommandBandHeader,
   CommandBandLede,
   DisplayHeading,
   MonoLabel,
-  PageBody,
   OperationalColumn,
+  PageBody,
+  PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import {
   Card,

@@ -45,8 +45,8 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 interface ChatRequestBody {
-  messages: UIMessage[];
   boardId?: string;
+  messages: UIMessage[];
 }
 
 function toStreamResponse(
@@ -97,9 +97,7 @@ export async function POST(request: Request): Promise<Response> {
           "OPENAI_API_KEY is not configured, so no model response was generated.",
         actionsTaken: [],
         errors: ["Missing OPENAI_API_KEY"],
-        nextSteps: [
-          "Set OPENAI_API_KEY in environment and retry.",
-        ],
+        nextSteps: ["Set OPENAI_API_KEY in environment and retry."],
       });
     }
 

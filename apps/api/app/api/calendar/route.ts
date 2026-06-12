@@ -33,17 +33,17 @@ function toDateEnd(date: Date): Date {
 }
 
 interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  end?: string;
-  type: "event" | "shift" | "timeoff";
-  status?: string;
+  assignedTo?: string;
   color?: string;
   details?: string;
-  location?: string;
-  assignedTo?: string;
+  end?: string;
   guestCount?: number;
+  id: string;
+  location?: string;
+  start: string;
+  status?: string;
+  title: string;
+  type: "event" | "shift" | "timeoff";
 }
 
 export async function GET(request: NextRequest) {

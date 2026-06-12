@@ -16,12 +16,12 @@ const LINE_SPLIT_REGEX = /\r?\n/;
  * Parsed ingredient input from form data.
  */
 export interface IngredientInput {
-  name: string;
-  quantity: number;
-  unit: string | null;
-  preparationNotes: string | null;
   isOptional: boolean;
+  name: string;
+  preparationNotes: string | null;
+  quantity: number;
   sortOrder?: number;
+  unit: string | null;
 }
 
 /**
@@ -29,19 +29,19 @@ export interface IngredientInput {
  */
 export interface ResolvedIngredient {
   ingredientId: string;
+  isOptional: boolean;
+  preparationNotes: string | null;
   quantity: number;
   unitId: number;
-  preparationNotes: string | null;
-  isOptional: boolean;
 }
 
 /**
  * Transaction client interface compatible with Prisma.
  */
 interface TxClient {
+  $executeRaw(query: PrismaNamespace.Sql): Promise<number>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $queryRaw<T = any>(query: PrismaNamespace.Sql): Promise<T>;
-  $executeRaw(query: PrismaNamespace.Sql): Promise<number>;
 }
 
 /**
@@ -77,12 +77,11 @@ export const parseIngredientLine = (line: string) => {
 /**
  * Split text into non-empty lines.
  */
-const parseLines = (text: string): string[] => {
-  return text
+const parseLines = (text: string): string[] =>
+  text
     .split(LINE_SPLIT_REGEX)
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
-};
 
 /**
  * Extract optional boolean from record fields.

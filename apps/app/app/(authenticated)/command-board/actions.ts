@@ -87,7 +87,9 @@ export const bulkUpdateCardsAction = async (
   cardIds: string[],
   updates: { status?: string; color?: string; cardType?: string }
 ) => {
-  if (cardIds.length === 0) return;
+  if (cardIds.length === 0) {
+    return;
+  }
 
   const tenantId = await requireTenantId();
 
@@ -112,7 +114,9 @@ export const bulkRestoreCardsAction = async (
     cardType: string;
   }>
 ) => {
-  if (cards.length === 0) return;
+  if (cards.length === 0) {
+    return;
+  }
 
   const tenantId = await requireTenantId();
 
@@ -186,7 +190,9 @@ export const createGroupAction = async (
  * TODO: Bulk updateMany with no governed equivalent. Keep as direct Prisma.
  */
 export const ungroupCardsAction = async (cardIds: string[]) => {
-  if (cardIds.length === 0) return;
+  if (cardIds.length === 0) {
+    return;
+  }
 
   const tenantId = await requireTenantId();
 
@@ -205,7 +211,9 @@ export const assignToGroupAction = async (
   cardIds: string[],
   groupId: string
 ) => {
-  if (cardIds.length === 0) return;
+  if (cardIds.length === 0) {
+    return;
+  }
 
   const tenantId = await requireTenantId();
 

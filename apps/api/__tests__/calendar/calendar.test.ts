@@ -94,7 +94,9 @@ vi.mock("@repo/observability/log", () => ({
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, resolveCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, resolveCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { database } = await import("@repo/database");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
@@ -619,7 +621,9 @@ describe("PATCH /api/calendar/reschedule", () => {
   // ----- Auth -----
 
   it("should return 500 when user not authenticated", async () => {
-    const error = new Error("Unauthorized") as Error & { name: "InvariantError" };
+    const error = new Error("Unauthorized") as Error & {
+      name: "InvariantError";
+    };
     error.name = "InvariantError";
     vi.mocked(resolveCurrentUser).mockRejectedValue(error);
 
@@ -636,7 +640,9 @@ describe("PATCH /api/calendar/reschedule", () => {
   });
 
   it("should return 500 when tenant resolution fails", async () => {
-    vi.mocked(resolveCurrentUser).mockRejectedValue(new Error("Tenant not found"));
+    vi.mocked(resolveCurrentUser).mockRejectedValue(
+      new Error("Tenant not found")
+    );
 
     const req = makePatchRequest({
       eventId: "evt-1",
@@ -715,7 +721,9 @@ describe("PATCH /api/calendar/reschedule", () => {
       status: "confirmed",
     });
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "evt-1" } }), { status: 200 })
+      new Response(JSON.stringify({ success: true, result: { id: "evt-1" } }), {
+        status: 200,
+      })
     );
 
     const req = makePatchRequest({
@@ -741,7 +749,9 @@ describe("PATCH /api/calendar/reschedule", () => {
       status: "confirmed",
     });
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "evt-1" } }), { status: 200 })
+      new Response(JSON.stringify({ success: true, result: { id: "evt-1" } }), {
+        status: 200,
+      })
     );
 
     const req = makePatchRequest({
@@ -770,7 +780,10 @@ describe("PATCH /api/calendar/reschedule", () => {
     });
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "shift-1" } }), { status: 200 })
+      new Response(
+        JSON.stringify({ success: true, result: { id: "shift-1" } }),
+        { status: 200 }
+      )
     );
 
     const req = makePatchRequest({
@@ -797,7 +810,10 @@ describe("PATCH /api/calendar/reschedule", () => {
     });
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "shift-1" } }), { status: 200 })
+      new Response(
+        JSON.stringify({ success: true, result: { id: "shift-1" } }),
+        { status: 200 }
+      )
     );
 
     const req = makePatchRequest({
@@ -815,7 +831,8 @@ describe("PATCH /api/calendar/reschedule", () => {
         }),
       })
     );
-    const callBody = vi.mocked(runManifestCommand).mock.calls[0][0].body as Record<string, unknown>;
+    const callBody = vi.mocked(runManifestCommand).mock.calls[0][0]
+      .body as Record<string, unknown>;
     const newStart = callBody.shiftStart as number;
     const newEnd = callBody.shiftEnd as number;
 
@@ -844,7 +861,10 @@ describe("PATCH /api/calendar/reschedule", () => {
     const existingShift = makeDbShift();
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "shift-1" } }), { status: 200 })
+      new Response(
+        JSON.stringify({ success: true, result: { id: "shift-1" } }),
+        { status: 200 }
+      )
     );
 
     const req = makePatchRequest({
@@ -875,7 +895,10 @@ describe("PATCH /api/calendar/reschedule", () => {
     // outer try-catch only if awaited. Since the route returns the promise
     // directly, we test that a resolved error response is returned instead.
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Internal server error" }), { status: 500 })
+      new Response(
+        JSON.stringify({ success: false, message: "Internal server error" }),
+        { status: 500 }
+      )
     );
 
     const req = makePatchRequest({
@@ -892,7 +915,10 @@ describe("PATCH /api/calendar/reschedule", () => {
     const existingShift = makeDbShift();
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Internal server error" }), { status: 500 })
+      new Response(
+        JSON.stringify({ success: false, message: "Internal server error" }),
+        { status: 500 }
+      )
     );
 
     const req = makePatchRequest({

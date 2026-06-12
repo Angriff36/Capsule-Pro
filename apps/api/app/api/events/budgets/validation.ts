@@ -52,18 +52,21 @@ export const CreateEventBudgetSchema = z
   })
   .refine(
     (data) => {
-      if (!data.lineItems || data.lineItems.length === 0) return true;
+      if (!data.lineItems || data.lineItems.length === 0) {
+        return true;
+      }
       const lineItemsTotal = data.lineItems.reduce(
         (sum, item) => sum + item.budgetedAmount,
         0
       );
       // Allow totalBudgetAmount of 0 (auto-calculated from line items)
-      if (data.totalBudgetAmount === 0) return true;
+      if (data.totalBudgetAmount === 0) {
+        return true;
+      }
       return lineItemsTotal <= data.totalBudgetAmount;
     },
     {
-      error:
-        "Line item budgeted amounts cannot exceed the total budget amount",
+      error: "Line item budgeted amounts cannot exceed the total budget amount",
       path: ["lineItems"],
     }
   )

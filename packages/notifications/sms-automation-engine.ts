@@ -47,24 +47,24 @@ export type SmsTriggerType =
  * Context data passed to rule evaluation
  */
 export interface RuleEvaluationContext {
-  tenantId: string;
-  triggerType: SmsTriggerType;
-  triggerData: Record<string, unknown>;
+  additionalMergeFields?: Record<string, string>;
   recipientEmployeeId?: string;
   recipientPhone?: string;
-  additionalMergeFields?: Record<string, string>;
+  tenantId: string;
+  triggerData: Record<string, unknown>;
+  triggerType: SmsTriggerType;
 }
 
 /**
  * Result of rule evaluation
  */
 export interface RuleEvaluationResult {
+  error?: string;
+  message?: string;
+  recipients?: string[];
   ruleId: string;
   ruleName: string;
   triggered: boolean;
-  message?: string;
-  recipients?: string[];
-  error?: string;
 }
 
 /**

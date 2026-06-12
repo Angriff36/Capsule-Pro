@@ -5,10 +5,14 @@
  * the algorithm used by compile.mjs, so that IR integrity checking works
  * end-to-end: compile → store hash → load → verify hash.
  */
-import { describe, it, expect, beforeEach } from "vitest";
-import { verifyProvenanceHash, invalidateMergedIRCache } from "@repo/manifest-runtime/runtime/loadManifests";
+
 import { createHash } from "node:crypto";
 import type { IR, IRType } from "@angriff36/manifest/ir";
+import {
+  invalidateMergedIRCache,
+  verifyProvenanceHash,
+} from "@repo/manifest-runtime/runtime/loadManifests";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /** Shorthand for a non-nullable string type. */
 const STRING_TYPE: IRType = { name: "string", nullable: false };

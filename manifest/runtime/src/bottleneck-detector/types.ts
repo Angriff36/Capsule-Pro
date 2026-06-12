@@ -65,28 +65,28 @@ export enum BottleneckType {
  * Detected bottleneck
  */
 export interface Bottleneck {
-  id: string;
-  tenantId: string;
-  category: BottleneckCategory;
-  type: BottleneckType;
-  severity: BottleneckSeverity;
-  title: string;
-  description: string;
   affectedEntity: {
     type: string;
     id: string;
     name: string;
   } | null;
+  category: BottleneckCategory;
+  context: Record<string, unknown>;
+  description: string;
+  detectedAt: Date;
+  id: string;
   metrics: {
     currentValue: number;
     thresholdValue: number;
     percentOverThreshold: number;
     trend: "improving" | "stable" | "worsening";
   };
-  context: Record<string, unknown>;
-  detectedAt: Date;
   resolvedAt: Date | null;
+  severity: BottleneckSeverity;
   suggestion: ImprovementSuggestion | null;
+  tenantId: string;
+  title: string;
+  type: BottleneckType;
 }
 
 /**
@@ -117,42 +117,42 @@ export enum SuggestionPriority {
  * Improvement suggestion
  */
 export interface ImprovementSuggestion {
-  id: string;
+  aiGenerated: boolean;
   bottleneckId: string;
-  type: SuggestionType;
-  priority: SuggestionPriority;
-  title: string;
+  createdAt: Date;
   description: string;
-  reasoning: string;
+  dismissed: boolean;
+  dismissedAt: Date | null;
+  dismissedBy: string | null;
+  dismissReason: string | null;
   estimatedImpact: {
     area: string;
     improvement: string; // e.g., "+20% throughput"
     confidence: "low" | "medium" | "high";
   };
+  id: string;
   implementation: {
     effort: "low" | "medium" | "high";
     timeframe: string;
     cost?: string;
     prerequisites: string[];
   };
+  priority: SuggestionPriority;
+  reasoning: string;
   steps: string[];
-  dismissed: boolean;
-  dismissedAt: Date | null;
-  dismissedBy: string | null;
-  dismissReason: string | null;
-  createdAt: Date;
-  aiGenerated: boolean;
+  title: string;
+  type: SuggestionType;
 }
 
 /**
  * Detection rule configuration
  */
 export interface DetectionRule {
+  category: BottleneckCategory;
+  context?: Record<string, unknown>;
+  enabled: boolean;
   id: string;
   name: string;
-  category: BottleneckCategory;
-  type: BottleneckType;
-  enabled: boolean;
   severity: BottleneckSeverity;
   threshold: {
     metric: string;
@@ -160,42 +160,46 @@ export interface DetectionRule {
     value: number;
     window?: string; // e.g., "7d", "30d"
   };
-  context?: Record<string, unknown>;
+  type: BottleneckType;
 }
 
 /**
  * Performance metrics data point
  */
 export interface PerformanceMetric {
+  metadata?: Record<string, unknown>;
   timestamp: Date;
   value: number;
-  metadata?: Record<string, unknown>;
 }
 
 /**
  * Time series data for trend analysis
  */
 export interface TimeSeriesData {
-  metric: string;
+  aggregation: "avg" | "sum" | "count" | "min" | "max";
+  dataPoints: PerformanceMetric[];
   entity: {
     type: string;
     id: string;
     name: string;
   };
-  dataPoints: PerformanceMetric[];
-  aggregation: "avg" | "sum" | "count" | "min" | "max";
+  metric: string;
 }
 
 /**
  * Bottleneck analysis result
  */
 export interface BottleneckAnalysis {
-  tenantId: string;
   analysisPeriod: {
     start: Date;
     end: Date;
   };
+  analyzedAt: Date;
   bottlenecks: Bottleneck[];
+  healthScore: {
+    overall: number; // 0-100
+    byCategory: Record<BottleneckCategory, number>;
+  };
   summary: {
     total: number;
     bySeverity: Record<BottleneckSeverity, number>;
@@ -207,23 +211,19 @@ export interface BottleneckAnalysis {
       bottleneckCount: number;
     }>;
   };
-  healthScore: {
-    overall: number; // 0-100
-    byCategory: Record<BottleneckCategory, number>;
-  };
-  analyzedAt: Date;
+  tenantId: string;
 }
 
 /**
  * Bottleneck detector configuration
  */
 export interface BottleneckDetectorConfig {
-  enabled: boolean;
-  sampleRate: number; // 0-1
-  rules: DetectionRule[];
   aiEnabled: boolean;
   aiModel?: string;
-  detectionWindow: string; // e.g., "7d", "30d"
-  minDataPoints: number;
   cacheTtl: number; // milliseconds
+  detectionWindow: string; // e.g., "7d", "30d"
+  enabled: boolean;
+  minDataPoints: number;
+  rules: DetectionRule[];
+  sampleRate: number; // 0-1
 }

@@ -23,9 +23,15 @@ export async function GET(request: NextRequest) {
     const checkType = searchParams.get("checkType"); // receiving, storage, prep, cooking, cooling, holding, transport
 
     const where: Record<string, unknown> = { tenantId };
-    if (eventId) where.eventId = eventId;
-    if (status) where.status = status;
-    if (checkType) where.checkType = checkType;
+    if (eventId) {
+      where.eventId = eventId;
+    }
+    if (status) {
+      where.status = status;
+    }
+    if (checkType) {
+      where.checkType = checkType;
+    }
 
     const checks = await database.qualityCheck.findMany({
       where,

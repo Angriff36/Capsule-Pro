@@ -17,9 +17,11 @@ export function buildThemeInitScript({
   return `(function(){try{var d=document.documentElement,t=${JSON.stringify(themes)},a=${JSON.stringify(attribute)},k=${JSON.stringify(storageKey)},def=${JSON.stringify(defaultTheme)},sys=${enableSystem};var s=localStorage.getItem(k)||def;var r=s==="system"&&sys?window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light":s;if(a==="class"){d.classList.remove.apply(d.classList,t);d.classList.add(r)}else{d.setAttribute(a,r)}d.style.colorScheme=r}catch(e){}})();`;
 }
 
-export function disableThemeTransitions(nonce?: string): (() => void) | undefined {
+export function disableThemeTransitions(
+  nonce?: string
+): (() => void) | undefined {
   if (typeof document === "undefined") {
-    return undefined;
+    return;
   }
 
   const style = document.createElement("style");

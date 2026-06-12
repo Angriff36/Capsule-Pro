@@ -21,8 +21,8 @@
  */
 
 import { execSync } from "node:child_process";
-import { writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -39,10 +39,14 @@ console.log("Mode:", strict ? "STRICT (exit 1 on drift)" : "REPORT ONLY");
 
 console.log("\n[1/4] Snapshotting current generated route hashes...");
 
-const generatedFiles = execSync(
-  'grep -rl "DO NOT EDIT" apps/api/app/api/',
-  { cwd: PROJECT_ROOT, encoding: "utf8", timeout: 30000 }
-).trim().split("\n").filter(Boolean);
+const generatedFiles = execSync('grep -rl "DO NOT EDIT" apps/api/app/api/', {
+  cwd: PROJECT_ROOT,
+  encoding: "utf8",
+  timeout: 30_000,
+})
+  .trim()
+  .split("\n")
+  .filter(Boolean);
 
 console.log("  Found", generatedFiles.length, "generated route files");
 
@@ -50,7 +54,9 @@ const snapshot = {};
 for (const file of generatedFiles) {
   try {
     const hash = execSync(`git hash-object "${file}"`, {
-      cwd: PROJECT_ROOT, encoding: "utf8", timeout: 5000
+      cwd: PROJECT_ROOT,
+      encoding: "utf8",
+      timeout: 5000,
     }).trim();
     snapshot[file] = hash;
   } catch {
@@ -66,7 +72,7 @@ try {
   execSync("node manifest/scripts/generate.mjs", {
     cwd: PROJECT_ROOT,
     encoding: "utf8",
-    timeout: 120000,
+    timeout: 120_000,
     stdio: "pipe",
   });
   console.log("  Generator completed successfully");
@@ -94,7 +100,9 @@ const driftResults = {
 for (const file of generatedFiles) {
   try {
     const hashAfter = execSync(`git hash-object "${file}"`, {
-      cwd: PROJECT_ROOT, encoding: "utf8", timeout: 5000
+      cwd: PROJECT_ROOT,
+      encoding: "utf8",
+      timeout: 5000,
     }).trim();
     const hashBefore = snapshot[file];
     if (hashBefore && hashAfter !== hashBefore) {
@@ -110,8 +118,11 @@ for (const file of generatedFiles) {
 // Check for newly-generated files
 const generatedAfter = execSync(
   'grep -rl "DO NOT EDIT" apps/api/app/api/ 2>/dev/null || true',
-  { cwd: PROJECT_ROOT, encoding: "utf8", timeout: 30000 }
-).trim().split("\n").filter(Boolean);
+  { cwd: PROJECT_ROOT, encoding: "utf8", timeout: 30_000 }
+)
+  .trim()
+  .split("\n")
+  .filter(Boolean);
 
 const originalSet = new Set(generatedFiles);
 for (const file of generatedAfter) {
@@ -147,15 +158,25 @@ if (hasDrift) {
     console.log("    REMOVED:", d);
   }
   if (driftResults.drifted.length > 20) {
-    console.log("    ... and", driftResults.drifted.length - 20, "more changed");
+    console.log(
+      "    ... and",
+      driftResults.drifted.length - 20,
+      "more changed"
+    );
   }
-  console.log("\n  Run 'pnpm manifest:generate' to regenerate, then commit changes.");
+  console.log(
+    "\n  Run 'pnpm manifest:generate' to regenerate, then commit changes."
+  );
 } else {
-  console.log("\n  ✅ No drift detected. Generated routes are consistent with IR.");
+  console.log(
+    "\n  ✅ No drift detected. Generated routes are consistent with IR."
+  );
 }
 
 // Write report
-if (!existsSync(REPORTS_DIR)) mkdirSync(REPORTS_DIR, { recursive: true });
+if (!existsSync(REPORTS_DIR)) {
+  mkdirSync(REPORTS_DIR, { recursive: true });
+}
 const reportPath = resolve(REPORTS_DIR, "route-drift.json");
 writeFileSync(reportPath, JSON.stringify(driftResults, null, 2));
 console.log("  Report:", reportPath);

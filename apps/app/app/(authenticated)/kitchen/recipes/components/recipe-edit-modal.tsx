@@ -32,23 +32,23 @@ import { useState } from "react";
 interface Ingredient {
   id?: string;
   name: string;
+  notes?: string;
   quantity: string;
   unit: string;
-  notes?: string;
 }
 
 interface Step {
-  id?: string;
-  instruction: string;
-  step_number: number;
   duration_minutes?: number | null;
-  temperature_value?: number | null;
-  temperature_unit?: string | null;
   equipment_needed?: string[];
+  id?: string;
+  image_url?: string | null;
+  instruction: string;
+  is_ccp?: boolean;
+  step_number: number;
+  temperature_unit?: string | null;
+  temperature_value?: number | null;
   tips?: string | null;
   video_url?: string | null;
-  image_url?: string | null;
-  is_ccp?: boolean;
 }
 
 // HACCP Critical Control Point temperature thresholds (Fahrenheit)
@@ -110,8 +110,9 @@ const COMMON_EQUIPMENT = [
 ];
 
 interface RecipeEditModalProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave?: (data: FormData) => Promise<void>;
+  open: boolean;
   recipe?: {
     id?: string;
     name?: string;
@@ -128,7 +129,6 @@ interface RecipeEditModalProps {
     restTimeMinutes?: number;
     difficultyLevel?: number;
   };
-  onSave?: (data: FormData) => Promise<void>;
 }
 
 // Initialize steps with all fields
@@ -227,7 +227,7 @@ function IngredientRow({
   onMoveDown: (index: number) => void;
 }) {
   return (
-    <div className="flex items-start gap-2 p-3 border rounded-md">
+    <div className="flex items-start gap-2 rounded-md border p-3">
       <div className="flex flex-col gap-1">
         <Button
           className="h-6 w-6"
@@ -249,7 +249,7 @@ function IngredientRow({
           ↓
         </Button>
       </div>
-      <div className="flex-1 grid grid-cols-12 gap-2">
+      <div className="grid flex-1 grid-cols-12 gap-2">
         <Input
           className="col-span-3"
           onChange={(e) => onUpdate(index, "quantity", e.target.value)}
@@ -329,7 +329,7 @@ function StepRow({
   ).slice(0, 5);
 
   return (
-    <div className="flex items-start gap-2 p-4 border rounded-lg bg-card">
+    <div className="flex items-start gap-2 rounded-lg border bg-card p-4">
       {/* Move controls */}
       <div className="flex flex-col gap-1 pt-6">
         <Button
@@ -356,7 +356,7 @@ function StepRow({
       <div className="flex-1 space-y-4">
         {/* Step header with number and CCP indicator */}
         <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">Step {index + 1}</Label>
+          <Label className="font-medium text-sm">Step {index + 1}</Label>
           {isCCP && (
             <Badge className="gap-1 bg-amber-500" variant="default">
               <AlertTriangle className="h-3 w-3" />
@@ -378,7 +378,7 @@ function StepRow({
         <div className="grid grid-cols-2 gap-4">
           {/* Timer input */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Label className="flex items-center gap-2 text-muted-foreground text-sm">
               <Clock className="h-4 w-4" />
               Duration (minutes)
             </Label>
@@ -399,7 +399,7 @@ function StepRow({
 
           {/* Temperature input with unit */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Label className="flex items-center gap-2 text-muted-foreground text-sm">
               <Thermometer className="h-4 w-4" />
               Temperature
             </Label>
@@ -438,11 +438,11 @@ function StepRow({
 
         {/* Equipment tags */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Label className="flex items-center gap-2 text-muted-foreground text-sm">
             <Wrench className="h-4 w-4" />
             Equipment Needed
           </Label>
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="mb-2 flex flex-wrap gap-2">
             {step.equipment_needed?.map((eq) => (
               <EquipmentChip
                 equipment={eq}
@@ -482,10 +482,10 @@ function StepRow({
             </Button>
           </div>
           {equipmentInput && filteredEquipment.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
+            <div className="mt-1 flex flex-wrap gap-1">
               {filteredEquipment.map((eq) => (
                 <button
-                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                  className="text-muted-foreground text-xs underline hover:text-foreground"
                   key={eq}
                   onClick={() => {
                     onAddEquipment(index, eq);
@@ -503,7 +503,7 @@ function StepRow({
         {/* Tips/notes toggle and field */}
         <div className="space-y-2">
           <Button
-            className="flex items-center gap-2 text-sm text-muted-foreground"
+            className="flex items-center gap-2 text-muted-foreground text-sm"
             onClick={() => setShowTips(!showTips)}
             size="sm"
             type="button"
@@ -533,7 +533,7 @@ function StepRow({
           step.temperature_value !== undefined && (
             <div className="flex items-center gap-2 rounded-md border border-amber-900/20 bg-amber-900/10 p-2">
               <AlertTriangle className="h-4 w-4 text-amber-700" />
-              <span className="text-sm text-amber-900">
+              <span className="text-amber-900 text-sm">
                 Critical Control Point: Temperature verification required
               </span>
             </div>
@@ -872,7 +872,7 @@ export const RecipeEditModal = ({
               </div>
             )}
             {ingredients.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-muted-foreground text-sm italic">
                 No ingredients added yet. Click "Add Ingredient" to get started.
               </p>
             )}
@@ -920,7 +920,7 @@ export const RecipeEditModal = ({
               </div>
             )}
             {steps.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-muted-foreground text-sm italic">
                 No steps added yet. Click "Add Step" to get started.
               </p>
             )}

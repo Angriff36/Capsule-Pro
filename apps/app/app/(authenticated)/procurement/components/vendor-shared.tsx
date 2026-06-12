@@ -1,48 +1,48 @@
 import { Star } from "lucide-react";
 
 export interface Vendor {
-  id: string;
-  supplier_number: string;
-  name: string;
-  contact_person: string | null;
-  email: string | null;
-  phone: string | null;
-  payment_terms: string;
   address_line1: string | null;
   address_line2: string | null;
-  city: string | null;
-  state: string | null;
-  postal_code: string | null;
-  country: string | null;
-  tax_id: string | null;
-  website: string | null;
-  performance_rating: number | null;
-  notes: string | null;
-  tags: string[] | null;
-  created_at: string;
-  updated_at: string;
-  contact_count: number;
   catalog_item_count: number;
+  city: string | null;
+  contact_count: number;
+  contact_person: string | null;
+  country: string | null;
+  created_at: string;
+  email: string | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  payment_terms: string;
+  performance_rating: number | null;
+  phone: string | null;
+  postal_code: string | null;
+  state: string | null;
+  supplier_number: string;
+  tags: string[] | null;
+  tax_id: string | null;
+  updated_at: string;
+  website: string | null;
 }
 
 export interface VendorContact {
-  id: string;
-  contact_name: string;
   contact_email: string | null;
+  contact_name: string;
   contact_phone: string | null;
   contact_role: string | null;
+  created_at: string;
+  id: string;
   is_primary: boolean;
   notes: string | null;
-  created_at: string;
 }
 
 export interface VendorRating {
-  id: string;
   category: string;
-  rating: number;
   comment: string | null;
-  rated_by_name: string | null;
   created_at: string;
+  id: string;
+  rated_by_name: string | null;
+  rating: number;
 }
 
 export const PAYMENT_TERMS_OPTIONS: { value: string; label: string }[] = [
@@ -76,18 +76,19 @@ export const RatingStars = ({
   size?: "sm" | "md";
 }) => {
   const sizeClass = size === "sm" ? "h-3 w-3" : "h-4 w-4";
-  if (!rating)
+  if (!rating) {
     return <span className="text-muted-foreground text-xs">Not rated</span>;
+  }
 
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
-          className={`${sizeClass} ${i <= Math.round(rating) ? "text-amber-400 fill-amber-400" : "text-gray-300"}`}
+          className={`${sizeClass} ${i <= Math.round(rating) ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
           key={i}
         />
       ))}
-      <span className="text-xs text-muted-foreground ml-1">
+      <span className="ml-1 text-muted-foreground text-xs">
         {Number(rating).toFixed(1)}
       </span>
     </div>
@@ -115,7 +116,8 @@ export const VendorAddress = ({
     vendor.country,
   ].filter(Boolean);
 
-  if (!parts.length)
+  if (!parts.length) {
     return <span className="text-muted-foreground text-sm">No address</span>;
+  }
   return <span className="text-sm">{parts.join(", ")}</span>;
 };

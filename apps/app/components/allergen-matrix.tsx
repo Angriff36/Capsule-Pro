@@ -63,28 +63,28 @@ const BIG_9_ALLERGENS = [
 type AllergenKey = (typeof BIG_9_ALLERGENS)[number]["key"];
 
 interface RecipeWithAllergens {
-  id: string;
-  name: string;
+  allergenIngredients: Record<AllergenKey, string[]>;
+  allergens: Record<AllergenKey, boolean | null>;
   category?: string;
   dietaryTags: string[];
-  allergens: Record<AllergenKey, boolean | null>;
+  id: string;
   ingredientCount: number;
-  allergenIngredients: Record<AllergenKey, string[]>;
+  name: string;
 }
 
 interface AllergenMatrixProps {
+  /** Additional class names */
+  className?: string;
+  /** Compact mode */
+  compact?: boolean;
   /** Optional filter for specific items */
   itemIds?: string[];
   /** Filter by item type */
   itemType?: "recipe" | "dish";
   /** Show dietary badges */
   showDietaryTags?: boolean;
-  /** Compact mode */
-  compact?: boolean;
   /** Show export button */
   showExport?: boolean;
-  /** Additional class names */
-  className?: string;
 }
 
 /**
@@ -124,7 +124,7 @@ function AllergenCell({
           className={`flex items-center justify-center ${compact ? "p-1" : "p-2"}`}
           title={tooltipContent}
         >
-          <div className="flex items-center justify-center bg-red-100 dark:bg-red-900/30 rounded-full p-0.5">
+          <div className="flex items-center justify-center rounded-full bg-red-100 p-0.5 dark:bg-red-900/30">
             <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
           </div>
         </div>
@@ -297,19 +297,19 @@ export function AllergenMatrix({
               size="sm"
               variant="outline"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Export CSV
             </Button>
           )}
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input
-              className="text-sm border rounded px-2 py-1 w-48 bg-background"
+              className="w-48 rounded border bg-background px-2 py-1 text-sm"
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search..."
               type="text"
@@ -318,14 +318,14 @@ export function AllergenMatrix({
           </div>
 
           {/* Allergen Filters */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             {BIG_9_ALLERGENS.map((allergen) => (
               <button
-                className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
+                className={`rounded-full border px-2 py-0.5 text-xs transition-colors ${
                   filterAllergens.includes(allergen.key)
-                    ? "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300"
-                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+                    ? "border-red-300 bg-red-100 text-red-800 dark:border-red-700 dark:bg-red-900/30 dark:text-red-300"
+                    : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                 }`}
                 key={allergen.key}
                 onClick={() => toggleAllergenFilter(allergen.key)}
@@ -336,11 +336,11 @@ export function AllergenMatrix({
             ))}
             {filterAllergens.length > 0 && (
               <button
-                className="text-xs px-2 py-0.5 text-gray-500 hover:text-gray-700"
+                className="px-2 py-0.5 text-gray-500 text-xs hover:text-gray-700"
                 onClick={() => setFilterAllergens([])}
                 type="button"
               >
-                <X className="h-3 w-3 inline mr-1" />
+                <X className="mr-1 inline h-3 w-3" />
                 Clear
               </button>
             )}
@@ -350,7 +350,7 @@ export function AllergenMatrix({
 
       <CardContent className={compact ? "py-2" : undefined}>
         {filteredRecipes.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="py-8 text-center text-muted-foreground">
             {recipes.length === 0
               ? `No ${itemType === "dish" ? "dishes" : "recipes"} found`
               : "No items match your filters"}
@@ -360,7 +360,7 @@ export function AllergenMatrix({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background z-10 min-w-[200px]">
+                  <TableHead className="sticky left-0 z-10 min-w-[200px] bg-background">
                     Name
                   </TableHead>
                   {!compact && (
@@ -368,7 +368,7 @@ export function AllergenMatrix({
                   )}
                   {BIG_9_ALLERGENS.map((allergen) => (
                     <TableHead
-                      className="text-center min-w-[60px]"
+                      className="min-w-[60px] text-center"
                       key={allergen.key}
                     >
                       {compact ? (
@@ -388,7 +388,7 @@ export function AllergenMatrix({
               <TableBody>
                 {filteredRecipes.map((recipe) => (
                   <TableRow key={recipe.id}>
-                    <TableCell className="sticky left-0 bg-background z-10 font-medium">
+                    <TableCell className="sticky left-0 z-10 bg-background font-medium">
                       {recipe.name}
                     </TableCell>
                     {!compact && (
@@ -424,7 +424,7 @@ export function AllergenMatrix({
         )}
 
         {/* Summary Stats */}
-        <div className="flex gap-4 mt-4 pt-4 border-t text-sm text-muted-foreground">
+        <div className="mt-4 flex gap-4 border-t pt-4 text-muted-foreground text-sm">
           <span>
             {filteredRecipes.length} of {recipes.length} items
           </span>

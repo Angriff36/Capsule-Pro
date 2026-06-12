@@ -87,12 +87,12 @@ const DIETARY_TAGS = [
 ] as const;
 
 interface AllergenManagementModalProps {
-  type: "dish" | "recipe";
-  id: string;
-  name: string;
   currentAllergens: string[];
   currentDietaryTags: string[];
+  id: string;
+  name: string;
   tenantId: string;
+  type: "dish" | "recipe";
 }
 
 export function AllergenManagementModal({
@@ -259,7 +259,7 @@ export function AllergenManagementModal({
 
             {/* Summary */}
             <div className="rounded-md bg-muted p-4">
-              <h4 className="font-semibold text-sm mb-2">Summary</h4>
+              <h4 className="mb-2 font-semibold text-sm">Summary</h4>
               <div className="space-y-1 text-sm">
                 <div>
                   <span className="text-muted-foreground">

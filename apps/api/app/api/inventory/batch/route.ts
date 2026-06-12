@@ -20,6 +20,7 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Uses createManifestRuntime — requires Node.js runtime (not Edge)
 export const runtime = "nodejs";
+
 import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 
@@ -43,14 +44,24 @@ interface BatchDeletePayload {
 type BatchPayload = BatchUpdatePayload | BatchDeletePayload;
 
 function isValidBatchPayload(body: unknown): body is BatchPayload {
-  if (typeof body !== "object" || body === null) return false;
+  if (typeof body !== "object" || body === null) {
+    return false;
+  }
   const b = body as Record<string, unknown>;
-  if (b.action !== "update" && b.action !== "delete") return false;
-  if (!Array.isArray(b.ids) || b.ids.length === 0) return false;
-  if (typeof b.ids[0] !== "string") return false;
+  if (b.action !== "update" && b.action !== "delete") {
+    return false;
+  }
+  if (!Array.isArray(b.ids) || b.ids.length === 0) {
+    return false;
+  }
+  if (typeof b.ids[0] !== "string") {
+    return false;
+  }
   if (b.action === "update") {
     const u = b.updates as Record<string, unknown> | undefined;
-    if (!u || typeof u !== "object") return false;
+    if (!u || typeof u !== "object") {
+      return false;
+    }
   }
   return true;
 }
@@ -147,7 +158,9 @@ export async function POST(request: NextRequest) {
             user: userCtx,
           }
         );
-        if (!result.ok) failCount++;
+        if (!result.ok) {
+          failCount++;
+        }
       }
 
       if (failCount > 0) {
@@ -229,15 +242,23 @@ export async function POST(request: NextRequest) {
           id: item.id,
           name: item.name,
           description: item.description,
-          category: updates.category !== undefined ? updates.category : item.category,
+          category:
+            updates.category === undefined ? item.category : updates.category,
           unitOfMeasure: item.unitOfMeasure,
-          unitCost: updates.unit_cost !== undefined ? updates.unit_cost : item.unitCost,
+          unitCost:
+            updates.unit_cost === undefined ? item.unitCost : updates.unit_cost,
           quantityOnHand: item.quantityOnHand,
           parLevel: item.parLevel,
-          reorder_level: updates.reorder_level !== undefined ? updates.reorder_level : item.reorder_level,
+          reorder_level:
+            updates.reorder_level === undefined
+              ? item.reorder_level
+              : updates.reorder_level,
           supplierId: item.supplierId,
-          tags: updates.tags !== undefined ? updates.tags.join(",") : item.tags,
-          fsa_status: updates.fsa_status !== undefined ? updates.fsa_status : item.fsa_status,
+          tags: updates.tags === undefined ? item.tags : updates.tags.join(","),
+          fsa_status:
+            updates.fsa_status === undefined
+              ? item.fsa_status
+              : updates.fsa_status,
           fsa_temp_logged: item.fsa_temp_logged,
           fsa_allergen_info: item.fsa_allergen_info,
           fsa_traceable: item.fsa_traceable,
@@ -259,7 +280,9 @@ export async function POST(request: NextRequest) {
             user: userCtx,
           }
         );
-        if (!result.ok) failCount++;
+        if (!result.ok) {
+          failCount++;
+        }
       }
 
       if (failCount > 0) {

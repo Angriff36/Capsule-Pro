@@ -12,27 +12,27 @@ const TEMPERATURE = 0.4;
 // --- Types ---
 
 interface EventDishRow {
-  tenant_id: string;
-  id: string;
-  event_id: string;
-  dish_id: string;
   course: string | null;
+  dish_id: string;
+  event_id: string;
+  id: string;
   quantity_servings: number;
+  tenant_id: string;
 }
 
 interface GeneratedTask {
-  id: string;
-  taskType: string;
-  name: string;
-  dishName: string | null;
   dishId: string | null;
-  quantityTotal: number;
-  estimatedMinutes: number;
-  priority: number;
-  startByOffsetDays: number;
+  dishName: string | null;
   dueByOffsetDays: number;
   dueByTime: string;
+  estimatedMinutes: number;
+  id: string;
+  name: string;
   notes: string | null;
+  priority: number;
+  quantityTotal: number;
+  startByOffsetDays: number;
+  taskType: string;
 }
 
 interface TaskGroup {
@@ -48,9 +48,12 @@ async function getEventContext(tenantId: string, eventId: string) {
     where: { tenantId, id: eventId, deletedAt: null },
   });
 
-  if (!event) throw new Error("Event not found");
-  if (!event.locationId)
+  if (!event) {
+    throw new Error("Event not found");
+  }
+  if (!event.locationId) {
     throw new Error("Event must have a location assigned to generate tasks");
+  }
 
   // Fetch event dishes via junction table
   const eventDishes = await database.$queryRaw<EventDishRow[]>`
@@ -61,8 +64,9 @@ async function getEventContext(tenantId: string, eventId: string) {
       AND event_id = ${eventId}::uuid
   `;
 
-  if (eventDishes.length === 0)
+  if (eventDishes.length === 0) {
     throw new Error("Event must have menu items assigned to generate tasks");
+  }
 
   // Fetch dish details
   const dishIds = [...new Set(eventDishes.map((ed) => ed.dish_id))];
@@ -231,16 +235,16 @@ Generate comprehensive tasks covering prep, setup, service, and follow-up. Retur
   const parsed = JSON.parse(result.text.trim());
 
   interface AiTask {
-    taskType?: string;
-    name?: string;
     dishName?: string | null;
-    quantityTotal?: number;
-    estimatedMinutes?: number;
-    priority?: number;
-    startByOffsetDays?: number;
     dueByOffsetDays?: number;
     dueByTime?: string;
+    estimatedMinutes?: number;
+    name?: string;
     notes?: string | null;
+    priority?: number;
+    quantityTotal?: number;
+    startByOffsetDays?: number;
+    taskType?: string;
   }
 
   interface AiTaskGroup {
@@ -279,7 +283,9 @@ Generate comprehensive tasks covering prep, setup, service, and follow-up. Retur
             ed.dish &&
             ed.dish.name.toLowerCase() === task.dishName!.toLowerCase()
         );
-        if (match?.dish) task.dishId = match.dish.id;
+        if (match?.dish) {
+          task.dishId = match.dish.id;
+        }
       }
     }
   }
@@ -301,7 +307,9 @@ function generateFallbackTasks(
   const categoryGroups = new Map<string, typeof eventDishes>();
 
   for (const ed of eventDishes) {
-    if (!ed.dish) continue;
+    if (!ed.dish) {
+      continue;
+    }
     const cat = ed.dish.category ?? "General";
     const existing = categoryGroups.get(cat) ?? [];
     existing.push(ed);

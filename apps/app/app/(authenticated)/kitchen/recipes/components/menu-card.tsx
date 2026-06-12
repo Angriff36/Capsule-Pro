@@ -11,18 +11,18 @@ import { CheckCircleIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 export interface MenuCardProps {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  isActive: boolean;
-  basePrice: number | null;
-  pricePerPerson: number | null;
-  minGuests: number | null;
-  maxGuests: number | null;
-  dishCount: number;
-  dietaryTags?: string[] | null;
   allergens?: string[] | null;
+  basePrice: number | null;
+  category: string | null;
+  description: string | null;
+  dietaryTags?: string[] | null;
+  dishCount: number;
+  id: string;
+  isActive: boolean;
+  maxGuests: number | null;
+  minGuests: number | null;
+  name: string;
+  pricePerPerson: number | null;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -104,7 +104,7 @@ export const MenuCard = ({
       >
         <CardHeader className="space-y-2">
           <div className="flex items-start justify-between gap-3">
-            <CardTitle className="font-normal text-xl leading-snug tracking-[-0.01em] text-ink">
+            <CardTitle className="font-normal text-ink text-xl leading-snug tracking-[-0.01em]">
               {name}
             </CardTitle>
             <div
@@ -125,7 +125,7 @@ export const MenuCard = ({
             ) : null}
             <Badge className="font-normal" variant="outline">
               <UsersIcon className="mr-1 size-3" />
-              {dishCount} dish{dishCount !== 1 ? "es" : ""}
+              {dishCount} dish{dishCount === 1 ? "" : "es"}
             </Badge>
           </div>
 
@@ -136,10 +136,10 @@ export const MenuCard = ({
           )}
         </CardHeader>
 
-        <CardContent className="space-y-3 border-t border-hairline/80 pt-4">
+        <CardContent className="space-y-3 border-hairline/80 border-t pt-4">
           <div className="flex items-center gap-4 text-sm">
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
                 Price
               </div>
               <div className="font-medium text-ink">
@@ -148,7 +148,7 @@ export const MenuCard = ({
             </div>
             {(minGuests || maxGuests) && (
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
                   Guests
                 </div>
                 <div className="font-medium text-ink">
@@ -183,7 +183,7 @@ export const MenuCard = ({
             <div className="flex flex-wrap gap-1">
               {allAllergens.slice(0, 2).map((allergen) => (
                 <Badge
-                  className="border-coral-soft text-xs font-normal text-coral"
+                  className="border-coral-soft font-normal text-coral text-xs"
                   key={allergen}
                   variant="outline"
                 >

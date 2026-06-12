@@ -29,11 +29,11 @@ export default async function ActivityFeedPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="font-semibold text-2xl tracking-tight">Activity Feed</h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="mt-2 text-muted-foreground">
           Monitor all system events, entity changes, AI plan approvals, and
           collaborator actions across your organization.
         </p>

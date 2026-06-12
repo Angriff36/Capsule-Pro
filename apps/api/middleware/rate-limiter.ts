@@ -32,14 +32,6 @@ import { NextResponse } from "next/server";
  * Rate limit configuration options.
  */
 export interface RateLimitOptions {
-  /** Maximum requests allowed in the window */
-  limit?: number;
-  /** Time window (e.g., "1m", "1h", "1d") */
-  window?: string;
-  /** Key prefix for Redis (default: "rate_limit") */
-  prefix?: string;
-  /** Whether to skip rate limiting (useful for testing) */
-  skip?: boolean;
   /**
    * Whether to allow traffic when Redis is unavailable.
    * Defaults to false (fail-closed: block on Redis errors).
@@ -47,17 +39,25 @@ export interface RateLimitOptions {
    * rate limiting (e.g., health checks, webhook receivers).
    */
   failOpen?: boolean;
+  /** Maximum requests allowed in the window */
+  limit?: number;
+  /** Key prefix for Redis (default: "rate_limit") */
+  prefix?: string;
+  /** Whether to skip rate limiting (useful for testing) */
+  skip?: boolean;
+  /** Time window (e.g., "1m", "1h", "1d") */
+  window?: string;
 }
 
 /**
  * Result of a rate limit check.
  */
 export interface RateLimitResult {
-  success: boolean;
   limit: number;
   remaining: number;
   reset: Date;
   response?: Response;
+  success: boolean;
 }
 
 /**

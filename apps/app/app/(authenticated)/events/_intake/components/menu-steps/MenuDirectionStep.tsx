@@ -20,7 +20,7 @@ export default function MenuDirectionStep({ formData, updateField }: Props) {
         title="Choose a culinary direction"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {MENU_DIRECTIONS.map((dir) => (
           <SelectCard
             description={dir.description}

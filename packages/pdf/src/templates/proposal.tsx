@@ -1,3 +1,4 @@
+import type React from "react";
 import {
   Document,
   Image,
@@ -6,7 +7,6 @@ import {
   Text,
   View,
 } from "../lib/react-pdf-primitives";
-import type React from "react";
 import type { ProposalPDFData } from "../types";
 
 // Default colors when no branding is specified
@@ -228,20 +228,18 @@ interface ProposalPDFProps {
 export const ProposalPDF: React.FC<ProposalPDFProps> = ({ data }) => {
   const styles = createStyles(data.branding);
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
-  };
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -260,9 +258,8 @@ export const ProposalPDF: React.FC<ProposalPDFProps> = ({ data }) => {
     }
   };
 
-  const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
+  const formatStatus = (status: string) =>
+    status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
     <Document>

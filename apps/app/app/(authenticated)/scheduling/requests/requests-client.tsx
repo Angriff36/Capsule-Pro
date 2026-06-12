@@ -30,7 +30,7 @@ export function RequestsClient({ requests }: { requests: UnifiedRequest[] }) {
   if (requests.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-        <p className="text-sm text-muted-foreground">No pending requests</p>
+        <p className="text-muted-foreground text-sm">No pending requests</p>
       </div>
     );
   }
@@ -52,7 +52,7 @@ export function RequestsClient({ requests }: { requests: UnifiedRequest[] }) {
             <TableRow key={`${r.type}:${r.id}`}>
               <TableCell>
                 <div className="font-medium">{r.employee}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {r.employeeRole}
                 </div>
               </TableCell>
@@ -62,12 +62,12 @@ export function RequestsClient({ requests }: { requests: UnifiedRequest[] }) {
               <TableCell>
                 <div className="text-sm">{r.detail}</div>
                 {r.reason && (
-                  <div className="text-xs text-muted-foreground mt-0.5">
+                  <div className="mt-0.5 text-muted-foreground text-xs">
                     {r.reason}
                   </div>
                 )}
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
+              <TableCell className="text-muted-foreground text-sm">
                 {r.submitted}
               </TableCell>
               <TableCell>

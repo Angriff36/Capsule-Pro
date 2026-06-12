@@ -49,14 +49,14 @@ import {
 } from "@/app/lib/manifest-client.generated";
 
 interface AlertsConfig {
-  id: string;
   channel: string;
   destination: string;
+  id: string;
 }
 
 interface InitialMetrics {
-  total: number;
   channelCount: number;
+  total: number;
 }
 
 const CHANNEL_CONFIG: Record<
@@ -126,8 +126,12 @@ export function AlertsConfigClient({
         page,
         limit: 25,
       };
-      if (channelFilter !== "all") query.channel = channelFilter;
-      if (searchQuery) query.search = searchQuery;
+      if (channelFilter !== "all") {
+        query.channel = channelFilter;
+      }
+      if (searchQuery) {
+        query.search = searchQuery;
+      }
 
       const result = await listAlertsConfigs(query);
       setConfigs(result.data as unknown as AlertsConfig[]);
@@ -173,7 +177,9 @@ export function AlertsConfigClient({
   };
 
   const handleEdit = async () => {
-    if (!editTarget) return;
+    if (!editTarget) {
+      return;
+    }
     setActioning(editTarget.id);
     try {
       await alertsConfigUpdate({
@@ -197,7 +203,9 @@ export function AlertsConfigClient({
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setActioning(deleteTarget.id);
     try {
       await alertsConfigRemove({
@@ -228,7 +236,7 @@ export function AlertsConfigClient({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -275,7 +283,7 @@ export function AlertsConfigClient({
       )}
 
       {!isLoading && configs.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No alert configurations found. Create one to start receiving
           notifications.
         </div>
@@ -283,7 +291,7 @@ export function AlertsConfigClient({
 
       {!isLoading && configs.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[120px_1fr_120px_120px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[120px_1fr_120px_120px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Channel</span>
             <span>Destination</span>
             <span>ID</span>
@@ -294,7 +302,7 @@ export function AlertsConfigClient({
               CHANNEL_CONFIG[config.channel] ?? DEFAULT_CHANNEL_ICON;
             return (
               <div
-                className="grid grid-cols-[120px_1fr_120px_120px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                className="grid grid-cols-[120px_1fr_120px_120px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                 key={config.id}
               >
                 <StatusPill>
@@ -306,7 +314,7 @@ export function AlertsConfigClient({
                     {config.destination}
                   </p>
                 </div>
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="truncate text-muted-foreground text-xs">
                   {config.id.slice(0, 8)}...
                 </span>
                 <div className="flex items-center justify-end gap-1">
@@ -375,7 +383,7 @@ export function AlertsConfigClient({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Channel</label>
+              <label className="font-medium text-sm">Channel</label>
               <Select
                 onValueChange={(v) => setForm((f) => ({ ...f, channel: v }))}
                 value={form.channel}
@@ -392,7 +400,7 @@ export function AlertsConfigClient({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Destination</label>
+              <label className="font-medium text-sm">Destination</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, destination: e.target.value }))
@@ -443,7 +451,7 @@ export function AlertsConfigClient({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Channel</label>
+              <label className="font-medium text-sm">Channel</label>
               <Select
                 onValueChange={(v) => setForm((f) => ({ ...f, channel: v }))}
                 value={form.channel}
@@ -460,7 +468,7 @@ export function AlertsConfigClient({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Destination</label>
+              <label className="font-medium text-sm">Destination</label>
               <Input
                 onChange={(e) =>
                   setForm((f) => ({ ...f, destination: e.target.value }))

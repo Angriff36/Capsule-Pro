@@ -3,14 +3,14 @@ import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { CheckCircleIcon, ClockIcon, EditIcon, UserIcon } from "lucide-react";
 
 interface ApprovalHistoryEntry {
-  id: string;
   action: string;
+  createdAt: Date;
+  id: string;
+  newValues: Record<string, unknown> | null;
+  oldValues: Record<string, unknown> | null;
   performedBy: string | null;
   performerFirstName: string | null;
   performerLastName: string | null;
-  oldValues: Record<string, unknown> | null;
-  newValues: Record<string, unknown> | null;
-  createdAt: Date;
 }
 
 interface ApprovalHistoryTimelineProps {
@@ -129,7 +129,7 @@ export default function ApprovalHistoryTimeline({
 
   return (
     <section>
-      <h2 className="font-medium text-sm text-muted-foreground mb-4">
+      <h2 className="mb-4 font-medium text-muted-foreground text-sm">
         Approval History
       </h2>
       <Card>
@@ -163,8 +163,8 @@ export default function ApprovalHistoryTimeline({
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
                             {actionDetails.label}
@@ -173,14 +173,14 @@ export default function ApprovalHistoryTimeline({
                             {entry.action.toUpperCase()}
                           </Badge>
                         </div>
-                        <span className="text-muted-foreground text-sm whitespace-nowrap">
+                        <span className="whitespace-nowrap text-muted-foreground text-sm">
                           {formatDate(entry.createdAt)}
                         </span>
                       </div>
-                      <p className="text-muted-foreground text-sm mb-2">
+                      <p className="mb-2 text-muted-foreground text-sm">
                         {actionDetails.description}
                       </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
                         <UserIcon className="h-3 w-3" />
                         <span>by {performerName}</span>
                       </div>
@@ -189,7 +189,7 @@ export default function ApprovalHistoryTimeline({
 
                   {/* Separator */}
                   {index < approvalHistory.length - 1 && (
-                    <div className="ml-6 mt-6 border-l-2 border-dashed border-muted" />
+                    <div className="mt-6 ml-6 border-muted border-l-2 border-dashed" />
                   )}
                 </div>
               );

@@ -48,45 +48,45 @@ import { Separator } from "../ui/separator";
  * Vitamins and minerals data
  */
 interface VitaminsMinerals {
-  vitaminA?: number;
-  vitaminC?: number;
   calcium?: number;
+  copper?: number;
+  folate?: number;
+  iodine?: number;
   iron?: number;
+  magnesium?: number;
+  manganese?: number;
+  niacin?: number;
+  phosphorus?: number;
+  riboflavin?: number;
+  selenium?: number;
+  thiamin?: number;
+  vitaminA?: number;
+  vitaminB6?: number;
+  vitaminB12?: number;
+  vitaminC?: number;
   vitaminD?: number;
   vitaminE?: number;
   vitaminK?: number;
-  thiamin?: number;
-  riboflavin?: number;
-  niacin?: number;
-  vitaminB6?: number;
-  vitaminB12?: number;
-  folate?: number;
-  phosphorus?: number;
-  iodine?: number;
-  magnesium?: number;
   zinc?: number;
-  selenium?: number;
-  copper?: number;
-  manganese?: number;
 }
 
 /**
  * Nutritional values per serving
  */
 export interface NutrientsPerServing {
+  addedSugars: number;
   calories: number;
   caloriesFromFat: number;
-  totalFat: number;
-  saturatedFat: number;
-  transFat: number;
   cholesterol: number;
-  sodium: number;
-  potassium: number;
-  totalCarbohydrate: number;
   dietaryFiber: number;
-  totalSugars: number;
-  addedSugars: number;
+  potassium: number;
   protein: number;
+  saturatedFat: number;
+  sodium: number;
+  totalCarbohydrate: number;
+  totalFat: number;
+  totalSugars: number;
+  transFat: number;
   vitamins: VitaminsMinerals;
 }
 
@@ -94,22 +94,22 @@ export interface NutrientsPerServing {
  * Percent daily values
  */
 export interface PercentDailyValues {
-  totalFat: number;
-  saturatedFat: number;
-  transFat: number;
-  cholesterol: number;
-  sodium: number;
-  potassium: number;
-  totalCarbohydrate: number;
-  dietaryFiber: number;
-  totalSugars: number;
   addedSugars: number;
-  protein: number;
-  vitaminD: number;
   calcium: number;
+  cholesterol: number;
+  dietaryFiber: number;
   iron: number;
+  potassium: number;
+  protein: number;
+  saturatedFat: number;
+  sodium: number;
+  totalCarbohydrate: number;
+  totalFat: number;
+  totalSugars: number;
+  transFat: number;
   vitaminA: number;
   vitaminC: number;
+  vitaminD: number;
 }
 
 /**
@@ -117,37 +117,37 @@ export interface PercentDailyValues {
  */
 export interface AllergenInfo {
   contains: string[];
-  mayContain: string[];
   freeFrom: string[];
   highlights: string[];
+  mayContain: string[];
 }
 
 /**
  * FDA compliance information
  */
 export interface FDAComplianceInfo {
+  isCompliant: boolean;
+  requiredNutrients: string[];
   servingSize: string;
   servingsPerContainer: number;
-  isCompliant: boolean;
   warnings: string[];
-  requiredNutrients: string[];
 }
 
 /**
  * Complete nutrition label data
  */
 export interface NutritionLabel {
-  recipeVersionId: string;
-  recipeName: string;
-  servingSize: string;
-  servingsPerContainer: number;
-  perServing: NutrientsPerServing;
-  perContainer: NutrientsPerServing;
-  percentDailyValues: PercentDailyValues;
   allergens: AllergenInfo;
   fdaCompliance: FDAComplianceInfo;
-  ingredientsList: string;
   generatedAt: Date | string;
+  ingredientsList: string;
+  perContainer: NutrientsPerServing;
+  percentDailyValues: PercentDailyValues;
+  perServing: NutrientsPerServing;
+  recipeName: string;
+  recipeVersionId: string;
+  servingSize: string;
+  servingsPerContainer: number;
 }
 
 /**
@@ -155,26 +155,25 @@ export interface NutritionLabel {
  */
 export interface NutritionLabelCardProps {
   /**
-   * The nutrition label data to display
-   */
-  label: NutritionLabel;
-
-  /**
    * Optional CSS class
    */
   className?: string;
-
   /**
-   * Whether to show allergen alerts
+   * The nutrition label data to display
    */
-  showAllergenAlerts?: boolean;
+  label: NutritionLabel;
+  onDownload?: () => void;
 
   /**
    * Optional callback for print/download
    */
   onPrint?: () => void;
-  onDownload?: () => void;
   onShare?: () => void;
+
+  /**
+   * Whether to show allergen alerts
+   */
+  showAllergenAlerts?: boolean;
 }
 
 /**
@@ -217,9 +216,9 @@ function FDANutritionLabel({ label }: { label: NutritionLabel }) {
   const { perServing, percentDailyValues } = label;
 
   return (
-    <div className="border-4 border-black p-4 bg-white text-black font-sans text-sm max-w-xs mx-auto">
+    <div className="mx-auto max-w-xs border-4 border-black bg-white p-4 font-sans text-black text-sm">
       {/* Header */}
-      <div className="font-bold text-lg mb-2">Nutrition Facts</div>
+      <div className="mb-2 font-bold text-lg">Nutrition Facts</div>
       <div className="mb-2">
         {label.servingsPerContainer} servings per container
       </div>
@@ -228,25 +227,25 @@ function FDANutritionLabel({ label }: { label: NutritionLabel }) {
         <span className="font-bold text-base">{label.servingSize}</span>
       </div>
 
-      <Separator className="my-2 border-b-4 border-black" />
+      <Separator className="my-2 border-black border-b-4" />
 
       {/* Calories */}
-      <div className="flex justify-between items-baseline py-2">
+      <div className="flex items-baseline justify-between py-2">
         <span className="font-bold text-2xl">{perServing.calories}</span>
         <span className="font-bold text-base">Calories</span>
       </div>
 
-      <Separator className="my-2 border-b-2 border-black" />
+      <Separator className="my-2 border-black border-b-2" />
 
       {/* Calories from fat */}
-      <div className="flex justify-between text-xs mb-2">
+      <div className="mb-2 flex justify-between text-xs">
         <span>Calories from Fat</span>
         <span>{perServing.caloriesFromFat}</span>
       </div>
 
-      <Separator className="my-2 border-b-4 border-black" />
+      <Separator className="my-2 border-black border-b-4" />
 
-      <div className="text-xs mb-2 font-bold">% Daily Value*</div>
+      <div className="mb-2 font-bold text-xs">% Daily Value*</div>
 
       {/* Total Fat */}
       <NutrientRow
@@ -340,7 +339,7 @@ function FDANutritionLabel({ label }: { label: NutritionLabel }) {
         value={perServing.protein}
       />
 
-      <Separator className="my-2 border-b-4 border-black" />
+      <Separator className="my-2 border-black border-b-4" />
 
       {/* Vitamins - showing if we have data */}
       <div className="flex justify-between py-0.5">
@@ -360,10 +359,10 @@ function FDANutritionLabel({ label }: { label: NutritionLabel }) {
         <span>{perServing.potassium}mg</span>
       </div>
 
-      <Separator className="my-2 border-b-4 border-black" />
+      <Separator className="my-2 border-black border-b-4" />
 
       {/* Footer */}
-      <div className="text-xs mt-2">
+      <div className="mt-2 text-xs">
         * The % Daily Value (DV) tells you how much a nutrient in a serving of
         food contributes to a daily diet. 2,000 calories a day is used for
         general nutrition advice.
@@ -425,8 +424,8 @@ function NutritionSection({
 
   return (
     <Collapsible onOpenChange={setIsOpen} open={isOpen}>
-      <div className="border rounded-lg overflow-hidden">
-        <CollapsibleTrigger className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors">
+      <div className="overflow-hidden rounded-lg border">
+        <CollapsibleTrigger className="flex w-full items-center justify-between p-3 transition-colors hover:bg-muted/50">
           <div className="flex items-center gap-2">
             {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
             <span className="font-medium text-sm">{title}</span>
@@ -522,7 +521,7 @@ export function NutritionLabelCard({
           <div className="space-y-3">
             {label.allergens.contains.length > 0 && (
               <div>
-                <div className="text-xs font-medium mb-2 flex items-center gap-1">
+                <div className="mb-2 flex items-center gap-1 font-medium text-xs">
                   <Ban className="h-3 w-3 text-red-500" />
                   Contains
                 </div>
@@ -540,7 +539,7 @@ export function NutritionLabelCard({
 
             {label.allergens.mayContain.length > 0 && (
               <div>
-                <div className="text-xs font-medium mb-2 flex items-center gap-1">
+                <div className="mb-2 flex items-center gap-1 font-medium text-xs">
                   <AlertCircle className="h-3 w-3 text-amber-500" />
                   May Contain
                 </div>
@@ -558,7 +557,7 @@ export function NutritionLabelCard({
 
             {label.allergens.freeFrom.length > 0 && (
               <div>
-                <div className="text-xs font-medium mb-2 flex items-center gap-1">
+                <div className="mb-2 flex items-center gap-1 font-medium text-xs">
                   <WheatOff className="h-3 w-3 text-green-500" />
                   Free From
                 </div>
@@ -578,7 +577,7 @@ export function NutritionLabelCard({
 
         {/* Ingredients List */}
         <NutritionSection icon={Info} title="Ingredients List">
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             {label.ingredientsList}
           </p>
         </NutritionSection>
@@ -588,10 +587,10 @@ export function NutritionLabelCard({
           <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <div className="font-medium text-sm mb-1">
+              <div className="mb-1 font-medium text-sm">
                 FDA Compliance Notices
               </div>
-              <ul className="list-disc list-inside text-xs space-y-1">
+              <ul className="list-inside list-disc space-y-1 text-xs">
                 {label.fdaCompliance.warnings.map((warning, idx) => (
                   <li key={idx}>{warning}</li>
                 ))}
@@ -601,7 +600,7 @@ export function NutritionLabelCard({
         )}
 
         {/* Footer */}
-        <div className="text-xs text-muted-foreground text-center">
+        <div className="text-center text-muted-foreground text-xs">
           Generated on {new Date(label.generatedAt).toLocaleDateString()} •
           Based on available ingredient nutritional data
         </div>

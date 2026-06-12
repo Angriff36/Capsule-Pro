@@ -23,8 +23,8 @@ const ALLOWED_ACTIONS = new Set([
 ]);
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(

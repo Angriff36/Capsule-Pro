@@ -24,12 +24,12 @@ import { useEffect, useState } from "react";
 import {
   getPurchaseOrder,
   listPurchaseOrderItems,
-  purchaseOrderSubmit,
   purchaseOrderApprove,
   purchaseOrderCancel,
-  purchaseOrderReject,
   purchaseOrderMarkOrdered,
   purchaseOrderMarkReceived,
+  purchaseOrderReject,
+  purchaseOrderSubmit,
 } from "@/app/lib/manifest-client.generated";
 import {
   type POItem,
@@ -43,20 +43,20 @@ import {
 } from "../../components/po-shared";
 
 interface POOrder {
-  id: string;
-  po_number: string;
-  vendor_name: string | null;
-  status: string;
-  order_date: string;
-  expected_delivery_date: string | null;
   actual_delivery_date: string | null;
+  expected_delivery_date: string | null;
+  id: string;
+  notes: string | null;
+  order_date: string;
+  po_number: string;
+  received_at: string | null;
+  shipping_amount: number;
+  status: string;
+  submitted_at: string | null;
   subtotal: number;
   tax_amount: number;
-  shipping_amount: number;
   total: number;
-  notes: string | null;
-  submitted_at: string | null;
-  received_at: string | null;
+  vendor_name: string | null;
 }
 
 export default function PODetailPage() {
@@ -85,7 +85,10 @@ export default function PODetailPage() {
       ]);
       const orderData = orderResult as unknown as POOrder;
       const allItems = itemsResult.data as unknown as POItem[];
-      const poItems = allItems.filter((item) => (item as unknown as Record<string, unknown>).purchaseOrderId === id);
+      const poItems = allItems.filter(
+        (item) =>
+          (item as unknown as Record<string, unknown>).purchaseOrderId === id
+      );
       setOrder(orderData);
       setItems(poItems);
       const initial: Record<string, string> = {};
@@ -105,7 +108,10 @@ export default function PODetailPage() {
     }
   };
 
-  const STATUS_COMMANDS: Record<string, (params: Record<string, unknown>) => Promise<unknown>> = {
+  const STATUS_COMMANDS: Record<
+    string,
+    (params: Record<string, unknown>) => Promise<unknown>
+  > = {
     submitted: purchaseOrderSubmit,
     approved: purchaseOrderApprove,
     ordered: purchaseOrderMarkOrdered,
@@ -114,7 +120,9 @@ export default function PODetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
-    if (!order) return;
+    if (!order) {
+      return;
+    }
     setUpdating(newStatus);
     try {
       const command = STATUS_COMMANDS[newStatus];
@@ -130,7 +138,9 @@ export default function PODetailPage() {
   };
 
   const handleReceive = async () => {
-    if (!order) return;
+    if (!order) {
+      return;
+    }
     setReceiving(true);
     try {
       for (const [itemId, qty] of Object.entries(receiveItems)) {
@@ -196,9 +206,9 @@ export default function PODetailPage() {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{order.po_number}</h1>
+            <h1 className="font-semibold text-2xl">{order.po_number}</h1>
             <Badge className={config.color}>
-              <Icon className="h-3 w-3 mr-1" />
+              <Icon className="mr-1 h-3 w-3" />
               {config.label}
             </Badge>
           </div>
@@ -222,7 +232,7 @@ export default function PODetailPage() {
                 }
               >
                 {updating === action && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 {actionConfig?.label}
               </Button>
@@ -234,7 +244,7 @@ export default function PODetailPage() {
               size="sm"
               variant="outline"
             >
-              <Package className="h-4 w-4 mr-2" />
+              <Package className="mr-2 h-4 w-4" />
               Receive Items
             </Button>
           )}
@@ -245,45 +255,45 @@ export default function PODetailPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subtotal</CardTitle>
+            <CardTitle className="font-medium text-sm">Subtotal</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(order.subtotal)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tax</CardTitle>
+            <CardTitle className="font-medium text-sm">Tax</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(order.tax_amount)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="font-medium text-sm">Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(order.total)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Receive Progress
             </CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{receiveProgress}%</div>
-            <div className="w-full bg-muted/50 rounded-full h-2 mt-1">
+            <div className="font-bold text-2xl">{receiveProgress}%</div>
+            <div className="mt-1 h-2 w-full rounded-full bg-muted/50">
               <div
                 className={`h-2 rounded-full ${receiveProgress === 100 ? "bg-green-500" : "bg-blue-500"}`}
                 style={{ width: `${receiveProgress}%` }}
@@ -316,7 +326,7 @@ export default function PODetailPage() {
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{order.notes}</p>
+            <p className="text-muted-foreground text-sm">{order.notes}</p>
           </CardContent>
         </Card>
       )}
@@ -338,19 +348,19 @@ export default function PODetailPage() {
               );
               return (
                 <div
-                  className="grid grid-cols-3 gap-4 items-center"
+                  className="grid grid-cols-3 items-center gap-4"
                   key={item.id}
                 >
                   <div>
                     <p className="font-medium text-sm">
                       {item.item_name || item.item_id}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Ordered: {Number(item.quantity_ordered)} · Received:{" "}
                       {Number(item.quantity_received)}
                     </p>
                   </div>
-                  <div className="text-right text-sm text-muted-foreground">
+                  <div className="text-right text-muted-foreground text-sm">
                     Remaining: {remaining} {item.unit_of_measure || ""}
                   </div>
                   <Input

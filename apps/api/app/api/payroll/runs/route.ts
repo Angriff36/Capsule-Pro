@@ -29,8 +29,8 @@ const _UpdatePayrollRunSchema = z.object({
 });
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(

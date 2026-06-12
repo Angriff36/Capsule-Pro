@@ -88,7 +88,9 @@ export function toDecimalInput(value: unknown): DecimalInput {
       return null;
     }
   }
-  if (typeof value === "number") return value;
+  if (typeof value === "number") {
+    return value;
+  }
   return String(value);
 }
 
@@ -132,35 +134,47 @@ export function asJsonInput(value: unknown): Exclude<JsonInput, null> {
 
 /** Coerce a manifest field to string, returning "" for null/undefined. */
 export function asString(value: unknown): string {
-  if (value === null || value === undefined) return "";
+  if (value === null || value === undefined) {
+    return "";
+  }
   return String(value);
 }
 
 /** Coerce a manifest field to string | null. */
 export function asNullableString(value: unknown): string | null {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
   return String(value);
 }
 
 /** ISO 3166-1 alpha-2 country code — DB column is CHAR(2). */
 export function asCountryCode(value: unknown): string | null {
   const raw = asNullableString(value);
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
   const normalized = raw.toUpperCase();
   return normalized.length === 2 ? normalized : null;
 }
 
 /** Coerce a manifest field to number | null. */
 export function asNullableNumber(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
 /** Coerce a manifest field to Date | null (accepts ISO string, ms epoch, or Date). */
 export function asNullableDate(value: unknown): Date | null {
-  if (value === null || value === undefined || value === "") return null;
-  if (value instanceof Date) return value;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  if (value instanceof Date) {
+    return value;
+  }
   if (typeof value === "number") {
     const d = new Date(value);
     return Number.isNaN(d.getTime()) ? null : d;
@@ -192,8 +206,14 @@ export function asStringArray(value: unknown): string[] {
 
 /** Coerce a manifest field to a boolean (default false). */
 export function asBool(value: unknown, fallback = false): boolean {
-  if (value === true || value === false) return value;
-  if (value === "true") return true;
-  if (value === "false") return false;
+  if (value === true || value === false) {
+    return value;
+  }
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
   return fallback;
 }

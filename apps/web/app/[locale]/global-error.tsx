@@ -28,7 +28,9 @@ function isNextHTTPErrorFallback(error: unknown): boolean {
 
 const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
   useEffect(() => {
-    if (isNextHTTPErrorFallback(error)) return;
+    if (isNextHTTPErrorFallback(error)) {
+      return;
+    }
     captureException(error);
   }, [error]);
 

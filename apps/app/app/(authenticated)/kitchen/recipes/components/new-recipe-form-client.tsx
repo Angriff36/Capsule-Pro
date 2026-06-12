@@ -18,8 +18,6 @@ import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipeCompositeCreate } from "@/app/lib/routes";
 
 interface CompositeRouteResponse {
-  success: boolean;
-  message?: string;
   constraintOutcomes?: ConstraintOutcome[];
   data?: {
     recipe: unknown;
@@ -29,6 +27,8 @@ interface CompositeRouteResponse {
     events: unknown[];
     recipeId: string;
   };
+  message?: string;
+  success: boolean;
 }
 
 interface NewRecipeFormProps {
@@ -262,13 +262,13 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
       >
         {/* Recipe Information Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Recipe Information
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="name">
+                <label className="font-medium text-sm" htmlFor="name">
                   Recipe name
                 </label>
                 <input
@@ -280,7 +280,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="category">
+                <label className="font-medium text-sm" htmlFor="category">
                   Category
                 </label>
                 <input
@@ -292,7 +292,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="description">
+              <label className="font-medium text-sm" htmlFor="description">
                 Description
               </label>
               <textarea
@@ -305,7 +305,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="yieldQuantity">
+                <label className="font-medium text-sm" htmlFor="yieldQuantity">
                   Yield quantity *
                 </label>
                 <input
@@ -327,11 +327,11 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   type="number"
                 />
                 {yieldQtyError && (
-                  <p className="text-xs text-red-500">{yieldQtyError}</p>
+                  <p className="text-red-500 text-xs">{yieldQtyError}</p>
                 )}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="yieldUnit">
+                <label className="font-medium text-sm" htmlFor="yieldUnit">
                   Yield unit
                 </label>
                 <select
@@ -354,7 +354,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="yieldDescription"
                 >
                   Yield notes
@@ -370,7 +370,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="prepTimeMinutes"
                 >
                   Prep time (min)
@@ -385,7 +385,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="cookTimeMinutes"
                 >
                   Cook time (min)
@@ -400,7 +400,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="restTimeMinutes"
                 >
                   Rest time (min)
@@ -417,7 +417,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="difficultyLevel"
                 >
                   Difficulty (1-5)
@@ -432,7 +432,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="tags">
+                <label className="font-medium text-sm" htmlFor="tags">
                   Tags (comma separated)
                 </label>
                 <input
@@ -448,12 +448,12 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
 
         {/* Ingredients & Steps Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Ingredients & Steps
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="ingredients">
+              <label className="font-medium text-sm" htmlFor="ingredients">
                 Ingredients (one per line)
               </label>
               <textarea
@@ -469,7 +469,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             </div>
             <div className="h-px bg-border" />
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="steps">
+              <label className="font-medium text-sm" htmlFor="steps">
                 Steps (one per line)
               </label>
               <textarea
@@ -485,12 +485,12 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
 
         {/* Media & Notes Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Media & Notes
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="imageFile">
+              <label className="font-medium text-sm" htmlFor="imageFile">
                 Hero image
               </label>
               <input
@@ -502,7 +502,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="notes">
+              <label className="font-medium text-sm" htmlFor="notes">
                 Kitchen notes
               </label>
               <textarea
@@ -516,14 +516,14 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             <div className="h-px bg-border" />
             <div className="flex flex-col gap-2">
               <button
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create recipe"}
               </button>
               <a
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes"
               >
                 Cancel

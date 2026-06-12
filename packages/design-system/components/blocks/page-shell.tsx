@@ -338,7 +338,7 @@ function FilterRailLabel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground",
+        "font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]",
         className
       )}
       data-slot="filter-rail-label"
@@ -386,7 +386,7 @@ function SectionHeader({
   return (
     <header
       className={cn(
-        "flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-4",
+        "flex flex-wrap items-end justify-between gap-4 border-hairline border-b pb-4",
         className
       )}
       data-slot="section-header"
@@ -394,13 +394,13 @@ function SectionHeader({
     >
       <div>
         {eyebrow ? (
-          <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+          <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
             {eyebrow}
           </div>
         ) : null}
         <h3
           className={cn(
-            "flex items-center gap-2 font-normal text-3xl leading-tight tracking-[-0.01em] text-ink",
+            "flex items-center gap-2 font-normal text-3xl text-ink leading-tight tracking-[-0.01em]",
             eyebrow ? "mt-1" : null
           )}
         >
@@ -408,14 +408,14 @@ function SectionHeader({
           {title}
         </h3>
         {description ? (
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-[15px] text-muted-foreground leading-relaxed">
             {description}
           </p>
         ) : null}
       </div>
       <div className="flex items-center gap-3">
         {count !== undefined && count !== null ? (
-          <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+          <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] text-ink uppercase tracking-[0.18em]">
             {count}
           </span>
         ) : null}
@@ -463,7 +463,7 @@ function OperationalLine({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-4 border-b border-hairline px-2 py-4 last:border-b-0",
+        "flex flex-wrap items-center gap-4 border-hairline border-b px-2 py-4 last:border-b-0",
         interactive && "transition-colors hover:bg-soft-stone/40",
         className
       )}
@@ -481,7 +481,7 @@ function StatusPill({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-hairline bg-canvas px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink",
+        "inline-flex items-center rounded-full border border-hairline bg-canvas px-2.5 py-0.5 font-mono text-[11px] text-ink uppercase tracking-[0.18em]",
         className
       )}
       data-slot="status-pill"
@@ -509,14 +509,14 @@ function KitchenOperationalCanvas({
 }
 
 interface KitchenOperationalHeroProps {
-  eyebrow: string;
-  title: React.ReactNode;
-  lede: React.ReactNode;
   actions?: React.ReactNode;
   /** Optional row beneath the headline (e.g. quick-filter toggles) */
   ancillaryRow?: React.ReactNode;
+  eyebrow: string;
+  lede: React.ReactNode;
   /** Typically `<KitchenOperationalMetricTiles>...</KitchenOperationalMetricTiles>` */
   metrics: React.ReactNode;
+  title: React.ReactNode;
 }
 
 /** Forest-green hero strip — parity with events › kitchen-dashboard */
@@ -536,21 +536,21 @@ function KitchenOperationalHero({
       <div className="space-y-10 px-6 py-10 sm:px-10 sm:py-14">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-4">
-            <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
+            <p className="font-mono text-[12px] text-white/60 uppercase tracking-[0.28em]">
               {eyebrow}
             </p>
             <h2 className="font-display font-normal text-4xl leading-[1.05] tracking-[-0.02em] sm:text-5xl">
               {title}
             </h2>
-            <p className="max-w-xl text-base leading-relaxed text-white/70">
+            <p className="max-w-xl text-base text-white/70 leading-relaxed">
               {lede}
             </p>
           </div>
-          {actions !== undefined ? (
+          {actions === undefined ? null : (
             <div className="flex flex-wrap items-center gap-3">{actions}</div>
-          ) : null}
+          )}
         </div>
-        {ancillaryRow !== undefined ? ancillaryRow : null}
+        {ancillaryRow === undefined ? null : ancillaryRow}
         {metrics}
       </div>
     </section>
@@ -621,10 +621,10 @@ function KitchenDashboardFilterAside({
   return (
     <aside className={cn("w-full min-w-0", className)} {...props}>
       <div className="sticky top-6 rounded-[16px] border border-hairline bg-soft-stone p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+        <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
           Filters
         </p>
-        <h3 className="mt-2 font-normal text-2xl leading-tight tracking-[-0.01em] text-ink">
+        <h3 className="mt-2 font-normal text-2xl text-ink leading-tight tracking-[-0.01em]">
           Refine the view.
         </h3>
         <div className="mt-6 border-hairline border-t pt-6">{children}</div>
@@ -634,10 +634,10 @@ function KitchenDashboardFilterAside({
 }
 
 interface KitchenOperationalSectionLeadProps {
-  eyebrow: string;
-  title: string;
-  subtitle?: React.ReactNode;
   countBadge?: React.ReactNode;
+  eyebrow: string;
+  subtitle?: React.ReactNode;
+  title: string;
 }
 
 /** Section title row matching kitchen-dashboard "Live operations / In window now" rhythm */
@@ -658,23 +658,23 @@ function KitchenOperationalSectionLead({
       data-slot="kitchen-section-lead"
     >
       <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+        <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
           {eyebrow}
         </p>
-        <h3 className="mt-1 font-normal text-3xl leading-tight tracking-[-0.01em] text-ink">
+        <h3 className="mt-1 font-normal text-3xl text-ink leading-tight tracking-[-0.01em]">
           {title}
         </h3>
-        {subtitle !== undefined ? (
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+        {subtitle === undefined ? null : (
+          <p className="mt-2 max-w-2xl text-[15px] text-muted-foreground leading-relaxed">
             {subtitle}
           </p>
-        ) : null}
+        )}
       </div>
-      {countBadge !== undefined ? (
-        <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+      {countBadge === undefined ? null : (
+        <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] text-ink uppercase tracking-[0.18em]">
           {countBadge}
         </span>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -682,32 +682,32 @@ function KitchenOperationalSectionLead({
 /* -------------------------------------------------------------------------- */
 
 export {
-  PageCanvas,
-  MonoLabel,
-  DisplayHeading,
   CommandBand,
-  CommandBandHeader,
-  CommandBandBody,
   CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
   CommandBandLede,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MetricDelta,
-  PageBody,
+  DisplayHeading,
   FilterRail,
   FilterRailGroup,
   FilterRailLabel,
-  OperationalColumn,
-  SectionHeader,
-  OperationalRow,
-  OperationalLine,
-  StatusPill,
+  KitchenDashboardFilterAside,
   KitchenOperationalCanvas,
   KitchenOperationalHero,
   KitchenOperationalMetricTile,
   KitchenOperationalMetricTiles,
-  KitchenDashboardFilterAside,
   KitchenOperationalSectionLead,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  OperationalLine,
+  OperationalRow,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+  StatusPill,
 };

@@ -46,35 +46,35 @@ import {
 /* -------------------------------------------------------------------------- */
 
 interface CardData {
-  readonly id: string;
-  readonly title: string;
   readonly cardType: string;
-  readonly status: string;
-  readonly positionX: number;
-  readonly positionY: number;
-  readonly width: number;
-  readonly height: number;
   readonly color: string | null;
   readonly groupId: string | null;
+  readonly height: number;
+  readonly id: string;
+  readonly positionX: number;
+  readonly positionY: number;
+  readonly status: string;
+  readonly title: string;
+  readonly width: number;
 }
 
 interface ConnectionData {
-  readonly id: string;
   readonly fromCardId: string;
-  readonly toCardId: string;
-  readonly relationshipType: string;
+  readonly id: string;
   readonly label: string | null;
+  readonly relationshipType: string;
+  readonly toCardId: string;
 }
 
 interface GroupData {
+  readonly collapsed: boolean;
+  readonly color: string | null;
+  readonly height: number;
   readonly id: string;
   readonly name: string;
-  readonly color: string | null;
-  readonly collapsed: boolean;
   readonly positionX: number;
   readonly positionY: number;
   readonly width: number;
-  readonly height: number;
 }
 
 interface BoardCanvasProps {
@@ -85,7 +85,6 @@ interface BoardCanvasProps {
 }
 
 interface PreviewData {
-  readonly updates: Record<string, string>;
   readonly affectedCards: readonly CardData[];
   readonly summary: ReadonlyArray<{
     property: string;
@@ -93,6 +92,7 @@ interface PreviewData {
     to: string;
     count: number;
   }>;
+  readonly updates: Record<string, string>;
   readonly warnings: readonly string[];
 }
 

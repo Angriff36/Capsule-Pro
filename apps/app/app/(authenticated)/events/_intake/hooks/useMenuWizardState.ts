@@ -129,14 +129,20 @@ export function useMenuWizardState(costProvider?: CostDataProvider) {
 
   const loadCosts = useCallback(
     async (dishIds: string[]) => {
-      if (!costProvider) return;
+      if (!costProvider) {
+        return;
+      }
       const uncached = dishIds.filter((id) => !costCache[id]);
-      if (uncached.length === 0) return;
+      if (uncached.length === 0) {
+        return;
+      }
 
       const results: Record<string, DishCost> = {};
       for (const id of uncached) {
         const cost = await costProvider.getCOGS(id);
-        if (cost) results[id] = cost;
+        if (cost) {
+          results[id] = cost;
+        }
       }
       setCostCache((prev) => ({ ...prev, ...results }));
     },

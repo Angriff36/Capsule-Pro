@@ -13,7 +13,10 @@ import { format } from "date-fns";
 import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { listDeals, dealUpdateStage } from "@/app/lib/manifest-client.generated";
+import {
+  dealUpdateStage,
+  listDeals,
+} from "@/app/lib/manifest-client.generated";
 
 const fmtCurrency = (v: string | number | null) =>
   formatCurrency(v, { fractionDigits: 0, nullDisplay: "\u2014" });
@@ -23,35 +26,35 @@ const fmtCurrency = (v: string | number | null) =>
 // ---------------------------------------------------------------------------
 
 export interface Deal {
-  id: string;
-  proposalNumber: string;
-  title: string;
-  stage: string;
-  proposalStatus: string;
-  total: string | number | null;
-  eventDate: string | null;
-  guestCount: number | null;
-  clientId: string | null;
-  leadId: string | null;
   client: {
     id: string;
     companyName: string | null;
     firstName: string | null;
     lastName: string | null;
   } | null;
+  clientId: string | null;
+  createdAt: string;
+  eventDate: string | null;
+  guestCount: number | null;
+  id: string;
   lead: {
     id: string;
     companyName: string | null;
     contactName: string | null;
   } | null;
-  createdAt: string;
+  leadId: string | null;
+  proposalNumber: string;
+  proposalStatus: string;
+  stage: string;
+  title: string;
+  total: string | number | null;
 }
 
 interface StageColumn {
+  color: string;
+  description: string;
   id: string;
   title: string;
-  description: string;
-  color: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,15 +105,21 @@ const STAGES: StageColumn[] = [
 // ---------------------------------------------------------------------------
 
 function getClientName(deal: Deal): string {
-  if (deal.client?.companyName) return deal.client.companyName;
+  if (deal.client?.companyName) {
+    return deal.client.companyName;
+  }
   if (deal.client) {
     return (
       [deal.client.firstName, deal.client.lastName].filter(Boolean).join(" ") ||
       "No name"
     );
   }
-  if (deal.lead?.companyName) return deal.lead.companyName;
-  if (deal.lead?.contactName) return deal.lead.contactName;
+  if (deal.lead?.companyName) {
+    return deal.lead.companyName;
+  }
+  if (deal.lead?.contactName) {
+    return deal.lead.contactName;
+  }
   return "No client";
 }
 
@@ -145,10 +154,10 @@ function DealCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-tight">
+          <p className="truncate font-semibold text-sm leading-tight">
             {deal.title}
           </p>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          <p className="mt-0.5 truncate text-muted-foreground text-xs">
             {getClientName(deal)}
           </p>
         </div>
@@ -157,19 +166,19 @@ function DealCard({
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {deal.total !== null && (
-          <span className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+          <span className="flex items-center gap-1 font-medium text-green-700 text-xs dark:text-green-400">
             <DollarSign className="size-3" />
             {fmtCurrency(deal.total)}
           </span>
         )}
         {deal.eventDate && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 text-muted-foreground text-xs">
             <Calendar className="size-3" />
             {format(new Date(deal.eventDate), "MMM d")}
           </span>
         )}
         {deal.guestCount !== null && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 text-muted-foreground text-xs">
             <Users className="size-3" />
             {deal.guestCount.toLocaleString()}
           </span>
@@ -177,11 +186,11 @@ function DealCard({
       </div>
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="truncate text-[10px] font-mono text-muted-foreground">
+        <span className="truncate font-mono text-[10px] text-muted-foreground">
           {deal.proposalNumber}
         </span>
         <Badge
-          className="text-[10px] px-1.5 py-0"
+          className="px-1.5 py-0 text-[10px]"
           variant={stageVariants[deal.stage] ?? "secondary"}
         >
           {deal.stage}
@@ -249,7 +258,9 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
       e.preventDefault();
       setDragOverStage(null);
 
-      if (!draggingDeal) return;
+      if (!draggingDeal) {
+        return;
+      }
       if (draggingDeal.stage === targetStage) {
         setDraggingDeal(null);
         return;
@@ -319,12 +330,12 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
       {/* Header summary */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-medium text-muted-foreground">
-            {deals.length} deal{deals.length !== 1 ? "s" : ""} total
+          <h2 className="font-medium text-muted-foreground text-sm">
+            {deals.length} deal{deals.length === 1 ? "" : "s"} total
           </h2>
         </div>
         {isUpdating && (
-          <span className="text-xs text-muted-foreground animate-pulse">
+          <span className="animate-pulse text-muted-foreground text-xs">
             Updating…
           </span>
         )}
@@ -361,7 +372,7 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
                 <CardDescription className="text-xs">
                   {stage.description}
                 </CardDescription>
-                <div className="mt-1 text-sm font-semibold text-green-700 dark:text-green-400">
+                <div className="mt-1 font-semibold text-green-700 text-sm dark:text-green-400">
                   {fmtCurrency(value)}
                 </div>
               </CardHeader>
@@ -369,11 +380,11 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
               {/* Cards list */}
               <CardContent className="flex-1 space-y-2 overflow-hidden">
                 {isLoading ? (
-                  <div className="py-4 text-center text-sm text-muted-foreground">
+                  <div className="py-4 text-center text-muted-foreground text-sm">
                     Loading…
                   </div>
                 ) : stageDeals.length === 0 ? (
-                  <div className="rounded-md border border-dashed border-border/60 p-3 text-center text-xs text-muted-foreground">
+                  <div className="rounded-md border border-border/60 border-dashed p-3 text-center text-muted-foreground text-xs">
                     No deals
                   </div>
                 ) : (

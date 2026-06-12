@@ -123,11 +123,11 @@ const ServerToServerImportSchema = z.object({
  * Result type for event import operation
  */
 interface EventImportResult {
+  errors?: string[];
   eventId?: string;
   externalId?: string;
-  status: "success" | "skipped" | "failed";
   message: string;
-  errors?: string[];
+  status: "success" | "skipped" | "failed";
 }
 
 /**
@@ -135,13 +135,13 @@ interface EventImportResult {
  */
 interface BatchImportResponse {
   batchId: string;
-  status: "completed" | "partial" | "failed";
-  totalEvents: number;
-  successCount: number;
-  skippedCount: number;
+  dryRun: boolean;
   failedCount: number;
   results: EventImportResult[];
-  dryRun: boolean;
+  skippedCount: number;
+  status: "completed" | "partial" | "failed";
+  successCount: number;
+  totalEvents: number;
 }
 
 /**
@@ -158,9 +158,9 @@ type EventImport = z.infer<typeof EventImportSchema>;
  * Counter type for import statistics
  */
 interface ImportCounters {
-  successCount: number;
-  skippedCount: number;
   failedCount: number;
+  skippedCount: number;
+  successCount: number;
 }
 
 /**

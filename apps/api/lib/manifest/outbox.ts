@@ -2,8 +2,8 @@ import type { PrismaClient } from "@repo/database";
 import { createPrismaOutboxWriter } from "@repo/manifest-runtime/prisma-store";
 
 export interface ManifestOutboxEvent {
-  aggregateType: string;
   aggregateId: string;
+  aggregateType: string;
   eventType: string;
   payload: unknown;
 }

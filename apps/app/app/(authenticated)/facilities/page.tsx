@@ -63,22 +63,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { facilityEdit, facilityRemove } from "@/app/lib/manifest-client.generated";
+import {
+  facilityEdit,
+  facilityRemove,
+} from "@/app/lib/manifest-client.generated";
 import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
 interface Facility {
-  id: string;
-  name: string;
-  code: string | null;
-  facilityType: string;
   addressLine1: string | null;
   city: string | null;
-  state: string | null;
-  postalCode: string | null;
-  phone: string | null;
-  status: string;
+  code: string | null;
+  facilityType: string;
+  id: string;
+  name: string;
   notes: string | null;
+  phone: string | null;
+  postalCode: string | null;
+  state: string | null;
+  status: string;
 }
 
 const FACILITY_TYPE_LABELS: Record<string, string> = {
@@ -190,7 +193,9 @@ export default function FacilitiesPage() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!(form.name.trim() && editing)) return;
+    if (!(form.name.trim() && editing)) {
+      return;
+    }
     setSaving(true);
     try {
       await facilityEdit({
@@ -235,7 +240,9 @@ export default function FacilitiesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       const formData = new FormData();
@@ -288,7 +295,7 @@ export default function FacilitiesPage() {
 
         <section className="space-y-4">
           <SectionHeader
-            count={`${facilities.length} site${facilities.length !== 1 ? "s" : ""}`}
+            count={`${facilities.length} site${facilities.length === 1 ? "" : "s"}`}
             description="Registered buildings and sites (kitchens, warehouses, offices)."
             eyebrow="Sites"
             title="Your Facilities"
@@ -314,7 +321,7 @@ export default function FacilitiesPage() {
                   key={facility.id}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-canvas text-ink border border-hairline">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-hairline bg-canvas text-ink">
                       <Building2 className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -328,7 +335,7 @@ export default function FacilitiesPage() {
                           <Badge variant="secondary">{facility.code}</Badge>
                         ) : null}
                       </div>
-                      <div className="space-y-0.5 text-sm text-muted-foreground">
+                      <div className="space-y-0.5 text-muted-foreground text-sm">
                         {facility.addressLine1 ? (
                           <div>{facility.addressLine1}</div>
                         ) : null}
@@ -385,12 +392,12 @@ export default function FacilitiesPage() {
               <Link href={link.href} key={link.href}>
                 <div className="group rounded-[22px] border border-hairline bg-canvas p-5 transition-colors hover:bg-accent">
                   <div className="mb-2 flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-canvas text-ink border border-hairline">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-hairline bg-canvas text-ink">
                       <link.icon className="h-4 w-4" />
                     </div>
                     <h3 className="font-semibold">{link.label}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {link.description}
                   </p>
                 </div>
@@ -567,7 +574,9 @@ export default function FacilitiesPage() {
       <AlertDialog
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
-          if (!open) setFacilityToDelete(null);
+          if (!open) {
+            setFacilityToDelete(null);
+          }
         }}
         open={deleteDialogOpen}
       >
@@ -588,7 +597,9 @@ export default function FacilitiesPage() {
               className="bg-red-600 hover:bg-red-700"
               disabled={deleting === facilityToDelete?.id}
               onClick={() => {
-                if (facilityToDelete) handleDelete(facilityToDelete.id);
+                if (facilityToDelete) {
+                  handleDelete(facilityToDelete.id);
+                }
               }}
             >
               {deleting === facilityToDelete?.id ? (

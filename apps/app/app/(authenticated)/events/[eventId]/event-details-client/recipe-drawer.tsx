@@ -21,15 +21,15 @@ import type {
 type DrawerMode = "instructions" | "ingredients";
 
 interface RecipeDrawerProps {
-  open: boolean;
+  drawerMode: DrawerMode;
+  onDrawerModeChange: (mode: DrawerMode) => void;
   onOpenChange: (open: boolean) => void;
+  open: boolean;
   selectedDish: EventDishSummary | null;
   selectedRecipe: RecipeDetailSummary | null;
   selectedScaledIngredients: Array<
     RecipeDetailSummary["ingredients"][number] & { scaledQuantity: number }
   >;
-  drawerMode: DrawerMode;
-  onDrawerModeChange: (mode: DrawerMode) => void;
 }
 
 export function RecipeDrawer({
@@ -47,11 +47,11 @@ export function RecipeDrawer({
         className="border-border bg-muted text-foreground sm:max-w-2xl lg:max-w-4xl"
         side="right"
       >
-        <SheetHeader className="border-b border-border pb-4">
+        <SheetHeader className="border-border border-b pb-4">
           <SheetTitle className="text-foreground">
             {selectedDish?.name ?? "Recipe details"}
           </SheetTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {selectedRecipe?.recipeName ?? "Recipe not linked"}
           </p>
         </SheetHeader>
@@ -86,30 +86,30 @@ export function RecipeDrawer({
             )}
           </Button>
         </div>
-        <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 pb-6 pt-2">
+        <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 pt-2 pb-6">
           {selectedRecipe ? (
             <>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">Prep time</div>
+                  <div className="text-muted-foreground text-xs">Prep time</div>
                   <div className="font-semibold">
                     {selectedRecipe.prepTimeMinutes ?? 0}m
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">Cook time</div>
+                  <div className="text-muted-foreground text-xs">Cook time</div>
                   <div className="font-semibold">
                     {selectedRecipe.cookTimeMinutes ?? 0}m
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">Rest time</div>
+                  <div className="text-muted-foreground text-xs">Rest time</div>
                   <div className="font-semibold">
                     {selectedRecipe.restTimeMinutes ?? 0}m
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-card/60 p-3 text-sm">
-                  <div className="text-xs text-muted-foreground">Yield</div>
+                  <div className="text-muted-foreground text-xs">Yield</div>
                   <div className="font-semibold">
                     {selectedRecipe.yieldQuantity}{" "}
                     {selectedRecipe.yieldUnitCode ?? "servings"}
@@ -120,7 +120,7 @@ export function RecipeDrawer({
               {drawerMode === "ingredients" ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Ingredients</h3>
+                    <h3 className="font-semibold text-lg">Ingredients</h3>
                     <Badge
                       className="border-border/70 bg-card/60 text-foreground"
                       variant="outline"
@@ -139,12 +139,12 @@ export function RecipeDrawer({
                             {ingredient.ingredientName}
                           </p>
                           {ingredient.preparationNotes && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {ingredient.preparationNotes}
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
                           <span>
                             {ingredient.scaledQuantity}{" "}
                             {ingredient.unitCode ?? ""}
@@ -164,7 +164,7 @@ export function RecipeDrawer({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <h3 className="text-lg font-semibold">Instructions</h3>
+                  <h3 className="font-semibold text-lg">Instructions</h3>
                   {selectedRecipe.steps.length > 0 ? (
                     <ol className="space-y-4">
                       {selectedRecipe.steps.map((step) => (
@@ -172,22 +172,22 @@ export function RecipeDrawer({
                           className="rounded-2xl border border-border/70 bg-card/60 p-4"
                           key={`${step.stepNumber}-${step.instruction}`}
                         >
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center justify-between text-muted-foreground text-xs">
                             <span>Step {step.stepNumber}</span>
                             {step.durationMinutes && (
                               <span>{step.durationMinutes}m</span>
                             )}
                           </div>
-                          <p className="mt-2 text-sm text-foreground">
+                          <p className="mt-2 text-foreground text-sm">
                             {step.instruction}
                           </p>
                           {step.equipmentNeeded.length > 0 && (
-                            <p className="mt-2 text-xs text-muted-foreground">
+                            <p className="mt-2 text-muted-foreground text-xs">
                               Equipment: {step.equipmentNeeded.join(", ")}
                             </p>
                           )}
                           {step.tips && (
-                            <p className="mt-2 text-xs text-muted-foreground">
+                            <p className="mt-2 text-muted-foreground text-xs">
                               Tip: {step.tips}
                             </p>
                           )}
@@ -195,13 +195,13 @@ export function RecipeDrawer({
                       ))}
                     </ol>
                   ) : selectedRecipe.instructions ? (
-                    <div className="rounded-2xl border border-border/70 bg-card/60 p-4 text-sm text-foreground">
+                    <div className="rounded-2xl border border-border/70 bg-card/60 p-4 text-foreground text-sm">
                       <p className="whitespace-pre-line">
                         {selectedRecipe.instructions}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       No instructions available.
                     </p>
                   )}
@@ -209,8 +209,8 @@ export function RecipeDrawer({
               )}
             </>
           ) : (
-            <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-border/70 border-dashed p-8 text-center">
+              <p className="text-muted-foreground text-sm">
                 No recipe linked to this dish yet.
               </p>
             </div>

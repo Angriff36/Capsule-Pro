@@ -9,72 +9,72 @@
  * Bill data structure for QuickBooks export
  */
 export interface BillRecord {
-  /** Unique bill number / reference */
-  billNumber: string;
-  /** Vendor name (must match QuickBooks vendor) */
-  vendorName: string;
-  /** Vendor address (optional) */
-  vendorAddress?: string | null;
   /** Bill date */
   billDate: Date;
+  /** Unique bill number / reference */
+  billNumber: string;
+  /** Currency code */
+  currency?: string;
   /** Due date */
   dueDate: Date;
   /** Line items on the bill */
   lineItems: BillLineItem[];
+  /** Memo/notes */
+  memo?: string | null;
+  /** Shipping amount */
+  shippingAmount: number;
   /** Subtotal before tax */
   subtotal: number;
   /** Tax amount */
   taxAmount: number;
-  /** Shipping amount */
-  shippingAmount: number;
-  /** Total amount */
-  totalAmount: number;
-  /** Memo/notes */
-  memo?: string | null;
-  /** Currency code */
-  currency?: string;
   /** Terms (e.g., "Net 30") */
   terms?: string;
+  /** Total amount */
+  totalAmount: number;
+  /** Vendor address (optional) */
+  vendorAddress?: string | null;
+  /** Vendor name (must match QuickBooks vendor) */
+  vendorName: string;
 }
 
 /**
  * Line item on a bill
  */
 export interface BillLineItem {
-  /** Item name/ID in QuickBooks */
-  item: string;
-  /** Description of the line item */
-  description: string;
-  /** Quantity */
-  quantity: number;
-  /** Unit cost/price */
-  unitCost: number;
   /** Line amount (quantity * unitCost) */
   amount: number;
+  /** Description of the line item */
+  description: string;
   /** Expense account for this line item */
   expenseAccount?: string;
-  /** Whether the item is taxable */
-  taxable?: boolean;
+  /** Item name/ID in QuickBooks */
+  item: string;
+  /** Quantity */
+  quantity: number;
   /** Service date if different from bill date */
   serviceDate?: Date | null;
+  /** Whether the item is taxable */
+  taxable?: boolean;
+  /** Unit cost/price */
+  unitCost: number;
 }
 
 /**
  * Account mappings for QuickBooks bill export
  */
 export interface QBBillAccountMappings {
-  /** Default expense account for inventory items */
-  expenseAccount: string;
   /** Accounts Payable account */
   accountsPayable: string;
-  /** Tax code for taxable items */
-  taxCode: string;
-  /** Tax code for non-taxable items */
-  nonTaxCode: string;
+  /** Default expense account for inventory items */
+  expenseAccount: string;
   /** Default item name for inventory purchases */
   inventoryItem: string;
+  /** Tax code for non-taxable items */
+  nonTaxCode: string;
   /** Default item name for shipping */
   shippingItem: string;
+  /** Tax code for taxable items */
+  taxCode: string;
 }
 
 /**
@@ -93,12 +93,12 @@ const DEFAULT_QB_BILL_MAPPINGS: QBBillAccountMappings = {
  * Export options
  */
 export interface QBBillExportOptions {
-  /** Include header row */
-  includeHeader?: boolean;
-  /** Date format: US (MM/DD/YYYY) or ISO (YYYY-MM-DD) */
-  dateFormat?: "us" | "iso";
   /** Account mappings */
   accountMappings?: Partial<QBBillAccountMappings>;
+  /** Date format: US (MM/DD/YYYY) or ISO (YYYY-MM-DD) */
+  dateFormat?: "us" | "iso";
+  /** Include header row */
+  includeHeader?: boolean;
   /** Payment terms (days) - will be overridden by bill-specific terms */
   paymentTerms?: number;
 }
@@ -423,9 +423,9 @@ export function exportBillsToIIF(
  * Export result
  */
 export interface BillExportResult {
-  format: "qbOnlineCsv" | "iif";
   content: string;
   filename: string;
+  format: "qbOnlineCsv" | "iif";
   mimeType: string;
 }
 

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
@@ -9,8 +9,8 @@ import { enforceCommandOwnership } from "../ir-contract";
 const MANIFEST_EXTENSION_RE = /\.manifest$/;
 
 export interface ManifestFile {
-  name: string;
   content: string;
+  name: string;
 }
 
 export interface LoadedManifestSet {
@@ -25,8 +25,8 @@ export interface CompiledManifestBundle {
 }
 
 interface LoadManifestOptions {
-  manifestsDir?: string;
   forceReload?: boolean;
+  manifestsDir?: string;
 }
 
 interface CompileBundleOptions extends LoadManifestOptions {
@@ -417,10 +417,10 @@ function deterministicStringify(obj: unknown): string {
 }
 
 export interface ProvenanceVerificationResult {
-  valid: boolean;
-  storedHash: string;
   computedHash: string;
   error?: string;
+  storedHash: string;
+  valid: boolean;
 }
 
 let provenanceVerified = false;
@@ -439,9 +439,7 @@ let lastVerificationResult: ProvenanceVerificationResult | null = null;
  * Verification runs once per process lifetime and caches the result.
  * Returns the verification result.
  */
-export function verifyProvenanceHash(
-  ir: IR
-): ProvenanceVerificationResult {
+export function verifyProvenanceHash(ir: IR): ProvenanceVerificationResult {
   if (provenanceVerified && lastVerificationResult) {
     return lastVerificationResult;
   }
@@ -453,7 +451,8 @@ export function verifyProvenanceHash(
       valid: false,
       storedHash: "",
       computedHash: "",
-      error: "No irHash in provenance — IR was compiled without hash generation",
+      error:
+        "No irHash in provenance — IR was compiled without hash generation",
     };
     lastVerificationResult = result;
     provenanceVerified = true;

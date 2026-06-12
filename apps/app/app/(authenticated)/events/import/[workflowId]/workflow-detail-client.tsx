@@ -34,31 +34,31 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  getEventImportWorkflow,
   eventImportWorkflowCancel,
   eventImportWorkflowResume,
   eventImportWorkflowRetry,
+  getEventImportWorkflow,
 } from "@/app/lib/manifest-client.generated";
 
 interface EventImport {
-  id: string;
-  tenantId: string;
+  battleBoardId: string | null;
+  confidence: number | null;
+  createdAt: string;
+  deletedAt: string | null;
+  detectedFormat: string | null;
   eventId: string | null;
+  extractedData: Record<string, unknown> | null;
   fileName: string;
-  mimeType: string;
   fileSize: number;
   fileType: string;
-  detectedFormat: string | null;
-  parseStatus: string;
-  extractedData: Record<string, unknown> | null;
-  confidence: number | null;
-  parseErrors: string[];
-  reportId: string | null;
-  battleBoardId: string | null;
+  id: string;
+  mimeType: string;
   parsedAt: string | null;
-  createdAt: string;
+  parseErrors: string[];
+  parseStatus: string;
+  reportId: string | null;
+  tenantId: string;
   updatedAt: string;
-  deletedAt: string | null;
 }
 
 const WORKFLOW_PHASES = [
@@ -96,12 +96,22 @@ const STATUS_CONFIG: Record<
 function getPhaseIndex(status: string): number {
   const normalized = status.toLowerCase();
   for (let i = WORKFLOW_PHASES.length - 1; i >= 0; i--) {
-    if (WORKFLOW_PHASES[i].key === normalized) return i;
+    if (WORKFLOW_PHASES[i].key === normalized) {
+      return i;
+    }
   }
-  if (normalized === "parsed") return 3;
-  if (normalized === "paused") return -1;
-  if (normalized === "failed") return -2;
-  if (normalized === "cancelled") return -3;
+  if (normalized === "parsed") {
+    return 3;
+  }
+  if (normalized === "paused") {
+    return -1;
+  }
+  if (normalized === "failed") {
+    return -2;
+  }
+  if (normalized === "cancelled") {
+    return -3;
+  }
   return 0;
 }
 
@@ -110,7 +120,9 @@ function isTerminalStatus(status: string): boolean {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
+  if (bytes === 0) {
+    return "0 B";
+  }
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -129,11 +141,17 @@ function formatDate(iso: string): string {
 
 function formatTimeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 60) {
+    return `${seconds}s ago`;
+  }
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
@@ -179,7 +197,9 @@ export function WorkflowDetailClient({
     if (workflow && !isTerminalStatus(workflow.parseStatus)) {
       pollRef.current = setInterval(loadWorkflow, 5000);
       return () => {
-        if (pollRef.current) clearInterval(pollRef.current);
+        if (pollRef.current) {
+          clearInterval(pollRef.current);
+        }
       };
     }
     if (pollRef.current) {
@@ -218,9 +238,9 @@ export function WorkflowDetailClient({
 
   if (error || !workflow) {
     return (
-      <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-center">
+      <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-center">
         <AlertCircle className="mx-auto mb-3 size-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {error ?? "Workflow not found"}
         </p>
         <Button asChild className="mt-4" size="sm" variant="outline">
@@ -267,12 +287,12 @@ export function WorkflowDetailClient({
                 )}
                 {statusCfg.label}
               </StatusPill>
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="font-mono text-muted-foreground text-xs">
                 {workflow.id.slice(0, 8)}
               </span>
             </div>
-            <h2 className="text-lg font-semibold">{workflow.fileName}</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-semibold text-lg">{workflow.fileName}</h2>
+            <p className="text-muted-foreground text-sm">
               {workflow.fileType.toUpperCase()} &middot;{" "}
               {formatBytes(workflow.fileSize)}
               {workflow.detectedFormat && ` \u00B7 ${workflow.detectedFormat}`}
@@ -329,32 +349,32 @@ export function WorkflowDetailClient({
         {/* Metrics Row */}
         <div className="mt-6 grid grid-cols-4 gap-4">
           <div className="rounded-[14px] border border-hairline p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
               Created
             </p>
-            <p className="mt-1 text-sm font-medium">
+            <p className="mt-1 font-medium text-sm">
               {formatDate(workflow.createdAt)}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {formatTimeAgo(workflow.createdAt)}
             </p>
           </div>
           <div className="rounded-[14px] border border-hairline p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
               Last Updated
             </p>
-            <p className="mt-1 text-sm font-medium">
+            <p className="mt-1 font-medium text-sm">
               {formatDate(workflow.updatedAt)}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {formatTimeAgo(workflow.updatedAt)}
             </p>
           </div>
           <div className="rounded-[14px] border border-hairline p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
               Current Phase
             </p>
-            <p className="mt-1 text-sm font-medium capitalize">
+            <p className="mt-1 font-medium text-sm capitalize">
               {isFailed
                 ? "Failed"
                 : isPaused
@@ -363,7 +383,7 @@ export function WorkflowDetailClient({
                     ? "Cancelled"
                     : workflow.parseStatus}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {isFailed
                 ? "Needs retry"
                 : isPaused
@@ -374,10 +394,10 @@ export function WorkflowDetailClient({
             </p>
           </div>
           <div className="rounded-[14px] border border-hairline p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
               Confidence
             </p>
-            <p className="mt-1 text-sm font-medium">
+            <p className="mt-1 font-medium text-sm">
               {workflow.confidence ?? 0}%
             </p>
             <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
@@ -392,7 +412,7 @@ export function WorkflowDetailClient({
 
       {/* Progress Stepper */}
       <div className="rounded-[22px] border border-hairline bg-canvas p-6">
-        <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-6">
+        <h3 className="mb-6 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
           Workflow Progress
         </h3>
         <div className="relative">
@@ -420,7 +440,7 @@ export function WorkflowDetailClient({
                   <div className="relative flex w-full items-center">
                     {index > 0 && (
                       <div
-                        className={`absolute right-1/2 top-1/2 h-0.5 -translate-y-1/2 ${
+                        className={`absolute top-1/2 right-1/2 h-0.5 -translate-y-1/2 ${
                           completed
                             ? "bg-primary"
                             : active
@@ -446,7 +466,7 @@ export function WorkflowDetailClient({
                     </div>
                     {index < WORKFLOW_PHASES.length - 1 && (
                       <div
-                        className={`absolute left-1/2 top-1/2 h-0.5 -translate-y-1/2 ${
+                        className={`absolute top-1/2 left-1/2 h-0.5 -translate-y-1/2 ${
                           completed
                             ? "bg-primary"
                             : active
@@ -459,7 +479,7 @@ export function WorkflowDetailClient({
                   </div>
                   {/* Label */}
                   <span
-                    className={`mt-2 text-center text-xs font-medium ${
+                    className={`mt-2 text-center font-medium text-xs ${
                       completed
                         ? "text-primary"
                         : active
@@ -478,8 +498,8 @@ export function WorkflowDetailClient({
         {/* Failed indicator overlay */}
         {isFailed && (
           <div className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-            <XCircle className="size-4 text-destructive flex-shrink-0" />
-            <span className="text-sm text-destructive">
+            <XCircle className="size-4 flex-shrink-0 text-destructive" />
+            <span className="text-destructive text-sm">
               Workflow failed. Review errors below and retry when ready.
             </span>
           </div>
@@ -487,8 +507,8 @@ export function WorkflowDetailClient({
 
         {isPaused && (
           <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-            <PauseCircle className="size-4 text-amber-600 flex-shrink-0" />
-            <span className="text-sm text-amber-600">
+            <PauseCircle className="size-4 flex-shrink-0 text-amber-600" />
+            <span className="text-amber-600 text-sm">
               Workflow is paused. Resume to continue processing.
             </span>
           </div>
@@ -498,7 +518,7 @@ export function WorkflowDetailClient({
       {/* Errors & Warnings */}
       {workflow.parseErrors.length > 0 && (
         <div className="rounded-[22px] border border-hairline bg-canvas p-6">
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+          <h3 className="mb-4 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             Errors ({workflow.parseErrors.length})
           </h3>
           <div className="space-y-2">
@@ -508,7 +528,7 @@ export function WorkflowDetailClient({
                 key={`error-${index}`}
               >
                 <AlertCircle className="mt-0.5 size-4 flex-shrink-0 text-destructive" />
-                <span className="text-sm text-destructive">{err}</span>
+                <span className="text-destructive text-sm">{err}</span>
               </div>
             ))}
           </div>
@@ -518,11 +538,11 @@ export function WorkflowDetailClient({
       {/* Extracted Data */}
       {workflow.extractedData && (
         <div className="rounded-[22px] border border-hairline bg-canvas p-6">
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+          <h3 className="mb-4 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             Extracted Data
           </h3>
           <div className="rounded-lg border border-hairline bg-muted/30 p-4">
-            <pre className="max-h-80 overflow-auto text-xs whitespace-pre-wrap break-words">
+            <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words text-xs">
               {JSON.stringify(workflow.extractedData, null, 2)}
             </pre>
           </div>
@@ -532,7 +552,7 @@ export function WorkflowDetailClient({
       {/* Generated Artifacts */}
       {(workflow.reportId || workflow.battleBoardId) && (
         <div className="rounded-[22px] border border-hairline bg-canvas p-6">
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+          <h3 className="mb-4 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             Generated Artifacts
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -556,7 +576,7 @@ export function WorkflowDetailClient({
 
       {/* Auto-refresh indicator */}
       {!isTerminal && (
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs">
           <Loader2 className="size-3 animate-spin" />
           Auto-refreshing every 5 seconds
         </div>
@@ -610,7 +630,11 @@ function isCompletedPhase(
   currentPhaseIndex: number,
   status: string
 ): boolean {
-  if (status.toLowerCase() === "completed") return true;
-  if (phaseIndex < currentPhaseIndex) return true;
+  if (status.toLowerCase() === "completed") {
+    return true;
+  }
+  if (phaseIndex < currentPhaseIndex) {
+    return true;
+  }
   return false;
 }

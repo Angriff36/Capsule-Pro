@@ -28,8 +28,8 @@ import {
 export interface ExecutionResult {
   agentId: string;
   executionId: string;
-  response: string;
   metrics: Metrics;
+  response: string;
   streamed?: boolean;
 }
 

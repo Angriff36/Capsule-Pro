@@ -1,35 +1,41 @@
-import { Document, Page, StyleSheet, Text, View } from "../lib/react-pdf-primitives";
 import type React from "react";
+import {
+  Document,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "../lib/react-pdf-primitives";
 
 // Types for prep list data
 interface PrepListIngredient {
+  allergens: string[];
+  category?: string;
+  dietarySubstitutions: string[];
   ingredientId: string;
   ingredientName: string;
-  scaledQuantity: number;
-  scaledUnit: string;
-  category?: string;
   isOptional: boolean;
   preparationNotes?: string;
-  allergens: string[];
-  dietarySubstitutions: string[];
+  scaledQuantity: number;
+  scaledUnit: string;
 }
 
 interface PrepListTask {
+  dueDate: Date;
   id: string;
   name: string;
-  dueDate: Date;
-  status: string;
   priority: number;
+  status: string;
 }
 
 interface StationPrepList {
+  color: string;
+  estimatedTime: number;
+  ingredients: PrepListIngredient[];
   stationId: string;
   stationName: string;
-  totalIngredients: number;
-  estimatedTime: number;
-  color: string;
-  ingredients: PrepListIngredient[];
   tasks: PrepListTask[];
+  totalIngredients: number;
 }
 
 interface PrepListPDFData {
@@ -38,6 +44,11 @@ interface PrepListPDFData {
     title: string;
     eventDate: Date;
     guestCount: number;
+  };
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
   };
   prepList: {
     eventId: string;
@@ -48,11 +59,6 @@ interface PrepListPDFData {
     totalIngredients: number;
     totalEstimatedTime: number;
     stationLists: StationPrepList[];
-  };
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
   };
 }
 
@@ -245,18 +251,16 @@ const STATION_COLORS: Record<string, string> = {
 export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
   const { prepList, metadata } = data;
 
-  const formatDate = (date: Date | string): string => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date: Date | string): string =>
+    new Date(date).toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  };
 
-  const getStationColor = (stationId: string): string => {
-    return STATION_COLORS[stationId] || "#6b7280";
-  };
+  const getStationColor = (stationId: string): string =>
+    STATION_COLORS[stationId] || "#6b7280";
 
   const renderIngredient = (ingredient: PrepListIngredient, index: number) => (
     <View
@@ -294,7 +298,9 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
   );
 
   const renderTasks = (tasks: PrepListTask[]) => {
-    if (tasks.length === 0) return null;
+    if (tasks.length === 0) {
+      return null;
+    }
 
     return (
       <View style={styles.taskSection}>

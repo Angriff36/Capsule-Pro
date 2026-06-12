@@ -18,13 +18,13 @@ import {
 } from "lucide-react";
 
 interface TimecardBulkActionsProps {
-  selectedCount: number;
-  totalEntries: number;
   loading: boolean;
   onBulkApprove: () => void;
-  onBulkReject: () => void;
   onBulkEditRequest: () => void;
   onBulkFlagExceptions: () => void;
+  onBulkReject: () => void;
+  selectedCount: number;
+  totalEntries: number;
 }
 
 export default function TimecardBulkActions({
@@ -36,10 +36,12 @@ export default function TimecardBulkActions({
   onBulkEditRequest,
   onBulkFlagExceptions,
 }: TimecardBulkActionsProps) {
-  if (selectedCount === 0) return null;
+  if (selectedCount === 0) {
+    return null;
+  }
 
   return (
-    <Card className="bg-card/60 border-primary/20">
+    <Card className="border-primary/20 bg-card/60">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

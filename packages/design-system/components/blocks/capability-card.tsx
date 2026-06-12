@@ -26,13 +26,13 @@ const DefaultLink: LinkComponent = ({ href, className, children }) => (
 );
 
 export interface CapabilityCardProps {
-  title: ReactNode;
-  description: ReactNode;
-  icon?: LucideIcon;
-  meta?: ReactNode;
-  href?: string;
-  linkComponent?: LinkComponent;
   className?: string;
+  description: ReactNode;
+  href?: string;
+  icon?: LucideIcon;
+  linkComponent?: LinkComponent;
+  meta?: ReactNode;
+  title: ReactNode;
 }
 
 export function CapabilityCard({

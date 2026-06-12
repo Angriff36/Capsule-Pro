@@ -49,7 +49,7 @@ export default function MenuDietaryStep({
       />
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Which dietary needs should your menu cover?
         </label>
         <div className="flex flex-wrap gap-2">
@@ -66,13 +66,13 @@ export default function MenuDietaryStep({
 
       {formData.dietaryCoverageNeeds.length > 0 && (
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block font-medium text-sm text-stone-700">
             Approximate guest counts per dietary need
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {formData.dietaryCoverageNeeds.map((flag) => (
               <div
-                className="flex items-center justify-between bg-stone-50 rounded-lg px-4 py-3 border border-stone-100"
+                className="flex items-center justify-between rounded-lg border border-stone-100 bg-stone-50 px-4 py-3"
                 key={flag}
               >
                 <span className="text-sm text-stone-700">
@@ -80,25 +80,25 @@ export default function MenuDietaryStep({
                 </span>
                 <div className="flex items-center gap-3">
                   <button
-                    className="w-7 h-7 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:bg-stone-100"
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-stone-200 text-stone-500 hover:bg-stone-100"
                     onClick={() =>
                       updateDietaryCount(flag, formData.dietaryCounts[flag] - 5)
                     }
                     type="button"
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="h-3 w-3" />
                   </button>
-                  <span className="text-sm font-medium text-stone-800 w-8 text-center">
+                  <span className="w-8 text-center font-medium text-sm text-stone-800">
                     {formData.dietaryCounts[flag]}
                   </span>
                   <button
-                    className="w-7 h-7 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:bg-stone-100"
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-stone-200 text-stone-500 hover:bg-stone-100"
                     onClick={() =>
                       updateDietaryCount(flag, formData.dietaryCounts[flag] + 5)
                     }
                     type="button"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="h-3 w-3" />
                   </button>
                 </div>
               </div>
@@ -108,8 +108,8 @@ export default function MenuDietaryStep({
       )}
 
       {formData.dietaryCoverageNeeds.length > 0 && (
-        <div className="bg-white rounded-xl border border-stone-200 p-5">
-          <h3 className="text-sm font-medium text-stone-700 mb-3">
+        <div className="rounded-xl border border-stone-200 bg-white p-5">
+          <h3 className="mb-3 font-medium text-sm text-stone-700">
             Coverage check
           </h3>
           <div className="space-y-2">
@@ -118,12 +118,12 @@ export default function MenuDietaryStep({
               .map(({ flag, coveredByMain }) => (
                 <div className="flex items-center gap-2" key={flag}>
                   {coveredByMain ? (
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-emerald-600" />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100">
+                      <Check className="h-3 w-3 text-emerald-600" />
                     </div>
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
-                      <AlertTriangle className="w-3 h-3 text-amber-600" />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100">
+                      <AlertTriangle className="h-3 w-3 text-amber-600" />
                     </div>
                   )}
                   <span
@@ -139,7 +139,7 @@ export default function MenuDietaryStep({
           </div>
 
           {unmetNeeds.length > 0 && (
-            <p className="text-xs text-amber-600 mt-3 bg-amber-50 rounded-lg px-3 py-2 border border-amber-100">
+            <p className="mt-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-amber-600 text-xs">
               Go back and add a main course that is{" "}
               {unmetNeeds
                 .map((n) => getDietaryFullLabel(n.flag).toLowerCase())

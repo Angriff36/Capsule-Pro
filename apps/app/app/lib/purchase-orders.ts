@@ -31,70 +31,70 @@ export const DISCREPANCY_TYPES = [
 export type DiscrepancyType = (typeof DISCREPANCY_TYPES)[number];
 
 export interface POItem {
+  created_at: Date;
+  deleted_at: Date | null;
+  discrepancy_amount: number | null;
+  discrepancy_type: DiscrepancyType | null;
   id: string;
-  tenant_id: string;
-  purchase_order_id: string;
   item_id: string;
+  notes: string | null;
+  purchase_order_id: string;
+  quality_status: QualityStatus;
   quantity_ordered: number;
   quantity_received: number;
-  unit_id: number;
-  unit_cost: number;
+  tenant_id: string;
   total_cost: number;
-  quality_status: QualityStatus;
-  discrepancy_type: DiscrepancyType | null;
-  discrepancy_amount: number | null;
-  notes: string | null;
-  created_at: Date;
+  unit_cost: number;
+  unit_id: number;
   updated_at: Date;
-  deleted_at: Date | null;
 }
 
 export interface POItemWithDetails extends POItem {
-  item_number?: string;
   item_name?: string;
+  item_number?: string;
 }
 
 export interface PurchaseOrder {
-  id: string;
-  tenant_id: string;
-  po_number: string;
-  vendor_id: string;
-  location_id: string;
-  order_date: Date;
-  expected_delivery_date: Date | null;
   actual_delivery_date: Date | null;
+  created_at: Date;
+  deleted_at: Date | null;
+  expected_delivery_date: Date | null;
+  id: string;
+  location_id: string;
+  notes: string | null;
+  order_date: Date;
+  po_number: string;
+  received_at: Date | null;
+  received_by: string | null;
+  shipping_amount: number;
   status: POStatus;
+  submitted_at: Date | null;
+  submitted_by: string | null;
   subtotal: number;
   tax_amount: number;
-  shipping_amount: number;
+  tenant_id: string;
   total: number;
-  notes: string | null;
-  submitted_by: string | null;
-  submitted_at: Date | null;
-  received_by: string | null;
-  received_at: Date | null;
-  created_at: Date;
   updated_at: Date;
-  deleted_at: Date | null;
+  vendor_id: string;
 }
 
 export interface PurchaseOrderWithDetails extends PurchaseOrder {
   items: POItemWithDetails[];
-  vendor_name?: string;
   location_name?: string;
   progress?: {
     total_items: number;
     received_items: number;
     percentage: number;
   };
+  vendor_name?: string;
 }
 
 export interface PurchaseOrderListFilters {
+  location_id?: string;
+  po_number?: string;
   search?: string;
   status?: POStatus;
   vendor_id?: string;
-  location_id?: string;
-  po_number?: string;
 }
 
 export interface UpdateQuantityReceivedRequest {
@@ -102,10 +102,10 @@ export interface UpdateQuantityReceivedRequest {
 }
 
 export interface UpdateQualityStatusRequest {
-  quality_status: QualityStatus;
-  discrepancy_type?: DiscrepancyType;
   discrepancy_amount?: number;
+  discrepancy_type?: DiscrepancyType;
   notes?: string;
+  quality_status: QualityStatus;
 }
 
 export interface CompleteReceivingRequest {
@@ -146,13 +146,27 @@ export async function listPurchaseOrders(params: {
 }): Promise<PurchaseOrderListResponse> {
   // NOTE: Keeping apiFetch — generated client returns PurchaseOrder[] without joined items/details
   const queryParams = new URLSearchParams();
-  if (params.search) queryParams.set("search", params.search);
-  if (params.status) queryParams.set("status", params.status);
-  if (params.vendor_id) queryParams.set("vendor_id", params.vendor_id);
-  if (params.location_id) queryParams.set("location_id", params.location_id);
-  if (params.po_number) queryParams.set("po_number", params.po_number);
-  if (params.page) queryParams.set("page", String(params.page));
-  if (params.limit) queryParams.set("limit", String(params.limit));
+  if (params.search) {
+    queryParams.set("search", params.search);
+  }
+  if (params.status) {
+    queryParams.set("status", params.status);
+  }
+  if (params.vendor_id) {
+    queryParams.set("vendor_id", params.vendor_id);
+  }
+  if (params.location_id) {
+    queryParams.set("location_id", params.location_id);
+  }
+  if (params.po_number) {
+    queryParams.set("po_number", params.po_number);
+  }
+  if (params.page) {
+    queryParams.set("page", String(params.page));
+  }
+  if (params.limit) {
+    queryParams.set("limit", String(params.limit));
+  }
 
   const response = await apiFetch(
     `/api/inventory/purchase-orders?${queryParams.toString()}`
@@ -171,7 +185,9 @@ export async function getPurchaseOrder(
   poId: string
 ): Promise<PurchaseOrderWithDetails> {
   const result = await _getPurchaseOrder(poId);
-  if (!result) throw new Error("Failed to get purchase order");
+  if (!result) {
+    throw new Error("Failed to get purchase order");
+  }
   return result as unknown as PurchaseOrderWithDetails;
 }
 

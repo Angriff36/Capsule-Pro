@@ -11,51 +11,51 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Types for labor budget operations
 export interface LaborBudgetInput {
-  tenantId: string;
-  locationId?: string;
-  eventId?: string;
-  name: string;
-  description?: string;
-  budgetType: "event" | "week" | "month";
-  periodStart?: Date;
-  periodEnd?: Date;
   budgetTarget: number;
+  budgetType: "event" | "week" | "month";
   budgetUnit: "hours" | "cost";
+  description?: string;
+  eventId?: string;
+  locationId?: string;
+  name: string;
+  overrideReason?: string;
+  periodEnd?: Date;
+  periodStart?: Date;
+  status?: "active" | "paused" | "archived";
+  tenantId: string;
   threshold80Pct?: boolean;
   threshold90Pct?: boolean;
   threshold100Pct?: boolean;
-  status?: "active" | "paused" | "archived";
-  overrideReason?: string;
 }
 
 export interface BudgetUtilization {
+  actualSpend: number;
   budgetId: string;
   budgetName: string;
-  budgetType: string;
   budgetTarget: number;
+  budgetType: string;
   budgetUnit: string;
-  actualSpend: number;
-  utilizationPct: number;
-  remainingBudget: number;
-  periodStart?: Date;
   periodEnd?: Date;
+  periodStart?: Date;
+  remainingBudget: number;
   status: "active" | "paused" | "archived";
+  utilizationPct: number;
 }
 
 export interface BudgetAlertInput {
-  tenantId: string;
-  budgetId: string;
   alertType: "threshold_80" | "threshold_90" | "threshold_100" | "exceeded";
-  utilization: number;
+  budgetId: string;
   message: string;
+  tenantId: string;
+  utilization: number;
 }
 
 export interface ShiftCostCalculation {
-  shiftId: string;
+  cost: number;
   employeeId: string;
   hourlyRate: number | null;
   shiftHours: number;
-  cost: number;
+  shiftId: string;
 }
 
 /**
@@ -320,7 +320,9 @@ export async function updateLaborBudget(
       user: { id: "", tenantId, role: "admin" },
       body: {
         locationId: updates.locationId ?? "",
-        periodStart: updates.periodStart ? updates.periodStart.toISOString() : "",
+        periodStart: updates.periodStart
+          ? updates.periodStart.toISOString()
+          : "",
         periodEnd: updates.periodEnd ? updates.periodEnd.toISOString() : "",
         budgetTarget: updates.budgetTarget ?? 0,
         budgetType: updates.budgetType ?? "",
@@ -329,7 +331,9 @@ export async function updateLaborBudget(
     }
   );
 
-  if (!result.ok) return null;
+  if (!result.ok) {
+    return null;
+  }
   return { id: budgetId, name: updates.name ?? "" };
 }
 

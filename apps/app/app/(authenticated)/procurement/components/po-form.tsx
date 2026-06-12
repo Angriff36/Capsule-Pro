@@ -26,10 +26,10 @@ export interface Location {
 }
 
 export interface POFormData {
-  vendorId: string;
-  locationId: string;
   expectedDeliveryDate: string;
+  locationId: string;
   notes: string;
+  vendorId: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -37,12 +37,12 @@ export interface POFormData {
 /* ------------------------------------------------------------------ */
 
 interface POFormProps {
-  form: POFormData;
-  vendors: Vendor[];
-  locations: Location[];
-  onChange: (update: Partial<POFormData>) => void;
   /** Rendered between vendor section and notes (e.g., line items card) */
   children?: React.ReactNode;
+  form: POFormData;
+  locations: Location[];
+  onChange: (update: Partial<POFormData>) => void;
+  vendors: Vendor[];
 }
 
 export function POForm({

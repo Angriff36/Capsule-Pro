@@ -26,17 +26,33 @@ import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface ParsedDocument {
-  id: string;
+  confidence: number;
+  detectedFormat: string;
+  errors: string[];
   fileName: string;
   fileType: "pdf" | "csv";
-  detectedFormat: string;
-  confidence: number;
-  errors: string[];
+  id: string;
   warnings: string[];
 }
 
 interface ImportResult {
+  battleBoard?: {
+    autoFillScore: number;
+    warnings: string[];
+  };
+  battleBoardId?: string;
+  checklist?: {
+    autoFilledCount: number;
+    totalQuestions: number;
+    warnings: string[];
+  };
+  checklistId?: string;
   documents: ParsedDocument[];
+  errors: string[];
+  imports: Array<{
+    importId: string;
+    document: ParsedDocument;
+  }>;
   mergedEvent?: {
     client?: string;
     number?: string;
@@ -50,22 +66,6 @@ interface ImportResult {
     scheduledIn?: string;
     scheduledOut?: string;
   }>;
-  imports: Array<{
-    importId: string;
-    document: ParsedDocument;
-  }>;
-  checklist?: {
-    autoFilledCount: number;
-    totalQuestions: number;
-    warnings: string[];
-  };
-  checklistId?: string;
-  battleBoard?: {
-    autoFillScore: number;
-    warnings: string[];
-  };
-  battleBoardId?: string;
-  errors: string[];
 }
 
 export function ImportForm() {
@@ -217,10 +217,10 @@ export function ImportForm() {
               onDrop={handleDrop}
             >
               <UploadIcon className="mb-4 h-10 w-10 text-muted-foreground" />
-              <p className="mb-2 text-sm text-muted-foreground">
+              <p className="mb-2 text-muted-foreground text-sm">
                 Drag and drop files here, or click to browse
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Supports PDF and CSV files
               </p>
               <Input
@@ -245,8 +245,8 @@ export function ImportForm() {
                       <div className="flex items-center gap-3">
                         <FileIcon className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <p className="text-sm font-medium">{file.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-medium text-sm">{file.name}</p>
+                          <p className="text-muted-foreground text-xs">
                             {formatBytes(file.size)} •{" "}
                             {file.name.endsWith(".pdf") ? "PDF" : "CSV"}
                           </p>
@@ -279,7 +279,7 @@ export function ImportForm() {
                     }
                   />
                   <label
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     htmlFor="generateBattleBoard"
                   >
                     Generate Battle Board
@@ -294,7 +294,7 @@ export function ImportForm() {
                     }
                   />
                   <label
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     htmlFor="generateChecklist"
                   >
                     Generate Pre-Event Review Checklist
@@ -362,12 +362,12 @@ export function ImportForm() {
                       </span>
                     </div>
                     {doc.errors.length > 0 && (
-                      <div className="text-sm text-destructive">
+                      <div className="text-destructive text-sm">
                         Errors: {doc.errors.join(", ")}
                       </div>
                     )}
                     {doc.warnings.length > 0 && (
-                      <div className="text-sm text-amber-600">
+                      <div className="text-amber-600 text-sm">
                         Warnings: {doc.warnings.join(", ")}
                       </div>
                     )}
@@ -459,13 +459,13 @@ export function ImportForm() {
                       ) : (
                         <AlertCircleIcon className="h-4 w-4 text-muted-foreground" />
                       )}
-                      <span className="text-sm font-medium">
+                      <span className="font-medium text-sm">
                         Battle Board{" "}
                         {result.battleBoardId ? "Created" : "Not Created"}
                       </span>
                     </div>
                     {result.battleBoard && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         Auto-fill score: {result.battleBoard.autoFillScore}%
                       </span>
                     )}
@@ -485,13 +485,13 @@ export function ImportForm() {
                       ) : (
                         <AlertCircleIcon className="h-4 w-4 text-muted-foreground" />
                       )}
-                      <span className="text-sm font-medium">
+                      <span className="font-medium text-sm">
                         Checklist{" "}
                         {result.checklistId ? "Created" : "Not Created"}
                       </span>
                     </div>
                     {result.checklist && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         Auto-filled: {result.checklist.autoFilledCount} /{" "}
                         {result.checklist.totalQuestions} questions
                       </span>

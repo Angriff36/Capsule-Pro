@@ -8,10 +8,7 @@ import {
 import { afterEach, describe, expect, it } from "vitest";
 
 const TMP_PREFIX = join(tmpdir(), "manifest-loader-invariant-");
-const FIXTURE_DIR = resolve(
-  process.cwd(),
-  "../../manifest/source"
-);
+const FIXTURE_DIR = resolve(process.cwd(), "../../manifest/source");
 
 const tempDirs: string[] = [];
 

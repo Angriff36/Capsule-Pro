@@ -27,7 +27,9 @@ server.stdout.on("data", (chunk) => {
   const lines = buffer.split("\n");
   buffer = lines.pop() ?? "";
   for (const line of lines) {
-    if (!line.trim()) continue;
+    if (!line.trim()) {
+      continue;
+    }
     try {
       const msg = JSON.parse(line);
       console.log(

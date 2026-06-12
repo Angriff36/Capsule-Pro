@@ -4,37 +4,35 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
-import {
-  runManifestCommand,
-} from "@/lib/manifest-command";
 
 export interface CreateTimelineTaskInput {
-  eventId: string;
-  title: string;
-  description?: string;
-  startTime: string;
-  endTime: string;
-  category: string;
-  priority: "low" | "medium" | "high" | "critical";
   assigneeId?: string;
+  category: string;
   dependencies?: string[];
+  description?: string;
+  endTime: string;
+  eventId: string;
+  priority: "low" | "medium" | "high" | "critical";
+  startTime: string;
+  title: string;
 }
 
 export interface UpdateTimelineTaskInput {
-  id: string;
-  eventId: string;
-  title?: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  status?: "not_started" | "in_progress" | "completed" | "delayed" | "blocked";
-  priority?: "low" | "medium" | "high" | "critical";
-  category?: string;
   assigneeId?: string | null;
-  progress?: number;
+  category?: string;
   dependencies?: string[];
+  description?: string;
+  endTime?: string;
+  eventId: string;
+  id: string;
   notes?: string;
+  priority?: "low" | "medium" | "high" | "critical";
+  progress?: number;
+  startTime?: string;
+  status?: "not_started" | "in_progress" | "completed" | "delayed" | "blocked";
+  title?: string;
 }
 
 export async function getTimelineTasks(eventId: string) {
@@ -477,7 +475,9 @@ export async function addEventStaff(
   const eventRow = await database.$queryRaw<Array<{ event_date: Date | null }>>`
     SELECT event_date FROM tenant_events.events
     WHERE tenant_id = ${user.tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
-  if (eventRow.length === 0) throw new Error("Event not found");
+  if (eventRow.length === 0) {
+    throw new Error("Event not found");
+  }
   // Engine datetime contract = epoch ms (ISO strings fail E_TYPE_DATETIME).
   const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).getTime();
 

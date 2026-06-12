@@ -35,7 +35,10 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { vendorContractCreate, listVendorContracts } from "@/app/lib/manifest-client.generated";
+import {
+  listVendorContracts,
+  vendorContractCreate,
+} from "@/app/lib/manifest-client.generated";
 import {
   CONTRACT_TYPE_CONFIG,
   formatDateShort,
@@ -43,17 +46,17 @@ import {
 } from "../components/vc-shared";
 
 interface VendorContract {
-  id: string;
-  contractNumber: string;
-  vendorName: string | null;
-  contractType: string;
-  status: string;
-  startDate: string;
-  endDate: string | null;
   autoRenew: boolean;
-  paymentTerms: string;
   complianceScore: number;
+  contractNumber: string;
+  contractType: string;
+  endDate: string | null;
+  id: string;
   notes: string | null;
+  paymentTerms: string;
+  startDate: string;
+  status: string;
+  vendorName: string | null;
 }
 
 export default function VendorContractsPage() {
@@ -89,19 +92,23 @@ export default function VendorContractsPage() {
     }
   };
 
-  const filtered = useMemo(() => {
-    return contracts.filter((c) => {
-      const matchesTab = activeTab === "all" || c.status === activeTab;
-      const matchesSearch =
-        !searchQuery ||
-        c.contractNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.vendorName?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [contracts, activeTab, searchQuery]);
+  const filtered = useMemo(
+    () =>
+      contracts.filter((c) => {
+        const matchesTab = activeTab === "all" || c.status === activeTab;
+        const matchesSearch =
+          !searchQuery ||
+          c.contractNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.vendorName?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesTab && matchesSearch;
+      }),
+    [contracts, activeTab, searchQuery]
+  );
 
   const handleCreate = async () => {
-    if (!(contractNumber && vendorId && startDate)) return;
+    if (!(contractNumber && vendorId && startDate)) {
+      return;
+    }
     setCreating(true);
     try {
       await vendorContractCreate({
@@ -145,7 +152,7 @@ export default function VendorContractsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Vendor Contracts
           </h1>
           <p className="text-muted-foreground">
@@ -153,7 +160,7 @@ export default function VendorContractsPage() {
           </p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           New Contract
         </Button>
       </div>
@@ -167,13 +174,13 @@ export default function VendorContractsPage() {
             return (
               <Card key={status}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="font-medium text-sm">
                     {config.label}
                   </CardTitle>
                   <config.icon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{count}</div>
+                  <div className="font-bold text-2xl">{count}</div>
                 </CardContent>
               </Card>
             );
@@ -183,7 +190,7 @@ export default function VendorContractsPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -196,7 +203,7 @@ export default function VendorContractsPage() {
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="all"
           >
             All ({contracts.length})
@@ -214,7 +221,7 @@ export default function VendorContractsPage() {
             const count = contracts.filter((c) => c.status === s).length;
             return count > 0 ? (
               <TabsTrigger
-                className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+                className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
                 key={s}
                 value={s}
               >
@@ -227,7 +234,7 @@ export default function VendorContractsPage() {
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No vendor contracts found.</p>
               </CardContent>
             </Card>
@@ -242,7 +249,7 @@ export default function VendorContractsPage() {
                   contract.contractType;
                 return (
                   <Card
-                    className="hover:border-primary/40 transition-shadow"
+                    className="transition-shadow hover:border-primary/40"
                     key={contract.id}
                   >
                     <CardContent className="p-4">
@@ -252,8 +259,8 @@ export default function VendorContractsPage() {
                         >
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <Link
                               className="font-semibold hover:underline"
                               href={`/procurement/vendor-contracts/${contract.id}`}
@@ -268,7 +275,7 @@ export default function VendorContractsPage() {
                               <Badge variant="secondary">Auto-Renew</Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             {contract.vendorName && (
                               <span>{contract.vendorName}</span>
                             )}
@@ -288,7 +295,7 @@ export default function VendorContractsPage() {
                           href={`/procurement/vendor-contracts/${contract.id}`}
                         >
                           <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="mr-1 h-4 w-4" />
                             View
                           </Button>
                         </Link>
@@ -394,7 +401,7 @@ export default function VendorContractsPage() {
               />
             </div>
           </div>
-          <div className="flex gap-2 justify-end mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <Button
               onClick={() => {
                 setShowCreateDialog(false);

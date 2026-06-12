@@ -12,22 +12,22 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface BarcodeLookupResult {
+  barcode: string | null;
+  category: string;
+  created_at: Date;
+  description: string | null;
+  fsa_status: string | null;
   id: string;
-  tenant_id: string;
   item_number: string;
   name: string;
-  description: string | null;
-  category: string;
-  unit_of_measure: string;
-  unit_cost: number;
-  quantity_on_hand: number;
   par_level: number;
+  quantity_on_hand: number;
   reorder_level: number;
   supplier_id: string | null;
   tags: string[];
-  fsa_status: string | null;
-  barcode: string | null;
-  created_at: Date;
+  tenant_id: string;
+  unit_cost: number;
+  unit_of_measure: string;
   updated_at: Date;
 }
 

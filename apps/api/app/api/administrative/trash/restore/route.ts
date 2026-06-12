@@ -5,30 +5,32 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireApiAdmin } from "@/app/lib/auth-roles";
 import {
+  getDeletedAtField,
   getPrismaDelegate,
   getTenantField,
-  getDeletedAtField,
-  type PrismaDelegate,
 } from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
 
 interface RestoreRequestBody {
+  cascade?: boolean;
   entities: Array<{
     id: string;
     type: string;
   }>;
-  cascade?: boolean;
 }
 
 interface RestoreResult {
-  success: boolean;
-  restored: Array<{ id: string; type: string; displayName: string }>;
   failed: Array<{ id: string; type: string; error: string }>;
+  restored: Array<{ id: string; type: string; displayName: string }>;
   skipped: Array<{ id: string; type: string; reason: string }>;
+  success: boolean;
 }
 
-function generateDisplayName(entityType: string, record: Record<string, unknown>): string {
+function generateDisplayName(
+  entityType: string,
+  record: Record<string, unknown>
+): string {
   const fieldMap: Partial<Record<string, string[]>> = {
     Event: ["title"],
     Client: ["name"],
@@ -259,7 +261,9 @@ async function restoreDependentEntities(
   for (const dep of dependents) {
     try {
       const delegate = getPrismaDelegate(dep.dependentEntity, database);
-      if (!delegate) continue;
+      if (!delegate) {
+        continue;
+      }
 
       const tenantField = getTenantField(dep.dependentEntity);
       const deletedAtField = getDeletedAtField(dep.dependentEntity);

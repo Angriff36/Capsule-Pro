@@ -11,13 +11,13 @@
  */
 
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import {
   buildContractRecipients,
   buildContractTemplateData,
   triggerEmailWorkflows,
   type UpdateLastTriggeredFn,
 } from "@repo/notifications";
-import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
@@ -101,13 +101,17 @@ async function getSystemUserId(tenantId: string): Promise<string> {
     where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
     select: { id: true },
   });
-  if (adminUser) return adminUser.id;
+  if (adminUser) {
+    return adminUser.id;
+  }
 
   const anyUser = await database.user.findFirst({
     where: { tenantId, deletedAt: null },
     select: { id: true },
   });
-  if (anyUser) return anyUser.id;
+  if (anyUser) {
+    return anyUser.id;
+  }
 
   throw new Error(`No active users found for tenant ${tenantId}`);
 }
@@ -134,7 +138,7 @@ function makeGovernedUpdateLastTriggered(
         command: "recordTriggered",
         body: { id: workflowId },
         user: { id: systemUserId, tenantId, role: "system" },
-      },
+      }
     );
   };
 }
@@ -199,27 +203,31 @@ async function processTenantContracts(
       continue;
     }
 
-    const triggerResult = await triggerEmailWorkflows(database, {
-      tenantId,
-      triggerType: "contract_expiration",
-      entity: {
-        id: contract.id,
-        type: "contract",
+    const triggerResult = await triggerEmailWorkflows(
+      database,
+      {
+        tenantId,
+        triggerType: "contract_expiration",
+        entity: {
+          id: contract.id,
+          type: "contract",
+        },
+        templateData: buildContractTemplateData({
+          contract_number: contract.contractNumber,
+          title: contract.title,
+          expires_at: contract.expiresAt,
+          event_name: contract.event?.title,
+          event_date: contract.event?.eventDate,
+        }),
+        recipients: buildContractRecipients({
+          client_email: contract.client.email,
+          client_first_name: contract.client.first_name,
+          client_last_name: contract.client.last_name,
+          client_id: contract.client.id,
+        }),
       },
-      templateData: buildContractTemplateData({
-        contract_number: contract.contractNumber,
-        title: contract.title,
-        expires_at: contract.expiresAt,
-        event_name: contract.event?.title,
-        event_date: contract.event?.eventDate,
-      }),
-      recipients: buildContractRecipients({
-        client_email: contract.client.email,
-        client_first_name: contract.client.first_name,
-        client_last_name: contract.client.last_name,
-        client_id: contract.client.id,
-      }),
-    }, makeGovernedUpdateLastTriggered(tenantId));
+      makeGovernedUpdateLastTriggered(tenantId)
+    );
 
     if (triggerResult.triggered > 0) {
       result.alertsSent += triggerResult.triggered;

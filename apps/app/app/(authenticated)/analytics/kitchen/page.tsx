@@ -1,6 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   CommandBand,
   CommandBandHeader,
@@ -15,6 +14,7 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -79,8 +79,8 @@ const UnavailableState = () => (
       </CommandBandHeader>
     </CommandBand>
     <div className="p-6 text-muted-foreground text-sm">
-      The kitchen analytics page could not read tenant data. Try again after
-      the database connection recovers.
+      The kitchen analytics page could not read tenant data. Try again after the
+      database connection recovers.
     </div>
   </PageCanvas>
 );
@@ -325,8 +325,8 @@ const KitchenAnalyticsPage = async () => {
                       <div className="space-y-1">
                         <div className="font-medium">{task.name}</div>
                         <div className="text-muted-foreground text-xs">
-                          Due {dateFormatter.format(task.dueByDate)} •
-                          Priority {task.priority}
+                          Due {dateFormatter.format(task.dueByDate)} • Priority{" "}
+                          {task.priority}
                         </div>
                       </div>
                     </TableCell>
@@ -426,8 +426,7 @@ const KitchenAnalyticsPage = async () => {
                       <div className="space-y-1">
                         <div className="font-medium">{prepList.name}</div>
                         <div className="text-muted-foreground text-xs">
-                          Generated{" "}
-                          {dateFormatter.format(prepList.generatedAt)}
+                          Generated {dateFormatter.format(prepList.generatedAt)}
                           {prepList.finalizedAt
                             ? ` • Finalized ${dateFormatter.format(prepList.finalizedAt)}`
                             : ""}
@@ -480,13 +479,9 @@ const KitchenAnalyticsPage = async () => {
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell>{recipe.category ?? "Uncategorized"}</TableCell>
                     <TableCell>
-                      {recipe.category ?? "Uncategorized"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={recipe.isActive ? "default" : "outline"}
-                      >
+                      <Badge variant={recipe.isActive ? "default" : "outline"}>
                         {recipe.isActive ? "active" : "inactive"}
                       </Badge>
                     </TableCell>

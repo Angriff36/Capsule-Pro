@@ -30,19 +30,10 @@ export type CuisineType =
   | "other";
 
 export interface Recipe {
-  id: string;
-  tenantId: string;
-  name: string;
-  description: string | null;
   category: RecipeCategory | null;
-  cuisineType: CuisineType | null;
-  yieldQuantity: number | null;
-  yieldUnitId: number | null;
-  portionSize: number | null;
-  portionUnitId: number | null;
-  prepTimeMinutes: number | null;
   cookTimeMinutes: number | null;
-  isActive: boolean;
+  createdAt: Date;
+  cuisineType: CuisineType | null;
   currentVersion: {
     id: string;
     versionNumber: number;
@@ -50,16 +41,24 @@ export interface Recipe {
     costPerYield: number | null;
     costCalculatedAt: Date | null;
   } | null;
-  createdAt: Date;
+  description: string | null;
+  id: string;
+  isActive: boolean;
+  name: string;
+  portionSize: number | null;
+  portionUnitId: number | null;
+  prepTimeMinutes: number | null;
+  tenantId: string;
   updatedAt: Date;
+  yieldQuantity: number | null;
+  yieldUnitId: number | null;
 }
 
 export interface RecipeCostBreakdown {
-  totalCost: number;
-  costPerYield: number;
   costPerPortion: number | null;
-  lastCalculated: Date | string | null;
+  costPerYield: number;
   ingredients: IngredientCostBreakdown[];
+  lastCalculated: Date | string | null;
   recipe: {
     id: string;
     name: string;
@@ -69,20 +68,21 @@ export interface RecipeCostBreakdown {
     portionSize: number | null;
     portionUnit: string | null;
   };
+  totalCost: number;
 }
 
 export interface IngredientCostBreakdown {
-  id: string;
-  recipeIngredientId: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  wasteFactor: number;
   adjustedQuantity: number;
-  unitCost: number;
   cost: number;
   hasInventoryItem: boolean;
+  id: string;
   inventoryItemId: string | null;
+  name: string;
+  quantity: number;
+  recipeIngredientId: string;
+  unit: string;
+  unitCost: number;
+  wasteFactor: number;
 }
 
 export interface RecipeListResponse {
@@ -96,26 +96,26 @@ export interface RecipeListResponse {
 }
 
 export interface RecipeListFilters {
-  search?: string;
   category?: RecipeCategory;
   cuisineType?: CuisineType;
-  tag?: string;
   isActive?: boolean;
-  page?: number;
   limit?: number;
+  page?: number;
+  search?: string;
+  tag?: string;
 }
 
 export interface ScaleRecipeRequest {
-  targetPortions: number;
   currentYield: number;
+  targetPortions: number;
 }
 
 export interface ScaledRecipeCost {
-  scaledTotalCost: number;
-  scaledCostPerYield: number;
-  scaledCostPerPortion: number | null;
-  scaleFactor: number;
   originalCost: number;
+  scaledCostPerPortion: number | null;
+  scaledCostPerYield: number;
+  scaledTotalCost: number;
+  scaleFactor: number;
 }
 
 export interface UpdateWasteFactorRequest {
@@ -124,9 +124,9 @@ export interface UpdateWasteFactorRequest {
 }
 
 interface ManifestResponse<T> {
-  success: boolean;
   data?: T;
   message?: string;
+  success: boolean;
 }
 
 function unwrapManifestResponse<T>(payload: T | ManifestResponse<T>): T {
@@ -154,15 +154,31 @@ export async function listRecipes(
 ): Promise<RecipeListResponse> {
   const query: Record<string, string | number> = {};
 
-  if (filters.search) query.search = filters.search;
-  if (filters.category) query.category = filters.category;
-  if (filters.cuisineType) query.cuisineType = filters.cuisineType;
-  if (filters.tag) query.tag = filters.tag;
-  if (filters.isActive !== undefined) query.isActive = String(filters.isActive);
-  if (filters.page) query.page = filters.page;
-  if (filters.limit) query.limit = filters.limit;
+  if (filters.search) {
+    query.search = filters.search;
+  }
+  if (filters.category) {
+    query.category = filters.category;
+  }
+  if (filters.cuisineType) {
+    query.cuisineType = filters.cuisineType;
+  }
+  if (filters.tag) {
+    query.tag = filters.tag;
+  }
+  if (filters.isActive !== undefined) {
+    query.isActive = String(filters.isActive);
+  }
+  if (filters.page) {
+    query.page = filters.page;
+  }
+  if (filters.limit) {
+    query.limit = filters.limit;
+  }
 
-  const result = await generatedListRecipes(Object.keys(query).length > 0 ? query : undefined);
+  const result = await generatedListRecipes(
+    Object.keys(query).length > 0 ? query : undefined
+  );
   return {
     data: result.data as unknown as Recipe[],
     pagination: result.pagination,
@@ -294,10 +310,10 @@ import { listRecipes as generatedListRecipes } from "@/app/lib/manifest-client.g
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;
-  loading: boolean;
   error: Error | null;
-  refetch: () => Promise<void>;
+  loading: boolean;
   recalculate: () => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
@@ -342,8 +358,8 @@ export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
 
 export interface UseRecipesResult {
   data: Recipe[];
-  loading: boolean;
   error: Error | null;
+  loading: boolean;
   pagination: {
     page: number;
     limit: number;
@@ -354,15 +370,7 @@ export interface UseRecipesResult {
 }
 
 export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
-  const {
-    search,
-    category,
-    cuisineType,
-    tag,
-    isActive,
-    page,
-    limit,
-  } = filters;
+  const { search, category, cuisineType, tag, isActive, page, limit } = filters;
   const [data, setData] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

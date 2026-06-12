@@ -34,10 +34,10 @@ import {
 } from "../../../../lib/assignment";
 
 interface AssignmentSuggestionCardProps {
-  suggestion: AssignmentSuggestion;
   isBestMatch?: boolean;
   onSelect?: () => void;
   selected?: boolean;
+  suggestion: AssignmentSuggestion;
 }
 
 export function AssignmentSuggestionCard({
@@ -50,9 +50,9 @@ export function AssignmentSuggestionCard({
 
   return (
     <Card
-      className={`transition-all cursor-pointer hover:border-primary/40 ${
+      className={`cursor-pointer transition-all hover:border-primary/40 ${
         selected ? "ring-2 ring-primary" : ""
-      } ${isBestMatch ? "border-green-500 border-2" : ""}`}
+      } ${isBestMatch ? "border-2 border-green-500" : ""}`}
       onClick={onSelect}
     >
       <CardHeader className="pb-3">
@@ -63,7 +63,7 @@ export function AssignmentSuggestionCard({
                 {formatEmployeeName(employee)}
               </CardTitle>
               {isBestMatch && (
-                <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300">
+                <Badge className="border-green-200 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                   Best Match
                 </Badge>
               )}
@@ -71,7 +71,7 @@ export function AssignmentSuggestionCard({
                 {getConfidenceIcon(confidence)} {getConfidenceLabel(confidence)}
               </Badge>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+            <div className="mt-1 flex items-center gap-4 text-muted-foreground text-sm">
               <span className="flex items-center gap-1">
                 <UserIcon className="h-3 w-3" />
                 {employee.role}
@@ -82,14 +82,14 @@ export function AssignmentSuggestionCard({
             </div>
           </div>
           <div className="text-right">
-            <div className={`text-2xl font-bold ${getScoreColor(score)}`}>
+            <div className={`font-bold text-2xl ${getScoreColor(score)}`}>
               {formatScore(score)}
             </div>
-            <div className="text-xs text-muted-foreground">out of 100</div>
+            <div className="text-muted-foreground text-xs">out of 100</div>
           </div>
         </div>
         {/* Score Bar */}
-        <div className="mt-2 h-2 bg-muted/50 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted/50 dark:bg-gray-700">
           <div
             className={`h-full ${getScoreBarColor(score)} transition-all duration-300`}
             style={{ width: getScoreBarWidth(score) }}
@@ -102,7 +102,7 @@ export function AssignmentSuggestionCard({
         <div className="grid grid-cols-2 gap-3">
           {/* Skills */}
           <div className="space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className="font-medium text-muted-foreground text-xs">
               Skills
             </div>
             {matchDetails.skillsMatch ? (
@@ -143,7 +143,7 @@ export function AssignmentSuggestionCard({
           {/* Seniority */}
           {employee.seniority && (
             <div className="space-y-1">
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="font-medium text-muted-foreground text-xs">
                 Seniority
               </div>
               <div className="flex items-center gap-1 text-sm">
@@ -155,7 +155,7 @@ export function AssignmentSuggestionCard({
                   (rank {employee.seniority.rank})
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 +{matchDetails.seniorityScore} points
               </div>
             </div>
@@ -166,16 +166,16 @@ export function AssignmentSuggestionCard({
         <div className="grid grid-cols-2 gap-3">
           {/* Availability */}
           <div className="space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className="font-medium text-muted-foreground text-xs">
               Availability
             </div>
             {matchDetails.availabilityMatch ? (
-              <div className="flex items-center gap-1 text-sm text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-1 text-green-700 text-sm dark:text-green-300">
                 <CheckIcon className="h-4 w-4" />
                 Available
               </div>
             ) : (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1 text-muted-foreground text-sm">
                 <ClockIcon className="h-4 w-4" />
                 No explicit availability
               </div>
@@ -184,7 +184,7 @@ export function AssignmentSuggestionCard({
 
           {/* Cost Estimate */}
           <div className="space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className="font-medium text-muted-foreground text-xs">
               Cost Estimate
             </div>
             <div className="flex items-center gap-1 text-sm">
@@ -207,10 +207,10 @@ export function AssignmentSuggestionCard({
             <AlertTriangleIcon className="h-4 w-4" />
             <AlertDescription className="text-sm">
               <div className="font-medium">Scheduling Conflict</div>
-              <div className="text-xs mt-1">
+              <div className="mt-1 text-xs">
                 {employee.conflictingShifts.length} conflicting shift
                 {employee.conflictingShifts.length > 1 ? "s" : ""}:
-                <ul className="list-disc list-inside mt-1 space-y-1">
+                <ul className="mt-1 list-inside list-disc space-y-1">
                   {employee.conflictingShifts.slice(0, 2).map((conflict) => (
                     <li key={conflict.id}>
                       {new Date(conflict.shiftStart).toLocaleDateString()} at{" "}
@@ -231,12 +231,12 @@ export function AssignmentSuggestionCard({
           <>
             <Separator />
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="font-medium text-muted-foreground text-xs">
                 Why This Match?
               </div>
               <ul className="space-y-1">
                 {reasoning.map((reason, idx) => (
-                  <li className="text-sm flex items-start gap-2" key={idx}>
+                  <li className="flex items-start gap-2 text-sm" key={idx}>
                     <span className="text-muted-foreground">•</span>
                     <span>{reason}</span>
                   </li>

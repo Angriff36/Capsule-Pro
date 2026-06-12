@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { join, resolve, dirname } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const repoRoot = resolve(process.cwd());
 const CONFIG_PATH = join(repoRoot, "manifest.config.yaml");
@@ -39,7 +39,9 @@ function parseSimpleYaml(text) {
   for (const rawLine of text.split("\n")) {
     // Strip comments (our config has no quoted strings with #)
     const line = rawLine.replace(/#.*$/, "").trimEnd();
-    if (!line.trim()) continue;
+    if (!line.trim()) {
+      continue;
+    }
 
     const indent = line.length - line.trimStart().length;
     const trimmed = line.trim();
@@ -50,7 +52,9 @@ function parseSimpleYaml(text) {
     }
 
     const kvMatch = trimmed.match(/^([\w][\w.-]*):\s*(.*)$/);
-    if (!kvMatch) continue;
+    if (!kvMatch) {
+      continue;
+    }
 
     const [, key, rawVal] = kvMatch;
     const val = rawVal.trim();
@@ -68,13 +72,23 @@ function parseSimpleYaml(text) {
 }
 
 function parseScalar(val) {
-  if (val === "true") return true;
-  if (val === "false") return false;
-  if (/^\d+$/.test(val)) return parseInt(val, 10);
-  if (/^\d+\.\d+$/.test(val)) return parseFloat(val);
+  if (val === "true") {
+    return true;
+  }
+  if (val === "false") {
+    return false;
+  }
+  if (/^\d+$/.test(val)) {
+    return Number.parseInt(val, 10);
+  }
+  if (/^\d+\.\d+$/.test(val)) {
+    return Number.parseFloat(val);
+  }
   // Strip surrounding quotes if present
-  if ((val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))) {
+  if (
+    (val.startsWith('"') && val.endsWith('"')) ||
+    (val.startsWith("'") && val.endsWith("'"))
+  ) {
     return val.slice(1, -1);
   }
   return val;
@@ -90,7 +104,9 @@ let _config = null;
  * Read and parse manifest.config.yaml (cached after first call).
  */
 export function readConfig() {
-  if (_config) return _config;
+  if (_config) {
+    return _config;
+  }
 
   if (!existsSync(CONFIG_PATH)) {
     console.warn(`[read-config] ${CONFIG_PATH} not found — using defaults.`);
@@ -111,9 +127,10 @@ export function getConfigPaths() {
   const cfg = readConfig();
 
   // Config values (with sensible defaults matching current hardcoded values)
-  const srcGlob   = cfg.src   || "manifest/source/**/*.manifest";
+  const srcGlob = cfg.src || "manifest/source/**/*.manifest";
   const outputDir = cfg.output || "manifest/ir/";
-  const prismaSchema = cfg.prismaSchema || "packages/database/prisma/schema.prisma";
+  const prismaSchema =
+    cfg.prismaSchema || "packages/database/prisma/schema.prisma";
 
   // Derive source directory from glob (strip the glob portion)
   const srcDir = srcGlob.replace(/\/?\*\*\/\*\.manifest$/, "");
@@ -166,20 +183,20 @@ export function getConfigPaths() {
   return {
     // Absolute paths
     repoRoot,
-    srcDir:          resolve(repoRoot, srcDir),
-    outputDir:       resolve(repoRoot, outputDir),
-    prismaSchema:    resolve(repoRoot, prismaSchema),
-    irPath:          resolve(repoRoot, irFile),
-    commandsPath:    resolve(repoRoot, commandsFile),
-    registryDir:     resolve(repoRoot, registryDir),
-    registryPath:    resolve(repoRoot, registryFile),
-    nextjsOutput:    resolve(repoRoot, nextjsOutput),
-    dispatcherPath:  resolve(repoRoot, nextjsDispatcher),
-    dispatcherDir:   resolve(repoRoot, dirname(nextjsDispatcher)),
+    srcDir: resolve(repoRoot, srcDir),
+    outputDir: resolve(repoRoot, outputDir),
+    prismaSchema: resolve(repoRoot, prismaSchema),
+    irPath: resolve(repoRoot, irFile),
+    commandsPath: resolve(repoRoot, commandsFile),
+    registryDir: resolve(repoRoot, registryDir),
+    registryPath: resolve(repoRoot, registryFile),
+    nextjsOutput: resolve(repoRoot, nextjsOutput),
+    dispatcherPath: resolve(repoRoot, nextjsDispatcher),
+    dispatcherDir: resolve(repoRoot, dirname(nextjsDispatcher)),
 
     // App Router base prefix (string, normalized with a trailing slash) — consumed by
     // generate.mjs to strip the staged-route prefix the CLI emits.
-    appDirPrefix:    `${appDir.replace(/\/+$/, "")}/`,
+    appDirPrefix: `${appDir.replace(/\/+$/, "")}/`,
 
     // Read-route generation policy.
     readRoutesEnabled,
@@ -199,8 +216,11 @@ export function getConfigPaths() {
 }
 
 // Allow scripts to call this directly for a quick config dump
-if (process.argv[1] && process.argv[1].endsWith("read-config.mjs") &&
-    process.argv.includes("--dump")) {
+if (
+  process.argv[1] &&
+  process.argv[1].endsWith("read-config.mjs") &&
+  process.argv.includes("--dump")
+) {
   const paths = getConfigPaths();
   console.log(JSON.stringify(paths, null, 2));
 }

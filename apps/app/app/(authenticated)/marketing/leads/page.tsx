@@ -47,7 +47,7 @@ function serializeLead<T extends { estimatedValue: unknown }>(lead: T) {
   return {
     ...lead,
     estimatedValue:
-      lead.estimatedValue != null ? Number(lead.estimatedValue) : null,
+      lead.estimatedValue == null ? null : Number(lead.estimatedValue),
   } as Omit<T, "estimatedValue"> & { estimatedValue: number | null };
 }
 

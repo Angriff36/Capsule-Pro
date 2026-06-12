@@ -4,17 +4,17 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface MenuItemAnalysis {
+  category: string | null;
+  contribution_margin: string;
+  cost_per_person: string | null;
   dish_id: string;
   dish_name: string;
-  category: string | null;
-  price_per_person: string | null;
-  cost_per_person: string | null;
-  total_orders: string;
-  total_guests_served: string;
-  total_revenue: string;
-  total_cost: string;
-  contribution_margin: string;
   margin_percent: string;
+  price_per_person: string | null;
+  total_cost: string;
+  total_guests_served: string;
+  total_orders: string;
+  total_revenue: string;
 }
 
 interface DateRange {
@@ -89,33 +89,33 @@ async function fetchMenuItemAnalysis(
 }
 
 interface MenuPerformanceSummary {
-  total_dishes: number;
   active_dishes: number;
-  total_orders: number;
-  total_revenue: number;
-  total_cost: number;
-  total_contribution_margin: number;
   average_margin_percent: number;
-  top_performing_dish: {
-    id: string;
-    name: string;
-    contribution_margin: number;
-  } | null;
   low_performing_dish: {
     id: string;
     name: string;
     contribution_margin: number;
   } | null;
+  top_performing_dish: {
+    id: string;
+    name: string;
+    contribution_margin: number;
+  } | null;
+  total_contribution_margin: number;
+  total_cost: number;
+  total_dishes: number;
+  total_orders: number;
+  total_revenue: number;
 }
 
 interface CategoryAnalysis {
+  averageMarginPercent: number;
   category: string;
+  topDish: string | null;
+  totalContributionMargin: number;
   totalDishes: number;
   totalOrders: number;
   totalRevenue: number;
-  totalContributionMargin: number;
-  averageMarginPercent: number;
-  topDish: string | null;
 }
 
 async function fetchMenuPerformanceSummary(
@@ -156,8 +156,7 @@ async function fetchMenuPerformanceSummary(
     totalRevenue > 0 ? (totalContributionMargin / totalRevenue) * 100 : 0;
 
   const sortedByMargin = [...menuItemAnalysis].sort(
-    (a, b) =>
-      Number(b.contribution_margin) - Number(a.contribution_margin)
+    (a, b) => Number(b.contribution_margin) - Number(a.contribution_margin)
   );
 
   const topDish = sortedByMargin[0];
@@ -202,7 +201,11 @@ function calculatePopularityScore(
   return Math.round(orderScore + guestScore);
 }
 
-function getMenuQuadrant(item: MenuItemAnalysis, avgMargin: number, popularityScore: number): string {
+function getMenuQuadrant(
+  item: MenuItemAnalysis,
+  avgMargin: number,
+  popularityScore: number
+): string {
   const marginPercent = Number(item.margin_percent);
 
   // Menu Engineering Matrix (Boston Matrix for Menus)
@@ -236,36 +239,38 @@ function getCategoryAnalysis(
     categoryMap.get(category)!.push(item);
   }
 
-  return Array.from(categoryMap.entries()).map(([category, items]) => {
-    const totalOrders = items.reduce(
-      (sum, item) => sum + Number(item.total_orders),
-      0
-    );
-    const totalRevenue = items.reduce(
-      (sum, item) => sum + Number(item.total_revenue),
-      0
-    );
-    const totalContributionMargin = items.reduce(
-      (sum, item) => sum + Number(item.contribution_margin),
-      0
-    );
-    const averageMarginPercent =
-      totalRevenue > 0 ? (totalContributionMargin / totalRevenue) * 100 : 0;
+  return Array.from(categoryMap.entries())
+    .map(([category, items]) => {
+      const totalOrders = items.reduce(
+        (sum, item) => sum + Number(item.total_orders),
+        0
+      );
+      const totalRevenue = items.reduce(
+        (sum, item) => sum + Number(item.total_revenue),
+        0
+      );
+      const totalContributionMargin = items.reduce(
+        (sum, item) => sum + Number(item.contribution_margin),
+        0
+      );
+      const averageMarginPercent =
+        totalRevenue > 0 ? (totalContributionMargin / totalRevenue) * 100 : 0;
 
-    const sortedByMargin = [...items].sort(
-      (a, b) => Number(b.contribution_margin) - Number(a.contribution_margin)
-    );
+      const sortedByMargin = [...items].sort(
+        (a, b) => Number(b.contribution_margin) - Number(a.contribution_margin)
+      );
 
-    return {
-      category,
-      totalDishes: items.length,
-      totalOrders,
-      totalRevenue,
-      totalContributionMargin,
-      averageMarginPercent,
-      topDish: sortedByMargin[0]?.dish_name || null,
-    };
-  }).sort((a, b) => b.totalContributionMargin - a.totalContributionMargin);
+      return {
+        category,
+        totalDishes: items.length,
+        totalOrders,
+        totalRevenue,
+        totalContributionMargin,
+        averageMarginPercent,
+        topDish: sortedByMargin[0]?.dish_name || null,
+      };
+    })
+    .sort((a, b) => b.totalContributionMargin - a.totalContributionMargin);
 }
 
 function generateRecommendations(
@@ -276,35 +281,63 @@ function generateRecommendations(
 
   // Analyze by quadrant
   const stars = menuItemAnalysis.filter(
-    (item) => getMenuQuadrant(item, avgMargin, calculatePopularityScore(
-      item,
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_guests_served)))
-    )) === "star"
+    (item) =>
+      getMenuQuadrant(
+        item,
+        avgMargin,
+        calculatePopularityScore(
+          item,
+          Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
+          Math.max(
+            ...menuItemAnalysis.map((i) => Number(i.total_guests_served))
+          )
+        )
+      ) === "star"
   );
 
   const plowhorses = menuItemAnalysis.filter(
-    (item) => getMenuQuadrant(item, avgMargin, calculatePopularityScore(
-      item,
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_guests_served)))
-    )) === "plowhorse"
+    (item) =>
+      getMenuQuadrant(
+        item,
+        avgMargin,
+        calculatePopularityScore(
+          item,
+          Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
+          Math.max(
+            ...menuItemAnalysis.map((i) => Number(i.total_guests_served))
+          )
+        )
+      ) === "plowhorse"
   );
 
   const puzzles = menuItemAnalysis.filter(
-    (item) => getMenuQuadrant(item, avgMargin, calculatePopularityScore(
-      item,
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_guests_served)))
-    )) === "puzzle"
+    (item) =>
+      getMenuQuadrant(
+        item,
+        avgMargin,
+        calculatePopularityScore(
+          item,
+          Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
+          Math.max(
+            ...menuItemAnalysis.map((i) => Number(i.total_guests_served))
+          )
+        )
+      ) === "puzzle"
   );
 
   const dogs = menuItemAnalysis.filter(
-    (item) => getMenuQuadrant(item, avgMargin, calculatePopularityScore(
-      item,
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
-      Math.max(...menuItemAnalysis.map((i) => Number(i.total_guests_served)))
-    )) === "dog"
+    (item) =>
+      getMenuQuadrant(
+        item,
+        avgMargin,
+        calculatePopularityScore(
+          item,
+          Math.max(...menuItemAnalysis.map((i) => Number(i.total_orders))),
+          Math.max(
+            ...menuItemAnalysis.map((i) => Number(i.total_guests_served))
+          )
+        )
+      ) === "dog"
   );
 
   // Generate recommendations based on quadrants
@@ -384,12 +417,22 @@ export async function GET(request: Request) {
         : 1;
     const maxGuests =
       menuItemAnalysis.length > 0
-        ? Math.max(...menuItemAnalysis.map((i) => Number(i.total_guests_served)))
+        ? Math.max(
+            ...menuItemAnalysis.map((i) => Number(i.total_guests_served))
+          )
         : 1;
 
     const menuItems = menuItemAnalysis.map((item) => {
-      const popularityScore = calculatePopularityScore(item, maxOrders, maxGuests);
-      const quadrant = getMenuQuadrant(item, summary.average_margin_percent, popularityScore);
+      const popularityScore = calculatePopularityScore(
+        item,
+        maxOrders,
+        maxGuests
+      );
+      const quadrant = getMenuQuadrant(
+        item,
+        summary.average_margin_percent,
+        popularityScore
+      );
 
       return {
         dishId: item.dish_id,
@@ -417,7 +460,8 @@ export async function GET(request: Request) {
 
     const quadrantDistribution = {
       star: menuItems.filter((item) => item.quadrant === "star").length,
-      plowhorse: menuItems.filter((item) => item.quadrant === "plowhorse").length,
+      plowhorse: menuItems.filter((item) => item.quadrant === "plowhorse")
+        .length,
       puzzle: menuItems.filter((item) => item.quadrant === "puzzle").length,
       dog: menuItems.filter((item) => item.quadrant === "dog").length,
     };

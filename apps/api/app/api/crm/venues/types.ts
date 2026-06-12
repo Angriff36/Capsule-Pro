@@ -16,34 +16,34 @@ export type VenueType =
   | "other";
 
 export interface VenueListFilters {
-  search?: string;
-  tags?: string[];
-  venueType?: VenueType;
   city?: string;
   isActive?: boolean;
   minCapacity?: number;
+  search?: string;
+  tags?: string[];
+  venueType?: VenueType;
 }
 
 export interface CreateVenueInput {
-  name: string;
-  venueType?: VenueType;
+  accessNotes?: string;
   addressLine1?: string;
   addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
   capacity?: number;
+  cateringNotes?: string;
+  city?: string;
+  contactEmail?: string;
   contactName?: string;
   contactPhone?: string;
-  contactEmail?: string;
+  countryCode?: string;
   equipmentList?: unknown;
-  preferredVendors?: unknown;
-  accessNotes?: string;
-  cateringNotes?: string;
-  layoutImageUrl?: string;
   isActive?: boolean;
+  layoutImageUrl?: string;
+  name: string;
+  postalCode?: string;
+  preferredVendors?: unknown;
+  stateProvince?: string;
   tags?: string[];
+  venueType?: VenueType;
 }
 
 export type UpdateVenueInput = Partial<CreateVenueInput>;

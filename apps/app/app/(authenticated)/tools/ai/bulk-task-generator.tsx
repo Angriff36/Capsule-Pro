@@ -45,18 +45,18 @@ import { apiFetch } from "@/app/lib/api";
 // --- Types ---
 
 interface GeneratedTask {
-  id: string;
-  taskType: string;
-  name: string;
-  dishName: string | null;
   dishId: string | null;
-  quantityTotal: number;
-  estimatedMinutes: number;
-  priority: number;
-  startByOffsetDays: number;
+  dishName: string | null;
   dueByOffsetDays: number;
   dueByTime: string;
+  estimatedMinutes: number;
+  id: string;
+  name: string;
   notes: string | null;
+  priority: number;
+  quantityTotal: number;
+  startByOffsetDays: number;
+  taskType: string;
 }
 
 interface TaskGroup {
@@ -66,15 +66,15 @@ interface TaskGroup {
 }
 
 interface GenerateResponse {
+  eventDate: string;
   eventId: string;
   eventTitle: string;
-  eventDate: string;
+  generatedAt: string;
   guestCount: number;
   locationId: string;
+  model: string;
   taskGroups: TaskGroup[];
   warnings: string[];
-  generatedAt: string;
-  model: string;
 }
 
 // --- Helpers ---
@@ -99,8 +99,12 @@ const STATION_TYPE_ICONS: Record<string, string> = {
 function priorityColor(
   priority: number
 ): "destructive" | "default" | "secondary" | "outline" {
-  if (priority <= 2) return "destructive";
-  if (priority <= 5) return "default";
+  if (priority <= 2) {
+    return "destructive";
+  }
+  if (priority <= 5) {
+    return "default";
+  }
   return "secondary";
 }
 
@@ -271,9 +275,9 @@ function TaskCard({
         onChange={onToggle}
         type="checkbox"
       />
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{task.name}</p>
+          <p className="truncate font-medium text-sm">{task.name}</p>
           <Badge className="text-xs" variant={priorityColor(task.priority)}>
             P{task.priority}
           </Badge>
@@ -281,7 +285,7 @@ function TaskCard({
             {TASK_TYPE_LABELS[task.taskType] ?? task.taskType}
           </Badge>
         </div>
-        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 flex items-center gap-3 text-muted-foreground text-xs">
           {task.dishName && <span>{task.dishName}</span>}
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -293,7 +297,7 @@ function TaskCard({
           <span>Qty: {task.quantityTotal}</span>
         </div>
         {task.notes && (
-          <p className="text-xs text-muted-foreground mt-1 truncate">
+          <p className="mt-1 truncate text-muted-foreground text-xs">
             {task.notes}
           </p>
         )}
@@ -368,7 +372,7 @@ export function BulkTaskGeneratorTab() {
       const allIds = json.taskGroups.flatMap((g) => g.tasks.map((t) => t.id));
       setSelectedIds(new Set(allIds));
       toast.success(
-        `Generated ${allIds.length} task${allIds.length !== 1 ? "s" : ""}`
+        `Generated ${allIds.length} task${allIds.length === 1 ? "" : "s"}`
       );
     } catch (err) {
       const message =
@@ -381,7 +385,9 @@ export function BulkTaskGeneratorTab() {
   }, [eventId]);
 
   const handleConfirm = useCallback(async () => {
-    if (!data || selectedCount === 0) return;
+    if (!data || selectedCount === 0) {
+      return;
+    }
 
     setConfirming(true);
     try {
@@ -425,7 +431,7 @@ export function BulkTaskGeneratorTab() {
         skippedCount: number;
       };
       toast.success(
-        `Created ${result.createdCount} task${result.createdCount !== 1 ? "s" : ""}${result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : ""}`
+        `Created ${result.createdCount} task${result.createdCount === 1 ? "" : "s"}${result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : ""}`
       );
       setData(null);
       setEventId("");
@@ -441,8 +447,11 @@ export function BulkTaskGeneratorTab() {
   const toggleTask = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }, []);
@@ -490,7 +499,9 @@ export function BulkTaskGeneratorTab() {
             id="bulk-event-id"
             onChange={(e) => setEventId(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleGenerate();
+              if (e.key === "Enter") {
+                handleGenerate();
+              }
             }}
             placeholder="Enter event ID to generate tasks for..."
             value={eventId}
@@ -522,8 +533,8 @@ export function BulkTaskGeneratorTab() {
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <div className="text-center">
-              <p className="text-sm font-medium">Generating tasks...</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-sm">Generating tasks...</p>
+              <p className="text-muted-foreground text-xs">
                 Analyzing menu, stations, and timing to create task plan.
               </p>
             </div>
@@ -537,7 +548,7 @@ export function BulkTaskGeneratorTab() {
           <CardContent className="p-4">
             {data.warnings.map((w, i) => (
               <div
-                className="flex items-center gap-2 text-sm text-foreground"
+                className="flex items-center gap-2 text-foreground text-sm"
                 key={i}
               >
                 <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
@@ -586,7 +597,7 @@ export function BulkTaskGeneratorTab() {
               Deselect All
             </Button>
             <div className="flex-1" />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               {selectedCount} of {effectiveTasks.length} selected
             </span>
             <Button
@@ -599,7 +610,7 @@ export function BulkTaskGeneratorTab() {
               ) : (
                 <PlusIcon className="mr-1.5 h-3.5 w-3.5" />
               )}
-              Accept {selectedCount} Task{selectedCount !== 1 ? "s" : ""}
+              Accept {selectedCount} Task{selectedCount === 1 ? "" : "s"}
             </Button>
           </div>
 
@@ -608,14 +619,14 @@ export function BulkTaskGeneratorTab() {
             {groupedTasks.map((group) => (
               <Card key={group.stationName}>
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                  <CardTitle className="flex items-center gap-2 font-medium text-sm">
                     <span>
                       {STATION_TYPE_ICONS[group.stationType] ?? "\uD83D\uDCCB"}
                     </span>
                     {group.stationName}
                     <Badge className="ml-auto text-xs" variant="secondary">
                       {group.tasks.length} task
-                      {group.tasks.length !== 1 ? "s" : ""}
+                      {group.tasks.length === 1 ? "" : "s"}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -645,8 +656,8 @@ export function BulkTaskGeneratorTab() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <ListChecks className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">No tasks generated yet</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-2 font-medium text-sm">No tasks generated yet</p>
+            <p className="text-muted-foreground text-sm">
               Enter an event ID and click &quot;Generate Tasks&quot; to create
               an AI-powered task plan.
             </p>
@@ -658,7 +669,9 @@ export function BulkTaskGeneratorTab() {
       {editingTask && (
         <EditTaskDialog
           onOpenChange={(open) => {
-            if (!open) setEditingTask(null);
+            if (!open) {
+              setEditingTask(null);
+            }
           }}
           onSave={saveEdit}
           open={!!editingTask}

@@ -16,14 +16,14 @@ import { CheckIcon, PenIcon, RefreshCwIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SignaturePadProps {
+  isSubmitting?: boolean;
+  onCancel: () => void;
   onSave: (
     signatureData: string,
     signerName: string,
     signerEmail?: string
   ) => void;
-  onCancel: () => void;
   requireEmail?: boolean;
-  isSubmitting?: boolean;
 }
 
 export function SignaturePad({
@@ -245,7 +245,7 @@ export function SignaturePad({
       {/* Signature Canvas */}
       <div className="grid gap-2">
         <Label>Signature *</Label>
-        <div className="relative aspect-[2/1] cursor-crosshair rounded-lg border-2 border-dashed border-input bg-background transition hover:border-primary/50">
+        <div className="relative aspect-[2/1] cursor-crosshair rounded-lg border-2 border-input border-dashed bg-background transition hover:border-primary/50">
           <canvas
             className="absolute inset-0 h-full w-full"
             onMouseDown={startDrawing}

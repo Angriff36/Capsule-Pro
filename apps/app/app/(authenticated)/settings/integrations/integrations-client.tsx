@@ -58,60 +58,59 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 interface GoodShuffleConfig {
-  id: string;
   apiKey: string;
   apiSecret: string;
-  webhookSecret: string | null;
-  syncEnabled: boolean;
-  syncDirection: "one_way" | "two_way";
-  conflictResolution: "convoy_wins" | "goodshuffle_wins" | "manual";
   autoSyncInterval: number;
-  lastSyncAt: string | null;
-  lastSyncStatus: string | null;
-  lastSyncError: string | null;
+  conflictResolution: "convoy_wins" | "goodshuffle_wins" | "manual";
   createdAt: string;
+  id: string;
+  lastSyncAt: string | null;
+  lastSyncError: string | null;
+  lastSyncStatus: string | null;
+  syncDirection: "one_way" | "two_way";
+  syncEnabled: boolean;
   updatedAt: string;
+  webhookSecret: string | null;
 }
 
 interface GoodShuffleConfigResponse {
-  configured: boolean;
   config: GoodShuffleConfig | null;
+  configured: boolean;
 }
 
 interface GoodShuffleStatus {
   configured: boolean;
-  syncEnabled: boolean;
   lastSyncAt: string | null;
   lastSyncStatus: string | null;
   pendingConflicts: number;
+  syncEnabled: boolean;
   totalSynced: number;
 }
 
 interface NowstaConfig {
-  id: string;
   apiKey: string;
   apiSecret: string;
-  organizationId: string | null;
-  syncEnabled: boolean;
-  syncDirection: "one_way" | "two_way";
   autoSyncInterval: number;
-  lastSyncAt: string | null;
-  lastSyncStatus: string | null;
-  lastSyncError: string | null;
   createdAt: string;
+  id: string;
+  lastSyncAt: string | null;
+  lastSyncError: string | null;
+  lastSyncStatus: string | null;
+  organizationId: string | null;
+  syncDirection: "one_way" | "two_way";
+  syncEnabled: boolean;
   updatedAt: string;
 }
 
 interface NowstaConfigResponse {
-  configured: boolean;
   config: NowstaConfig | null;
+  configured: boolean;
 }
 
 interface NowstaStatus {
-  configured: boolean;
-  syncEnabled: boolean;
   // Absent in the not-configured payload; lastSync/statistics are null until first sync
   autoSyncInterval?: number;
+  configured: boolean;
   lastSync: {
     at: string | null;
     status: string | null;
@@ -135,6 +134,7 @@ interface NowstaStatus {
       at: string;
     }>;
   } | null;
+  syncEnabled: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -308,10 +308,8 @@ function ConfigField({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className={`text-sm font-medium${mono ? " font-mono" : ""}`}>
-        {value}
-      </p>
+      <p className="text-muted-foreground text-sm">{label}</p>
+      <p className={`text-sm font-medium${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   );
 }
@@ -359,26 +357,26 @@ function GoodShuffleStatusCard({
         {status ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Sync Status</p>
+              <p className="text-muted-foreground text-sm">Sync Status</p>
               {syncStatusBadge(status.lastSyncStatus)}
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Last Sync</p>
-              <p className="text-sm font-medium">
+              <p className="text-muted-foreground text-sm">Last Sync</p>
+              <p className="font-medium text-sm">
                 {formatDate(status.lastSyncAt)}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Total Synced</p>
-              <p className="text-sm font-medium">{status.totalSynced}</p>
+              <p className="text-muted-foreground text-sm">Total Synced</p>
+              <p className="font-medium text-sm">{status.totalSynced}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Pending Conflicts</p>
-              <p className="text-sm font-medium">{status.pendingConflicts}</p>
+              <p className="text-muted-foreground text-sm">Pending Conflicts</p>
+              <p className="font-medium text-sm">{status.pendingConflicts}</p>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             No status information available.
           </p>
         )}
@@ -430,7 +428,7 @@ function GoodShuffleConfigDisplay({
             value={config.webhookSecret || "Not set"}
           />
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Sync Enabled</p>
+            <p className="text-muted-foreground text-sm">Sync Enabled</p>
             <SyncEnabledBadge enabled={config.syncEnabled} />
           </div>
           <ConfigField
@@ -610,7 +608,7 @@ function GoodShuffleConfigForm({
                 type="number"
                 value={formAutoSyncInterval}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Between 5 and 1440 minutes
               </p>
             </div>
@@ -915,52 +913,52 @@ function NowstaStatistics({
     <>
       <Separator />
       <div>
-        <p className="mb-3 text-sm font-medium">Employee Mappings</p>
+        <p className="mb-3 font-medium text-sm">Employee Mappings</p>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold">
+            <p className="font-bold text-2xl">
               {statistics.employeeMappings.total}
             </p>
-            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-muted-foreground text-xs">Total</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold">
+            <p className="font-bold text-2xl">
               {statistics.employeeMappings.autoMapped}
             </p>
-            <p className="text-xs text-muted-foreground">Auto-Mapped</p>
+            <p className="text-muted-foreground text-xs">Auto-Mapped</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold">
+            <p className="font-bold text-2xl">
               {statistics.employeeMappings.confirmed}
             </p>
-            <p className="text-xs text-muted-foreground">Confirmed</p>
+            <p className="text-muted-foreground text-xs">Confirmed</p>
           </div>
         </div>
       </div>
       <div>
-        <p className="mb-3 text-sm font-medium">Shift Syncs</p>
+        <p className="mb-3 font-medium text-sm">Shift Syncs</p>
         <div className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold">{statistics.shiftSyncs.total}</p>
-            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="font-bold text-2xl">{statistics.shiftSyncs.total}</p>
+            <p className="text-muted-foreground text-xs">Total</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold text-green-600">
+            <p className="font-bold text-2xl text-green-600">
               {statistics.shiftSyncs.synced}
             </p>
-            <p className="text-xs text-muted-foreground">Synced</p>
+            <p className="text-muted-foreground text-xs">Synced</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold text-yellow-600">
+            <p className="font-bold text-2xl text-yellow-600">
               {statistics.shiftSyncs.pending}
             </p>
-            <p className="text-xs text-muted-foreground">Pending</p>
+            <p className="text-muted-foreground text-xs">Pending</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-2xl font-bold text-red-600">
+            <p className="font-bold text-2xl text-red-600">
               {statistics.shiftSyncs.error}
             </p>
-            <p className="text-xs text-muted-foreground">Errors</p>
+            <p className="text-muted-foreground text-xs">Errors</p>
           </div>
         </div>
       </div>
@@ -978,16 +976,16 @@ function NowstaRecentErrors({
 }) {
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-destructive">Recent Errors</p>
+      <p className="mb-2 font-medium text-destructive text-sm">Recent Errors</p>
       <div className="space-y-2">
         {errors.map((err, idx) => (
           <div
             className="rounded-md border border-destructive/30 bg-destructive/5 p-3"
             key={`nowsta-err-${err.shiftId}-${idx}`}
           >
-            <p className="text-sm font-medium">Shift: {err.shiftId}</p>
-            <p className="text-sm text-muted-foreground">{err.error}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-medium text-sm">Shift: {err.shiftId}</p>
+            <p className="text-muted-foreground text-sm">{err.error}</p>
+            <p className="text-muted-foreground text-xs">
               {formatDate(err.at)}
             </p>
           </div>
@@ -1029,20 +1027,20 @@ function NowstaStatusCard({
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Sync Status</p>
+                <p className="text-muted-foreground text-sm">Sync Status</p>
                 {syncStatusBadge(status.lastSync?.status)}
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Last Sync</p>
-                <p className="text-sm font-medium">
+                <p className="text-muted-foreground text-sm">Last Sync</p>
+                <p className="font-medium text-sm">
                   {formatDate(status.lastSync?.at)}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Auto Sync Interval
                 </p>
-                <p className="text-sm font-medium">
+                <p className="font-medium text-sm">
                   {status.autoSyncInterval ?? "—"} minutes
                 </p>
               </div>
@@ -1050,7 +1048,7 @@ function NowstaStatusCard({
 
             {status.lastSync?.error && (
               <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3">
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {status.lastSync.error}
                 </p>
               </div>
@@ -1061,7 +1059,7 @@ function NowstaStatusCard({
             )}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             No status information available.
           </p>
         )}
@@ -1113,7 +1111,7 @@ function NowstaConfigDisplay({
             value={config.organizationId || "Not set"}
           />
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Sync Enabled</p>
+            <p className="text-muted-foreground text-sm">Sync Enabled</p>
             <SyncEnabledBadge enabled={config.syncEnabled} />
           </div>
           <ConfigField
@@ -1265,7 +1263,7 @@ function NowstaConfigForm({
                 type="number"
                 value={formAutoSyncInterval}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Between 5 and 1440 minutes
               </p>
             </div>
@@ -1554,20 +1552,20 @@ function NowstaIntegration() {
 
 interface ExportResult {
   filename: string;
+  fileUrl: string;
   format: string;
   recordCount: number;
   totalAmount: number;
-  fileUrl: string;
 }
 
 interface ExportHistoryEntry {
-  id: string;
-  type: string;
+  exportedAt: string;
+  filename: string;
   format: string;
+  id: string;
   recordCount: number;
   totalAmount: number;
-  filename: string;
-  exportedAt: string;
+  type: string;
 }
 
 function ExportSection({
@@ -1755,7 +1753,9 @@ function QuickBooksIntegration() {
   }, [lastResult]);
 
   const formatLabel = (fmt: string) => {
-    if (fmt === "iif") return "IIF (QuickBooks Desktop)";
+    if (fmt === "iif") {
+      return "IIF (QuickBooks Desktop)";
+    }
     return "CSV (QuickBooks Online)";
   };
 
@@ -1776,20 +1776,20 @@ function QuickBooksIntegration() {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-md border p-3">
-              <p className="text-sm font-medium">Bills (POs)</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-sm">Bills (POs)</p>
+              <p className="text-muted-foreground text-xs">
                 Export purchase orders
               </p>
             </div>
             <div className="rounded-md border p-3">
-              <p className="text-sm font-medium">Invoices</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-sm">Invoices</p>
+              <p className="text-muted-foreground text-xs">
                 Export event invoices
               </p>
             </div>
             <div className="rounded-md border p-3">
-              <p className="text-sm font-medium">Payroll</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium text-sm">Payroll</p>
+              <p className="text-muted-foreground text-xs">
                 Export payroll periods
               </p>
             </div>
@@ -1956,22 +1956,22 @@ function QuickBooksIntegration() {
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Filename</p>
-                <p className="text-sm font-medium">{lastResult.filename}</p>
+                <p className="text-muted-foreground text-sm">Filename</p>
+                <p className="font-medium text-sm">{lastResult.filename}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Format</p>
-                <p className="text-sm font-medium">
+                <p className="text-muted-foreground text-sm">Format</p>
+                <p className="font-medium text-sm">
                   {formatLabel(lastResult.format)}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Records</p>
-                <p className="text-sm font-medium">{lastResult.recordCount}</p>
+                <p className="text-muted-foreground text-sm">Records</p>
+                <p className="font-medium text-sm">{lastResult.recordCount}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Amount</p>
-                <p className="text-sm font-medium">
+                <p className="text-muted-foreground text-sm">Total Amount</p>
+                <p className="font-medium text-sm">
                   ${lastResult.totalAmount.toLocaleString()}
                 </p>
               </div>
@@ -2000,7 +2000,7 @@ function QuickBooksIntegration() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : history.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <p className="py-6 text-center text-muted-foreground text-sm">
               No exports yet. Use the sections above to generate your first
               export.
             </p>
@@ -2012,7 +2012,7 @@ function QuickBooksIntegration() {
                 title: (
                   <div>
                     <div>{entry.type}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {entry.recordCount} records
                     </div>
                   </div>

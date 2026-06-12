@@ -17,28 +17,28 @@ import {
 } from "@repo/database";
 
 export interface WebhookPayload {
-  id: string;
-  eventType: webhook_event_type;
-  entityType: string;
-  entityId: string;
-  timestamp: string;
   data: Record<string, unknown>;
+  entityId: string;
+  entityType: string;
+  eventType: webhook_event_type;
+  id: string;
   tenantId: string;
+  timestamp: string;
 }
 
 export interface WebhookDeliveryResult {
-  success: boolean;
+  errorMessage?: string;
   httpStatus?: number;
   responseBody?: string;
-  errorMessage?: string;
+  success: boolean;
 }
 
 export interface WebhookConfig {
-  maxRetries: number;
   initialDelayMs: number;
-  maxDelayMs: number;
-  timeoutMs: number;
   maxConsecutiveFailures: number;
+  maxDelayMs: number;
+  maxRetries: number;
+  timeoutMs: number;
 }
 
 const DEFAULT_CONFIG: WebhookConfig = {

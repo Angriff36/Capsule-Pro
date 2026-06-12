@@ -6,41 +6,41 @@ import type { Proposal } from "@repo/database";
 
 // Line item type from proposal_line_items table
 interface ProposalLineItem {
-  id: string;
-  tenant_id: string;
-  proposal_id: string;
-  sort_order: number;
-  item_type: string;
-  description: string;
-  quantity: number;
-  unit_price: number;
-  total: number;
-  notes: string | null;
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
+  description: string;
+  id: string;
+  item_type: string;
+  notes: string | null;
+  proposal_id: string;
+  quantity: number;
+  sort_order: number;
+  tenant_id: string;
+  total: number;
+  unit_price: number;
+  updated_at: Date;
 }
 
 export interface CreateProposalRequest {
   clientId?: string | null;
-  leadId?: string | null;
-  eventId?: string | null;
-  title: string;
+  discountAmount?: number | null;
   eventDate?: string | null;
+  eventId?: string | null;
   eventType?: string | null;
   guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  subtotal?: number | null;
-  taxRate?: number | null;
-  taxAmount?: number | null;
-  discountAmount?: number | null;
-  total?: number | null;
-  status?: "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
-  validUntil?: string | null;
-  notes?: string | null;
-  termsAndConditions?: string | null;
+  leadId?: string | null;
   lineItems?: CreateLineItemRequest[];
+  notes?: string | null;
+  status?: "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired";
+  subtotal?: number | null;
+  taxAmount?: number | null;
+  taxRate?: number | null;
+  termsAndConditions?: string | null;
+  title: string;
+  total?: number | null;
+  validUntil?: string | null;
+  venueAddress?: string | null;
+  venueName?: string | null;
 }
 
 export type UpdateProposalRequest = Partial<CreateProposalRequest> & {
@@ -48,56 +48,56 @@ export type UpdateProposalRequest = Partial<CreateProposalRequest> & {
 };
 
 export interface CreateLineItemRequest {
-  sortOrder?: number;
-  itemType: string;
   category?: string | null;
   description: string;
-  quantity: number;
-  unitPrice: number;
-  total?: number | null;
+  itemType: string;
   notes?: string | null;
+  quantity: number;
+  sortOrder?: number;
+  total?: number | null;
+  unitPrice: number;
 }
 
 export interface ProposalFilters {
-  search?: string;
-  status?: string;
   clientId?: string;
-  leadId?: string;
-  eventId?: string;
   dateFrom?: string;
   dateTo?: string;
+  eventId?: string;
+  leadId?: string;
+  search?: string;
+  status?: string;
 }
 
 export interface SendProposalRequest {
-  recipientEmail?: string;
   message?: string;
+  recipientEmail?: string;
 }
 
 export interface ProposalListItem {
-  id: string;
-  proposalNumber: string;
-  title: string;
+  acceptedAt: Date | null;
   client?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  createdAt: Date;
+  eventDate: Date | null;
+  guestCount: number | null;
+  id: string;
   lead?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  proposalNumber: string;
+  sentAt: Date | null;
   status: string;
-  eventDate: Date | null;
-  guestCount: number | null;
+  title: string;
   total: number | null;
   validUntil: Date | null;
-  sentAt: Date | null;
   viewedAt: Date | null;
-  acceptedAt: Date | null;
-  createdAt: Date;
 }
 
 export type ProposalDetail = Proposal & {

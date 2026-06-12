@@ -310,7 +310,7 @@ export const CustomTriggerText: Story = {
             {label && (
               <div className="text-muted-foreground text-xs">{label}</div>
             )}
-            {label && <div className="text-lg font-semibold">$1,000</div>}
+            {label && <div className="font-semibold text-lg">$1,000</div>}
             {!label && (
               <Button className="w-full" disabled type="button">
                 View full budget — story preview
@@ -462,19 +462,19 @@ export const DynamicTriggerText: Story = {
               <div className="text-muted-foreground text-xs">
                 Total Budgeted
               </div>
-              <div className="text-lg font-semibold">$5,000</div>
+              <div className="font-semibold text-lg">$5,000</div>
             </div>
             <div className="rounded-lg border p-4">
               <div className="text-muted-foreground text-xs">Total Actual</div>
-              <div className="text-lg font-semibold">$4,500</div>
+              <div className="font-semibold text-lg">$4,500</div>
             </div>
             <div className="rounded-lg border p-4">
               <div className="text-muted-foreground text-xs">Variance</div>
-              <div className="text-lg font-semibold text-green-600">+$500</div>
+              <div className="font-semibold text-green-600 text-lg">+$500</div>
             </div>
             <div className="flex items-center">
               <button
-                className="w-full cursor-not-allowed rounded-md bg-primary/50 px-4 py-2 text-sm font-medium text-primary-foreground"
+                className="w-full cursor-not-allowed rounded-md bg-primary/50 px-4 py-2 font-medium text-primary-foreground text-sm"
                 disabled
                 type="button"
               >

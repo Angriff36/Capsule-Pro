@@ -110,7 +110,7 @@ export default function NewLeadPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">New Lead</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">New Lead</h1>
           <p className="text-muted-foreground">
             Add a new lead to your pipeline.
           </p>
@@ -128,7 +128,7 @@ export default function NewLeadPage() {
           <CardContent className="space-y-6">
             {/* Contact Info */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Contact Information</h3>
+              <h3 className="font-medium text-lg">Contact Information</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="contactName">Contact Name *</Label>
@@ -197,8 +197,8 @@ export default function NewLeadPage() {
 
             {/* Event */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Event</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="font-medium text-lg">Event</h3>
+              <p className="text-muted-foreground text-xs">
                 Source is recorded as <span className="font-mono">manual</span>.
                 Website inquiries flow through the public form; CSV uploads use
                 the import path.
@@ -275,7 +275,7 @@ export default function NewLeadPage() {
 
             {/* Notes */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Additional Information</h3>
+              <h3 className="font-medium text-lg">Additional Information</h3>
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea

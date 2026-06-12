@@ -12,7 +12,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
-import { resolveCurrentUser } from "@/app/lib/tenant";
 import {
   connectorRegistry,
   SupplierSyncService,
@@ -20,7 +19,7 @@ import {
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
@@ -142,7 +141,11 @@ export async function POST(request: NextRequest) {
         entity: "VendorCatalog",
         command: params.command,
         body: params.body,
-        user: { id: userId as string, tenantId: tid as string, role: currentUser.role },
+        user: {
+          id: userId as string,
+          tenantId: tid as string,
+          role: currentUser.role,
+        },
       });
       if (!result.ok) {
         const errorText = await result.text();
@@ -153,8 +156,10 @@ export async function POST(request: NextRequest) {
 
     // Run the sync — reads use Prisma (bypasses Manifest per §10), writes use Manifest
     const syncService = new SupplierSyncService(
-      database as unknown as ConstructorParameters<typeof SupplierSyncService>[0],
-      runVendorCatalogCommand,
+      database as unknown as ConstructorParameters<
+        typeof SupplierSyncService
+      >[0],
+      runVendorCatalogCommand
     );
     const result = await syncService.syncCatalog(connector, config);
 

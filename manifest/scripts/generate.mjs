@@ -11,12 +11,12 @@ import {
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import {
+  applyFieldOverrides,
+  ENTITY_DETAIL_DROP,
   ENTITY_DOMAIN_MAP,
   FLAT_SEGMENT_TO_ENTITY,
   resolveAccessor,
   resolveDetailSegment,
-  applyFieldOverrides,
-  ENTITY_DETAIL_DROP,
 } from "./entity-domain-map.mjs";
 import { getConfigPaths } from "./read-config.mjs";
 
@@ -85,7 +85,9 @@ function remapToDomainPath(relativePath) {
   const afterApi = normalized.slice(apiPrefix.length);
   // afterApi is like: event/create/route.ts  or  event/list/route.ts  or  event/:id/route.ts
   const parts = afterApi.split("/");
-  if (parts.length < 2) return null;
+  if (parts.length < 2) {
+    return null;
+  }
 
   const entitySegment = parts[0];
   const domain = FLAT_SEGMENT_TO_DOMAIN[entitySegment];
@@ -101,10 +103,7 @@ function remapToDomainPath(relativePath) {
   const routeFile = rest[rest.length - 1]; // "route.ts"
   let commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
 
-  if (
-    entity &&
-    (commandOrAction === ":id" || commandOrAction === "[id]")
-  ) {
+  if (entity && (commandOrAction === ":id" || commandOrAction === "[id]")) {
     commandOrAction = `[${resolveDetailSegment(entity)}]`;
   }
 
@@ -130,7 +129,9 @@ function remapToDomainPath(relativePath) {
 function entityForStagedPath(relativePath) {
   const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
   const apiPrefix = appDirPrefix;
-  if (!normalized.startsWith(apiPrefix)) return null;
+  if (!normalized.startsWith(apiPrefix)) {
+    return null;
+  }
   const segment = normalized.slice(apiPrefix.length).split("/")[0];
   return FLAT_SEGMENT_TO_ENTITY[segment] ?? null;
 }
@@ -149,7 +150,9 @@ const collectFiles = (rootDir) => {
   const stack = [rootDir];
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!(current && existsSync(current))) continue;
+    if (!(current && existsSync(current))) {
+      continue;
+    }
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const entryPath = join(current, entry.name);
       if (entry.isDirectory()) {
@@ -243,11 +246,15 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
     f.endsWith("route.ts")
   )) {
     const stagedContent = readFileSync(stagedFile, "utf8");
-    if (!hasGeneratedMarker(stagedContent)) continue;
+    if (!hasGeneratedMarker(stagedContent)) {
+      continue;
+    }
 
     const stagedRelativePath = relative(stagingDir, stagedFile);
     const domainRelativePath = remapToDomainPath(stagedRelativePath);
-    if (!domainRelativePath) continue;
+    if (!domainRelativePath) {
+      continue;
+    }
 
     const safeRelativePath = domainRelativePath
       .replace(/\\/g, "/")
@@ -303,11 +310,7 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
   }
 
   // Copy pass: write read routes only (list/detail). Commands use dispatcher.
-  for (const {
-    stagedContent,
-    safeRelativePath,
-    entity,
-  } of stagedRoutes) {
+  for (const { stagedContent, safeRelativePath, entity } of stagedRoutes) {
     if (isCommandsNamespacePath(safeRelativePath)) {
       continue;
     }
@@ -403,8 +406,12 @@ const pruneLegacyCommandRoutes = (outputDir) => {
     entry.endsWith("route.ts")
   )) {
     const rel = relative(outputDir, file).replace(/\\/g, "/");
-    if (!rel.includes("/commands/")) continue;
-    if (rel === dispatcherRel) continue;
+    if (!rel.includes("/commands/")) {
+      continue;
+    }
+    if (rel === dispatcherRel) {
+      continue;
+    }
 
     const content = readFileSync(file, "utf8");
     if (
@@ -539,7 +546,7 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     "): Promise<Response> {",
     "  try {",
     "    if (!context?.params) {",
-    "      return manifestErrorResponse(\"Missing route params\", 400);",
+    '      return manifestErrorResponse("Missing route params", 400);',
     "    }",
     "    const { entity, command: commandSlug } = await context.params;",
     "    const currentUser = await requireCurrentUser();",
@@ -558,11 +565,11 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     "  } catch (error) {",
     "    // Auth/tenant resolution errors from requireCurrentUser should return 401, not 500.",
     "    // InvariantError is thrown for: Unauthenticated, Tenant not found, User not found.",
-    "    if (error instanceof Error && error.name === \"InvariantError\") {",
+    '    if (error instanceof Error && error.name === "InvariantError") {',
     "      return manifestErrorResponse(error.message, 401);",
     "    }",
     "    captureException(error);",
-    "    return manifestErrorResponse(\"Internal server error\", 500);",
+    '    return manifestErrorResponse("Internal server error", 500);',
     "  }",
     "}",
     "",

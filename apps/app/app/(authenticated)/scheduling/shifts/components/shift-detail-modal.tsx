@@ -33,28 +33,28 @@ import { deleteShift } from "../actions";
 import { ShiftForm } from "./shift-form";
 
 interface Shift {
-  id: string;
-  schedule_id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
+  created_at: Date;
   employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
   employeeRole: string;
+  id: string;
   location_id: string;
   location_name: string;
-  shift_start: Date;
-  shift_end: Date;
-  role_during_shift: string | null;
   notes: string | null;
-  created_at: Date;
+  role_during_shift: string | null;
+  schedule_id: string;
+  shift_end: Date;
+  shift_start: Date;
   updated_at: Date;
 }
 
 interface ShiftDetailModalProps {
-  open: boolean;
   onClose: () => void;
-  shift: Shift | null;
   onDelete?: () => void;
+  open: boolean;
+  shift: Shift | null;
 }
 
 export function ShiftDetailModal({
@@ -92,21 +92,19 @@ export function ShiftDetailModal({
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   const calculateDuration = (start: Date, end: Date) => {
     const diffMs = end.getTime() - start.getTime();
@@ -118,7 +116,7 @@ export function ShiftDetailModal({
   if (isEditing) {
     return (
       <Dialog onOpenChange={onClose} open={open}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Shift</DialogTitle>
             <DialogDescription>
@@ -151,7 +149,7 @@ export function ShiftDetailModal({
 
   return (
     <Dialog onOpenChange={onClose} open={open}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Shift Details</DialogTitle>
           <DialogDescription>
@@ -162,15 +160,15 @@ export function ShiftDetailModal({
 
         <div className="flex flex-col gap-6">
           {/* Employee Info */}
-          <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="flex items-start gap-4 rounded-lg border bg-muted/30 p-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <UserIcon className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg">
                 {shift.employeeFirstName} {shift.employeeLastName}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {shift.employeeEmail}
               </p>
               <div className="mt-2 flex gap-2">
@@ -186,26 +184,26 @@ export function ShiftDetailModal({
 
           {/* Time & Location */}
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-start gap-3 p-4 border rounded-lg">
-              <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border p-4">
+              <ClockIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Time</p>
+                <p className="text-muted-foreground text-sm">Time</p>
                 <p className="font-medium">{formatDate(shift.shift_start)}</p>
                 <p className="text-sm">
                   {formatTime(shift.shift_start)} -{" "}
                   {formatTime(shift.shift_end)}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="mt-1 text-muted-foreground text-xs">
                   Duration:{" "}
                   {calculateDuration(shift.shift_start, shift.shift_end)}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 border rounded-lg">
-              <MapPinIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border p-4">
+              <MapPinIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Location</p>
+                <p className="text-muted-foreground text-sm">Location</p>
                 <p className="font-medium">{shift.location_name}</p>
               </div>
             </div>
@@ -213,14 +211,14 @@ export function ShiftDetailModal({
 
           {/* Notes */}
           {shift.notes && (
-            <div className="p-4 border rounded-lg bg-muted/30">
-              <p className="text-sm text-muted-foreground mb-1">Notes</p>
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="mb-1 text-muted-foreground text-sm">Notes</p>
               <p className="text-sm">{shift.notes}</p>
             </div>
           )}
 
           {/* Metadata */}
-          <div className="grid gap-4 text-sm text-muted-foreground">
+          <div className="grid gap-4 text-muted-foreground text-sm">
             <div className="flex justify-between">
               <span>Shift ID:</span>
               <span className="font-mono">{shift.id.slice(0, 8)}...</span>
@@ -236,9 +234,9 @@ export function ShiftDetailModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 border-t pt-4">
             <Button onClick={() => setIsEditing(true)} variant="outline">
-              <PencilIcon className="h-4 w-4 mr-2" />
+              <PencilIcon className="mr-2 h-4 w-4" />
               Edit
             </Button>
             <Button
@@ -249,7 +247,7 @@ export function ShiftDetailModal({
               {isDeleting && (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               )}
-              <Trash2Icon className="h-4 w-4 mr-2" />
+              <Trash2Icon className="mr-2 h-4 w-4" />
               Delete
             </Button>
           </div>
@@ -257,7 +255,9 @@ export function ShiftDetailModal({
 
         <AlertDialog
           onOpenChange={(open) => {
-            if (!open) setDeleteDialogOpen(false);
+            if (!open) {
+              setDeleteDialogOpen(false);
+            }
           }}
           open={deleteDialogOpen}
         >

@@ -45,27 +45,27 @@ import { AvailabilityDetailModal } from "./availability-detail-modal";
 import { AvailabilityForm } from "./availability-form";
 
 interface Availability {
-  id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
+  createdAt: Date;
   dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
   effectiveFrom: Date;
   effectiveUntil: Date | null;
-  createdAt: Date;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  endTime: string;
+  id: string;
+  isAvailable: boolean;
+  startTime: string;
   updatedAt: Date;
 }
 
 interface Employee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
   email: string;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
   role: string;
 }
 
@@ -190,20 +190,18 @@ export function AvailabilityClient() {
     setModalOpen(true);
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   // Table columns
   const columns: ColumnDef<Availability>[] = [

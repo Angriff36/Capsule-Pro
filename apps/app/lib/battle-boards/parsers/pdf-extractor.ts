@@ -1,7 +1,7 @@
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from "pdfjs-dist";
 
 // Must point to the worker bundle — Next.js serves /public statically
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 export async function extractPdfText(file: File): Promise<string[]> {
   const arrayBuffer = await file.arrayBuffer();
@@ -12,9 +12,14 @@ export async function extractPdfText(file: File): Promise<string[]> {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     const pageText = content.items
-      .map((item: any) => ('str' in item ? item.str : ''))
-      .join(' ');
-    lines.push(...pageText.split('\n').map((l: string) => l.trim()).filter(Boolean));
+      .map((item: any) => ("str" in item ? item.str : ""))
+      .join(" ");
+    lines.push(
+      ...pageText
+        .split("\n")
+        .map((l: string) => l.trim())
+        .filter(Boolean)
+    );
   }
 
   return lines;

@@ -36,38 +36,38 @@ import { Separator } from "../ui/separator";
  */
 
 export interface EmptyStateConfig {
-  icon?: LucideIcon;
-  title: string;
-  description: string;
   actionLabel?: string;
+  description: string;
+  icon?: LucideIcon;
   onAction?: () => void;
+  title: string;
 }
 
 interface CollapsibleSectionBlockProps {
-  /** Icon to display in the header */
-  icon: LucideIcon;
-  /** Section title */
-  title: string;
-  /** Subtitle text (often a count or status) */
-  subtitle?: string;
-  /** Tailwind color class for the icon (e.g., "text-emerald-500") */
-  iconColor?: string;
-  /** Whether the section is open by default */
-  defaultOpen?: boolean;
-  /** Text for the collapsible trigger button (string or function returning string) */
-  triggerText?: string | (() => string);
-  /** Optional custom ID for the collapsible */
-  id?: string;
-  /** Actions to display in the header (right side) */
-  headerActions?: React.ReactNode;
   /** Content to display when there is data */
   children: React.ReactNode;
-  /** Optional empty state configuration */
-  emptyState?: EmptyStateConfig;
-  /** Whether to show the empty state */
-  showEmptyState?: boolean;
   /** Optional additional class names for the container */
   className?: string;
+  /** Whether the section is open by default */
+  defaultOpen?: boolean;
+  /** Optional empty state configuration */
+  emptyState?: EmptyStateConfig;
+  /** Actions to display in the header (right side) */
+  headerActions?: React.ReactNode;
+  /** Icon to display in the header */
+  icon: LucideIcon;
+  /** Tailwind color class for the icon (e.g., "text-emerald-500") */
+  iconColor?: string;
+  /** Optional custom ID for the collapsible */
+  id?: string;
+  /** Whether to show the empty state */
+  showEmptyState?: boolean;
+  /** Subtitle text (often a count or status) */
+  subtitle?: string;
+  /** Section title */
+  title: string;
+  /** Text for the collapsible trigger button (string or function returning string) */
+  triggerText?: string | (() => string);
 }
 
 export function CollapsibleSectionBlock({
@@ -174,16 +174,16 @@ function EmptyState({
  */
 
 interface SectionHeaderBlockProps {
-  icon: LucideIcon;
-  title: string;
-  /** Tailwind color class for the icon */
-  iconColor?: string;
   /** Actions to display on the right side */
   actions?: React.ReactNode;
   /** Optional badge count or other indicator */
   badge?: React.ReactNode;
   /** Optional additional class names */
   className?: string;
+  icon: LucideIcon;
+  /** Tailwind color class for the icon */
+  iconColor?: string;
+  title: string;
 }
 
 export function SectionHeaderBlock({

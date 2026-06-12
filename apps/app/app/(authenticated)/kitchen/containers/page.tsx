@@ -24,10 +24,14 @@ import { ContainersClient } from "./containers-client";
 
 export default async function ContainersPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [total, active, inactive, reusable, disposable] = await Promise.all([
     database.container.count({
@@ -114,7 +118,7 @@ export default async function ContainersPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} container${total !== 1 ? "s" : ""}`}
+            count={`${total} container${total === 1 ? "" : "s"}`}
             description="Create and manage kitchen containers with type, capacity, and reusability tracking."
             eyebrow="Containers"
             title="All Containers"

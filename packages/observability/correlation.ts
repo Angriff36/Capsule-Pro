@@ -123,17 +123,17 @@ export function createLogContext(
  * Log entry shape for command-board operations.
  */
 export interface CommandBoardLogEntry {
-  correlationId: string;
-  errorCode?: CommandBoardErrorCode;
-  route: string;
-  operation: string;
-  tenantId?: string;
-  userId?: string;
   boardId?: string;
+  correlationId: string;
   duration?: number;
-  success: boolean;
+  errorCode?: CommandBoardErrorCode;
   message?: string;
   metadata?: Record<string, unknown>;
+  operation: string;
+  route: string;
+  success: boolean;
+  tenantId?: string;
+  userId?: string;
 }
 
 /**
@@ -152,7 +152,7 @@ export function createCommandBoardLog(
     ...(entry.tenantId ? { tenantId: entry.tenantId } : {}),
     ...(entry.userId ? { userId: entry.userId } : {}),
     ...(entry.boardId ? { boardId: entry.boardId } : {}),
-    ...(entry.duration !== undefined ? { durationMs: entry.duration } : {}),
+    ...(entry.duration === undefined ? {} : { durationMs: entry.duration }),
     ...(entry.message ? { message: entry.message } : {}),
     ...(entry.metadata ? { metadata: entry.metadata } : {}),
   };

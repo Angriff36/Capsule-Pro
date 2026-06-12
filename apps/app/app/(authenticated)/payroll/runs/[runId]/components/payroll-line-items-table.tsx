@@ -27,24 +27,24 @@ import { SearchIcon } from "lucide-react";
 import { useState } from "react";
 
 interface PayrollLineItem {
-  id: string;
-  payrollRunId: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  hoursRegular: number;
-  hoursOvertime: number;
-  rateRegular: number;
-  rateOvertime: number;
-  grossPay: number;
-  deductions: Record<string, number>;
-  netPay: number;
   createdAt: Date;
-  updatedAt: Date;
+  deductions: Record<string, number>;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  grossPay: number;
+  hoursOvertime: number;
+  hoursRegular: number;
+  id: string;
+  netPay: number;
+  payrollRunId: string;
+  rateOvertime: number;
+  rateRegular: number;
   /** Tax withholdings by type (federal, state, social_security, medicare) */
   taxesWithheld?: Record<string, number>;
+  updatedAt: Date;
 }
 
 interface PayrollLineItemsTableProps {
@@ -160,21 +160,20 @@ export default function PayrollLineItemsTable({
     }
   };
 
-  const getTotalDeductions = (deductions: Record<string, number>) => {
-    return Object.values(deductions).reduce((sum, val) => sum + val, 0);
-  };
+  const getTotalDeductions = (deductions: Record<string, number>) =>
+    Object.values(deductions).reduce((sum, val) => sum + val, 0);
 
   return (
     <section>
-      <h2 className="font-medium text-sm text-muted-foreground mb-4">
+      <h2 className="mb-4 font-medium text-muted-foreground text-sm">
         Payroll Line Items ({filteredItems.length})
       </h2>
       <Card>
         <CardContent className="p-4">
           {/* Search and Filter */}
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <div className="flex-1 min-w-[200px] relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="mb-4 flex flex-wrap items-center gap-4">
+            <div className="relative min-w-[200px] flex-1">
+              <SearchIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="pl-9"
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -318,8 +317,8 @@ export default function PayrollLineItemsTable({
 
           {/* Summary */}
           {filteredItems.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="grid gap-4 md:grid-cols-5 text-sm">
+            <div className="mt-4 border-t pt-4">
+              <div className="grid gap-4 text-sm md:grid-cols-5">
                 <div>
                   <span className="text-muted-foreground">
                     Total Employees:

@@ -25,10 +25,10 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface ActivityFeedClientProps {
+  enableRealtime?: boolean;
+  pollInterval?: number;
   tenantId: string;
   userId: string;
-  pollInterval?: number;
-  enableRealtime?: boolean;
 }
 
 export function ActivityFeedClient({
@@ -136,7 +136,9 @@ export function ActivityFeedClient({
 
   // Polling for real-time updates
   useEffect(() => {
-    if (!enableRealtime) return;
+    if (!enableRealtime) {
+      return;
+    }
 
     const interval = setInterval(() => {
       fetchActivities(0, filters);
@@ -205,7 +207,7 @@ export function ActivityTimelineWidget({
     return (
       <Card>
         <CardContent className="p-4">
-          <div className="text-muted-foreground text-sm text-center">
+          <div className="text-center text-muted-foreground text-sm">
             Loading activities...
           </div>
         </CardContent>
@@ -217,7 +219,7 @@ export function ActivityTimelineWidget({
     return (
       <Card>
         <CardContent className="p-4">
-          <div className="text-muted-foreground text-sm text-center">
+          <div className="text-center text-muted-foreground text-sm">
             No recent activity
           </div>
         </CardContent>
@@ -228,7 +230,7 @@ export function ActivityTimelineWidget({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold text-sm">Recent Activity</h3>
           <Button asChild className="h-7 text-xs" size="sm" variant="ghost">
             <Link href="/analytics/activity-feed">View All</Link>
@@ -238,12 +240,12 @@ export function ActivityTimelineWidget({
           {activities.map((activity) => (
             <div className="flex gap-2 text-xs" key={activity.id}>
               <div
-                className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full border ${
+                className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border ${
                   activity.activityType === "ai_approval"
-                    ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                    ? "border-purple-500/20 bg-purple-500/10 text-purple-500"
                     : activity.activityType === "entity_change"
-                      ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                      : "bg-green-500/10 text-green-500 border-green-500/20"
+                      ? "border-blue-500/20 bg-blue-500/10 text-blue-500"
+                      : "border-green-500/20 bg-green-500/10 text-green-500"
                 }`}
               >
                 <span className="text-xs">
@@ -254,8 +256,8 @@ export function ActivityTimelineWidget({
                       : "C"}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium line-clamp-1">{activity.title}</p>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-1 font-medium">{activity.title}</p>
                 <p className="text-muted-foreground">
                   {new Date(activity.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",

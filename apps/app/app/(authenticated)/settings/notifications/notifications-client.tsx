@@ -75,60 +75,60 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 interface AutomationRule {
-  id: string;
-  tenantId: string;
-  name: string;
-  description: string | null;
-  triggerType: string;
-  triggerConfig: Record<string, unknown>;
-  templateId: string | null;
-  customMessage: string | null;
-  recipientType: string;
-  recipientConfig: Record<string, unknown>;
-  isActive: boolean;
-  priority: number;
   createdAt: string | null;
+  customMessage: string | null;
+  description: string | null;
+  id: string;
+  isActive: boolean;
+  name: string;
+  priority: number;
+  recipientConfig: Record<string, unknown>;
+  recipientType: string;
+  templateId: string | null;
+  tenantId: string;
+  triggerConfig: Record<string, unknown>;
+  triggerType: string;
   updatedAt: string | null;
 }
 
 interface SmsLog {
-  id: string;
+  created_at: string;
+  delivered_at: string | null;
   employeeId: string | null;
-  phone_number: string;
+  error_message: string | null;
+  failed_at: string | null;
+  id: string;
   message: string;
   notification_type: string;
+  phone_number: string;
+  sent_at: string | null;
   status: "pending" | "sent" | "delivered" | "failed";
   twilio_sid: string | null;
-  error_message: string | null;
-  sent_at: string | null;
-  delivered_at: string | null;
-  failed_at: string | null;
-  created_at: string;
 }
 
 interface EmailLog {
+  createdAt: string;
+  deliveredAt?: string;
+  errorMessage?: string;
+  failedAt?: string;
   id: string;
-  tenantId: string;
-  workflowId?: string;
+  notificationType: string;
+  openedAt?: string;
   recipientEmail: string;
   recipientId?: string;
   recipientType?: string;
-  subject: string;
-  notificationType: string;
-  status: "pending" | "sent" | "delivered" | "opened" | "failed" | "bounced";
   resendId?: string;
-  errorMessage?: string;
   sentAt?: string;
-  deliveredAt?: string;
-  openedAt?: string;
-  failedAt?: string;
-  createdAt: string;
+  status: "pending" | "sent" | "delivered" | "opened" | "failed" | "bounced";
+  subject: string;
+  tenantId: string;
+  workflowId?: string;
 }
 
 interface EmailPreference {
-  notificationType: string;
-  isEnabled: boolean;
   channel: string;
+  isEnabled: boolean;
+  notificationType: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -467,7 +467,7 @@ function RuleFormDialog({
               rows={3}
               value={formCustomMessage}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Template merge fields: {"{{name}}"}, {"{{event}}"}, {"{{date}}"},{" "}
               {"{{time}}"}
             </p>
@@ -786,8 +786,8 @@ function AutomationRulesTab() {
         <Card tone="canvas">
           <CardContent className="py-12 text-center">
             <Bell className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No automation rules yet</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-lg">No automation rules yet</p>
+            <p className="text-muted-foreground text-sm">
               Create your first SMS automation rule to send notifications
               automatically.
             </p>
@@ -814,7 +814,7 @@ function AutomationRulesTab() {
                       <div>
                         <p className="font-medium">{rule.name}</p>
                         {rule.description && (
-                          <p className="text-xs text-muted-foreground truncate max-w-48">
+                          <p className="max-w-48 truncate text-muted-foreground text-xs">
                             {rule.description}
                           </p>
                         )}
@@ -1038,8 +1038,8 @@ function SmsHistoryTab() {
         <Card tone="canvas">
           <CardContent className="py-12 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No SMS history</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-lg">No SMS history</p>
+            <p className="text-muted-foreground text-sm">
               SMS messages will appear here once automation rules begin sending
               notifications.
             </p>
@@ -1069,14 +1069,14 @@ function SmsHistoryTab() {
                     </TableCell>
                     <TableCell>{smsStatusBadge(log.status)}</TableCell>
                     <TableCell className="max-w-64">
-                      <p className="text-sm truncate">{log.message}</p>
+                      <p className="truncate text-sm">{log.message}</p>
                       {log.error_message && (
-                        <p className="text-xs text-destructive truncate">
+                        <p className="truncate text-destructive text-xs">
                           {log.error_message}
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
                       {formatDate(log.sent_at ?? log.created_at)}
                     </TableCell>
                   </TableRow>
@@ -1095,9 +1095,9 @@ function SmsHistoryTab() {
 // ---------------------------------------------------------------------------
 
 interface SmsPreference {
-  notificationType: string;
-  isEnabled: boolean;
   channel: string;
+  isEnabled: boolean;
+  notificationType: string;
 }
 
 function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
@@ -1273,8 +1273,8 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
                     <div className="flex items-center gap-3">
                       <BellRing className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">{type.label}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-sm">{type.label}</p>
+                        <p className="text-muted-foreground text-xs">
                           Receive SMS when{" "}
                           {type.label
                             .toLowerCase()
@@ -1409,8 +1409,8 @@ function EmailHistoryTab() {
         <Card tone="canvas">
           <CardContent className="py-12 text-center">
             <Mail className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No email history</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-lg">No email history</p>
+            <p className="text-muted-foreground text-sm">
               Email delivery logs will appear here once email notifications are
               sent.
             </p>
@@ -1436,9 +1436,9 @@ function EmailHistoryTab() {
                       {log.recipientEmail}
                     </TableCell>
                     <TableCell className="max-w-64">
-                      <p className="text-sm truncate">{log.subject}</p>
+                      <p className="truncate text-sm">{log.subject}</p>
                       {log.errorMessage && (
-                        <p className="text-xs text-destructive truncate">
+                        <p className="truncate text-destructive text-xs">
                           {log.errorMessage}
                         </p>
                       )}
@@ -1447,7 +1447,7 @@ function EmailHistoryTab() {
                       <Badge variant="outline">{log.notificationType}</Badge>
                     </TableCell>
                     <TableCell>{emailStatusBadge(log.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
                       {formatDate(log.sentAt ?? log.createdAt)}
                     </TableCell>
                   </TableRow>
@@ -1638,8 +1638,8 @@ function EmailPreferencesTab({ employeeId }: { employeeId: string }) {
                     <div className="flex items-center gap-3">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">{type.label}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-sm">{type.label}</p>
+                        <p className="text-muted-foreground text-xs">
                           Receive email when{" "}
                           {type.label
                             .toLowerCase()

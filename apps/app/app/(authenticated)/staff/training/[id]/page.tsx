@@ -31,30 +31,30 @@ import { DeleteTrainingModuleButton } from "./components/delete-training-module-
 import { EditTrainingModuleDialog } from "./components/edit-training-module-dialog";
 
 interface ModuleDetail {
-  id: string;
-  title: string;
-  description: string | null;
-  content_url: string | null;
-  content_type: string;
-  duration_minutes: number | null;
   category: string | null;
-  is_required: boolean;
-  is_active: boolean;
+  content_type: string;
+  content_url: string | null;
   created_at: Date;
+  description: string | null;
+  duration_minutes: number | null;
+  id: string;
+  is_active: boolean;
+  is_required: boolean;
+  title: string;
 }
 
 interface AssignmentRow {
-  id: string;
-  employeeId: string | null;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string | null;
-  status: string;
-  due_date: Date | null;
   assigned_at: Date;
-  completion_id: string | null;
   completion_completed_at: Date | null;
+  completion_id: string | null;
   completion_passed: boolean;
+  due_date: Date | null;
+  employeeEmail: string | null;
+  employeeFirstName: string | null;
+  employeeId: string | null;
+  employeeLastName: string | null;
+  id: string;
+  status: string;
 }
 
 const formatContentType = (type: string) => {
@@ -67,16 +67,17 @@ const formatContentType = (type: string) => {
   return types[type] ?? type;
 };
 
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat("en-US", {
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   }).format(date);
-};
 
 const isOverdue = (dueDate: Date | null, status: string): boolean => {
-  if (!dueDate || status === "completed") return false;
+  if (!dueDate || status === "completed") {
+    return false;
+  }
   return new Date(dueDate) < new Date();
 };
 
@@ -154,7 +155,9 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           },
         })
       : [];
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
 
   const assignments: AssignmentRow[] = assignmentRecords.map((assignment) => {
     const completion = assignment.completions[0];
@@ -227,11 +230,11 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Content Type</CardTitle>
+            <CardTitle className="font-medium text-sm">Content Type</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {formatContentType(module.content_type)}
             </div>
           </CardContent>
@@ -239,11 +242,11 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Duration</CardTitle>
+            <CardTitle className="font-medium text-sm">Duration</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {module.duration_minutes ? `${module.duration_minutes} min` : "-"}
             </div>
           </CardContent>
@@ -251,25 +254,25 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assigned</CardTitle>
+            <CardTitle className="font-medium text-sm">Assigned</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{assignments.length}</div>
+            <div className="font-semibold text-2xl">{assignments.length}</div>
           </CardContent>
         </Card>
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="font-medium text-sm">Completed</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {completedCount}/{assignments.length}
             </div>
             {assignments.length > 0 && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {Math.round((completedCount / assignments.length) * 100)}%
                 completion rate
               </p>
@@ -344,7 +347,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardHeader>
           <CardContent className="p-0">
             {assignments.length === 0 ? (
-              <div className="p-6 text-sm text-muted-foreground">
+              <div className="p-6 text-muted-foreground text-sm">
                 No assignments yet. Assign this training to employees to track
                 their progress.
               </div>
@@ -376,7 +379,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                                 : (assignment.employeeEmail ?? "All Employees")}
                             </div>
                             {assignment.employeeEmail && (
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-muted-foreground text-xs">
                                 {assignment.employeeEmail}
                               </div>
                             )}
@@ -409,7 +412,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                           {assignment.due_date ? (
                             <span
                               className={
-                                overdue ? "text-red-600 font-medium" : ""
+                                overdue ? "font-medium text-red-600" : ""
                               }
                             >
                               {formatDate(assignment.due_date)}

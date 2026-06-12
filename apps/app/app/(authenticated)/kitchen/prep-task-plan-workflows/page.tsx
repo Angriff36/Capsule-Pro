@@ -25,10 +25,14 @@ import { WorkflowsClient } from "./workflows-client";
 
 export default async function PrepTaskPlanWorkflowsPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const baseWhere = { tenantId, deletedAt: null };
 
@@ -148,7 +152,7 @@ export default async function PrepTaskPlanWorkflowsPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} workflow${total !== 1 ? "s" : ""}`}
+            count={`${total} workflow${total === 1 ? "" : "s"}`}
             description="Manage prep task plan workflows with full lifecycle tracking."
             eyebrow="Prep Task Plans"
             title="All Workflows"

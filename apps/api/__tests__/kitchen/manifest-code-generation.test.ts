@@ -121,10 +121,7 @@ describe("Manifest Code Generation Inventory", () => {
     console.info("\n");
 
     // Verify the manifest compilation infrastructure exists
-    const manifestBinPath = join(
-      PROJECT_ROOT,
-      "manifest/source"
-    );
+    const manifestBinPath = join(PROJECT_ROOT, "manifest/source");
     expect(existsSync(manifestBinPath)).toBe(true);
 
     // Verify the manifest directory has content

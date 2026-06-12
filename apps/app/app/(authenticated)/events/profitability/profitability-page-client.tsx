@@ -202,10 +202,10 @@ export const ProfitabilityPageClient = ({
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Total Revenue</CardDescription>
-            <DollarSignIcon className="text-muted-foreground size-4" />
+            <DollarSignIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {formatCurrency(summary.totalActualRevenue)}
             </div>
             <p className="text-muted-foreground text-xs">
@@ -224,10 +224,10 @@ export const ProfitabilityPageClient = ({
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Total Costs</CardDescription>
-            <TrendingDownIcon className="text-muted-foreground size-4" />
+            <TrendingDownIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {formatCurrency(summary.totalActualCost)}
             </div>
             <p className="text-muted-foreground text-xs">
@@ -246,11 +246,11 @@ export const ProfitabilityPageClient = ({
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Average Margin</CardDescription>
-            <TrendingUpIcon className="text-muted-foreground size-4" />
+            <TrendingUpIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-semibold ${getMarginColor(
+              className={`font-semibold text-2xl ${getMarginColor(
                 summary.averageMarginPct
               )}`}
             >
@@ -258,7 +258,7 @@ export const ProfitabilityPageClient = ({
             </div>
             <p className="text-muted-foreground text-xs">
               Across {summary.recordCount} event
-              {summary.recordCount !== 1 ? "s" : ""}
+              {summary.recordCount === 1 ? "" : "s"}
             </p>
           </CardContent>
         </Card>
@@ -267,11 +267,11 @@ export const ProfitabilityPageClient = ({
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Events Underwater</CardDescription>
-            <TrendingDownIcon className="text-muted-foreground size-4" />
+            <TrendingDownIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-semibold ${
+              className={`font-semibold text-2xl ${
                 summary.underperformingCount > 0
                   ? "text-red-600 dark:text-red-400"
                   : "text-green-600 dark:text-green-400"
@@ -286,16 +286,16 @@ export const ProfitabilityPageClient = ({
 
       {/* Filters Section */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <h2 className="font-medium text-muted-foreground text-sm">Filters</h2>
         <Card className="mt-3" tone="canvas">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
             {/* Search */}
             <div className="flex-1">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Search
               </label>
               <div className="relative">
-                <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="pl-9"
                   onChange={(e) => handleSearchChange(e.target.value)}
@@ -307,7 +307,7 @@ export const ProfitabilityPageClient = ({
 
             {/* Margin Filter */}
             <div className="lg:w-52">
-              <label className="text-muted-foreground mb-1.5 block text-sm font-medium">
+              <label className="mb-1.5 block font-medium text-muted-foreground text-sm">
                 Margin Health
               </label>
               <Select
@@ -347,7 +347,7 @@ export const ProfitabilityPageClient = ({
       {/* Table Section */}
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Profitability Records ({filteredRecords.length})
           </h2>
           <p className="text-muted-foreground text-sm">

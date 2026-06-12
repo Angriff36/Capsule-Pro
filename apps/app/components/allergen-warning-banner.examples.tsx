@@ -192,10 +192,10 @@ export default function AllergenWarningBannerExamples() {
   return (
     <div className="container mx-auto max-w-5xl space-y-8 p-6">
       <div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="font-bold text-3xl">
           Allergen Warning Banner Component
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="mt-2 text-muted-foreground">
           Comprehensive allergen and dietary restriction warnings with
           severity-based styling
         </p>
@@ -206,7 +206,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Critical Severity Examples */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Critical Severity</h2>
+          <h2 className="font-semibold text-2xl">Critical Severity</h2>
           <p className="text-muted-foreground text-sm">
             Used for life-threatening allergen conflicts requiring immediate
             attention
@@ -245,7 +245,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Warning Severity Examples */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Warning Severity</h2>
+          <h2 className="font-semibold text-2xl">Warning Severity</h2>
           <p className="text-muted-foreground text-sm">
             Used for dietary restrictions and cross-contamination risks
           </p>
@@ -283,7 +283,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Info Severity Examples */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Info Severity</h2>
+          <h2 className="font-semibold text-2xl">Info Severity</h2>
           <p className="text-muted-foreground text-sm">
             Used for religious dietary preferences and informational alerts
           </p>
@@ -309,7 +309,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Compact Mode */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Compact Mode</h2>
+          <h2 className="font-semibold text-2xl">Compact Mode</h2>
           <p className="text-muted-foreground text-sm">
             Inline variant for use in cards and tight spaces
           </p>
@@ -337,7 +337,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Inline Badge */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Inline Badge</h2>
+          <h2 className="font-semibold text-2xl">Inline Badge</h2>
           <p className="text-muted-foreground text-sm">
             Small clickable badge for use in tables and lists
           </p>
@@ -366,7 +366,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Severity Badges */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Severity Badges</h2>
+          <h2 className="font-semibold text-2xl">Severity Badges</h2>
           <p className="text-muted-foreground text-sm">
             Standalone severity indicators for use in tables
           </p>
@@ -391,7 +391,7 @@ export default function AllergenWarningBannerExamples() {
       {/* Usage Documentation */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold">Usage Documentation</h2>
+          <h2 className="font-semibold text-2xl">Usage Documentation</h2>
         </div>
 
         <Card>
@@ -399,7 +399,7 @@ export default function AllergenWarningBannerExamples() {
             <CardTitle>Basic Usage</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
+            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-50 text-sm">
               {`import { AllergenWarningBanner } from "@/components/allergen-warning-banner";
 import type { AllergenWarning } from "@repo/database";
 
@@ -429,7 +429,7 @@ function MyComponent() {
             <CardTitle>Compact Mode</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
+            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-50 text-sm">
               {`<AllergenWarningBanner
   warning={warning}
   compact
@@ -444,7 +444,7 @@ function MyComponent() {
             <CardTitle>Inline Badge for Tables</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
+            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-50 text-sm">
               {`import { AllergenWarningInline } from "@/components/allergen-warning-banner";
 
 {warnings.map((warning) => (
@@ -463,7 +463,7 @@ function MyComponent() {
             <CardTitle>Severity Badge</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="bg-slate-950 text-slate-50 overflow-x-auto rounded-lg p-4 text-sm">
+            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-50 text-sm">
               {`import { AllergenSeverityBadge } from "@/components/allergen-warning-banner";
 
 <AllergenSeverityBadge severity="critical" />

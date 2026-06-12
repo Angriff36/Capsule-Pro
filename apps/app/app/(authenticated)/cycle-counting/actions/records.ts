@@ -249,10 +249,7 @@ export async function updateCycleCountRecord(
       }
     }
 
-    if (
-      input.countedQuantity !== undefined ||
-      input.notes !== undefined
-    ) {
+    if (input.countedQuantity !== undefined || input.notes !== undefined) {
       const result = await runManifestCommand({
         entity: "CycleCountRecord",
         command: "update",

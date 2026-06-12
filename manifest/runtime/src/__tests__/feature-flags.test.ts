@@ -13,10 +13,11 @@
  * provider. The full end-to-end guard evaluation is tested by the
  * existing entity-concurrency and reactions test suites which use the real IR.
  */
-import { describe, it, expect, afterEach } from "vitest";
+
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { afterEach, describe, expect, it } from "vitest";
 import { createEnvFlagProvider } from "../flag-provider";
 
 const here = dirname(fileURLToPath(import.meta.url));

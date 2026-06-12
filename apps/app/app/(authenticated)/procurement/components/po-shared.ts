@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 
 export interface POStatusConfig {
-  label: string;
   color: string;
   icon: React.ComponentType<{ className?: string }>;
+  label: string;
 }
 
 export const STATUS_CONFIG: Record<string, POStatusConfig> = {

@@ -42,18 +42,18 @@ const MONOREPO_APP_PREFIXES = [
  * Configuration for the AI fixer
  */
 export interface FixerConfig {
-  /** OpenAI API key */
-  openaiApiKey: string;
-  /** Model to use for analysis */
-  model: string;
-  /** Working directory (repo root) */
-  workingDir: string;
-  /** Max source files to include in context */
-  maxSourceFiles: number;
   /** Max lines per source file to include */
   maxLinesPerFile: number;
+  /** Max source files to include in context */
+  maxSourceFiles: number;
+  /** Model to use for analysis */
+  model: string;
+  /** OpenAI API key */
+  openaiApiKey: string;
   /** Temperature for generation */
   temperature: number;
+  /** Working directory (repo root) */
+  workingDir: string;
 }
 
 const DEFAULT_FIXER_CONFIG: Partial<FixerConfig> = {
@@ -67,20 +67,20 @@ const DEFAULT_FIXER_CONFIG: Partial<FixerConfig> = {
  * A single file edit returned by the AI
  */
 export interface FileEdit {
-  filePath: string;
-  originalContent: string;
-  newContent: string;
   explanation: string;
+  filePath: string;
+  newContent: string;
+  originalContent: string;
 }
 
 /**
  * Result of the AI fix attempt
  */
 export interface FixResult {
-  success: boolean;
-  edits: FileEdit[];
   analysis: string;
+  edits: FileEdit[];
   error?: string;
+  success: boolean;
 }
 
 /**

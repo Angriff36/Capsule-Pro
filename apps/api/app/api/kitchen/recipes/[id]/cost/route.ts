@@ -9,30 +9,29 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
-import { captureException } from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
 export interface UnitConversion {
   fromUnitId: number;
-  toUnitId: number;
   multiplier: number;
+  toUnitId: number;
 }
 
 export interface RecipeCostBreakdown {
-  totalCost: number;
-  costPerYield: number;
   costPerPortion: number | null;
-  lastCalculated: Date | null;
+  costPerYield: number;
   ingredients: IngredientCostBreakdown[];
+  lastCalculated: Date | null;
   recipe: {
     id: string;
     name: string;
@@ -42,39 +41,40 @@ export interface RecipeCostBreakdown {
     portionSize: number | null;
     portionUnit: string | null;
   };
+  totalCost: number;
 }
 
 export interface IngredientCostBreakdown {
-  id: string;
-  recipeIngredientId: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  wasteFactor: number;
   adjustedQuantity: number;
-  unitCost: number;
   cost: number;
   hasInventoryItem: boolean;
+  id: string;
   inventoryItemId: string | null;
+  name: string;
+  quantity: number;
+  recipeIngredientId: string;
+  unit: string;
+  unitCost: number;
+  wasteFactor: number;
 }
 
 interface RecipeVersionCostRow {
-  id: string;
-  name: string;
   description: string | null;
+  id: string;
+  lastCalculated: Date | null;
+  name: string;
   yieldQuantity: Prisma.Decimal | number | string | null;
   yieldUnit: string | null;
-  lastCalculated: Date | null;
 }
 
 interface RecipeIngredientCostRow {
   id: string;
+  ingredientCost: Prisma.Decimal | number | string | null;
+  inventoryItemId: string | null;
   name: string;
   quantity: Prisma.Decimal | number | string;
   unit: string | null;
   wasteFactor: Prisma.Decimal | number | string;
-  ingredientCost: Prisma.Decimal | number | string | null;
-  inventoryItemId: string | null;
 }
 
 /**

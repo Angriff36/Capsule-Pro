@@ -216,7 +216,7 @@ export default async function BudgetDetailPage({
               <span className="font-medium">{utilizationPct.toFixed(1)}%</span>
             </div>
             <Progress className="h-3" value={Math.min(utilizationPct, 100)} />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span>{fmtCurrency(totalActual)} spent</span>
               <span>of {fmtCurrency(totalBudget)}</span>
             </div>
@@ -251,8 +251,8 @@ export default async function BudgetDetailPage({
               <>
                 <Separator className="my-4" />
                 <div>
-                  <span className="text-sm font-medium">Notes:</span>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <span className="font-medium text-sm">Notes:</span>
+                  <p className="mt-1 text-muted-foreground text-sm">
                     {budget.notes}
                   </p>
                 </div>
@@ -304,9 +304,9 @@ export default async function BudgetDetailPage({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm font-medium">{item.name}</div>
+                        <div className="font-medium text-sm">{item.name}</div>
                         {item.description && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {item.description}
                           </div>
                         )}

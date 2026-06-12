@@ -182,17 +182,17 @@ export const deleteMenu = async (menuId: string) => {
 };
 
 export interface MenuSummary {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  isActive: boolean;
   basePrice: number | null;
-  pricePerPerson: number | null;
-  minGuests: number | null;
-  maxGuests: number | null;
-  dishCount: number;
+  category: string | null;
   createdAt: Date;
+  description: string | null;
+  dishCount: number;
+  id: string;
+  isActive: boolean;
+  maxGuests: number | null;
+  minGuests: number | null;
+  name: string;
+  pricePerPerson: number | null;
 }
 
 export const getMenus = async (): Promise<MenuSummary[]> => {
@@ -266,18 +266,10 @@ export const getMenus = async (): Promise<MenuSummary[]> => {
 };
 
 export interface MenuDetail {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  isActive: boolean;
-  isTemplate: boolean;
   basePrice: number | null;
-  pricePerPerson: number | null;
-  minGuests: number | null;
-  maxGuests: number | null;
+  category: string | null;
   createdAt: Date;
-  updatedAt: Date;
+  description: string | null;
   dishes: {
     id: string;
     dishId: string;
@@ -290,6 +282,14 @@ export interface MenuDetail {
     pricePerPerson: number | null;
     costPerPerson: number | null;
   }[];
+  id: string;
+  isActive: boolean;
+  isTemplate: boolean;
+  maxGuests: number | null;
+  minGuests: number | null;
+  name: string;
+  pricePerPerson: number | null;
+  updatedAt: Date;
 }
 
 export const getMenuById = async (
@@ -651,17 +651,17 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };
 export interface DishSummary {
+  category: string | null;
+  description: string | null;
   id: string;
   name: string;
-  description: string | null;
-  category: string | null;
 }
 
 export interface DishWithCost extends DishSummary {
-  dietaryTags: string[];
   allergens: string[];
-  pricePerPerson: number | null;
   costPerPerson: number | null;
+  dietaryTags: string[];
+  pricePerPerson: number | null;
 }
 
 export const getDishes = async (): Promise<DishSummary[]> => {
@@ -742,9 +742,9 @@ export const getDishesWithCost = async (): Promise<DishWithCost[]> => {
 };
 
 export interface RecipeForDishCreation {
+  category: string | null;
   id: string;
   name: string;
-  category: string | null;
 }
 
 export const getRecipesForDishCreation = async (): Promise<
@@ -850,12 +850,12 @@ export const createDishInline = async (
 // ============ Menu Template Actions ============
 
 export interface MenuTemplate {
+  category: string | null;
+  createdAt: Date;
+  description: string | null;
+  dishCount: number;
   id: string;
   name: string;
-  description: string | null;
-  category: string | null;
-  dishCount: number;
-  createdAt: Date;
 }
 
 export const getMenuTemplates = async (): Promise<MenuTemplate[]> => {
@@ -1096,10 +1096,10 @@ export const createFromTemplate = async (
 // ============ Batch Menu Dish Updates ============
 
 export interface MenuDishInput {
-  dishId: string;
   course: string | null;
-  sortOrder: number;
+  dishId: string;
   isOptional: boolean;
+  sortOrder: number;
 }
 
 export const updateMenuDishes = async (

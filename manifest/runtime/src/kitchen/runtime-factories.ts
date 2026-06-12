@@ -5,17 +5,17 @@
  */
 
 import type { IR } from "@angriff36/manifest/ir";
-import type { KitchenOpsContext } from "./types";
 import { ManifestRuntimeEngine } from "../runtime-engine";
 import {
-  loadPrepTaskManifestIR,
-  loadStationManifestIR,
   loadInventoryManifestIR,
-  loadRecipeManifestIR,
   loadMenuManifestIR,
   loadPrepListManifestIR,
+  loadPrepTaskManifestIR,
+  loadRecipeManifestIR,
+  loadStationManifestIR,
 } from "./manifest-ir-loader";
 import { createPostgresStoreProvider } from "./postgres-store";
+import type { KitchenOpsContext } from "./types";
 
 /**
  * Create a kitchen operations runtime for prep tasks

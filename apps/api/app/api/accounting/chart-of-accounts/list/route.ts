@@ -11,7 +11,9 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const guard = await requireApiManager();
-    if (!guard.ok) return guard.response;
+    if (!guard.ok) {
+      return guard.response;
+    }
     const { tenantId } = guard;
 
     const chartOfAccounts = await database.chartOfAccount.findMany({

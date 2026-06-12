@@ -36,42 +36,42 @@ export type CardStatus = (typeof CARD_STATUSES)[number];
  * Command Board Card shape
  */
 export interface CommandBoardCard {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  title: string;
-  content: string | null;
   card_type: CardType;
-  status: CardStatus;
+  color: string | null;
+  content: string | null;
+  created_at: Date;
+  deleted_at: Date | null;
+  height: number;
+  id: string;
+  metadata: Record<string, unknown>;
   position_x: number;
   position_y: number;
-  width: number;
-  height: number;
-  z_index: number;
-  color: string | null;
-  metadata: Record<string, unknown>;
+  status: CardStatus;
+  tenant_id: string;
+  title: string;
+  updated_at: Date;
   vector_clock: Record<string, number> | null;
   version: number;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  width: number;
+  z_index: number;
 }
 
 /**
  * Command Board response shape
  */
 export interface CommandBoard {
-  id: string;
-  tenant_id: string;
-  event_id: string | null;
-  name: string;
-  description: string | null;
-  status: BoardStatus;
-  is_template: boolean;
-  tags: string[];
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
+  description: string | null;
+  event_id: string | null;
+  id: string;
+  is_template: boolean;
+  name: string;
+  status: BoardStatus;
+  tags: string[];
+  tenant_id: string;
+  updated_at: Date;
 }
 
 /**
@@ -85,62 +85,62 @@ export interface CommandBoardWithCards extends CommandBoard {
  * Update command board request
  */
 export interface UpdateCommandBoardRequest {
-  name?: string;
   description?: string;
-  status?: BoardStatus;
-  is_template?: boolean;
-  tags?: string[];
   event_id?: string | null;
+  is_template?: boolean;
+  name?: string;
+  status?: BoardStatus;
+  tags?: string[];
 }
 
 /**
  * Create card request
  */
 export interface CreateCardRequest {
-  title: string;
-  content?: string;
   cardType?: CardType;
-  status?: CardStatus;
+  color?: string;
+  content?: string;
+  height?: number;
+  metadata?: Record<string, unknown>;
   positionX?: number;
   positionY?: number;
+  status?: CardStatus;
+  title: string;
   width?: number;
-  height?: number;
   zIndex?: number;
-  color?: string;
-  metadata?: Record<string, unknown>;
 }
 
 /**
  * Update command board card request
  */
 export interface UpdateCommandBoardCardRequest {
-  title?: string;
-  content?: string | null;
   card_type?: CardType;
-  status?: CardStatus;
+  color?: string | null;
+  content?: string | null;
+  height?: number;
+  metadata?: Record<string, unknown>;
   position_x?: number;
   position_y?: number;
-  width?: number;
-  height?: number;
-  z_index?: number;
-  color?: string | null;
-  metadata?: Record<string, unknown>;
+  status?: CardStatus;
+  title?: string;
   /**
    * Version for optimistic locking and conflict detection
    * Must match the current version on the server for update to succeed
    */
   version: number;
+  width?: number;
+  z_index?: number;
 }
 
 /**
  * Create command board request
  */
 export interface CreateCommandBoardRequest {
-  name: string;
   description?: string;
   event_id?: string;
-  status?: BoardStatus;
   is_template?: boolean;
+  name: string;
+  status?: BoardStatus;
   tags?: string[];
 }
 
@@ -148,10 +148,10 @@ export interface CreateCommandBoardRequest {
  * List filters
  */
 export interface CommandBoardListFilters {
-  search?: string;
-  status?: BoardStatus;
   event_id?: string;
   is_template?: boolean;
+  search?: string;
+  status?: BoardStatus;
   tags?: string[];
 }
 
@@ -179,33 +179,33 @@ export interface CommandBoardListResponse {
  * Command Board Group response shape
  */
 export interface CommandBoardGroup {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  name: string;
-  color: string | null;
   collapsed: boolean;
+  color: string | null;
+  created_at: Date;
+  deleted_at: Date | null;
+  height: number;
+  id: string;
+  name: string;
   position_x: number;
   position_y: number;
-  width: number;
-  height: number;
-  z_index: number;
-  created_at: Date;
+  tenant_id: string;
   updated_at: Date;
-  deleted_at: Date | null;
+  width: number;
+  z_index: number;
 }
 
 /**
  * Create group request
  */
 export interface CreateGroupRequest {
-  name: string;
-  color?: string;
   collapsed?: boolean;
+  color?: string;
+  height?: number;
+  name: string;
   positionX?: number;
   positionY?: number;
   width?: number;
-  height?: number;
   zIndex?: number;
 }
 
@@ -213,13 +213,13 @@ export interface CreateGroupRequest {
  * Update group request
  */
 export interface UpdateGroupRequest {
-  name?: string;
-  color?: string | null;
   collapsed?: boolean;
+  color?: string | null;
+  height?: number;
+  name?: string;
   position_x?: number;
   position_y?: number;
   width?: number;
-  height?: number;
   z_index?: number;
 }
 
@@ -290,17 +290,17 @@ export const RelationshipConfig: Record<
  * Command Board Connection shape
  */
 export interface CommandBoardConnection {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  from_card_id: string;
-  to_card_id: string;
-  relationship_type: ConnectionType;
-  label: string | null;
-  visible: boolean;
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
+  from_card_id: string;
+  id: string;
+  label: string | null;
+  relationship_type: ConnectionType;
+  tenant_id: string;
+  to_card_id: string;
+  updated_at: Date;
+  visible: boolean;
 }
 
 /**
@@ -308,9 +308,9 @@ export interface CommandBoardConnection {
  */
 export interface CreateConnectionRequest {
   fromCardId: string;
-  toCardId: string;
-  relationshipType?: ConnectionType;
   label?: string;
+  relationshipType?: ConnectionType;
+  toCardId: string;
   visible?: boolean;
 }
 
@@ -318,8 +318,8 @@ export interface CreateConnectionRequest {
  * Update connection request
  */
 export interface UpdateConnectionRequest {
-  relationshipType?: ConnectionType;
   label?: string | null;
+  relationshipType?: ConnectionType;
   visible?: boolean;
 }
 
@@ -327,28 +327,28 @@ export interface UpdateConnectionRequest {
  * Viewport state for command board layouts
  */
 export interface ViewportState {
-  zoom: number;
   panX: number;
   panY: number;
+  zoom: number;
 }
 
 /**
  * Command Board Layout shape
  */
 export interface CommandBoardLayout {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  user_id: string;
-  name: string;
-  viewport: ViewportState;
-  visible_cards: string[];
+  created_at: Date;
+  deleted_at: Date | null;
   grid_size: number;
+  id: string;
+  name: string;
   show_grid: boolean;
   snap_to_grid: boolean;
-  created_at: Date;
+  tenant_id: string;
   updated_at: Date;
-  deleted_at: Date | null;
+  user_id: string;
+  viewport: ViewportState;
+  visible_cards: string[];
 }
 
 /**
@@ -356,24 +356,24 @@ export interface CommandBoardLayout {
  */
 export interface CreateLayoutRequest {
   boardId: string;
-  name: string;
-  viewport?: ViewportState;
-  visibleCards?: string[];
   gridSize?: number;
+  name: string;
   showGrid?: boolean;
   snapToGrid?: boolean;
+  viewport?: ViewportState;
+  visibleCards?: string[];
 }
 
 /**
  * Update layout request
  */
 export interface UpdateLayoutRequest {
-  name?: string;
-  viewport?: ViewportState;
-  visibleCards?: string[];
   gridSize?: number;
+  name?: string;
   showGrid?: boolean;
   snapToGrid?: boolean;
+  viewport?: ViewportState;
+  visibleCards?: string[];
 }
 
 // ============================================================================
@@ -402,63 +402,63 @@ export type SimulationStatus = (typeof SIMULATION_STATUSES)[number];
 
 /** A single entity projected onto a board at a specific position (API snake_case format) */
 export interface BoardProjection {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  entity_type: EntityType;
+  collapsed: boolean;
+  color_override: string | null;
   entity_id: string;
+  entity_type: EntityType;
+  group_id: string | null;
+  height: number;
+  id: string;
+  pinned: boolean;
   position_x: number;
   position_y: number;
+  tenant_id: string;
   width: number;
-  height: number;
   z_index: number;
-  color_override: string | null;
-  collapsed: boolean;
-  group_id: string | null;
-  pinned: boolean;
 }
 
 /** A visual group container on the board (API snake_case format) */
 export interface BoardGroup {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  name: string;
-  color: string | null;
   collapsed: boolean;
+  color: string | null;
+  height: number;
+  id: string;
+  name: string;
   position_x: number;
   position_y: number;
+  tenant_id: string;
   width: number;
-  height: number;
   z_index: number;
 }
 
 /** A manual annotation (connection, label, or region) on the board (API snake_case format) */
 export interface BoardAnnotation {
-  id: string;
-  board_id: string;
   annotation_type: string;
-  from_projection_id: string | null;
-  to_projection_id: string | null;
-  label: string | null;
+  board_id: string;
   color: string | null;
+  from_projection_id: string | null;
+  id: string;
+  label: string | null;
   style: string | null;
+  to_projection_id: string | null;
 }
 
 /** Delta between original and simulated board state */
 export interface BoardDelta {
+  added_annotations: BoardAnnotation[];
+  added_groups: BoardGroup[];
   added_projections: BoardProjection[];
-  removed_projection_ids: string[];
   modified_projections: Array<{
     id: string;
     field: string;
     original: unknown;
     simulated: unknown;
   }>;
-  added_groups: BoardGroup[];
-  removed_group_ids: string[];
-  added_annotations: BoardAnnotation[];
   removed_annotation_ids: string[];
+  removed_group_ids: string[];
+  removed_projection_ids: string[];
   summary: {
     additions: number;
     removals: number;
@@ -469,32 +469,32 @@ export interface BoardDelta {
 
 /** Request to create a new simulation */
 export interface CreateSimulationRequest {
-  source_board_id: string;
   simulation_name: string;
+  source_board_id: string;
 }
 
 /** Simulation list item for listing endpoints */
 export interface SimulationListItem {
-  id: string;
-  tenant_id: string;
-  source_board_id: string;
-  simulation_name: string;
-  created_at: Date;
-  status: SimulationStatus;
-  projections_count: number;
-  groups_count: number;
   annotations_count: number;
+  created_at: Date;
+  groups_count: number;
+  id: string;
+  projections_count: number;
+  simulation_name: string;
+  source_board_id: string;
+  status: SimulationStatus;
+  tenant_id: string;
 }
 
 /** Full simulation context with all data */
 export interface SimulationContext {
-  id: string;
-  tenant_id: string;
-  source_board_id: string;
-  simulation_name: string;
-  created_at: Date;
-  status: SimulationStatus;
-  projections: BoardProjection[];
-  groups: BoardGroup[];
   annotations: BoardAnnotation[];
+  created_at: Date;
+  groups: BoardGroup[];
+  id: string;
+  projections: BoardProjection[];
+  simulation_name: string;
+  source_board_id: string;
+  status: SimulationStatus;
+  tenant_id: string;
 }

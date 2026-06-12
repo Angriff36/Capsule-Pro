@@ -24,17 +24,17 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { CreateTrainingModuleDialog } from "./components/create-training-module-dialog";
 
 interface TrainingModuleRow {
-  id: string;
-  title: string;
-  description: string | null;
-  content_type: string;
-  duration_minutes: number | null;
-  category: string | null;
-  is_required: boolean;
-  is_active: boolean;
   assignment_count: bigint;
+  category: string | null;
   completion_count: bigint;
+  content_type: string;
   created_at: Date;
+  description: string | null;
+  duration_minutes: number | null;
+  id: string;
+  is_active: boolean;
+  is_required: boolean;
+  title: string;
 }
 
 const formatContentType = (type: string) => {
@@ -86,7 +86,7 @@ const StaffTrainingPage = async () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Training</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Training</h1>
           <p className="text-muted-foreground">
             Create and manage training modules and assignments.
           </p>
@@ -106,7 +106,7 @@ const StaffTrainingPage = async () => {
           </CardHeader>
           <CardContent className="p-0">
             {modules.length === 0 ? (
-              <div className="p-6 text-sm text-muted-foreground">
+              <div className="p-6 text-muted-foreground text-sm">
                 No training modules yet. Create your first module to get
                 started.
               </div>

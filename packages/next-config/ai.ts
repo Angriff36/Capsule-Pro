@@ -68,21 +68,21 @@ const DEFAULT_STREAMING_ROUTE_PATTERN = "/api/(chat|agents|ai|stream)/:path*";
 
 export interface WithAIOptions {
   /**
-   * Additional source patterns (Next.js path syntax) that should receive
-   * streaming-friendly headers. Merged with the default
-   * `/api/(chat|agents|ai|stream)/:path*` pattern.
+   * Additional hostnames for AI-produced or AI-hosted images. Merged with
+   * the built-in provider list.
    */
-  streamingRoutes?: string[];
+  additionalImageHostnames?: string[];
   /**
    * Override the Server Actions body size limit. Defaults to "10mb" to fit
    * vision-model image inputs. Pass `null` to skip changing it.
    */
   bodySizeLimit?: SizeLimit | null;
   /**
-   * Additional hostnames for AI-produced or AI-hosted images. Merged with
-   * the built-in provider list.
+   * Additional source patterns (Next.js path syntax) that should receive
+   * streaming-friendly headers. Merged with the default
+   * `/api/(chat|agents|ai|stream)/:path*` pattern.
    */
-  additionalImageHostnames?: string[];
+  streamingRoutes?: string[];
 }
 
 const STREAMING_HEADERS = [

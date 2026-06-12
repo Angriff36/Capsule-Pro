@@ -10,9 +10,12 @@
  */
 
 import { database } from "@repo/database";
-import { triggerEmailWorkflows, type UpdateLastTriggeredFn } from "@repo/notifications";
-import { log } from "@repo/observability/log";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import {
+  triggerEmailWorkflows,
+  type UpdateLastTriggeredFn,
+} from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
@@ -120,13 +123,17 @@ async function getSystemUserId(tenantId: string): Promise<string> {
     where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
     select: { id: true },
   });
-  if (adminUser) return adminUser.id;
+  if (adminUser) {
+    return adminUser.id;
+  }
 
   const anyUser = await database.user.findFirst({
     where: { tenantId, deletedAt: null },
     select: { id: true },
   });
-  if (anyUser) return anyUser.id;
+  if (anyUser) {
+    return anyUser.id;
+  }
 
   throw new Error(`No active users found for tenant ${tenantId}`);
 }
@@ -154,7 +161,7 @@ function makeGovernedUpdateLastTriggered(
         command: "recordTriggered",
         body: { id: workflowId },
         user: { id: systemUserId, tenantId, role: "system" },
-      },
+      }
     );
   };
 }
@@ -258,39 +265,43 @@ async function processTaskReminders() {
 
         result.processed++;
 
-        const triggerResult = await triggerEmailWorkflows(database, {
-          tenantId,
-          triggerType: "task_reminder",
-          entity: {
-            id: task.id,
-            type: "task",
-          },
-          templateData: {
-            taskName: task.title,
-            taskDescription: task.summary,
-            taskDueDate: task.dueDate
-              ? task.dueDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })
-              : undefined,
-            taskPriority: task.priority.toString(),
-            dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
-              ? `${process.env.NEXT_PUBLIC_APP_URL}/kitchen/tasks`
-              : undefined,
-          },
-          recipients: [
-            {
-              email: employee.email,
-              employeeId: employee.id,
-              name: [employee.firstName, employee.lastName]
-                .filter(Boolean)
-                .join(" "),
+        const triggerResult = await triggerEmailWorkflows(
+          database,
+          {
+            tenantId,
+            triggerType: "task_reminder",
+            entity: {
+              id: task.id,
+              type: "task",
             },
-          ],
-        }, makeGovernedUpdateLastTriggered(tenantId));
+            templateData: {
+              taskName: task.title,
+              taskDescription: task.summary,
+              taskDueDate: task.dueDate
+                ? task.dueDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : undefined,
+              taskPriority: task.priority.toString(),
+              dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
+                ? `${process.env.NEXT_PUBLIC_APP_URL}/kitchen/tasks`
+                : undefined,
+            },
+            recipients: [
+              {
+                email: employee.email,
+                employeeId: employee.id,
+                name: [employee.firstName, employee.lastName]
+                  .filter(Boolean)
+                  .join(" "),
+              },
+            ],
+          },
+          makeGovernedUpdateLastTriggered(tenantId)
+        );
 
         if (triggerResult.triggered > 0) {
           result.sent += triggerResult.triggered;
@@ -396,47 +407,51 @@ async function processShiftReminders() {
           continue;
         }
 
-        const triggerResult = await triggerEmailWorkflows(database, {
-          tenantId,
-          triggerType: "shift_reminder",
-          entity: {
-            id: shift.id,
-            type: "shift",
-          },
-          templateData: {
-            shiftDate: shift.shift_start.toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }),
-            shiftTime: shift.shift_start.toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-            }),
-            shiftEndTime: shift.shift_end?.toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-            }),
-            location: location?.name ?? "TBD",
-            role: shift.role_during_shift ?? undefined,
-            recipientName: [employee.firstName, employee.lastName]
-              .filter(Boolean)
-              .join(" "),
-            dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
-              ? `${process.env.NEXT_PUBLIC_APP_URL}/schedule`
-              : undefined,
-          },
-          recipients: [
-            {
-              email: employee.email,
-              employeeId: employee.id,
-              name: [employee.firstName, employee.lastName]
+        const triggerResult = await triggerEmailWorkflows(
+          database,
+          {
+            tenantId,
+            triggerType: "shift_reminder",
+            entity: {
+              id: shift.id,
+              type: "shift",
+            },
+            templateData: {
+              shiftDate: shift.shift_start.toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+              shiftTime: shift.shift_start.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              }),
+              shiftEndTime: shift.shift_end?.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              }),
+              location: location?.name ?? "TBD",
+              role: shift.role_during_shift ?? undefined,
+              recipientName: [employee.firstName, employee.lastName]
                 .filter(Boolean)
                 .join(" "),
+              dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
+                ? `${process.env.NEXT_PUBLIC_APP_URL}/schedule`
+                : undefined,
             },
-          ],
-        }, makeGovernedUpdateLastTriggered(tenantId));
+            recipients: [
+              {
+                email: employee.email,
+                employeeId: employee.id,
+                name: [employee.firstName, employee.lastName]
+                  .filter(Boolean)
+                  .join(" "),
+              },
+            ],
+          },
+          makeGovernedUpdateLastTriggered(tenantId)
+        );
 
         if (triggerResult.triggered > 0) {
           result.sent += triggerResult.triggered;

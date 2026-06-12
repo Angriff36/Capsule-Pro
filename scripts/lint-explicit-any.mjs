@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 /**
  * Enforces Biome noExplicitAny on apps/app, apps/api, apps/web.
  *
@@ -11,16 +12,19 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const baselinePath = path.join(repoRoot, "scripts", "lint-explicit-any-baseline.txt");
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".."
+);
+const baselinePath = path.join(
+  repoRoot,
+  "scripts",
+  "lint-explicit-any-baseline.txt"
+);
 const targets = ["apps/app", "apps/api", "apps/web"];
 
-const baseline = Number.parseInt(
-  readFileSync(baselinePath, "utf8").trim(),
-  10
-);
+const baseline = Number.parseInt(readFileSync(baselinePath, "utf8").trim(), 10);
 
 const result = spawnSync(
   "pnpm",

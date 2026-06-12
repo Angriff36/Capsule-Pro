@@ -23,24 +23,24 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { EditDishDialog } from "./edit-dish-dialog";
 
 interface DishDetailRow {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  service_style: string | null;
-  presentation_image_url: string | null;
-  dietary_tags: string[] | null;
   allergens: string[] | null;
-  price_per_person: number | null;
+  category: string | null;
   cost_per_person: number | null;
-  portion_size_description: string | null;
-  min_prep_lead_days: number;
-  max_prep_lead_days: number | null;
+  description: string | null;
+  dietary_tags: string[] | null;
+  event_count: number;
+  id: string;
   is_active: boolean;
+  max_prep_lead_days: number | null;
+  min_prep_lead_days: number;
+  name: string;
+  portion_size_description: string | null;
+  prep_task_count: number;
+  presentation_image_url: string | null;
+  price_per_person: number | null;
   recipe_id: string;
   recipe_name: string | null;
-  event_count: number;
-  prep_task_count: number;
+  service_style: string | null;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -58,7 +58,9 @@ export default async function DishDetailPage({
   params: Promise<{ dishId: string }>;
 }) {
   const { orgId } = await auth();
-  if (!orgId) return notFound();
+  if (!orgId) {
+    return notFound();
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
   const { dishId } = await params;
@@ -103,7 +105,9 @@ export default async function DishDetailPage({
     `
   );
 
-  if (dishes.length === 0) return notFound();
+  if (dishes.length === 0) {
+    return notFound();
+  }
   const dish = dishes[0];
 
   const margin =
@@ -114,13 +118,13 @@ export default async function DishDetailPage({
       : null;
 
   const marginColor =
-    margin !== null
-      ? margin >= 60
+    margin === null
+      ? "text-muted-foreground"
+      : margin >= 60
         ? "text-emerald-600"
         : margin >= 40
           ? "text-amber-600"
-          : "text-red-500"
-      : "text-muted-foreground";
+          : "text-red-500";
 
   return (
     <>
@@ -132,7 +136,7 @@ export default async function DishDetailPage({
       <div className="flex flex-1 flex-col gap-6 p-6">
         {/* Back link */}
         <Link
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+          className="inline-flex w-fit items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
           href="/kitchen/recipes?tab=dishes"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -142,7 +146,7 @@ export default async function DishDetailPage({
         {/* Hero */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
           {/* Image */}
-          <div className="w-full md:w-80 shrink-0">
+          <div className="w-full shrink-0 md:w-80">
             {dish.presentation_image_url ? (
               <img
                 alt={dish.name}
@@ -160,17 +164,17 @@ export default async function DishDetailPage({
           <div className="flex-1 space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-2xl font-bold">{dish.name}</h1>
+                <h1 className="font-bold text-2xl">{dish.name}</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {dish.is_active ? (
-                    <Badge className="gap-1 bg-emerald-900/10 text-emerald-700 border-0">
+                    <Badge className="gap-1 border-0 bg-emerald-900/10 text-emerald-700">
                       <CheckCircle className="h-3 w-3" /> Active
                     </Badge>
                   ) : (
                     <Badge variant="secondary">Paused</Badge>
                   )}
                   {dish.category && (
-                    <Badge className="bg-primary/10 text-primary border-0">
+                    <Badge className="border-0 bg-primary/10 text-primary">
                       {dish.category}
                     </Badge>
                   )}
@@ -190,7 +194,7 @@ export default async function DishDetailPage({
             <div className="flex flex-wrap gap-2">
               {(dish.dietary_tags ?? []).map((tag) => (
                 <Badge
-                  className="bg-secondary/20 text-secondary-foreground border-0 text-xs"
+                  className="border-0 bg-secondary/20 text-secondary-foreground text-xs"
                   key={tag}
                 >
                   {tag}
@@ -208,7 +212,7 @@ export default async function DishDetailPage({
               <div className="text-sm">
                 <span className="text-muted-foreground">Recipe: </span>
                 <Link
-                  className="text-primary hover:underline font-medium"
+                  className="font-medium text-primary hover:underline"
                   href={`/kitchen/recipes/${dish.recipe_id}`}
                 >
                   {dish.recipe_name}
@@ -222,63 +226,63 @@ export default async function DishDetailPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-l-4 border-l-accent" tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
                 <DollarSign className="h-3.5 w-3.5 text-accent" />
                 Food Cost
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 {dish.cost_per_person
                   ? currencyFormatter.format(dish.cost_per_person)
                   : "-"}
               </div>
-              <p className="text-xs text-muted-foreground">per person</p>
+              <p className="text-muted-foreground text-xs">per person</p>
             </CardContent>
           </Card>
 
           <Card className="border-l-4 border-l-primary" tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
                 <DollarSign className="h-3.5 w-3.5 text-primary" />
                 Menu Price
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 {dish.price_per_person
                   ? currencyFormatter.format(dish.price_per_person)
                   : "-"}
               </div>
-              <p className="text-xs text-muted-foreground">per person</p>
+              <p className="text-muted-foreground text-xs">per person</p>
             </CardContent>
           </Card>
 
           <Card className="border-l-4 border-l-emerald-500" tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
                 Margin
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${marginColor}`}>
+              <div className={`font-bold text-2xl ${marginColor}`}>
                 {formatPercent(margin)}
               </div>
-              <p className="text-xs text-muted-foreground">profit margin</p>
+              <p className="text-muted-foreground text-xs">profit margin</p>
             </CardContent>
           </Card>
 
           <Card className="border-l-4 border-l-secondary" tone="canvas">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
                 <Users className="h-3.5 w-3.5 text-secondary" />
                 Usage
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{dish.event_count}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="font-bold text-2xl">{dish.event_count}</div>
+              <p className="text-muted-foreground text-xs">
                 events · {dish.prep_task_count} prep tasks
               </p>
             </CardContent>
@@ -298,7 +302,7 @@ export default async function DishDetailPage({
                 </span>
                 <span className="font-medium">
                   {dish.min_prep_lead_days} day
-                  {dish.min_prep_lead_days !== 1 ? "s" : ""}
+                  {dish.min_prep_lead_days === 1 ? "" : "s"}
                 </span>
               </div>
               {dish.max_prep_lead_days && (

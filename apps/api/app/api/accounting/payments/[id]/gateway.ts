@@ -35,26 +35,23 @@ import { log } from "@repo/observability/log";
 import { stripe } from "@repo/payments";
 
 export interface ProcessPaymentInput {
-  paymentId: string;
-  tenantId: string;
   amount: number;
   currency: string;
   /** Stored Stripe PaymentMethod ID (pm_*) from a prior client-side setup. */
   gatewayPaymentMethodId?: string | null;
+  paymentId: string;
+  tenantId: string;
 }
 
 export interface ProcessPaymentResult {
+  failureReason?: string;
   success: boolean;
   transactionId: string;
-  failureReason?: string;
 }
 
 export interface RefundPaymentInput {
-  paymentId: string;
-  tenantId: string;
   amount: number;
   currency: string;
-  reason: string;
   /**
    * Server-known charge transaction ID from the original Payment row's
    * `gatewayTransactionId`. Required for the real processor to correlate
@@ -62,12 +59,15 @@ export interface RefundPaymentInput {
    * persisted payment record, NEVER from the HTTP request body.
    */
   originalGatewayTransactionId: string | null;
+  paymentId: string;
+  reason: string;
+  tenantId: string;
 }
 
 export interface RefundPaymentResult {
-  success: boolean;
-  refundTransactionId: string;
   failureReason?: string;
+  refundTransactionId: string;
+  success: boolean;
 }
 
 const SUCCESS_STATUSES = new Set(["succeeded", "requires_capture"]);

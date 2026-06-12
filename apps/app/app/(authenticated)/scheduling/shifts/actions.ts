@@ -5,8 +5,8 @@ import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
-  runManifestCommand,
   type RunManifestCommandResult,
+  runManifestCommand,
 } from "@/lib/manifest-command";
 
 // ---------------------------------------------------------------------------
@@ -98,8 +98,12 @@ async function mapShiftRows(
       select: { id: true, name: true },
     }),
   ]);
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
-  const locationsById = new Map(locations.map((location) => [location.id, location]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
+  const locationsById = new Map(
+    locations.map((location) => [location.id, location])
+  );
 
   return shifts.map((shift) => {
     const employee = employeesById.get(shift.employeeId);
@@ -259,7 +263,9 @@ export async function getAvailableEmployees(params: {
           deletedAt: null,
           shift_start: { lt: endDate },
           shift_end: { gt: startDate },
-          ...(params.excludeShiftId ? { id: { not: params.excludeShiftId } } : {}),
+          ...(params.excludeShiftId
+            ? { id: { not: params.excludeShiftId } }
+            : {}),
         },
         orderBy: { shift_start: "asc" },
       });
@@ -271,7 +277,9 @@ export async function getAvailableEmployees(params: {
         },
         select: { id: true, name: true },
       });
-      const locationsById = new Map(locations.map((location) => [location.id, location]));
+      const locationsById = new Map(
+        locations.map((location) => [location.id, location])
+      );
 
       return {
         id: emp.id,
@@ -497,7 +505,7 @@ export async function getEmployees(params?: {
   const employeeWhere: Prisma.UserWhereInput = {
     tenantId,
     deletedAt: null,
-    ...(params?.activeOnly !== false ? { isActive: true } : {}),
+    ...(params?.activeOnly === false ? {} : { isActive: true }),
     ...(params?.role ? { role: params.role } : {}),
     ...(params?.search
       ? {
@@ -556,7 +564,7 @@ export async function getLocations(params?: {
     where: {
       tenantId,
       deletedAt: null,
-      ...(params?.activeOnly !== false ? { isActive: true } : {}),
+      ...(params?.activeOnly === false ? {} : { isActive: true }),
       ...(params?.search
         ? { name: { contains: params.search, mode: "insensitive" } }
         : {}),
@@ -707,7 +715,12 @@ export async function getEvents(params?: {
         },
         deletedAt: null,
       },
-      select: { id: true, company_name: true, first_name: true, last_name: true },
+      select: {
+        id: true,
+        company_name: true,
+        first_name: true,
+        last_name: true,
+      },
     }),
     database.location.findMany({
       where: {

@@ -21,17 +21,22 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { automatedFollowupGenerate, automatedFollowupComplete, automatedFollowupSkip, listAutomatedFollowups } from "@/app/lib/manifest-client.generated";
+import {
+  automatedFollowupComplete,
+  automatedFollowupGenerate,
+  automatedFollowupSkip,
+  listAutomatedFollowups,
+} from "@/app/lib/manifest-client.generated";
 
 interface Followup {
-  id: string;
-  task_type: string;
-  description: string;
-  due_date: string | null;
-  status: string;
   assigned_to: string | null;
   completed_at: string | null;
+  description: string;
+  due_date: string | null;
   event_name: string;
+  id: string;
+  status: string;
+  task_type: string;
 }
 
 const taskTypeIcons: Record<string, React.ReactNode> = {
@@ -101,7 +106,10 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      await automatedFollowupSkip({ id: followupId, reason: "Skipped by user" });
+      await automatedFollowupSkip({
+        id: followupId,
+        reason: "Skipped by user",
+      });
       fetchFollowups();
     } catch (e) {
       console.error("Failed to skip followup:", e);
@@ -111,7 +119,9 @@ export default function EventFollowUpsPage() {
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "No due date";
+    if (!dateStr) {
+      return "No due date";
+    }
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -120,7 +130,9 @@ export default function EventFollowUpsPage() {
   };
 
   const isOverdue = (dueDate: string | null, status: string) => {
-    if (!dueDate || status !== "pending") return false;
+    if (!dueDate || status !== "pending") {
+      return false;
+    }
     return new Date(dueDate) < new Date();
   };
 
@@ -128,16 +140,16 @@ export default function EventFollowUpsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">Event Follow-Ups</h2>
+          <h2 className="font-semibold text-2xl">Event Follow-Ups</h2>
           <p className="text-muted-foreground">
             Automated follow-up tasks for client management
           </p>
         </div>
         <Button disabled={generating} onClick={generateFollowups}>
           {generating ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Sparkles className="mr-2 h-4 w-4" />
           )}
           {generating ? "Generating..." : "Generate Follow-Ups"}
         </Button>
@@ -152,13 +164,13 @@ export default function EventFollowUpsPage() {
       ) : followups.length === 0 ? (
         <Card tone="canvas">
           <CardContent className="py-8 text-center">
-            <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">
+            <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="mb-4 text-muted-foreground">
               No follow-up tasks yet. Click "Generate Follow-Ups" to create
               automated post-event tasks.
             </p>
             <Button disabled={generating} onClick={generateFollowups}>
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="mr-2 h-4 w-4" />
               Generate Follow-Ups
             </Button>
           </CardContent>
@@ -193,7 +205,7 @@ export default function EventFollowUpsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-muted-foreground text-sm">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         {formatDate(followup.due_date)}
@@ -208,7 +220,7 @@ export default function EventFollowUpsPage() {
                           size="sm"
                           variant="outline"
                         >
-                          <SkipForward className="h-4 w-4 mr-1" />
+                          <SkipForward className="mr-1 h-4 w-4" />
                           Skip
                         </Button>
                         <Button
@@ -216,7 +228,7 @@ export default function EventFollowUpsPage() {
                           onClick={() => completeFollowup(followup.id)}
                           size="sm"
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-1" />
+                          <CheckCircle2 className="mr-1 h-4 w-4" />
                           Complete
                         </Button>
                       </div>

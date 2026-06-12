@@ -15,20 +15,20 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { assignClientToEvent } from "../../actions";
 
 interface ClientResult {
-  id: string;
   clientType: string;
   company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
   email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
   phone: string | null;
 }
 
 interface ClientAssignDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   eventId: string;
   onAssigned: () => void;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
 export const ClientAssignDialog = ({
@@ -54,9 +54,13 @@ export const ClientAssignDialog = ({
 
     try {
       const params = new URLSearchParams();
-      if (query.trim()) params.set("search", query.trim());
+      if (query.trim()) {
+        params.set("search", query.trim());
+      }
       const res = await fetch(`/api/crm/clients?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to search clients");
+      if (!res.ok) {
+        throw new Error("Failed to search clients");
+      }
       const data = await res.json();
       setClients(data.data ?? []);
     } catch (err) {
@@ -99,8 +103,12 @@ export const ClientAssignDialog = ({
 
   const formatSubtitle = (client: ClientResult): string => {
     const parts: string[] = [];
-    if (client.email) parts.push(client.email);
-    if (client.phone) parts.push(client.phone);
+    if (client.email) {
+      parts.push(client.email);
+    }
+    if (client.phone) {
+      parts.push(client.phone);
+    }
     if (
       client.clientType === "company" &&
       (client.first_name || client.last_name)
@@ -127,7 +135,7 @@ export const ClientAssignDialog = ({
           <div className="space-y-2">
             <Label htmlFor="client-search">Search clients</Label>
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+              <SearchIcon className="absolute top-3 left-3 size-4 text-muted-foreground" />
               <Input
                 className="pl-10"
                 id="client-search"
@@ -139,7 +147,7 @@ export const ClientAssignDialog = ({
           </div>
 
           {error && (
-            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-destructive text-sm">
               {error}
             </div>
           )}
@@ -152,7 +160,7 @@ export const ClientAssignDialog = ({
               </div>
             ) : clients.length === 0 ? (
               search.trim() ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground text-sm">
                   No clients found.{" "}
                   <a
                     className="underline hover:text-foreground"
@@ -164,7 +172,7 @@ export const ClientAssignDialog = ({
                   </a>
                 </div>
               ) : (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground text-sm">
                   Type to search CRM clients
                 </div>
               )
@@ -187,14 +195,14 @@ export const ClientAssignDialog = ({
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
+                        <div className="truncate font-medium text-sm">
                           {formatClientName(client)}
                         </div>
-                        <div className="truncate text-xs text-muted-foreground">
+                        <div className="truncate text-muted-foreground text-xs">
                           {formatSubtitle(client)}
                         </div>
                       </div>
-                      <div className="shrink-0 text-xs capitalize text-muted-foreground">
+                      <div className="shrink-0 text-muted-foreground text-xs capitalize">
                         {client.clientType}
                       </div>
                     </div>

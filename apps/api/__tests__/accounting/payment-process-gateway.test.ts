@@ -183,7 +183,12 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       // the updated payment for the response body.
       mocks.paymentFindFirstMock
         .mockResolvedValueOnce(makePayment())
-        .mockResolvedValueOnce(makePayment({ status: "COMPLETED", gatewayTransactionId: "txn_server_generated_abc" }));
+        .mockResolvedValueOnce(
+          makePayment({
+            status: "COMPLETED",
+            gatewayTransactionId: "txn_server_generated_abc",
+          })
+        );
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_server_generated_abc",
@@ -263,7 +268,12 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
     it("ignores body.gatewayResponse.transactionId — server-generated ID is authoritative", async () => {
       mocks.paymentFindFirstMock
         .mockResolvedValueOnce(makePayment())
-        .mockResolvedValueOnce(makePayment({ status: "COMPLETED", gatewayTransactionId: "txn_server_authoritative" }));
+        .mockResolvedValueOnce(
+          makePayment({
+            status: "COMPLETED",
+            gatewayTransactionId: "txn_server_authoritative",
+          })
+        );
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_server_authoritative",
@@ -313,7 +323,9 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
     it("calls gateway with server-side payment metadata, never values from body", async () => {
       mocks.paymentFindFirstMock
         .mockResolvedValueOnce(makePayment({ currency: "USD" }))
-        .mockResolvedValueOnce(makePayment({ currency: "USD", status: "COMPLETED" }));
+        .mockResolvedValueOnce(
+          makePayment({ currency: "USD", status: "COMPLETED" })
+        );
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_ok",

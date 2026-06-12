@@ -69,43 +69,43 @@ import RecipesRealtime from "./recipes-realtime";
 import { RecipesToolbar } from "./recipes-toolbar";
 
 interface RecipeRow {
-  id: string;
-  name: string;
-  description: string | null;
   category: string | null;
-  tags: string[] | null;
+  cook_time_minutes: number | null;
+  description: string | null;
+  dish_count: number;
+  id: string;
+  image_url: string | null;
+  ingredient_count: number;
   is_active: boolean;
+  name: string;
+  prep_time_minutes: number | null;
+  rest_time_minutes: number | null;
+  tags: string[] | null;
   yield_quantity: number | null;
   yield_unit: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  rest_time_minutes: number | null;
-  ingredient_count: number;
-  dish_count: number;
-  image_url: string | null;
 }
 
 interface DishRow {
-  id: string;
-  name: string;
   category: string | null;
-  recipe_name: string | null;
-  dietary_tags: string[] | null;
-  price_per_person: number | null;
   cost_per_person: number | null;
-  presentation_image_url: string | null;
-  prep_task_count: number;
+  dietary_tags: string[] | null;
   event_count: number;
+  id: string;
   is_active: boolean;
+  name: string;
+  prep_task_count: number;
+  presentation_image_url: string | null;
+  price_per_person: number | null;
+  recipe_name: string | null;
 }
 
 interface IngredientRow {
-  id: string;
-  name: string;
-  category: string | null;
   allergens: string[] | null;
-  unit_code: string | null;
+  category: string | null;
+  id: string;
   is_active: boolean;
+  name: string;
+  unit_code: string | null;
 }
 
 interface RecipesPageProps {
@@ -593,10 +593,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       <ChefHatIcon className="size-5" />
                     </span>
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-[24px] leading-[1.3] tracking-[-0.24px] text-foreground">
+                      <h3 className="font-semibold text-[24px] text-foreground leading-[1.3] tracking-[-0.24px]">
                         Create your first recipe
                       </h3>
-                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
+                      <p className="mx-auto max-w-md text-[16px] text-muted-foreground leading-[1.5]">
                         Start building your recipe collection. Recipes can be
                         reused across multiple dishes, prep lists, and events to
                         streamline your kitchen operations.
@@ -604,7 +604,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </div>
                     <Button
                       asChild
-                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                      className="rounded-full bg-ink px-6 py-2 font-medium text-[15px] text-white hover:bg-ink/90"
                     >
                       <Link href="/kitchen/recipes/new">Create new recipe</Link>
                     </Button>
@@ -653,7 +653,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           )}
 
                           {/* Time info */}
-                          <div className="flex shrink-0 items-center gap-3 font-mono text-[12px] uppercase tracking-[0.6px] text-muted-foreground">
+                          <div className="flex shrink-0 items-center gap-3 font-mono text-[12px] text-muted-foreground uppercase tracking-[0.6px]">
                             {recipe.prep_time_minutes ? (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -731,17 +731,17 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       <UtensilsIcon className="size-5" />
                     </span>
                     <div className="space-y-2">
-                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                      <h3 className="font-normal text-[24px] text-ink leading-[1.3] tracking-[-0.24px]">
                         Build your first dish
                       </h3>
-                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
+                      <p className="mx-auto max-w-md text-[16px] text-muted-foreground leading-[1.5]">
                         Transform recipes into marketable dishes with pricing,
                         dietary information, and presentation details.
                       </p>
                     </div>
                     <Button
                       asChild
-                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                      className="rounded-full bg-ink px-6 py-2 font-medium text-[15px] text-white hover:bg-ink/90"
                     >
                       <Link href="/kitchen/recipes/dishes/new">
                         Create new dish
@@ -801,7 +801,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               <div className="text-[10px] uppercase tracking-wide">
                                 Cost
                               </div>
-                              <div className="font-sans font-medium text-ink">
+                              <div className="font-medium font-sans text-ink">
                                 {dish.cost_per_person
                                   ? currencyFormatter.format(
                                       dish.cost_per_person
@@ -813,7 +813,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               <div className="text-[10px] uppercase tracking-wide">
                                 Price
                               </div>
-                              <div className="font-sans font-medium text-ink">
+                              <div className="font-medium font-sans text-ink">
                                 <InlineDishPrice
                                   dishId={dish.id}
                                   price={
@@ -877,10 +877,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       <PackageIcon className="size-5" />
                     </span>
                     <div className="space-y-2">
-                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                      <h3 className="font-normal text-[24px] text-ink leading-[1.3] tracking-[-0.24px]">
                         Add your ingredients
                       </h3>
-                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
+                      <p className="mx-auto max-w-md text-[16px] text-muted-foreground leading-[1.5]">
                         Build your ingredient library with units, categories,
                         and allergen information for accurate scaling and cost
                         data.
@@ -888,7 +888,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </div>
                     <Button
                       asChild
-                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                      className="rounded-full bg-ink px-6 py-2 font-medium text-[15px] text-white hover:bg-ink/90"
                     >
                       <Link href="/kitchen/recipes/ingredients/new">
                         Add ingredient
@@ -928,7 +928,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               .slice(0, 3)
                               .map((allergen) => (
                                 <Badge
-                                  className="font-normal text-xs text-coral border-coral-soft"
+                                  className="border-coral-soft font-normal text-coral text-xs"
                                   key={allergen}
                                   variant="outline"
                                 >
@@ -942,7 +942,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           <span className="text-[10px] uppercase tracking-wide">
                             Unit
                           </span>{" "}
-                          <span className="font-sans font-medium text-ink">
+                          <span className="font-medium font-sans text-ink">
                             {ingredient.unit_code ?? "—"}
                           </span>
                         </div>
@@ -976,17 +976,17 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       <UtensilsIcon className="size-5" />
                     </span>
                     <div className="space-y-2">
-                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                      <h3 className="font-normal text-[24px] text-ink leading-[1.3] tracking-[-0.24px]">
                         Create your first menu
                       </h3>
-                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
+                      <p className="mx-auto max-w-md text-[16px] text-muted-foreground leading-[1.5]">
                         Curate dishes into bundles for events, tastings, and
                         client proposals.
                       </p>
                     </div>
                     <Button
                       asChild
-                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                      className="rounded-full bg-ink px-6 py-2 font-medium text-[15px] text-white hover:bg-ink/90"
                     >
                       <Link href="/kitchen/recipes/menus/new">
                         Create new menu
@@ -1048,7 +1048,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   <MetricCell surface="light">
                     <MetricLabel surface="light">Highest margin</MetricLabel>
                     <MetricValue
-                      className="text-deep-green text-4xl sm:text-[2.75rem]"
+                      className="text-4xl text-deep-green sm:text-[2.75rem]"
                       surface="light"
                     >
                       {costingStats?.highestMarginDish
@@ -1064,8 +1064,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     <MetricValue
                       className={
                         (costingStats?.highFoodCostAlerts ?? 0) > 0
-                          ? "text-coral text-4xl sm:text-[2.75rem]"
-                          : "text-deep-green text-4xl sm:text-[2.75rem]"
+                          ? "text-4xl text-coral sm:text-[2.75rem]"
+                          : "text-4xl text-deep-green sm:text-[2.75rem]"
                       }
                       surface="light"
                     >
@@ -1082,8 +1082,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 </MetricBand>
 
                 <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-                  <div className="border-b border-hairline px-6 py-5">
-                    <h3 className="font-normal text-lg tracking-[-0.01em] text-ink">
+                  <div className="border-hairline border-b px-6 py-5">
+                    <h3 className="font-normal text-ink text-lg tracking-[-0.01em]">
                       Recipe cost analysis
                     </h3>
                     <p className="mt-1 text-[14px] text-muted-foreground">
@@ -1106,26 +1106,26 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       <>
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-b border-hairline hover:bg-transparent">
-                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                            <TableRow className="border-hairline border-b hover:bg-transparent">
+                              <TableHead className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Recipe
                               </TableHead>
-                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="text-right font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Cost / yield
                               </TableHead>
-                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="text-right font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Menu price
                               </TableHead>
-                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="text-right font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Food cost %
                               </TableHead>
-                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="text-right font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Margin
                               </TableHead>
-                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Ingredients
                               </TableHead>
-                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                              <TableHead className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                                 Status
                               </TableHead>
                               <TableHead />
@@ -1143,7 +1143,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                               return (
                                 <TableRow
-                                  className="border-b border-hairline/80 last:border-b-0"
+                                  className="border-hairline/80 border-b last:border-b-0"
                                   key={recipe.recipeId}
                                 >
                                   <TableCell>
@@ -1181,7 +1181,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                         {formatPercent(foodCostPercent)}
                                       </span>
                                       {isHighFoodCost ? (
-                                        <Badge className="border-0 bg-coral px-2 text-xs text-white">
+                                        <Badge className="border-0 bg-coral px-2 text-white text-xs">
                                           Alert
                                         </Badge>
                                       ) : null}
@@ -1198,7 +1198,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                   <TableCell>
                                     {recipe.lastCalculated ? (
                                       <Badge
-                                        className="border-deep-green/30 bg-deep-green/10 text-xs text-deep-green"
+                                        className="border-deep-green/30 bg-deep-green/10 text-deep-green text-xs"
                                         variant="outline"
                                       >
                                         Calculated
@@ -1236,7 +1236,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           costingStats.lowestMarginDish.margin < 30 && (
                             <div className="mt-6 rounded-[16px] border border-coral/40 bg-coral/5 px-5 py-4">
                               <div className="mb-1 flex flex-wrap items-center gap-2">
-                                <Badge className="border-0 bg-coral text-xs text-white">
+                                <Badge className="border-0 bg-coral text-white text-xs">
                                   Low margin
                                 </Badge>
                                 <span className="font-medium text-[15px] text-ink">

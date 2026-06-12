@@ -44,9 +44,8 @@ export const getApiBaseUrl = (): string => {
  * Vercel sets VERCEL_DEPLOYMENT_ID automatically.
  * Returns empty string when not on Vercel or not set.
  */
-export const getDeploymentId = (): string => {
-  return process.env.VERCEL_DEPLOYMENT_ID ?? "";
-};
+export const getDeploymentId = (): string =>
+  process.env.VERCEL_DEPLOYMENT_ID ?? "";
 
 export const apiUrl = (path: string): string => {
   if (path.startsWith("http://") || path.startsWith("https://")) {

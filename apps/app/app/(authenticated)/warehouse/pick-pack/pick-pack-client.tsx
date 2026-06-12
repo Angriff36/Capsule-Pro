@@ -21,22 +21,22 @@ type PickStatus = "pending" | "in_progress" | "picked" | "packed" | "shipped";
 
 interface PickQueueItem {
   id: string;
-  orderRef: string;
   itemName: string;
   itemNumber: string;
-  quantity: number;
   locationName: string;
-  storageType: string;
+  orderRef: string;
   priority: PickPriority;
+  quantity: number;
   status: PickStatus;
+  storageType: string;
   strategy: "FIFO" | "FEFO";
   transactionDate: string;
 }
 
 interface PickPackMetrics {
   openPicks: number;
-  picksToday: number;
   packComplete: number;
+  picksToday: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,7 +91,9 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
     try {
       const params = new URLSearchParams({ status: statusFilter });
       const res = await apiFetch(`/api/warehouse/pick-pack?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch pick/pack data");
+      if (!res.ok) {
+        throw new Error("Failed to fetch pick/pack data");
+      }
       const data = await res.json();
       setPickQueue(data.pickQueue ?? []);
       setPackingItems(data.packingItems ?? []);
@@ -106,14 +108,13 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
     fetchData();
   }, [fetchData]);
 
-  const formatDate = (d: string) => {
-    return new Intl.DateTimeFormat("en-US", {
+  const formatDate = (d: string) =>
+    new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date(d));
-  };
 
   return (
     <div className="space-y-6">
@@ -142,10 +143,10 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
         <>
           {/* ---- Pick Queue Section ---- */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-ink">
+            <div className="flex items-center gap-2 font-medium text-ink text-sm">
               <ShoppingCart className="size-4" />
               <span>Pick Queue</span>
-              <span className="text-ink/50 font-normal">
+              <span className="font-normal text-ink/50">
                 ({pickQueue.length} order{pickQueue.length === 1 ? "" : "s"})
               </span>
             </div>
@@ -159,7 +160,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
               <div className="overflow-x-auto rounded-lg border border-hairline">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-hairline bg-soft-stone">
+                    <tr className="border-hairline border-b bg-soft-stone">
                       <th className="px-4 py-3 text-left font-medium text-ink/70">
                         Order
                       </th>
@@ -189,10 +190,10 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                   <tbody>
                     {pickQueue.map((item) => (
                       <tr
-                        className="border-b border-hairline last:border-0 hover:bg-soft-stone/50 transition-colors"
+                        className="border-hairline border-b transition-colors last:border-0 hover:bg-soft-stone/50"
                         key={item.id}
                       >
-                        <td className="px-4 py-3 font-mono text-xs text-ink/70">
+                        <td className="px-4 py-3 font-mono text-ink/70 text-xs">
                           {item.orderRef}
                         </td>
                         <td className="px-4 py-3">
@@ -200,7 +201,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                             {item.itemName}
                           </span>
                           {item.itemNumber && (
-                            <span className="ml-1.5 text-xs text-ink/50">
+                            <span className="ml-1.5 text-ink/50 text-xs">
                               {item.itemNumber}
                             </span>
                           )}
@@ -232,7 +233,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                             {PICK_STATUS_LABELS[item.status]}
                           </StatusPill>
                         </td>
-                        <td className="px-4 py-3 text-xs text-ink/50">
+                        <td className="px-4 py-3 text-ink/50 text-xs">
                           {formatDate(item.transactionDate)}
                         </td>
                       </tr>
@@ -245,10 +246,10 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
 
           {/* ---- Packing Station Section ---- */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-ink">
+            <div className="flex items-center gap-2 font-medium text-ink text-sm">
               <PackageCheck className="size-4" />
               <span>Packing Station</span>
-              <span className="text-ink/50 font-normal">
+              <span className="font-normal text-ink/50">
                 ({packingItems.length} item
                 {packingItems.length === 1 ? "" : "s"})
               </span>
@@ -258,7 +259,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
               <div className="flex flex-col items-center justify-center gap-2 py-10 text-ink/50">
                 <Clock className="size-8 opacity-30" />
                 <p className="text-sm">No items awaiting packing</p>
-                <p className="text-xs text-ink/40">
+                <p className="text-ink/40 text-xs">
                   Picked items will appear here for verification
                 </p>
               </div>
@@ -266,7 +267,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {packingItems.map((item) => (
                   <div
-                    className="rounded-lg border border-hairline bg-canvas p-4 space-y-2"
+                    className="space-y-2 rounded-lg border border-hairline bg-canvas p-4"
                     key={item.id}
                   >
                     <div className="flex items-center justify-between">
@@ -277,7 +278,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                         {PICK_STATUS_LABELS[item.status]}
                       </StatusPill>
                     </div>
-                    <div className="text-xs text-ink/60 space-y-1">
+                    <div className="space-y-1 text-ink/60 text-xs">
                       <div className="flex justify-between">
                         <span>Order</span>
                         <span className="font-mono">{item.orderRef}</span>
@@ -290,16 +291,16 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                         <span>Location</span>
                         <span>{item.locationName}</span>
                       </div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <span>Strategy</span>
                         <StatusPill
-                          className={`${STRATEGY_STYLES[item.strategy]} text-[10px] px-1.5 py-0`}
+                          className={`${STRATEGY_STYLES[item.strategy]} px-1.5 py-0 text-[10px]`}
                         >
                           {item.strategy}
                         </StatusPill>
                       </div>
                     </div>
-                    <div className="pt-2 border-t border-hairline text-xs text-ink/40">
+                    <div className="border-hairline border-t pt-2 text-ink/40 text-xs">
                       Verification pending
                     </div>
                   </div>
@@ -309,7 +310,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
           </div>
 
           {/* Summary footer */}
-          <div className="flex items-center justify-between text-xs text-ink/50 pt-2">
+          <div className="flex items-center justify-between pt-2 text-ink/50 text-xs">
             <span>
               {pickQueue.length} pick{pickQueue.length === 1 ? "" : "s"} in
               queue

@@ -46,35 +46,40 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { listStaffPerformances, listStaffMembers, staffPerformanceCreate, staffPerformanceComplete } from "@/app/lib/manifest-client.generated";
+import {
+  listStaffMembers,
+  listStaffPerformances,
+  staffPerformanceComplete,
+  staffPerformanceCreate,
+} from "@/app/lib/manifest-client.generated";
 
 // Types matching the PerformanceReview model
 interface Employee {
-  id: string;
-  firstName: string;
-  lastName: string;
   email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
   role: string;
 }
 
 interface PerformanceReview {
-  id: string;
-  employeeId: string;
-  reviewerId: string;
-  reviewType: string;
-  scheduledDate: string;
-  completedDate: string | null;
-  status: string;
-  rating: number | null;
-  strengths: string | null;
   areasForImprovement: string | null;
-  goalsNextPeriod: string | null;
-  managerComments: string | null;
-  employeeComments: string | null;
+  completedDate: string | null;
   createdAt: string;
+  employeeComments: string | null;
+  employeeId: string;
   // Joined data
   employeeName?: string;
+  goalsNextPeriod: string | null;
+  id: string;
+  managerComments: string | null;
+  rating: number | null;
+  reviewerId: string;
   reviewerName?: string;
+  reviewType: string;
+  scheduledDate: string;
+  status: string;
+  strengths: string | null;
 }
 
 const REVIEW_TYPE_LABELS: Record<string, string> = {
@@ -141,7 +146,7 @@ function RatingStars({
               star <= (hovered || rating)
                 ? "fill-amber-400 text-amber-400"
                 : "text-gray-300"
-            } ${onChange ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
+            } ${onChange ? "cursor-pointer transition-transform hover:scale-110" : ""}`}
           />
         </button>
       ))}
@@ -150,7 +155,9 @@ function RatingStars({
 }
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "—";
+  if (!dateStr) {
+    return "—";
+  }
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -205,7 +212,9 @@ export default function PerformancePageClient() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!(createForm.employeeId && createForm.scheduledDate)) return;
+    if (!(createForm.employeeId && createForm.scheduledDate)) {
+      return;
+    }
     setCreating(true);
     try {
       await staffPerformanceCreate(createForm);
@@ -225,7 +234,9 @@ export default function PerformancePageClient() {
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReview || completeForm.rating === 0) return;
+    if (!selectedReview || completeForm.rating === 0) {
+      return;
+    }
     setCompleting(true);
     try {
       await staffPerformanceComplete({
@@ -265,15 +276,19 @@ export default function PerformancePageClient() {
   };
 
   const filteredReviews = reviews.filter((r) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "upcoming")
+    if (activeTab === "all") {
+      return true;
+    }
+    if (activeTab === "upcoming") {
       return (
         r.status === "scheduled" &&
         new Date(r.scheduledDate) <=
           new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
       );
-    if (activeTab === "overdue")
+    }
+    if (activeTab === "overdue") {
       return r.status === "scheduled" && new Date(r.scheduledDate) < new Date();
+    }
     return r.status === activeTab;
   });
 
@@ -290,13 +305,13 @@ export default function PerformancePageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Performance</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Performance</h1>
           <p className="text-muted-foreground">
             Track reviews, ratings, goals, and staff development.
           </p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Schedule Review
         </Button>
       </div>
@@ -305,40 +320,40 @@ export default function PerformancePageClient() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Reviews</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{stats.total}</div>
+            <div className="font-semibold text-2xl">{stats.total}</div>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
+            <CardTitle className="font-medium text-sm">Scheduled</CardTitle>
             <Calendar className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{stats.scheduled}</div>
-            <p className="text-xs text-muted-foreground">Pending completion</p>
+            <div className="font-semibold text-2xl">{stats.scheduled}</div>
+            <p className="text-muted-foreground text-xs">Pending completion</p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="font-medium text-sm">Completed</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{stats.completed}</div>
+            <div className="font-semibold text-2xl">{stats.completed}</div>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
+            <CardTitle className="font-medium text-sm">Avg Rating</CardTitle>
             <Star className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{stats.avgRating}</div>
-            <p className="text-xs text-muted-foreground">out of 5.0</p>
+            <div className="font-semibold text-2xl">{stats.avgRating}</div>
+            <p className="text-muted-foreground text-xs">out of 5.0</p>
           </CardContent>
         </Card>
       </div>
@@ -379,9 +394,9 @@ export default function PerformancePageClient() {
           {filteredReviews.length === 0 ? (
             <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
-                <Target className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <Target className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No reviews found.</p>
-                <p className="text-sm mt-1">
+                <p className="mt-1 text-sm">
                   Schedule a performance review to get started.
                 </p>
               </CardContent>
@@ -413,8 +428,8 @@ export default function PerformancePageClient() {
                         </div>
 
                         {/* Main info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <span className="font-semibold">
                               {review.employeeName || review.employeeId}
                             </span>
@@ -431,7 +446,7 @@ export default function PerformancePageClient() {
                               <Badge variant="destructive">Overdue</Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {formatDate(review.scheduledDate)}
@@ -482,8 +497,8 @@ export default function PerformancePageClient() {
 
                       {/* Expanded Details */}
                       {isExpanded && (
-                        <div className="mt-4 pt-4 border-t space-y-3">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="mt-4 space-y-3 border-t pt-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                             <div>
                               <p className="text-muted-foreground">Status</p>
                               <p className="capitalize">{statusConfig.label}</p>
@@ -510,50 +525,50 @@ export default function PerformancePageClient() {
 
                           {review.strengths && (
                             <div>
-                              <p className="text-sm font-medium mb-1">
+                              <p className="mb-1 font-medium text-sm">
                                 Strengths
                               </p>
-                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
                                 {review.strengths}
                               </p>
                             </div>
                           )}
                           {review.areasForImprovement && (
                             <div>
-                              <p className="text-sm font-medium mb-1">
+                              <p className="mb-1 font-medium text-sm">
                                 Areas for Improvement
                               </p>
-                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
                                 {review.areasForImprovement}
                               </p>
                             </div>
                           )}
                           {review.goalsNextPeriod && (
                             <div>
-                              <p className="text-sm font-medium mb-1">
+                              <p className="mb-1 font-medium text-sm">
                                 Goals for Next Period
                               </p>
-                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
                                 {review.goalsNextPeriod}
                               </p>
                             </div>
                           )}
                           {review.managerComments && (
                             <div>
-                              <p className="text-sm font-medium mb-1">
+                              <p className="mb-1 font-medium text-sm">
                                 Manager Comments
                               </p>
-                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
                                 {review.managerComments}
                               </p>
                             </div>
                           )}
                           {review.employeeComments && (
                             <div>
-                              <p className="text-sm font-medium mb-1">
+                              <p className="mb-1 font-medium text-sm">
                                 Employee Comments
                               </p>
-                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
+                              <p className="rounded-md bg-muted/20 p-2 text-muted-foreground text-sm">
                                 {review.employeeComments}
                               </p>
                             </div>
@@ -674,7 +689,7 @@ export default function PerformancePageClient() {
                 rating={completeForm.rating}
               />
               {completeForm.rating === 0 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Click a star to rate (1-5)
                 </p>
               )}

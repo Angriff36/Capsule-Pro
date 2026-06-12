@@ -61,6 +61,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@/app/lib/format";
 import {
   cycleCountRecordCreate,
   cycleCountRecordUpdate,
@@ -71,7 +72,6 @@ import {
   listCycleCountRecords,
   listInventoryItems,
 } from "@/app/lib/manifest-client.generated";
-import { formatCurrency } from "@/app/lib/format";
 
 type CycleCountSessionStatus =
   | "draft"
@@ -87,49 +87,49 @@ type CycleCountSessionType =
   | "scheduled_monthly";
 
 interface CycleCountSession {
+  completed_at: string | null;
+  count_type: CycleCountSessionType;
+  counted_items: number;
+  created_at: string;
+  finalized_at: string | null;
   id: string;
+  notes: string | null;
+  scheduled_date: string | null;
   session_id: string;
   session_name: string;
-  count_type: CycleCountSessionType;
-  scheduled_date: string | null;
   started_at: string | null;
-  completed_at: string | null;
-  finalized_at: string | null;
   status: CycleCountSessionStatus;
   total_items: number;
-  counted_items: number;
   total_variance: number;
   variance_percentage: number;
-  notes: string | null;
-  created_at: string;
 }
 
 interface CycleCountRecord {
-  id: string;
-  session_id: string;
-  item_id: string;
-  item_number: string;
-  item_name: string;
-  storage_location_id: string;
-  expected_quantity: number;
+  barcode: string | null;
+  count_date: string;
   counted_quantity: number;
+  created_at: string;
+  expected_quantity: number;
+  id: string;
+  is_verified: boolean;
+  item_id: string;
+  item_name: string;
+  item_number: string;
+  notes: string | null;
+  session_id: string;
+  storage_location_id: string;
+  sync_status: string;
   variance: number;
   variance_pct: number;
-  count_date: string;
-  barcode: string | null;
-  notes: string | null;
-  is_verified: boolean;
-  sync_status: string;
-  created_at: string;
 }
 
 interface InventoryItem {
+  category: string;
   id: string;
   item_number: string;
   name: string;
   quantity_on_hand: number;
   unit_of_measure: string;
-  category: string;
 }
 
 const statusVariant: Record<
@@ -192,7 +192,7 @@ function RecordTableRow({
       <TableCell>
         <div>
           <div className="font-medium">{record.item_name}</div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             {record.item_number}
           </div>
         </div>
@@ -537,7 +537,7 @@ export default function CycleCountSessionDetailPage() {
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
         <AlertTriangleIcon className="h-12 w-12 text-muted-foreground" />
-        <div className="text-lg font-medium">Session not found</div>
+        <div className="font-medium text-lg">Session not found</div>
         <Button asChild variant="outline">
           <Link href="/warehouse/audits">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
@@ -565,7 +565,7 @@ export default function CycleCountSessionDetailPage() {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="font-bold text-2xl tracking-tight">
                 {session.session_name}
               </h1>
               <Badge variant={statusVariant[session.status]}>
@@ -620,29 +620,29 @@ export default function CycleCountSessionDetailPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Progress</CardTitle>
+            <CardTitle className="font-medium text-sm">Progress</CardTitle>
             <ClipboardCheckIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {session.counted_items} / {session.total_items}
             </div>
             <Progress className="mt-2" value={progressPercent} />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-muted-foreground text-xs">
               {progressPercent}% complete
             </p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Total Variance
             </CardTitle>
             <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${getVarianceColor(session.total_variance)}`}
+              className={`font-bold text-2xl ${getVarianceColor(session.total_variance)}`}
             >
               {formatCurrency(Math.abs(session.total_variance))}
               {session.total_variance !== 0 && (
@@ -653,35 +653,35 @@ export default function CycleCountSessionDetailPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {getVarianceLabel(session.total_variance)}
             </p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verified</CardTitle>
+            <CardTitle className="font-medium text-sm">Verified</CardTitle>
             <CheckCircle2Icon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {records.filter((r) => r.is_verified).length} / {records.length}
             </div>
-            <p className="text-xs text-muted-foreground">Records verified</p>
+            <p className="text-muted-foreground text-xs">Records verified</p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Started</CardTitle>
+            <CardTitle className="font-medium text-sm">Started</CardTitle>
             <ClipboardCheckIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {session.started_at
                 ? new Date(session.started_at).toLocaleDateString()
                 : "Not started"}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {session.started_at
                 ? new Date(session.started_at).toLocaleTimeString()
                 : ""}
@@ -734,7 +734,7 @@ export default function CycleCountSessionDetailPage() {
             <div className="space-y-2">
               <Label>Search Inventory</Label>
               <div className="relative">
-                <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <SearchIcon className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -757,11 +757,11 @@ export default function CycleCountSessionDetailPage() {
                     >
                       <div>
                         <div className="font-medium">{item.name}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           {item.item_number}
                         </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Qty: {item.quantity_on_hand}
                       </div>
                     </button>
@@ -773,7 +773,7 @@ export default function CycleCountSessionDetailPage() {
               <>
                 <div className="rounded-md border p-3">
                   <div className="font-medium">{selectedItem.name}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     Expected: {selectedItem.quantity_on_hand}{" "}
                     {selectedItem.unit_of_measure}
                   </div>
@@ -841,7 +841,7 @@ export default function CycleCountSessionDetailPage() {
             <div className="space-y-4">
               <div className="rounded-md border p-3">
                 <div className="font-medium">{editingRecord.item_name}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Expected: {editingRecord.expected_quantity}
                 </div>
               </div>

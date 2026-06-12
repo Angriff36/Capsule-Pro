@@ -15,7 +15,9 @@
 function isDecimal(
   value: unknown
 ): value is { toNumber: () => number; toString: () => string } {
-  if (value == null || typeof value !== "object") return false;
+  if (value == null || typeof value !== "object") {
+    return false;
+  }
   // Duck-type check: Prisma Decimal (decimal.js) always has { s, e, d } internals
   // plus a toNumber method. Avoid constructor.name — it gets minified to "Decimal2"
   // when @repo/database is transpiled by Turbopack/webpack (transpilePackages).
@@ -34,9 +36,15 @@ function isDecimal(
  * Returns null/undefined as-is.
  */
 export function serializeDecimal(value: unknown): number | null | undefined {
-  if (value == null) return value as null | undefined;
-  if (typeof value === "number") return value;
-  if (isDecimal(value)) return value.toNumber();
+  if (value == null) {
+    return value as null | undefined;
+  }
+  if (typeof value === "number") {
+    return value;
+  }
+  if (isDecimal(value)) {
+    return value.toNumber();
+  }
   // If it's a string that looks like a number, parse it
   if (typeof value === "string") {
     const parsed = Number(value);
@@ -57,11 +65,15 @@ export function serializeDecimal(value: unknown): number | null | undefined {
  * ```
  */
 export function serializeDecimals<T>(obj: T): T {
-  if (obj == null) return obj;
+  if (obj == null) {
+    return obj;
+  }
 
   if (typeof obj === "object") {
     // Handle Date objects — leave them intact
-    if (obj instanceof Date) return obj as T;
+    if (obj instanceof Date) {
+      return obj as T;
+    }
 
     // Handle arrays
     if (Array.isArray(obj)) {
@@ -104,7 +116,9 @@ export function serializeApiDecimalFields(
   obj: Record<string, unknown>,
   decimalFields?: string[]
 ): Record<string, unknown> {
-  if (!obj || typeof obj !== "object") return obj;
+  if (!obj || typeof obj !== "object") {
+    return obj;
+  }
 
   if (decimalFields && decimalFields.length > 0) {
     // Fast path: only convert known fields

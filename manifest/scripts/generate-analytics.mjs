@@ -17,8 +17,8 @@
  * Output: manifest/generated/analytics/
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -42,8 +42,15 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 
 // ── Import projection (direct dist path, not in package exports) ──
 const generatorPath = join(
-  root, "node_modules", "@angriff36", "manifest",
-  "dist", "manifest", "projections", "analytics", "generator.js"
+  root,
+  "node_modules",
+  "@angriff36",
+  "manifest",
+  "dist",
+  "manifest",
+  "projections",
+  "analytics",
+  "generator.js"
 );
 const generatorUrl = import.meta.resolve(
   `file://${generatorPath.replace(/\\/g, "/")}`
@@ -126,5 +133,7 @@ console.log(`[analytics] IR entities: ${ir.entities?.length ?? 0}`);
 console.log(`[analytics] IR commands: ${ir.commands?.length ?? 0}`);
 console.log(`[analytics] IR events: ${ir.events?.length ?? 0}`);
 console.log(`[analytics] Artifacts generated: ${totalArtifacts}`);
-console.log(`[analytics] Diagnostics: ${totalErrors} errors, ${totalWarnings} warnings, ${totalInfo} info`);
+console.log(
+  `[analytics] Diagnostics: ${totalErrors} errors, ${totalWarnings} warnings, ${totalInfo} info`
+);
 console.log(`[analytics] Output: ${OUT_DIR}`);

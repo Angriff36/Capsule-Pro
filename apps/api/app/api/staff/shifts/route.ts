@@ -97,8 +97,12 @@ export async function GET(request: Request) {
     }),
   ]);
 
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
-  const locationsById = new Map(locations.map((location) => [location.id, location]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
+  const locationsById = new Map(
+    locations.map((location) => [location.id, location])
+  );
   const shifts = shiftRows.map((shift) => {
     const employee = employeesById.get(shift.employeeId);
     const location = locationsById.get(shift.locationId);
@@ -139,7 +143,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[ScheduleShift/POST] Delegating to manifest create command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "ScheduleShift",

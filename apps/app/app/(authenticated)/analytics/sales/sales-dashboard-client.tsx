@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   Alert,
   AlertDescription,
   AlertTitle,
@@ -24,28 +34,17 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  PageCanvas,
-  CommandBand,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  PageBody,
-  OperationalColumn,
-} from "@repo/design-system/components/blocks/page-shell";
 import { SalesMetricsTabs } from "./components/sales-metrics-tabs";
 import {
   buildDateColumnOptionsForUI,
   getCreatedDateCol,
   getEventDateCol,
   loadSalesData,
-  type SalesData,
   prepareSalesMetrics,
+  type SalesData,
   validateFunnel,
 } from "./lib/sales-analytics";
 import {
-  formatCurrency,
   formatDateForInput,
   formatNumber,
   formatPercent,
@@ -116,9 +115,7 @@ export function SalesDashboardClient() {
     () =>
       salesData
         ? Array.from(
-            new Set(
-              salesData.masterEvents.flatMap((row) => Object.keys(row))
-            )
+            new Set(salesData.masterEvents.flatMap((row) => Object.keys(row)))
           )
         : [],
     [salesData]
@@ -294,15 +291,13 @@ export function SalesDashboardClient() {
                   type="file"
                 />
                 {fileName ? (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Loaded: {fileName}
                   </p>
                 ) : null}
               </div>
               {isLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Parsing file...
-                </p>
+                <p className="text-muted-foreground text-sm">Parsing file...</p>
               ) : null}
               {loadError ? (
                 <Alert variant="destructive">
@@ -347,7 +342,7 @@ export function SalesDashboardClient() {
                         </SelectContent>
                       </Select>
                       {createdRatio < 0.5 ? (
-                        <p className="text-xs text-amber-600">
+                        <p className="text-amber-600 text-xs">
                           Created Date column has low date coverage.
                         </p>
                       ) : null}
@@ -370,7 +365,7 @@ export function SalesDashboardClient() {
                         </SelectContent>
                       </Select>
                       {eventRatio < 0.5 ? (
-                        <p className="text-xs text-amber-600">
+                        <p className="text-amber-600 text-xs">
                           Event Date column has low date coverage.
                         </p>
                       ) : null}
@@ -417,10 +412,10 @@ export function SalesDashboardClient() {
                 <CardHeader>
                   <CardTitle>Data Snapshot</CardTitle>
                   <CardDescription>
-                    Master Events:{" "}
-                    {formatNumber(salesData.masterEvents.length)} &middot; Deals
-                    Lost: {formatNumber(salesData.dealsLost.length)} &middot;
-                    Lead Source: {formatNumber(salesData.leadSource.length)}
+                    Master Events: {formatNumber(salesData.masterEvents.length)}{" "}
+                    &middot; Deals Lost:{" "}
+                    {formatNumber(salesData.dealsLost.length)} &middot; Lead
+                    Source: {formatNumber(salesData.leadSource.length)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
@@ -450,10 +445,10 @@ export function SalesDashboardClient() {
               {/* Main Tabs */}
               {metrics ? (
                 <SalesMetricsTabs
+                  flatData={flatData}
                   metrics={metrics}
                   salesData={salesData}
                   validation={validation}
-                  flatData={flatData}
                 />
               ) : (
                 <Alert>

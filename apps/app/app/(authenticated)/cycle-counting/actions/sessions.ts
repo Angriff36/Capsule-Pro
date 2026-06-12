@@ -134,13 +134,19 @@ export async function createCycleCountSession(
     });
 
     if (!result.ok) {
-      return { success: false, error: result.message || "Failed to create session" };
+      return {
+        success: false,
+        error: result.message || "Failed to create session",
+      };
     }
 
     // Post-command read to materialize return shape (constitution §10)
     const created = await database.cycleCountSession.findUnique({
       where: {
-        tenantId_id: { tenantId: user.tenantId, id: (result.result as { id?: string })?.id ?? "" },
+        tenantId_id: {
+          tenantId: user.tenantId,
+          id: (result.result as { id?: string })?.id ?? "",
+        },
       },
     });
 
@@ -217,7 +223,10 @@ export async function updateCycleCountSession(
 
       const command = commandMap[input.status];
       if (!command) {
-        return { success: false, error: `Unsupported status transition: ${input.status}` };
+        return {
+          success: false,
+          error: `Unsupported status transition: ${input.status}`,
+        };
       }
 
       const body: Record<string, unknown> = {
@@ -238,12 +247,18 @@ export async function updateCycleCountSession(
       });
 
       if (!result.ok) {
-        return { success: false, error: result.message || `Failed to ${command} session` };
+        return {
+          success: false,
+          error: result.message || `Failed to ${command} session`,
+        };
       }
     }
 
     // Field-only edits (sessionName, notes) without status change — governed via update command
-    if (input.status === undefined && (input.sessionName !== undefined || input.notes !== undefined)) {
+    if (
+      input.status === undefined &&
+      (input.sessionName !== undefined || input.notes !== undefined)
+    ) {
       const updateResult = await runManifestCommand({
         entity: "CycleCountSession",
         command: "update",
@@ -257,7 +272,10 @@ export async function updateCycleCountSession(
       });
 
       if (!updateResult.ok) {
-        return { success: false, error: updateResult.message || "Failed to update session" };
+        return {
+          success: false,
+          error: updateResult.message || "Failed to update session",
+        };
       }
     }
 
@@ -360,7 +378,10 @@ export async function deleteCycleCountSession(
     });
 
     if (!result.ok) {
-      return { success: false, error: result.message || "Failed to delete session" };
+      return {
+        success: false,
+        error: result.message || "Failed to delete session",
+      };
     }
 
     return { success: true };

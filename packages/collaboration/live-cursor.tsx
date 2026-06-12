@@ -3,10 +3,10 @@
 import { memo } from "react";
 
 interface CursorProps {
-  x: number;
-  y: number;
   color: string;
   name: string;
+  x: number;
+  y: number;
 }
 
 function Cursor({ x, y, color, name }: CursorProps) {

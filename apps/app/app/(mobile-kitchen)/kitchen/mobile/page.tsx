@@ -232,19 +232,19 @@ export default function MobileTodayPage() {
                     {/* Task counts */}
                     <div className="mt-3 flex gap-3">
                       {event.unclaimedPrepCount > 0 && (
-                        <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-amber-700 text-xs font-medium">
+                        <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 font-medium text-amber-700 text-xs">
                           <AlertCircle className="h-3 w-3" />
                           {event.unclaimedPrepCount} unclaimed
                         </div>
                       )}
                       {event.incompleteItemsCount > 0 && (
-                        <div className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-blue-700 text-xs font-medium">
+                        <div className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 font-medium text-blue-700 text-xs">
                           {event.incompleteItemsCount} items left
                         </div>
                       )}
                       {event.unclaimedPrepCount === 0 &&
                         event.incompleteItemsCount === 0 && (
-                          <div className="flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-emerald-700 text-xs font-medium">
+                          <div className="flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 font-medium text-emerald-700 text-xs">
                             All prep complete
                           </div>
                         )}

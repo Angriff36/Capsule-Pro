@@ -14,15 +14,15 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface IngredientListFilters {
-  category?: string;
-  search?: string;
-  isActive?: boolean;
   allergen?: string;
+  category?: string;
+  isActive?: boolean;
+  search?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

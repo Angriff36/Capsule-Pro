@@ -1,5 +1,11 @@
-import { Document, Page, StyleSheet, Text, View } from "../lib/react-pdf-primitives";
 import type React from "react";
+import {
+  Document,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "../lib/react-pdf-primitives";
 import type { BattleBoardPDFData } from "../types";
 
 // Register font (optional - uses default Helvetica if not registered)

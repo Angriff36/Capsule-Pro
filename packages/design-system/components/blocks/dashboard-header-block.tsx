@@ -94,7 +94,7 @@ export function DashboardHeaderBlock() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Badge variant="secondary">Live</Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               Updated 5 minutes ago
             </span>
           </div>
@@ -125,8 +125,8 @@ export function DashboardHeaderBlock() {
         <div className="grid gap-4 sm:grid-cols-3">
           {quickStats.map((stat) => (
             <div className="space-y-1" key={stat.label}>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-              <div className="text-xl font-semibold">{stat.value}</div>
+              <div className="text-muted-foreground text-sm">{stat.label}</div>
+              <div className="font-semibold text-xl">{stat.value}</div>
             </div>
           ))}
         </div>

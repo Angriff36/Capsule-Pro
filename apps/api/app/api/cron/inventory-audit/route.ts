@@ -155,7 +155,7 @@ async function createCycleCountSession(params: {
   );
   return {
     ok: result.ok,
-    message: !result.ok ? result.message : undefined,
+    message: result.ok ? undefined : result.message,
   };
 }
 

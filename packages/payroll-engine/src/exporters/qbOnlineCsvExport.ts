@@ -11,24 +11,24 @@ function invariant(condition: unknown, message: string): asserts condition {
  * QuickBooks Online CSV Export Configuration
  */
 export interface QBOnlineCsvExportOptions {
-  includeHeader?: boolean;
-  dateFormat?: "us" | "iso";
   accountMappings?: QBOnlineAccountMappings;
+  dateFormat?: "us" | "iso";
+  includeHeader?: boolean;
 }
 
 /**
  * QuickBooks Online Account Mappings
  */
 export interface QBOnlineAccountMappings {
-  wagesAccount: string;
-  overtimeAccount: string;
-  tipsAccount: string;
-  federalTaxAccount: string;
-  stateTaxAccount: string;
-  ficaAccount: string;
   benefitsAccount: string;
-  retirementAccount: string;
   cashAccount: string;
+  federalTaxAccount: string;
+  ficaAccount: string;
+  overtimeAccount: string;
+  retirementAccount: string;
+  stateTaxAccount: string;
+  tipsAccount: string;
+  wagesAccount: string;
 }
 
 /**
@@ -88,11 +88,11 @@ function formatAmountOrEmpty(amount: number): string {
 }
 
 interface QBOJournalBuildInput {
-  record: PayrollRecord;
-  period: PayrollPeriod;
-  journalNo: string;
   accounts: QBOnlineAccountMappings;
+  journalNo: string;
   options: QBOnlineCsvExportOptions;
+  period: PayrollPeriod;
+  record: PayrollRecord;
 }
 
 function buildEmployeeJournalLines(input: QBOJournalBuildInput): string[][] {

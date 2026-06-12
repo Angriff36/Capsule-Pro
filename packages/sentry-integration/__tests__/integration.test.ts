@@ -8,7 +8,9 @@ vi.mock("@repo/observability/sentry", () => ({
   captureException: vi.fn(),
   captureMessage: vi.fn(),
   startSpan: vi.fn((_opts, fn: () => any) => fn()),
-  withScope: vi.fn((_opts, fn: (scope: any) => any) => fn({ setTag: vi.fn(), setExtra: vi.fn() })),
+  withScope: vi.fn((_opts, fn: (scope: any) => any) =>
+    fn({ setTag: vi.fn(), setExtra: vi.fn() })
+  ),
 }));
 
 import { InMemoryJobStore, SentryJobQueue } from "../src/queue";

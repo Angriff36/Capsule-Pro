@@ -61,13 +61,13 @@ const ALLERGEN_MAPPINGS: Record<string, string[]> = {
 type AllergenKey = keyof typeof ALLERGEN_MAPPINGS;
 
 interface AllergenMatrixItem {
-  id: string;
-  name: string;
+  allergenIngredients: Record<AllergenKey, string[]>;
+  allergens: Record<AllergenKey, boolean | null>;
   category: string | null;
   dietaryTags: string[];
-  allergens: Record<AllergenKey, boolean | null>;
+  id: string;
   ingredientCount: number;
-  allergenIngredients: Record<AllergenKey, string[]>;
+  name: string;
 }
 
 /**

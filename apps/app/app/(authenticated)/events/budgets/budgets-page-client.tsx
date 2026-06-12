@@ -200,7 +200,7 @@ export function BudgetsPageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Event Budgets
           </h1>
           <p className="text-muted-foreground">
@@ -231,22 +231,22 @@ export function BudgetsPageClient() {
 
       {/* Performance Overview Section */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">
+              <CardDescription className="font-medium text-sm">
                 Active Budgets
               </CardDescription>
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-semibold">
+              <CardTitle className="font-semibold text-2xl">
                 {activeBudgets}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {budgets.length} total budgets
               </p>
             </CardContent>
@@ -254,16 +254,16 @@ export function BudgetsPageClient() {
 
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">
+              <CardDescription className="font-medium text-sm">
                 Total Budget
               </CardDescription>
               <DollarSignIcon className="size-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-semibold">
+              <CardTitle className="font-semibold text-2xl">
                 {formatCurrency(totalBudget)}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Active budgets only
               </p>
             </CardContent>
@@ -271,16 +271,16 @@ export function BudgetsPageClient() {
 
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">
+              <CardDescription className="font-medium text-sm">
                 Actual Spend
               </CardDescription>
               <DollarSignIcon className="size-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-semibold">
+              <CardTitle className="font-semibold text-2xl">
                 {formatCurrency(totalActual)}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {totalBudget > 0
                   ? `${((totalActual / totalBudget) * 100).toFixed(1)}% utilized`
                   : "--"}
@@ -292,12 +292,12 @@ export function BudgetsPageClient() {
 
       {/* Filters Section */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Filters
         </h2>
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pl-10"
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -353,7 +353,7 @@ export function BudgetsPageClient() {
 
       {/* Budgets Table Section */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Budgets ({filteredBudgets.length})
         </h2>
         <Card tone="canvas">
@@ -454,7 +454,7 @@ export function BudgetsPageClient() {
                                   ? " under"
                                   : ""}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               {budget.variancePercentage.toFixed(1)}%
                             </div>
                           </div>
@@ -528,11 +528,11 @@ export function BudgetsPageClient() {
 
 // Delete Confirmation Modal
 interface BudgetDeleteModalProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
   budget: EventBudget | null;
   loading: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  open: boolean;
 }
 
 function BudgetDeleteModal({
@@ -551,8 +551,8 @@ function BudgetDeleteModal({
         <div className="mb-4">
           <XCircleIcon className="size-12 text-red-600" />
         </div>
-        <h3 className="text-lg font-semibold">Delete Budget</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h3 className="font-semibold text-lg">Delete Budget</h3>
+        <p className="mt-2 text-muted-foreground text-sm">
           Are you sure you want to delete the budget for event &quot;
           {budget?.eventId.slice(0, 8)}...&quot;? This action cannot be undone.
         </p>

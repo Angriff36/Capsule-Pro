@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     log.error("List probes error:", error);
     return NextResponse.json(
       { error: "Failed to list probes" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     if (!(name && probeId)) {
       return NextResponse.json(
         { error: "Name and probe ID are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     log.error("Create probe error:", error);
     return NextResponse.json(
       { error: "Failed to create probe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

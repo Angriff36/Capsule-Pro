@@ -46,58 +46,58 @@ import { Separator } from "../ui/separator";
  */
 export interface NutritionalInfo {
   calories: number;
-  protein: number;
   carbohydrates: number;
+  cholesterol: number;
   fat: number;
   fiber: number;
-  sugar: number;
+  protein: number;
   sodium: number;
-  cholesterol: number;
+  sugar: number;
 }
 
 /**
  * Nutritional improvement suggestion
  */
 export interface NutritionalImprovement {
-  type: "reduce" | "increase" | "substitute";
-  nutrient: string;
   currentValue: number;
-  targetValue: number;
-  suggestion: string;
   impact: string;
+  nutrient: string;
+  suggestion: string;
+  targetValue: number;
+  type: "reduce" | "increase" | "substitute";
 }
 
 /**
  * Nutritional analysis result
  */
 export interface NutritionalAnalysis {
-  perServing: NutritionalInfo;
-  perRecipe: NutritionalInfo;
-  healthScore: number;
-  nutrientHighlights: string[];
   concerns: string[];
+  healthScore: number;
   improvementSuggestions: NutritionalImprovement[];
+  nutrientHighlights: string[];
+  perRecipe: NutritionalInfo;
+  perServing: NutritionalInfo;
 }
 
 /**
  * Ingredient substitution suggestion
  */
 export interface IngredientSubstitution {
+  allergenChanges: string[];
+  costSavings: number;
+  costSavingsPercentage: number;
+  originalCost: number;
   originalIngredientId: string;
   originalIngredientName: string;
   originalQuantity: number;
   originalUnitId: number;
-  originalCost: number;
+  qualityImpact: "positive" | "neutral" | "negative";
+  reason: string;
+  suggestedCost: number;
   suggestedIngredientId: string;
   suggestedIngredientName: string;
   suggestedQuantity: number;
   suggestedUnitId: number;
-  suggestedCost: number;
-  costSavings: number;
-  costSavingsPercentage: number;
-  reason: string;
-  qualityImpact: "positive" | "neutral" | "negative";
-  allergenChanges: string[];
 }
 
 /**
@@ -109,14 +109,14 @@ export interface CostOptimization {
     | "quantity_adjustment"
     | "supplier_change"
     | "waste_reduction";
-  priority: "high" | "medium" | "low";
-  title: string;
   description: string;
+  implementation: string;
   potentialSavings: number;
   potentialSavingsPercentage: number;
-  substitutions: IngredientSubstitution[];
-  implementation: string;
+  priority: "high" | "medium" | "low";
   risks: string[];
+  substitutions: IngredientSubstitution[];
+  title: string;
 }
 
 /**
@@ -124,40 +124,40 @@ export interface CostOptimization {
  */
 export interface PrioritizedAction {
   action: string;
-  rationale: string;
-  expectedOutcome: string;
   effort: "low" | "medium" | "high";
+  expectedOutcome: string;
+  rationale: string;
 }
 
 /**
  * AI insights for recipe optimization
  */
 export interface AIInsights {
-  summary: string;
+  dietaryAlternatives?: string[];
   prioritizedActions: PrioritizedAction[];
   seasonalConsiderations?: string;
-  dietaryAlternatives?: string[];
+  summary: string;
 }
 
 /**
  * Full recipe optimization result
  */
 export interface RecipeOptimization {
-  recipeVersionId: string;
-  recipeName: string;
+  aiInsights?: AIInsights;
+  availabilityScore: number;
+  costOptimizations: CostOptimization[];
   currentCost: number;
   currentCostPerYield: number;
+  generatedAt: Date | string;
+  nutritionalAnalysis: NutritionalAnalysis;
   optimizedCost: number;
   optimizedCostPerYield: number;
+  overallScore: number;
+  qualityScore: number;
+  recipeName: string;
+  recipeVersionId: string;
   totalPotentialSavings: number;
   totalPotentialSavingsPercentage: number;
-  costOptimizations: CostOptimization[];
-  nutritionalAnalysis: NutritionalAnalysis;
-  availabilityScore: number;
-  qualityScore: number;
-  overallScore: number;
-  generatedAt: Date | string;
-  aiInsights?: AIInsights;
 }
 
 /**
@@ -165,9 +165,9 @@ export interface RecipeOptimization {
  */
 export interface RecipeOptimizationCardProps {
   /**
-   * The optimization data to display
+   * Optional CSS class
    */
-  optimization: RecipeOptimization;
+  className?: string;
 
   /**
    * Optional callback when a substitution is applied
@@ -178,16 +178,15 @@ export interface RecipeOptimizationCardProps {
    * Optional callback when dismissing the card
    */
   onDismiss?: () => void;
+  /**
+   * The optimization data to display
+   */
+  optimization: RecipeOptimization;
 
   /**
    * Whether to show the AI insights section
    */
   showAIInsights?: boolean;
-
-  /**
-   * Optional CSS class
-   */
-  className?: string;
 }
 
 /**
@@ -209,7 +208,7 @@ function ScoreIndicator({
       <div className="relative h-10 w-10">
         <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
           <path
-            className="text-muted stroke-current"
+            className="stroke-current text-muted"
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
             strokeWidth="3"
@@ -225,8 +224,8 @@ function ScoreIndicator({
         <Icon className="absolute inset-0 m-auto h-5 w-5 text-white" />
       </div>
       <div>
-        <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="text-sm font-semibold">{value}/100</div>
+        <div className="text-muted-foreground text-xs">{label}</div>
+        <div className="font-semibold text-sm">{value}/100</div>
       </div>
     </div>
   );
@@ -251,9 +250,9 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="overflow-hidden rounded-lg border">
       <button
-        className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+        className="flex w-full items-center justify-between p-3 transition-colors hover:bg-muted/50"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
@@ -353,16 +352,16 @@ export function RecipeOptimizationCard({
 
       <CardContent className="space-y-4">
         {/* Summary metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <DollarSign className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-xs text-muted-foreground">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <DollarSign className="mx-auto mb-1 h-4 w-4 text-muted-foreground" />
+            <div className="text-muted-foreground text-xs">
               Potential Savings
             </div>
-            <div className={`text-lg font-bold ${savingsColor}`}>
+            <div className={`font-bold text-lg ${savingsColor}`}>
               {optimization.totalPotentialSavingsPercentage.toFixed(1)}%
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-muted-foreground text-xs">
               ${optimization.totalPotentialSavings.toFixed(2)}
             </div>
           </div>
@@ -409,7 +408,7 @@ export function RecipeOptimizationCard({
             icon={Lightbulb}
             title="AI Recommendations"
           >
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="mb-4 text-muted-foreground text-sm">
               {optimization.aiInsights.summary}
             </p>
 
@@ -417,13 +416,13 @@ export function RecipeOptimizationCard({
               <div className="space-y-3">
                 {optimization.aiInsights.prioritizedActions.map(
                   (action, idx) => (
-                    <div className="flex gap-3 p-3 rounded-lg border" key={idx}>
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
+                    <div className="flex gap-3 rounded-lg border p-3" key={idx}>
+                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-xs">
                         {idx + 1}
                       </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium">{action.action}</p>
+                          <p className="font-medium text-sm">{action.action}</p>
                           <Badge
                             className={getEffortColor(action.effort)}
                             variant="outline"
@@ -431,11 +430,11 @@ export function RecipeOptimizationCard({
                             {action.effort} effort
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {action.rationale}
                         </p>
-                        <p className="text-xs text-green-600">
-                          <TrendingDown className="h-3 w-3 inline mr-1" />
+                        <p className="text-green-600 text-xs">
+                          <TrendingDown className="mr-1 inline h-3 w-3" />
                           {action.expectedOutcome}
                         </p>
                       </div>
@@ -464,17 +463,17 @@ export function RecipeOptimizationCard({
           title="Cost Reduction Opportunities"
         >
           {optimization.costOptimizations.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground text-sm">
+            <div className="py-6 text-center text-muted-foreground text-sm">
               No cost optimization opportunities identified. Your recipe is
               already optimized!
             </div>
           ) : (
             <div className="space-y-3">
               {optimization.costOptimizations.map((opt, idx) => (
-                <div className="p-3 rounded-lg border space-y-2" key={idx}>
+                <div className="space-y-2 rounded-lg border p-3" key={idx}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <h4 className="font-medium text-sm">{opt.title}</h4>
                         <Badge
                           className={getPriorityColor(opt.priority)}
@@ -483,7 +482,7 @@ export function RecipeOptimizationCard({
                           {opt.priority}
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {opt.description}
                       </p>
                     </div>
@@ -491,22 +490,22 @@ export function RecipeOptimizationCard({
                       <div className="font-semibold text-green-600">
                         -${opt.potentialSavings.toFixed(2)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {opt.potentialSavingsPercentage.toFixed(1)}% savings
                       </div>
                     </div>
                   </div>
 
                   {opt.substitutions.length > 0 && (
-                    <div className="space-y-2 mt-2">
+                    <div className="mt-2 space-y-2">
                       {opt.substitutions.map((sub, subIdx) => (
                         <div
-                          className="flex items-center justify-between p-2 rounded bg-muted/50 text-sm"
+                          className="flex items-center justify-between rounded bg-muted/50 p-2 text-sm"
                           key={subIdx}
                         >
                           <div className="flex items-center gap-2">
                             <ArrowDown className="h-3 w-3 text-red-500" />
-                            <span className="line-through text-muted-foreground">
+                            <span className="text-muted-foreground line-through">
                               {sub.originalIngredientName}
                             </span>
                             <ArrowUp className="h-3 w-3 text-green-500" />
@@ -523,7 +522,7 @@ export function RecipeOptimizationCard({
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-green-600 font-semibold">
+                            <span className="font-semibold text-green-600">
                               -${sub.costSavings.toFixed(2)}
                             </span>
                             {onApplySubstitution && (
@@ -537,7 +536,7 @@ export function RecipeOptimizationCard({
                               </Button>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground col-span-full mt-1">
+                          <p className="col-span-full mt-1 text-muted-foreground text-xs">
                             {sub.reason}
                           </p>
                         </div>
@@ -546,7 +545,7 @@ export function RecipeOptimizationCard({
                   )}
 
                   {opt.implementation && (
-                    <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-2 rounded">
+                    <div className="rounded bg-blue-50 p-2 text-muted-foreground text-xs dark:bg-blue-950/20">
                       <span className="font-medium">Implementation:</span>{" "}
                       {opt.implementation}
                     </div>
@@ -572,8 +571,8 @@ export function RecipeOptimizationCard({
             <Badge
               className={`ml-2 ${
                 optimization.nutritionalAnalysis.healthScore > 70
-                  ? "bg-green-100 text-green-700 border-green-200"
-                  : "bg-amber-100 text-amber-700 border-amber-200"
+                  ? "border-green-200 bg-green-100 text-green-700"
+                  : "border-amber-200 bg-amber-100 text-amber-700"
               }`}
               variant="outline"
             >
@@ -583,36 +582,36 @@ export function RecipeOptimizationCard({
           icon={Apple}
           title="Nutritional Analysis"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div className="text-center p-2 rounded bg-muted/50">
-              <div className="text-lg font-semibold">
+          <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded bg-muted/50 p-2 text-center">
+              <div className="font-semibold text-lg">
                 {optimization.nutritionalAnalysis.perServing.calories}
               </div>
-              <div className="text-xs text-muted-foreground">Calories</div>
+              <div className="text-muted-foreground text-xs">Calories</div>
             </div>
-            <div className="text-center p-2 rounded bg-muted/50">
-              <div className="text-lg font-semibold">
+            <div className="rounded bg-muted/50 p-2 text-center">
+              <div className="font-semibold text-lg">
                 {optimization.nutritionalAnalysis.perServing.protein}g
               </div>
-              <div className="text-xs text-muted-foreground">Protein</div>
+              <div className="text-muted-foreground text-xs">Protein</div>
             </div>
-            <div className="text-center p-2 rounded bg-muted/50">
-              <div className="text-lg font-semibold">
+            <div className="rounded bg-muted/50 p-2 text-center">
+              <div className="font-semibold text-lg">
                 {optimization.nutritionalAnalysis.perServing.carbohydrates}g
               </div>
-              <div className="text-xs text-muted-foreground">Carbs</div>
+              <div className="text-muted-foreground text-xs">Carbs</div>
             </div>
-            <div className="text-center p-2 rounded bg-muted/50">
-              <div className="text-lg font-semibold">
+            <div className="rounded bg-muted/50 p-2 text-center">
+              <div className="font-semibold text-lg">
                 {optimization.nutritionalAnalysis.perServing.fat}g
               </div>
-              <div className="text-xs text-muted-foreground">Fat</div>
+              <div className="text-muted-foreground text-xs">Fat</div>
             </div>
           </div>
 
           {optimization.nutritionalAnalysis.nutrientHighlights.length > 0 && (
             <div className="mb-3">
-              <div className="text-xs font-medium mb-1">Highlights</div>
+              <div className="mb-1 font-medium text-xs">Highlights</div>
               <div className="flex flex-wrap gap-1">
                 {optimization.nutritionalAnalysis.nutrientHighlights.map(
                   (highlight, idx) => (
@@ -630,7 +629,7 @@ export function RecipeOptimizationCard({
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle className="text-xs">Nutritional Concerns</AlertTitle>
               <AlertDescription className="text-xs">
-                <ul className="list-disc list-inside">
+                <ul className="list-inside list-disc">
                   {optimization.nutritionalAnalysis.concerns.map(
                     (concern, idx) => (
                       <li key={idx}>{concern}</li>
@@ -644,19 +643,19 @@ export function RecipeOptimizationCard({
           {optimization.nutritionalAnalysis.improvementSuggestions.length >
             0 && (
             <div className="space-y-2">
-              <div className="text-xs font-medium">Improvement Suggestions</div>
+              <div className="font-medium text-xs">Improvement Suggestions</div>
               {optimization.nutritionalAnalysis.improvementSuggestions.map(
                 (suggestion, idx) => (
                   <div
-                    className="flex items-start gap-2 p-2 rounded border text-sm"
+                    className="flex items-start gap-2 rounded border p-2 text-sm"
                     key={idx}
                   >
                     {suggestion.type === "reduce" ? (
-                      <ArrowDown className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                      <ArrowDown className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
                     ) : suggestion.type === "increase" ? (
-                      <ArrowUp className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <ArrowUp className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
                     ) : (
-                      <Scale className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <Scale className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                     )}
                     <div>
                       <div className="font-medium">
@@ -666,7 +665,7 @@ export function RecipeOptimizationCard({
                         {suggestion.type === "reduce" ? " → " : " → "}
                         {suggestion.targetValue}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {suggestion.suggestion}
                       </div>
                     </div>
@@ -679,16 +678,16 @@ export function RecipeOptimizationCard({
 
         {/* Overall Score */}
         <div className="pt-2">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="font-medium text-sm">
               Overall Optimization Score
             </span>
-            <span className="text-sm font-semibold">
+            <span className="font-semibold text-sm">
               {Math.round(optimization.overallScore)}/100
             </span>
           </div>
           <Progress className="h-2" value={optimization.overallScore} />
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="mt-2 text-muted-foreground text-xs">
             This score combines availability (
             {Math.round(optimization.availabilityScore)}%), quality (
             {Math.round(optimization.qualityScore)}%), and nutritional value (

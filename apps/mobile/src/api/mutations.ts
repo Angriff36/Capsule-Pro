@@ -12,8 +12,8 @@ interface ClaimTaskRequest {
 }
 
 interface ClaimTaskResponse {
-  success: boolean;
   claimId: string;
+  success: boolean;
 }
 
 interface BundleClaimRequest {
@@ -33,8 +33,8 @@ interface ReleaseTaskRequest {
 }
 
 interface MarkPrepItemCompleteRequest {
-  itemId: string;
   completed: boolean;
+  itemId: string;
 }
 
 interface UpdatePrepItemNotesRequest {

@@ -26,18 +26,18 @@ const DefaultLink: LinkComponent = ({ href, className, children }) => (
 );
 
 export interface ResearchTableRow {
-  id: string;
-  title: ReactNode;
   href?: string;
-  pills?: ReactNode;
+  id: string;
   meta?: ReactNode;
+  pills?: ReactNode;
+  title: ReactNode;
 }
 
 export interface ResearchTableProps {
-  rows: ResearchTableRow[];
   caption?: ReactNode;
-  linkComponent?: LinkComponent;
   className?: string;
+  linkComponent?: LinkComponent;
+  rows: ResearchTableRow[];
 }
 
 export function ResearchTable({

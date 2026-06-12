@@ -15,73 +15,73 @@ type RouteParams = Promise<{
 
 interface AuthContext {
   orgId: string;
-  userId: string;
   tenantId: string;
+  userId: string;
 }
 
 interface Venue {
-  name: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  stateProvince: string | null;
-  postalCode: string | null;
   countryCode: string | null;
+  name: string | null;
+  postalCode: string | null;
+  stateProvince: string | null;
 }
 
 interface EventData {
-  id: string;
-  title: string;
-  eventNumber: string | null;
   eventDate: Date | null;
+  eventNumber: string | null;
   eventType: string | null;
   guestCount: number | null;
-  venue: Venue | null;
+  id: string;
   location: Venue | null;
-  venueName: string | null;
+  title: string;
+  venue: Venue | null;
   venueAddress: string | null;
+  venueName: string | null;
 }
 
 interface ClientData {
-  id: string;
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  phone: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  stateProvince: string | null;
-  postalCode: string | null;
+  company_name: string | null;
   countryCode: string | null;
+  email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
+  phone: string | null;
+  postalCode: string | null;
+  stateProvince: string | null;
 }
 
 interface Signature {
   id: string;
-  signerName: string | null;
-  signerEmail: string | null;
-  signedAt: Date | null;
   signatureData: string | null;
+  signedAt: Date | null;
+  signerEmail: string | null;
+  signerName: string | null;
 }
 
 interface Contract {
-  id: string;
+  client: ClientData | null;
   contractNumber: string | null;
-  title: string;
-  status: string;
-  notes: string | null;
-  expiresAt: Date | null;
   createdAt: Date;
   event: EventData | null;
-  client: ClientData | null;
+  expiresAt: Date | null;
+  id: string;
+  notes: string | null;
   signatures: Signature[];
+  status: string;
+  title: string;
 }
 
 interface UserData {
+  email: string | null;
   firstName: string | null;
   lastName: string | null;
-  email: string | null;
 }
 
 async function getAuthContext(
@@ -183,7 +183,7 @@ function prepareContractData(contract: Contract) {
 
 function prepareEventData(event: EventData | null) {
   if (!event) {
-    return undefined;
+    return;
   }
 
   const venueName =
@@ -219,7 +219,7 @@ function prepareEventData(event: EventData | null) {
 
 function prepareClientData(client: ClientData | null) {
   if (!client) {
-    return undefined;
+    return;
   }
 
   return {

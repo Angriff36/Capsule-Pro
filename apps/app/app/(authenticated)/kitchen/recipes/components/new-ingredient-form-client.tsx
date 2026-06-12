@@ -30,8 +30,8 @@ import type { IngredientActionResult } from "../actions-ingredient";
 import { createIngredient } from "../actions-ingredient";
 
 interface UnitOption {
-  id: number;
   code: string;
+  id: number;
   name: string;
 }
 
@@ -85,7 +85,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
         <CommandBandBody>
           <div className="flex items-center gap-4 text-sm text-white/60">
             <span>
-              {units.length} unit{units.length !== 1 ? "s" : ""} available
+              {units.length} unit{units.length === 1 ? "" : "s"} available
             </span>
           </div>
         </CommandBandBody>
@@ -103,7 +103,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
           <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="name">
+                <label className="font-medium text-sm" htmlFor="name">
                   Ingredient name <span className="text-coral">*</span>
                 </label>
                 <input
@@ -116,7 +116,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="category">
+                <label className="font-medium text-sm" htmlFor="category">
                   Category
                 </label>
                 <input
@@ -130,7 +130,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="defaultUnitId">
+                <label className="font-medium text-sm" htmlFor="defaultUnitId">
                   Default unit
                 </label>
                 <select
@@ -147,7 +147,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="allergens">
+                <label className="font-medium text-sm" htmlFor="allergens">
                   Allergens
                 </label>
                 <input
@@ -173,7 +173,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
           <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="shelfLifeDays">
+                <label className="font-medium text-sm" htmlFor="shelfLifeDays">
                   Shelf life (days)
                 </label>
                 <input
@@ -188,7 +188,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
             </div>
             <div className="space-y-2">
               <label
-                className="text-sm font-medium"
+                className="font-medium text-sm"
                 htmlFor="storageInstructions"
               >
                 Storage instructions
@@ -209,14 +209,14 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
           <div className="rounded-lg border bg-card p-6">
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
-                className="inline-flex h-10 items-center justify-center rounded-sm bg-ink px-6 py-2 text-sm font-medium text-white hover:bg-ink/90 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center rounded-sm bg-ink px-6 py-2 font-medium text-sm text-white hover:bg-ink/90 disabled:pointer-events-none disabled:opacity-50"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create ingredient"}
               </button>
               <a
-                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-6 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-6 py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes?tab=ingredients"
               >
                 Cancel

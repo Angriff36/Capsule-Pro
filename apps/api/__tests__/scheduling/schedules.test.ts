@@ -18,17 +18,19 @@ vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...data }), { status })
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(JSON.stringify({ success: true, ...data }), { status })
   ),
-  manifestErrorResponse: vi.fn((data, status = 400) =>
-    new Response(
-      JSON.stringify({
-        success: false,
-        ...(typeof data === "string" ? { message: data } : data),
-      }),
-      { status }
-    )
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          ...(typeof data === "string" ? { message: data } : data),
+        }),
+        { status }
+      )
   ),
 }));
 vi.mock("@/app/lib/invariant", () => ({
@@ -77,9 +79,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // --- Import mocked modules ---
 
 const { requireCurrentUser } = await import("@/app/lib/tenant");
-const { runManifestCommand } = await import(
-  "@/lib/manifest/execute-command"
-);
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
 
@@ -145,7 +145,11 @@ function mockCurrentUser() {
 function mockManifestSuccess(result: Record<string, unknown> = {}) {
   vi.mocked(runManifestCommand).mockResolvedValue(
     new Response(
-      JSON.stringify({ success: true, result: { id: "schedule-001", ...result }, events: [] }),
+      JSON.stringify({
+        success: true,
+        result: { id: "schedule-001", ...result },
+        events: [],
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     )
   );
@@ -153,10 +157,10 @@ function mockManifestSuccess(result: Record<string, unknown> = {}) {
 
 function mockManifestError(message: string, status = 400) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    new Response(
-      JSON.stringify({ success: false, message }),
-      { status, headers: { "Content-Type": "application/json" } }
-    )
+    new Response(JSON.stringify({ success: false, message }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    })
   );
 }
 
@@ -247,7 +251,10 @@ describe("Schedule Command API", () => {
     });
 
     it("should return 422 on guard failure", async () => {
-      mockManifestError("Guard 1 failed: Cannot create schedule for past date", 422);
+      mockManifestError(
+        "Guard 1 failed: Cannot create schedule for past date",
+        422
+      );
 
       const request = makeCommandRequest("create", {
         name: "Past Schedule",
@@ -270,7 +277,9 @@ describe("Schedule Command API", () => {
     });
 
     it("should return 500 on unexpected runtime exception", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = makeCommandRequest("create", { name: "Crash" });
       const createSchedule = await getCreateSchedule();
@@ -353,7 +362,9 @@ describe("Schedule Command API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected failure"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Unexpected failure")
+      );
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
       const updateSchedule = await getUpdateSchedule();
@@ -428,7 +439,9 @@ describe("Schedule Command API", () => {
     });
 
     it("should return 500 on unexpected error for close", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Database timeout"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Database timeout")
+      );
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
       const closeSchedule = await getCloseSchedule();
@@ -503,7 +516,9 @@ describe("Schedule Command API", () => {
     });
 
     it("should return 500 on unexpected error for release", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Network failure"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Network failure")
+      );
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
       const releaseSchedule = await getReleaseSchedule();
@@ -548,7 +563,9 @@ describe("Schedule Command API", () => {
     });
 
     it("should handle requireCurrentUser throwing a non-InvariantError exception", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new Error("Auth service down"));
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new Error("Auth service down")
+      );
 
       const request = makeCommandRequest("create", { name: "Test" });
       const createSchedule = await getCreateSchedule();

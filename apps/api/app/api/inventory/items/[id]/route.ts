@@ -273,8 +273,10 @@ export async function PUT(request: Request, context: RouteContext) {
       supplierId: body.supplier_id ?? existing.supplierId ?? "",
       tags: body.tags ?? existing.tags ?? "",
       fsa_status: body.fsa_status ?? existing.fsa_status ?? "unknown",
-      fsa_temp_logged: body.fsa_temp_logged ?? existing.fsa_temp_logged ?? false,
-      fsa_allergen_info: body.fsa_allergen_info ?? existing.fsa_allergen_info ?? false,
+      fsa_temp_logged:
+        body.fsa_temp_logged ?? existing.fsa_temp_logged ?? false,
+      fsa_allergen_info:
+        body.fsa_allergen_info ?? existing.fsa_allergen_info ?? false,
       fsa_traceable: body.fsa_traceable ?? existing.fsa_traceable ?? false,
     };
 

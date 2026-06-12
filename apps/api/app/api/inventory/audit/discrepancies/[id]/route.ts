@@ -57,8 +57,8 @@ interface RouteContext {
 
 interface UpdateDiscrepancyBody {
   notes?: string;
-  rootCause?: string;
   resolutionNotes?: string;
+  rootCause?: string;
 }
 
 /**

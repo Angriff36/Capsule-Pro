@@ -112,6 +112,16 @@ const allergenDisplayNames: Record<string, { name: string; emoji: string }> = {
  * Props for the AllergenWarningBanner component
  */
 export interface AllergenWarningBannerProps {
+  /** Optional custom class names */
+  className?: string;
+  /** Compact mode for smaller display */
+  compact?: boolean;
+  /** Callback when warning is acknowledged with optional reason */
+  onAcknowledge?: (warningId: string, reason?: string) => void | Promise<void>;
+  /** Callback when warning is dismissed (info-level only) */
+  onDismiss?: (warningId: string) => void | Promise<void>;
+  /** Callback when viewing full details */
+  onViewDetails?: (warningId: string) => void;
   /** The allergen warning data from the database */
   warning: AllergenWarning & {
     dishName?: string;
@@ -121,16 +131,6 @@ export interface AllergenWarningBannerProps {
       email?: string | null;
     }>;
   };
-  /** Callback when warning is acknowledged with optional reason */
-  onAcknowledge?: (warningId: string, reason?: string) => void | Promise<void>;
-  /** Callback when warning is dismissed (info-level only) */
-  onDismiss?: (warningId: string) => void | Promise<void>;
-  /** Callback when viewing full details */
-  onViewDetails?: (warningId: string) => void;
-  /** Optional custom class names */
-  className?: string;
-  /** Compact mode for smaller display */
-  compact?: boolean;
 }
 
 /**
@@ -214,8 +214,8 @@ function AcknowledgeDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="rounded-md bg-slate-50 dark:bg-slate-900 p-3">
-            <p className="text-sm font-medium">Warning Type</p>
+          <div className="rounded-md bg-slate-50 p-3 dark:bg-slate-900">
+            <p className="font-medium text-sm">Warning Type</p>
             <p className="text-muted-foreground text-sm">
               {getWarningTypeLabel(warningType)}
             </p>
@@ -366,7 +366,7 @@ export function AllergenWarningBanner({
             )}
           </span>
           {warning.overrideReason && (
-            <span className="text-muted-foreground text-xs font-normal">
+            <span className="font-normal text-muted-foreground text-xs">
               Override: {warning.overrideReason}
             </span>
           )}
@@ -389,7 +389,7 @@ export function AllergenWarningBanner({
             )}
             <span className="text-xs">
               {warning.affectedGuests.length} guest
-              {warning.affectedGuests.length !== 1 ? "s" : ""} affected
+              {warning.affectedGuests.length === 1 ? "" : "s"} affected
             </span>
           </div>
         </AlertDescription>
@@ -403,7 +403,7 @@ export function AllergenWarningBanner({
       className={cn(
         severity.bgColor,
         severity.borderColor,
-        "border relative",
+        "relative border",
         isResolved && "opacity-60",
         className
       )}
@@ -452,7 +452,7 @@ export function AllergenWarningBanner({
           {/* Affected Guests */}
           {warning.affectedGuests.length > 0 && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
+              <div className="flex items-center gap-1.5 font-semibold text-xs uppercase">
                 <User className="h-3.5 w-3.5" />
                 Affected Guests
               </div>
@@ -460,7 +460,7 @@ export function AllergenWarningBanner({
                 {warning.affectedGuestDetails
                   ? warning.affectedGuestDetails.map((guest) => (
                       <Badge
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800"
                         key={guest.id}
                         variant="outline"
                       >
@@ -469,7 +469,7 @@ export function AllergenWarningBanner({
                     ))
                   : warning.affectedGuests.map((guestId, index) => (
                       <Badge
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800"
                         key={guestId}
                         variant="outline"
                       >
@@ -483,7 +483,7 @@ export function AllergenWarningBanner({
           {/* Allergens/Restrictions */}
           {warning.allergens.length > 0 && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
+              <div className="flex items-center gap-1.5 font-semibold text-xs uppercase">
                 <Ban className="h-3.5 w-3.5" />
                 {warning.warningType === "dietary_restriction"
                   ? "Restrictions"
@@ -506,7 +506,7 @@ export function AllergenWarningBanner({
           {/* Dish Information */}
           {warning.dishName && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
+              <div className="flex items-center gap-1.5 font-semibold text-xs uppercase">
                 <Utensils className="h-3.5 w-3.5" />
                 Related Dish
               </div>
@@ -518,19 +518,19 @@ export function AllergenWarningBanner({
 
           {/* Override Reason (if acknowledged) */}
           {warning.overrideReason && (
-            <div className="rounded-md bg-white/50 dark:bg-slate-900/50 p-2">
-              <p className="text-xs font-semibold uppercase">Override Reason</p>
-              <p className="text-xs mt-1">{warning.overrideReason}</p>
+            <div className="rounded-md bg-white/50 p-2 dark:bg-slate-900/50">
+              <p className="font-semibold text-xs uppercase">Override Reason</p>
+              <p className="mt-1 text-xs">{warning.overrideReason}</p>
             </div>
           )}
 
           {/* Notes (if present) */}
           {warning.notes && (
-            <div className="rounded-md bg-white/50 dark:bg-slate-900/50 p-2">
-              <p className="text-xs font-semibold uppercase">
+            <div className="rounded-md bg-white/50 p-2 dark:bg-slate-900/50">
+              <p className="font-semibold text-xs uppercase">
                 Additional Notes
               </p>
-              <p className="text-xs mt-1">{warning.notes}</p>
+              <p className="mt-1 text-xs">{warning.notes}</p>
             </div>
           )}
         </AlertDescription>
@@ -539,7 +539,7 @@ export function AllergenWarningBanner({
         {!isResolved && (
           <div className="flex flex-wrap items-center gap-2">
             {isAcknowledged ? (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs">
                 <CheckCircle2 className="h-4 w-4 text-blue-600" />
                 <span>
                   Acknowledged by {warning.acknowledgedBy} on{" "}
@@ -583,7 +583,7 @@ export function AllergenWarningBanner({
 
             {warning.severity === "info" && onDismiss && !isAcknowledged && (
               <Button
-                className="gap-1.5 ml-auto"
+                className="ml-auto gap-1.5"
                 onClick={handleDismiss}
                 size="sm"
                 variant="ghost"
@@ -618,7 +618,7 @@ export function AllergenWarningInline({
   return (
     <button
       className={cn(
-        "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:opacity-80",
+        "flex items-center gap-1.5 rounded-md px-2 py-1 font-medium text-xs transition-colors hover:opacity-80",
         severity.bgColor,
         severity.textColor,
         severity.borderColor,
@@ -633,7 +633,7 @@ export function AllergenWarningInline({
         {warning.warningType === "dietary_restriction"
           ? "restriction"
           : "allergen"}
-        {warning.allergens.length !== 1 ? "s" : ""}
+        {warning.allergens.length === 1 ? "" : "s"}
       </span>
     </button>
   );

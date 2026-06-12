@@ -4,9 +4,9 @@ import { PAGE } from "./document";
 
 export interface MetricCardData {
   label: string;
-  value: string;
   subtext?: string;
   trend?: "up" | "down" | "neutral";
+  value: string;
 }
 
 export function drawMetricCards(

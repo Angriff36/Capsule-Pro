@@ -19,11 +19,11 @@
  * - Audit trail
  */
 
-import type { ConstraintOutcome } from "@repo/design-system/components/constraint-override-dialog";
 import { database } from "@repo/database";
+import type { ConstraintOutcome } from "@repo/design-system/components/constraint-override-dialog";
 import { revalidatePath } from "next/cache";
-import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
 
 // ============ Helper Functions ============
 
@@ -39,14 +39,14 @@ const parseNumber = (value: FormDataEntryValue | null) => {
  * Result of a menu action with constraint outcomes
  */
 export interface MenuManifestActionResult {
-  success: boolean;
   constraintOutcomes?: ConstraintOutcome[];
-  overrideRequests?: Array<unknown>;
-  redirectUrl?: string;
   error?: string;
+  isActive?: boolean;
   menuId?: string;
   name?: string;
-  isActive?: boolean;
+  overrideRequests?: Array<unknown>;
+  redirectUrl?: string;
+  success: boolean;
 }
 
 // ============ Public Actions ============

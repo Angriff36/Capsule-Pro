@@ -5,16 +5,13 @@
  * then dispatches through governed Manifest `recalculate` command.
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
-import {
-  manifestErrorResponse,
-} from "@/lib/manifest-response";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 interface RecalculateRequestBody {
   instanceId: string;
@@ -45,7 +42,12 @@ async function calculateBudgetTotals(
   const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
   if (!(eventBudget && eventBudget.lineItems.length)) {
-    return { budgetedRevenue, budgetedFoodCost: 0, budgetedLaborCost: 0, budgetedOverhead: 0 };
+    return {
+      budgetedRevenue,
+      budgetedFoodCost: 0,
+      budgetedLaborCost: 0,
+      budgetedOverhead: 0,
+    };
   }
 
   let budgetedFoodCost = 0;
@@ -56,18 +58,35 @@ async function calculateBudgetTotals(
     const amount = Number(item.budgetedAmount);
     const category = item.category.toLowerCase();
 
-    if (category.includes("food") || category.includes("catering") || category.includes("menu")) {
+    if (
+      category.includes("food") ||
+      category.includes("catering") ||
+      category.includes("menu")
+    ) {
       budgetedFoodCost += amount;
-    } else if (category.includes("labor") || category.includes("staff") || category.includes("service")) {
+    } else if (
+      category.includes("labor") ||
+      category.includes("staff") ||
+      category.includes("service")
+    ) {
       budgetedLaborCost += amount;
-    } else if (category.includes("overhead") || category.includes("facility") || category.includes("equipment")) {
+    } else if (
+      category.includes("overhead") ||
+      category.includes("facility") ||
+      category.includes("equipment")
+    ) {
       budgetedOverhead += amount;
     } else {
       budgetedFoodCost += amount;
     }
   }
 
-  return { budgetedRevenue, budgetedFoodCost, budgetedLaborCost, budgetedOverhead };
+  return {
+    budgetedRevenue,
+    budgetedFoodCost,
+    budgetedLaborCost,
+    budgetedOverhead,
+  };
 }
 
 /**
@@ -93,7 +112,10 @@ async function calculateActualTotals(
 
   for (const order of cateringOrders) {
     actualRevenue += Number(order.subtotal_amount);
-    if (order.order_status === "confirmed" || order.order_status === "completed") {
+    if (
+      order.order_status === "confirmed" ||
+      order.order_status === "completed"
+    ) {
       actualFoodCost += Number(order.subtotal_amount) * 0.35;
       actualLaborCost += Number(order.subtotal_amount) * 0.15;
       actualOverhead += Number(order.subtotal_amount) * 0.05;
@@ -114,7 +136,10 @@ export async function POST(request: NextRequest) {
     const { instanceId: profitabilityId } = body;
 
     if (!profitabilityId) {
-      return manifestErrorResponse("Profitability ID (instanceId) is required", 400);
+      return manifestErrorResponse(
+        "Profitability ID (instanceId) is required",
+        400
+      );
     }
 
     // Verify the profitability record exists (read path, constitution §10)
@@ -127,8 +152,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Compute fresh budgeted and actual values (reads, not governed writes)
-    const budget = await calculateBudgetTotals(user.tenantId, profitability.eventId);
-    const actuals = await calculateActualTotals(user.tenantId, profitability.eventId);
+    const budget = await calculateBudgetTotals(
+      user.tenantId,
+      profitability.eventId
+    );
+    const actuals = await calculateActualTotals(
+      user.tenantId,
+      profitability.eventId
+    );
 
     // Dispatch governed write through Manifest runtime
     return runManifestCommand({

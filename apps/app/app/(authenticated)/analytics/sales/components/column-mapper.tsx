@@ -12,8 +12,8 @@ import {
 import type { EncodingSlot, FieldType } from "../lib/chart-catalog";
 
 interface ColumnInfo {
-  name: string;
   detectedType: FieldType;
+  name: string;
   sampleValues: string[];
 }
 
@@ -137,9 +137,9 @@ function ColumnMapper({
         return (
           <div className="space-y-1" key={slot.placeholder}>
             <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium">{slot.label}</Label>
+              <Label className="font-medium text-sm">{slot.label}</Label>
               {slot.required && (
-                <Badge className="text-[10px] px-1 py-0" variant="outline">
+                <Badge className="px-1 py-0 text-[10px]" variant="outline">
                   Required
                 </Badge>
               )}
@@ -170,7 +170,7 @@ function ColumnMapper({
                     <div className="flex items-center gap-2">
                       <span>{col.name}</span>
                       <span
-                        className={`text-[10px] px-1 rounded ${TYPE_COLORS[col.detectedType]}`}
+                        className={`rounded px-1 text-[10px] ${TYPE_COLORS[col.detectedType]}`}
                       >
                         {TYPE_LABELS[col.detectedType]}
                       </span>
@@ -182,7 +182,7 @@ function ColumnMapper({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">{col.name}</span>
                       <span
-                        className={`text-[10px] px-1 rounded ${TYPE_COLORS[col.detectedType]}`}
+                        className={`rounded px-1 text-[10px] ${TYPE_COLORS[col.detectedType]}`}
                       >
                         {TYPE_LABELS[col.detectedType]}
                       </span>
@@ -198,5 +198,5 @@ function ColumnMapper({
   );
 }
 
-export { buildColumnInfo, ColumnMapper, detectFieldType };
 export type { ColumnInfo, ColumnMapperProps };
+export { buildColumnInfo, ColumnMapper, detectFieldType };

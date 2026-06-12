@@ -9,31 +9,31 @@ const BAR_OPTIONS = [
     value: "none",
     label: "No Bar Service",
     description: "Food only",
-    icon: <CircleOff className="w-4 h-4" />,
+    icon: <CircleOff className="h-4 w-4" />,
   },
   {
     value: "beer-wine",
     label: "Beer & Wine",
     description: "Curated beer and wine selection",
-    icon: <Beer className="w-4 h-4" />,
+    icon: <Beer className="h-4 w-4" />,
   },
   {
     value: "full-bar",
     label: "Full Bar",
     description: "Standard spirits, beer, and wine",
-    icon: <GlassWater className="w-4 h-4" />,
+    icon: <GlassWater className="h-4 w-4" />,
   },
   {
     value: "premium-bar",
     label: "Premium Bar",
     description: "Top-shelf spirits and craft cocktails",
-    icon: <Martini className="w-4 h-4" />,
+    icon: <Martini className="h-4 w-4" />,
   },
   {
     value: "byob-service",
     label: "BYOB Service",
     description: "You supply, we bartend",
-    icon: <Wine className="w-4 h-4" />,
+    icon: <Wine className="h-4 w-4" />,
   },
 ];
 
@@ -75,11 +75,11 @@ const ADDON_KEYS: Record<string, string> = {
 
 interface Props {
   formData: WizardFormData;
+  toggleArrayItem: (field: keyof WizardFormData, item: string) => void;
   updateField: <K extends keyof WizardFormData>(
     field: K,
     value: WizardFormData[K]
   ) => void;
-  toggleArrayItem: (field: keyof WizardFormData, item: string) => void;
 }
 
 export default function ExtrasStep({
@@ -95,10 +95,10 @@ export default function ExtrasStep({
       />
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Bar service
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {BAR_OPTIONS.map((opt) => (
             <SelectCard
               description={opt.description}
@@ -113,7 +113,7 @@ export default function ExtrasStep({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Rentals needed (select all that apply)
         </label>
         <div className="flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ export default function ExtrasStep({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Add-on experiences
         </label>
         <div className="flex flex-wrap gap-2">

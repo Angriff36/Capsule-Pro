@@ -50,7 +50,7 @@ export function CalendarViewSwitcher({
       href: getDetailUrl(event),
       pills: (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${TYPE_COLORS[event.type] ?? "bg-muted text-muted-foreground"}`}
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${TYPE_COLORS[event.type] ?? "bg-muted text-muted-foreground"}`}
         >
           {event.type === "timeoff" ? "Time off" : event.type}
         </span>

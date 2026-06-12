@@ -40,50 +40,50 @@ export type CardNetwork =
  * Payment method type from database
  */
 export interface PaymentMethod {
-  tenantId: string;
-  id: string;
-  clientId: string;
-  externalMethodId: string | null;
-  type: PaymentMethodType;
-  cardLastFour: string | null;
-  cardNetwork: CardNetwork | null;
-  cardExpiryMonth: number | null;
-  cardExpiryYear: number | null;
-  cardHolderName: string | null;
   bankAccountLastFour: string | null;
   bankAccountType: string | null;
   bankRoutingNumber: string | null;
-  walletProvider: string | null;
-  walletEmail: string | null;
-  status: PaymentMethodStatus;
-  isDefault: boolean;
-  fraudFlagged: boolean;
-  verifiedAt: Date | null;
-  verificationMethod: string | null;
-  nickname: string | null;
+  cardExpiryMonth: number | null;
+  cardExpiryYear: number | null;
+  cardHolderName: string | null;
+  cardLastFour: string | null;
+  cardNetwork: CardNetwork | null;
+  clientId: string;
   createdAt: Date;
-  updatedAt: Date;
   expiresAt: Date | null;
+  externalMethodId: string | null;
+  fraudFlagged: boolean;
+  id: string;
+  isDefault: boolean;
+  nickname: string | null;
+  status: PaymentMethodStatus;
+  tenantId: string;
+  type: PaymentMethodType;
+  updatedAt: Date;
+  verificationMethod: string | null;
+  verifiedAt: Date | null;
+  walletEmail: string | null;
+  walletProvider: string | null;
 }
 
 /**
  * Create payment method request body
  */
 export interface CreatePaymentMethodRequest {
-  clientId: string;
-  type: PaymentMethodType;
-  externalMethodId: string;
-  cardLastFour?: string;
-  cardNetwork?: CardNetwork;
+  bankAccountLastFour?: string;
+  bankAccountType?: string;
   cardExpiryMonth?: number;
   cardExpiryYear?: number;
   cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  walletProvider?: string;
-  walletEmail?: string;
-  nickname?: string;
+  cardLastFour?: string;
+  cardNetwork?: CardNetwork;
+  clientId: string;
+  externalMethodId: string;
   isDefault?: boolean;
+  nickname?: string;
+  type: PaymentMethodType;
+  walletEmail?: string;
+  walletProvider?: string;
 }
 
 /**
@@ -95,17 +95,17 @@ export type UpdatePaymentMethodRequest = Partial<CreatePaymentMethodRequest>;
  * Payment method list item
  */
 export interface PaymentMethodListItem {
-  id: string;
   clientId: string;
   clientName: string;
-  type: PaymentMethodType;
+  createdAt: Date;
   displayInfo: string;
-  status: PaymentMethodStatus;
-  isDefault: boolean;
   fraudFlagged: boolean;
+  id: string;
+  isDefault: boolean;
   isExpired: boolean;
   isUsable: boolean;
-  createdAt: Date;
+  status: PaymentMethodStatus;
+  type: PaymentMethodType;
 }
 
 /**
@@ -142,25 +142,25 @@ export type PaymentMethodResponse = PaymentMethod & {
  */
 export interface PaymentMethodFilters {
   clientId?: string;
-  type?: PaymentMethodType;
-  status?: PaymentMethodStatus;
-  isDefault?: boolean;
   fraudFlagged?: boolean;
+  isDefault?: boolean;
   search?: string;
+  status?: PaymentMethodStatus;
+  type?: PaymentMethodType;
 }
 
 /**
  * Tokenization response from payment gateway
  */
 export interface TokenizationResponse {
-  success: boolean;
-  token: string;
-  lastFour: string;
-  network?: CardNetwork;
-  expiryMonth?: number;
-  expiryYear?: number;
   cardHolder?: string;
   errorMessage?: string;
+  expiryMonth?: number;
+  expiryYear?: number;
+  lastFour: string;
+  network?: CardNetwork;
+  success: boolean;
+  token: string;
 }
 
 /**

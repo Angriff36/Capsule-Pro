@@ -111,7 +111,11 @@ describe("resolveParentContext — direct enrichment", () => {
     const { body, inheritedFields } = await resolveParentContext(engine, {
       entity: "BattleBoard",
       command: "create",
-      body: { boardName: "Smith Wedding Board", boardType: "event-specific", eventId: "e1" },
+      body: {
+        boardName: "Smith Wedding Board",
+        boardType: "event-specific",
+        eventId: "e1",
+      },
     });
 
     expect(body.eventDate).toBe(EVENT_DATE);
@@ -121,7 +125,14 @@ describe("resolveParentContext — direct enrichment", () => {
     expect(body.venueAddress).toBe("123 Main St");
     expect(body.locationId).toBe("loc-9");
     expect(inheritedFields.sort()).toEqual(
-      ["clientId", "eventDate", "guestCount", "locationId", "venueAddress", "venueName"].sort()
+      [
+        "clientId",
+        "eventDate",
+        "guestCount",
+        "locationId",
+        "venueAddress",
+        "venueName",
+      ].sort()
     );
 
     // Source metadata is recorded for drift prevention.
@@ -222,7 +233,11 @@ describe("run-manifest-command-core — create inherits parent context end-to-en
       {
         entity: "BattleBoard",
         command: "create",
-        body: { boardName: "Smith Wedding Board", boardType: "event-specific", eventId: "e1" },
+        body: {
+          boardName: "Smith Wedding Board",
+          boardType: "event-specific",
+          eventId: "e1",
+        },
         user: { id: "u1", tenantId: "t1", role: "manager" },
       }
     );

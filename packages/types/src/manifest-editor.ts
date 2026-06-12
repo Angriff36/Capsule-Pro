@@ -6,10 +6,10 @@
  */
 
 export interface EntityListItem {
-  name: string;
-  displayName: string;
   commands: string[];
   constraints: string[];
+  displayName: string;
+  name: string;
   policies: string[];
   properties: Array<{
     name: string;
@@ -19,79 +19,77 @@ export interface EntityListItem {
 }
 
 export interface EntityDetail {
-  name: string;
-  displayName: string;
-  properties: Array<{
-    name: string;
-    type: string;
-    required: boolean;
-    default?: unknown;
-  }>;
+  commands: CommandDetail[];
   computed: Array<{
     name: string;
     type: string;
     expression: string;
   }>;
   constraints: ConstraintDetail[];
-  commands: CommandDetail[];
+  displayName: string;
+  name: string;
   policies: PolicyDetail[];
+  properties: Array<{
+    name: string;
+    type: string;
+    required: boolean;
+    default?: unknown;
+  }>;
 }
 
 export interface ConstraintDetail {
-  name: string;
   code: string;
-  severity: "block" | "warn" | "info";
-  message: string;
-  expression: string;
-  level: "entity" | "command";
   commandName?: string;
   details?: string;
+  expression: string;
+  level: "entity" | "command";
+  message: string;
+  name: string;
+  severity: "block" | "warn" | "info";
 }
 
 export interface GuardDetail {
-  index: number;
   expression: string;
+  index: number;
   message?: string;
 }
 
 export interface CommandDetail {
-  name: string;
-  description?: string;
-  parameters: Array<{
-    name: string;
-    type: string;
-  }>;
-  guards: GuardDetail[];
   constraints: ConstraintDetail[];
+  description?: string;
+  emittedEvents: string[];
+  guards: GuardDetail[];
   mutations: Array<{
     property: string;
     expression: string;
   }>;
-  emittedEvents: string[];
+  name: string;
+  parameters: Array<{
+    name: string;
+    type: string;
+  }>;
 }
 
 export interface PolicyDetail {
-  name: string;
-  type: "execute" | "read" | "create" | "update" | "delete";
-  targetCommands: string[];
   expression: string;
   message: string;
+  name: string;
+  targetCommands: string[];
+  type: "execute" | "read" | "create" | "update" | "delete";
 }
 
 export interface ValidationResult {
-  valid: boolean;
-  passed: boolean;
   error?: string;
-  result?: unknown;
   formatted?: string;
+  passed: boolean;
+  result?: unknown;
+  valid: boolean;
 }
 
 export interface TestScenario {
-  name: string;
+  commandName?: string;
   description: string;
   entityName: string;
-  commandName?: string;
-  testData: Record<string, unknown>;
   expectedResults: {
     guardResults?: Array<{ guardIndex: number; shouldPass: boolean }>;
     constraintResults?: Array<{
@@ -100,10 +98,12 @@ export interface TestScenario {
     }>;
     policyDenial?: boolean;
   };
+  name: string;
+  testData: Record<string, unknown>;
 }
 
 export interface TestResult {
-  scenarioName: string;
+  errors?: string[];
   passed: boolean;
   results: {
     guards?: Array<{
@@ -123,55 +123,55 @@ export interface TestResult {
       reason?: string;
     };
   };
-  errors?: string[];
+  scenarioName: string;
 }
 
 /**
  * Result from executing a manifest command in the playground
  */
 export interface ExecutionResult {
-  success: boolean;
   commandName: string;
-  entityName: string;
-  input: Record<string, unknown>;
-  output?: {
-    result?: Record<string, unknown>;
-    events?: Array<{ name: string; payload: Record<string, unknown> }>;
-  };
-  guards: Array<{
-    index: number;
-    expression: string;
-    passed: boolean;
-    message?: string;
-  }>;
   constraints: Array<{
     name: string;
     severity: string;
     passed: boolean;
     message?: string;
   }>;
+  entityName: string;
+  error?: string;
+  executionTime: number;
+  guards: Array<{
+    index: number;
+    expression: string;
+    passed: boolean;
+    message?: string;
+  }>;
+  input: Record<string, unknown>;
+  output?: {
+    result?: Record<string, unknown>;
+    events?: Array<{ name: string; payload: Record<string, unknown> }>;
+  };
   policy?: {
     denied: boolean;
     policyName?: string;
     reason?: string;
   };
-  error?: string;
   snapshot?: {
     id: string;
     timestamp: number;
     state: Record<string, unknown>;
   };
-  executionTime: number;
+  success: boolean;
 }
 
 /**
  * Entry in the execution history
  */
 export interface ExecutionHistoryEntry {
-  id: string;
-  timestamp: number;
-  entityName: string;
   commandName: string;
+  entityName: string;
+  id: string;
   input: Record<string, unknown>;
   result: ExecutionResult;
+  timestamp: number;
 }

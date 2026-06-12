@@ -6,30 +6,43 @@
  */
 
 import { database } from "@repo/database";
-import { checkBudgetForShift } from "./labor-budget";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { checkBudgetForShift } from "./labor-budget";
 
 export interface ShiftRequirement {
-  shiftId: string;
-  scheduleId: string;
-  locationId: string;
-  shiftStart: Date;
-  shiftEnd: Date;
-  roleDuringShift?: string;
-  requiredSkills?: string[];
   eventId?: string;
+  locationId: string;
   notes?: string;
+  requiredSkills?: string[];
+  roleDuringShift?: string;
+  scheduleId: string;
+  shiftEnd: Date;
+  shiftId: string;
+  shiftStart: Date;
 }
 
 export interface EmployeeCandidate {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
+  availability?: Array<{
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+  }>;
+  conflictingShifts: Array<{
+    id: string;
+    shiftStart: Date;
+    shiftEnd: Date;
+    locationName: string;
+  }>;
   email: string;
-  role: string;
-  isActive: boolean;
+  firstName: string | null;
+  hasConflictingShift: boolean;
   hourlyRate: number | null;
+  id: string;
+  isActive: boolean;
+  lastName: string | null;
+  role: string;
   seniority?: {
     level: string;
     rank: number;
@@ -39,26 +52,11 @@ export interface EmployeeCandidate {
     skillName: string;
     proficiencyLevel: number;
   }>;
-  availability?: Array<{
-    dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
-  }>;
-  hasConflictingShift: boolean;
-  conflictingShifts: Array<{
-    id: string;
-    shiftStart: Date;
-    shiftEnd: Date;
-    locationName: string;
-  }>;
 }
 
 export interface AssignmentSuggestion {
-  employee: EmployeeCandidate;
-  score: number;
-  reasoning: string[];
   confidence: "high" | "medium" | "low";
+  employee: EmployeeCandidate;
   matchDetails: {
     skillsMatch: boolean;
     skillsMatched: string[];
@@ -68,24 +66,39 @@ export interface AssignmentSuggestion {
     hasConflicts: boolean;
     costEstimate: number;
   };
+  reasoning: string[];
+  score: number;
 }
 
 export interface AutoAssignmentResult {
-  shiftId: string;
-  suggestions: AssignmentSuggestion[];
   bestMatch: AssignmentSuggestion | null;
   canAutoAssign: boolean;
   laborBudgetWarning?: string;
+  shiftId: string;
+  suggestions: AssignmentSuggestion[];
 }
 
 interface DbEmployee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
+  availability: Array<{
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+  }>;
+  conflicting_shifts: Array<{
+    id: string;
+    shift_start: Date;
+    shift_end: Date;
+    location_name: string;
+  }>;
   email: string;
-  role: string;
-  is_active: boolean;
+  first_name: string | null;
+  has_conflicting_shift: boolean;
   hourly_rate: number | null;
+  id: string;
+  is_active: boolean;
+  last_name: string | null;
+  role: string;
   seniority_level: string | null;
   seniority_rank: number | null;
   skills: Array<{
@@ -93,29 +106,16 @@ interface DbEmployee {
     skill_name: string;
     proficiency_level: number;
   }>;
-  availability: Array<{
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-  }>;
-  has_conflicting_shift: boolean;
-  conflicting_shifts: Array<{
-    id: string;
-    shift_start: Date;
-    shift_end: Date;
-    location_name: string;
-  }>;
 }
 
 interface ScoreBreakdown {
-  totalScore: number;
-  skillsMatched: string[];
-  skillsMissing: string[];
-  skillsMatch: boolean;
-  seniorityScore: number;
   availabilityMatch: boolean;
   reasoning: string[];
+  seniorityScore: number;
+  skillsMatch: boolean;
+  skillsMatched: string[];
+  skillsMissing: string[];
+  totalScore: number;
 }
 
 /**
@@ -310,7 +310,10 @@ async function fetchEmployeesForShift(
     skillsByEmployeeId.set(skill.employee_id, employeeSkills);
   }
 
-  const availabilityByEmployeeId = new Map<string, DbEmployee["availability"]>();
+  const availabilityByEmployeeId = new Map<
+    string,
+    DbEmployee["availability"]
+  >();
   for (const availability of availabilityRows) {
     const employeeAvailability =
       availabilityByEmployeeId.get(availability.employeeId) ?? [];
@@ -326,7 +329,10 @@ async function fetchEmployeesForShift(
   const locationNamesById = new Map(
     locations.map((location) => [location.id, location.name])
   );
-  const conflictsByEmployeeId = new Map<string, DbEmployee["conflicting_shifts"]>();
+  const conflictsByEmployeeId = new Map<
+    string,
+    DbEmployee["conflicting_shifts"]
+  >();
   for (const shift of conflictRows) {
     const employeeConflicts = conflictsByEmployeeId.get(shift.employeeId) ?? [];
     employeeConflicts.push({
@@ -485,14 +491,13 @@ function checkAvailabilityMatch(
   const shiftStartTime = shiftStart.toTimeString().slice(0, 5);
   const shiftEndTime = shiftEnd.toTimeString().slice(0, 5);
 
-  const availabilityMatch = availability.some((avail) => {
-    return (
+  const availabilityMatch = availability.some(
+    (avail) =>
       avail.day_of_week === shiftDayOfWeek &&
       avail.is_available &&
       avail.start_time <= shiftStartTime &&
       avail.end_time >= shiftEndTime
-    );
-  });
+  );
 
   const reasoning: string[] = [];
   let score = 0;

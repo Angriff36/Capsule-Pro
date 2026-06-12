@@ -48,8 +48,8 @@ const channelNameForThread = (
     ? `tenant:${tenantId}:admin-chat`
     : `tenant:${tenantId}:admin-chat:thread:${threadId}`;
 
-const getEmployee = async (tenantId: string, authUserId: string) => {
-  return await database.user.findFirst({
+const getEmployee = async (tenantId: string, authUserId: string) =>
+  await database.user.findFirst({
     where: {
       tenantId,
       authUserId,
@@ -62,7 +62,6 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
       email: true,
     },
   });
-};
 
 /**
  * Ensures a participant exists for a team thread using Manifest commands.
@@ -72,7 +71,14 @@ const ensureTeamThreadParticipant = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
-  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
+  user: {
+    id: string;
+    tenantId: string;
+    role: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }) => {
   // Read: check if participant exists (read per constitution §10)
   const existing = await database.adminChatParticipant.findFirst({
@@ -124,7 +130,14 @@ const resolveThreadAccess = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
-  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
+  user: {
+    id: string;
+    tenantId: string;
+    role: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }) => {
   const thread = await database.adminChatThread.findFirst({
     where: {

@@ -27,6 +27,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -36,14 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CheckCircle2,
@@ -60,24 +60,24 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  listDrivers,
-  listVehicles,
   driverRemove,
   driverUpdate,
+  listDrivers,
+  listVehicles,
 } from "@/app/lib/manifest-client.generated";
 import { createDriver } from "../actions";
 
 interface Driver {
-  id: string;
-  name: string;
-  phone: string | null;
   email: string | null;
-  license_number: string | null;
+  id: string;
   license_expiry: string | null;
+  license_number: string | null;
+  name: string;
+  notes: string | null;
+  phone: string | null;
   status: string;
   vehicle_id: string | null;
   vehicle_name: string | null;
-  notes: string | null;
 }
 
 interface Vehicle {
@@ -193,7 +193,9 @@ export default function DriversPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       if (editing) {
@@ -201,7 +203,9 @@ export default function DriversPage() {
           id: editing.id,
           ...form,
           vehicleId:
-            form.vehicleId === "__none__" ? undefined : form.vehicleId || undefined,
+            form.vehicleId === "__none__"
+              ? undefined
+              : form.vehicleId || undefined,
         });
         toast.success("Driver updated successfully");
         await loadData();
@@ -248,24 +252,25 @@ export default function DriversPage() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Drivers</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Drivers</h1>
           <p className="text-muted-foreground">
             Manage delivery drivers and assignments.
           </p>
         </div>
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Driver
         </Button>
       </div>
@@ -277,7 +282,7 @@ export default function DriversPage() {
           return (
             <Card key={status} tone="soft-stone">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="font-medium text-sm">
                   {config.label}
                 </CardTitle>
                 <config.icon
@@ -285,7 +290,7 @@ export default function DriversPage() {
                 />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{count}</div>
+                <div className="font-bold text-2xl">{count}</div>
               </CardContent>
             </Card>
           );
@@ -302,12 +307,14 @@ export default function DriversPage() {
                 </EmptyMedia>
                 <EmptyTitle>No drivers yet</EmptyTitle>
                 <EmptyDescription>
-                  Add delivery drivers to manage assignments and track availability.
+                  Add delivery drivers to manage assignments and track
+                  availability.
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <p className="text-muted-foreground text-xs">
-                  Click <strong>Add Driver</strong> above to create your first driver.
+                  Click <strong>Add Driver</strong> above to create your first
+                  driver.
                 </p>
               </EmptyContent>
             </Empty>
@@ -321,7 +328,7 @@ export default function DriversPage() {
             const Icon = config.icon;
             return (
               <Card
-                className="hover:border-primary/40 transition-shadow"
+                className="transition-shadow hover:border-primary/40"
                 key={driver.id}
                 tone="canvas"
               >
@@ -332,12 +339,12 @@ export default function DriversPage() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <span className="font-semibold">{driver.name}</span>
                         <Badge className={config.color}>{config.label}</Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
                         {driver.phone && (
                           <span className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />

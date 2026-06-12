@@ -10,17 +10,17 @@ import type { Task } from "../types";
 import { priorityConfig } from "../types";
 
 interface TaskCardProps {
-  task: Task;
-  type: "available" | "my-tasks";
   isLoading?: boolean;
   isMultiSelectMode?: boolean;
   isSelected?: boolean;
   onClaim?: (taskId: string) => void;
-  onRelease?: (taskId: string) => void;
   onComplete?: (taskId: string) => void;
+  onLongPress?: (taskId: string) => void;
+  onRelease?: (taskId: string) => void;
   onStart?: (taskId: string) => void;
   onToggleSelect?: (taskId: string) => void;
-  onLongPress?: (taskId: string) => void;
+  task: Task;
+  type: "available" | "my-tasks";
 }
 
 function formatDueStatus(

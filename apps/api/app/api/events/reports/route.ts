@@ -101,7 +101,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[EventReport/POST] Delegating to manifest create command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return await runManifestCommand({
     entity: "EventReport",
     command: "create",

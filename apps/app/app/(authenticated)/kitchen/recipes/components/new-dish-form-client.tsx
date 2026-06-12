@@ -105,13 +105,13 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
       >
         {/* Basic Information Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Basic Information
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="name">
+                <label className="font-medium text-sm" htmlFor="name">
                   Dish name
                 </label>
                 <input
@@ -123,7 +123,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="recipeId">
+                <label className="font-medium text-sm" htmlFor="recipeId">
                   Linked recipe
                 </label>
                 <select
@@ -142,7 +142,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="category">
+                <label className="font-medium text-sm" htmlFor="category">
                   Category
                 </label>
                 <input
@@ -153,7 +153,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="serviceStyle">
+                <label className="font-medium text-sm" htmlFor="serviceStyle">
                   Service style
                 </label>
                 <input
@@ -166,7 +166,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="dietaryTags">
+                <label className="font-medium text-sm" htmlFor="dietaryTags">
                   Dietary tags
                 </label>
                 <input
@@ -177,7 +177,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="allergens">
+                <label className="font-medium text-sm" htmlFor="allergens">
                   Allergens
                 </label>
                 <input
@@ -193,13 +193,13 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
 
         {/* Pricing & Costs Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Pricing & Costs
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="pricePerPerson">
+                <label className="font-medium text-sm" htmlFor="pricePerPerson">
                   Menu price per person
                 </label>
                 <input
@@ -211,7 +211,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="costPerPerson">
+                <label className="font-medium text-sm" htmlFor="costPerPerson">
                   Food cost per person
                 </label>
                 <input
@@ -228,14 +228,14 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
 
         {/* Timing & Portions Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Timing & Portions
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="minPrepLeadDays"
                 >
                   Min prep lead (days)
@@ -250,7 +250,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="maxPrepLeadDays"
                 >
                   Max prep lead (days)
@@ -265,7 +265,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="portionSizeDescription"
                 >
                   Portion size
@@ -283,12 +283,12 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
 
         {/* Media & Actions Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Media & Actions
           </h2>
-          <div className="rounded-lg border bg-card p-6 space-y-6">
+          <div className="space-y-6 rounded-lg border bg-card p-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="imageFile">
+              <label className="font-medium text-sm" htmlFor="imageFile">
                 Presentation image
               </label>
               <input
@@ -301,7 +301,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
             </div>
             <div className="h-px bg-border" />
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="description">
+              <label className="font-medium text-sm" htmlFor="description">
                 Service notes
               </label>
               <textarea
@@ -315,14 +315,14 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
             <div className="h-px bg-border" />
             <div className="flex flex-col gap-2">
               <button
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create dish"}
               </button>
               <a
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes?tab=dishes"
               >
                 Cancel

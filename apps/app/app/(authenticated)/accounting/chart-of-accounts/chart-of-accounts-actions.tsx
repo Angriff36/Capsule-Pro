@@ -2,8 +2,8 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { useEffect, useState } from "react";
-import { listChartOfAccounts } from "@/app/lib/manifest-client.generated";
 import type { ChartOfAccountWithParent } from "@/app/lib/chart-of-accounts";
+import { listChartOfAccounts } from "@/app/lib/manifest-client.generated";
 import { AccountModal } from "./components/account-modal";
 
 export function ChartOfAccountsActions() {

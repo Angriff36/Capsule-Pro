@@ -19,20 +19,39 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) => new Response(JSON.stringify(data), { status })),
-  manifestErrorResponse: vi.fn((data, status = 400) => new Response(JSON.stringify(data), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) => new Response(JSON.stringify(data), { status })
+  ),
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) => new Response(JSON.stringify(data), { status })
+  ),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -41,11 +60,20 @@ import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const dispatch = (command: string) => (req: NextRequest) =>
-  manifestDispatch(req, { params: Promise.resolve({ entity: "Menu", command }) });
+  manifestDispatch(req, {
+    params: Promise.resolve({ entity: "Menu", command }),
+  });
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
 const TEST_USER_ID = "user-001";
-const MOCK_USER = { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin", email: "test@test.com", firstName: "Test", lastName: "User" };
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: "admin",
+  email: "test@test.com",
+  firstName: "Test",
+  lastName: "User",
+};
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest("http://localhost:3000/api/menu/test", {
@@ -59,12 +87,21 @@ function mockAuthenticated() {
 }
 
 function throwInvariant(message: string) {
-  vi.mocked(requireCurrentUser).mockImplementation(() => { throw new InvariantError(message); });
+  vi.mocked(requireCurrentUser).mockImplementation(() => {
+    throw new InvariantError(message);
+  });
 }
 
 function mockRunSuccess(result: Record<string, unknown> = { id: "menu-001" }) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    new Response(JSON.stringify({ success: true, result, events: [{ type: "MenuCreated", entityId: result.id }] }), { status: 200 })
+    new Response(
+      JSON.stringify({
+        success: true,
+        result,
+        events: [{ type: "MenuCreated", entityId: result.id }],
+      }),
+      { status: 200 }
+    )
   );
 }
 
@@ -85,13 +122,17 @@ describe("Menu API Routes", () => {
   describe("POST Menu.create", () => {
     it("returns 401 when unauthenticated", async () => {
       throwInvariant("Unauthorized");
-      const res = await dispatch("create")(makeRequest({ name: "Brunch Menu" }));
+      const res = await dispatch("create")(
+        makeRequest({ name: "Brunch Menu" })
+      );
       expect(res.status).toBe(401);
     });
 
     it("returns 200 on successful create", async () => {
       mockRunSuccess({ id: "menu-001", name: "Brunch Menu" });
-      const res = await dispatch("create")(makeRequest({ name: "Brunch Menu" }));
+      const res = await dispatch("create")(
+        makeRequest({ name: "Brunch Menu" })
+      );
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.success).toBe(true);
@@ -101,7 +142,9 @@ describe("Menu API Routes", () => {
 
     it("returns 403 on policy denial", async () => {
       mockRunError(403, "Access denied: adminOnly (role=admin)");
-      const res = await dispatch("create")(makeRequest({ name: "Brunch Menu" }));
+      const res = await dispatch("create")(
+        makeRequest({ name: "Brunch Menu" })
+      );
       expect(res.status).toBe(403);
       const data = await res.json();
       expect(data.message).toContain("adminOnly");
@@ -118,14 +161,20 @@ describe("Menu API Routes", () => {
 
     it("returns 400 on generic command failure", async () => {
       mockRunError(400, "Something went wrong");
-      const res = await dispatch("create")(makeRequest({ name: "Brunch Menu" }));
+      const res = await dispatch("create")(
+        makeRequest({ name: "Brunch Menu" })
+      );
       expect(res.status).toBe(400);
       expect((await res.json()).message).toBe("Something went wrong");
     });
 
     it("returns 500 when runtime throws an exception", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new Error("DB connection lost") as never);
-      const res = await dispatch("create")(makeRequest({ name: "Brunch Menu" }));
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new Error("DB connection lost") as never
+      );
+      const res = await dispatch("create")(
+        makeRequest({ name: "Brunch Menu" })
+      );
       expect(res.status).toBe(500);
     });
   });
@@ -135,13 +184,17 @@ describe("Menu API Routes", () => {
   describe("POST Menu.update", () => {
     it("returns 401 when unauthenticated", async () => {
       throwInvariant("Unauthorized");
-      const res = await dispatch("update")(makeRequest({ id: "menu-001", name: "Updated" }));
+      const res = await dispatch("update")(
+        makeRequest({ id: "menu-001", name: "Updated" })
+      );
       expect(res.status).toBe(401);
     });
 
     it("returns 200 on successful update", async () => {
       mockRunSuccess({ id: "menu-001", name: "Dinner Menu" });
-      const res = await dispatch("update")(makeRequest({ id: "menu-001", name: "Dinner Menu" }));
+      const res = await dispatch("update")(
+        makeRequest({ id: "menu-001", name: "Dinner Menu" })
+      );
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.success).toBe(true);
@@ -150,14 +203,18 @@ describe("Menu API Routes", () => {
 
     it("passes correct entityName to runManifestCommand", async () => {
       mockRunSuccess({ id: "menu-001" });
-      await dispatch("update")(makeRequest({ id: "menu-001", name: "Updated" }));
+      await dispatch("update")(
+        makeRequest({ id: "menu-001", name: "Updated" })
+      );
       expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({ entity: "Menu", command: "update" })
       );
     });
 
     it("returns 500 on unexpected error", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new Error("Unexpected") as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new Error("Unexpected") as never
+      );
       const res = await dispatch("update")(makeRequest({ id: "menu-001" }));
       expect(res.status).toBe(500);
     });

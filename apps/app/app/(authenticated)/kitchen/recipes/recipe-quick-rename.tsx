@@ -68,7 +68,7 @@ export function RecipeQuickRename({
       </PopoverTrigger>
       <PopoverContent className="w-80" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-3">
-          <div className="text-sm font-medium">Rename Recipe</div>
+          <div className="font-medium text-sm">Rename Recipe</div>
           <Input
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {

@@ -46,7 +46,7 @@ export const Particles: Story = {
     intensity: 0.6,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           This empty state has a subtle particle animation.
         </p>
@@ -65,7 +65,7 @@ export const Waves: Story = {
     intensity: 0.6,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           This empty state has a gentle wave animation.
         </p>
@@ -84,7 +84,7 @@ export const Pulse: Story = {
     intensity: 0.6,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           This empty state has a subtle pulse animation.
         </p>
@@ -103,7 +103,7 @@ export const HighIntensity: Story = {
     intensity: 1,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           This empty state has a more visible animation.
         </p>
@@ -122,7 +122,7 @@ export const LowIntensity: Story = {
     intensity: 0.2,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           This empty state has a very subtle animation.
         </p>
@@ -141,7 +141,7 @@ export const Hidden: Story = {
     intensity: 0.6,
     children: (
       <div className="w-96 p-8 text-center">
-        <h3 className="text-lg font-medium">Empty State</h3>
+        <h3 className="font-medium text-lg">Empty State</h3>
         <p className="text-muted-foreground text-sm">
           The animation is hidden but content is still visible.
         </p>

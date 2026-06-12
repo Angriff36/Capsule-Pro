@@ -34,42 +34,46 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getPayment, paymentProcess, paymentRefund } from "@/app/lib/manifest-client.generated";
+import {
+  getPayment,
+  paymentProcess,
+  paymentRefund,
+} from "@/app/lib/manifest-client.generated";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
 
 interface Payment {
-  id: string;
   amount: string;
-  currency: string;
-  status: string;
-  methodType: string;
-  invoiceId: string | null;
-  eventId: string | null;
-  clientId: string | null;
-  gatewayTransactionId: string | null;
-  gatewayPaymentMethodId: string | null;
-  processor: string | null;
-  processedAt: string | null;
-  completedAt: string | null;
-  refundedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
   client?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   };
+  clientId: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  currency: string;
   event?: {
     id: string;
     title: string;
   };
+  eventId: string | null;
+  gatewayPaymentMethodId: string | null;
+  gatewayTransactionId: string | null;
+  id: string;
   invoice?: {
     id: string;
     invoiceNumber: string;
   };
+  invoiceId: string | null;
+  methodType: string;
+  processedAt: string | null;
+  processor: string | null;
+  refundedAt: string | null;
+  status: string;
+  updatedAt: string;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -97,7 +101,9 @@ const methodLabels: Record<string, string> = {
 };
 
 const formatDateTime = (dateStr: string | null | undefined) => {
-  if (!dateStr) return "—";
+  if (!dateStr) {
+    return "—";
+  }
   return new Date(dateStr).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
@@ -126,7 +132,9 @@ export default function PaymentDetailPage() {
     setError(null);
     try {
       const data = await getPayment(id);
-      if (!data) throw new Error("Payment not found");
+      if (!data) {
+        throw new Error("Payment not found");
+      }
       setPayment(data as unknown as Payment);
     } catch (err) {
       const message =
@@ -231,10 +239,10 @@ export default function PaymentDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">Payment</h1>
+              <h1 className="font-semibold text-2xl tracking-tight">Payment</h1>
               <Badge className={status.className}>{status.label}</Badge>
             </div>
-            <p className="font-mono text-sm text-muted-foreground">
+            <p className="font-mono text-muted-foreground text-sm">
               {payment.id}
             </p>
           </div>
@@ -274,16 +282,16 @@ export default function PaymentDetailPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <CreditCard className="size-4" />
               Amount
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
+            <p className="font-semibold text-2xl">
               {formatCurrency(payment.amount)}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {payment.currency} · {methodLabel}
             </p>
           </CardContent>
@@ -291,7 +299,7 @@ export default function PaymentDetailPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <CheckCircle className="size-4" />
               Status
             </CardTitle>
@@ -299,7 +307,7 @@ export default function PaymentDetailPage() {
           <CardContent>
             <Badge className={status.className}>{status.label}</Badge>
             {payment.processor && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-muted-foreground text-xs">
                 via {payment.processor}
               </p>
             )}
@@ -308,7 +316,7 @@ export default function PaymentDetailPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Clock className="size-4" />
               Created
             </CardTitle>
@@ -328,24 +336,24 @@ export default function PaymentDetailPage() {
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">Payment ID</p>
+                <p className="text-muted-foreground text-sm">Payment ID</p>
                 <p className="font-mono text-sm">{payment.id}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Method</p>
+                <p className="text-muted-foreground text-sm">Method</p>
                 <p className="text-sm">{methodLabel}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Currency</p>
+                <p className="text-muted-foreground text-sm">Currency</p>
                 <p className="text-sm">{payment.currency}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Processor</p>
+                <p className="text-muted-foreground text-sm">Processor</p>
                 <p className="text-sm">{payment.processor || "—"}</p>
               </div>
               {payment.gatewayTransactionId && (
                 <div className="md:col-span-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Gateway Transaction ID
                   </p>
                   <p className="font-mono text-sm">
@@ -364,9 +372,9 @@ export default function PaymentDetailPage() {
           <CardContent className="space-y-3">
             {payment.invoice && (
               <div>
-                <p className="text-sm text-muted-foreground">Invoice</p>
+                <p className="text-muted-foreground text-sm">Invoice</p>
                 <Link
-                  className="text-sm font-medium underline-offset-4 hover:underline"
+                  className="font-medium text-sm underline-offset-4 hover:underline"
                   href={`/accounting/invoices/${payment.invoice.id}`}
                 >
                   {payment.invoice.invoiceNumber}
@@ -375,9 +383,9 @@ export default function PaymentDetailPage() {
             )}
             {payment.event && (
               <div>
-                <p className="text-sm text-muted-foreground">Event</p>
+                <p className="text-muted-foreground text-sm">Event</p>
                 <Link
-                  className="text-sm font-medium underline-offset-4 hover:underline"
+                  className="font-medium text-sm underline-offset-4 hover:underline"
                   href={`/events/${payment.event.id}`}
                 >
                   {payment.event.title}
@@ -386,9 +394,9 @@ export default function PaymentDetailPage() {
             )}
             {payment.client && (
               <div>
-                <p className="text-sm text-muted-foreground">Client</p>
+                <p className="text-muted-foreground text-sm">Client</p>
                 <Link
-                  className="text-sm font-medium underline-offset-4 hover:underline"
+                  className="font-medium text-sm underline-offset-4 hover:underline"
                   href={`/crm/clients/${payment.client.id}`}
                 >
                   {payment.client.company_name ||
@@ -397,7 +405,7 @@ export default function PaymentDetailPage() {
               </div>
             )}
             {!(payment.invoice || payment.event || payment.client) && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No related records
               </p>
             )}
@@ -417,8 +425,8 @@ export default function PaymentDetailPage() {
                 <Clock className="size-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Created</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-medium text-sm">Created</p>
+                <p className="text-muted-foreground text-xs">
                   {formatDateTime(payment.createdAt)}
                 </p>
               </div>
@@ -430,8 +438,8 @@ export default function PaymentDetailPage() {
                   <CreditCard className="size-4 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Processed</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm">Processed</p>
+                  <p className="text-muted-foreground text-xs">
                     {formatDateTime(payment.processedAt)}
                   </p>
                 </div>
@@ -444,8 +452,8 @@ export default function PaymentDetailPage() {
                   <CheckCircle className="size-4 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Completed</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm">Completed</p>
+                  <p className="text-muted-foreground text-xs">
                     {formatDateTime(payment.completedAt)}
                   </p>
                 </div>
@@ -458,8 +466,8 @@ export default function PaymentDetailPage() {
                   <RotateCcw className="size-4 text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Refunded</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-medium text-sm">Refunded</p>
+                  <p className="text-muted-foreground text-xs">
                     {formatDateTime(payment.refundedAt)}
                   </p>
                 </div>

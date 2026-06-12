@@ -19,7 +19,7 @@ export default function WasteTrackingPage() {
     <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Waste Tracking
           </h1>
           <p className="text-muted-foreground">
@@ -35,7 +35,7 @@ export default function WasteTrackingPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Waste Management
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
@@ -72,7 +72,7 @@ export default function WasteTrackingPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Reports & Analysis
         </h2>
         <Card tone="canvas">

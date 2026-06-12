@@ -212,7 +212,9 @@ export async function finalizeCycleCountSession(input: {
           });
 
           if (!txResult.ok) {
-            throw new Error(txResult.message || "Failed to create inventory transaction");
+            throw new Error(
+              txResult.message || "Failed to create inventory transaction"
+            );
           }
 
           // Governed write: InventoryItem.adjust (constitution §3/§9).
@@ -237,7 +239,9 @@ export async function finalizeCycleCountSession(input: {
           });
 
           if (!adjustResult.ok) {
-            throw new Error(adjustResult.message || "Failed to adjust inventory item");
+            throw new Error(
+              adjustResult.message || "Failed to adjust inventory item"
+            );
           }
         }
 

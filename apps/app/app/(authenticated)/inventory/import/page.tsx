@@ -22,8 +22,8 @@ import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface ImportResult {
-  success: number;
   errors: Array<{ row: number; message: string }>;
+  success: number;
 }
 
 const CSV_TEMPLATE = `item_number,name,category,unit_cost,quantity_on_hand,reorder_level,tags,fsa_status
@@ -65,13 +65,17 @@ export default function InventoryImportPage() {
       e.preventDefault();
       setDragOver(false);
       const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile) handleFileSelect(droppedFile);
+      if (droppedFile) {
+        handleFileSelect(droppedFile);
+      }
     },
     [handleFileSelect]
   );
 
   const handleImport = async () => {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     setImporting(true);
     setResult(null);
 
@@ -99,7 +103,9 @@ export default function InventoryImportPage() {
 
       const data: ImportResult = await res.json();
       setResult(data);
-      if (data.success > 0) setFile(null);
+      if (data.success > 0) {
+        setFile(null);
+      }
     } catch (err) {
       setResult({
         success: 0,
@@ -135,7 +141,7 @@ export default function InventoryImportPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="font-bold text-2xl tracking-tight">
               Import Inventory
             </h1>
             <p className="text-muted-foreground">
@@ -170,7 +176,9 @@ export default function InventoryImportPage() {
                 input.accept = ".csv";
                 input.onchange = (e) => {
                   const target = e.target as HTMLInputElement;
-                  if (target.files?.[0]) handleFileSelect(target.files[0]);
+                  if (target.files?.[0]) {
+                    handleFileSelect(target.files[0]);
+                  }
                 };
                 input.click();
               }}
@@ -185,7 +193,7 @@ export default function InventoryImportPage() {
                 <div className="text-center">
                   <FileUp className="mx-auto h-10 w-10 text-muted-foreground" />
                   <p className="mt-2 font-medium">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {(file.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
@@ -221,10 +229,10 @@ export default function InventoryImportPage() {
               <div>
                 <h4 className="mb-2 font-medium text-sm">Required Columns</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="rounded bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
+                  <span className="rounded bg-muted/50 px-2 py-0.5 font-medium text-foreground text-xs">
                     item_number *
                   </span>
-                  <span className="rounded bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
+                  <span className="rounded bg-muted/50 px-2 py-0.5 font-medium text-foreground text-xs">
                     name *
                   </span>
                 </div>
@@ -237,7 +245,7 @@ export default function InventoryImportPage() {
                     (h) => h !== "item_number" && h !== "name"
                   ).map((header) => (
                     <span
-                      className="rounded bg-muted px-2 py-0.5 text-xs font-medium"
+                      className="rounded bg-muted px-2 py-0.5 font-medium text-xs"
                       key={header}
                     >
                       {header}
@@ -263,7 +271,7 @@ export default function InventoryImportPage() {
                     "other",
                   ].map((cat) => (
                     <span
-                      className="rounded bg-muted/50 px-1.5 py-0.5 text-xs text-foreground"
+                      className="rounded bg-muted/50 px-1.5 py-0.5 text-foreground text-xs"
                       key={cat}
                     >
                       {cat}
@@ -283,7 +291,7 @@ export default function InventoryImportPage() {
                     "exempt",
                   ].map((status) => (
                     <span
-                      className="rounded bg-muted/50 px-1.5 py-0.5 text-xs text-foreground"
+                      className="rounded bg-muted/50 px-1.5 py-0.5 text-foreground text-xs"
                       key={status}
                     >
                       {status.replace("_", " ")}
@@ -318,17 +326,17 @@ export default function InventoryImportPage() {
             <div className="space-y-4">
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="font-bold text-2xl text-green-600">
                     {result.success}
                   </p>
-                  <p className="text-sm text-muted-foreground">Imported</p>
+                  <p className="text-muted-foreground text-sm">Imported</p>
                 </div>
                 {result.errors.length > 0 && (
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="font-bold text-2xl text-red-600">
                       {result.errors.length}
                     </p>
-                    <p className="text-sm text-muted-foreground">Errors</p>
+                    <p className="text-muted-foreground text-sm">Errors</p>
                   </div>
                 )}
               </div>

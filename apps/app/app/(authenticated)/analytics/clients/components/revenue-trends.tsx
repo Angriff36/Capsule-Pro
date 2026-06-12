@@ -15,13 +15,13 @@ import { cn } from "@repo/design-system/lib/utils";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 interface RevenueTrendsProps {
+  className?: string;
   data: Array<{
     month: string;
     revenue: number;
     orders: number;
     clients: number;
   }>;
-  className?: string;
 }
 
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
@@ -60,13 +60,13 @@ export function RevenueTrends({ data, className }: RevenueTrendsProps) {
             <CartesianGrid className="stroke-muted" strokeDasharray="3 3" />
             <XAxis
               axisLine={false}
-              className="text-xs fill-muted-foreground"
+              className="fill-muted-foreground text-xs"
               dataKey="month"
               tickLine={false}
             />
             <YAxis
               axisLine={false}
-              className="text-xs fill-muted-foreground"
+              className="fill-muted-foreground text-xs"
               tickFormatter={(value) => formatCurrency(value)}
               tickLine={false}
             />

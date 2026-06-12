@@ -11,9 +11,9 @@ import {
 } from "@react-email/components";
 
 export interface ContactTemplateProps {
-  readonly name: string;
   readonly email: string;
   readonly message: string;
+  readonly name: string;
 }
 
 export const ContactTemplate = ({

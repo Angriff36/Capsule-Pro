@@ -19,23 +19,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { ChartBuilder } from "./chart-builder";
-import { ComparisonTable } from "./comparison-table";
-import { DataTable } from "./data-table";
-import { FunnelBySourceTable } from "./funnel-by-source-table";
-import { KpiCard } from "./kpi-card";
-import { PricingSummaryTable } from "./pricing-summary-table";
-import { SegmentSummaryTable } from "./segment-summary-table";
-import { ValidationTable } from "./validation-table";
-import {
-  barChartSpec,
-  lineChartSpec,
-  VegaChart,
-} from "./vega-chart";
-import {
-  type DataRow,
-  type SalesData,
+import type {
+  DataRow,
   prepareSalesMetrics,
+  SalesData,
   validateFunnel,
 } from "../lib/sales-analytics";
 import {
@@ -47,6 +34,15 @@ import {
   formatSignedCurrency,
   formatSignedPercent,
 } from "../lib/sales-helpers";
+import { ChartBuilder } from "./chart-builder";
+import { ComparisonTable } from "./comparison-table";
+import { DataTable } from "./data-table";
+import { FunnelBySourceTable } from "./funnel-by-source-table";
+import { KpiCard } from "./kpi-card";
+import { PricingSummaryTable } from "./pricing-summary-table";
+import { SegmentSummaryTable } from "./segment-summary-table";
+import { ValidationTable } from "./validation-table";
+import { barChartSpec, lineChartSpec, VegaChart } from "./vega-chart";
 
 type SalesMetrics = ReturnType<typeof prepareSalesMetrics>;
 
@@ -256,9 +252,7 @@ export function SalesMetricsTabs({
           <Card tone="canvas">
             <CardHeader>
               <CardTitle>Closing Performance</CardTitle>
-              <CardDescription>
-                Win/loss counts by salesperson.
-              </CardDescription>
+              <CardDescription>Win/loss counts by salesperson.</CardDescription>
             </CardHeader>
             <CardContent>
               <DataTable
@@ -408,7 +402,7 @@ export function SalesMetricsTabs({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
+            <p className="font-semibold text-2xl">
               {formatCurrency(metrics.quarterly.nextQuarterForecast)}
             </p>
           </CardContent>
@@ -424,11 +418,11 @@ export function SalesMetricsTabs({
                 metrics.quarterly.recommendations.map((item) => (
                   <div className="flex items-start gap-2" key={item}>
                     <Badge variant="secondary">Action</Badge>
-                    <p className="text-sm text-muted-foreground">{item}</p>
+                    <p className="text-muted-foreground text-sm">{item}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No recommendations this quarter.
                 </p>
               )}
@@ -443,11 +437,11 @@ export function SalesMetricsTabs({
                 metrics.quarterly.opportunities.map((item) => (
                   <div className="flex items-start gap-2" key={item}>
                     <Badge variant="outline">Opportunity</Badge>
-                    <p className="text-sm text-muted-foreground">{item}</p>
+                    <p className="text-muted-foreground text-sm">{item}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No opportunities flagged.
                 </p>
               )}
@@ -629,14 +623,14 @@ export function SalesMetricsTabs({
                   >
                     {validation.passed ? "Pass" : "Fail"}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     Tolerance: 1%
                   </span>
                 </div>
                 <ValidationTable results={validation.results} />
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Select columns to run validation.
               </p>
             )}

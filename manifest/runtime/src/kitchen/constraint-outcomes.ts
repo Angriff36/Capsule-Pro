@@ -4,8 +4,10 @@
  * Constraint handling, override management, and UI formatting
  */
 
-import type { ConstraintOutcome } from "@angriff36/manifest/ir";
-import type { OverrideRequest } from "@angriff36/manifest/ir";
+import type {
+  ConstraintOutcome,
+  OverrideRequest,
+} from "@angriff36/manifest/ir";
 
 /**
  * Override reason codes for constraint overrides
@@ -170,23 +172,6 @@ export function formatConstraintOutcome(outcome: ConstraintOutcome): {
  * Extended command result with constraint outcome helpers
  */
 export interface CommandResultWithConstraints<T = unknown> {
-  success: boolean;
-  result?: T;
-  error?: string;
-  deniedBy?: string;
-  guardFailure?: {
-    index: number;
-    expression: string;
-    formatted: string;
-    resolved?: Array<{ expression: string; value: unknown }>;
-  };
-  policyDenial?: {
-    policyName: string;
-    message?: string;
-    resolved?: Array<{ expression: string; value: unknown }>;
-  };
-  constraintOutcomes?: ConstraintOutcome[];
-  overrideRequests?: OverrideRequest[];
   concurrencyConflict?: {
     entityType: string;
     entityId: string;
@@ -194,12 +179,29 @@ export interface CommandResultWithConstraints<T = unknown> {
     actualVersion: number;
     conflictCode: string;
   };
+  constraintOutcomes?: ConstraintOutcome[];
+  deniedBy?: string;
   emittedEvents: Array<{
     name: string;
     channel: string;
     payload: unknown;
     timestamp: number;
   }>;
+  error?: string;
+  guardFailure?: {
+    index: number;
+    expression: string;
+    formatted: string;
+    resolved?: Array<{ expression: string; value: unknown }>;
+  };
+  overrideRequests?: OverrideRequest[];
+  policyDenial?: {
+    policyName: string;
+    message?: string;
+    resolved?: Array<{ expression: string; value: unknown }>;
+  };
+  result?: T;
+  success: boolean;
 }
 
 /**

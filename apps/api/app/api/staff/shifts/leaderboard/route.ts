@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+    const employeesById = new Map(
+      employees.map((employee) => [employee.id, employee])
+    );
     const leaderboard: LeaderboardRow[] = shiftCounts
       .map((row) => {
         const employee = employeesById.get(row.employeeId);

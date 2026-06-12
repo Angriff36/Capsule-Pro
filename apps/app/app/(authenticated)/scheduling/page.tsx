@@ -262,7 +262,7 @@ const SchedulingPage = async () => {
       <PageBody variant="rail">
         <FilterRail>
           <FilterRailLabel>Scheduling</FilterRailLabel>
-          <h3 className="font-normal text-2xl leading-tight tracking-[-0.01em] text-ink">
+          <h3 className="font-normal text-2xl text-ink leading-tight tracking-[-0.01em]">
             Workspaces
           </h3>
           <p className="text-muted-foreground text-sm leading-relaxed">
@@ -271,31 +271,31 @@ const SchedulingPage = async () => {
           </p>
           <FilterRailGroup className="mt-4 flex flex-col gap-2">
             <Link
-              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-sm text-ink transition-colors hover:border-ink/25"
+              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-ink text-sm transition-colors hover:border-ink/25"
               href="/scheduling/shifts"
             >
               Shifts board
             </Link>
             <Link
-              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-sm text-ink transition-colors hover:border-ink/25"
+              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-ink text-sm transition-colors hover:border-ink/25"
               href="/scheduling/availability"
             >
               Availability
             </Link>
             <Link
-              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-sm text-ink transition-colors hover:border-ink/25"
+              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-ink text-sm transition-colors hover:border-ink/25"
               href="/scheduling/time-off"
             >
               Time off
             </Link>
             <Link
-              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-sm text-ink transition-colors hover:border-ink/25"
+              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-ink text-sm transition-colors hover:border-ink/25"
               href="/scheduling/requests"
             >
               Requests
             </Link>
             <Link
-              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-sm text-ink transition-colors hover:border-ink/25"
+              className="rounded-full border border-hairline bg-canvas px-4 py-2 font-medium text-ink text-sm transition-colors hover:border-ink/25"
               href="/scheduling/budgets"
             >
               Budgets
@@ -336,12 +336,12 @@ const SchedulingPage = async () => {
                     key={day.label}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                      <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
                         {day.label}
                       </div>
                       {day.isToday ? <StatusPill>Today</StatusPill> : null}
                     </div>
-                    <div className="mt-3 space-y-1.5 text-sm text-ink">
+                    <div className="mt-3 space-y-1.5 text-ink text-sm">
                       {empty ? (
                         <span className="text-muted-foreground text-xs">
                           No shifts
@@ -395,7 +395,7 @@ const SchedulingPage = async () => {
 
             {happeningToday.length === 0 ? (
               <OperationalRow density="compact">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No shifts scheduled for today. Use{" "}
                   <span className="text-ink">Add shift</span> to fill the day.
                 </p>
@@ -413,7 +413,7 @@ const SchedulingPage = async () => {
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-5">
                           <div className="flex flex-col">
-                            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                            <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
                               Start
                             </span>
                             <span className="font-medium text-ink text-lg tabular-nums">
@@ -473,7 +473,7 @@ const SchedulingPage = async () => {
 
             {leaderboard.length === 0 ? (
               <OperationalRow density="compact">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No shift activity yet this week. The board fills as people
                   claim open shifts.
                 </p>
@@ -491,7 +491,7 @@ const SchedulingPage = async () => {
                       key={person.employeeId}
                     >
                       <div className="flex items-center gap-4">
-                        <span className="font-mono text-2xl tabular-nums text-muted-foreground">
+                        <span className="font-mono text-2xl text-muted-foreground tabular-nums">
                           #{index + 1}
                         </span>
                         <Avatar className="size-12">

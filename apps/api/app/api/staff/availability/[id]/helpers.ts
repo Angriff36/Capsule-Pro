@@ -13,17 +13,17 @@ import {
 } from "../validation";
 
 export interface ExistingAvailability {
-  id: string;
-  employee_id: string;
   day_of_week: number;
   effective_until: Date | null;
+  employee_id: string;
+  id: string;
 }
 
 export interface ExistingAvailabilityRecord {
-  start_time: Date;
-  end_time: Date;
   effective_from: Date;
   effective_until: Date | null;
+  end_time: Date;
+  start_time: Date;
 }
 
 export interface EffectiveDateRange {
@@ -32,10 +32,10 @@ export interface EffectiveDateRange {
 }
 
 export interface OverlapCheckParams {
-  startTime: string;
-  endTime: string;
   effectiveFrom: Date;
   effectiveUntil: Date | null;
+  endTime: string;
+  startTime: string;
 }
 
 /**

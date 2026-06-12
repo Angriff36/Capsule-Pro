@@ -12,12 +12,12 @@ export type EventValidationStatus =
   | "incomplete";
 
 interface EventValidationInput {
-  venueName: string | null;
-  staffCount: number;
-  guestCount: number;
-  eventDate: Date;
-  startTime: Date | null;
   endTime: Date | null;
+  eventDate: Date;
+  guestCount: number;
+  staffCount: number;
+  startTime: Date | null;
+  venueName: string | null;
 }
 
 /**

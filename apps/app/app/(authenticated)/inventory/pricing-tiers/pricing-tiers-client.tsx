@@ -44,31 +44,31 @@ import { toast } from "sonner";
 import {
   listPricingTiers,
   pricingTierCreate,
-  pricingTierUpdate,
   pricingTierSoftDelete,
+  pricingTierUpdate,
 } from "@/app/lib/manifest-client.generated";
 
 interface PricingTier {
-  id: string;
-  tenantId: string;
   catalogEntryId: string;
-  tierName: string;
-  minQuantity: string;
-  maxQuantity: string | null;
-  unitCost: string;
+  createdAt: string;
+  deletedAt: string | null;
   discountPercent: string | null;
   effectiveFrom: string | null;
   effectiveTo: string | null;
+  id: string;
   isActive: boolean;
-  createdAt: string;
+  maxQuantity: string | null;
+  minQuantity: string;
+  tenantId: string;
+  tierName: string;
+  unitCost: string;
   updatedAt: string;
-  deletedAt: string | null;
 }
 
 interface InitialMetrics {
-  total: number;
   active: number;
   inactive: number;
+  total: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -94,13 +94,13 @@ const STATUS_CONFIG: Record<
 
 interface FormState {
   catalogEntryId: string;
-  tierName: string;
-  minQuantity: string;
-  maxQuantity: string;
-  unitCost: string;
   discountPercent: string;
   effectiveFrom: string;
   effectiveTo: string;
+  maxQuantity: string;
+  minQuantity: string;
+  tierName: string;
+  unitCost: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -115,12 +115,16 @@ const EMPTY_FORM: FormState = {
 };
 
 function formatPercent(value: string | null): string {
-  if (!value) return "--";
+  if (!value) {
+    return "--";
+  }
   return `${Number(value).toFixed(2)}%`;
 }
 
 function formatQuantity(value: string | null): string {
-  if (!value) return "--";
+  if (!value) {
+    return "--";
+  }
   return Number(value).toLocaleString("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 3,
@@ -128,7 +132,9 @@ function formatQuantity(value: string | null): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "--";
+  if (!iso) {
+    return "--";
+  }
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -137,7 +143,9 @@ function formatDate(iso: string | null): string {
 }
 
 function getStatusKey(tier: PricingTier): string {
-  if (tier.deletedAt) return "deleted";
+  if (tier.deletedAt) {
+    return "deleted";
+  }
   return tier.isActive ? "active" : "inactive";
 }
 
@@ -170,8 +178,12 @@ export function PricingTiersClient({
         page,
         limit: 25,
       };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (searchQuery) params.search = searchQuery;
+      if (statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
 
       const result = await listPricingTiers(params);
       setTiers(result.data as unknown as PricingTier[]);
@@ -203,10 +215,18 @@ export function PricingTiersClient({
         minQuantity: form.minQuantity,
         unitCost: form.unitCost,
       };
-      if (form.maxQuantity) payload.maxQuantity = form.maxQuantity;
-      if (form.discountPercent) payload.discountPercent = form.discountPercent;
-      if (form.effectiveFrom) payload.effectiveFrom = form.effectiveFrom;
-      if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
+      if (form.maxQuantity) {
+        payload.maxQuantity = form.maxQuantity;
+      }
+      if (form.discountPercent) {
+        payload.discountPercent = form.discountPercent;
+      }
+      if (form.effectiveFrom) {
+        payload.effectiveFrom = form.effectiveFrom;
+      }
+      if (form.effectiveTo) {
+        payload.effectiveTo = form.effectiveTo;
+      }
 
       await pricingTierCreate(payload);
       toast.success("Pricing tier created");
@@ -221,7 +241,9 @@ export function PricingTiersClient({
   };
 
   const handleEdit = async () => {
-    if (!editTarget) return;
+    if (!editTarget) {
+      return;
+    }
     setActioning(editTarget.id);
     try {
       const payload: Record<string, unknown> = {
@@ -231,10 +253,18 @@ export function PricingTiersClient({
         unitCost: form.unitCost,
         catalogEntryId: form.catalogEntryId,
       };
-      if (form.maxQuantity) payload.maxQuantity = form.maxQuantity;
-      if (form.discountPercent) payload.discountPercent = form.discountPercent;
-      if (form.effectiveFrom) payload.effectiveFrom = form.effectiveFrom;
-      if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
+      if (form.maxQuantity) {
+        payload.maxQuantity = form.maxQuantity;
+      }
+      if (form.discountPercent) {
+        payload.discountPercent = form.discountPercent;
+      }
+      if (form.effectiveFrom) {
+        payload.effectiveFrom = form.effectiveFrom;
+      }
+      if (form.effectiveTo) {
+        payload.effectiveTo = form.effectiveTo;
+      }
 
       await pricingTierUpdate(payload);
       toast.success("Pricing tier updated");
@@ -251,7 +281,9 @@ export function PricingTiersClient({
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setActioning(deleteTarget.id);
     try {
       await pricingTierSoftDelete({ id: deleteTarget.id });
@@ -290,7 +322,7 @@ export function PricingTiersClient({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchInput(e.target.value)}
@@ -336,14 +368,14 @@ export function PricingTiersClient({
       )}
 
       {!isLoading && tiers.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           No pricing tiers found. Create your first tier to get started.
         </div>
       )}
 
       {!isLoading && tiers.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-          <div className="grid grid-cols-[1fr_100px_100px_110px_100px_140px_90px_110px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_100px_100px_110px_100px_140px_90px_110px] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Tier Name</span>
             <span className="text-right">Min Qty</span>
             <span className="text-right">Max Qty</span>
@@ -361,12 +393,12 @@ export function PricingTiersClient({
             };
             return (
               <div
-                className="grid grid-cols-[1fr_100px_100px_110px_100px_140px_90px_110px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                className="grid grid-cols-[1fr_100px_100px_110px_100px_140px_90px_110px] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                 key={tier.id}
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{tier.tierName}</p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-muted-foreground text-xs">
                     {tier.catalogEntryId.slice(0, 8)}...
                   </p>
                 </div>
@@ -449,7 +481,7 @@ export function PricingTiersClient({
 
       {/* Create Dialog */}
       <Dialog onOpenChange={setCreateOpen} open={createOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Pricing Tier</DialogTitle>
             <DialogDescription>
@@ -459,7 +491,7 @@ export function PricingTiersClient({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tier Name</label>
+                <label className="font-medium text-sm">Tier Name</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, tierName: e.target.value }))
@@ -469,7 +501,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Catalog Entry ID</label>
+                <label className="font-medium text-sm">Catalog Entry ID</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -484,7 +516,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Min Quantity</label>
+                <label className="font-medium text-sm">Min Quantity</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, minQuantity: e.target.value }))
@@ -496,7 +528,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Max Quantity</label>
+                <label className="font-medium text-sm">Max Quantity</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, maxQuantity: e.target.value }))
@@ -510,7 +542,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Unit Cost ($)</label>
+                <label className="font-medium text-sm">Unit Cost ($)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, unitCost: e.target.value }))
@@ -522,7 +554,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Discount (%)</label>
+                <label className="font-medium text-sm">Discount (%)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -539,7 +571,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Effective From</label>
+                <label className="font-medium text-sm">Effective From</label>
                 <DatePicker
                   onChange={(e) =>
                     setForm((f) => ({
@@ -551,7 +583,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Effective To</label>
+                <label className="font-medium text-sm">Effective To</label>
                 <DatePicker
                   onChange={(e) =>
                     setForm((f) => ({
@@ -595,7 +627,7 @@ export function PricingTiersClient({
         }}
         open={!!editTarget}
       >
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Pricing Tier</DialogTitle>
             <DialogDescription>
@@ -606,7 +638,7 @@ export function PricingTiersClient({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tier Name</label>
+                <label className="font-medium text-sm">Tier Name</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, tierName: e.target.value }))
@@ -615,7 +647,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Catalog Entry ID</label>
+                <label className="font-medium text-sm">Catalog Entry ID</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -629,7 +661,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Min Quantity</label>
+                <label className="font-medium text-sm">Min Quantity</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, minQuantity: e.target.value }))
@@ -640,7 +672,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Max Quantity</label>
+                <label className="font-medium text-sm">Max Quantity</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, maxQuantity: e.target.value }))
@@ -654,7 +686,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Unit Cost ($)</label>
+                <label className="font-medium text-sm">Unit Cost ($)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({ ...f, unitCost: e.target.value }))
@@ -665,7 +697,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Discount (%)</label>
+                <label className="font-medium text-sm">Discount (%)</label>
                 <Input
                   onChange={(e) =>
                     setForm((f) => ({
@@ -681,7 +713,7 @@ export function PricingTiersClient({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Effective From</label>
+                <label className="font-medium text-sm">Effective From</label>
                 <DatePicker
                   onChange={(e) =>
                     setForm((f) => ({
@@ -693,7 +725,7 @@ export function PricingTiersClient({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Effective To</label>
+                <label className="font-medium text-sm">Effective To</label>
                 <DatePicker
                   onChange={(e) =>
                     setForm((f) => ({

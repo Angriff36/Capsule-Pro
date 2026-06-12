@@ -1,5 +1,5 @@
-import type { PrismaClient } from "./generated/client";
 import { logManifestIssue } from "@repo/observability/manifest-issue-log";
+import type { PrismaClient } from "./generated/client";
 
 function summarizeArgs(args: unknown): unknown {
   if (!args || typeof args !== "object") {
@@ -58,8 +58,7 @@ export function withManifestIssueLog(client: PrismaClient): PrismaClient {
               kind: "prisma_error",
               entity: model,
               source: "database",
-              message:
-                error instanceof Error ? error.message : String(error),
+              message: error instanceof Error ? error.message : String(error),
               details: {
                 operation,
                 prismaCode,

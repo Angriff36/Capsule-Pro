@@ -25,15 +25,20 @@ import { PrepListsSection, PrepTasksSection } from "../event-details-sections";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 
 interface TemplateStaffing {
-  servers: number;
   bartenders: number;
   chefs: number;
+  servers: number;
   setupCrew: number;
 }
 
 interface OperationsSectionProps {
-  eventId: string;
   battleBoardHref: string;
+  currentStaffCount?: number;
+  eventId: string;
+  isGeneratingPrepList?: boolean;
+  onGeneratePrepList?: () => void;
+  onOpenGenerateModal: () => void;
+  prepLists?: PrepListSummary[];
   prepTasks: PrepTaskSummaryClient[];
   taskSummary: {
     pending: number;
@@ -42,13 +47,8 @@ interface OperationsSectionProps {
     canceled: number;
     other: number;
   };
-  onOpenGenerateModal: () => void;
-  onGeneratePrepList?: () => void;
-  isGeneratingPrepList?: boolean;
   templateName?: string | null;
   templateStaffing?: TemplateStaffing | null;
-  currentStaffCount?: number;
-  prepLists?: PrepListSummary[];
 }
 
 export function OperationsSection({
@@ -84,7 +84,7 @@ export function OperationsSection({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <UsersIcon className="h-5 w-5" />
                   Suggested Staffing from {templateName}
                 </CardTitle>
@@ -97,7 +97,7 @@ export function OperationsSection({
                   className="bg-muted/50 text-foreground"
                   variant="secondary"
                 >
-                  <CheckIcon className="h-3 w-3 mr-1" />
+                  <CheckIcon className="mr-1 h-3 w-3" />
                   Staffed
                 </Badge>
               ) : (
@@ -114,56 +114,56 @@ export function OperationsSection({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1 flex items-center gap-2">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Servers
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-semibold text-2xl">
                     {templateStaffing.servers}
                   </p>
                 </CardContent>
               </Card>
               <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1 flex items-center gap-2">
                     <WineIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Bartenders
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-semibold text-2xl">
                     {templateStaffing.bartenders}
                   </p>
                 </CardContent>
               </Card>
               <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1 flex items-center gap-2">
                     <ChefHatIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Chefs</span>
+                    <span className="text-muted-foreground text-sm">Chefs</span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-semibold text-2xl">
                     {templateStaffing.chefs}
                   </p>
                 </CardContent>
               </Card>
               <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1 flex items-center gap-2">
                     <PackageIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Setup Crew
                     </span>
                   </div>
-                  <p className="text-2xl font-semibold">
+                  <p className="font-semibold text-2xl">
                     {templateStaffing.setupCrew}
                   </p>
                 </CardContent>
               </Card>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center gap-2 text-muted-foreground text-sm">
               <span>Total suggested: {totalSuggestedStaff} staff members</span>
               <span className="text-muted-foreground/50">•</span>
               <span>Currently assigned: {currentStaffCount}</span>

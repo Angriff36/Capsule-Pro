@@ -22,18 +22,18 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 interface TeamActivityItem {
-  id: string;
-  kind: "claim" | "release" | "progress";
-  taskId: string;
-  taskTitle: string | null;
+  action: string;
+  createdAt: string;
+  detail: string | null;
+  employeeAvatarUrl: string | null;
   employeeId: string;
   employeeName: string | null;
-  employeeAvatarUrl: string | null;
-  action: string;
-  detail: string | null;
-  oldStatus: string | null;
+  id: string;
+  kind: "claim" | "release" | "progress";
   newStatus: string | null;
-  createdAt: string;
+  oldStatus: string | null;
+  taskId: string;
+  taskTitle: string | null;
 }
 
 function kindIcon(kind: TeamActivityItem["kind"]) {
@@ -48,7 +48,9 @@ function kindIcon(kind: TeamActivityItem["kind"]) {
 }
 
 function initials(name: string | null): string {
-  if (!name) return "?";
+  if (!name) {
+    return "?";
+  }
   return name
     .split(" ")
     .filter(Boolean)
@@ -65,7 +67,9 @@ export function TeamActivityFeed() {
   const fetchActivity = useCallback(async () => {
     try {
       const res = await fetch("/api/kitchen/team-activity?limit=10");
-      if (!res.ok) return;
+      if (!res.ok) {
+        return;
+      }
       const data = await res.json();
       setItems(data.data?.items ?? data.items ?? []);
     } catch {
@@ -93,16 +97,16 @@ export function TeamActivityFeed() {
       </CardHeader>
       <CardContent className="space-y-2">
         {items.length === 0 ? (
-          <div className="text-center py-4 text-muted-foreground text-sm">
+          <div className="py-4 text-center text-muted-foreground text-sm">
             {loading ? "Loading activity..." : "No recent activity"}
           </div>
         ) : (
           items.map((item) => (
             <div
-              className="flex items-start gap-2 rounded-md px-2 py-1.5 hover:bg-soft-stone/50 transition-colors"
+              className="flex items-start gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-soft-stone/50"
               key={item.id}
             >
-              <Avatar className="h-6 w-6 mt-0.5">
+              <Avatar className="mt-0.5 h-6 w-6">
                 {item.employeeAvatarUrl && (
                   <AvatarImage
                     alt={item.employeeName ?? ""}
@@ -113,30 +117,30 @@ export function TeamActivityFeed() {
                   {initials(item.employeeName)}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   {kindIcon(item.kind)}
-                  <span className="text-xs font-medium truncate">
+                  <span className="truncate font-medium text-xs">
                     {item.employeeName ?? "Unknown"}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                <p className="mt-0.5 truncate text-muted-foreground text-xs">
                   {item.action}
                   {item.taskTitle ? ` — ${item.taskTitle}` : ""}
                 </p>
                 {item.oldStatus && item.newStatus && (
-                  <div className="flex items-center gap-1 mt-0.5">
+                  <div className="mt-0.5 flex items-center gap-1">
                     <span className="text-[10px] text-muted-foreground">
                       {item.oldStatus}
                     </span>
                     <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
-                    <span className="text-[10px] font-medium">
+                    <span className="font-medium text-[10px]">
                       {item.newStatus}
                     </span>
                   </div>
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-1">
+              <span className="mt-1 whitespace-nowrap text-[10px] text-muted-foreground">
                 {formatDistanceToNow(new Date(item.createdAt), {
                   addSuffix: true,
                 })}

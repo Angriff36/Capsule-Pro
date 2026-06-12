@@ -9,18 +9,18 @@ const ROUTE_SURFACE_MANIFEST_RELATIVE_PATH = join(
 );
 
 interface RouteSurfaceParam {
-  name?: unknown;
-  type?: unknown;
-  required?: unknown;
   location?: unknown;
+  name?: unknown;
+  required?: unknown;
+  type?: unknown;
 }
 
 interface RouteSurfaceEntry {
   id?: unknown;
-  path?: unknown;
   method?: unknown;
-  source?: unknown;
   params?: unknown;
+  path?: unknown;
+  source?: unknown;
 }
 
 interface RouteSurfaceManifest {
@@ -29,47 +29,47 @@ interface RouteSurfaceManifest {
 }
 
 interface RouteSourceCommand {
-  kind: "command";
-  entity: string;
   command: string;
+  entity: string;
+  kind: "command";
 }
 
 export interface CommandRoute {
   id: string;
-  path: string;
   method: "POST" | "PUT" | "PATCH" | "DELETE";
-  source: RouteSourceCommand;
   params: Array<{
     name: string;
     type: "string" | "number" | "boolean";
     required: boolean;
     location: "body" | "path" | "query";
   }>;
+  path: string;
+  source: RouteSourceCommand;
 }
 
 export interface CommandToolDefinition {
-  type: "function";
-  name: string;
   description: string;
+  name: string;
   parameters: Record<string, unknown>;
+  type: "function";
 }
 
 export interface CommandCatalog {
-  commands: CommandRoute[];
   byEntityCommand: Map<string, CommandRoute>;
-  canonicalEntityCommandByNormalizedKey: Map<string, string>;
   canonicalEntityCommandByLooseNormalizedKey: Map<string, string>;
+  canonicalEntityCommandByNormalizedKey: Map<string, string>;
+  canonicalEntityCommandPairs: string[];
+  commands: CommandRoute[];
+  generatedAt: string | null;
+  toolDefinitions: CommandToolDefinition[];
   toolNameByEntityCommand: Map<string, string>;
   toolToEntityCommand: Map<string, string>;
-  toolDefinitions: CommandToolDefinition[];
-  canonicalEntityCommandPairs: string[];
-  generatedAt: string | null;
 }
 
 export interface AliasResolution {
-  userTerm: string;
   canonical: string;
   note: string;
+  userTerm: string;
 }
 
 const ALIAS_RULES: Array<{

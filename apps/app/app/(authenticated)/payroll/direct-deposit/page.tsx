@@ -1,24 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
 import {
   CommandBand,
   CommandBandActions,
@@ -34,6 +15,32 @@ import {
   OperationalColumn,
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import {
   AlertTriangle,
   ArrowLeftRight,
@@ -48,15 +55,9 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { executeCommand } from "@/app/lib/manifest-client";
 import {
   bankAccountCreate,
   bankAccountRemove,
@@ -65,31 +66,30 @@ import {
   listBankAccounts,
   listUsers,
 } from "@/app/lib/manifest-client.generated";
-import { executeCommand } from "@/app/lib/manifest-client";
 
 interface Employee {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
   email: string;
+  firstName: string | null;
+  id: string;
+  lastName: string | null;
   payoutMethod: string;
 }
 
 interface BankAccount {
-  id: string;
-  employeeId: string;
-  bankName: string;
-  accountType: string;
-  routingNumber: string;
-  accountNumberLast4: string;
   accountHolderName: string;
-  isDefault: boolean;
-  status: string;
-  verifiedAt: string | null;
-  verificationMethod: string | null;
-  notes: string | null;
+  accountNumberLast4: string;
+  accountType: string;
+  bankName: string;
   createdAt: string;
+  employeeId: string;
+  id: string;
+  isDefault: boolean;
+  notes: string | null;
+  routingNumber: string;
+  status: string;
   updatedAt: string;
+  verificationMethod: string | null;
+  verifiedAt: string | null;
 }
 
 function getEmployeeName(e: Employee): string {
@@ -97,7 +97,9 @@ function getEmployeeName(e: Employee): string {
 }
 
 function formatDate(date: string | null): string {
-  if (!date) return "—";
+  if (!date) {
+    return "—";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -137,7 +139,9 @@ export default function DirectDepositPage() {
     setLoading(true);
     try {
       const [bankResult, userResult] = await Promise.all([
-        listBankAccounts(selectedEmployeeId ? { employeeId: selectedEmployeeId } : undefined),
+        listBankAccounts(
+          selectedEmployeeId ? { employeeId: selectedEmployeeId } : undefined
+        ),
         listUsers(),
       ]);
       setAccounts(
@@ -164,7 +168,9 @@ export default function DirectDepositPage() {
           firstName: u.firstName ?? null,
           lastName: u.lastName ?? null,
           email: u.email,
-          payoutMethod: ((u as unknown) as Record<string, unknown>).payoutMethod as string ?? "manual",
+          payoutMethod:
+            ((u as unknown as Record<string, unknown>)
+              .payoutMethod as string) ?? "manual",
         }))
       );
     } catch (err) {
@@ -193,7 +199,9 @@ export default function DirectDepositPage() {
     resetForm();
     if (selectedEmployeeId) {
       const emp = employees.find((e) => e.id === selectedEmployeeId);
-      if (emp) setFormAccountHolderName(getEmployeeName(emp));
+      if (emp) {
+        setFormAccountHolderName(getEmployeeName(emp));
+      }
     }
     setModalOpen(true);
   }
@@ -250,7 +258,9 @@ export default function DirectDepositPage() {
   }
 
   async function handleDelete(accountId: string) {
-    if (!confirm("Delete this bank account?")) return;
+    if (!confirm("Delete this bank account?")) {
+      return;
+    }
     setActionLoading(accountId);
     try {
       await bankAccountRemove({ id: accountId });
@@ -277,7 +287,9 @@ export default function DirectDepositPage() {
   }
 
   async function handleVerify() {
-    if (!verifyTarget) return;
+    if (!verifyTarget) {
+      return;
+    }
     setActionLoading("verify");
     try {
       await bankAccountVerify({ id: verifyTarget.id });
@@ -351,10 +363,10 @@ export default function DirectDepositPage() {
 
       <OperationalColumn>
         {/* Employee Filter */}
-        <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 mb-6">
+        <div className="mb-6 rounded-[22px] border border-hairline bg-soft-stone p-6">
           <div className="flex items-center gap-4">
-            <div className="flex-1 max-w-md">
-              <Label className="text-xs text-muted-foreground mb-1.5 block">
+            <div className="max-w-md flex-1">
+              <Label className="mb-1.5 block text-muted-foreground text-xs">
                 Filter by Employee
               </Label>
               <Select
@@ -379,7 +391,7 @@ export default function DirectDepositPage() {
             <div className="flex items-center gap-2 pt-5">
               <Badge className="text-xs" variant="secondary">
                 <CreditCard className="mr-1 h-3 w-3" />
-                {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+                {accounts.length} account{accounts.length === 1 ? "" : "s"}
               </Badge>
             </div>
           </div>
@@ -409,16 +421,18 @@ export default function DirectDepositPage() {
         ) : (
           <div className="space-y-3">
             {displayAccounts.map((account) => {
-              const employee = employees.find((e) => e.id === account.employeeId);
+              const employee = employees.find(
+                (e) => e.id === account.employeeId
+              );
               return (
                 <div
-                  key={account.id}
                   className="rounded-[22px] border border-hairline bg-soft-stone p-4"
+                  key={account.id}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                       <div
-                        className={`p-3 rounded-xl ${
+                        className={`rounded-xl p-3 ${
                           account.status === "verified"
                             ? "bg-muted/50"
                             : "bg-muted/20"
@@ -427,13 +441,13 @@ export default function DirectDepositPage() {
                         <Landmark className={"h-5 w-5 text-foreground"} />
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-2">
                           <p className="font-medium text-sm">
                             {account.bankName}
                           </p>
                           {account.isDefault && (
                             <Badge
-                              className="text-[10px] gap-1"
+                              className="gap-1 text-[10px]"
                               variant="secondary"
                             >
                               <Star className="h-2.5 w-2.5" />
@@ -460,7 +474,7 @@ export default function DirectDepositPage() {
                             {account.status}
                           </Badge>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                        <div className="mt-1 space-y-0.5 text-muted-foreground text-xs">
                           <p>
                             {account.accountType === "checking"
                               ? "Checking"
@@ -473,11 +487,11 @@ export default function DirectDepositPage() {
                           <p>Holder: {account.accountHolderName}</p>
                         </div>
                         {employee && (
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="mt-2 text-muted-foreground text-xs">
                             Employee: {getEmployeeName(employee)}{" "}
                             <span className="ml-2">
                               <Badge
-                                className="text-[10px] gap-1"
+                                className="gap-1 text-[10px]"
                                 variant="outline"
                               >
                                 <ArrowLeftRight className="h-2.5 w-2.5" />
@@ -487,14 +501,14 @@ export default function DirectDepositPage() {
                           </p>
                         )}
                         {account.verifiedAt && (
-                          <p className="text-[10px] text-muted-foreground mt-1">
+                          <p className="mt-1 text-[10px] text-muted-foreground">
                             Verified {formatDate(account.verifiedAt)}
                             {account.verificationMethod &&
                               ` via ${account.verificationMethod}`}
                           </p>
                         )}
                         {account.notes && (
-                          <p className="text-[10px] text-muted-foreground mt-1 italic">
+                          <p className="mt-1 text-[10px] text-muted-foreground italic">
                             {account.notes}
                           </p>
                         )}
@@ -502,7 +516,7 @@ export default function DirectDepositPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 shrink-0 ml-4">
+                    <div className="ml-4 flex shrink-0 items-center gap-1">
                       {account.status !== "verified" && (
                         <Button
                           className="h-8 w-8 text-green-600 hover:text-green-700"
@@ -632,7 +646,7 @@ export default function DirectDepositPage() {
               <Label>
                 Account Number
                 {editingAccount && (
-                  <span className="text-muted-foreground font-normal ml-2">
+                  <span className="ml-2 font-normal text-muted-foreground">
                     (leave blank to keep current: ••••{" "}
                     {editingAccount.accountNumberLast4})
                   </span>
@@ -731,7 +745,7 @@ export default function DirectDepositPage() {
             </div>
 
             {verifyMethod === "micro_deposit" && (
-              <div className="rounded-lg bg-muted/20 p-3 border border-hairline text-xs text-muted-foreground">
+              <div className="rounded-lg border border-hairline bg-muted/20 p-3 text-muted-foreground text-xs">
                 Two small deposits (under $1.00) will be sent to this account.
                 The employee should verify the amounts in their bank statement.
               </div>

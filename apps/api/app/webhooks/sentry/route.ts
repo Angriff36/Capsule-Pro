@@ -220,10 +220,10 @@ export const GET = (request: Request): Response => {
     const webhookBearerValid =
       webhookSecret && authHeader === `Bearer ${webhookSecret}`;
 
-    if (!bearerValid && !webhookBearerValid) {
+    if (!(bearerValid || webhookBearerValid)) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized" },
-        { status: 401 },
+        { status: 401 }
       );
     }
   }

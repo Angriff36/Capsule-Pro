@@ -16,14 +16,14 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface DishListFilters {
   category?: string;
-  search?: string;
-  hasAllergens?: boolean;
   dietaryTag?: string;
+  hasAllergens?: boolean;
+  search?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 
 interface StationBadgeProps {
+  /** Custom background color (default: #f1f5f9) */
+  backgroundColor?: string;
   /** Station name to display */
   name: string;
   /** Size variant (default: medium) */
   size?: "small" | "medium";
-  /** Custom background color (default: #f1f5f9) */
-  backgroundColor?: string;
   /** Custom text color (default: #475569) */
   textColor?: string;
 }

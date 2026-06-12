@@ -129,7 +129,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const recognizedAt = new Date(body.recognizedAt || Date.now());
 
       const user = await resolveCurrentUser(request);
-      const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+      const manifestUser = {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
+      };
       const manifestRuntime = await createManifestRuntime({
         user: manifestUser,
         entityName: "RevenueRecognitionLine",
@@ -145,7 +149,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           amount,
           recognizedAt: recognizedAt.toISOString(),
           status: "RECOGNIZED",
-          description: body.description || `Recognition ${existing.lines.length + 1}`,
+          description:
+            body.description || `Recognition ${existing.lines.length + 1}`,
           metadata: body.metadata ?? {},
         },
         { entityName: "RevenueRecognitionLine" }
@@ -194,7 +199,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         },
       });
 
-      return NextResponse.json({ data: { ...updated, newLine: lineResult.result } });
+      return NextResponse.json({
+        data: { ...updated, newLine: lineResult.result },
+      });
     }
 
     // Action: Reverse a recognition (Manifest runtime — governed via reverse + reverseRecognition)
@@ -223,7 +230,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const newRemaining = Number(existing.remainingAmount) + reverseAmount;
 
       const user = await resolveCurrentUser(request);
-      const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+      const manifestUser = {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
+      };
 
       // Step 1: Reverse the recognition line
       const lineResult = await runManifestCommand({
@@ -287,7 +298,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // Action: Adjust schedule amounts (Manifest runtime — adjustSchedule command)
     if (action === "adjust") {
       const newTotal =
-        body.totalAmount !== undefined ? Number(body.totalAmount) : null;
+        body.totalAmount === undefined ? null : Number(body.totalAmount);
 
       if (newTotal !== null && newTotal <= 0) {
         return NextResponse.json(
@@ -302,11 +313,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         command: "adjustSchedule",
         instanceId: id,
         body: {
-          newEndDate: body.endDate ? new Date(body.endDate).getTime() : existing.endDate?.getTime() ?? Date.now(),
+          newEndDate: body.endDate
+            ? new Date(body.endDate).getTime()
+            : (existing.endDate?.getTime() ?? Date.now()),
           newTotalAmount: newTotal ?? Number(existing.totalAmount),
           description: body.description ?? existing.description ?? "",
           notes: body.notes ?? existing.notes ?? "",
-          recognitionPeriod: body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
+          recognitionPeriod:
+            body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
         },
         user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });
@@ -334,7 +348,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           newTotalAmount: Number(existing.totalAmount),
           description: body.description ?? existing.description ?? "",
           notes: body.notes ?? existing.notes ?? "",
-          recognitionPeriod: body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
+          recognitionPeriod:
+            body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
         },
         user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });

@@ -11,14 +11,14 @@
 export interface ReplayFetchRequest {
   /** Board ID to fetch events for */
   boardId: string;
-  /** Tenant ID for multi-tenancy */
-  tenantId: string;
   /** Optional: sequence number to start from (for incremental replay) */
   fromSequence?: number;
   /** Optional: maximum number of events to return (default: 1000) */
   limit?: number;
   /** Optional: only return events after this timestamp */
   since?: Date;
+  /** Tenant ID for multi-tenancy */
+  tenantId: string;
 }
 
 /**
@@ -27,42 +27,42 @@ export interface ReplayFetchRequest {
 export interface ReplayFetchResponse {
   /** Events in chronological order (oldest first) */
   events: ReplayEvent[];
-  /** Total number of events available (may be more than returned) */
-  totalCount: number;
-  /** Last sequence number in this batch */
-  lastSequence: number;
   /** Whether more events are available */
   hasMore: boolean;
+  /** Last sequence number in this batch */
+  lastSequence: number;
+  /** Total number of events available (may be more than returned) */
+  totalCount: number;
 }
 
 /**
  * A replayable event with metadata for playback
  */
 export interface ReplayEvent {
-  /** Event ID */
-  id: string;
   /** Event type (e.g., "command.board.card.created") */
   eventType: string;
+  /** Event ID */
+  id: string;
   /** When the event occurred */
   occurredAt: string;
-  /** User who triggered the event */
-  userId: string;
   /** The event payload */
   payload: unknown;
   /** Sequence number for ordering */
   sequence: number;
+  /** User who triggered the event */
+  userId: string;
 }
 
 /**
  * Configuration for replay playback
  */
 export interface ReplayConfig {
+  /** Maximum number of events to replay */
+  maxEvents: number;
   /** Speed multiplier for replay (1 = real-time, 10 = 10x faster) */
   playbackSpeed: number;
   /** Whether to show replay UI indicators */
   showIndicator: boolean;
-  /** Maximum number of events to replay */
-  maxEvents: number;
 }
 
 /**
@@ -80,14 +80,14 @@ export type ReplayState =
  * Progress of replay playback
  */
 export interface ReplayProgress {
-  /** Current replay state */
-  state: ReplayState;
-  /** Number of events processed */
-  processedCount: number;
-  /** Total number of events to replay */
-  totalCount: number;
   /** Current event being processed */
   currentEvent?: ReplayEvent;
   /** Error if state is "error" */
   error?: string;
+  /** Number of events processed */
+  processedCount: number;
+  /** Current replay state */
+  state: ReplayState;
+  /** Total number of events to replay */
+  totalCount: number;
 }

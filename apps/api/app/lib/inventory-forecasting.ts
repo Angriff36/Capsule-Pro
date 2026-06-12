@@ -12,17 +12,16 @@ import { invariant } from "./invariant";
 
 // Types for forecasting
 export interface ForecastRequest {
-  tenantId: string;
-  sku: string;
   horizonDays?: number; // Forecast horizon in days (default: 30)
+  sku: string;
+  tenantId: string;
 }
 
 export interface ForecastResult {
-  sku: string;
-  currentStock: number;
-  depletionDate: Date | null;
-  daysUntilDepletion: number | null;
   confidence: "high" | "medium" | "low";
+  currentStock: number;
+  daysUntilDepletion: number | null;
+  depletionDate: Date | null;
   forecast: Array<{
     date: Date;
     projectedStock: number;
@@ -30,22 +29,23 @@ export interface ForecastResult {
     eventId?: string;
     eventName?: string;
   }>;
+  sku: string;
 }
 
 export interface ReorderSuggestionRequest {
-  tenantId: string;
-  sku?: string; // If not provided, generates for all low-stock items
   leadTimeDays?: number;
   safetyStockDays?: number;
+  sku?: string; // If not provided, generates for all low-stock items
+  tenantId: string;
 }
 
 export interface ReorderSuggestionResult {
-  sku: string;
   currentStock: number;
-  reorderPoint: number;
-  recommendedOrderQty: number;
-  leadTimeDays: number;
   justification: string;
+  leadTimeDays: number;
+  recommendedOrderQty: number;
+  reorderPoint: number;
+  sku: string;
   urgency: "critical" | "warning" | "info";
 }
 
@@ -747,14 +747,14 @@ export async function saveReorderSuggestionToDatabase(
  * Accuracy Tracking Types
  */
 export interface ForecastAccuracyMetrics {
+  averageErrorDays: number;
+  confidenceHighAccuracy: number;
+  confidenceLowAccuracy: number;
+  confidenceMediumAccuracy: number;
+  meanAbsolutePercentageError: number;
   sku: string;
   totalForecasts: number;
   trackedForecasts: number;
-  averageErrorDays: number;
-  meanAbsolutePercentageError: number;
-  confidenceHighAccuracy: number;
-  confidenceMediumAccuracy: number;
-  confidenceLowAccuracy: number;
 }
 
 /**

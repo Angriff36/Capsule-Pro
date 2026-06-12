@@ -28,7 +28,7 @@ function getPreviewUrl(servicePrefix: string): string | undefined {
     return vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
   }
 
-  return undefined;
+  return;
 }
 
 export const keys = () => {

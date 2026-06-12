@@ -15,8 +15,8 @@ import { runManifestCommand } from "@/lib/manifest/execute-command";
 type PayrollPeriodStatus = "open" | "closed" | "processing";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(
@@ -143,7 +143,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "PayrollPeriod",

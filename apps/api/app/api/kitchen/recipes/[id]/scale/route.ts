@@ -9,7 +9,6 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestErrorResponse,
@@ -19,31 +18,32 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
 export interface PortionScaleRequest {
+  currentYield: number;
   recipeVersionId: string;
   targetPortions: number;
-  currentYield: number;
 }
 
 export interface ScaledRecipeCost {
-  scaledTotalCost: number;
-  scaledCostPerYield: number;
-  scaleFactor: number;
   originalCost: number;
+  scaledCostPerYield: number;
+  scaledTotalCost: number;
+  scaleFactor: number;
 }
 
 export interface ScaledIngredient {
   ingredientId: string;
   ingredientName: string;
-  originalQuantity: number;
-  scaledQuantity: number;
-  unitId: number;
-  preparationNotes: string | null;
   isOptional: boolean;
+  originalQuantity: number;
+  preparationNotes: string | null;
+  scaledQuantity: number;
   scaleFactor: number;
+  unitId: number;
 }
 
 /**

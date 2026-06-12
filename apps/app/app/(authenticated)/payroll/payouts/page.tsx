@@ -1,40 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
-import {
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { listPayrollRuns } from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandActions,
@@ -51,9 +16,41 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import { DollarSign, Loader2, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { listPayrollRuns } from "@/app/lib/manifest-client.generated";
 
 interface PayrollRun {
+  approvedAt: string | null;
+  approvedBy: string | null;
   id: string;
+  paidAt: string | null;
   payrollPeriodId: string;
   runDate: string;
   status:
@@ -63,12 +60,9 @@ interface PayrollRun {
     | "approved"
     | "paid"
     | "failed";
-  totalGross: number;
   totalDeductions: number;
+  totalGross: number;
   totalNet: number;
-  approvedBy: string | null;
-  approvedAt: string | null;
-  paidAt: string | null;
 }
 
 type StatusFilter = "all" | "pending" | "processing" | "approved" | "paid";
@@ -187,9 +181,9 @@ const PayrollPayoutsPage = () => {
 
       <OperationalColumn>
         <SectionHeader
-          title="Payroll Runs"
+          count={`${runs.length} run${runs.length === 1 ? "" : "s"}`}
           description="All payroll runs with payout status and amounts."
-          count={`${runs.length} run${runs.length !== 1 ? "s" : ""}`}
+          title="Payroll Runs"
         />
 
         <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
@@ -218,9 +212,9 @@ const PayrollPayoutsPage = () => {
               </EmptyMedia>
               <EmptyTitle>No payroll runs found</EmptyTitle>
               <EmptyDescription>
-                {statusFilter !== "all"
-                  ? "No runs match the selected filter. Try changing the status filter."
-                  : "Runs will appear here once payroll periods are processed."}
+                {statusFilter === "all"
+                  ? "Runs will appear here once payroll periods are processed."
+                  : "No runs match the selected filter. Try changing the status filter."}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
@@ -257,9 +251,7 @@ const PayrollPayoutsPage = () => {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={
-                          STATUS_BADGE_VARIANT[run.status] ?? "outline"
-                        }
+                        variant={STATUS_BADGE_VARIANT[run.status] ?? "outline"}
                       >
                         {STATUS_LABEL[run.status] ?? run.status}
                       </Badge>

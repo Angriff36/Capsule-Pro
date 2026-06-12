@@ -102,7 +102,12 @@ export async function PATCH(
     return runManifestCommand({
       entity: "PrepListItem",
       command: "updateStation",
-      body: { id, stationId: body.stationId, stationName: body.stationName, userId: user.id },
+      body: {
+        id,
+        stationId: body.stationId,
+        stationName: body.stationName,
+        userId: user.id,
+      },
       user: userCtx,
     });
   }
@@ -141,7 +146,10 @@ export async function DELETE(
   );
 
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "PrepListItem",

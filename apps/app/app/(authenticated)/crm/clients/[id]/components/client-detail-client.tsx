@@ -1,6 +1,19 @@
 "use client";
 
-import { ClientQuickStatsBlock } from "@repo/design-system/components/blocks/client-quick-stats-block";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  PageBody,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,20 +27,6 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MonoLabel,
-  PageCanvas,
-  PageBody,
-} from "@repo/design-system/components/blocks/page-shell";
 import {
   Tabs,
   TabsContent,
@@ -191,8 +190,10 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
         <CommandBandHeader>
           <div>
             <MonoLabel tone="dark">Client Detail</MonoLabel>
-            <div className="flex items-center gap-3 mt-1">
-              <DisplayHeading size="md">{getClientDisplayName()}</DisplayHeading>
+            <div className="mt-1 flex items-center gap-3">
+              <DisplayHeading size="md">
+                {getClientDisplayName()}
+              </DisplayHeading>
               <Badge variant="outline">{client.clientType}</Badge>
             </div>
             <CommandBandLede className="mt-2">
@@ -222,13 +223,13 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
               size="sm"
               variant="on-dark"
             >
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
               Back
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button disabled={isDeleting} variant="on-dark">
-                  <TrashIcon className="h-4 w-4 mr-2" />
+                  <TrashIcon className="mr-2 h-4 w-4" />
                   Delete
                 </Button>
               </AlertDialogTrigger>
@@ -279,59 +280,59 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
       </CommandBand>
 
       <PageBody>
-      {/* Tabs */}
-      <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="contact">
-            <UserIcon className="h-4 w-4 mr-2" />
-            Contact
-          </TabsTrigger>
-          <TabsTrigger value="contacts">
-            <UsersIcon className="h-4 w-4 mr-2" />
-            Contacts
-          </TabsTrigger>
-          <TabsTrigger value="events">
-            <CalendarIcon className="h-4 w-4 mr-2" />
-            Events
-          </TabsTrigger>
-          <TabsTrigger value="communications">
-            <MessageSquareIcon className="h-4 w-4 mr-2" />
-            Communications
-          </TabsTrigger>
-          <TabsTrigger value="preferences">
-            <TagIcon className="h-4 w-4 mr-2" />
-            Preferences
-          </TabsTrigger>
-          <TabsTrigger value="financial">
-            <DollarSignIcon className="h-4 w-4 mr-2" />
-            Financial
-          </TabsTrigger>
-        </TabsList>
+        {/* Tabs */}
+        <Tabs onValueChange={setActiveTab} value={activeTab}>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="contact">
+              <UserIcon className="mr-2 h-4 w-4" />
+              Contact
+            </TabsTrigger>
+            <TabsTrigger value="contacts">
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Contacts
+            </TabsTrigger>
+            <TabsTrigger value="events">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="communications">
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              Communications
+            </TabsTrigger>
+            <TabsTrigger value="preferences">
+              <TagIcon className="mr-2 h-4 w-4" />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="financial">
+              <DollarSignIcon className="mr-2 h-4 w-4" />
+              Financial
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent className="mt-6" value="contact">
-          <ContactInfoTab client={client} onEdit={() => setIsEditing(true)} />
-        </TabsContent>
+          <TabsContent className="mt-6" value="contact">
+            <ContactInfoTab client={client} onEdit={() => setIsEditing(true)} />
+          </TabsContent>
 
-        <TabsContent className="mt-6" value="contacts">
-          <ContactsTab client={client} />
-        </TabsContent>
+          <TabsContent className="mt-6" value="contacts">
+            <ContactsTab client={client} />
+          </TabsContent>
 
-        <TabsContent className="mt-6" value="events">
-          <EventsTab clientId={clientId} />
-        </TabsContent>
+          <TabsContent className="mt-6" value="events">
+            <EventsTab clientId={clientId} />
+          </TabsContent>
 
-        <TabsContent className="mt-6" value="communications">
-          <CommunicationsTab clientId={clientId} />
-        </TabsContent>
+          <TabsContent className="mt-6" value="communications">
+            <CommunicationsTab clientId={clientId} />
+          </TabsContent>
 
-        <TabsContent className="mt-6" value="preferences">
-          <PreferencesTab client={client} />
-        </TabsContent>
+          <TabsContent className="mt-6" value="preferences">
+            <PreferencesTab client={client} />
+          </TabsContent>
 
-        <TabsContent className="mt-6" value="financial">
-          <FinancialTab client={client} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent className="mt-6" value="financial">
+            <FinancialTab client={client} />
+          </TabsContent>
+        </Tabs>
       </PageBody>
     </PageCanvas>
   );

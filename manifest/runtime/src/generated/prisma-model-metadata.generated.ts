@@ -1093,6 +1093,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "verificationFailedAt",
+        "irName": "verificationFailedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationFailureReason",
+        "irName": "verificationFailureReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -1572,6 +1594,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "prepListId",
+        "irName": "prepListId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "stationId",
+        "irName": "stationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -1684,6 +1728,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
         "isId": false
       }
     ]
@@ -1807,6 +1862,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "progressPct",
+        "irName": "progressPct",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recordedAt",
+        "irName": "recordedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -1986,6 +2063,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isActive",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -2759,6 +2847,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inMaintenance",
+        "irName": "inMaintenance",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maintenanceReason",
+        "irName": "maintenanceReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maintenanceStartAt",
+        "irName": "maintenanceStartAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currentTaskCount",
+        "irName": "currentTaskCount",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -4341,6 +4473,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "rejectedAt",
+        "irName": "rejectedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejectionReason",
+        "irName": "rejectionReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -5803,6 +5968,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -5914,6 +6123,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "uploadedBy",
+        "irName": "uploadedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -6402,6 +6633,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lineItemCount",
+        "irName": "lineItemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -7262,6 +7504,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -7602,6 +7888,83 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "inventoryItemId",
+        "irName": "inventoryItemId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currentLotNumber",
+        "irName": "currentLotNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currentLotReceivedAt",
+        "irName": "currentLotReceivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currentLotExpiresAt",
+        "irName": "currentLotExpiresAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isRecalled",
+        "irName": "isRecalled",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recallReason",
+        "irName": "recallReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recalledAt",
+        "irName": "recalledAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -8146,6 +8509,83 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "isSeasonal",
+        "irName": "isSeasonal",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seasonLabel",
+        "irName": "seasonLabel",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seasonStartMonth",
+        "irName": "seasonStartMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seasonEndMonth",
+        "irName": "seasonEndMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isEightySix",
+        "irName": "isEightySix",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eightySixReason",
+        "irName": "eightySixReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eightySixAt",
+        "irName": "eightySixAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -8314,6 +8754,72 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "isSeasonal",
+        "irName": "isSeasonal",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seasonLabel",
+        "irName": "seasonLabel",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seasonYear",
+        "irName": "seasonYear",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "archivedAt",
+        "irName": "archivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -8431,6 +8937,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priceOverride",
+        "irName": "priceOverride",
+        "type": "Decimal",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -8729,6 +9246,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -8957,6 +9485,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "totalRows",
+        "irName": "totalRows",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "importedRows",
+        "irName": "importedRows",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "skippedRows",
+        "irName": "skippedRows",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -10435,6 +10996,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "entityType",
+        "irName": "entityType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entityId",
+        "irName": "entityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -10585,6 +11168,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "positionX",
+        "irName": "positionX",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "positionY",
+        "irName": "positionY",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -10807,6 +11412,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sortOrder",
+        "irName": "sortOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -11213,6 +11840,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "delivered_at",
+        "irName": "deliveredAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "prep_started_at",
+        "irName": "prepStartedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ],
     "versionProperty": "version"
@@ -11469,6 +12118,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "quantityReserved",
+        "irName": "quantityReserved",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ],
     "versionProperty": "version"
@@ -11669,6 +12329,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reversedAt",
+        "irName": "reversedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reversedBy",
+        "irName": "reversedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reverseOfTransactionId",
+        "irName": "reverseOfTransactionId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isReversed",
+        "irName": "isReversed",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -11947,6 +12651,105 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isActive",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "openPOCount",
+        "irName": "openPOCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendedReason",
+        "irName": "suspendedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklistedAt",
+        "irName": "blacklistedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklistedReason",
+        "irName": "blacklistedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "qualificationStatus",
+        "irName": "qualificationStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -12256,6 +13059,61 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deleted_at",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "severity",
+        "irName": "severity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "acknowledgedAt",
+        "irName": "acknowledgedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "acknowledgedBy",
+        "irName": "acknowledgedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedBy",
+        "irName": "resolvedBy",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -12837,6 +13695,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -13639,6 +14508,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "rejectedAt",
+        "irName": "rejectedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rejectionReason",
+        "irName": "rejectionReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -14039,6 +14941,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "itemCount",
+        "irName": "itemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -14572,6 +15485,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "itemCount",
+        "irName": "itemCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -15431,6 +16355,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "ratedAt",
+        "irName": "ratedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -15814,6 +16749,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "triggeredAt",
+        "irName": "triggeredAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -16464,6 +17410,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isShared",
+        "irName": "isShared",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -17398,6 +18355,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -17571,6 +18561,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "inherited_context",
         "irName": "inheritedContext",
         "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swapOfferedTo",
+        "irName": "swapOfferedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swapStatus",
+        "irName": "swapStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swapOfferedAt",
+        "irName": "swapOfferedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "swapAcceptedAt",
+        "irName": "swapAcceptedAt",
+        "type": "DateTime",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -18218,6 +19252,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -18848,6 +19904,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -22752,6 +23830,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "isSuspended",
+        "irName": "isSuspended",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendReason",
+        "irName": "suspendReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reinstatedAt",
+        "irName": "reinstatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -22884,6 +24006,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -23445,6 +24578,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "totalDeductions",
+        "irName": "totalDeductions",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "hoursWorked",
+        "irName": "hoursWorked",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -23724,6 +24879,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "rejectedBy",
+        "irName": "rejectedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -23896,6 +25062,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -24797,6 +25974,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "distributedAmount",
+        "irName": "distributedAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "distributedAt",
+        "irName": "distributedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "distributedBy",
+        "irName": "distributedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -25066,6 +26287,105 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "code",
+        "irName": "code",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requiredRole",
+        "irName": "requiredRole",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "archivedAt",
+        "irName": "archivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -25204,6 +26524,193 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleCode",
+        "irName": "moduleCode",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "moduleTitle",
+        "irName": "moduleTitle",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "staffRole",
+        "irName": "staffRole",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dueDateReviewNeeded",
+        "irName": "dueDateReviewNeeded",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "firstShiftAt",
+        "irName": "firstShiftAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "startedAt",
+        "irName": "startedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "waivedAt",
+        "irName": "waivedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "waiverReason",
+        "irName": "waiverReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "waiverApprovedBy",
+        "irName": "waiverApprovedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "attemptCount",
+        "irName": "attemptCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastAttemptId",
+        "irName": "lastAttemptId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastScorePercent",
+        "irName": "lastScorePercent",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "maxAttempts",
+        "irName": "maxAttempts",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "managerReviewRequired",
+        "irName": "managerReviewRequired",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reminderSentAt",
+        "irName": "reminderSentAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -25539,6 +27046,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "balanceSnapshot",
+        "irName": "balanceSnapshot",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "balanceUnit",
+        "irName": "balanceUnit",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -25949,6 +27478,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deleted_at",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "severity",
+        "irName": "severity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_to",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalation_reason",
+        "irName": "escalationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalated_at",
+        "irName": "escalatedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -26838,6 +28411,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -27372,6 +28978,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "declineReason",
+        "irName": "declineReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "checkedInAt",
+        "irName": "checkedInAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ],
     "versionProperty": "version"
@@ -27551,6 +29179,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "sentAt",
+        "irName": "sentAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "viewedAt",
+        "irName": "viewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "signedAt",
+        "irName": "signedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "canceledBy",
+        "irName": "canceledBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -27685,6 +29357,61 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "signerRole",
+        "irName": "signerRole",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invalidatedAt",
+        "irName": "invalidatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "invalidationReason",
+        "irName": "invalidationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isValid",
+        "irName": "isValid",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -27807,6 +29534,83 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "publishedBy",
+        "irName": "publishedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supersededBy",
+        "irName": "supersededBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "publishedAt",
+        "irName": "publishedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "supersededAt",
+        "irName": "supersededAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
         "isId": false
       }
     ]
@@ -28453,6 +30257,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "overdueSince",
+        "irName": "overdueSince",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reminderCount",
+        "irName": "reminderCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastReminderAt",
+        "irName": "lastReminderAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ],
     "versionProperty": "version"
@@ -28581,6 +30418,160 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "externalMethodId",
+        "irName": "externalMethodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cardExpiryMonth",
+        "irName": "cardExpiryMonth",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cardExpiryYear",
+        "irName": "cardExpiryYear",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "cardHolderName",
+        "irName": "cardHolderName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bankAccountLastFour",
+        "irName": "bankAccountLastFour",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bankAccountType",
+        "irName": "bankAccountType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bankRoutingNumber",
+        "irName": "bankRoutingNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "walletProvider",
+        "irName": "walletProvider",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "walletEmail",
+        "irName": "walletEmail",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraudFlagged",
+        "irName": "fraudFlagged",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "nickname",
+        "irName": "nickname",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expiresAt",
+        "irName": "expiresAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -28815,6 +30806,72 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "chargebackAt",
+        "irName": "chargebackAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraudStatus",
+        "irName": "fraudStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fraudScore",
+        "irName": "fraudScore",
+        "type": "Float",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reviewedAt",
+        "irName": "reviewedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reviewedBy",
+        "irName": "reviewedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -29255,6 +31312,116 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "assignedAt",
+        "irName": "assignedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "paymentPlanId",
+        "irName": "paymentPlanId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "nextPaymentDue",
+        "irName": "nextPaymentDue",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "disputeReason",
+        "irName": "disputeReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "disputeResolvedAt",
+        "irName": "disputeResolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "legalCaseNumber",
+        "irName": "legalCaseNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "legalFirm",
+        "irName": "legalFirm",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastActivityAt",
+        "irName": "lastActivityAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "closedAt",
+        "irName": "closedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -29355,6 +31522,94 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "direction",
+        "irName": "direction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "nextActionDate",
+        "irName": "nextActionDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promiseAmount",
+        "irName": "promiseAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "promiseDate",
+        "irName": "promiseDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduledFor",
+        "irName": "scheduledFor",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -29489,6 +31744,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "installmentAmount",
+        "irName": "installmentAmount",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedInstallments",
+        "irName": "completedInstallments",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "defaultedAt",
+        "irName": "defaultedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
         "isId": false
       }
     ]
@@ -35197,6 +37496,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "nextRunAt",
+        "irName": "nextRunAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastRunAt",
+        "irName": "lastRunAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -35352,6 +37673,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "viewCount",
+        "irName": "viewCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -35566,6 +37898,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "discrepancyNotes",
+        "irName": "discrepancyNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "hasDiscrepancy",
+        "irName": "hasDiscrepancy",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -35677,6 +38031,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "unitId",
+        "irName": "unitId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
         "isId": false
       }
     ]
@@ -36638,6 +39003,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalationReason",
+        "irName": "escalationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -36984,6 +39382,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "withinRange",
+        "irName": "withinRange",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -37216,6 +39625,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "optional": false,
         "hasDefault": true,
         "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "ruleId",
+        "irName": "ruleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "value",
+        "irName": "value",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
         "isId": false
       }
     ]
@@ -37987,6 +40418,50 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "facilityId",
+        "irName": "facilityId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "currentValue",
+        "irName": "currentValue",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastMaintenanceAt",
+        "irName": "lastMaintenanceAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "nextMaintenanceAt",
+        "irName": "nextMaintenanceAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -38281,6 +40756,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "estimatedCost",
+        "irName": "estimatedCost",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "partsUsed",
+        "irName": "partsUsed",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -38749,6 +41246,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedStops",
+        "irName": "completedStops",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delayMinutes",
+        "irName": "delayMinutes",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -40491,6 +43010,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lockedAt",
+        "irName": "lockedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -40836,6 +43388,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -40985,6 +43548,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "updatedAt",
         "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "seatedAt",
+        "irName": "seatedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -41152,6 +43726,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "updatedAt",
         "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -41524,6 +44109,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "departedAt",
+        "irName": "departedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "failureReason",
+        "irName": "failureReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       }
@@ -41950,6 +44557,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "acknowledgementNotes",
+        "irName": "acknowledgementNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "acknowledgedAt",
+        "irName": "acknowledgedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -42172,6 +44801,83 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "approvedAt",
+        "irName": "approvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvedBy",
+        "irName": "approvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendedAt",
+        "irName": "suspendedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "suspendedReason",
+        "irName": "suspendedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklistedAt",
+        "irName": "blacklistedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blacklistedReason",
+        "irName": "blacklistedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastContactAddedAt",
+        "irName": "lastContactAddedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -42266,6 +44972,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "createdAt",
         "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,
@@ -42720,6 +45437,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "totalRows",
+        "irName": "totalRows",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "importedRows",
+        "irName": "importedRows",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "skippedRows",
+        "irName": "skippedRows",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
     ]
   },
@@ -42925,6 +45675,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationFailedAt",
+        "irName": "verificationFailedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationFailureReason",
+        "irName": "verificationFailureReason",
+        "type": "String",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -43181,6 +45953,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedStops",
+        "irName": "completedStops",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "delayMinutes",
+        "irName": "delayMinutes",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -43705,6 +46499,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "name": "deletedAt",
         "irName": "deletedAt",
         "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "durationMinutes",
+        "irName": "durationMinutes",
+        "type": "Int",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -44463,6 +47268,39 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "deletedAt",
         "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedTo",
+        "irName": "escalatedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalationReason",
+        "irName": "escalationReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "escalatedAt",
+        "irName": "escalatedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,

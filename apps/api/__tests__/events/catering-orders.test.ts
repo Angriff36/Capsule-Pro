@@ -43,14 +43,25 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
 
 vi.mock("@/lib/manifest-response", async () => {
@@ -58,13 +69,24 @@ vi.mock("@/lib/manifest-response", async () => {
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
       NextResponse.json(
-        { success: true, ...(typeof data === "object" && data !== null ? data : { data }) },
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
         { status }
       ),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) => {
-      const body = typeof message === "string"
-        ? { success: false, message }
-        : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) => {
+      const body =
+        typeof message === "string"
+          ? { success: false, message }
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            };
       return NextResponse.json(body, { status });
     },
   };
@@ -75,7 +97,9 @@ vi.mock("@/lib/manifest-response", async () => {
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // ---------------------------------------------------------------------------
@@ -94,7 +118,10 @@ const EVENT_ID = "e0000000-0000-4000-a000-000000000001";
 // ---------------------------------------------------------------------------
 
 function authedOrg() {
-  vi.mocked(auth).mockResolvedValue({ orgId: ORG_ID, userId: CLERK_ID } as never);
+  vi.mocked(auth).mockResolvedValue({
+    orgId: ORG_ID,
+    userId: CLERK_ID,
+  } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT_ID as never);
 }
 
@@ -132,10 +159,13 @@ function makeOrder(overrides: Record<string, unknown> = {}) {
 }
 
 function mockSuccessResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify({ success: true, result: data, events: [] }), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ success: true, result: data, events: [] }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
 
 // ===========================================================================
@@ -148,7 +178,9 @@ describe("GET /api/events/catering-orders/list", () => {
     authedOrg();
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("returns 401 for unauthenticated requests", async () => {
     unauthed();
@@ -188,7 +220,10 @@ describe("GET /api/events/catering-orders/list", () => {
 
     expect(mockCoFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ tenantId: TENANT_ID, deletedAt: null }),
+        where: expect.objectContaining({
+          tenantId: TENANT_ID,
+          deletedAt: null,
+        }),
       })
     );
   });
@@ -212,14 +247,19 @@ describe("GET /api/events/catering-orders/[id]", () => {
     authedOrg();
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("returns 401 for unauthenticated requests", async () => {
     unauthed();
     const { GET } = await import("@/app/api/events/catering-orders/[id]/route");
-    const res = await GET(getRequest(`/api/events/catering-orders/${ORDER_ID}`), {
-      params: Promise.resolve({ id: ORDER_ID }),
-    });
+    const res = await GET(
+      getRequest(`/api/events/catering-orders/${ORDER_ID}`),
+      {
+        params: Promise.resolve({ id: ORDER_ID }),
+      }
+    );
     expect(res.status).toBe(401);
   });
 
@@ -228,9 +268,12 @@ describe("GET /api/events/catering-orders/[id]", () => {
     mockCoFindFirst.mockResolvedValue(order);
 
     const { GET } = await import("@/app/api/events/catering-orders/[id]/route");
-    const res = await GET(getRequest(`/api/events/catering-orders/${ORDER_ID}`), {
-      params: Promise.resolve({ id: ORDER_ID }),
-    });
+    const res = await GET(
+      getRequest(`/api/events/catering-orders/${ORDER_ID}`),
+      {
+        params: Promise.resolve({ id: ORDER_ID }),
+      }
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -242,9 +285,12 @@ describe("GET /api/events/catering-orders/[id]", () => {
     mockCoFindFirst.mockResolvedValue(null);
 
     const { GET } = await import("@/app/api/events/catering-orders/[id]/route");
-    const res = await GET(getRequest("/api/events/catering-orders/nonexistent"), {
-      params: Promise.resolve({ id: "nonexistent" }),
-    });
+    const res = await GET(
+      getRequest("/api/events/catering-orders/nonexistent"),
+      {
+        params: Promise.resolve({ id: "nonexistent" }),
+      }
+    );
 
     expect(res.status).toBe(404);
   });
@@ -268,9 +314,12 @@ describe("GET /api/events/catering-orders/[id]", () => {
     mockCoFindFirst.mockRejectedValue(new Error("DB error") as never);
 
     const { GET } = await import("@/app/api/events/catering-orders/[id]/route");
-    const res = await GET(getRequest(`/api/events/catering-orders/${ORDER_ID}`), {
-      params: Promise.resolve({ id: ORDER_ID }),
-    });
+    const res = await GET(
+      getRequest(`/api/events/catering-orders/${ORDER_ID}`),
+      {
+        params: Promise.resolve({ id: ORDER_ID }),
+      }
+    );
     expect(res.status).toBe(500);
   });
 });
@@ -290,20 +339,30 @@ describe("POST via dispatcher — CateringOrder commands", () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: ORDER_ID, status: "draft" })
     );
-    const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+    const mod = await import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
     POST_dispatch = mod.POST;
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   const dispatchCo = (command: string, body: Record<string, unknown> = {}) =>
-    POST_dispatch(postRequest(`/api/events/catering-orders/commands/${command}`, body), {
-      params: Promise.resolve({ entity: "CateringOrder", command }),
-    });
+    POST_dispatch(
+      postRequest(`/api/events/catering-orders/commands/${command}`, body),
+      {
+        params: Promise.resolve({ entity: "CateringOrder", command }),
+      }
+    );
 
   // --- create ---
   it("returns 200 on create success", async () => {
-    const res = await dispatchCo("create", { eventId: EVENT_ID, clientName: "Acme Corp" });
+    const res = await dispatchCo("create", {
+      eventId: EVENT_ID,
+      clientName: "Acme Corp",
+    });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
@@ -322,7 +381,10 @@ describe("POST via dispatcher — CateringOrder commands", () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: ORDER_ID, guestCount: 200 })
     );
-    const res = await dispatchCo("update", { instanceId: ORDER_ID, guestCount: 200 });
+    const res = await dispatchCo("update", {
+      instanceId: ORDER_ID,
+      guestCount: 200,
+    });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.result.guestCount).toBe(200);
@@ -344,7 +406,10 @@ describe("POST via dispatcher — CateringOrder commands", () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: ORDER_ID, status: "cancelled" })
     );
-    const res = await dispatchCo("cancel", { instanceId: ORDER_ID, cancellationReason: "Client requested" });
+    const res = await dispatchCo("cancel", {
+      instanceId: ORDER_ID,
+      cancellationReason: "Client requested",
+    });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.result.status).toBe("cancelled");
@@ -384,9 +449,16 @@ describe("POST via dispatcher — CateringOrder commands", () => {
 
   it("returns 403 on policy denial", async () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Access denied: RequiresManagerRole" }), {
-        status: 403, headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({
+          success: false,
+          message: "Access denied: RequiresManagerRole",
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
 
     const res = await dispatchCo("create", { eventId: EVENT_ID });
@@ -395,9 +467,13 @@ describe("POST via dispatcher — CateringOrder commands", () => {
 
   it("returns 400 on generic command failure", async () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Invalid payload" }), {
-        status: 400, headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({ success: false, message: "Invalid payload" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
 
     const res = await dispatchCo("create", { eventId: EVENT_ID });

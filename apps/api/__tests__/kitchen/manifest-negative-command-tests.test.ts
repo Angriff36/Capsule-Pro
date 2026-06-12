@@ -19,27 +19,57 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) => new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { InvariantError } from "@/app/lib/invariant";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { manifestErrorResponse } from "@/lib/manifest-response";
@@ -122,7 +152,10 @@ describe("Negative Command Tests - PrepTask Commands", () => {
   describe("Guard failure tests", () => {
     it("should return 422 when guard fails (invalid status transition)", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestErrorResponse("Guard 1 failed: status must be 'open' to claim, got 'done'", 422)
+        manifestErrorResponse(
+          "Guard 1 failed: status must be 'open' to claim, got 'done'",
+          422
+        )
       );
 
       const request = new NextRequest(
@@ -150,7 +183,10 @@ describe("Negative Command Tests - PrepTask Commands", () => {
   describe("Policy denial tests", () => {
     it("should return 403 when policy denies access", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestErrorResponse("Access denied by policy: adminOnly — User does not have admin role", 403)
+        manifestErrorResponse(
+          "Access denied by policy: adminOnly — User does not have admin role",
+          403
+        )
       );
 
       const request = new NextRequest(
@@ -217,7 +253,10 @@ describe("Negative Command Tests - PrepTask Commands", () => {
 
     it("should not log console.error for 403 responses", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
-        manifestErrorResponse("Access denied by policy: adminOnly — Denied", 403)
+        manifestErrorResponse(
+          "Access denied by policy: adminOnly — Denied",
+          403
+        )
       );
 
       const request = new NextRequest(

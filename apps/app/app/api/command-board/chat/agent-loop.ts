@@ -80,16 +80,16 @@ function isRetryableError(error: unknown): boolean {
 }
 
 interface ResponsesFunctionCall {
-  type: "function_call";
-  name: string;
   arguments: string;
   call_id: string;
+  name: string;
+  type: "function_call";
 }
 
 interface ResponsesOutputMessage {
-  type: "message";
-  role: "assistant" | "user";
   content?: Array<{ type: string; text?: string }>;
+  role: "assistant" | "user";
+  type: "message";
 }
 
 interface ResponsesApiResult {
@@ -99,49 +99,46 @@ interface ResponsesApiResult {
 }
 
 interface SimulationPlanAlias {
-  userTerm: string;
   canonical: string;
   note: string;
+  userTerm: string;
 }
 
 interface SimulationPlanStep {
-  entity: string;
-  command: string;
-  route: string;
   args: Record<string, unknown>;
+  command: string;
+  entity: string;
+  route: string;
 }
 
 interface SimulationUnfulfilledIntent {
-  requested: string;
-  reason: string;
   closestSupportedSequence: string[];
+  reason: string;
+  requested: string;
 }
 
 interface SimulationPlan {
+  commandSequence: SimulationPlanStep[];
   requestedSimulation: string;
   resolvedAliases: SimulationPlanAlias[];
-  commandSequence: SimulationPlanStep[];
   unfulfilledIntents: SimulationUnfulfilledIntent[];
 }
 
 export interface AgentToolExecution {
-  toolName: string;
   status: "success" | "error";
   summary: string;
+  toolName: string;
 }
 
 export interface StructuredAgentResponse {
-  summary: string;
   actionsTaken: string[];
   errors: string[];
   nextSteps: string[];
+  summary: string;
 }
 
 export interface RunManifestAgentParams {
   apiKey: string;
-  model: string;
-  systemPrompt: string;
-  messages: UIMessage[];
   context: {
     tenantId: string;
     userId: string;
@@ -151,6 +148,9 @@ export interface RunManifestAgentParams {
     getToken?: (() => Promise<string | null>) | null;
     correlationId: string;
   };
+  messages: UIMessage[];
+  model: string;
+  systemPrompt: string;
 }
 
 function getMessageText(message: UIMessage): string {
@@ -560,8 +560,7 @@ export function buildPlanningInstructions(
     .map((command) => {
       const params = command.params
         .map(
-          (param) =>
-            `${param.name}:${param.type}${param.required ? "*" : ""}`
+          (param) => `${param.name}:${param.type}${param.required ? "*" : ""}`
         )
         .join(", ");
       return `${command.source.entity}.${command.source.command}(${params})`;

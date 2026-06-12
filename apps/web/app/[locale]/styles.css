@@ -11,8 +11,8 @@
 }
 
 .shiki {
-  background-color: var(--shiki-light-bg);
   color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
   @apply border-border;
 }
 
@@ -21,8 +21,8 @@
 }
 
 .dark .shiki {
-  background-color: var(--shiki-dark-bg);
   color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
 }
 
 .dark .shiki span {

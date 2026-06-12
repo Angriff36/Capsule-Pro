@@ -35,22 +35,22 @@ const TPP_MARKERS = [
  * PDF metadata info structure
  */
 interface PdfMetadataInfo {
-  Title?: string;
   Author?: string;
-  Subject?: string;
   Creator?: string;
+  Subject?: string;
+  Title?: string;
 }
 
 export interface PdfExtractionResult {
+  errors: string[];
   lines: string[];
-  pageCount: number;
   metadata?: {
     title?: string;
     author?: string;
     subject?: string;
     creator?: string;
   };
-  errors: string[];
+  pageCount: number;
 }
 
 function _extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
@@ -197,21 +197,23 @@ export async function extractPdfText(
      * PDF metadata structure from pdf2json
      */
     interface Pdf2JsonMeta {
-      Title?: string;
       Author?: string;
-      Subject?: string;
       Creator?: string;
+      Subject?: string;
+      Title?: string;
     }
 
     /**
      * PDF data structure from pdf2json
      */
     interface Pdf2JsonData {
-      Pages?: Pdf2JsonPage[];
       Meta?: Pdf2JsonMeta;
+      Pages?: Pdf2JsonPage[];
     }
 
     interface Pdf2JsonParser {
+      // destroy isn't documented in the README example, so keep it optional
+      destroy?: () => void;
       on(
         event: "pdfParser_dataError",
         cb: (errData: Pdf2JsonDataError) => void
@@ -220,9 +222,6 @@ export async function extractPdfText(
 
       // pdf2json docs: parseBuffer(pdfBuffer) after registering handlers
       parseBuffer(buffer: Buffer): void;
-
-      // destroy isn't documented in the README example, so keep it optional
-      destroy?: () => void;
     }
 
     type Pdf2JsonParserCtor = new () => Pdf2JsonParser;
@@ -241,9 +240,8 @@ export async function extractPdfText(
 
     const hasPDFParserProperty = (
       obj: unknown
-    ): obj is { PDFParser: unknown } => {
-      return typeof obj === "object" && obj !== null && "PDFParser" in obj;
-    };
+    ): obj is { PDFParser: unknown } =>
+      typeof obj === "object" && obj !== null && "PDFParser" in obj;
 
     const PDFParserClass: Pdf2JsonParserCtor | undefined =
       (isParserCtor(pdf2jsonModule.PDFParser)
@@ -412,8 +410,8 @@ function emitSegment(segment: string, rows: string[]) {
  * Detect PDF format (TPP, generic, etc.)
  */
 export interface FormatDetectionResult {
-  format: "tpp" | "generic";
   confidence: number;
+  format: "tpp" | "generic";
   markers: string[];
 }
 

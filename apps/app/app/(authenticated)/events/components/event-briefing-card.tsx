@@ -22,15 +22,15 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface EventBriefingResponse {
+  criticalInfo: string[];
+  eventDate: string;
   eventId: string;
+  eventTitle: string;
+  generatedAt: string;
+  highlights: string[];
+  model: string;
   summary: string;
   wordCount: number;
-  highlights: string[];
-  criticalInfo: string[];
-  generatedAt: string;
-  eventTitle: string;
-  eventDate: string;
-  model: string;
 }
 
 interface EventBriefingCardProps {
@@ -147,7 +147,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   if (!briefing) {
     return (
       <Card
-        className="border-dashed border-border/70 bg-muted/30"
+        className="border-border/70 border-dashed bg-muted/30"
         tone="canvas"
       >
         <CardHeader className="pb-3">
@@ -214,7 +214,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Summary text */}
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div className="prose prose-sm dark:prose-invert max-w-none">
           <p className="text-foreground/90 leading-relaxed">
             {briefing.summary}
           </p>

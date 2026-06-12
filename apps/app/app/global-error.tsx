@@ -28,10 +28,14 @@ function isNextHTTPErrorFallback(error: unknown): boolean {
 
 const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
   useEffect(() => {
-    if (isNextHTTPErrorFallback(error)) return;
+    if (isNextHTTPErrorFallback(error)) {
+      return;
+    }
     captureException(error);
     posthog?.capture("error:boundary_triggered", {
-      error_message: String(error instanceof Error ? error.message : String(error)).slice(0, 200),
+      error_message: String(
+        error instanceof Error ? error.message : String(error)
+      ).slice(0, 200),
     });
   }, [error]);
 

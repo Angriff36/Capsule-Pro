@@ -1,22 +1,26 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import * as XLSX from "xlsx";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import * as XLSX from "xlsx";
 
 interface ImportRow {
+  category: string;
   item_number: string;
   name: string;
-  category: string;
   quantityOnHand: string;
-  unitCost: string;
   tags: string[];
+  unitCost: string;
 }
 
 function parseBoolean(val: unknown): boolean {
-  if (typeof val === "boolean") return val;
-  if (typeof val === "string") return val === "true" || val === "1" || val === "yes";
+  if (typeof val === "boolean") {
+    return val;
+  }
+  if (typeof val === "string") {
+    return val === "true" || val === "1" || val === "yes";
+  }
   return false;
 }
 
@@ -36,8 +40,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
-      return NextResponse.json({ error: "File must be .xlsx or .xls" }, { status: 400 });
+    if (!(file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
+      return NextResponse.json(
+        { error: "File must be .xlsx or .xls" },
+        { status: 400 }
+      );
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -52,18 +59,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 }) as unknown[][];
+    const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, {
+      header: 1,
+    }) as unknown[][];
 
     // Header row at index 3 (0-indexed), data starts at index 4
     if (raw.length < 5) {
-      return NextResponse.json({ error: "File has no data rows" }, { status: 400 });
+      return NextResponse.json(
+        { error: "File has no data rows" },
+        { status: 400 }
+      );
     }
 
     const headers = raw[3];
     const colIndex: Record<string, number> = {};
     for (let i = 0; i < headers.length; i++) {
       const h = String(headers[i] ?? "").trim();
-      if (h) colIndex[h] = i;
+      if (h) {
+        colIndex[h] = i;
+      }
     }
 
     const items: Array<{
@@ -82,7 +96,9 @@ export async function POST(request: NextRequest) {
     for (let i = 4; i < raw.length; i++) {
       const row = raw[i];
       const productId = String(row[colIndex["Product ID"]] ?? "").trim();
-      if (!productId || productId === "undefined" || productId === "null") continue;
+      if (!productId || productId === "undefined" || productId === "null") {
+        continue;
+      }
 
       const name = String(row[colIndex["Title"]] ?? "").trim();
       const primaryCat = String(row[colIndex["Primary Category"]] ?? "").trim();
@@ -102,7 +118,14 @@ export async function POST(request: NextRequest) {
           : Number(flatFeeRaw);
 
       // Tags from attributes
-      const tagKeys = ["Attr::Color", "Attr::Material", "Attr::Size", "Attr::Style", "Attr::Shape", "Attr::Type"];
+      const tagKeys = [
+        "Attr::Color",
+        "Attr::Material",
+        "Attr::Size",
+        "Attr::Style",
+        "Attr::Shape",
+        "Attr::Type",
+      ];
       const tags: string[] = [];
       for (const key of tagKeys) {
         const val = row[colIndex[key]];
@@ -142,9 +165,7 @@ export async function POST(request: NextRequest) {
     for (const item of items) {
       try {
         // Check if item with this item_number exists
-        const existing = await database.$queryRaw<
-          { id: string }[]
-        >`
+        const existing = await database.$queryRaw<{ id: string }[]>`
           SELECT id FROM tenant_inventory.inventory_items
           WHERE tenant_id = ${item.tenantId}
             AND item_number = ${item.item_number}
@@ -152,7 +173,11 @@ export async function POST(request: NextRequest) {
           LIMIT 1
         `;
 
-        const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
+        const userCtx = {
+          id: user.id,
+          tenantId: user.tenantId,
+          role: user.role,
+        };
 
         if (existing.length > 0) {
           const result = await runManifestCommand({
@@ -210,9 +235,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Inventory import error:", error);
-    return NextResponse.json(
-      { error: "Import failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Import failed" }, { status: 500 });
   }
 }

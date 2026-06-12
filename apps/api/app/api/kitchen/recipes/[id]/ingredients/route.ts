@@ -15,12 +15,12 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface RecipeIngredient {
   id: string;
+  isOptional: boolean;
   name: string;
+  notes: string | null;
+  orderIndex: number;
   quantity: number;
   unitCode: string;
-  notes: string | null;
-  isOptional: boolean;
-  orderIndex: number;
 }
 
 /**

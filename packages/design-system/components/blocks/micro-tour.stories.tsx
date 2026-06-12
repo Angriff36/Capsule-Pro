@@ -30,7 +30,7 @@ export const Default: Story = {
       useMicroTourState("demo-tour");
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-muted/30 rounded-lg flex items-center justify-center">
+      <div className="relative flex h-[600px] w-[800px] items-center justify-center rounded-lg bg-muted/30">
         <p className="text-muted-foreground">Page content behind the tour</p>
         <MicroTour
           isActive={isActive}
@@ -70,7 +70,7 @@ export const WithIcons: Story = {
       useMicroTourState("demo-icons-tour");
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-muted/30 rounded-lg flex items-center justify-center">
+      <div className="relative flex h-[600px] w-[800px] items-center justify-center rounded-lg bg-muted/30">
         <MicroTour
           isActive={isActive}
           onComplete={handleComplete}
@@ -113,7 +113,7 @@ export const EventsEmptyStateWithTour: Story = {
     );
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-background rounded-lg">
+      <div className="relative h-[600px] w-[800px] rounded-lg bg-background">
         <NoEventsState onCreateEvent={() => {}} />
         <MicroTour
           isActive={isActive}
@@ -135,7 +135,7 @@ export const ClientsEmptyStateWithTour: Story = {
     );
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-background rounded-lg">
+      <div className="relative h-[600px] w-[800px] rounded-lg bg-background">
         <NoClientsState onCreateClient={() => {}} />
         <MicroTour
           isActive={isActive}
@@ -157,7 +157,7 @@ export const InventoryEmptyStateWithTour: Story = {
     );
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-background rounded-lg">
+      <div className="relative h-[600px] w-[800px] rounded-lg bg-background">
         <NoInventoryState onAddItem={() => {}} />
         <MicroTour
           isActive={isActive}
@@ -178,7 +178,7 @@ export const AutoAdvance: Story = {
       useMicroTourState("demo-auto-advance");
 
     return (
-      <div className="relative w-[800px] h-[600px] bg-muted/30 rounded-lg flex items-center justify-center">
+      <div className="relative flex h-[600px] w-[800px] items-center justify-center rounded-lg bg-muted/30">
         <p className="text-muted-foreground">
           This tour auto-advances every 3 seconds
         </p>

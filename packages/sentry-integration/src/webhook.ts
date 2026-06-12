@@ -53,9 +53,7 @@ export const verifySentrySignature = (
  */
 export const parseSentryWebhookPayload = (
   payload: unknown
-): SentryIssueAlertPayload => {
-  return SentryIssueAlertSchema.parse(payload);
-};
+): SentryIssueAlertPayload => SentryIssueAlertSchema.parse(payload);
 
 /**
  * Extract organization and project slugs from Sentry URLs
@@ -149,18 +147,17 @@ export const parseSentryIssue = (
 /**
  * Check if webhook resource type is an issue alert
  */
-export const isIssueAlertWebhook = (resourceHeader: string | null): boolean => {
-  return resourceHeader === "event_alert";
-};
+export const isIssueAlertWebhook = (resourceHeader: string | null): boolean =>
+  resourceHeader === "event_alert";
 
 /**
  * Webhook headers expected from Sentry
  */
 export interface SentryWebhookHeaders {
+  requestId: string | null;
+  sentryHookResource: string | null;
   sentryHookSignature: string | null;
   sentryHookTimestamp: string | null;
-  sentryHookResource: string | null;
-  requestId: string | null;
 }
 
 /**
@@ -168,11 +165,9 @@ export interface SentryWebhookHeaders {
  */
 export const extractSentryHeaders = (
   headers: Headers
-): SentryWebhookHeaders => {
-  return {
-    sentryHookSignature: headers.get("sentry-hook-signature"),
-    sentryHookTimestamp: headers.get("sentry-hook-timestamp"),
-    sentryHookResource: headers.get("sentry-hook-resource"),
-    requestId: headers.get("request-id"),
-  };
-};
+): SentryWebhookHeaders => ({
+  sentryHookSignature: headers.get("sentry-hook-signature"),
+  sentryHookTimestamp: headers.get("sentry-hook-timestamp"),
+  sentryHookResource: headers.get("sentry-hook-resource"),
+  requestId: headers.get("request-id"),
+});

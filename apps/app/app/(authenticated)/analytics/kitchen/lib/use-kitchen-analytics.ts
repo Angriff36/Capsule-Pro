@@ -6,40 +6,40 @@ import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
 interface KitchenAnalyticsSummary {
-  period: string;
-  startDate: string;
   endDate: string;
   locationId: string | null;
+  period: string;
+  startDate: string;
 }
 
 interface StationThroughput {
+  avgTime: string;
+  completed: number;
+  completedItems: number;
+  load: number;
+  pendingItems: number;
   stationId: string;
   stationName: string;
-  load: number;
-  completed: number;
-  avgTime: string;
   totalItems: number;
-  completedItems: number;
-  pendingItems: number;
 }
 
 interface KitchenHealth {
+  allergenWarnings: number;
+  avgMinutes?: number;
   prepListsSync: {
     rate: number;
     total: number;
     completed: number;
   };
-  allergenWarnings: number;
-  wasteAlerts: number;
   timeToCompletion: string;
-  avgMinutes?: number;
+  wasteAlerts: number;
 }
 
 export interface KitchenTrendStation {
-  stationName: string;
-  total: number;
   completed: number;
   completionRate: number;
+  stationName: string;
+  total: number;
 }
 
 export interface KitchenTrend {
@@ -48,31 +48,31 @@ export interface KitchenTrend {
 }
 
 interface KitchenTopPerformer {
+  avgMinutes: number;
+  completedTasks: number;
   employeeId: string;
   firstName: string;
   lastName: string;
-  completedTasks: number;
-  avgMinutes: number;
 }
 
 export interface KitchenAnalyticsData {
-  summary: KitchenAnalyticsSummary;
-  stationThroughput: StationThroughput[];
   kitchenHealth: KitchenHealth;
-  trends: KitchenTrend[];
+  stationThroughput: StationThroughput[];
+  summary: KitchenAnalyticsSummary;
   topPerformers: KitchenTopPerformer[];
+  trends: KitchenTrend[];
 }
 
 export interface UseKitchenAnalyticsOptions {
-  period?: "7d" | "30d" | "90d" | "12m";
-  locationId?: string;
   enabled?: boolean;
+  locationId?: string;
+  period?: "7d" | "30d" | "90d" | "12m";
 }
 
 export interface UseKitchenAnalyticsReturn {
   data: KitchenAnalyticsData | null;
-  isLoading: boolean;
   error: Error | null;
+  isLoading: boolean;
   refetch: () => void;
 }
 

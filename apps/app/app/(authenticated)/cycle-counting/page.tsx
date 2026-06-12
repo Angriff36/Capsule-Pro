@@ -145,7 +145,7 @@ export default async function CycleCountingPage() {
 
         <section className="space-y-4">
           <SectionHeader
-            count={`${sessions.length} session${sessions.length !== 1 ? "s" : ""}`}
+            count={`${sessions.length} session${sessions.length === 1 ? "" : "s"}`}
             eyebrow="History"
             title="Recent Sessions"
           />
@@ -160,7 +160,7 @@ export default async function CycleCountingPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-[22px] border border-hairline bg-canvas overflow-hidden">
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -191,7 +191,7 @@ export default async function CycleCountingPage() {
                             {session.sessionName}
                           </a>
                         </TableCell>
-                        <TableCell className="capitalize text-muted-foreground">
+                        <TableCell className="text-muted-foreground capitalize">
                           {session.countType.replace("_", " ")}
                         </TableCell>
                         <TableCell>

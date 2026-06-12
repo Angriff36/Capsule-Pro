@@ -143,10 +143,7 @@ function mockCommandSuccess(
 
 function mockCommandFailure(message: string, status = 400) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    NextResponse.json(
-      { success: false, message },
-      { status }
-    ) as never
+    NextResponse.json({ success: false, message }, { status }) as never
   );
 }
 

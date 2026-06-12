@@ -19,7 +19,7 @@ interface SegmentSummaryTableProps {
 function SegmentSummaryTable({ rows }: SegmentSummaryTableProps) {
   if (!rows.length) {
     return (
-      <div className="text-sm text-muted-foreground">No segment data.</div>
+      <div className="text-muted-foreground text-sm">No segment data.</div>
     );
   }
   const displayRows = rows.slice(0, 12);

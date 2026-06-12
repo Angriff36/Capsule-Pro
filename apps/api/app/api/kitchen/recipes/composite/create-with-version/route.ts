@@ -5,7 +5,6 @@ import {
   type IngredientInput,
   resolveIngredients,
 } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestConstraintBlockedResponse,
@@ -16,6 +15,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
@@ -25,11 +25,11 @@ export const runtime = "nodejs";
  */
 interface ResolvedIngredientInput {
   ingredientId: string;
-  quantity: number;
-  unitId: number;
-  preparationNotes?: string;
   isOptional?: boolean;
+  preparationNotes?: string;
+  quantity: number;
   sortOrder: number;
+  unitId: number;
 }
 
 /**
@@ -37,12 +37,12 @@ interface ResolvedIngredientInput {
  * Used for backward compatibility with frontend forms that send free-text.
  */
 interface RawIngredientInput {
-  name: string;
-  quantity: number;
-  unit?: string | null;
-  preparationNotes?: string | null;
   isOptional?: boolean;
+  name: string;
+  preparationNotes?: string | null;
+  quantity: number;
   sortOrder: number;
+  unit?: string | null;
 }
 
 /**
@@ -60,24 +60,26 @@ function isResolvedIngredient(
 }
 
 interface CreateRecipeRequest {
-  // Recipe fields
-  name: string;
   category?: string;
+  cookTimeMinutes?: number;
   cuisineType?: string;
   description?: string;
-  tags?: string[];
-  // Version fields
-  yieldQuantity: number;
-  yieldUnitId: number;
-  yieldDescription?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  restTimeMinutes?: number;
   difficultyLevel?: number;
-  instructions?: string;
-  notes?: string;
+  // Idempotency
+  idempotencyKey?: string;
   // Related entities - supports both resolved and raw formats
   ingredients?: IngredientInputItem[];
+  instructions?: string;
+  // Recipe fields
+  name: string;
+  notes?: string;
+  // Override support - when provided, constraints will be overridden
+  override?: {
+    reasonCode: string;
+    details: string;
+  };
+  prepTimeMinutes?: number;
+  restTimeMinutes?: number;
   steps?: {
     stepNumber: number;
     instruction: string;
@@ -89,13 +91,11 @@ interface CreateRecipeRequest {
     videoUrl?: string;
     imageUrl?: string;
   }[];
-  // Idempotency
-  idempotencyKey?: string;
-  // Override support - when provided, constraints will be overridden
-  override?: {
-    reasonCode: string;
-    details: string;
-  };
+  tags?: string[];
+  yieldDescription?: string;
+  // Version fields
+  yieldQuantity: number;
+  yieldUnitId: number;
 }
 
 export async function POST(request: NextRequest) {

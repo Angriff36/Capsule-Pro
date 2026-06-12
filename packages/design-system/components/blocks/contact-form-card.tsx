@@ -19,15 +19,15 @@ import type { FormEvent, ReactNode } from "react";
  * `flex flex-col gap-5` default that callers can override.
  */
 export interface ContactFormCardProps {
-  eyebrow?: ReactNode;
-  title?: ReactNode;
-  description?: ReactNode;
-  submitLabel?: string;
-  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   children: ReactNode;
-  footnote?: ReactNode;
   className?: string;
+  description?: ReactNode;
+  eyebrow?: ReactNode;
+  footnote?: ReactNode;
   formClassName?: string;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
+  submitLabel?: string;
+  title?: ReactNode;
 }
 
 export function ContactFormCard({

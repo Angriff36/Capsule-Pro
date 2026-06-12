@@ -25,27 +25,51 @@ vi.mock("@/app/lib/tenant", () => ({
   resolveCurrentUser: vi.fn(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
 
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string"
-      ? { success: false, message }
-      : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 // --- Imports (after mocks) ---
@@ -120,11 +144,14 @@ function mockDispatcherSuccess(
   result: Record<string, unknown> = { id: TEST_RECIPE_ID }
 ) {
   vi.mocked(runManifestCommand).mockResolvedValueOnce(
-    new Response(JSON.stringify({
-      success: true,
-      result,
-      events: [{ type: "RecipeEvent", entityId: result.id }],
-    }), { status: 200 })
+    new Response(
+      JSON.stringify({
+        success: true,
+        result,
+        events: [{ type: "RecipeEvent", entityId: result.id }],
+      }),
+      { status: 200 }
+    )
   );
 }
 
@@ -151,9 +178,7 @@ describe("Recipes API", () => {
     it("returns 401 when unauthenticated", async () => {
       unauthed();
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      const res = await GET(
-        makeRequest("/api/kitchen/recipes") as Request
-      );
+      const res = await GET(makeRequest("/api/kitchen/recipes") as Request);
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -167,9 +192,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(1 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      const res = await GET(
-        makeRequest("/api/kitchen/recipes") as Request
-      );
+      const res = await GET(makeRequest("/api/kitchen/recipes") as Request);
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -200,9 +223,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?category=sauce") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?category=sauce") as Request);
 
       expect(rootFindManyArg().where.AND).toContainEqual({ category: "sauce" });
     });
@@ -213,9 +234,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?cuisineType=italian"
-        ) as Request
+        makeRequest("/api/kitchen/recipes?cuisineType=italian") as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({
@@ -228,9 +247,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?search=Caesar") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?search=Caesar") as Request);
 
       const ands = rootFindManyArg().where.AND as Array<
         Record<string, unknown>
@@ -248,9 +265,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?tag=staff-meal") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?tag=staff-meal") as Request);
 
       expect(rootFindManyArg().where.AND).toContainEqual({
         tags: { has: "staff-meal" },
@@ -262,9 +277,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?isActive=true") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?isActive=true") as Request);
 
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: true });
     });
@@ -274,9 +287,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?isActive=false") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?isActive=false") as Request);
 
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: false });
     });
@@ -286,9 +297,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?limit=999999") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?limit=999999") as Request);
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
         take: number;
@@ -303,9 +312,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest("/api/kitchen/recipes?limit=0") as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?limit=0") as Request);
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
         take: number;
@@ -318,11 +325,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(
-        makeRequest(
-          "/api/kitchen/recipes?page=3&limit=10"
-        ) as Request
-      );
+      await GET(makeRequest("/api/kitchen/recipes?page=3&limit=10") as Request);
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
         take: number;
@@ -338,9 +341,7 @@ describe("Recipes API", () => {
       );
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      const res = await GET(
-        makeRequest("/api/kitchen/recipes") as Request
-      );
+      const res = await GET(makeRequest("/api/kitchen/recipes") as Request);
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -562,7 +563,9 @@ describe("Recipes API", () => {
         Object.assign(new Error("Unauthorized"), { name: "InvariantError" })
       );
 
-      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(401);
@@ -580,7 +583,9 @@ describe("Recipes API", () => {
 
       mockDispatcherSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
 
-      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(200);
@@ -600,7 +605,9 @@ describe("Recipes API", () => {
 
       mockDispatcherFailure("Recipe is already active");
 
-      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(400);
@@ -620,7 +627,9 @@ describe("Recipes API", () => {
 
       mockDispatcherSuccess({ id: TEST_RECIPE_ID });
 
-      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       await POST(postRequest(path, sampleBody), context);
 
       // The dispatcher receives entity/command from context.params

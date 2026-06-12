@@ -2,8 +2,8 @@ import { Check } from "lucide-react";
 
 interface ChipToggleProps {
   label: string;
-  selected: boolean;
   onClick: () => void;
+  selected: boolean;
 }
 
 export default function ChipToggle({
@@ -13,19 +13,16 @@ export default function ChipToggle({
 }: ChipToggleProps) {
   return (
     <button
-      className={`
-        inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium
-        transition-all duration-200 border
-        ${
-          selected
-            ? "bg-stone-800 text-white border-stone-800 shadow-md"
-            : "bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:bg-stone-50"
-        }
+      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 font-medium text-sm transition-all duration-200 ${
+        selected
+          ? "border-stone-800 bg-stone-800 text-white shadow-md"
+          : "border-stone-200 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50"
+      }
       `}
       onClick={onClick}
       type="button"
     >
-      {selected && <Check className="w-3.5 h-3.5" />}
+      {selected && <Check className="h-3.5 w-3.5" />}
       {label}
     </button>
   );

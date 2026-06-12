@@ -173,9 +173,17 @@ export const POST = withRateLimit(
         if (response.ok) {
           created++;
         } else {
-          const errorBody = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-          const message = typeof errorBody.message === "string" ? errorBody.message : `HTTP ${response.status}`;
-          log.error(`[BatchAvailability] Manifest create failed for day ${pattern.dayOfWeek}: ${message}`);
+          const errorBody = (await response.json().catch(() => ({}))) as Record<
+            string,
+            unknown
+          >;
+          const message =
+            typeof errorBody.message === "string"
+              ? errorBody.message
+              : `HTTP ${response.status}`;
+          log.error(
+            `[BatchAvailability] Manifest create failed for day ${pattern.dayOfWeek}: ${message}`
+          );
           errors.push({
             pattern: {
               dayOfWeek: pattern.dayOfWeek,

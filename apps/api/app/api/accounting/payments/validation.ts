@@ -40,23 +40,23 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
 
 export interface PaymentFilters {
-  search?: string;
-  status?: PaymentStatus;
-  methodType?: PaymentMethodType;
-  invoiceId?: string;
-  eventId?: string;
+  amountFrom?: number;
+  amountTo?: number;
   clientId?: string;
   dateFrom?: string;
   dateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
+  eventId?: string;
+  invoiceId?: string;
+  methodType?: PaymentMethodType;
+  search?: string;
+  status?: PaymentStatus;
 }
 
 export interface CreatePaymentRequest {
-  invoiceId: string;
-  eventId: string;
   amount: number;
   currency?: string;
+  eventId: string;
+  invoiceId: string;
   methodType: PaymentMethodType;
   paymentMethodId?: string;
   processor?: string;
@@ -251,24 +251,24 @@ export function validatePaymentBusinessRules(
 
 // Type definitions for API responses
 export interface PaymentResponse {
-  id: string;
-  tenantId: string;
   amount: Decimal;
-  currency: string;
-  status: string;
-  methodType: string;
-  invoiceId: string;
-  eventId: string;
   clientId: string | null;
-  gatewayTransactionId: string | null;
-  gatewayPaymentMethodId: string | null;
-  processor: string | null;
-  processedAt: Date | null;
   completedAt: Date | null;
-  refundedAt: Date | null;
   createdAt: Date;
-  updatedAt: Date;
+  currency: string;
   deletedAt: Date | null;
+  eventId: string;
+  gatewayPaymentMethodId: string | null;
+  gatewayTransactionId: string | null;
+  id: string;
+  invoiceId: string;
+  methodType: string;
+  processedAt: Date | null;
+  processor: string | null;
+  refundedAt: Date | null;
+  status: string;
+  tenantId: string;
+  updatedAt: Date;
 }
 
 export interface PaymentListResponse {

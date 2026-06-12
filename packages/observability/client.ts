@@ -33,7 +33,7 @@ const getSentryEnvironment = () => {
     return nodeEnv;
   }
 
-  return undefined;
+  return;
 };
 
 export const initializeSentry = () => {

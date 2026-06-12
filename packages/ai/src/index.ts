@@ -37,9 +37,9 @@ import { AgentWorkflow, createWorkflow } from "./workflow.js";
 export interface SDKOptions {
   apiKey?: string;
   baseUrl?: string;
-  defaultTimeout?: number;
-  defaultMaxRetries?: number;
   debug?: boolean;
+  defaultMaxRetries?: number;
+  defaultTimeout?: number;
   metricsCollector?: MetricsCollector;
 }
 
@@ -195,41 +195,40 @@ export function getSDK(): AISDK {
   return sdkInstance;
 }
 
-export {
-  AISDK,
-  createAgent,
-  createTool,
-  createWorkflow,
-  Agent,
-  Tool,
-  ToolRegistry,
-  AgentWorkflow,
-  AgentEventEmitter,
-  type AgentEvent,
-  type LifecycleEvent,
-  type ProgressEvent,
-  type ToolEvent,
-  SDKError,
-  createSDKError,
-  MetricsCollector,
-  RetryManager,
-  ERROR_CODES,
-  AuthenticationError,
-  RateLimitExceededError,
-  TimeoutError,
-  ToolExecutionError,
-  AgentNotFoundError,
-  AgentExecutionError,
-  CancellationError,
-};
-
 export type {
-  ExecutionResult,
   AgentConfig,
+  AggregateMetrics,
   ExecutionOptions,
-  SDKConfig,
+  ExecutionResult,
   Metrics,
   RetryConfig,
+  SDKConfig,
   ToolConfig,
-  AggregateMetrics,
+};
+export {
+  Agent,
+  type AgentEvent,
+  AgentEventEmitter,
+  AgentExecutionError,
+  AgentNotFoundError,
+  AgentWorkflow,
+  AISDK,
+  AuthenticationError,
+  CancellationError,
+  createAgent,
+  createSDKError,
+  createTool,
+  createWorkflow,
+  ERROR_CODES,
+  type LifecycleEvent,
+  MetricsCollector,
+  type ProgressEvent,
+  RateLimitExceededError,
+  RetryManager,
+  SDKError,
+  TimeoutError,
+  Tool,
+  type ToolEvent,
+  ToolExecutionError,
+  ToolRegistry,
 };

@@ -118,9 +118,10 @@ function setupFetchMocks(opts: {
   // Derive location names from conflicts if not explicitly provided
   const locationNames =
     opts.locationNames ??
-    [...new Set((opts.conflicts ?? []).map((c) => c.locationId))].map(
-      (id) => ({ id, name: `Location-${id}` })
-    );
+    [...new Set((opts.conflicts ?? []).map((c) => c.locationId))].map((id) => ({
+      id,
+      name: `Location-${id}`,
+    }));
   vi.mocked(database.location.findMany).mockResolvedValue(
     locationNames as never
   );
@@ -253,9 +254,7 @@ describe("Auto-Assignment Service", () => {
             hourlyRate: 20,
           },
         ],
-        seniority: [
-          { employee_id: "emp-1", level: "senior", rank: 4 },
-        ],
+        seniority: [{ employee_id: "emp-1", level: "senior", rank: 4 }],
         skills: [
           { employee_id: "emp-1", skill_id: "skill-1", proficiency_level: 5 },
           { employee_id: "emp-1", skill_id: "skill-2", proficiency_level: 4 },
@@ -418,9 +417,7 @@ describe("Auto-Assignment Service", () => {
             hourlyRate: 20,
           },
         ],
-        seniority: [
-          { employee_id: "emp-1", level: "senior", rank: 4 },
-        ],
+        seniority: [{ employee_id: "emp-1", level: "senior", rank: 4 }],
         skills: [
           { employee_id: "emp-1", skill_id: "skill-1", proficiency_level: 5 },
         ],
@@ -470,9 +467,7 @@ describe("Auto-Assignment Service", () => {
             hourlyRate: 20,
           },
         ],
-        seniority: [
-          { employee_id: "emp-1", level: "senior", rank: 4 },
-        ],
+        seniority: [{ employee_id: "emp-1", level: "senior", rank: 4 }],
         skills: [
           { employee_id: "emp-1", skill_id: "skill-1", proficiency_level: 5 },
         ],
@@ -530,11 +525,10 @@ describe("Auto-Assignment Service", () => {
           role: "admin",
         } as never);
 
-      vi.mocked(database.user.findFirst)
-        .mockResolvedValueOnce({
-          firstName: "John",
-          lastName: "Senior",
-        } as never);
+      vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+        firstName: "John",
+        lastName: "Senior",
+      } as never);
 
       const result = await autoAssignShift(mockTenantId, mockShiftId, "emp-1");
 
@@ -687,9 +681,7 @@ describe("Auto-Assignment Service", () => {
             hourlyRate: 20,
           },
         ],
-        seniority: [
-          { employee_id: "emp-1", level: "senior", rank: 4 },
-        ],
+        seniority: [{ employee_id: "emp-1", level: "senior", rank: 4 }],
         skills: [
           { employee_id: "emp-1", skill_id: "skill-1", proficiency_level: 5 },
         ],

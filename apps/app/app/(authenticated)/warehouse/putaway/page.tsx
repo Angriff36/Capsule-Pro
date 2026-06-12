@@ -22,10 +22,14 @@ import { PutawayClient } from "./putaway-client";
 
 export default async function PutawayPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   // Fetch metrics server-side for the initial render
   const [pendingTransactions, completedToday, activeLocations] =

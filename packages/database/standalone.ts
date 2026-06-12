@@ -62,7 +62,8 @@ const adapter = connectionString
   ? new PrismaNeon({ connectionString })
   : undefined;
 
-export const database = globalForPrisma.prisma ||
+export const database =
+  globalForPrisma.prisma ||
   (adapter
     ? new PrismaClient({ adapter })
     : (undefined as unknown as PrismaClient));

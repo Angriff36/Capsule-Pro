@@ -1,49 +1,49 @@
 import { AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 
 export interface Budget {
+  budget_amount: number;
+  category: string | null;
+  committed_amount: number;
+  created_at: string;
+  description: string | null;
+  fiscal_year: number;
   id: string;
   name: string;
-  description: string | null;
-  category: string | null;
-  fiscal_year: number;
-  period_type: string;
-  period_start: string | null;
-  period_end: string | null;
-  budget_amount: number;
-  spent_amount: number;
-  committed_amount: number;
-  threshold_warning_pct: number;
-  threshold_critical_pct: number;
-  status: string;
   notes: string | null;
-  created_at: string;
-  updated_at: string;
+  period_end: string | null;
+  period_start: string | null;
+  period_type: string;
+  spent_amount: number;
+  status: string;
+  threshold_critical_pct: number;
+  threshold_warning_pct: number;
   unacknowledged_alert_count: number;
+  updated_at: string;
 }
 
 export interface BudgetSpend {
-  totalSpent: number;
-  poCount: number;
   committed: number;
+  poCount: number;
   remaining: number;
+  totalSpent: number;
   utilizationPct: number;
 }
 
 export interface BudgetAlert {
-  id: string;
-  budget_id: string;
-  alert_type: string;
-  utilization_pct: number;
-  message: string;
-  is_acknowledged: boolean;
   acknowledged_at: string | null;
-  resolved: boolean;
+  alert_type: string;
+  budget_id: string;
   created_at: string;
+  id: string;
+  is_acknowledged: boolean;
+  message: string;
+  resolved: boolean;
+  utilization_pct: number;
 }
 
 export interface MonthlyBreakdown {
-  month: string;
   amount: number;
+  month: string;
   po_count: number;
 }
 
@@ -76,8 +76,12 @@ export const getUtilizationColor = (
   warningPct: number,
   criticalPct: number
 ) => {
-  if (pct >= criticalPct) return "bg-red-500";
-  if (pct >= warningPct) return "bg-amber-500";
+  if (pct >= criticalPct) {
+    return "bg-red-500";
+  }
+  if (pct >= warningPct) {
+    return "bg-amber-500";
+  }
   return "bg-blue-500";
 };
 
@@ -86,9 +90,15 @@ export const getUtilizationBarColor = (
   warningPct: number,
   criticalPct: number
 ) => {
-  if (pct >= criticalPct) return "bg-red-500";
-  if (pct >= warningPct) return "bg-amber-500";
-  if (pct >= warningPct * 0.7) return "bg-blue-400";
+  if (pct >= criticalPct) {
+    return "bg-red-500";
+  }
+  if (pct >= warningPct) {
+    return "bg-amber-500";
+  }
+  if (pct >= warningPct * 0.7) {
+    return "bg-blue-400";
+  }
   return "bg-blue-500";
 };
 
@@ -112,7 +122,7 @@ export const UtilizationBar = ({
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span
-          className={`text-sm font-medium ${
+          className={`font-medium text-sm ${
             pct >= criticalPct
               ? "text-red-600"
               : pct >= warningPct
@@ -124,21 +134,21 @@ export const UtilizationBar = ({
           {displayPct}%
         </span>
         {pct >= criticalPct && !compact && (
-          <span className="flex items-center gap-1 text-xs text-red-600">
+          <span className="flex items-center gap-1 text-red-600 text-xs">
             <AlertTriangle className="h-3 w-3" />
             Over budget
           </span>
         )}
       </div>
-      <div className="h-2 bg-muted/50 rounded-full overflow-hidden relative">
+      <div className="relative h-2 overflow-hidden rounded-full bg-muted/50">
         {/* Warning threshold marker */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-amber-300 z-10"
+          className="absolute top-0 z-10 h-full w-0.5 bg-amber-300"
           style={{ left: `${Math.min(warningPct, 100)}%` }}
         />
         {/* Critical threshold marker */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-red-300 z-10"
+          className="absolute top-0 z-10 h-full w-0.5 bg-red-300"
           style={{ left: `${Math.min(criticalPct, 100)}%` }}
         />
         {/* Progress bar */}
@@ -158,18 +168,20 @@ export const TrendIcon = ({
   current: number;
   previous: number;
 }) => {
-  if (previous === 0) return null;
+  if (previous === 0) {
+    return null;
+  }
   const change = ((current - previous) / previous) * 100;
   if (change > 0) {
     return (
-      <span className="flex items-center gap-0.5 text-xs text-red-600">
+      <span className="flex items-center gap-0.5 text-red-600 text-xs">
         <TrendingUp className="h-3 w-3" />+{change.toFixed(0)}%
       </span>
     );
   }
   if (change < 0) {
     return (
-      <span className="flex items-center gap-0.5 text-xs text-green-600">
+      <span className="flex items-center gap-0.5 text-green-600 text-xs">
         <TrendingDown className="h-3 w-3" />
         {change.toFixed(0)}%
       </span>

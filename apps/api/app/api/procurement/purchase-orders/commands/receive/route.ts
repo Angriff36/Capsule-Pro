@@ -14,18 +14,25 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     const { orderId, items } = await request.json();
-    if (!(orderId && items?.length))
+    if (!(orderId && items?.length)) {
       return manifestErrorResponse("orderId and items required", 400);
+    }
 
     const allReceived = await database.$transaction(async (tx) => {
       for (const item of items) {
-        if (!item.itemId || item.quantityReceived == null) continue;
+        if (!item.itemId || item.quantityReceived == null) {
+          continue;
+        }
 
         const quantityReceived = new Prisma.Decimal(item.quantityReceived);
         const qualityStatus =

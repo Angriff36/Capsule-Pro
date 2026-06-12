@@ -62,10 +62,8 @@ export default defineConfig({
     restoreMocks: true,
     setupFiles: ["./test/setup.ts"],
     include: ["**/__tests__/**/*.quarantine.test.{ts,tsx,js}"],
-    exclude: [
-      "**/__tests__/**/*.integration.test.{ts,tsx,js}",
-    ],
-    testTimeout: 30000,
+    exclude: ["**/__tests__/**/*.integration.test.{ts,tsx,js}"],
+    testTimeout: 30_000,
   },
   resolve: {
     alias: {

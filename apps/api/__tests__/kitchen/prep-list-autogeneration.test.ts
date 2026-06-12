@@ -31,7 +31,9 @@ describe("Prep List Auto-Generation", () => {
       const { createOutboxEvent } = await import("@repo/realtime");
       vi.mocked(createOutboxEvent).mockResolvedValue({} as never);
 
-      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { triggerPrepListAutoGeneration } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const input = {
         db: database,
@@ -69,9 +71,13 @@ describe("Prep List Auto-Generation", () => {
 
     it("should handle errors gracefully", async () => {
       const { createOutboxEvent } = await import("@repo/realtime");
-      vi.mocked(createOutboxEvent).mockRejectedValue(new Error("Database error"));
+      vi.mocked(createOutboxEvent).mockRejectedValue(
+        new Error("Database error")
+      );
 
-      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { triggerPrepListAutoGeneration } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const result = await triggerPrepListAutoGeneration({
         db: database,
@@ -90,7 +96,9 @@ describe("Prep List Auto-Generation", () => {
       const { createOutboxEvent } = await import("@repo/realtime");
       vi.mocked(createOutboxEvent).mockResolvedValue({} as never);
 
-      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { triggerPrepListAutoGeneration } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       await triggerPrepListAutoGeneration({
         db: database,
@@ -148,7 +156,9 @@ describe("Prep List Auto-Generation", () => {
         error: null,
       } as never);
 
-      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { processPendingPrepListGenerations } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
@@ -210,7 +220,9 @@ describe("Prep List Auto-Generation", () => {
         error: "Generation failed",
       } as never);
 
-      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { processPendingPrepListGenerations } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: false,
@@ -249,7 +261,9 @@ describe("Prep List Auto-Generation", () => {
       }));
 
       // Return only first 10 (batch size)
-      vi.mocked(database.outboxEvent.findMany).mockResolvedValue(events.slice(0, 10) as never);
+      vi.mocked(database.outboxEvent.findMany).mockResolvedValue(
+        events.slice(0, 10) as never
+      );
       vi.mocked(database.outboxEvent.update).mockResolvedValue({
         id: "outbox-0",
         tenantId: "tenant-123",
@@ -264,7 +278,9 @@ describe("Prep List Auto-Generation", () => {
         error: null,
       } as never);
 
-      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { processPendingPrepListGenerations } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
@@ -292,7 +308,9 @@ describe("Prep List Auto-Generation", () => {
 
   describe("generatePrepListImmediately", () => {
     it("should generate prep list immediately without outbox", async () => {
-      const { generatePrepListImmediately } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { generatePrepListImmediately } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
@@ -321,7 +339,9 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should handle generation errors", async () => {
-      const { generatePrepListImmediately } = await import("@repo/manifest-runtime/prep-list-autogeneration");
+      const { generatePrepListImmediately } = await import(
+        "@repo/manifest-runtime/prep-list-autogeneration"
+      );
 
       const mockGenerateFn = vi
         .fn()

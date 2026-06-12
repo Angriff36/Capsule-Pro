@@ -19,7 +19,7 @@ import { NextResponse } from "next/server";
 export function normalizeCommandResult(
   _entity: string,
   _command: string,
-  result: CommandResult,
+  result: CommandResult
 ): {
   success: boolean;
   data?: unknown;
@@ -27,7 +27,11 @@ export function normalizeCommandResult(
   events?: CommandResult["emittedEvents"];
   diagnostics?: Array<{ kind: string; message: string }>;
 } {
-  const toDiagnostic = (kind: string, message: string | undefined, fallback: string) => ({
+  const toDiagnostic = (
+    kind: string,
+    message: string | undefined,
+    fallback: string
+  ) => ({
     kind,
     message: message ?? fallback,
   });
@@ -40,23 +44,54 @@ export function normalizeCommandResult(
       events: result.emittedEvents,
       diagnostics: result.constraintOutcomes
         ?.filter((o) => !o.passed)
-        .map((o) => toDiagnostic("constraint_block", o.formatted ?? o.message, "Constraint failed")),
+        .map((o) =>
+          toDiagnostic(
+            "constraint_block",
+            o.formatted ?? o.message,
+            "Constraint failed"
+          )
+        ),
     };
   }
 
   // Map failure mode to a diagnostic kind
   const diagnostics: Array<{ kind: string; message: string }> = [];
   if (result.policyDenial) {
-    diagnostics.push(toDiagnostic("policy_denial", result.policyDenial.formatted, "Policy denied"));
+    diagnostics.push(
+      toDiagnostic(
+        "policy_denial",
+        result.policyDenial.formatted,
+        "Policy denied"
+      )
+    );
   }
   if (result.guardFailure) {
-    diagnostics.push(toDiagnostic("guard_failure", result.guardFailure.formatted, "Guard failed"));
+    diagnostics.push(
+      toDiagnostic(
+        "guard_failure",
+        result.guardFailure.formatted,
+        "Guard failed"
+      )
+    );
   }
   if (result.concurrencyConflict) {
-    diagnostics.push(toDiagnostic("concurrency_conflict", result.concurrencyConflict.conflictCode, "Conflict"));
+    diagnostics.push(
+      toDiagnostic(
+        "concurrency_conflict",
+        result.concurrencyConflict.conflictCode,
+        "Conflict"
+      )
+    );
   }
-  for (const outcome of result.constraintOutcomes?.filter((o) => !o.passed) ?? []) {
-    diagnostics.push(toDiagnostic("constraint_block", outcome.formatted ?? outcome.message, "Constraint failed"));
+  for (const outcome of result.constraintOutcomes?.filter((o) => !o.passed) ??
+    []) {
+    diagnostics.push(
+      toDiagnostic(
+        "constraint_block",
+        outcome.formatted ?? outcome.message,
+        "Constraint failed"
+      )
+    );
   }
 
   return {
@@ -84,6 +119,10 @@ export function manifestErrorResponse(
   const body =
     typeof message === "string"
       ? { success: false, message }
-      : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+      : {
+          success: false,
+          error: message.error,
+          diagnostics: message.diagnostics ?? [],
+        };
   return NextResponse.json(body, { status });
 }

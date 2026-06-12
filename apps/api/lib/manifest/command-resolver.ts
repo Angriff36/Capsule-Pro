@@ -6,6 +6,6 @@
 
 export {
   isRegisteredCommand,
-  resolveCommand,
   type ResolvedCommand,
+  resolveCommand,
 } from "@repo/manifest-runtime/command-resolver";

@@ -73,8 +73,16 @@ export async function PUT(
     lineItemId,
   });
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "BudgetLineItem", command: "update", body: { ...rawBody, id: lineItemId, budgetId: id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "BudgetLineItem",
+    command: "update",
+    body: { ...rawBody, id: lineItemId, budgetId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }
 
 /**
@@ -91,5 +99,10 @@ export async function DELETE(
     lineItemId,
   });
   const user = await resolveCurrentUser(request);
-  return runManifestCommand({ entity: "BudgetLineItem", command: "remove", body: { id: lineItemId, budgetId: id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  return runManifestCommand({
+    entity: "BudgetLineItem",
+    command: "remove",
+    body: { id: lineItemId, budgetId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

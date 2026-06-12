@@ -43,10 +43,10 @@ type PreferenceValue =
 
 interface Preference {
   id: string;
-  preferenceType: string;
-  preferenceKey: string;
-  preferenceValue: PreferenceValue;
   notes: string | null;
+  preferenceKey: string;
+  preferenceType: string;
+  preferenceValue: PreferenceValue;
 }
 
 interface PreferencesTabProps {
@@ -118,7 +118,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPreference) return;
+    if (!selectedPreference) {
+      return;
+    }
     setSubmitting(true);
     try {
       await updateClientPreference(client.id, selectedPreference.id, {
@@ -142,7 +144,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!selectedPreference) return;
+    if (!selectedPreference) {
+      return;
+    }
     setSubmitting(true);
     try {
       await deleteClientPreference(client.id, selectedPreference.id);
@@ -188,7 +192,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
   };
 
   const formatValue = (value: PreferenceValue): string => {
-    if (typeof value === "object") return JSON.stringify(value, null, 2);
+    if (typeof value === "object") {
+      return JSON.stringify(value, null, 2);
+    }
     return String(value);
   };
 
@@ -207,7 +213,7 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
       <div className="space-y-2">
         <Label htmlFor="preferenceType">Category *</Label>
         <select
-          className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
           id="preferenceType"
           onChange={(e) =>
             setFormData({ ...formData, preferenceType: e.target.value })
@@ -262,13 +268,13 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
+        <h2 className="font-semibold text-xl">
           Client Preferences ({preferences.length})
         </h2>
         <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add Preference
             </Button>
           </DialogTrigger>
@@ -301,14 +307,14 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
       {preferences.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No preferences set</h3>
-            <p className="text-muted-foreground mb-4">
+            <TagIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">No preferences set</h3>
+            <p className="mb-4 text-muted-foreground">
               Add preferences to track client-specific requirements and
               settings.
             </p>
             <Button onClick={() => setDialogOpen(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add First Preference
             </Button>
           </CardContent>
@@ -317,12 +323,12 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
         <div className="space-y-6">
           {Object.entries(groupedPreferences).map(([type, prefs]) => (
             <div key={type}>
-              <h3 className="text-lg font-medium mb-3 capitalize">{type}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <h3 className="mb-3 font-medium text-lg capitalize">{type}</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {prefs.map((pref) => (
                   <Card key={pref.id}>
                     <CardContent className="py-4">
-                      <div className="flex items-start justify-between mb-2">
+                      <div className="mb-2 flex items-start justify-between">
                         <Badge variant="secondary">{pref.preferenceKey}</Badge>
                         <div className="flex gap-1">
                           <Button
@@ -343,11 +349,11 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
                           </Button>
                         </div>
                       </div>
-                      <div className="text-sm font-mono bg-muted p-2 rounded">
+                      <div className="rounded bg-muted p-2 font-mono text-sm">
                         {formatValue(pref.preferenceValue)}
                       </div>
                       {pref.notes && (
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="mt-2 text-muted-foreground text-xs">
                           {pref.notes}
                         </p>
                       )}

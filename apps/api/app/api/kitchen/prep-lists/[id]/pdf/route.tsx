@@ -13,8 +13,8 @@ type RouteParams = Promise<{
 
 interface AuthContext {
   orgId: string;
-  userId: string;
   tenantId: string;
+  userId: string;
 }
 
 async function getAuthContext(
@@ -268,7 +268,9 @@ async function preparePdfData(
       where: { id: eventDish.dishId, tenantId },
     });
 
-    if (!dish?.recipeId) continue;
+    if (!dish?.recipeId) {
+      continue;
+    }
 
     // Get latest recipe version for this recipe
     const latestVersion = await database.recipeVersion.findFirst({
@@ -276,7 +278,9 @@ async function preparePdfData(
       orderBy: { versionNumber: "desc" },
     });
 
-    if (!latestVersion) continue;
+    if (!latestVersion) {
+      continue;
+    }
 
     // Get ingredients for this version
     const recipeIngredients = await database.recipeIngredient.findMany({

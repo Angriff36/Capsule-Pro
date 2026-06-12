@@ -34,11 +34,11 @@ import {
  * anchor (`<a>`) is used.
  */
 export interface ModuleLandingFeature {
-  title: string;
+  actionLabel?: string;
   description: string;
   href?: string;
-  actionLabel?: string;
   icon?: LucideIcon;
+  title: string;
 }
 
 type LinkComponent = (props: {
@@ -48,11 +48,11 @@ type LinkComponent = (props: {
 }) => ReactNode;
 
 interface ModuleLandingProperties {
-  title: string;
-  summary: string;
-  highlights: Array<string | ModuleLandingFeature>;
   eyebrow?: string;
+  highlights: Array<string | ModuleLandingFeature>;
   linkComponent?: LinkComponent;
+  summary: string;
+  title: string;
 }
 
 const DefaultLink: LinkComponent = ({ href, className, children }) => (

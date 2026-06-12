@@ -16,9 +16,7 @@ const isRecipeEvent = (name?: string) => name?.startsWith("recipe.") ?? false;
 
 const RecipesRealtime = ({ tenantId }: RecipesRealtimeProps) => {
   const router = useRouter();
-  const enabled = Boolean(
-    tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED
-  );
+  const enabled = Boolean(tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED);
 
   const handleMessage = useCallback(
     (message: RealtimeEventMessage) => {

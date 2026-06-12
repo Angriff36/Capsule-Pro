@@ -19,12 +19,12 @@ export const ERROR_CODES = {
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 export interface SDKErrorOptions extends ErrorOptions {
-  code: ErrorCode;
   agentId?: string;
-  toolName?: string;
-  retryable?: boolean;
-  troubleshootingUrl?: string;
+  code: ErrorCode;
   context?: Record<string, unknown>;
+  retryable?: boolean;
+  toolName?: string;
+  troubleshootingUrl?: string;
 }
 
 export class SDKError extends Error {

@@ -48,7 +48,7 @@ function validateEnumField(
 ): string | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "string" && validValues.includes(value),
@@ -66,7 +66,7 @@ function validateBooleanField(
 ): boolean | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(typeof value === "boolean", `${field} must be a boolean`);
   return value as boolean;
@@ -83,7 +83,7 @@ function validateUuidField(
   const value = data[field];
   if (value === undefined || value === null) {
     invariant(!required, `${field} is required`);
-    return undefined;
+    return;
   }
   invariant(typeof value === "string", `${field} must be a string`);
 

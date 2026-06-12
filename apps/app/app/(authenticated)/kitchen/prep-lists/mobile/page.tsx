@@ -27,30 +27,30 @@ import { Header } from "../../../components/header";
 interface PrepListItem {
   id: string;
   itemName: string;
-  quantity: number;
-  unit: string;
-  recipeId: string | null;
-  station: string | null;
-  prepDate: string;
-  status: string;
   notes: string | null;
+  prepDate: string;
+  quantity: number;
   recipe?: {
     id: string;
     name: string;
   };
+  recipeId: string | null;
+  station: string | null;
+  status: string;
+  unit: string;
 }
 
 interface PrepList {
-  id: string;
-  eventId: string;
   event: {
     id: string;
     name: string;
     eventDate: string;
     guestCount: number;
   };
-  status: string;
+  eventId: string;
+  id: string;
   items: PrepListItem[];
+  status: string;
 }
 
 const stationColors: Record<string, string> = {
@@ -141,7 +141,7 @@ export default function PrepListsMobilePage() {
       <Header page="Prep Lists" pages={["Kitchen Ops"]} />
 
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-soft-stone px-4 py-2">
+        <div className="flex items-center justify-center gap-2 border-hairline border-b bg-soft-stone px-4 py-2">
           <WifiOff className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="font-medium text-ink">
             You're offline. Some features may be unavailable.
@@ -155,7 +155,7 @@ export default function PrepListsMobilePage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
-                {prepLists.length} Event{prepLists.length !== 1 ? "s" : ""}
+                {prepLists.length} Event{prepLists.length === 1 ? "" : "s"}
               </CardTitle>
               <div className="flex items-center gap-2">
                 {isOnline ? (
@@ -180,7 +180,7 @@ export default function PrepListsMobilePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {completedItems} / {totalItems} items complete
                 </span>
               </div>
@@ -229,11 +229,11 @@ export default function PrepListsMobilePage() {
           Object.entries(itemsByStation).map(([station, items]) => (
             <div className="mb-6" key={station}>
               <div className="mb-3 flex items-center gap-2">
-                <h3 className="text-lg font-bold text-ink">{station}</h3>
+                <h3 className="font-bold text-ink text-lg">{station}</h3>
                 <Badge
                   className={`border text-xs ${stationColors[station] || "border-hairline bg-soft-stone text-ink"}`}
                 >
-                  {items.length} item{items.length !== 1 ? "s" : ""}
+                  {items.length} item{items.length === 1 ? "" : "s"}
                 </Badge>
               </div>
 
@@ -282,7 +282,7 @@ export default function PrepListsMobilePage() {
                           <Badge
                             className={`text-xs ${
                               prepDateLabel.isUrgent && !isCompleted
-                                ? "bg-rose-900/10 text-rose-700 border-rose-900/20"
+                                ? "border-rose-900/20 bg-rose-900/10 text-rose-700"
                                 : ""
                             }`}
                             variant="outline"

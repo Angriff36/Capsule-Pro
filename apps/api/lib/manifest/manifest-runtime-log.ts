@@ -1,11 +1,14 @@
-import { log } from "@repo/observability/log";
 import type { ManifestRuntimeLogger } from "@repo/manifest-runtime/manifest-runtime-factory";
+import { log } from "@repo/observability/log";
 import { logManifestIssue } from "./issue-log";
 
 const JSON_STORE_PREFIX = "Using PrismaJsonStore for entity:";
 const MISSING_STORE_PREFIX = "No store for entity";
 
-function extractEntityName(message: string, prefix: string): string | undefined {
+function extractEntityName(
+  message: string,
+  prefix: string
+): string | undefined {
   const quoted = message.match(new RegExp(`${prefix}\\s+"([^"]+)"`));
   if (quoted?.[1]) {
     return quoted[1];

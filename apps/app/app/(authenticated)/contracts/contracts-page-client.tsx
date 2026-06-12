@@ -25,15 +25,15 @@ import { useMemo, useState } from "react";
 type ContractType = "event" | "vendor";
 
 interface UnifiedContract {
-  id: string;
-  type: ContractType;
-  contractNumber: string | null;
-  title: string;
-  status: string;
-  partyName: string | null;
-  expiresAt: string | null;
-  createdAt: string;
   complianceScore: number | null;
+  contractNumber: string | null;
+  createdAt: string;
+  expiresAt: string | null;
+  id: string;
+  partyName: string | null;
+  status: string;
+  title: string;
+  type: ContractType;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +57,9 @@ const STATUS_COLORS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "\u2014";
+  if (!iso) {
+    return "\u2014";
+  }
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", {
     month: "short",
@@ -67,20 +69,30 @@ function formatDate(iso: string | null): string {
 }
 
 function formatExpiry(iso: string | null): string | null {
-  if (!iso) return null;
+  if (!iso) {
+    return null;
+  }
   const exp = new Date(iso);
   const now = new Date();
   const diffDays = Math.ceil(
     (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   );
-  if (diffDays < 0) return `Expired ${Math.abs(diffDays)}d ago`;
-  if (diffDays === 0) return "Expires today";
-  if (diffDays <= 30) return `Expires in ${diffDays}d`;
+  if (diffDays < 0) {
+    return `Expired ${Math.abs(diffDays)}d ago`;
+  }
+  if (diffDays === 0) {
+    return "Expires today";
+  }
+  if (diffDays <= 30) {
+    return `Expires in ${diffDays}d`;
+  }
   return formatDate(iso);
 }
 
 function isExpiringSoon(iso: string | null): boolean {
-  if (!iso) return false;
+  if (!iso) {
+    return false;
+  }
   const exp = new Date(iso);
   const thirty = new Date();
   thirty.setDate(thirty.getDate() + 30);
@@ -148,20 +160,20 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
       pills: (
         <>
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || "bg-slate-100 text-slate-600"}`}
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${STATUS_COLORS[c.status] || "bg-slate-100 text-slate-600"}`}
           >
             {c.status}
           </span>
-          <span className="inline-flex items-center rounded-full border border-hairline px-2.5 py-0.5 text-xs text-ink/60">
+          <span className="inline-flex items-center rounded-full border border-hairline px-2.5 py-0.5 text-ink/60 text-xs">
             {c.type === "event" ? "Event" : "Vendor"}
           </span>
           {c.complianceScore !== null && c.complianceScore < 80 && (
-            <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-600">
+            <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 font-medium text-red-600 text-xs">
               Compliance: {c.complianceScore}
             </span>
           )}
           {expiringWarning && (
-            <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+            <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 font-medium text-amber-700 text-xs">
               Expiring
             </span>
           )}
@@ -189,7 +201,7 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
       {/* Search */}
       <div className="flex items-center gap-4">
         <input
-          className="flex-1 rounded-md border border-hairline bg-canvas px-4 py-2 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-[var(--ds-coral-soft)]"
+          className="flex-1 rounded-md border border-hairline bg-canvas px-4 py-2 text-ink text-sm placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-[var(--ds-coral-soft)]"
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search contracts..."
           type="text"
@@ -233,7 +245,7 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
       ) : (
         <>
           <MonoLabel className="text-ink/50">
-            {filtered.length} contract{filtered.length !== 1 ? "s" : ""}
+            {filtered.length} contract{filtered.length === 1 ? "" : "s"}
           </MonoLabel>
           <ResearchTable
             linkComponent={({ href, className, children }) => (

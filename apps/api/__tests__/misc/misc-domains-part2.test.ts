@@ -26,7 +26,9 @@ class MockInvariantError extends Error {
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: MockInvariantError,
   invariant: (condition: unknown, message: string) => {
-    if (!condition) throw new MockInvariantError(message);
+    if (!condition) {
+      throw new MockInvariantError(message);
+    }
   },
 }));
 
@@ -113,7 +115,9 @@ vi.mock("@repo/observability/log", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
@@ -199,7 +203,10 @@ function mockRunManifestCommandResponse(
 }
 
 /** Create a successful manifest response (200) */
-function successResponse(result: unknown = { id: "result-001" }, events: unknown[] = []) {
+function successResponse(
+  result: unknown = { id: "result-001" },
+  events: unknown[] = []
+) {
   return NextResponse.json({
     success: true,
     result,
@@ -256,9 +263,7 @@ function testManifestCommandRoute(
     it("should execute command successfully", async () => {
       mockAuth();
       mockRunManifestCommandResponse(
-        successResponse({ id: "result-001" }, [
-          { type: `${entityName}Event` },
-        ])
+        successResponse({ id: "result-001" }, [{ type: `${entityName}Event` }])
       );
 
       const payload = { id: "test-id", name: "Test payload" };
@@ -1010,9 +1015,7 @@ describe("User Preferences API", () => {
     });
 
     it("should use session userId instead of query param (IDOR fix)", async () => {
-      vi.mocked(database.userPreference.upsert).mockResolvedValue(
-        {} as never
-      );
+      vi.mocked(database.userPreference.upsert).mockResolvedValue({} as never);
 
       const request = makeRequest("http://localhost/api/user-preferences", {
         preferenceKey: "theme",
@@ -1034,9 +1037,7 @@ describe("User Preferences API", () => {
     });
 
     it("should upsert a preference successfully", async () => {
-      vi.mocked(database.userPreference.upsert).mockResolvedValue(
-        {} as never
-      );
+      vi.mocked(database.userPreference.upsert).mockResolvedValue({} as never);
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
@@ -1057,9 +1058,7 @@ describe("User Preferences API", () => {
     });
 
     it("should upsert preference without optional fields", async () => {
-      vi.mocked(database.userPreference.upsert).mockResolvedValue(
-        {} as never
-      );
+      vi.mocked(database.userPreference.upsert).mockResolvedValue({} as never);
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
@@ -1095,9 +1094,7 @@ describe("User Preferences API", () => {
     });
 
     it("should include tenant scope in upsert query (tenant isolation)", async () => {
-      vi.mocked(database.userPreference.upsert).mockResolvedValue(
-        {} as never
-      );
+      vi.mocked(database.userPreference.upsert).mockResolvedValue({} as never);
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,

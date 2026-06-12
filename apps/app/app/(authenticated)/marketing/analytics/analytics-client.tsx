@@ -2,38 +2,38 @@
 
 import { MonoLabel } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Loader2, AlertTriangle, RotateCcw, Settings } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw, Settings } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 interface Metrics {
-  totalSent: number;
+  activeSmsRules: number;
+  activeWorkflows: number;
+  conversionRate: number;
   openRate: number;
   totalLeads: number;
-  conversionRate: number;
-  activeWorkflows: number;
-  activeSmsRules: number;
+  totalSent: number;
 }
 
 interface WorkflowPerformance {
   id: string;
-  name: string;
-  triggerType: string;
   isActive: boolean;
-  sent: number;
+  name: string;
   opened: number;
   openRate: number | null;
+  sent: number;
+  triggerType: string;
 }
 
 interface SmsRuleSummary {
   id: string;
+  isActive: boolean;
   name: string;
   triggerType: string;
-  isActive: boolean;
 }
 
 interface AnalyticsData {
-  window: string;
+  emailPerformanceByWorkflow: WorkflowPerformance[];
   metrics: {
     totalSent: number;
     openRate: number | null;
@@ -46,8 +46,8 @@ interface AnalyticsData {
     activeWorkflows: number;
     activeSmsRules: number;
   };
-  emailPerformanceByWorkflow: WorkflowPerformance[];
   smsPerformanceSummary: SmsRuleSummary[];
+  window: string;
 }
 
 interface AnalyticsClientProps {
@@ -71,7 +71,9 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
     setError(false);
     fetch(`/api/marketing/analytics?window=${windowPeriod}`)
       .then((r) => {
-        if (!r.ok) throw new Error("Request failed");
+        if (!r.ok) {
+          throw new Error("Request failed");
+        }
         return r.json();
       })
       .then((d) => setData(d))
@@ -89,7 +91,9 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
   const metrics = data?.metrics ?? null;
 
   const leadsBySource = useMemo(() => {
-    if (!metrics?.leadsBySource) return [];
+    if (!metrics?.leadsBySource) {
+      return [];
+    }
     return Object.entries(metrics.leadsBySource).sort(([, a], [, b]) => b - a);
   }, [metrics]);
 
@@ -99,7 +103,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
       <div className="flex gap-2">
         {(["30d", "90d", "180d"] as const).map((w) => (
           <button
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${
               windowPeriod === w
                 ? "bg-ink text-white"
                 : "border border-hairline bg-canvas text-muted-foreground hover:bg-soft-stone"
@@ -120,20 +124,25 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
       )}
 
       {!loading && error && (
-        <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
           <AlertTriangle className="mb-3 h-10 w-10 text-amber-500/60" />
-          <p className="text-lg font-medium">Failed to load analytics</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="font-medium text-lg">Failed to load analytics</p>
+          <p className="mt-1 text-muted-foreground text-sm">
             Something went wrong fetching marketing data. Try again.
           </p>
-          <Button className="mt-4" onClick={fetchData} size="sm" variant="outline">
+          <Button
+            className="mt-4"
+            onClick={fetchData}
+            size="sm"
+            variant="outline"
+          >
             <RotateCcw className="mr-2 h-4 w-4" />
             Retry
           </Button>
         </div>
       )}
 
-      {!loading && !error && metrics && data && (
+      {!(loading || error) && metrics && data && (
         <>
           {/* Window-scoped headline metrics */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
@@ -146,16 +155,16 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
               {
                 label: "Open rate",
                 value:
-                  metrics.openRate !== null
-                    ? `${metrics.openRate.toFixed(1)}%`
-                    : "\u2014",
+                  metrics.openRate === null
+                    ? "\u2014"
+                    : `${metrics.openRate.toFixed(1)}%`,
               },
               {
                 label: "Conversion",
                 value:
-                  metrics.conversionRate !== null
-                    ? `${metrics.conversionRate.toFixed(1)}%`
-                    : "\u2014",
+                  metrics.conversionRate === null
+                    ? "\u2014"
+                    : `${metrics.conversionRate.toFixed(1)}%`,
               },
               {
                 label: "SMS sent",
@@ -165,9 +174,9 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
               {
                 label: "SMS delivery",
                 value:
-                  metrics.smsDeliveryRate !== null
-                    ? `${metrics.smsDeliveryRate.toFixed(1)}%`
-                    : "\u2014",
+                  metrics.smsDeliveryRate === null
+                    ? "\u2014"
+                    : `${metrics.smsDeliveryRate.toFixed(1)}%`,
               },
               {
                 label: "Bounced",
@@ -179,7 +188,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                 key={m.label}
               >
                 <MonoLabel>{m.label}</MonoLabel>
-                <p className="mt-1 text-2xl font-medium">{m.value}</p>
+                <p className="mt-1 font-medium text-2xl">{m.value}</p>
               </div>
             ))}
           </div>
@@ -191,7 +200,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                 <MonoLabel>Email performance by workflow</MonoLabel>
               </div>
               <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-                <div className="grid grid-cols-[1fr_140px_80px_80px_80px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="grid grid-cols-[1fr_140px_80px_80px_80px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
                   <span>Workflow</span>
                   <span>Trigger</span>
                   <span>Sent</span>
@@ -205,7 +214,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                       key={wf.id}
                     >
                       <span className="font-medium">{wf.name}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatTriggerType(wf.triggerType)}
                       </span>
                       <span className="text-xs">
@@ -215,11 +224,11 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                         {wf.opened > 0 ? wf.opened : "\u2014"}
                       </span>
                       <span className="text-xs">
-                        {wf.openRate !== null
-                          ? `${wf.openRate.toFixed(1)}%`
-                          : wf.sent === 0
+                        {wf.openRate === null
+                          ? wf.sent === 0
                             ? "\u2014"
-                            : "0%"}
+                            : "0%"
+                          : `${wf.openRate.toFixed(1)}%`}
                       </span>
                     </div>
                   ))}
@@ -235,7 +244,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                 <MonoLabel>Lead pipeline by source</MonoLabel>
               </div>
               <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-                <div className="grid grid-cols-[1fr_100px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="grid grid-cols-[1fr_100px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
                   <span>Source</span>
                   <span>Count</span>
                 </div>
@@ -261,7 +270,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                 <MonoLabel>SMS automation rules</MonoLabel>
               </div>
               <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-                <div className="grid grid-cols-[1fr_160px_80px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="grid grid-cols-[1fr_160px_80px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
                   <span>Rule</span>
                   <span>Trigger</span>
                   <span>Status</span>
@@ -273,11 +282,11 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                       key={rule.id}
                     >
                       <span className="font-medium">{rule.name}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatTriggerType(rule.triggerType)}
                       </span>
                       <span
-                        className={`inline-flex w-fit rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ${
+                        className={`inline-flex w-fit rounded-full px-2.5 py-0.5 font-medium text-[11px] uppercase tracking-wide ${
                           rule.isActive
                             ? "bg-ink text-white"
                             : "border border-hairline bg-canvas text-muted-foreground"
@@ -296,9 +305,9 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
           {metrics.totalSent === 0 &&
             metrics.totalLeads === 0 &&
             metrics.totalSms === 0 && (
-              <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
-                <p className="text-lg font-medium">No data yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+              <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
+                <p className="font-medium text-lg">No data yet</p>
+                <p className="mt-1 text-muted-foreground text-sm">
                   Activate a workflow or create leads to begin tracking.
                 </p>
                 <Button asChild className="mt-4" size="sm" variant="outline">

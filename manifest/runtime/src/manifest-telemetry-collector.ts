@@ -27,65 +27,66 @@ export type TelemetryStatus = "success" | "failure" | "guard_denied";
  * Guard failure details.
  */
 export interface GuardFailure {
+  constraintId?: string;
   guardExpression: string;
   reason: string;
-  constraintId?: string;
 }
 
 /**
  * Telemetry data collected during command execution.
  */
 export interface CommandTelemetryData {
-  commandName: string;
-  entityName?: string;
-  instanceId?: string;
-  status: TelemetryStatus;
-  errorMessage?: string;
-  errorCode?: string;
-  durationMs: number;
-  guardEvalMs?: number;
   actionExecMs?: number;
-  guardsEvaluated: number;
-  guardsPassed: number;
-  guardsFailed: number;
-  failedGuards?: GuardFailure[];
-  idempotencyKey?: string;
-  wasIdempotentHit?: boolean;
-  eventsEmitted: number;
-  performedBy?: string;
-  correlationId?: string;
   causationId?: string;
-  requestId?: string;
+  commandName: string;
+  correlationId?: string;
+  durationMs: number;
+  entityName?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  eventsEmitted: number;
+  failedGuards?: GuardFailure[];
+  guardEvalMs?: number;
+  guardsEvaluated: number;
+  guardsFailed: number;
+  guardsPassed: number;
+  idempotencyKey?: string;
+  instanceId?: string;
   ipAddress?: string;
+  performedBy?: string;
+  requestId?: string;
+  status: TelemetryStatus;
+  wasIdempotentHit?: boolean;
 }
 
 /**
  * Timing metrics for different phases of command execution.
  */
 export interface CommandTimingMetrics {
-  startTime: number;
-  guardEvalStart?: number;
-  guardEvalEnd?: number;
-  actionExecStart?: number;
   actionExecEnd?: number;
+  actionExecStart?: number;
+  guardEvalEnd?: number;
+  guardEvalStart?: number;
+  startTime: number;
 }
 
 /**
  * Context for collecting telemetry during command execution.
  */
 export interface TelemetryContext {
-  tenantId: string;
-  performedBy?: string;
-  correlationId?: string;
   causationId?: string;
-  requestId?: string;
+  correlationId?: string;
   ipAddress?: string;
+  performedBy?: string;
+  requestId?: string;
+  tenantId: string;
 }
 
 /**
  * Prisma client interface for telemetry operations.
  */
 export interface TelemetryPrismaClient {
+  $transaction?: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
   manifestCommandTelemetry: {
     create: (args: { data: unknown }) => Promise<{ id: string }>;
     createMany?: (args: {
@@ -97,18 +98,17 @@ export interface TelemetryPrismaClient {
       select?: unknown;
     }) => Promise<unknown[]>;
   };
-  $transaction?: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
 }
 
 /**
  * Configuration for the telemetry collector.
  */
 export interface TelemetryCollectorConfig {
-  prisma: TelemetryPrismaClient;
-  enabled?: boolean; // Default: true
-  sampleRate?: number; // 0.0 to 1.0, default: 1.0 (all)
   batchSize?: number; // Default: 50
+  enabled?: boolean; // Default: true
   flushIntervalMs?: number; // Default: 5000
+  prisma: TelemetryPrismaClient;
+  sampleRate?: number; // 0.0 to 1.0, default: 1.0 (all)
 }
 
 // ---------------------------------------------------------------------------
@@ -119,8 +119,8 @@ export interface TelemetryCollectorConfig {
  * In-memory buffer for telemetry records before batch write.
  */
 interface TelemetryBuffer {
-  records: CommandTelemetryData[];
   flushTimeout: ReturnType<typeof setTimeout> | null;
+  records: CommandTelemetryData[];
 }
 
 /**
@@ -491,8 +491,12 @@ export class ManifestTelemetryCollector {
       }
       if (params.startDate || params.endDate) {
         const executedAt: Record<string, unknown> = {};
-        if (params.startDate) executedAt.gte = params.startDate;
-        if (params.endDate) executedAt.lte = params.endDate;
+        if (params.startDate) {
+          executedAt.gte = params.startDate;
+        }
+        if (params.endDate) {
+          executedAt.lte = params.endDate;
+        }
         where.executed_at = executedAt;
       }
 
@@ -618,12 +622,18 @@ export class ManifestTelemetryCollector {
  * Returns 0 for empty arrays.
  */
 function percentile(sorted: number[], p: number): number {
-  if (sorted.length === 0) return 0;
-  if (sorted.length === 1) return sorted[0];
+  if (sorted.length === 0) {
+    return 0;
+  }
+  if (sorted.length === 1) {
+    return sorted[0];
+  }
   const index = (p / 100) * (sorted.length - 1);
   const lower = Math.floor(index);
   const upper = Math.ceil(index);
-  if (lower === upper) return sorted[lower];
+  if (lower === upper) {
+    return sorted[lower];
+  }
   // Linear interpolation between adjacent values
   return Math.round(
     sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower)

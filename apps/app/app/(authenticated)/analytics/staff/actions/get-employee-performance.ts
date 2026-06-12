@@ -7,52 +7,44 @@ import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface EmployeePerformanceMetrics {
-  employeeId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  hireDate: Date;
-  avatarUrl: string | null;
-
-  taskCompletionRate: number;
-  totalTasks: number;
-  completedTasks: number;
-  averageTaskDuration: number;
-  onTimeTaskRate: number;
-
   attendanceRate: number;
-  totalShifts: number;
   attendedShifts: number;
-  punctualityRate: number;
+  avatarUrl: string | null;
   averageHoursPerWeek: number;
-
-  qualityScore: number;
-  taskRejectionRate: number;
-  reworkRate: number;
-
-  efficiencyScore: number;
-  tasksPerHour: number;
-  revenueGenerated: number;
+  averageTaskDuration: number;
 
   clientInteractions: number;
+  completedTasks: number;
+
+  efficiencyScore: number;
+  email: string;
+  employeeId: string;
   eventParticipation: number;
+  firstName: string;
+  hireDate: Date;
+  lastName: string;
+  onTimeTaskRate: number;
+  punctualityRate: number;
+
+  qualityScore: number;
+  revenueGenerated: number;
+  reworkRate: number;
+  role: string;
+
+  taskCompletionRate: number;
+  taskRejectionRate: number;
+  tasksPerHour: number;
   totalHoursWorked: number;
+  totalShifts: number;
+  totalTasks: number;
 }
 
 export interface EmployeePerformanceSummary {
-  totalEmployees: number;
-  averageTaskCompletionRate: number;
   averageAttendanceRate: number;
+  averageEfficiencyScore: number;
   averagePunctualityRate: number;
   averageQualityScore: number;
-  averageEfficiencyScore: number;
-  topPerformers: Array<{
-    employeeId: string;
-    name: string;
-    score: number;
-    category: string;
-  }>;
+  averageTaskCompletionRate: number;
   metricsByRole: Array<{
     role: string;
     employeeCount: number;
@@ -66,6 +58,13 @@ export interface EmployeePerformanceSummary {
     avgQualityScore: number;
     avgEfficiencyScore: number;
   }>;
+  topPerformers: Array<{
+    employeeId: string;
+    name: string;
+    score: number;
+    category: string;
+  }>;
+  totalEmployees: number;
 }
 
 export async function getEmployeePerformance(

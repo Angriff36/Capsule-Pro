@@ -16,35 +16,35 @@ import SelectCard from "../ui/SelectCard";
 import StepHeader from "../ui/StepHeader";
 
 const OCCASION_TYPES = [
-  { value: "wedding", label: "Wedding", icon: <Heart className="w-4 h-4" /> },
+  { value: "wedding", label: "Wedding", icon: <Heart className="h-4 w-4" /> },
   {
     value: "corporate",
     label: "Corporate",
-    icon: <Building2 className="w-4 h-4" />,
+    icon: <Building2 className="h-4 w-4" />,
   },
   {
     value: "social",
     label: "Social",
-    icon: <PartyPopper className="w-4 h-4" />,
+    icon: <PartyPopper className="h-4 w-4" />,
   },
   {
     value: "milestone",
     label: "Milestone",
-    icon: <Cake className="w-4 h-4" />,
+    icon: <Cake className="h-4 w-4" />,
   },
   {
     value: "nonprofit",
     label: "Nonprofit",
-    icon: <Users className="w-4 h-4" />,
+    icon: <Users className="h-4 w-4" />,
   },
-  { value: "other", label: "Other", icon: <Briefcase className="w-4 h-4" /> },
+  { value: "other", label: "Other", icon: <Briefcase className="h-4 w-4" /> },
 ];
 
 const SEASONS: { value: Season; label: string; icon: React.ReactNode }[] = [
-  { value: "spring", label: "Spring", icon: <Flower2 className="w-4 h-4" /> },
-  { value: "summer", label: "Summer", icon: <Sun className="w-4 h-4" /> },
-  { value: "fall", label: "Fall", icon: <Leaf className="w-4 h-4" /> },
-  { value: "winter", label: "Winter", icon: <Snowflake className="w-4 h-4" /> },
+  { value: "spring", label: "Spring", icon: <Flower2 className="h-4 w-4" /> },
+  { value: "summer", label: "Summer", icon: <Sun className="h-4 w-4" /> },
+  { value: "fall", label: "Fall", icon: <Leaf className="h-4 w-4" /> },
+  { value: "winter", label: "Winter", icon: <Snowflake className="h-4 w-4" /> },
 ];
 
 interface Props {
@@ -64,10 +64,10 @@ export default function MenuContextStep({ formData, updateField }: Props) {
       />
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           What is the occasion?
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {OCCASION_TYPES.map((t) => (
             <SelectCard
               icon={t.icon}
@@ -81,10 +81,10 @@ export default function MenuContextStep({ formData, updateField }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           What season is the event?
         </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {SEASONS.map((s) => (
             <SelectCard
               icon={s.icon}

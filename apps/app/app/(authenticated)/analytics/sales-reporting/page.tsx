@@ -1,6 +1,17 @@
 "use client";
 
 import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   Alert,
   AlertDescription,
 } from "@repo/design-system/components/ui/alert";
@@ -23,37 +34,25 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Switch } from "@repo/design-system/components/ui/switch";
-import {
-  PageCanvas,
-  CommandBand,
-  CommandBandHeader,
-  CommandBandActions,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  PageBody,
-  OperationalColumn,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import { AlertCircle, Download, FileUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 type ReportType = "weekly" | "monthly" | "quarterly";
 
 interface DateRange {
-  min: string;
   max: string;
+  min: string;
 }
 
 interface ColumnOption {
-  name: string;
   coverage: number;
   isDetected: boolean;
+  name: string;
 }
 
 interface ParsedData {
-  dateRange: DateRange | null;
   columns: ColumnOption[];
+  dateRange: DateRange | null;
   detectedDateColumn: string | null;
   rowCount: number;
 }
@@ -557,7 +556,7 @@ export default function SalesReportingPage() {
                   <FileUp className="h-5 w-5 text-muted-foreground" />
                 </div>
                 {parsedData && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Loaded {parsedData.rowCount} rows from file
                   </p>
                 )}
@@ -594,7 +593,7 @@ export default function SalesReportingPage() {
                         <strong>{parsedData.dateRange.max}</strong>
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {Math.ceil(
                         (new Date(parsedData.dateRange.max).getTime() -
                           new Date(parsedData.dateRange.min).getTime()) /
@@ -640,7 +639,7 @@ export default function SalesReportingPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="advanced-mode">Advanced Options</Label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Customize date column selection
                   </p>
                 </div>
@@ -683,7 +682,7 @@ export default function SalesReportingPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Detected Columns</p>
+                    <p className="font-medium text-sm">Detected Columns</p>
                     <div className="flex flex-wrap gap-2">
                       {parsedData.columns.map((col) => (
                         <Badge
@@ -746,7 +745,7 @@ export default function SalesReportingPage() {
               <CardHeader>
                 <CardTitle className="text-base">Weekly Reports</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
+              <CardContent className="text-muted-foreground text-sm">
                 Revenue by event type, leads received, proposals sent, closing
                 ratio, lost opportunities, top pending deals
               </CardContent>
@@ -756,7 +755,7 @@ export default function SalesReportingPage() {
               <CardHeader>
                 <CardTitle className="text-base">Monthly Reports</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
+              <CardContent className="text-muted-foreground text-sm">
                 Total revenue vs previous month and YoY, avg event value, lead
                 source breakdown, funnel metrics, win/loss trends
               </CardContent>
@@ -766,7 +765,7 @@ export default function SalesReportingPage() {
               <CardHeader>
                 <CardTitle className="text-base">Quarterly Reports</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
+              <CardContent className="text-muted-foreground text-sm">
                 Customer segment analysis, sales cycle length, pricing trends,
                 referral performance, recommendations
               </CardContent>

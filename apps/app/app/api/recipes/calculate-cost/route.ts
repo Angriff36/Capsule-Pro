@@ -4,31 +4,31 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
 interface IngredientInput {
+  isSubRecipe?: boolean;
   name: string;
   quantity: number;
-  unit: string;
-  isSubRecipe?: boolean;
   subRecipeId?: string | null;
+  unit: string;
 }
 
 interface IngredientCostResult {
+  cost: number;
+  hasInventoryItem: boolean;
   id: string;
   name: string;
   quantity: number;
   unit: string;
   unitCost: number;
-  cost: number;
-  hasInventoryItem: boolean;
   wasteFactor: number;
 }
 
 interface CostBreakdownResult {
-  totalCost: number;
-  costPerYield: number;
   costPerServing: number;
+  costPerYield: number;
   foodCostPercentage: number | null;
-  targetPrice: number | null;
   ingredients: IngredientCostResult[];
+  targetPrice: number | null;
+  totalCost: number;
 }
 
 // Helper function to get vendor catalog cost for an ingredient

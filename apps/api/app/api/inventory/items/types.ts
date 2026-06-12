@@ -60,26 +60,26 @@ export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
  * Inventory Item response shape
  */
 export interface InventoryItem {
+  category: string;
+  created_at: Date;
+  deleted_at: Date | null;
+  description: string | null;
+  fsa_allergen_info: boolean | null;
+  fsa_status: FSAStatus | null;
+  fsa_temp_logged: boolean | null;
+  fsa_traceable: boolean | null;
   id: string;
-  tenant_id: string;
   item_number: string;
   name: string;
-  description: string | null;
-  category: string;
-  unit_of_measure: string;
-  unit_cost: number;
-  quantity_on_hand: number;
   par_level: number;
+  quantity_on_hand: number;
   reorder_level: number;
   supplier_id: string | null;
   tags: string[];
-  fsa_status: FSAStatus | null;
-  fsa_temp_logged: boolean | null;
-  fsa_allergen_info: boolean | null;
-  fsa_traceable: boolean | null;
-  created_at: Date;
+  tenant_id: string;
+  unit_cost: number;
+  unit_of_measure: string;
   updated_at: Date;
-  deleted_at: Date | null;
 }
 
 /**
@@ -94,53 +94,53 @@ export interface InventoryItemWithStatus extends InventoryItem {
  * Create inventory item request
  */
 export interface CreateInventoryItemRequest {
+  category: string;
+  description?: string;
+  fsa_allergen_info?: boolean;
+  fsa_status?: FSAStatus;
+  fsa_temp_logged?: boolean;
+  fsa_traceable?: boolean;
   item_number: string;
   name: string;
-  description?: string;
-  category: string;
-  unit_of_measure?: string;
-  unit_cost?: number;
-  quantity_on_hand?: number;
   par_level?: number;
+  quantity_on_hand?: number;
   reorder_level?: number;
   supplier_id?: string;
   tags?: string[];
-  fsa_status?: FSAStatus;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  unit_cost?: number;
+  unit_of_measure?: string;
 }
 
 /**
  * Update inventory item request
  */
 export interface UpdateInventoryItemRequest {
+  category?: string;
+  description?: string;
+  fsa_allergen_info?: boolean;
+  fsa_status?: FSAStatus;
+  fsa_temp_logged?: boolean;
+  fsa_traceable?: boolean;
   item_number?: string;
   name?: string;
-  description?: string;
-  category?: string;
-  unit_of_measure?: string;
-  unit_cost?: number;
-  quantity_on_hand?: number;
   par_level?: number;
+  quantity_on_hand?: number;
   reorder_level?: number;
   supplier_id?: string;
   tags?: string[];
-  fsa_status?: FSAStatus;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  unit_cost?: number;
+  unit_of_measure?: string;
 }
 
 /**
  * List filters
  */
 export interface InventoryItemListFilters {
-  search?: string;
   category?: string;
-  supplier_id?: string;
-  stock_status?: StockStatus;
   fsa_status?: FSAStatus;
+  search?: string;
+  stock_status?: StockStatus;
+  supplier_id?: string;
   tags?: string[];
 }
 
@@ -161,8 +161,8 @@ export interface InventoryItemListResponse {
  * Search parameters
  */
 export interface InventoryItemSearchParams {
-  query: string;
   categories?: string[];
-  tags?: string[];
   limit?: number;
+  query: string;
+  tags?: string[];
 }

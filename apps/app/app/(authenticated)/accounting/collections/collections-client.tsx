@@ -42,14 +42,14 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  listCollectionCases,
-  collectionCaseRecordPayment,
-  collectionCaseEscalateDunning,
   collectionCaseClose,
-  collectionCaseMarkDisputed,
+  collectionCaseEscalateDunning,
   collectionCaseEscalateToLegalWithDetails,
-  collectionCaseWriteOff,
+  collectionCaseMarkDisputed,
+  collectionCaseRecordPayment,
   collectionCaseSetPriority,
+  collectionCaseWriteOff,
+  listCollectionCases,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -67,59 +67,59 @@ type DunningStage =
   | "COLLECTIONS";
 
 interface CollectionCase {
+  actions: CollectionActionItem[];
+  agingBucket: string | null;
+  assignedTo: string | null;
+  clientId: string;
+  clientName: string;
+  collectedAmount: number | string;
+  collectionPercentage: number;
+  createdAt: string;
+  daysOverdue: number;
+  dunningStage: DunningStage;
+  hasPaymentPlan: boolean;
   id: string;
   invoiceId: string;
   invoiceNumber: string;
-  clientId: string;
-  clientName: string;
-  originalAmount: number | string;
-  outstandingAmount: number | string;
-  collectedAmount: number | string;
-  status: CollectionStatus;
-  priority: CollectionPriority;
-  dunningStage: DunningStage;
-  daysOverdue: number;
-  agingBucket: string | null;
-  assignedTo: string | null;
-  hasPaymentPlan: boolean;
+  isCritical: boolean;
   isDisputed: boolean;
   isEscalatedToLegal: boolean;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  collectionPercentage: number;
   isHighRisk: boolean;
-  isCritical: boolean;
-  actions: CollectionActionItem[];
+  notes: string | null;
+  originalAmount: number | string;
+  outstandingAmount: number | string;
   paymentPlans: CollectionPaymentPlanItem[];
+  priority: CollectionPriority;
+  status: CollectionStatus;
+  updatedAt: string;
 }
 
 interface CollectionActionItem {
-  id: string;
   actionType: string;
-  description: string;
-  outcome: string | null;
   contactedAt: string;
   createdAt: string;
+  description: string;
+  id: string;
+  outcome: string | null;
 }
 
 interface CollectionPaymentPlanItem {
-  id: string;
-  totalAmount: number | string;
-  installments: number;
   frequencyDays: number;
+  id: string;
+  installments: number;
   startDate: string;
   status: string;
+  totalAmount: number | string;
 }
 
 interface InitialMetrics {
-  totalCases: number;
   activeCases: number;
+  collectedTotal: number;
+  disputedCases: number;
   legalCases: number;
   outstandingTotal: number;
-  collectedTotal: number;
   overdueCases: number;
-  disputedCases: number;
+  totalCases: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,7 +127,9 @@ interface InitialMetrics {
 // ---------------------------------------------------------------------------
 
 const formatDate = (d: string | null) => {
-  if (!d) return "\u2014";
+  if (!d) {
+    return "\u2014";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -232,8 +234,12 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
         page,
         limit: 25,
       };
-      if (statusFilter !== "all") query.status = statusFilter;
-      if (priorityFilter !== "all") query.priority = priorityFilter;
+      if (statusFilter !== "all") {
+        query.status = statusFilter;
+      }
+      if (priorityFilter !== "all") {
+        query.priority = priorityFilter;
+      }
 
       const result = await listCollectionCases(query);
       setCases(result.data as unknown as CollectionCase[]);
@@ -257,7 +263,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   // ---------------------------------------------------------------------------
 
   const filteredCases = cases.filter((c) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const q = searchQuery.toLowerCase();
     return (
       c.clientName.toLowerCase().includes(q) ||
@@ -271,7 +279,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   // ---------------------------------------------------------------------------
 
   const handleRecordPayment = async () => {
-    if (!(selectedCase && paymentAmount)) return;
+    if (!(selectedCase && paymentAmount)) {
+      return;
+    }
     const amount = Number.parseFloat(paymentAmount);
     if (Number.isNaN(amount) || amount <= 0) {
       toast.error("Enter a valid payment amount");
@@ -285,12 +295,16 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       setSelectedCase(null);
       loadCases();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to record payment");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to record payment"
+      );
     }
   };
 
   const handleEscalateDunning = async () => {
-    if (!(selectedCase && dunningStage)) return;
+    if (!(selectedCase && dunningStage)) {
+      return;
+    }
     try {
       await collectionCaseEscalateDunning({ id: selectedCase.id });
       toast.success("Dunning escalated successfully");
@@ -299,14 +313,21 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       setSelectedCase(null);
       loadCases();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to escalate dunning");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to escalate dunning"
+      );
     }
   };
 
   const handleCloseCase = async () => {
-    if (!selectedCase) return;
+    if (!selectedCase) {
+      return;
+    }
     try {
-      await collectionCaseClose({ id: selectedCase.id, resolution: closeResolution });
+      await collectionCaseClose({
+        id: selectedCase.id,
+        resolution: closeResolution,
+      });
       toast.success("Case closed successfully");
       setCloseDialogOpen(false);
       setCloseResolution("");
@@ -318,21 +339,30 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleMarkDisputed = async () => {
-    if (!selectedCase) return;
+    if (!selectedCase) {
+      return;
+    }
     try {
-      await collectionCaseMarkDisputed({ id: selectedCase.id, reason: disputeReason });
+      await collectionCaseMarkDisputed({
+        id: selectedCase.id,
+        reason: disputeReason,
+      });
       toast.success("Case marked as disputed");
       setDisputeDialogOpen(false);
       setDisputeReason("");
       setSelectedCase(null);
       loadCases();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to mark disputed");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to mark disputed"
+      );
     }
   };
 
   const handleEscalateLegal = async () => {
-    if (!selectedCase) return;
+    if (!selectedCase) {
+      return;
+    }
     try {
       await collectionCaseEscalateToLegalWithDetails({
         id: selectedCase.id,
@@ -346,12 +376,16 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       setSelectedCase(null);
       loadCases();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to escalate to legal");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to escalate to legal"
+      );
     }
   };
 
   const handleWriteOff = async () => {
-    if (!(selectedCase && writeOffReason)) return;
+    if (!(selectedCase && writeOffReason)) {
+      return;
+    }
     const amount = Number(selectedCase.outstandingAmount);
     try {
       await collectionCaseWriteOff({
@@ -371,7 +405,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleSetPriority = async () => {
-    if (!(selectedCase && newPriority)) return;
+    if (!(selectedCase && newPriority)) {
+      return;
+    }
     try {
       await collectionCaseSetPriority({
         id: selectedCase.id,
@@ -385,13 +421,18 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       setSelectedCase(null);
       loadCases();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to set priority");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to set priority"
+      );
     }
   };
 
   const handleReopen = async (c: CollectionCase) => {
     try {
-      await collectionCaseClose({ id: c.id, resolution: "Reopened from collections UI" });
+      await collectionCaseClose({
+        id: c.id,
+        resolution: "Reopened from collections UI",
+      });
       toast.success("Case reopened");
       loadCases();
     } catch (err) {
@@ -490,7 +531,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="w-64 pl-10"
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -557,7 +598,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       )}
 
       {!isLoading && filteredCases.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
             ? "No cases match the current filters. Try adjusting your search or filters."
             : "No collection cases yet. Overdue invoices will appear here, or create a case manually."}
@@ -567,7 +608,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       {!isLoading && filteredCases.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
           {/* Header row */}
-          <div className="grid grid-cols-[1fr_0.8fr_0.7fr_0.6fr_0.7fr_0.7fr_0.6fr_0.8fr] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[1fr_0.8fr_0.7fr_0.6fr_0.7fr_0.7fr_0.6fr_0.8fr] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Client / Invoice</span>
             <span>Outstanding</span>
             <span>Status</span>
@@ -581,7 +622,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           {/* Data rows */}
           {filteredCases.map((c) => (
             <div
-              className={`grid grid-cols-[1fr_0.8fr_0.7fr_0.6fr_0.7fr_0.7fr_0.6fr_0.8fr] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0 ${
+              className={`grid grid-cols-[1fr_0.8fr_0.7fr_0.6fr_0.7fr_0.7fr_0.6fr_0.8fr] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0 ${
                 c.isCritical
                   ? "bg-red-50/50 dark:bg-red-950/20"
                   : c.isHighRisk
@@ -596,7 +637,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 <div className="text-muted-foreground">
                   {c.invoiceNumber}
                   {c.isDisputed && (
-                    <span className="ml-2 inline-flex items-center gap-1 text-xs text-amber-600">
+                    <span className="ml-2 inline-flex items-center gap-1 text-amber-600 text-xs">
                       <Shield className="h-3 w-3" />
                       Disputed
                     </span>
@@ -806,7 +847,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Invoice ID *</label>
+                <label className="font-medium text-sm">Invoice ID *</label>
                 <Input
                   onChange={(e) => setCreateInvoiceId(e.target.value)}
                   placeholder="UUID"
@@ -814,7 +855,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Invoice number *</label>
+                <label className="font-medium text-sm">Invoice number *</label>
                 <Input
                   onChange={(e) => setCreateInvoiceNumber(e.target.value)}
                   placeholder="INV-001"
@@ -824,7 +865,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Client ID *</label>
+                <label className="font-medium text-sm">Client ID *</label>
                 <Input
                   onChange={(e) => setCreateClientId(e.target.value)}
                   placeholder="UUID"
@@ -832,7 +873,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Client name *</label>
+                <label className="font-medium text-sm">Client name *</label>
                 <Input
                   onChange={(e) => setCreateClientName(e.target.value)}
                   placeholder="Acme Corp"
@@ -841,7 +882,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Event ID</label>
+              <label className="font-medium text-sm">Event ID</label>
               <Input
                 onChange={(e) => setCreateEventId(e.target.value)}
                 placeholder="UUID (optional)"
@@ -850,7 +891,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Original amount</label>
+                <label className="font-medium text-sm">Original amount</label>
                 <Input
                   onChange={(e) => setCreateOriginalAmount(e.target.value)}
                   placeholder="0.00"
@@ -859,7 +900,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="font-medium text-sm">
                   Outstanding amount
                 </label>
                 <Input
@@ -872,7 +913,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Priority</label>
+                <label className="font-medium text-sm">Priority</label>
                 <Select
                   onValueChange={setCreatePriority}
                   value={createPriority}
@@ -890,7 +931,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Notes</label>
+              <label className="font-medium text-sm">Notes</label>
               <Textarea
                 onChange={(e) => setCreateNotes(e.target.value)}
                 placeholder="Optional notes about this case..."
@@ -928,7 +969,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Payment amount *</label>
+              <label className="font-medium text-sm">Payment amount *</label>
               <Input
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 placeholder="0.00"
@@ -971,7 +1012,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">New stage *</label>
+              <label className="font-medium text-sm">New stage *</label>
               <Select onValueChange={setDunningStage} value={dunningStage}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select stage" />
@@ -1019,7 +1060,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Resolution</label>
+              <label className="font-medium text-sm">Resolution</label>
               <Textarea
                 onChange={(e) => setCloseResolution(e.target.value)}
                 placeholder="Describe how this case was resolved..."
@@ -1058,7 +1099,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Dispute reason</label>
+              <label className="font-medium text-sm">Dispute reason</label>
               <Textarea
                 onChange={(e) => setDisputeReason(e.target.value)}
                 placeholder="Describe the reason for the dispute..."
@@ -1097,7 +1138,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Legal case number</label>
+              <label className="font-medium text-sm">Legal case number</label>
               <Input
                 onChange={(e) => setLegalCaseNumber(e.target.value)}
                 placeholder="Optional"
@@ -1105,7 +1146,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Legal firm</label>
+              <label className="font-medium text-sm">Legal firm</label>
               <Input
                 onChange={(e) => setLegalFirm(e.target.value)}
                 placeholder="Optional"
@@ -1151,7 +1192,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Reason *</label>
+              <label className="font-medium text-sm">Reason *</label>
               <Textarea
                 onChange={(e) => setWriteOffReason(e.target.value)}
                 placeholder="Explain why this amount is being written off..."
@@ -1192,7 +1233,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">New priority *</label>
+              <label className="font-medium text-sm">New priority *</label>
               <Select onValueChange={setNewPriority} value={newPriority}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select priority" />
@@ -1206,7 +1247,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Reason</label>
+              <label className="font-medium text-sm">Reason</label>
               <Input
                 onChange={(e) => setPriorityReason(e.target.value)}
                 placeholder="Optional reason for the change"

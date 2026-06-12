@@ -15,9 +15,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface DLQListQuery {
-  page?: number;
-  limit?: number;
   entityType?: string;
+  limit?: number;
+  page?: number;
   unresolved?: boolean;
 }
 

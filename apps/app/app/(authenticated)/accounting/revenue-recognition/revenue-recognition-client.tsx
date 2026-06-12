@@ -28,13 +28,6 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
-import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -44,7 +37,14 @@ import {
 } from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Play, Plus, RotateCcw, X, TrendingUp } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Play, Plus, RotateCcw, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
@@ -53,31 +53,31 @@ import { useCallback, useMemo, useState } from "react";
 /* -------------------------------------------------------------------------- */
 
 interface Schedule {
+  clientId: string;
+  clientName: string;
+  completedMilestones: number;
+  createdAt: string;
+  description: string | null;
+  endDate: string;
   id: string;
   invoiceId: string;
-  clientId: string;
   invoiceNumber: string;
-  clientName: string;
   method: string;
-  status: string;
-  totalAmount: number;
+  recognitionPeriod: number;
   recognizedAmount: number;
   remainingAmount: number;
   startDate: string;
-  endDate: string;
-  description: string | null;
-  recognitionPeriod: number;
+  status: string;
+  totalAmount: number;
   totalMilestones: number;
-  completedMilestones: number;
-  createdAt: string;
 }
 
 interface Metrics {
-  totalSchedules: number;
-  inProgress: number;
   completed: number;
+  inProgress: number;
   totalRecognized: number;
   totalRemaining: number;
+  totalSchedules: number;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -128,14 +128,14 @@ const METHODS = [
 ];
 
 interface CreateFormState {
-  invoiceId: string;
   clientId: string;
-  method: string;
-  totalAmount: string;
-  startDate: string;
-  endDate: string;
   description: string;
+  endDate: string;
+  invoiceId: string;
+  method: string;
   recognitionPeriod: string;
+  startDate: string;
+  totalAmount: string;
 }
 
 const initialForm: CreateFormState = {
@@ -652,7 +652,7 @@ export function RevenueRecognitionClient({
           ) : (
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
               {/* Table header */}
-              <div className="grid grid-cols-[1.1fr_0.9fr_1fr_0.65fr_0.8fr_0.8fr_0.8fr_1.2fr] gap-4 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="grid grid-cols-[1.1fr_0.9fr_1fr_0.65fr_0.8fr_0.8fr_0.8fr_1.2fr] gap-4 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                 <span>Client / Invoice</span>
                 <span>Method</span>
                 <span>Status</span>
@@ -666,7 +666,7 @@ export function RevenueRecognitionClient({
               {/* Table rows */}
               {filtered.map((schedule) => (
                 <div
-                  className="grid grid-cols-[1.1fr_0.9fr_1fr_0.65fr_0.8fr_0.8fr_0.8fr_1.2fr] gap-4 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                  className="grid grid-cols-[1.1fr_0.9fr_1fr_0.65fr_0.8fr_0.8fr_0.8fr_1.2fr] gap-4 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                   key={schedule.id}
                 >
                   {/* Client / Invoice */}
@@ -678,7 +678,7 @@ export function RevenueRecognitionClient({
                       {schedule.invoiceNumber}
                     </div>
                     {schedule.description && (
-                      <div className="truncate text-xs text-muted-foreground">
+                      <div className="truncate text-muted-foreground text-xs">
                         {schedule.description}
                       </div>
                     )}
@@ -823,14 +823,14 @@ export function RevenueRecognitionClient({
                       >
                         <Button
                           asChild
-                          className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                          className="h-7 px-2 text-destructive text-xs hover:text-destructive"
                           disabled={actionLoading === schedule.id}
                           size="sm"
                           variant="ghost"
                         >
                           <DialogTrigger asChild>
                             <button
-                              className="inline-flex items-center rounded-md px-2 text-xs text-destructive hover:text-destructive hover:bg-accent"
+                              className="inline-flex items-center rounded-md px-2 text-destructive text-xs hover:bg-accent hover:text-destructive"
                               type="button"
                             >
                               <X className="mr-1 h-3 w-3" />

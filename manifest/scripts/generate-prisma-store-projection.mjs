@@ -12,17 +12,20 @@
  * Runtime authority: manifest-prisma-store-metadata.generated.ts (IR projection).
  * Schema-derived prisma-model-metadata is merged for requiresTenantConnect only.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = resolve(process.cwd());
 const irPath = join(root, "manifest/ir/kitchen.ir.json");
-const optionsPath = join(root, "manifest/scripts/prisma-store-options.generated.json");
+const optionsPath = join(
+  root,
+  "manifest/scripts/prisma-store-options.generated.json"
+);
 const outDir = join(root, "manifest/generated/runtime");
 const pkgPrismaStore = resolve(
   root,
-  "node_modules/@angriff36/manifest/dist/manifest/projections/prisma-store/generator.js",
+  "node_modules/@angriff36/manifest/dist/manifest/projections/prisma-store/generator.js"
 );
 
 if (!existsSync(irPath)) {
@@ -31,7 +34,7 @@ if (!existsSync(irPath)) {
 }
 if (!existsSync(optionsPath)) {
   console.error(
-    `Options not found: ${optionsPath}. Run build-prisma-store-options.mjs first.`,
+    `Options not found: ${optionsPath}. Run build-prisma-store-options.mjs first.`
   );
   process.exit(1);
 }
@@ -58,24 +61,31 @@ const registryResult = projection.generate(ir, {
   options,
 });
 
-const errors = [...metaResult.diagnostics, ...registryResult.diagnostics].filter(
-  (d) => d.severity === "error",
-);
+const errors = [
+  ...metaResult.diagnostics,
+  ...registryResult.diagnostics,
+].filter((d) => d.severity === "error");
 if (errors.length > 0) {
   console.error("prisma-store projection errors:");
-  for (const e of errors) console.error(`  ${e.code}: ${e.message}`);
+  for (const e of errors) {
+    console.error(`  ${e.code}: ${e.message}`);
+  }
   process.exit(1);
 }
 
 const schemaMetaPath = join(outDir, "prisma-model-metadata.generated.json");
 
 function enrichWithSchemaFlags(code) {
-  if (!existsSync(schemaMetaPath)) return code;
+  if (!existsSync(schemaMetaPath)) {
+    return code;
+  }
   const schemaMeta = JSON.parse(readFileSync(schemaMetaPath, "utf8"));
   const match = code.match(
-    /export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ([\s\S]+);\s*$/,
+    /export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ([\s\S]+);\s*$/
   );
-  if (!match) return code;
+  if (!match) {
+    return code;
+  }
   const metadata = JSON.parse(match[1]);
   for (const [name, meta] of Object.entries(metadata)) {
     const schema = schemaMeta[name];
@@ -99,9 +109,12 @@ for (const artifact of registryResult.artifacts) {
   console.log(`wrote ${outPath}`);
 }
 
-const warnings = [...metaResult.diagnostics, ...registryResult.diagnostics].filter(
-  (d) => d.severity === "warning",
-);
+const warnings = [
+  ...metaResult.diagnostics,
+  ...registryResult.diagnostics,
+].filter((d) => d.severity === "warning");
 if (warnings.length > 0) {
-  console.log(`warnings: ${warnings.length} (unmappable IR fields — see diagnostics)`);
+  console.log(
+    `warnings: ${warnings.length} (unmappable IR fields — see diagnostics)`
+  );
 }

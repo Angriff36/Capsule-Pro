@@ -45,30 +45,30 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface LocationCoverage {
+  coverage_pct: number;
+  filled_shifts: number;
   location_id: string;
   location_name: string;
   total_shifts: number;
-  filled_shifts: number;
   unfilled_shifts: number;
-  coverage_pct: number;
 }
 
 interface WeeklySummary {
-  week_start: string;
-  week_end: string;
-  total_shifts: number;
   total_hours: number;
-  unique_employees: number;
+  total_shifts: number;
   unfilled: number;
+  unique_employees: number;
+  week_end: string;
+  week_start: string;
 }
 
 interface TodayStats {
-  total_shifts: number;
-  filled_shifts: number;
-  unfilled_shifts: number;
   active_employees: number;
-  total_hours: number;
+  filled_shifts: number;
   locations: LocationCoverage[];
+  total_hours: number;
+  total_shifts: number;
+  unfilled_shifts: number;
 }
 
 function formatHour(h: number): string {

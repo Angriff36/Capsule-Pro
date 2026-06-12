@@ -6,29 +6,12 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface RecipeVersionDetail {
-  id: string;
-  recipeId: string;
-  versionNumber: number;
-  createdAt: string;
-  name: string;
   category: string | null;
+  createdAt: string;
   cuisineType: string | null;
   description: string | null;
-  tags: string[];
-  yield: {
-    quantity: number;
-    unitId: number;
-    unit: string | null;
-    description: string | null;
-  };
-  times: {
-    prepMinutes: number | null;
-    cookMinutes: number | null;
-    restMinutes: number | null;
-  };
   difficultyLevel: number | null;
-  instructions: string | null;
-  notes: string | null;
+  id: string;
   ingredients: {
     id: string;
     ingredientId: string;
@@ -39,6 +22,10 @@ interface RecipeVersionDetail {
     isOptional: boolean;
     sortOrder: number;
   }[];
+  instructions: string | null;
+  name: string;
+  notes: string | null;
+  recipeId: string;
   steps: {
     id: string;
     stepNumber: number;
@@ -51,6 +38,19 @@ interface RecipeVersionDetail {
     videoUrl: string | null;
     imageUrl: string | null;
   }[];
+  tags: string[];
+  times: {
+    prepMinutes: number | null;
+    cookMinutes: number | null;
+    restMinutes: number | null;
+  };
+  versionNumber: number;
+  yield: {
+    quantity: number;
+    unitId: number;
+    unit: string | null;
+    description: string | null;
+  };
 }
 
 export async function GET(

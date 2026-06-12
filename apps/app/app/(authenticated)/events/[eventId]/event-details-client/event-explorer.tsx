@@ -74,33 +74,33 @@ type QuickFilter =
   | "paid";
 
 interface EventExplorerProps {
-  now: Date;
   explorerView: ExplorerView;
-  sortBy: SortOption;
+  now: Date;
   quickFilters: QuickFilter[];
-  selectedDateStart: string;
-  selectedDateEnd: string;
-  selectedLocation: string;
-  selectedOrganizer: string;
-  selectedFormat: string;
-  selectedPrice: string;
-  selectedTags: string[];
-  selectedAccessibility: string[];
   relatedEvents: RelatedEventSummary[];
   relatedGuestCounts: Record<string, number>;
+  resetFilters: () => void;
+  selectedAccessibility: string[];
+  selectedDateEnd: string;
+  selectedDateStart: string;
+  selectedFormat: string;
+  selectedLocation: string;
+  selectedOrganizer: string;
+  selectedPrice: string;
+  selectedTags: string[];
   // State setters
   setExplorerView: (view: ExplorerView) => void;
-  setSortBy: (sort: SortOption) => void;
   setQuickFilters: (filters: QuickFilter[]) => void;
-  setSelectedDateStart: (date: string) => void;
+  setSelectedAccessibility: (accessibility: string[]) => void;
   setSelectedDateEnd: (date: string) => void;
+  setSelectedDateStart: (date: string) => void;
+  setSelectedFormat: (format: string) => void;
   setSelectedLocation: (location: string) => void;
   setSelectedOrganizer: (organizer: string) => void;
-  setSelectedFormat: (format: string) => void;
   setSelectedPrice: (price: string) => void;
   setSelectedTags: (tags: string[]) => void;
-  setSelectedAccessibility: (accessibility: string[]) => void;
-  resetFilters: () => void;
+  setSortBy: (sort: SortOption) => void;
+  sortBy: SortOption;
 }
 
 export function EventExplorer({
@@ -513,7 +513,7 @@ export function EventExplorer({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-64 p-3">
             {tagOptions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No tags available.
               </p>
             ) : (
@@ -563,7 +563,7 @@ export function EventExplorer({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-64 p-3">
             {accessibilityOptions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No accessibility options listed.
               </p>
             ) : (
@@ -594,7 +594,7 @@ export function EventExplorer({
         </Popover>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {filteredRelatedEvents.length} events matched
         </span>
         <Button
@@ -613,11 +613,11 @@ export function EventExplorer({
     <section className="space-y-6" id="explore">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="text-muted-foreground text-xs uppercase tracking-[0.25em]">
             Event explorer
           </p>
-          <h2 className="text-2xl font-semibold">Schedule + browse</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-semibold text-2xl">Schedule + browse</h2>
+          <p className="text-muted-foreground text-sm">
             Editorial overview for high-volume event browsing.
           </p>
         </div>
@@ -760,10 +760,10 @@ export function EventExplorer({
           <div className="rounded-3xl border border-border/60 bg-card/70 p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
                   Featured
                 </p>
-                <h3 className="text-xl font-semibold">13 featured events</h3>
+                <h3 className="font-semibold text-xl">13 featured events</h3>
               </div>
               <Badge
                 className="border-border/70 bg-muted/40 text-foreground"
@@ -773,7 +773,7 @@ export function EventExplorer({
               </Badge>
             </div>
             {featuredEvents.length === 0 ? (
-              <p className="mt-4 text-sm text-muted-foreground">
+              <p className="mt-4 text-muted-foreground text-sm">
                 No featured events available yet.
               </p>
             ) : (
@@ -801,7 +801,7 @@ export function EventExplorer({
                       <div className="absolute inset-0 bg-gradient-to-t from-muted/70 via-transparent to-transparent" />
                     </div>
                     <div className="space-y-1 p-3">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-muted-foreground text-xs">
                         <span>
                           {shortDateFormatter.format(
                             new Date(related.eventDate)
@@ -809,8 +809,8 @@ export function EventExplorer({
                         </span>
                         <span>{related.eventType}</span>
                       </div>
-                      <p className="text-sm font-semibold">{related.title}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-semibold text-sm">{related.title}</p>
+                      <p className="text-muted-foreground text-xs">
                         {related.venueName ?? "No venue assigned"}
                       </p>
                       <div className="mt-2 flex items-center gap-1 text-[11px] text-success">
@@ -840,7 +840,7 @@ export function EventExplorer({
               </CardHeader>
               <CardContent className="space-y-3">
                 {todayEvents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No events scheduled for today.
                   </p>
                 ) : (
@@ -852,7 +852,7 @@ export function EventExplorer({
                     >
                       <div>
                         <p className="font-semibold">{related.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {related.venueName ?? "No venue assigned"}
                         </p>
                       </div>
@@ -894,14 +894,14 @@ export function EventExplorer({
               </CardHeader>
               <CardContent>
                 {thisWeekEvents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No events scheduled this week.
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {thisWeekEvents.slice(0, 8).map((related) => (
                       <Link
-                        className="rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-xs text-foreground transition hover:border-success/40"
+                        className="rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-foreground text-xs transition hover:border-success/40"
                         href={`/events/${related.id}`}
                         key={related.id}
                       >
@@ -935,12 +935,12 @@ export function EventExplorer({
                 <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-muted/60">
                   <Globe2Icon className="size-5 text-muted-foreground" />
                 </div>
-                <p className="text-sm text-foreground">
+                <p className="text-foreground text-sm">
                   {hasActiveFilters
                     ? "No events match the current filters."
                     : "No events available yet."}
                 </p>
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-muted-foreground text-xs">
                   Try resetting filters or browse all events.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -1020,13 +1020,13 @@ export function EventExplorer({
                       )}
                     </div>
                     <div className="mt-3 space-y-1">
-                      <p className="text-lg font-semibold">{related.title}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-semibold text-lg">{related.title}</p>
+                      <p className="text-muted-foreground text-xs">
                         {shortDateFormatter.format(relatedDate)} •{" "}
                         {related.venueName ?? "No venue assigned"}
                       </p>
                     </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="mt-3 flex items-center justify-between text-muted-foreground text-xs">
                       <span>{related.eventType}</span>
                       <span>
                         {related.ticketPrice === null
@@ -1036,7 +1036,7 @@ export function EventExplorer({
                             : formatCurrency(related.ticketPrice)}
                       </span>
                     </div>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="mt-3 flex items-center gap-2 text-muted-foreground text-xs">
                       <UsersIcon className="size-3" />
                       {related.rsvpCount}/{related.guestCount || 0} RSVPs
                     </div>
@@ -1051,7 +1051,7 @@ export function EventExplorer({
                         </Badge>
                       ))}
                     </div>
-                    <div className="mt-3 space-y-1 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
+                    <div className="mt-3 space-y-1 text-muted-foreground text-xs opacity-0 transition group-hover:opacity-100">
                       <div className="flex items-center gap-2">
                         <TimerIcon className="size-3" />
                         {relatedLive
@@ -1078,10 +1078,10 @@ export function EventExplorer({
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold">
+                      <p className="font-semibold text-sm">
                         {dateFormatter.format(group.date)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {group.items.length} events
                       </p>
                     </div>
@@ -1111,12 +1111,12 @@ export function EventExplorer({
                         >
                           <div className="space-y-1">
                             <p className="font-semibold">{related.title}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {related.venueName ?? "No venue assigned"} •{" "}
                               {related.eventType}
                             </p>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
                             <Badge
                               className={cn(
                                 "border text-[11px]",

@@ -5,11 +5,11 @@ import { XIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 interface TagInputProps {
-  value: string[];
-  onChange: (tags: string[]) => void;
-  suggestions?: string[];
-  placeholder?: string;
   disabled?: boolean;
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
+  suggestions?: string[];
+  value: string[];
 }
 
 export function TagInput({

@@ -62,57 +62,57 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 interface WebhookConfig {
-  id: string;
-  name: string;
-  url: string;
-  secret: string | null;
   apiKey: string | null;
-  status: string;
-  eventTypeFilters: string[];
+  consecutiveFailures: number;
+  createdAt: string;
+  customHeaders: Record<string, string> | null;
+  deletedAt: string | null;
   entityFilters: string[];
+  eventTypeFilters: string[];
+  id: string;
+  lastFailureAt: string | null;
+  lastSuccessAt: string | null;
+  lastTriggeredAt: string | null;
+  name: string;
   retryCount: number;
   retryDelayMs: number;
+  secret: string | null;
+  status: string;
   timeoutMs: number;
-  customHeaders: Record<string, string> | null;
-  consecutiveFailures: number;
-  lastTriggeredAt: string | null;
-  lastSuccessAt: string | null;
-  lastFailureAt: string | null;
-  createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
+  url: string;
 }
 
 interface DeliveryLog {
-  id: string;
-  webhookId: string;
-  eventType: string;
-  entityType: string;
-  entityId: string;
-  status: string;
   attemptNumber: number;
-  httpResponseStatus: number | null;
-  errorMessage: string | null;
-  nextRetryAt: string | null;
-  deliveredAt: string | null;
-  failedAt: string | null;
   createdAt: string;
+  deliveredAt: string | null;
+  entityId: string;
+  entityType: string;
+  errorMessage: string | null;
+  eventType: string;
+  failedAt: string | null;
+  httpResponseStatus: number | null;
+  id: string;
+  nextRetryAt: string | null;
+  status: string;
+  webhookId: string;
 }
 
 interface DlqEntry {
-  id: string;
-  webhookId: string;
-  deliveryLogId: string;
-  eventType: string;
-  entityType: string;
-  entityId: string;
-  failureReason: string | null;
-  lastAttemptAt: string | null;
   attemptCount: number;
+  deliveryLogId: string;
+  entityId: string;
+  entityType: string;
+  eventType: string;
+  failureReason: string | null;
+  id: string;
+  lastAttemptAt: string | null;
   movedToDlqAt: string;
   resolvedAt: string | null;
   reviewedBy: string | null;
   webhook?: { name: string; url: string };
+  webhookId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -150,7 +150,9 @@ const STATUS_COLORS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 function fmt(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) {
+    return "—";
+  }
   return new Date(iso).toLocaleString();
 }
 
@@ -227,14 +229,14 @@ function ConfirmDialog({
 // ---------------------------------------------------------------------------
 
 interface FormState {
-  name: string;
-  url: string;
-  secret: string;
   apiKey: string;
-  eventTypeFilters: string[];
   entityFilters: string[];
+  eventTypeFilters: string[];
+  name: string;
   retryCount: number;
+  secret: string;
   timeoutMs: number;
+  url: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -299,7 +301,7 @@ function WebhookFormDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{webhook ? "Edit Webhook" : "New Webhook"}</DialogTitle>
           <DialogDescription>
@@ -376,7 +378,7 @@ function WebhookFormDialog({
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Leave empty to receive all event types.
             </p>
           </div>
@@ -399,7 +401,7 @@ function WebhookFormDialog({
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Leave empty to receive all entity types.
             </p>
           </div>
@@ -574,8 +576,12 @@ export function WebhooksClient() {
         retryCount: data.retryCount,
         timeoutMs: data.timeoutMs,
       };
-      if (data.secret) body.secret = data.secret;
-      if (data.apiKey) body.apiKey = data.apiKey;
+      if (data.secret) {
+        body.secret = data.secret;
+      }
+      if (data.apiKey) {
+        body.apiKey = data.apiKey;
+      }
 
       const res = editingWebhook
         ? await apiFetch(`/api/integrations/webhooks/${editingWebhook.id}`, {
@@ -819,10 +825,10 @@ export function WebhooksClient() {
             {webhooks.length === 0 ? (
               <div className="rounded-[22px] border border-dashed px-6 py-16 text-center">
                 <Webhook className="mx-auto h-10 w-10 text-muted-foreground/40" />
-                <h3 className="mt-4 text-lg font-semibold">
+                <h3 className="mt-4 font-semibold text-lg">
                   No webhooks configured
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-muted-foreground text-sm">
                   Create a webhook to receive real-time event notifications.
                 </p>
                 <Button
@@ -853,7 +859,7 @@ export function WebhooksClient() {
                   {webhooks.map((wh) => (
                     <TableRow key={wh.id}>
                       <TableCell className="font-medium">{wh.name}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground max-w-[200px] truncate">
+                      <TableCell className="max-w-[200px] truncate font-mono text-muted-foreground text-xs">
                         {wh.url}
                       </TableCell>
                       <TableCell>
@@ -880,14 +886,14 @@ export function WebhooksClient() {
                       </TableCell>
                       <TableCell className="text-right">
                         {wh.consecutiveFailures > 0 ? (
-                          <span className="text-red-600 font-medium">
+                          <span className="font-medium text-red-600">
                             {wh.consecutiveFailures}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">0</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-sm">
                         {fmt(wh.lastTriggeredAt)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -936,7 +942,7 @@ export function WebhooksClient() {
 
           {/* ---- Delivery Logs tab ---- */}
           <TabsContent className="mt-6" value="delivery-logs">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <SectionHeader
                 count={logsPagination.total}
                 title="Delivery Logs"
@@ -977,7 +983,7 @@ export function WebhooksClient() {
                         </TableCell>
                         <TableCell className="text-sm">
                           {entityLabel(log.entityType)}{" "}
-                          <span className="font-mono text-xs text-muted-foreground">
+                          <span className="font-mono text-muted-foreground text-xs">
                             {truncate(log.entityId, 8)}
                           </span>
                         </TableCell>
@@ -1004,14 +1010,14 @@ export function WebhooksClient() {
                           )}
                         </TableCell>
                         <TableCell
-                          className="text-sm text-muted-foreground max-w-[200px] truncate"
+                          className="max-w-[200px] truncate text-muted-foreground text-sm"
                           title={log.errorMessage ?? ""}
                         >
                           {log.errorMessage
                             ? truncate(log.errorMessage, 40)
                             : "—"}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {fmt(log.createdAt)}
                         </TableCell>
                       </TableRow>
@@ -1082,14 +1088,14 @@ export function WebhooksClient() {
                           {entry.attemptCount}
                         </TableCell>
                         <TableCell
-                          className="text-sm text-muted-foreground max-w-[200px] truncate"
+                          className="max-w-[200px] truncate text-muted-foreground text-sm"
                           title={entry.failureReason ?? ""}
                         >
                           {entry.failureReason
                             ? truncate(entry.failureReason, 40)
                             : "Unknown"}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {fmt(entry.movedToDlqAt)}
                         </TableCell>
                         <TableCell className="text-right">

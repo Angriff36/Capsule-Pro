@@ -167,7 +167,8 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
     throw new Error(headerResult.message || "Failed to create purchase order");
   }
 
-  const orderId = (headerResult.result as Record<string, unknown>)?.id as string;
+  const orderId = (headerResult.result as Record<string, unknown>)
+    ?.id as string;
 
   // --- Governed create: PurchaseOrderItem for each line item ---
   for (const item of data.items) {
@@ -186,7 +187,9 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
     });
 
     if (!itemResult.ok) {
-      throw new Error(itemResult.message || "Failed to create purchase order item");
+      throw new Error(
+        itemResult.message || "Failed to create purchase order item"
+      );
     }
   }
 
@@ -207,7 +210,9 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   });
 
   if (!totalsResult.ok) {
-    throw new Error(totalsResult.message || "Failed to update purchase order totals");
+    throw new Error(
+      totalsResult.message || "Failed to update purchase order totals"
+    );
   }
 
   revalidatePath("/procurement/purchase-orders");

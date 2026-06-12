@@ -86,8 +86,17 @@ export async function PUT(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "ChartOfAccount", command: "update", body: { ...rawBody }, user: { id: user.id, tenantId: user.tenantId, role: user.role }, instanceId: id });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "ChartOfAccount",
+    command: "update",
+    body: { ...rawBody },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    instanceId: id,
+  });
 }
 
 /**
@@ -100,5 +109,11 @@ export async function DELETE(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  return runManifestCommand({ entity: "ChartOfAccount", command: "deactivate", body: {}, user: { id: user.id, tenantId: user.tenantId, role: user.role }, instanceId: id });
+  return runManifestCommand({
+    entity: "ChartOfAccount",
+    command: "deactivate",
+    body: {},
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    instanceId: id,
+  });
 }

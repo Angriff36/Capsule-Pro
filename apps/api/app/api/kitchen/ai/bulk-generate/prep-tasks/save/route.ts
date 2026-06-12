@@ -21,8 +21,8 @@ interface SaveTasksRequest {
 
 interface SaveTasksResponse {
   created: number;
-  failed: number;
   errors: string[];
+  failed: number;
   summary: string;
 }
 

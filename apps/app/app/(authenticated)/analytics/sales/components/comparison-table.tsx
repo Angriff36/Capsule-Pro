@@ -75,5 +75,5 @@ function ComparisonTable({ summaries }: ComparisonTableProps) {
   );
 }
 
-export { ComparisonTable };
 export type { ComparisonTableProps };
+export { ComparisonTable };

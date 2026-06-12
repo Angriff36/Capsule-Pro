@@ -115,7 +115,7 @@ export default function MobilePrepListsPage() {
         <div>
           <h1 className="font-bold text-2xl text-slate-900">Prep Lists</h1>
           <p className="text-slate-500 text-sm">
-            {prepLists.length} active list{prepLists.length !== 1 ? "s" : ""}
+            {prepLists.length} active list{prepLists.length === 1 ? "" : "s"}
           </p>
         </div>
         <Button

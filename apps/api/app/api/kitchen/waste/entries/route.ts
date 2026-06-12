@@ -6,15 +6,15 @@ import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface WasteRequestBody {
+  eventId?: string;
   inventoryItemId: string;
+  locationId?: string;
+  loggedBy?: string;
+  notes?: string;
   quantity: number;
   reasonId: number;
-  unitId?: number;
-  locationId?: string;
-  eventId?: string;
-  loggedBy?: string;
   unitCost?: number;
-  notes?: string;
+  unitId?: number;
 }
 
 /**
@@ -173,10 +173,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as WasteRequestBody;
 
     // Pre-validate referential integrity
-    const validationError = await validateWasteRequest(
-      user.tenantId,
-      body
-    );
+    const validationError = await validateWasteRequest(user.tenantId, body);
     if (validationError) {
       return validationError;
     }

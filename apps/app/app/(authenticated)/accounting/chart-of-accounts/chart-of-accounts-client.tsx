@@ -170,7 +170,7 @@ export const ChartOfAccountsClient = () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Chart of Accounts
           </h1>
           <p className="text-muted-foreground">
@@ -183,7 +183,7 @@ export const ChartOfAccountsClient = () => {
 
         {/* Summary Cards */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
             Overview
           </h2>
           <div className="grid gap-4 md:grid-cols-4">
@@ -212,7 +212,7 @@ export const ChartOfAccountsClient = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Account Types</CardDescription>
-                <div className="flex gap-1 flex-wrap mt-1">
+                <div className="mt-1 flex flex-wrap gap-1">
                   {ACCOUNT_TYPES.map((type) => (
                     <Badge className="text-xs" key={type} variant="outline">
                       {getAccountTypeLabel(type)}: {accountsByType[type]}
@@ -226,13 +226,13 @@ export const ChartOfAccountsClient = () => {
 
         {/* Filters Section */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
             Filters
           </h2>
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="w-64 pl-10"
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -270,7 +270,7 @@ export const ChartOfAccountsClient = () => {
                   type="checkbox"
                 />
                 <label
-                  className="text-sm cursor-pointer select-none"
+                  className="cursor-pointer select-none text-sm"
                   htmlFor="include-inactive"
                 >
                   Include Inactive
@@ -286,7 +286,7 @@ export const ChartOfAccountsClient = () => {
 
         {/* Accounts Table Section */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
             Accounts ({filteredAccounts.length})
           </h2>
           {isLoading && (
@@ -299,7 +299,7 @@ export const ChartOfAccountsClient = () => {
               <div className="mb-4 rounded-full bg-muted p-4">
                 <FileText className="size-8 text-muted-foreground" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
+              <h3 className="mb-2 font-semibold text-lg">
                 {searchQuery || accountTypeFilter !== "all"
                   ? "No accounts found"
                   : "No accounts yet"}
@@ -341,7 +341,7 @@ export const ChartOfAccountsClient = () => {
                           {account.account_name}
                         </div>
                         {account.description && (
-                          <div className="text-muted-foreground text-xs truncate max-w-xs">
+                          <div className="max-w-xs truncate text-muted-foreground text-xs">
                             {account.description}
                           </div>
                         )}
@@ -383,7 +383,7 @@ export const ChartOfAccountsClient = () => {
                           </Button>
                           {account.is_active && (
                             <Button
-                              className="text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                              className="text-muted-foreground hover:bg-muted/20 hover:text-foreground"
                               onClick={() => confirmDeactivate(account)}
                               size="sm"
                               variant="ghost"

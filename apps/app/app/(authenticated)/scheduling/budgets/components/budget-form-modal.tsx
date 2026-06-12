@@ -33,11 +33,11 @@ import type {
 } from "@/app/lib/labor-budgets";
 
 interface BudgetFormModalProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (data: CreateBudgetInput | UpdateBudgetInput) => Promise<void>;
   budget?: LaborBudget;
   loading?: boolean;
+  onClose: () => void;
+  onSave: (data: CreateBudgetInput | UpdateBudgetInput) => Promise<void>;
+  open: boolean;
 }
 
 export function BudgetFormModal({
@@ -137,7 +137,7 @@ export function BudgetFormModal({
 
   return (
     <Dialog onOpenChange={onClose} open={open}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Budget" : "Create New Budget"}
@@ -166,7 +166,7 @@ export function BudgetFormModal({
                 value={formData.name}
               />
               {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
+                <p className="text-red-500 text-sm">{errors.name}</p>
               )}
             </div>
 
@@ -260,7 +260,7 @@ export function BudgetFormModal({
               value={formData.budgetTarget}
             />
             {errors.budgetTarget && (
-              <p className="text-sm text-red-500">{errors.budgetTarget}</p>
+              <p className="text-red-500 text-sm">{errors.budgetTarget}</p>
             )}
           </div>
 
@@ -280,9 +280,9 @@ export function BudgetFormModal({
                 value={formData.eventId}
               />
               {errors.eventId && (
-                <p className="text-sm text-red-500">{errors.eventId}</p>
+                <p className="text-red-500 text-sm">{errors.eventId}</p>
               )}
-              <p className="text-xs text-gray-500">
+              <p className="text-gray-500 text-xs">
                 This budget will apply only to the specified event.
               </p>
             </div>
@@ -301,7 +301,7 @@ export function BudgetFormModal({
                 placeholder="Leave blank for tenant-wide budget"
                 value={formData.locationId}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-gray-500 text-xs">
                 If specified, this budget applies only to this location.
               </p>
             </div>
@@ -338,7 +338,7 @@ export function BudgetFormModal({
                 />
               </div>
               {errors.period && (
-                <p className="col-span-2 text-sm text-red-500">
+                <p className="col-span-2 text-red-500 text-sm">
                   {errors.period}
                 </p>
               )}
@@ -388,7 +388,7 @@ export function BudgetFormModal({
           {/* Alert Thresholds */}
           <div className="space-y-4 border-t pt-4">
             <Label>Alert Thresholds</Label>
-            <p className="text-sm text-gray-500">
+            <p className="text-gray-500 text-sm">
               Configure when you want to be notified about budget utilization.
             </p>
 
@@ -397,7 +397,7 @@ export function BudgetFormModal({
                 <Label className="cursor-pointer" htmlFor="threshold80Pct">
                   80% Alert
                 </Label>
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Notify when budget reaches 80%
                 </p>
               </div>
@@ -416,7 +416,7 @@ export function BudgetFormModal({
                 <Label className="cursor-pointer" htmlFor="threshold90Pct">
                   90% Warning
                 </Label>
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Warn when budget reaches 90%
                 </p>
               </div>
@@ -435,7 +435,7 @@ export function BudgetFormModal({
                 <Label className="cursor-pointer" htmlFor="threshold100Pct">
                   100% Critical
                 </Label>
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Critical alert when budget is exceeded
                 </p>
               </div>

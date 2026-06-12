@@ -3,16 +3,16 @@ import { cn } from "@repo/design-system/lib/utils";
 import { ClockIcon, FlameIcon, TimerIcon } from "lucide-react";
 
 interface TimeBadgesProps {
-  /** Prep time in minutes */
-  prepTime?: number | null;
+  /** Additional class names for the container */
+  className?: string;
   /** Cook time in minutes */
   cookTime?: number | null;
+  /** Prep time in minutes */
+  prepTime?: number | null;
   /** Rest time in minutes */
   restTime?: number | null;
   /** Show icons alongside text */
   showIcons?: boolean;
-  /** Additional class names for the container */
-  className?: string;
 }
 
 /**

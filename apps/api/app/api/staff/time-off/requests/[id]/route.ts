@@ -37,8 +37,8 @@ export async function GET(
     where: {
       tenantId,
       id: {
-        in: [record.employeeId, record.reviewedBy].filter(
-          (id): id is string => Boolean(id)
+        in: [record.employeeId, record.reviewedBy].filter((id): id is string =>
+          Boolean(id)
         ),
       },
       deletedAt: null,
@@ -91,18 +91,25 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   const status = rawBody.status as string;
 
   let commandName: string;
-  if (status === "APPROVED") commandName = "approve";
-  else if (status === "REJECTED") commandName = "reject";
-  else if (status === "CANCELLED") commandName = "cancel";
-  else
+  if (status === "APPROVED") {
+    commandName = "approve";
+  } else if (status === "REJECTED") {
+    commandName = "reject";
+  } else if (status === "CANCELLED") {
+    commandName = "cancel";
+  } else {
     return new Response(JSON.stringify({ message: "Invalid status" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
 
   return runManifestCommand({
     entity: "TimeOffRequest",
@@ -111,7 +118,10 @@ export async function PATCH(
       ...rawBody,
       id,
       processedBy: user.id,
-      rejectionReason: (rawBody.rejectionReason as string) || (rawBody.rejection_reason as string) || "",
+      rejectionReason:
+        (rawBody.rejectionReason as string) ||
+        (rawBody.rejection_reason as string) ||
+        "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

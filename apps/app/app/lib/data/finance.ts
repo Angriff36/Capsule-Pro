@@ -18,20 +18,20 @@ import { db } from "../data/db";
 // ============================================================================
 
 export interface FinanceOverview {
-  invoicedTotal: number;
+  actualBudgetTotal: number;
+  budgetCount: number;
+  budgetedTotal: number;
+  budgetVarianceTotal: number;
   collectedTotal: number;
-  outstandingTotal: number;
-  invoiceCount: number;
+  collectionRate: number;
   completedPaymentCount: number;
+  expenseAccountCount: number;
+  invoiceCount: number;
+  invoicedTotal: number;
+  outstandingTotal: number;
   overdueCount: number;
   overdueTotal: number;
-  budgetedTotal: number;
-  actualBudgetTotal: number;
-  budgetVarianceTotal: number;
-  budgetCount: number;
   revenueAccountCount: number;
-  expenseAccountCount: number;
-  collectionRate: number;
 }
 
 export const getFinanceOverview = cache(
@@ -123,8 +123,8 @@ export const getFinanceOverview = cache(
 // Recent invoices — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentInvoices = cache(async (tenantId: string) => {
-  return db.invoice.findMany({
+export const getRecentInvoices = cache(async (tenantId: string) =>
+  db.invoice.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     take: 8,
@@ -148,15 +148,15 @@ export const getRecentInvoices = cache(async (tenantId: string) => {
         select: { title: true },
       },
     },
-  });
-});
+  })
+);
 
 // ============================================================================
 // Recent payments — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentPayments = cache(async (tenantId: string) => {
-  return db.payment.findMany({
+export const getRecentPayments = cache(async (tenantId: string) =>
+  db.payment.findMany({
     where: { tenantId, deletedAt: null },
     orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
     take: 8,
@@ -181,5 +181,5 @@ export const getRecentPayments = cache(async (tenantId: string) => {
         select: { title: true },
       },
     },
-  });
-});
+  })
+);

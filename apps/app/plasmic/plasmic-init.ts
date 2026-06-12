@@ -1,6 +1,6 @@
 import { initPlasmicLoader } from "@plasmicapp/loader-nextjs";
-import { env } from "@/env";
 import { invariant } from "@/app/lib/invariant";
+import { env } from "@/env";
 import { registerPlasmicComponents } from "./register-components";
 
 let loader: ReturnType<typeof initPlasmicLoader> | null = null;
@@ -26,7 +26,10 @@ export const getPlasmicLoader = () => {
     preview: process.env.NODE_ENV !== "production",
   });
 
-  registerPlasmicComponents(loader.registerComponent.bind(loader) as any, "loader");
+  registerPlasmicComponents(
+    loader.registerComponent.bind(loader) as any,
+    "loader"
+  );
 
   return loader;
 };

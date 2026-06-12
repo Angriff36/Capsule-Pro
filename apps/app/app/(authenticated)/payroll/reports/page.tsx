@@ -1,5 +1,20 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -36,35 +51,20 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { listPayrollPeriods } from "@/app/lib/manifest-client.generated";
-import {
-  CommandBand,
-  CommandBandBody,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 
 type ReportFormat = "csv" | "qbxml" | "qbOnlineCsv" | "json";
 
 interface PayrollPeriod {
   id: string;
-  periodStart: Date;
   periodEnd: Date;
+  periodStart: Date;
   status: string;
 }
 
 interface ReportConfig {
-  periodId: string;
-  format: ReportFormat;
   aggregate?: boolean;
+  format: ReportFormat;
+  periodId: string;
 }
 
 function formatDate(date: Date) {
@@ -201,9 +201,8 @@ export default function PayrollReportsPage() {
     setExportDialogOpen(true);
   };
 
-  const getPeriodLabel = (period: PayrollPeriod) => {
-    return `${formatDate(period.periodStart)} - ${formatDate(period.periodEnd)}`;
-  };
+  const getPeriodLabel = (period: PayrollPeriod) =>
+    `${formatDate(period.periodStart)} - ${formatDate(period.periodEnd)}`;
 
   const openPeriods = periods.filter((p) => p.status === "open").length;
   const closedPeriods = periods.filter((p) => p.status === "closed").length;
@@ -240,9 +239,9 @@ export default function PayrollReportsPage() {
 
       <OperationalColumn>
         <SectionHeader
+          count={periods.length > 0 ? `${periods.length}` : undefined}
           eyebrow="Periods"
           title="Export by Period"
-          count={periods.length > 0 ? `${periods.length}` : undefined}
         />
         {loading ? (
           <div className="flex items-center justify-center rounded-[22px] border border-hairline bg-canvas p-12">
@@ -254,7 +253,7 @@ export default function PayrollReportsPage() {
             <p className="mb-2 text-lg text-muted-foreground">
               No payroll periods found
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Create a payroll period and generate payroll to export reports
             </p>
           </div>
@@ -368,18 +367,15 @@ export default function PayrollReportsPage() {
 
       {/* Format Guide Section */}
       <OperationalColumn>
-        <SectionHeader
-          eyebrow="Reference"
-          title="Export Format Guide"
-        />
+        <SectionHeader eyebrow="Reference" title="Export Format Guide" />
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex items-start gap-3 rounded-[22px] border border-hairline bg-canvas p-4">
             <FileSpreadsheetIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div>
               <h3 className="mb-1 font-semibold">CSV</h3>
-              <p className="text-sm text-muted-foreground">
-                Standard CSV format compatible with Excel, Google Sheets,
-                and most spreadsheet applications.
+              <p className="text-muted-foreground text-sm">
+                Standard CSV format compatible with Excel, Google Sheets, and
+                most spreadsheet applications.
               </p>
             </div>
           </div>
@@ -387,7 +383,7 @@ export default function PayrollReportsPage() {
             <FileTextIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div>
               <h3 className="mb-1 font-semibold">QuickBooks XML</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 QBXML format for importing into QuickBooks Desktop. Supports
                 aggregate import option.
               </p>
@@ -397,9 +393,9 @@ export default function PayrollReportsPage() {
             <FileSpreadsheetIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div>
               <h3 className="mb-1 font-semibold">QuickBooks Online CSV</h3>
-              <p className="text-sm text-muted-foreground">
-                Specialized CSV format for QuickBooks Online imports.
-                Supports aggregate import option.
+              <p className="text-muted-foreground text-sm">
+                Specialized CSV format for QuickBooks Online imports. Supports
+                aggregate import option.
               </p>
             </div>
           </div>
@@ -407,9 +403,9 @@ export default function PayrollReportsPage() {
             <FileTextIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div>
               <h3 className="mb-1 font-semibold">JSON</h3>
-              <p className="text-sm text-muted-foreground">
-                Machine-readable JSON format for integration with other
-                systems and custom processing.
+              <p className="text-muted-foreground text-sm">
+                Machine-readable JSON format for integration with other systems
+                and custom processing.
               </p>
             </div>
           </div>

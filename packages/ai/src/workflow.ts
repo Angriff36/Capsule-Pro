@@ -8,34 +8,34 @@ import {
 } from "./events.js";
 
 export interface WorkflowStep {
-  id: string;
   agent: Agent;
+  condition?: (context: WorkflowContext) => boolean;
   dependsOn: string[];
+  id: string;
   inputMapping?: Record<string, string>;
   outputMapping?: Record<string, string>;
-  condition?: (context: WorkflowContext) => boolean;
 }
 
 export interface WorkflowConfig {
   name: string;
-  steps: WorkflowStep[];
   parallelExecution?: boolean;
+  steps: WorkflowStep[];
   timeout?: number;
 }
 
 export interface WorkflowContext {
-  workflowId: string;
-  stepResults: Map<string, unknown>;
   sharedState: Record<string, unknown>;
   startTime: Date;
+  stepResults: Map<string, unknown>;
+  workflowId: string;
 }
 
 export interface WorkflowResult {
-  workflowId: string;
-  success: boolean;
-  stepResults: Map<string, ExecutionResult>;
   duration: number;
   error?: SDKError;
+  stepResults: Map<string, ExecutionResult>;
+  success: boolean;
+  workflowId: string;
 }
 
 export class AgentWorkflow {

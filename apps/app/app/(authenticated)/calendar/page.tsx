@@ -31,17 +31,17 @@ import { getTenantIdForOrg } from "../../lib/tenant";
 import { CalendarViewSwitcher } from "./components/calendar-view-switcher";
 
 export interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end?: Date;
-  type: "event" | "shift" | "timeoff";
-  status?: string;
+  assignedTo?: string;
   color?: string;
   details?: string;
-  location?: string;
-  assignedTo?: string;
+  end?: Date;
   guestCount?: number;
+  id: string;
+  location?: string;
+  start: Date;
+  status?: string;
+  title: string;
+  type: "event" | "shift" | "timeoff";
 }
 
 async function getCalendarData(tenantId: string, start: Date, end: Date) {

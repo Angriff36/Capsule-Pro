@@ -143,7 +143,11 @@ beforeEach(() => {
   mocks.requireTenantIdMock.mockReset();
   mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
   mocks.requireCurrentUserMock.mockReset();
-  mocks.requireCurrentUserMock.mockResolvedValue({ id: "user-1", tenantId: TENANT_ID, role: "manager" });
+  mocks.requireCurrentUserMock.mockResolvedValue({
+    id: "user-1",
+    tenantId: TENANT_ID,
+    role: "manager",
+  });
   mocks.paymentCreateMock.mockReset();
   mocks.paymentCreateMock.mockResolvedValue({
     ...createdPayment,
@@ -198,8 +202,16 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     expect(res.status).toBe(201);
     // Payment is now created through Manifest runtime, not direct Prisma
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("process", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "process",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
     // No header → no cache lookup, no cache store. Backwards compatible.
     expect(mocks.manifestIdempotencyFindUniqueMock).not.toHaveBeenCalled();
     expect(mocks.manifestIdempotencyUpsertMock).not.toHaveBeenCalled();
@@ -210,7 +222,11 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     expect(res.status).toBe(201);
     // Payment now goes through Manifest runtime
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
 
     // Cache lookup must happen — short-circuit prerequisite.
     expect(mocks.manifestIdempotencyFindUniqueMock).toHaveBeenCalledTimes(1);
@@ -304,7 +320,11 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.status).toBe(201);
     // Expired entry must NOT be replayed. New payment is created and the
     // cache row is overwritten via upsert.
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
     expect(mocks.manifestIdempotencyUpsertMock).toHaveBeenCalledTimes(1);
   });
 
@@ -334,7 +354,11 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     // Tenant B must NOT see tenant A's cached body. A new payment is created.
     expect(res.status).toBe(201);
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
     expect(res.headers.get("X-Idempotent-Replay")).toBeNull();
 
     // Lookup was scoped to tenant B's tenantId — verifies the (tenantId, key)
@@ -405,7 +429,11 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     // Worst-case degradation = duplicate-on-retry, same as no idempotency
     // at all. We never make availability worse by adding it.
     expect(res.status).toBe(201);
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
   });
 
   it("fails OPEN: cache store throwing does not corrupt the response", async () => {
@@ -417,7 +445,11 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     // Payment was created; cache write failure is swallowed and logged.
     expect(res.status).toBe(201);
-    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith(
+      "create",
+      expect.any(Object),
+      expect.objectContaining({ entityName: "Payment" })
+    );
     const body = await res.json();
     expect(body.id).toBe(PAYMENT_ID);
   });

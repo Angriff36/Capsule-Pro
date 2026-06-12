@@ -100,9 +100,8 @@ export function BudgetDetailClient() {
   };
 
   // Type guard to check if a string is a valid EventBudgetStatus
-  const isValidStatus = (value: string): value is EventBudgetStatus => {
-    return validStatuses.includes(value);
-  };
+  const isValidStatus = (value: string): value is EventBudgetStatus =>
+    validStatuses.includes(value);
 
   // Line item modal
   const [lineItemModalOpen, setLineItemModalOpen] = useState(false);
@@ -270,7 +269,7 @@ export function BudgetDetailClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -278,7 +277,7 @@ export function BudgetDetailClient() {
 
   if (!budget) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-muted-foreground">Budget not found</p>
         <Button
           className="mt-4"
@@ -311,7 +310,7 @@ export function BudgetDetailClient() {
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-semibold text-2xl tracking-tight">
               Event Budget Details
             </h1>
             <p className="text-muted-foreground">
@@ -337,7 +336,7 @@ export function BudgetDetailClient() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            <CardTitle className="font-medium text-sm">Status</CardTitle>
             <CheckCircle2Icon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -349,11 +348,11 @@ export function BudgetDetailClient() {
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget</CardTitle>
+            <CardTitle className="font-medium text-sm">Budget</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {formatCurrency(budget.totalBudgetAmount)}
             </div>
           </CardContent>
@@ -361,14 +360,14 @@ export function BudgetDetailClient() {
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actual</CardTitle>
+            <CardTitle className="font-medium text-sm">Actual</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">
+            <div className="font-semibold text-2xl">
               {formatCurrency(budget.totalActualAmount)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {utilizationPct.toFixed(1)}% utilized
             </p>
           </CardContent>
@@ -376,12 +375,12 @@ export function BudgetDetailClient() {
 
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Variance</CardTitle>
+            <CardTitle className="font-medium text-sm">Variance</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-semibold ${
+              className={`font-semibold text-2xl ${
                 budget.varianceAmount < 0
                   ? "text-red-600"
                   : budget.varianceAmount > 0
@@ -391,7 +390,7 @@ export function BudgetDetailClient() {
             >
               {formatCurrency(Math.abs(budget.varianceAmount))}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {budget.variancePercentage.toFixed(1)}%
             </p>
           </CardContent>
@@ -410,7 +409,7 @@ export function BudgetDetailClient() {
               <span className="font-medium">{utilizationPct.toFixed(1)}%</span>
             </div>
             <Progress className="h-3" value={Math.min(utilizationPct, 100)} />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
               <span>{formatCurrency(budget.totalActualAmount)} spent</span>
               <span>of {formatCurrency(budget.totalBudgetAmount)}</span>
             </div>
@@ -481,7 +480,7 @@ export function BudgetDetailClient() {
                 value={editNotes}
               />
             ) : (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-muted-foreground text-sm">
                 {budget.notes || "No notes"}
               </p>
             )}
@@ -561,7 +560,7 @@ export function BudgetDetailClient() {
                         <div>
                           <div className="font-medium">{item.name}</div>
                           {item.description && (
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                               {item.description}
                             </div>
                           )}
@@ -586,7 +585,7 @@ export function BudgetDetailClient() {
                           {itemVariance < 0 ? "-" : itemVariance > 0 ? "+" : ""}
                           {formatCurrency(Math.abs(itemVariance))}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {itemVariancePct.toFixed(1)}%
                         </div>
                       </TableCell>
@@ -645,8 +644,8 @@ export function BudgetDetailClient() {
             onClick={() => setLineItemModalOpen(false)}
           />
           <div className="relative z-50 w-full max-w-md rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-semibold text-xl">
                 {selectedLineItem ? "Edit Line Item" : "Add Line Item"}
               </h2>
               <Button

@@ -17,26 +17,26 @@ const PR_URL_REGEX = /(https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/(\d+))/;
  * Job runner configuration
  */
 export interface JobRunnerConfig {
-  /** GitHub repository owner */
-  repoOwner: string;
-  /** GitHub repository name */
-  repoName: string;
+  /** AI model to use for fix generation (default: gpt-4o) */
+  aiModel: string;
+  /** Base branch for PRs */
+  baseBranch: string;
+  /** Blocked path patterns */
+  blockedPatterns: RegExp[];
   /** GitHub token for API access */
   githubToken: string;
   /** OpenAI API key for AI-powered fix generation */
   openaiApiKey: string;
-  /** Base branch for PRs */
-  baseBranch: string;
-  /** Working directory for git operations */
-  workingDir: string;
-  /** Blocked path patterns */
-  blockedPatterns: RegExp[];
-  /** Test command to run */
-  testCommand: string;
+  /** GitHub repository name */
+  repoName: string;
+  /** GitHub repository owner */
+  repoOwner: string;
   /** Whether to actually run tests (can be disabled for safety) */
   runTests: boolean;
-  /** AI model to use for fix generation (default: gpt-4o) */
-  aiModel: string;
+  /** Test command to run */
+  testCommand: string;
+  /** Working directory for git operations */
+  workingDir: string;
 }
 
 const DEFAULT_CONFIG: Partial<JobRunnerConfig> = {
@@ -60,8 +60,8 @@ interface GitResult {
  * Result of PR creation
  */
 interface PRResult {
-  url: string;
   number: number;
+  url: string;
 }
 
 /**
@@ -211,7 +211,10 @@ export class SentryJobRunner {
               parentSpan.setAttribute("fixer.outcome", "tests_failed");
               // Revert the AI's edits before cleaning up the branch
               if (this.lastAppliedEdits.length > 0) {
-                await revertEdits(this.lastAppliedEdits, this.config.workingDir);
+                await revertEdits(
+                  this.lastAppliedEdits,
+                  this.config.workingDir
+                );
                 this.lastAppliedEdits = [];
               }
               await this.cleanupBranch(branchName);
@@ -249,7 +252,8 @@ export class SentryJobRunner {
             prNumber: prResult.number,
           };
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
+          const message =
+            error instanceof Error ? error.message : "Unknown error";
           parentSpan.setAttribute("fixer.outcome", "error");
           captureFailure(error, "execute");
           return {
@@ -505,6 +509,4 @@ export const createJobRunner = (
       JobRunnerConfig,
       "repoOwner" | "repoName" | "githubToken" | "openaiApiKey"
     >
-): SentryJobRunner => {
-  return new SentryJobRunner(config);
-};
+): SentryJobRunner => new SentryJobRunner(config);

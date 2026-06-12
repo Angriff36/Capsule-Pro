@@ -22,10 +22,14 @@ import { PickPackClient } from "./pick-pack-client";
 
 export default async function PickPackPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   // Fetch metrics server-side
   const [usageTransactions, transfersToday, packedItems] = await Promise.all([

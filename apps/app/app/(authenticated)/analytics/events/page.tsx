@@ -1,15 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   CommandBand,
   CommandBandActions,
@@ -26,6 +16,16 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -210,7 +210,7 @@ const AnalyticsEventsPage = async () => {
           </CommandBandLede>
         </CommandBandHeader>
         <CommandBandActions>
-          <Button asChild variant="on-dark" size="sm">
+          <Button asChild size="sm" variant="on-dark">
             <Link href="/analytics/events/advanced">Advanced analytics</Link>
           </Button>
         </CommandBandActions>
@@ -228,7 +228,8 @@ const AnalyticsEventsPage = async () => {
             {currencyFormatter.format(summary.totalBudget)}
           </MetricValue>
           <MetricLabel>
-            Planned budget · actuals {currencyFormatter.format(summary.totalActual)}
+            Planned budget · actuals{" "}
+            {currencyFormatter.format(summary.totalActual)}
           </MetricLabel>
         </MetricCell>
         <MetricCell>
@@ -252,16 +253,16 @@ const AnalyticsEventsPage = async () => {
       <PageBody>
         <OperationalColumn>
           <SectionHeader
-            title="Recent event performance"
-            description="Budget, settlement, and checklist health from live tenant data."
             actions={
               <Link
-                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                className="font-medium text-primary text-sm underline-offset-4 hover:underline"
                 href="/events"
               >
                 Open events roster
               </Link>
             }
+            description="Budget, settlement, and checklist health from live tenant data."
+            title="Recent event performance"
           />
 
           <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
@@ -309,7 +310,9 @@ const AnalyticsEventsPage = async () => {
                       : "No report";
                     const paymentProgress =
                       budgetValue > 0
-                        ? percentFormatter.format((paidValue / budgetValue) * 100)
+                        ? percentFormatter.format(
+                            (paidValue / budgetValue) * 100
+                          )
                         : "0.0";
 
                     return (
@@ -360,7 +363,7 @@ const AnalyticsEventsPage = async () => {
                             {currencyFormatter.format(varianceValue)}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right text-sm text-muted-foreground">
+                        <TableCell className="text-right text-muted-foreground text-sm">
                           {reportStatus}
                         </TableCell>
                       </TableRow>

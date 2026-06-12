@@ -62,11 +62,11 @@ import {
 // ---------------------------------------------------------------------------
 
 interface ProposalSummary {
+  acceptedCount: number;
+  formattedTotalValue: string;
+  pendingCount: number;
   totalCount: number;
   totalValue: number;
-  formattedTotalValue: string;
-  acceptedCount: number;
-  pendingCount: number;
 }
 
 interface ProposalsPageClientProps {
@@ -297,8 +297,8 @@ export function ProposalsPageClient({
 
       {/* Search + Filter bar */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -325,14 +325,14 @@ export function ProposalsPageClient({
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-4 py-16 text-center">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas px-4 py-16 text-center">
           <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
           <p className="font-medium text-ink">
             {initialProposals.length === 0
               ? "No proposals yet"
               : "No proposals match your filters"}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-muted-foreground text-sm">
             {initialProposals.length === 0
               ? "Create your first proposal to start tracking deals."
               : "Try adjusting your search or status filter."}
@@ -346,7 +346,7 @@ export function ProposalsPageClient({
       ) : (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
           {/* Column headers */}
-          <div className="grid grid-cols-[0.7fr_1fr_0.8fr_0.6fr_0.65fr_0.7fr_0.6fr_auto] gap-4 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[0.7fr_1fr_0.8fr_0.6fr_0.65fr_0.7fr_0.6fr_auto] gap-4 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Proposal #</span>
             <span>Title / Client</span>
             <span>Event</span>
@@ -364,23 +364,23 @@ export function ProposalsPageClient({
 
             return (
               <div
-                className="grid grid-cols-[0.7fr_1fr_0.8fr_0.6fr_0.65fr_0.7fr_0.6fr_auto] gap-4 border-b border-hairline px-5 py-4 text-sm last:border-b-0 hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[0.7fr_1fr_0.8fr_0.6fr_0.65fr_0.7fr_0.6fr_auto] gap-4 border-hairline border-b px-5 py-4 text-sm transition-colors last:border-b-0 hover:bg-muted/30"
                 key={proposal.id}
               >
                 {/* Proposal # */}
-                <div className="font-mono text-xs text-muted-foreground">
+                <div className="font-mono text-muted-foreground text-xs">
                   {proposal.proposalNumber}
                 </div>
 
                 {/* Title / Client */}
-                <div className="space-y-1 min-w-0">
+                <div className="min-w-0 space-y-1">
                   <Link
-                    className="font-medium text-ink hover:underline truncate block"
+                    className="block truncate font-medium text-ink hover:underline"
                     href={`/crm/proposals/${proposal.id}`}
                   >
                     {proposal.title}
                   </Link>
-                  <div className="text-muted-foreground text-xs truncate">
+                  <div className="truncate text-muted-foreground text-xs">
                     {getClientName(proposal)}
                   </div>
                 </div>

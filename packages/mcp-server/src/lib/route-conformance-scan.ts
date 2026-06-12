@@ -6,11 +6,11 @@ export const DISPATCHER_ROUTE_PATH = "/api/manifest/:entity/commands/:command";
 
 export interface RouteConformanceFinding {
   code: string;
-  severity: "error" | "warning" | "info";
-  message: string;
+  evidence?: string;
   file: string;
   line?: number;
-  evidence?: string;
+  message: string;
+  severity: "error" | "warning" | "info";
   suggestion?: string;
 }
 
@@ -26,8 +26,8 @@ export interface RouteConformanceScanResult {
 
 interface ManifestRoute {
   id?: string;
-  path: string;
   method?: string;
+  path: string;
   source?: {
     kind?: string;
     entity?: string;
@@ -138,10 +138,7 @@ function isConcreteCommandRouteFile(relativeApiPath: string): boolean {
 }
 
 function loadCommandRegistry(projectRoot: string): Set<string> {
-  const commandsPath = join(
-    projectRoot,
-    "manifest/ir/kitchen.commands.json"
-  );
+  const commandsPath = join(projectRoot, "manifest/ir/kitchen.commands.json");
   const raw = JSON.parse(readFileSync(commandsPath, "utf-8")) as Array<{
     entity: string;
     command: string;

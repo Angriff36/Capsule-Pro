@@ -6,9 +6,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
+  getDeletedAtField,
   getPrismaDelegate,
   getTenantField,
-  getDeletedAtField,
 } from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
@@ -114,12 +114,12 @@ const RESTORABLE_ENTITIES = [
 type RestorableEntity = (typeof RESTORABLE_ENTITIES)[number];
 
 interface TrashItem {
-  id: string;
-  entity: RestorableEntity;
-  tenantId: string;
   deletedAt: Date;
   displayName: string;
+  entity: RestorableEntity;
   hasDependents: boolean;
+  id: string;
+  tenantId: string;
 }
 
 // Display name mappings for entities
@@ -664,7 +664,9 @@ export async function GET(request: NextRequest) {
       // Limit to 10 entity types for performance
       try {
         const delegate = getPrismaDelegate(ent, database);
-        if (!delegate) continue;
+        if (!delegate) {
+          continue;
+        }
 
         const tenantField = getTenantField(ent);
         const deletedAtField = getDeletedAtField(ent);
@@ -773,7 +775,10 @@ function getDisplayFieldForEntity(entity: RestorableEntity): string | null {
   return fieldMap[entity] ?? null;
 }
 
-function generateDisplayName(entity: RestorableEntity, record: Record<string, unknown>): string {
+function generateDisplayName(
+  entity: RestorableEntity,
+  record: Record<string, unknown>
+): string {
   const fieldMap: Partial<Record<RestorableEntity, string[]>> = {
     Event: ["title"],
     Client: ["name"],

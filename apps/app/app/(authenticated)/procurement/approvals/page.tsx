@@ -45,29 +45,29 @@ import {
 } from "../components/po-shared";
 
 interface ApprovalHistory {
-  id: string;
-  entityType: string;
-  entityId: string;
   action: string;
-  performedBy: string;
-  performedAt: string;
-  previousStatus: string | null;
+  entityId: string;
+  entityType: string;
+  id: string;
+  metadata: any;
   newStatus: string | null;
   notes: string | null;
-  metadata: any;
+  performedAt: string;
+  performedBy: string;
+  previousStatus: string | null;
 }
 
 interface ApprovalOrder {
-  id: string;
-  po_number: string;
-  vendor_name: string | null;
-  status: string;
-  total: number;
-  item_count: number;
-  submitted_by: string | null;
-  submitted_at: string | null;
-  created_at: string;
   approval_history: ApprovalHistory[];
+  created_at: string;
+  id: string;
+  item_count: number;
+  po_number: string;
+  status: string;
+  submitted_at: string | null;
+  submitted_by: string | null;
+  total: number;
+  vendor_name: string | null;
 }
 
 // Approval chain steps
@@ -95,16 +95,16 @@ function ApprovalChainStepper({
   const financeApproval = hasApproval && managerApproval; // If approved, we assume finance also signed off
 
   return (
-    <div className="flex items-center gap-1 mt-2">
+    <div className="mt-2 flex items-center gap-1">
       {/* Step 1: Requester - Always complete if we're viewing this */}
       <div className="flex items-center gap-1.5">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
           <CheckCircle2 className="h-3.5 w-3.5" />
         </div>
-        <span className="text-xs font-medium text-foreground">Requester</span>
+        <span className="font-medium text-foreground text-xs">Requester</span>
       </div>
 
-      <ArrowRight className="h-3.5 w-3.5 text-gray-300 mx-1" />
+      <ArrowRight className="mx-1 h-3.5 w-3.5 text-gray-300" />
 
       {/* Step 2: Manager */}
       <div className="flex items-center gap-1.5">
@@ -113,35 +113,35 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground">Manager</span>
+            <span className="font-medium text-foreground text-xs">Manager</span>
           </>
         ) : hasRejection ? (
           <>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <XCircle className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground">Manager</span>
+            <span className="font-medium text-foreground text-xs">Manager</span>
           </>
         ) : isSubmitted ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground animate-pulse">
+            <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-muted/50 text-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground">Manager</span>
+            <span className="font-medium text-foreground text-xs">Manager</span>
           </>
         ) : (
           <>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="font-medium text-muted-foreground text-xs">
               Manager
             </span>
           </>
         )}
       </div>
 
-      <ArrowRight className="h-3.5 w-3.5 text-gray-300 mx-1" />
+      <ArrowRight className="mx-1 h-3.5 w-3.5 text-gray-300" />
 
       {/* Step 3: Finance */}
       <div className="flex items-center gap-1.5">
@@ -150,14 +150,14 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground">Finance</span>
+            <span className="font-medium text-foreground text-xs">Finance</span>
           </>
         ) : hasRejection ? (
           <>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="font-medium text-muted-foreground text-xs">
               Finance
             </span>
           </>
@@ -166,7 +166,7 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="font-medium text-muted-foreground text-xs">
               Finance
             </span>
           </>
@@ -175,7 +175,7 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="font-medium text-muted-foreground text-xs">
               Finance
             </span>
           </>
@@ -188,7 +188,7 @@ function ApprovalChainStepper({
 function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
   if (!history || history.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground py-4 text-center">
+      <div className="py-4 text-center text-muted-foreground text-sm">
         No approval history yet
       </div>
     );
@@ -221,7 +221,7 @@ function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
                 )}
               </div>
               {index < history.length - 1 && (
-                <div className="w-px h-full bg-gray-200 my-1" />
+                <div className="my-1 h-full w-px bg-gray-200" />
               )}
             </div>
             <div className="flex-1 pb-4">
@@ -233,11 +233,11 @@ function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
                   {item.newStatus || item.action}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-muted-foreground text-xs">
                 {formatDate(item.performedAt)} by {item.performedBy || "System"}
               </p>
               {item.notes && (
-                <p className="text-sm text-muted-foreground mt-2 bg-muted p-2 rounded">
+                <p className="mt-2 rounded bg-muted p-2 text-muted-foreground text-sm">
                   {item.notes}
                 </p>
               )}
@@ -269,7 +269,9 @@ export default function ApprovalsPage() {
     try {
       const res = await apiFetch("/api/procurement/approvals/list");
       const data = await res.json();
-      if (data.success) setOrders(data.data.orders || []);
+      if (data.success) {
+        setOrders(data.data.orders || []);
+      }
     } catch (error) {
       console.error("Failed to load approval orders:", error);
     } finally {
@@ -348,7 +350,7 @@ export default function ApprovalsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Approvals</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Approvals</h1>
           <p className="text-muted-foreground">
             Review and approve purchase orders before they're sent to vendors.
           </p>
@@ -359,49 +361,49 @@ export default function ApprovalsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Pending Approval
             </CardTitle>
             <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.pending}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{summaryStats.pending}</div>
+            <p className="text-muted-foreground text-xs">
               Awaiting your review
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Approved Today
             </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {summaryStats.approvedToday}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Orders processed today
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+            <CardTitle className="font-medium text-sm">Rejected</CardTitle>
             <XCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.rejected}</div>
-            <p className="text-xs text-muted-foreground">Require attention</p>
+            <div className="font-bold text-2xl">{summaryStats.rejected}</div>
+            <p className="text-muted-foreground text-xs">Require attention</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -414,25 +416,25 @@ export default function ApprovalsPage() {
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="pending"
           >
             Pending ({orders.filter((o) => o.status === "submitted").length})
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="approved"
           >
             Approved ({orders.filter((o) => o.status === "approved").length})
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="rejected"
           >
             Rejected ({orders.filter((o) => o.status === "rejected").length})
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="all"
           >
             All History ({orders.length})
@@ -443,8 +445,8 @@ export default function ApprovalsPage() {
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-1">No approvals found</p>
+                <Shield className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                <p className="mb-1 font-medium text-lg">No approvals found</p>
                 <p className="text-sm">
                   {activeTab === "pending"
                     ? "All caught up! No purchase orders pending approval."
@@ -463,7 +465,7 @@ export default function ApprovalsPage() {
 
                 return (
                   <Card
-                    className="hover:border-primary/40 transition-shadow"
+                    className="transition-shadow hover:border-primary/40"
                     key={order.id}
                   >
                     <CardContent className="p-4">
@@ -473,8 +475,8 @@ export default function ApprovalsPage() {
                         >
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <span className="font-semibold">
                               {order.po_number}
                             </span>
@@ -482,13 +484,13 @@ export default function ApprovalsPage() {
                               {config.label}
                             </Badge>
                             {order.vendor_name && (
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-muted-foreground text-sm">
                                 • {order.vendor_name}
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-1">
+                          <div className="mb-1 flex items-center gap-4 text-muted-foreground text-sm">
                             <span className="flex items-center gap-1">
                               <FileText className="h-3.5 w-3.5" />
                               {order.item_count} items
@@ -519,13 +521,13 @@ export default function ApprovalsPage() {
                             size="sm"
                             variant="ghost"
                           >
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="mr-1 h-4 w-4" />
                             Details
                           </Button>
                           {isPending && (
                             <>
                               <Button
-                                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                                 disabled={isActioning}
                                 onClick={() =>
                                   handleAction(order.id, "rejected")
@@ -536,7 +538,7 @@ export default function ApprovalsPage() {
                                 {isActioning ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  <XCircle className="h-4 w-4 mr-1" />
+                                  <XCircle className="mr-1 h-4 w-4" />
                                 )}
                                 Reject
                               </Button>
@@ -551,7 +553,7 @@ export default function ApprovalsPage() {
                                 {isActioning ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                                  <CheckCircle2 className="mr-1 h-4 w-4" />
                                 )}
                                 Approve
                               </Button>
@@ -586,7 +588,7 @@ export default function ApprovalsPage() {
               {/* Order Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Status</p>
+                  <p className="text-muted-foreground text-xs">Status</p>
                   <Badge
                     className={STATUS_CONFIG[selectedOrder.status]?.color || ""}
                   >
@@ -595,17 +597,17 @@ export default function ApprovalsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-muted-foreground text-xs">Total</p>
                   <p className="font-semibold">
                     {formatCurrency(selectedOrder.total)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Items</p>
+                  <p className="text-muted-foreground text-xs">Items</p>
                   <p className="font-medium">{selectedOrder.item_count}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Submitted</p>
+                  <p className="text-muted-foreground text-xs">Submitted</p>
                   <p className="font-medium">
                     {selectedOrder.submitted_at
                       ? formatDate(selectedOrder.submitted_at)
@@ -616,7 +618,7 @@ export default function ApprovalsPage() {
 
               {/* Approval Chain */}
               <div>
-                <h4 className="text-sm font-medium mb-3">Approval Chain</h4>
+                <h4 className="mb-3 font-medium text-sm">Approval Chain</h4>
                 <ApprovalChainStepper
                   approvalHistory={selectedOrder.approval_history}
                   status={selectedOrder.status}
@@ -625,7 +627,7 @@ export default function ApprovalsPage() {
 
               {/* Approval History */}
               <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <h4 className="mb-3 flex items-center gap-2 font-medium text-sm">
                   <MessageSquare className="h-4 w-4" />
                   Approval History
                 </h4>

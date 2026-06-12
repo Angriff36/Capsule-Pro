@@ -14,7 +14,9 @@ export async function GET(
 ) {
   try {
     const guard = await requireApiManager();
-    if (!guard.ok) return guard.response;
+    if (!guard.ok) {
+      return guard.response;
+    }
     const { tenantId } = guard;
 
     const { id } = await params;

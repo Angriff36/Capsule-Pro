@@ -14,26 +14,26 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 interface SupplierMetricsRow {
-  supplier_name: string;
-  total_orders: bigint;
+  average_lead_time: number;
+  discrepancy_rate: number;
   on_time_deliveries: bigint;
   quality_score: number;
-  average_lead_time: number;
+  supplier_name: string;
+  total_orders: bigint;
   total_spent: number;
-  discrepancy_rate: number;
 }
 
 interface ReceivingSummaryRow {
-  total_pos_received: bigint;
-  total_items_received: bigint;
-  total_discrepancies: bigint;
   average_quality_score: number;
   pending_items: bigint;
+  total_discrepancies: bigint;
+  total_items_received: bigint;
+  total_pos_received: bigint;
 }
 
 interface DiscrepancyBreakdownRow {
-  discrepancy_type: string;
   count: bigint;
+  discrepancy_type: string;
 }
 
 const getScoreBadgeVariant = (
@@ -48,12 +48,11 @@ const getScoreBadgeVariant = (
   return "destructive";
 };
 
-const formatDiscrepancyType = (type: string): string => {
-  return type
+const formatDiscrepancyType = (type: string): string =>
+  type
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-};
 
 const discrepancyColors: Record<string, string> = {
   shortage: "bg-blue-600",
@@ -163,7 +162,7 @@ const ReceivingReportsPage = async () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Receiving Reports & Supplier Performance
         </h1>
         <p className="text-muted-foreground">
@@ -175,7 +174,7 @@ const ReceivingReportsPage = async () => {
 
       {/* Performance Overview Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -219,14 +218,14 @@ const ReceivingReportsPage = async () => {
 
       {/* Supplier Performance Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Supplier Performance
         </h2>
 
         <Card tone="canvas">
           <CardContent className="pt-6">
             {supplierMetrics.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
+              <div className="py-8 text-center text-muted-foreground text-sm">
                 No supplier data available yet. Supplier metrics will appear
                 once purchase orders have been received.
               </div>
@@ -234,12 +233,12 @@ const ReceivingReportsPage = async () => {
               <div className="space-y-4">
                 {supplierMetrics.map((supplier) => (
                   <div
-                    className="rounded-lg border p-4 space-y-3"
+                    className="space-y-3 rounded-lg border p-4"
                     key={supplier.supplier_name}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <h3 className="font-medium">
                             {supplier.supplier_name}
                           </h3>
@@ -251,7 +250,7 @@ const ReceivingReportsPage = async () => {
                             {supplier.quality_score.toFixed(1)} / 5.0
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {supplier.total_orders} orders • $
                           {supplier.total_spent.toLocaleString()} total
                         </p>
@@ -276,13 +275,13 @@ const ReceivingReportsPage = async () => {
 
                     <div className="grid gap-3 sm:grid-cols-4">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">
+                        <p className="mb-1 text-muted-foreground text-xs">
                           On-Time Deliveries
                         </p>
-                        <p className="text-sm font-medium">
+                        <p className="font-medium text-sm">
                           {supplier.on_time_deliveries} /{" "}
                           {supplier.total_orders}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {" "}
                             (
                             {supplier.total_orders > 0
@@ -297,27 +296,27 @@ const ReceivingReportsPage = async () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">
+                        <p className="mb-1 text-muted-foreground text-xs">
                           Average Lead Time
                         </p>
-                        <p className="text-sm font-medium">
+                        <p className="font-medium text-sm">
                           {supplier.average_lead_time.toFixed(1)} days
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">
+                        <p className="mb-1 text-muted-foreground text-xs">
                           Quality Score
                         </p>
-                        <p className="text-sm font-medium">
+                        <p className="font-medium text-sm">
                           {supplier.quality_score.toFixed(1)} / 5.0
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">
+                        <p className="mb-1 text-muted-foreground text-xs">
                           Discrepancy Rate
                         </p>
                         <p
-                          className={`text-sm font-medium ${supplier.discrepancy_rate > 5 ? "text-destructive" : "text-emerald-600"}`}
+                          className={`font-medium text-sm ${supplier.discrepancy_rate > 5 ? "text-destructive" : "text-emerald-600"}`}
                         >
                           {supplier.discrepancy_rate.toFixed(1)}%
                         </p>
@@ -333,14 +332,14 @@ const ReceivingReportsPage = async () => {
 
       {/* Discrepancy Breakdown Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Discrepancy Breakdown by Type
         </h2>
 
         <Card tone="canvas">
           <CardContent className="pt-6">
             {discrepancies.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
+              <div className="py-8 text-center text-muted-foreground text-sm">
                 No discrepancies recorded. This section will populate as
                 receiving inspections identify issues.
               </div>
@@ -356,13 +355,13 @@ const ReceivingReportsPage = async () => {
 
                   return (
                     <div key={discrepancy.type}>
-                      <div className="flex justify-between text-sm mb-2">
+                      <div className="mb-2 flex justify-between text-sm">
                         <span>{formatDiscrepancyType(discrepancy.type)}</span>
                         <span className="font-medium">
                           {discrepancy.count} ({percentage.toFixed(0)}%)
                         </span>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
                         <div
                           className={`h-full ${colorClass}`}
                           style={{ width: `${percentage}%` }}

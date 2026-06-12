@@ -95,7 +95,10 @@ async function seedAndCreate(
   instanceId = "ea-1"
 ) {
   const body = availabilityBody();
-  await runtime.createInstance("EmployeeAvailability", { ...body, id: instanceId });
+  await runtime.createInstance("EmployeeAvailability", {
+    ...body,
+    id: instanceId,
+  });
   return runtime.runCommand("create", body, {
     entityName: "EmployeeAvailability",
     instanceId,

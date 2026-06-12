@@ -38,17 +38,17 @@ import {
 } from "../components/req-shared";
 
 interface Requisition {
-  id: string;
-  requisitionNumber: string;
-  status: string;
-  priority: string;
   department: string | null;
-  requestDate: string;
-  requiredBy: string | null;
-  subtotal: number;
   estimatedTotal: number;
+  id: string;
   justification: string | null;
   notes: string | null;
+  priority: string;
+  requestDate: string;
+  requiredBy: string | null;
+  requisitionNumber: string;
+  status: string;
+  subtotal: number;
 }
 
 export default function RequisitionsPage() {
@@ -73,16 +73,20 @@ export default function RequisitionsPage() {
     }
   };
 
-  const filtered = useMemo(() => {
-    return requisitions.filter((r) => {
-      const matchesTab = activeTab === "all" || r.status === activeTab;
-      const matchesSearch =
-        !searchQuery ||
-        r.requisitionNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.department?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
-    });
-  }, [requisitions, activeTab, searchQuery]);
+  const filtered = useMemo(
+    () =>
+      requisitions.filter((r) => {
+        const matchesTab = activeTab === "all" || r.status === activeTab;
+        const matchesSearch =
+          !searchQuery ||
+          r.requisitionNumber
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          r.department?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesTab && matchesSearch;
+      }),
+    [requisitions, activeTab, searchQuery]
+  );
 
   if (loading) {
     return (
@@ -142,7 +146,7 @@ export default function RequisitionsPage() {
                     <config.icon aria-hidden className="size-4 text-white/60" />
                   </div>
                   <MetricValue>{String(count)}</MetricValue>
-                  <div className="text-xs text-white/55">{footnote}</div>
+                  <div className="text-white/55 text-xs">{footnote}</div>
                 </MetricCell>
               );
             })}
@@ -160,7 +164,7 @@ export default function RequisitionsPage() {
 
         <section className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
           <div className="relative">
-            <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="rounded-[16px] border-hairline bg-canvas pl-10"
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -201,7 +205,7 @@ export default function RequisitionsPage() {
             </TabsList>
             <TabsContent className="mt-6" value={activeTab}>
               {filtered.length === 0 ? (
-                <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-6 py-16 text-center">
+                <div className="rounded-[22px] border border-hairline border-dashed bg-canvas px-6 py-16 text-center">
                   <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-60" />
                   <p className="text-muted-foreground">
                     No requisitions match this view.
@@ -246,7 +250,7 @@ export default function RequisitionsPage() {
                                 {priorityConfig.label}
                               </Badge>
                             </div>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
                               {req.department ? (
                                 <span>{req.department}</span>
                               ) : null}

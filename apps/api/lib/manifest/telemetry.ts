@@ -17,6 +17,11 @@ import * as Sentry from "@sentry/nextjs";
  * get observability without per-route changes.
  */
 export interface ManifestTelemetryHooks {
+  onCommandExecuted?: (
+    command: Readonly<IRCommand>,
+    result: Readonly<CommandResult>,
+    entityName?: string
+  ) => void | Promise<void>;
   onConstraintEvaluated?: (
     outcome: Readonly<ConstraintOutcome>,
     commandName: string,
@@ -29,12 +34,6 @@ export interface ManifestTelemetryHooks {
     outcome: Readonly<ConstraintOutcome>,
     commandName: string
   ) => void;
-
-  onCommandExecuted?: (
-    command: Readonly<IRCommand>,
-    result: Readonly<CommandResult>,
-    entityName?: string
-  ) => void | Promise<void>;
 }
 
 /**

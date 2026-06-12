@@ -21,29 +21,26 @@
 // Re-export the most commonly used hooks for 3 pilot domains.
 // Full hook library: see manifest-hooks.generated.ts (171 list + 188 detail + 999 mutation hooks)
 export {
-  // Inventory domain
-  useInventoryItemList,
-  useInventoryItemDetail,
-  useInventoryItemCreateMutation,
-  useInventoryItemUpdateMutation,
-  useInventoryItemSoftDeleteMutation,
-
-  // Client domain
-  useClientList,
-  useClientDetail,
-  useClientCreateMutation,
-  useClientUpdateMutation,
-  useClientArchiveMutation,
-  useClientReactivateMutation,
-
-  // Recipe domain
-  useRecipeList,
-  useRecipeDetail,
-  useRecipeCreateMutation,
-  useRecipeUpdateMutation,
-  useRecipeActivateMutation,
-  useRecipeDeactivateMutation,
-
   // Query key factory (for custom invalidation)
   queryKeys,
+  useClientArchiveMutation,
+  useClientCreateMutation,
+  useClientDetail,
+  // Client domain
+  useClientList,
+  useClientReactivateMutation,
+  useClientUpdateMutation,
+  useInventoryItemCreateMutation,
+  useInventoryItemDetail,
+  // Inventory domain
+  useInventoryItemList,
+  useInventoryItemSoftDeleteMutation,
+  useInventoryItemUpdateMutation,
+  useRecipeActivateMutation,
+  useRecipeCreateMutation,
+  useRecipeDeactivateMutation,
+  useRecipeDetail,
+  // Recipe domain
+  useRecipeList,
+  useRecipeUpdateMutation,
 } from "./manifest-hooks.generated";

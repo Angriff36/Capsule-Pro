@@ -228,8 +228,12 @@ export async function POST(request: NextRequest) {
 
     if (startDate || endDate) {
       const orderDateFilter: Record<string, Date> = {};
-      if (startDate) orderDateFilter.gte = new Date(startDate);
-      if (endDate) orderDateFilter.lte = new Date(endDate);
+      if (startDate) {
+        orderDateFilter.gte = new Date(startDate);
+      }
+      if (endDate) {
+        orderDateFilter.lte = new Date(endDate);
+      }
       where.orderDate = orderDateFilter;
     }
 

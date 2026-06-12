@@ -82,35 +82,35 @@ import {
 } from "../actions";
 
 interface Proposal {
-  id: string;
-  proposalNumber: string;
-  title: string;
-  status: string;
-  eventDate: string | null;
-  guestCount: number | null;
-  total: number | null;
-  validUntil: string | null;
-  sentAt: string | null;
-  viewedAt: string | null;
   acceptedAt: string | null;
-  createdAt: string;
   client?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  createdAt: string;
+  eventDate: string | null;
+  guestCount: number | null;
+  id: string;
   lead?: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  proposalNumber: string;
+  sentAt: string | null;
+  status: string;
+  title: string;
+  total: number | null;
+  validUntil: string | null;
+  viewedAt: string | null;
 }
 
 interface PaginationData {
-  page: number;
   limit: number;
+  page: number;
   total: number;
   totalPages: number;
 }
@@ -159,10 +159,10 @@ function getClientName(proposal: Proposal): string {
 }
 
 interface ProposalsClientProps {
+  initialClientId?: string;
   initialPage?: number;
   initialSearch?: string;
   initialStatus?: string;
-  initialClientId?: string;
 }
 
 export function ProposalsClient({
@@ -304,7 +304,9 @@ export function ProposalsClient({
   };
 
   const handleSendSubmit = async () => {
-    if (!(sendProposal && recipientEmail.trim())) return;
+    if (!(sendProposal && recipientEmail.trim())) {
+      return;
+    }
 
     setIsSending(true);
     try {
@@ -379,7 +381,7 @@ export function ProposalsClient({
         return (
           <div>
             <div className="font-medium">{proposal.title}</div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <span className="font-mono text-xs">
                 {proposal.proposalNumber}
               </span>
@@ -453,7 +455,7 @@ export function ProposalsClient({
       cell: ({ row }) => {
         const date = row.original.createdAt;
         return (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {format(new Date(date), "MMM d, yyyy")}
           </span>
         );
@@ -525,11 +527,11 @@ export function ProposalsClient({
     <div className="space-y-6">
       {/* Filters Section */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-medium text-muted-foreground text-sm">Filters</h2>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex flex-1 items-center gap-2">
             <Input
               className="max-w-sm"
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -560,8 +562,8 @@ export function ProposalsClient({
 
       {/* Proposals Table Section */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Proposals ({pagination.total})
           </h2>
         </div>
@@ -594,9 +596,7 @@ export function ProposalsClient({
                 <TableCell className="text-center" colSpan={columns.length}>
                   <div className="flex flex-col items-center gap-2 py-8">
                     <FileText className="size-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      No proposals found
-                    </p>
+                    <p className="text-muted-foreground">No proposals found</p>
                     <Button asChild variant="outline">
                       <Link href="/crm/proposals/new">
                         Create your first proposal
@@ -624,7 +624,7 @@ export function ProposalsClient({
 
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
               of {pagination.total} proposals

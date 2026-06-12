@@ -60,12 +60,12 @@ vi.mock("@/app/lib/invariant", async () => {
 });
 
 import { auth } from "@repo/auth/server";
+import { InvariantError } from "@/app/lib/invariant";
 import {
   getTenantIdForOrg,
   requireCurrentUser,
   resolveCurrentUser,
 } from "@/app/lib/tenant";
-import { InvariantError } from "@/app/lib/invariant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -152,7 +152,10 @@ describe("Shipment dispatcher — runtime failure responses", () => {
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
-        body: JSON.stringify({ id: TEST_SHIPMENT_ID, reason: "supplier delay" }),
+        body: JSON.stringify({
+          id: TEST_SHIPMENT_ID,
+          reason: "supplier delay",
+        }),
       }),
       { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
     );

@@ -22,9 +22,12 @@ export function getAvailableItems(
     if (
       serviceStyle &&
       !item.compatibleStyles.includes(serviceStyle as ServiceStyle)
-    )
+    ) {
       return false;
-    if (!item.seasons.includes(season)) return false;
+    }
+    if (!item.seasons.includes(season)) {
+      return false;
+    }
     return true;
   });
 }
@@ -101,9 +104,15 @@ export function validateMenuSelection(
 
 export function getCurrentSeason(): Season {
   const month = new Date().getMonth();
-  if (month >= 2 && month <= 4) return "spring";
-  if (month >= 5 && month <= 7) return "summer";
-  if (month >= 8 && month <= 10) return "fall";
+  if (month >= 2 && month <= 4) {
+    return "spring";
+  }
+  if (month >= 5 && month <= 7) {
+    return "summer";
+  }
+  if (month >= 8 && month <= 10) {
+    return "fall";
+  }
   return "winter";
 }
 
@@ -112,7 +121,9 @@ export function groupByCategory(
 ): Record<string, MenuCatalogItem[]> {
   const groups: Record<string, MenuCatalogItem[]> = {};
   for (const item of items) {
-    if (!groups[item.category]) groups[item.category] = [];
+    if (!groups[item.category]) {
+      groups[item.category] = [];
+    }
     groups[item.category].push(item);
   }
   return groups;

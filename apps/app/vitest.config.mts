@@ -40,7 +40,10 @@ export default defineConfig({
           );
         }
         // Intercept storage package
-        if (id === "@repo/storage" || normalizedId.includes("packages/storage")) {
+        if (
+          id === "@repo/storage" ||
+          normalizedId.includes("packages/storage")
+        ) {
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/storage.ts"
@@ -53,7 +56,7 @@ export default defineConfig({
             "./test/mocks/@clerk/nextjs.tsx"
           );
         }
-        return undefined;
+        return;
       },
       load(id) {
         const normalizedId = id.replace(/\\/g, "/");
@@ -93,7 +96,7 @@ export default defineConfig({
             export const tenantDatabase = vi.fn(() => database);
           `;
         }
-        return undefined;
+        return;
       },
     },
   ],

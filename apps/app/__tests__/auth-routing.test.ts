@@ -22,22 +22,22 @@ vi.mock("@clerk/nextjs/server", () => ({
       return pathname === pattern;
     });
   },
-  clerkMiddleware: (
-    handler: (
-      auth: (() => Promise<{ userId: string | null }>) & {
-        protect: () => Promise<void>;
-      },
-      req: { url: string }
-    ) => Promise<Response | void>
-  ) => {
-    return async (req: { url: string }) => {
+  clerkMiddleware:
+    (
+      handler: (
+        auth: (() => Promise<{ userId: string | null }>) & {
+          protect: () => Promise<void>;
+        },
+        req: { url: string }
+      ) => Promise<Response | void>
+    ) =>
+    async (req: { url: string }) => {
       const auth = clerkState.authMock as unknown as (() => Promise<{
         userId: string | null;
       }>) & { protect: () => Promise<void> };
       auth.protect = clerkState.protectMock;
       return handler(auth, req);
-    };
-  },
+    },
 }));
 
 function request(pathname: string) {
@@ -49,9 +49,9 @@ function request(pathname: string) {
 
 async function runMiddleware(pathname: string) {
   const { default: middleware } = await import("../proxy");
-  return (
-    middleware as (req: { url: string }) => Promise<Response | void>
-  )(request(pathname));
+  return (middleware as (req: { url: string }) => Promise<Response | void>)(
+    request(pathname)
+  );
 }
 
 describe("app auth routing", () => {

@@ -45,22 +45,22 @@ type SchedulingNotificationType =
   | "schedule_published";
 
 interface Notification {
-  tenantId: string;
-  id: string;
-  recipient_employee_id: string;
-  notification_type: SchedulingNotificationType;
-  title: string;
-  body: string | null;
   action_url: string | null;
-  isRead: boolean;
-  readAt: string | null;
-  createdAt: string;
+  body: string | null;
   correlation_id: string | null;
+  createdAt: string;
+  id: string;
+  isRead: boolean;
+  notification_type: SchedulingNotificationType;
+  readAt: string | null;
+  recipient_employee_id: string;
+  tenantId: string;
+  title: string;
 }
 
 interface Pagination {
-  page: number;
   limit: number;
+  page: number;
   total: number;
   totalPages: number;
 }
@@ -265,17 +265,17 @@ export function NotificationsClient() {
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex min-w-0 items-start gap-3">
                     <Icon
                       aria-hidden
-                      className={`size-5 mt-0.5 shrink-0 ${iconColor}`}
+                      className={`mt-0.5 size-5 shrink-0 ${iconColor}`}
                     />
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-sm leading-snug">
                         {notification.title}
                       </CardTitle>
                       <div className="mt-1 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {formatRelativeTime(notification.createdAt)}
                         </span>
                         {!notification.isRead && (
@@ -319,7 +319,7 @@ export function NotificationsClient() {
               </CardHeader>
               {notification.body && (
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {notification.body}
                   </p>
                 </CardContent>
@@ -339,7 +339,7 @@ export function NotificationsClient() {
             >
               Previous
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button

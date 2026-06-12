@@ -15,13 +15,13 @@ import { Header } from "../../../components/header";
 import { cleanupImportedItems } from "./server-actions";
 
 interface CleanupCandidate {
-  id: string;
-  name: string;
   category: string | null;
-  tags: string[] | null;
   dish_count: number;
+  id: string;
   ingredient_count: number;
+  name: string;
   step_count: number;
+  tags: string[] | null;
 }
 
 interface Classification {
@@ -188,7 +188,7 @@ const CleanupImportsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Cleanup Imports
           </h1>
           <p className="text-muted-foreground">
@@ -201,7 +201,7 @@ const CleanupImportsPage = async () => {
 
         {/* Cleanup Candidates Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Cleanup Candidates {rows.length > 0 && `(${rows.length})`}
           </h2>
           <Card>

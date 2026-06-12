@@ -14,10 +14,7 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { translatePrismaError } from "@/lib/prisma-error";
-import {
-  parsePaginationParams,
-  parseVenueListFilters,
-} from "./validation";
+import { parsePaginationParams, parseVenueListFilters } from "./validation";
 
 /**
  * GET /api/crm/venues
@@ -118,7 +115,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "Venue",
     command: "create",

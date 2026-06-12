@@ -6,54 +6,54 @@
  */
 
 export interface NowstaEmployee {
-  id: string;
-  first_name: string;
-  last_name: string;
+  created_at: string;
   email: string;
+  first_name: string;
+  id: string;
+  is_active: boolean;
+  last_name: string;
   phone?: string;
   role?: string;
-  is_active: boolean;
-  created_at: string;
   updated_at: string;
 }
 
 export interface NowstaShift {
-  id: string;
+  created_at: string;
   employee_id: string;
+  end_time: string;
+  id: string;
   location_id?: string;
   location_name?: string;
-  start_time: string;
-  end_time: string;
-  role?: string;
-  status: string;
   notes?: string;
-  created_at: string;
+  role?: string;
+  start_time: string;
+  status: string;
   updated_at: string;
 }
 
 export interface NowstaLocation {
-  id: string;
-  name: string;
   address?: string;
   city?: string;
+  id: string;
+  name: string;
   state?: string;
   zip?: string;
 }
 
 export interface NowstaSyncResult {
-  success: boolean;
   employeesImported: number;
   employeesSkipped: number;
+  errors: string[];
   shiftsImported: number;
   shiftsSkipped: number;
-  errors: string[];
+  success: boolean;
 }
 
 export interface NowstaApiConfig {
   apiKey: string;
   apiSecret: string;
-  organizationId?: string;
   baseUrl?: string;
+  organizationId?: string;
 }
 
 const DEFAULT_BASE_URL = "https://api.nowsta.com/v1";

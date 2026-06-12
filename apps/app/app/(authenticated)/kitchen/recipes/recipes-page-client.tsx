@@ -16,13 +16,13 @@ import { RecipeEditModal } from "./components/recipe-edit-modal";
 import { RecipeEditorModal } from "./recipe-editor-modal";
 
 interface CompositeRouteResponse {
-  success: boolean;
-  message?: string;
   constraintOutcomes?: Array<{ blocked: boolean; message: string }>;
   data?: {
     recipeId?: string;
     version?: unknown;
   };
+  message?: string;
+  success: boolean;
 }
 
 /** Convert difficulty string to numeric level */
@@ -34,12 +34,14 @@ const difficultyToLevel = (difficulty: string): number | undefined => {
 /** Safely parse JSON from a FormData field */
 const parseJsonField = <T,>(formData: FormData, key: string): T | undefined => {
   const raw = formData.get(key) as string | null;
-  if (!raw) return undefined;
+  if (!raw) {
+    return;
+  }
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as T) : undefined;
   } catch {
-    return undefined;
+    return;
   }
 };
 
@@ -330,7 +332,7 @@ export const RecipesPageClient = () => {
       {/* FAB for creating new recipe */}
       <button
         aria-label="Create new recipe"
-        className="fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white border border-primary/30 transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
+        className="fixed right-8 bottom-8 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-ink text-white transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
         onClick={() => setIsCreateModalOpen(true)}
         type="button"
       >

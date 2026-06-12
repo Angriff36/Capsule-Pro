@@ -21,24 +21,28 @@ import type {
   MiddlewareResult,
 } from "@angriff36/manifest";
 import {
+  hasPermission,
+  type Permission,
+  type RolePolicyData,
+} from "../permission-checker";
+import {
   AI_APPROVAL_COMMANDS,
+  AIApprovalRequiredError,
   COMMAND_PERMISSION_MAP,
   PermissionDeniedError,
-  AIApprovalRequiredError,
 } from "../permission-guard";
-import { hasPermission, type RolePolicyData, type Permission } from "../permission-checker";
 
 // ---------------------------------------------------------------------------
 // Options
 // ---------------------------------------------------------------------------
 
 export interface RbacMiddlewareOptions {
-  /** Pre-loaded role policies (loaded at factory time) */
-  rolePolicies: RolePolicyData[];
-  /** Custom command-to-permission mapping (defaults to COMMAND_PERMISSION_MAP) */
-  commandPermissionMap?: Record<string, Permission>;
   /** Commands requiring additional AI approval permission */
   aiApprovalCommands?: Set<string>;
+  /** Custom command-to-permission mapping (defaults to COMMAND_PERMISSION_MAP) */
+  commandPermissionMap?: Record<string, Permission>;
+  /** Pre-loaded role policies (loaded at factory time) */
+  rolePolicies: RolePolicyData[];
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +61,9 @@ export interface RbacMiddlewareOptions {
  * Denied commands are short-circuited with a `CommandResult` indicating failure,
  * identical to the legacy Proxy-based permission guard behavior.
  */
-export function createRbacMiddleware(options: RbacMiddlewareOptions): Middleware {
+export function createRbacMiddleware(
+  options: RbacMiddlewareOptions
+): Middleware {
   const {
     rolePolicies,
     commandPermissionMap = COMMAND_PERMISSION_MAP,
@@ -95,7 +101,7 @@ export function createRbacMiddleware(options: RbacMiddlewareOptions): Middleware
       // Only explicitly mapped commands are gated. This preserves the current
       // allow-by-default behavior for the ~180/189 unmapped entities.
       // (Task 9.9 will tighten this to deny-by-default.)
-      if (!requiredPermission && !commandKey.startsWith("*")) {
+      if (!(requiredPermission || commandKey.startsWith("*"))) {
         return {};
       }
 
@@ -114,10 +120,8 @@ export function createRbacMiddleware(options: RbacMiddlewareOptions): Middleware
           shortCircuit: true,
           result: {
             success: false,
-            error: new AIApprovalRequiredError(
-              ctx.command.name,
-              ctx.entityName
-            ).message,
+            error: new AIApprovalRequiredError(ctx.command.name, ctx.entityName)
+              .message,
             emittedEvents: [],
           } satisfies CommandResult,
         };

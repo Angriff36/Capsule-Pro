@@ -2,38 +2,14 @@
   "total_violations": 22,
   "files_with_violations": 8,
   "top_files": [
-    [
-      ".\\command-board\\actions.ts",
-      7
-    ],
-    [
-      ".\\facilities\\actions.ts",
-      3
-    ],
-    [
-      ".\\staff\\team\\actions.ts",
-      3
-    ],
-    [
-      ".\\crm\\proposals\\templates\\actions.ts",
-      2
-    ],
-    [
-      ".\\events\\actions.ts",
-      2
-    ],
-    [
-      ".\\logistics\\actions.ts",
-      2
-    ],
-    [
-      ".\\settings\\email-templates\\actions.ts",
-      2
-    ],
-    [
-      ".\\crm\\clients\\actions.ts",
-      1
-    ]
+    [".\\command-board\\actions.ts", 7],
+    [".\\facilities\\actions.ts", 3],
+    [".\\staff\\team\\actions.ts", 3],
+    [".\\crm\\proposals\\templates\\actions.ts", 2],
+    [".\\events\\actions.ts", 2],
+    [".\\logistics\\actions.ts", 2],
+    [".\\settings\\email-templates\\actions.ts", 2],
+    [".\\crm\\clients\\actions.ts", 1]
   ],
   "all_files": {
     ".\\command-board\\actions.ts": 7,

@@ -8,17 +8,17 @@ export interface ToolParameters {
 }
 
 export interface ToolResult<T = unknown> {
-  success: boolean;
   data?: T;
   error?: SDKError;
+  success: boolean;
 }
 
 export interface ToolDefinition {
-  name: string;
   description: string;
+  name: string;
   parameters: ToolParameters;
-  returns: ToolParameterSchema;
   retryable: boolean;
+  returns: ToolParameterSchema;
 }
 
 export type ToolFunction<
@@ -30,18 +30,18 @@ export type ToolFunction<
 ) => Promise<ToolResult<TReturn>>;
 
 export interface ToolContext {
+  abortSignal?: AbortSignal;
   agentId: string;
   executionId: string;
-  abortSignal?: AbortSignal;
   onProgress?: (data: unknown) => void;
 }
 
 export interface ToolOptions {
-  name: string;
   description: string;
+  name: string;
   parameters?: ToolParameters;
-  returns?: ToolParameterSchema;
   retryable?: boolean;
+  returns?: ToolParameterSchema;
 }
 
 export class Tool<

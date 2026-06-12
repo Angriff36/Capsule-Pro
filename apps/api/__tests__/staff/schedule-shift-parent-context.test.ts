@@ -14,25 +14,40 @@
  */
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "..", "manifest", "ir", "kitchen.ir.json");
+const irPath = join(
+  here,
+  "..",
+  "..",
+  "..",
+  "..",
+  "manifest",
+  "ir",
+  "kitchen.ir.json"
+);
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
-const schedule = ir.entities.find((e: { name: string }) => e.name === "Schedule");
-const shift = ir.entities.find((e: { name: string }) => e.name === "ScheduleShift");
+const schedule = ir.entities.find(
+  (e: { name: string }) => e.name === "Schedule"
+);
+const shift = ir.entities.find(
+  (e: { name: string }) => e.name === "ScheduleShift"
+);
 const createCmd = ir.commands.find(
-  (c: { entity: string; name: string }) => c.entity === "ScheduleShift" && c.name === "create"
+  (c: { entity: string; name: string }) =>
+    c.entity === "ScheduleShift" && c.name === "create"
 );
 
 describe("ScheduleShift parent-context propagation", () => {
   it("has a belongsTo relationship to Schedule", () => {
     const rel = shift.relationships.find(
-      (r: { kind: string; target: string }) => r.kind === "belongsTo" && r.target === "Schedule"
+      (r: { kind: string; target: string }) =>
+        r.kind === "belongsTo" && r.target === "Schedule"
     );
     expect(rel).toBeDefined();
     expect(rel.foreignKey.fields).toContain("scheduleId");
@@ -49,12 +64,16 @@ describe("ScheduleShift parent-context propagation", () => {
   });
 
   it("declares inheritedContext property", () => {
-    const props = new Set(shift.properties.map((p: { name: string }) => p.name));
+    const props = new Set(
+      shift.properties.map((p: { name: string }) => p.name)
+    );
     expect(props.has("inheritedContext")).toBe(true);
   });
 
   it("Schedule genuinely owns locationId (the field being inherited)", () => {
-    const scheduleProps = new Set(schedule.properties.map((p: { name: string }) => p.name));
+    const scheduleProps = new Set(
+      schedule.properties.map((p: { name: string }) => p.name)
+    );
     expect(scheduleProps.has("locationId")).toBe(true);
   });
 });

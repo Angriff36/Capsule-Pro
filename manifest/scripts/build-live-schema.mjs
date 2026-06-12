@@ -22,13 +22,13 @@
  * Usage: node manifest/scripts/build-live-schema.mjs
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = resolve(process.cwd());
 const projPath = resolve(
   root,
-  "manifest/runtime/node_modules/@angriff36/manifest/dist/manifest/projections/prisma/generator.js",
+  "manifest/runtime/node_modules/@angriff36/manifest/dist/manifest/projections/prisma/generator.js"
 );
 const irPath = resolve(root, "manifest/ir/kitchen.ir.json");
 const partialPath = resolve(root, "manifest/schema-partials/infra-core.prisma");
@@ -51,11 +51,14 @@ const result = new PrismaProjection().generate(ir, {
 });
 const arts = result.artifacts || [];
 const schemaArt =
-  arts.find((a) => (a.pathHint || "").endsWith(".prisma") || a.id === "prisma.schema") ||
-  arts[0];
+  arts.find(
+    (a) => (a.pathHint || "").endsWith(".prisma") || a.id === "prisma.schema"
+  ) || arts[0];
 const diags = result.diagnostics || [];
 const byCode = {};
-for (const d of diags) byCode[d.code] = (byCode[d.code] || 0) + 1;
+for (const d of diags) {
+  byCode[d.code] = (byCode[d.code] || 0) + 1;
+}
 
 // keep only model/enum/type blocks from the projection output (strip any datasource/generator)
 const code = schemaArt.code;
@@ -100,5 +103,5 @@ const partialModels = (partial.match(/^model /gm) || []).length;
 process.stdout.write(
   `projection diagnostics: ${JSON.stringify(byCode)}\n` +
     `wrote ${dest}\n` +
-    `models: ${modelCount} (${modelCount - partialModels} generated + ${partialModels} preserved)\n`,
+    `models: ${modelCount} (${modelCount - partialModels} generated + ${partialModels} preserved)\n`
 );

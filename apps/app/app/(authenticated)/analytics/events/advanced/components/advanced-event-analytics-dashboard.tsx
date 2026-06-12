@@ -1,21 +1,6 @@
 "use client";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
   CommandBand,
   CommandBandActions,
   CommandBandHeader,
@@ -31,49 +16,42 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Download,
-  TrendingUp,
-  TrendingDown,
-  Minus,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
   AlertTriangle,
-  CheckCircle2,
-  Lightbulb,
-  DollarSign,
-  Users,
-  Percent,
   Calendar,
+  CheckCircle2,
+  Download,
+  Lightbulb,
+  Minus,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom analytics endpoint (/api/analytics/events/advanced)
 // — not an entity CRUD route, no generated client equivalent.
 import { apiFetch } from "@/app/lib/api";
-import { VegaChart, barChartSpec, lineChartSpec } from "../../../sales/components/vega-chart";
-import type { TopLevelSpec } from "vega-lite";
+import {
+  barChartSpec,
+  lineChartSpec,
+  VegaChart,
+} from "../../../sales/components/vega-chart";
 
 interface AdvancedAnalyticsData {
-  summary: {
-    totalEvents: number;
-    totalRevenue: number;
-    averageMargin: number;
-    averageGuestCount: number;
-    revenueTrend: "up" | "down" | "stable";
-    marginTrend: "up" | "down" | "stable";
-  };
-  profitabilityTrends: Array<{
-    period: string;
-    revenue: number;
-    margin: number;
-    events: number;
-  }>;
-  topMenuItems: Array<{
-    dishId: string;
-    dishName: string;
-    category: string | null;
-    eventCount: number;
-    avgMarginPerEvent: number;
-    totalRevenue: number;
-  }>;
   clientPreferences: Array<{
     clientId: string;
     clientName: string;
@@ -110,6 +88,28 @@ interface AdvancedAnalyticsData {
       mitigation: string;
     }>;
   };
+  profitabilityTrends: Array<{
+    period: string;
+    revenue: number;
+    margin: number;
+    events: number;
+  }>;
+  summary: {
+    totalEvents: number;
+    totalRevenue: number;
+    averageMargin: number;
+    averageGuestCount: number;
+    revenueTrend: "up" | "down" | "stable";
+    marginTrend: "up" | "down" | "stable";
+  };
+  topMenuItems: Array<{
+    dishId: string;
+    dishName: string;
+    category: string | null;
+    eventCount: number;
+    avgMarginPerEvent: number;
+    totalRevenue: number;
+  }>;
 }
 
 const formatCurrency = (value: number) =>
@@ -122,10 +122,12 @@ const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value);
 
 const TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
-  if (trend === "up")
+  if (trend === "up") {
     return <TrendingUp className="h-4 w-4 text-green-500" />;
-  if (trend === "down")
+  }
+  if (trend === "down") {
     return <TrendingDown className="h-4 w-4 text-red-500" />;
+  }
   return <Minus className="h-4 w-4 text-muted-foreground" />;
 };
 
@@ -140,7 +142,7 @@ const ConfidenceBadge = ({
     high: "secondary",
   } as const;
   return (
-    <Badge variant={variants[confidence]} className="text-xs">
+    <Badge className="text-xs" variant={variants[confidence]}>
       {confidence} confidence
     </Badge>
   );
@@ -153,7 +155,8 @@ const PriorityBadge = ({
 }) => {
   const colors = {
     high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    medium:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   };
   return (
@@ -192,7 +195,9 @@ export function AdvancedEventAnalyticsDashboard() {
   }, [selectedPeriod]);
 
   const handleExportCSV = () => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
     const rows: string[][] = [];
 
@@ -207,7 +212,10 @@ export function AdvancedEventAnalyticsDashboard() {
     rows.push(["Total Events", data.summary.totalEvents.toString()]);
     rows.push(["Total Revenue", formatCurrency(data.summary.totalRevenue)]);
     rows.push(["Average Margin", `${data.summary.averageMargin.toFixed(2)}%`]);
-    rows.push(["Average Guest Count", data.summary.averageGuestCount.toFixed(0)]);
+    rows.push([
+      "Average Guest Count",
+      data.summary.averageGuestCount.toFixed(0),
+    ]);
     rows.push(["Revenue Trend", data.summary.revenueTrend]);
     rows.push(["Margin Trend", data.summary.marginTrend]);
     rows.push([]);
@@ -216,13 +224,24 @@ export function AdvancedEventAnalyticsDashboard() {
     rows.push(["PROFITABILITY TRENDS"]);
     rows.push(["Period", "Revenue", "Margin", "Events"]);
     data.profitabilityTrends.forEach((t) => {
-      rows.push([t.period, formatCurrency(t.revenue), `${t.margin.toFixed(2)}%`, t.events.toString()]);
+      rows.push([
+        t.period,
+        formatCurrency(t.revenue),
+        `${t.margin.toFixed(2)}%`,
+        t.events.toString(),
+      ]);
     });
     rows.push([]);
 
     // Top menu items
     rows.push(["TOP MENU ITEMS"]);
-    rows.push(["Dish Name", "Category", "Event Count", "Avg Margin", "Total Revenue"]);
+    rows.push([
+      "Dish Name",
+      "Category",
+      "Event Count",
+      "Avg Margin",
+      "Total Revenue",
+    ]);
     data.topMenuItems.forEach((item) => {
       rows.push([
         item.dishName,
@@ -236,7 +255,13 @@ export function AdvancedEventAnalyticsDashboard() {
 
     // Client preferences
     rows.push(["CLIENT PREFERENCES"]);
-    rows.push(["Client", "Event Count", "Total Revenue", "Avg Margin", "Preferred Types"]);
+    rows.push([
+      "Client",
+      "Event Count",
+      "Total Revenue",
+      "Avg Margin",
+      "Preferred Types",
+    ]);
     data.clientPreferences.forEach((client) => {
       rows.push([
         client.clientName,
@@ -250,7 +275,13 @@ export function AdvancedEventAnalyticsDashboard() {
 
     // Event type analysis
     rows.push(["EVENT TYPE ANALYSIS"]);
-    rows.push(["Event Type", "Count", "Avg Revenue", "Avg Margin", "Avg Guests"]);
+    rows.push([
+      "Event Type",
+      "Count",
+      "Avg Revenue",
+      "Avg Margin",
+      "Avg Guests",
+    ]);
     data.eventTypeAnalysis.forEach((type) => {
       rows.push([
         type.eventType,
@@ -262,7 +293,9 @@ export function AdvancedEventAnalyticsDashboard() {
     });
 
     // Create CSV content
-    const csvContent = rows.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+    const csvContent = rows
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
 
     // Download
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -281,8 +314,8 @@ export function AdvancedEventAnalyticsDashboard() {
           {[...new Array(4)].map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <div className="h-4 w-24 animate-pulse bg-muted rounded" />
-                <div className="h-8 w-32 mt-2 animate-pulse bg-muted rounded" />
+                <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                <div className="mt-2 h-8 w-32 animate-pulse rounded bg-muted" />
               </CardHeader>
             </Card>
           ))}
@@ -295,9 +328,9 @@ export function AdvancedEventAnalyticsDashboard() {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-          <h3 className="text-lg font-medium mb-2">Error loading analytics</h3>
-          <p className="text-sm text-muted-foreground text-center">{error}</p>
+          <AlertTriangle className="mb-4 h-12 w-12 text-destructive" />
+          <h3 className="mb-2 font-medium text-lg">Error loading analytics</h3>
+          <p className="text-center text-muted-foreground text-sm">{error}</p>
         </CardContent>
       </Card>
     );
@@ -307,9 +340,11 @@ export function AdvancedEventAnalyticsDashboard() {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">No analytics data available</h3>
-          <p className="text-sm text-muted-foreground">
+          <Calendar className="mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 font-medium text-lg">
+            No analytics data available
+          </h3>
+          <p className="text-muted-foreground text-sm">
             Analytics data will appear as events are completed
           </p>
         </CardContent>
@@ -334,12 +369,16 @@ export function AdvancedEventAnalyticsDashboard() {
   }));
 
   const clientRevenueData = data.clientPreferences.slice(0, 10).map((c) => ({
-    label: c.clientName.length > 20 ? c.clientName.slice(0, 20) + "..." : c.clientName,
+    label:
+      c.clientName.length > 20
+        ? c.clientName.slice(0, 20) + "..."
+        : c.clientName,
     value: c.totalRevenue,
   }));
 
   const menuItemData = data.topMenuItems.slice(0, 10).map((m) => ({
-    label: m.dishName.length > 25 ? m.dishName.slice(0, 25) + "..." : m.dishName,
+    label:
+      m.dishName.length > 25 ? m.dishName.slice(0, 25) + "..." : m.dishName,
     value: m.eventCount,
   }));
 
@@ -365,8 +404,8 @@ export function AdvancedEventAnalyticsDashboard() {
               <SelectItem value="12m">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExportCSV} variant="on-dark" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button onClick={handleExportCSV} size="sm" variant="on-dark">
+            <Download className="mr-2 h-4 w-4" />
             Export CSV
           </Button>
         </CommandBandActions>
@@ -409,250 +448,283 @@ export function AdvancedEventAnalyticsDashboard() {
         <OperationalColumn>
           {/* Profitability Trends Charts */}
           <SectionHeader title="Profitability Trends" />
-        <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
+            <VegaChart
+              data={revenueTrendData}
+              description="Monthly revenue trends for the selected period"
+              height={250}
+              spec={lineChartSpec({
+                xTitle: "Period",
+                yTitle: "Revenue",
+                showCurrency: true,
+              })}
+              title="Revenue Over Time"
+            />
+
+            <VegaChart
+              data={marginTrendData}
+              description="Monthly profit margin percentage"
+              height={250}
+              spec={lineChartSpec({
+                xTitle: "Period",
+                yTitle: "Margin (%)",
+                color: "hsl(142, 76%, 36%)",
+              })}
+              title="Margin Trends"
+            />
+          </div>
+
+          <SectionHeader title="Event & Menu Analysis" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <VegaChart
+              data={eventTypeData}
+              description="Distribution of events by type"
+              height={300}
+              spec={barChartSpec({
+                xTitle: "Event Type",
+                yTitle: "Events",
+              })}
+              title="Events by Type"
+            />
+
+            <VegaChart
+              data={menuItemData}
+              description="Top menu items by event frequency"
+              height={300}
+              spec={barChartSpec({
+                xTitle: "Menu Item",
+                yTitle: "Event Count",
+                color: "hsl(280, 65%, 45%)",
+              })}
+              title="Most Popular Menu Items"
+            />
+          </div>
+
+          <SectionHeader title="Client Revenue Analysis" />
           <VegaChart
-            spec={lineChartSpec({
-              xTitle: "Period",
+            data={clientRevenueData}
+            description="Revenue contribution by top clients"
+            height={300}
+            spec={barChartSpec({
+              xTitle: "Client",
               yTitle: "Revenue",
               showCurrency: true,
             })}
-            data={revenueTrendData}
-            title="Revenue Over Time"
-            description="Monthly revenue trends for the selected period"
-            height={250}
+            title="Top Clients by Revenue"
           />
 
-          <VegaChart
-            spec={lineChartSpec({
-              xTitle: "Period",
-              yTitle: "Margin (%)",
-              color: "hsl(142, 76%, 36%)",
-            })}
-            data={marginTrendData}
-            title="Margin Trends"
-            description="Monthly profit margin percentage"
-            height={250}
-          />
-        </div>
-
-          <SectionHeader title="Event & Menu Analysis" />
-        <div className="grid gap-6 md:grid-cols-2">
-          <VegaChart
-            spec={barChartSpec({
-              xTitle: "Event Type",
-              yTitle: "Events",
-            })}
-            data={eventTypeData}
-            title="Events by Type"
-            description="Distribution of events by type"
-            height={300}
-          />
-
-          <VegaChart
-            spec={barChartSpec({
-              xTitle: "Menu Item",
-              yTitle: "Event Count",
-              color: "hsl(280, 65%, 45%)",
-            })}
-            data={menuItemData}
-            title="Most Popular Menu Items"
-            description="Top menu items by event frequency"
-            height={300}
-          />
-        </div>
-
-          <SectionHeader title="Client Revenue Analysis" />
-        <VegaChart
-          spec={barChartSpec({
-            xTitle: "Client",
-            yTitle: "Revenue",
-            showCurrency: true,
-          })}
-          data={clientRevenueData}
-          title="Top Clients by Revenue"
-          description="Revenue contribution by top clients"
-          height={300}
-        />
-
-        {data.clientPreferences.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Client Preferences Detail</CardTitle>
-              <CardDescription>
-                Detailed breakdown of client preferences and patterns
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-2 text-left font-medium">Client</th>
-                      <th className="py-2 text-right font-medium">Events</th>
-                      <th className="py-2 text-right font-medium">Revenue</th>
-                      <th className="py-2 text-right font-medium">Avg Margin</th>
-                      <th className="py-2 text-left font-medium">Preferred Types</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.clientPreferences.slice(0, 10).map((client) => (
-                      <tr className="border-b hover:bg-muted/50" key={client.clientId}>
-                        <td className="py-2">{client.clientName}</td>
-                        <td className="py-2 text-right">{client.eventCount}</td>
-                        <td className="py-2 text-right">
-                          {formatCurrency(client.totalRevenue)}
-                        </td>
-                        <td className="py-2 text-right">
-                          {client.avgMargin.toFixed(1)}%
-                        </td>
-                        <td className="py-2">
-                          <div className="flex flex-wrap gap-1">
-                            {client.preferredEventTypes.slice(0, 2).map((type) => (
-                              <Badge key={type} variant="outline" className="text-xs">
-                                {type}
-                              </Badge>
-                            ))}
-                            {client.preferredEventTypes.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{client.preferredEventTypes.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
+          {data.clientPreferences.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Client Preferences Detail</CardTitle>
+                <CardDescription>
+                  Detailed breakdown of client preferences and patterns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-2 text-left font-medium">Client</th>
+                        <th className="py-2 text-right font-medium">Events</th>
+                        <th className="py-2 text-right font-medium">Revenue</th>
+                        <th className="py-2 text-right font-medium">
+                          Avg Margin
+                        </th>
+                        <th className="py-2 text-left font-medium">
+                          Preferred Types
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    </thead>
+                    <tbody>
+                      {data.clientPreferences.slice(0, 10).map((client) => (
+                        <tr
+                          className="border-b hover:bg-muted/50"
+                          key={client.clientId}
+                        >
+                          <td className="py-2">{client.clientName}</td>
+                          <td className="py-2 text-right">
+                            {client.eventCount}
+                          </td>
+                          <td className="py-2 text-right">
+                            {formatCurrency(client.totalRevenue)}
+                          </td>
+                          <td className="py-2 text-right">
+                            {client.avgMargin.toFixed(1)}%
+                          </td>
+                          <td className="py-2">
+                            <div className="flex flex-wrap gap-1">
+                              {client.preferredEventTypes
+                                .slice(0, 2)
+                                .map((type) => (
+                                  <Badge
+                                    className="text-xs"
+                                    key={type}
+                                    variant="outline"
+                                  >
+                                    {type}
+                                  </Badge>
+                                ))}
+                              {client.preferredEventTypes.length > 2 && (
+                                <Badge className="text-xs" variant="outline">
+                                  +{client.preferredEventTypes.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <SectionHeader
-            title="Predictive Insights & Recommendations"
             icon={<Lightbulb className="h-4 w-4" />}
+            title="Predictive Insights & Recommendations"
           />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Forecast Card */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle>Next Season Forecast</CardTitle>
-              <CardDescription>
-                AI-powered predictions for upcoming quarter
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Expected Events</div>
-                <div className="text-2xl font-bold">
-                  {data.predictiveInsights.nextSeasonForecast.expectedEvents}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Expected Revenue</div>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(data.predictiveInsights.nextSeasonForecast.expectedRevenue)}
-                </div>
-              </div>
-              <div>
-                <ConfidenceBadge
-                  confidence={data.predictiveInsights.nextSeasonForecast.confidence}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recommendations Card */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Recommended Actions</CardTitle>
-              <CardDescription>
-                AI-generated suggestions based on your data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {data.predictiveInsights.recommendedActions.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-muted-foreground">
-                  <div className="text-center">
-                    <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                    <p className="text-sm">Everything looks good! No urgent actions needed.</p>
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Forecast Card */}
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Next Season Forecast</CardTitle>
+                <CardDescription>
+                  AI-powered predictions for upcoming quarter
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="text-muted-foreground text-sm">
+                    Expected Events
+                  </div>
+                  <div className="font-bold text-2xl">
+                    {data.predictiveInsights.nextSeasonForecast.expectedEvents}
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {data.predictiveInsights.recommendedActions.map((action, idx) => (
-                    <div
-                      key={idx}
-                      className="flex gap-3 p-3 rounded-lg border bg-card"
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        <Lightbulb className="h-4 w-4 text-yellow-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{action.title}</span>
-                          <PriorityBadge priority={action.priority} />
+                <div>
+                  <div className="text-muted-foreground text-sm">
+                    Expected Revenue
+                  </div>
+                  <div className="font-bold text-2xl">
+                    {formatCurrency(
+                      data.predictiveInsights.nextSeasonForecast.expectedRevenue
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <ConfidenceBadge
+                    confidence={
+                      data.predictiveInsights.nextSeasonForecast.confidence
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recommendations Card */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Recommended Actions</CardTitle>
+                <CardDescription>
+                  AI-generated suggestions based on your data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {data.predictiveInsights.recommendedActions.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    <div className="text-center">
+                      <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-green-500" />
+                      <p className="text-sm">
+                        Everything looks good! No urgent actions needed.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {data.predictiveInsights.recommendedActions.map(
+                      (action, idx) => (
+                        <div
+                          className="flex gap-3 rounded-lg border bg-card p-3"
+                          key={idx}
+                        >
+                          <div className="mt-0.5 flex-shrink-0">
+                            <Lightbulb className="h-4 w-4 text-yellow-500" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className="font-medium text-sm">
+                                {action.title}
+                              </span>
+                              <PriorityBadge priority={action.priority} />
+                            </div>
+                            <p className="mb-2 text-muted-foreground text-sm">
+                              {action.description}
+                            </p>
+                            <p className="text-green-600 text-xs dark:text-green-400">
+                              Potential impact: {action.potentialImpact}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {action.description}
-                        </p>
-                        <p className="text-xs text-green-600 dark:text-green-400">
-                          Potential impact: {action.potentialImpact}
-                        </p>
+                      )
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Risk Factors */}
+          {data.predictiveInsights.riskFactors.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  Risk Factors
+                </CardTitle>
+                <CardDescription>
+                  Areas requiring attention to maintain performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {data.predictiveInsights.riskFactors.map((risk, idx) => (
+                    <div
+                      className={`rounded-lg border-l-4 p-4 ${
+                        risk.severity === "high"
+                          ? "border-l-red-500 bg-red-50 dark:bg-red-950/20"
+                          : risk.severity === "medium"
+                            ? "border-l-orange-500 bg-orange-50 dark:bg-orange-950/20"
+                            : "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20"
+                      }`}
+                      key={idx}
+                    >
+                      <div className="mb-2 flex items-start justify-between">
+                        <h4 className="font-medium">{risk.type}</h4>
+                        <Badge
+                          className="text-xs"
+                          variant={
+                            risk.severity === "high" ? "destructive" : "outline"
+                          }
+                        >
+                          {risk.severity}
+                        </Badge>
                       </div>
+                      <p className="mb-2 text-muted-foreground text-sm">
+                        {risk.description}
+                      </p>
+                      <p className="font-medium text-xs">
+                        Mitigation: {risk.mitigation}
+                      </p>
                     </div>
                   ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Risk Factors */}
-        {data.predictiveInsights.riskFactors.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Risk Factors
-              </CardTitle>
-              <CardDescription>
-                Areas requiring attention to maintain performance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {data.predictiveInsights.riskFactors.map((risk, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-4 rounded-lg border-l-4 ${
-                      risk.severity === "high"
-                        ? "border-l-red-500 bg-red-50 dark:bg-red-950/20"
-                        : risk.severity === "medium"
-                          ? "border-l-orange-500 bg-orange-50 dark:bg-orange-950/20"
-                          : "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium">{risk.type}</h4>
-                      <Badge
-                        variant={risk.severity === "high" ? "destructive" : "outline"}
-                        className="text-xs"
-                      >
-                        {risk.severity}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">{risk.description}</p>
-                    <p className="text-xs font-medium">
-                      Mitigation: {risk.mitigation}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
         </OperationalColumn>
       </PageBody>
     </>

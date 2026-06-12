@@ -57,6 +57,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+
 // NOTE: Keeping apiFetch for all calls — /api/payroll/runs returns enriched data with Date objects
 // and joins; generated listPayrollRuns hits /api/payroll/runs/list which returns raw entity strings.
 // Generate and report export are custom actions with no generated client.

@@ -9,25 +9,27 @@
  */
 
 import { database } from "@repo/database";
+import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
-import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 
 type Params = Promise<{ token: string }>;
 
 interface SignContractBody {
   signatureData: string;
-  signerName: string;
   signerEmail?: string;
+  signerName: string;
 }
 
 /**
  * Build a synthetic system-user context for public (unauthenticated) operations.
  * Uses the tenant's admin user to satisfy Manifest's RBAC requirements.
  */
-async function buildSystemUserContext(tenantId: string): Promise<ManifestUserContext> {
+async function buildSystemUserContext(
+  tenantId: string
+): Promise<ManifestUserContext> {
   const adminUser = await database.user.findFirst({
     where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
     select: { id: true, role: true },
@@ -131,7 +133,10 @@ export async function POST(
     });
 
     if (!signatureResult.ok) {
-      log.error("Failed to create signature via Manifest:", await signatureResult.text());
+      log.error(
+        "Failed to create signature via Manifest:",
+        await signatureResult.text()
+      );
       return NextResponse.json(
         { message: "Failed to create signature" },
         { status: 500 }
@@ -150,7 +155,10 @@ export async function POST(
     });
 
     if (!contractResult.ok) {
-      log.error("Failed to sign contract via Manifest:", await contractResult.text());
+      log.error(
+        "Failed to sign contract via Manifest:",
+        await contractResult.text()
+      );
       return NextResponse.json(
         { message: "Failed to sign contract" },
         { status: 500 }
@@ -167,7 +175,11 @@ export async function POST(
       success: true,
       message: "Contract signed successfully",
       signature: signature
-        ? { id: signature.id, signerName: signature.signerName, signedAt: signature.signedAt }
+        ? {
+            id: signature.id,
+            signerName: signature.signerName,
+            signedAt: signature.signedAt,
+          }
         : { id: "created", signerName, signedAt: new Date().toISOString() },
     });
   } catch (error) {

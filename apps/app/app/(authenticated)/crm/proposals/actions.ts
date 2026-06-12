@@ -21,31 +21,25 @@ const DEFAULT_FROM_ADDRESS = "noreply@capsule.pro";
 
 // Types matching the API
 export interface ProposalFilters {
-  search?: string;
-  status?: string;
   clientId?: string;
-  leadId?: string;
-  eventId?: string;
   dateFrom?: string;
   dateTo?: string;
+  eventId?: string;
+  leadId?: string;
+  search?: string;
+  status?: string;
 }
 
 export interface CreateProposalInput {
-  templateId?: string | null;
   clientId?: string | null;
-  leadId?: string | null;
-  eventId?: string | null;
-  title: string;
+  discountAmount?: number | null;
   eventDate?: string | null;
+  eventId?: string | null;
   eventType?: string | null;
   guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  subtotal?: number | null;
-  taxRate?: number | null;
-  taxAmount?: number | null;
-  discountAmount?: number | null;
-  total?: number | null;
+  leadId?: string | null;
+  lineItems?: CreateLineItemInput[];
+  notes?: string | null;
   status?:
     | "draft"
     | "sent"
@@ -54,25 +48,31 @@ export interface CreateProposalInput {
     | "rejected"
     | "expired"
     | null;
-  validUntil?: string | null;
-  notes?: string | null;
+  subtotal?: number | null;
+  taxAmount?: number | null;
+  taxRate?: number | null;
+  templateId?: string | null;
   termsAndConditions?: string | null;
-  lineItems?: CreateLineItemInput[];
+  title: string;
+  total?: number | null;
+  validUntil?: string | null;
+  venueAddress?: string | null;
+  venueName?: string | null;
 }
 
 export interface CreateLineItemInput {
-  sortOrder?: number;
-  itemType: string;
   description: string;
-  quantity: number;
-  unitPrice: number;
-  total?: number | null;
+  itemType: string;
   notes?: string | null;
+  quantity: number;
+  sortOrder?: number;
+  total?: number | null;
+  unitPrice: number;
 }
 
 export interface SendProposalInput {
-  recipientEmail?: string;
   message?: string;
+  recipientEmail?: string;
 }
 
 /**
@@ -447,45 +447,70 @@ export async function updateProposal(
     command: "update",
     body: {
       id,
-      title: (input.title !== undefined ? input.title?.trim() : existingProposal.title) ?? "",
-      eventDate: input.eventDate !== undefined
-        ? (input.eventDate ? new Date(input.eventDate).getTime() : 0)
-        : (existingProposal.eventDate ? existingProposal.eventDate.getTime() : 0),
-      eventType: input.eventType !== undefined
-        ? (input.eventType?.trim() || "")
-        : (existingProposal.eventType ?? ""),
+      title:
+        (input.title === undefined
+          ? existingProposal.title
+          : input.title?.trim()) ?? "",
+      eventDate:
+        input.eventDate === undefined
+          ? existingProposal.eventDate
+            ? existingProposal.eventDate.getTime()
+            : 0
+          : input.eventDate
+            ? new Date(input.eventDate).getTime()
+            : 0,
+      eventType:
+        input.eventType === undefined
+          ? (existingProposal.eventType ?? "")
+          : input.eventType?.trim() || "",
       guestCount: input.guestCount ?? existingProposal.guestCount ?? 0,
-      venueName: input.venueName !== undefined
-        ? (input.venueName?.trim() || "")
-        : (existingProposal.venueName ?? ""),
-      venueAddress: input.venueAddress !== undefined
-        ? (input.venueAddress?.trim() || "")
-        : (existingProposal.venueAddress ?? ""),
-      subtotal: typeof calculatedSubtotal === "number"
-        ? calculatedSubtotal
-        : calculatedSubtotal.toNumber(),
-      taxRate: input.taxRate ?? (typeof existingProposal.taxRate === "number"
-        ? existingProposal.taxRate
-        : existingProposal.taxRate?.toNumber() ?? 0),
-      taxAmount: typeof calculatedTax === "number"
-        ? calculatedTax
-        : calculatedTax.toNumber(),
+      venueName:
+        input.venueName === undefined
+          ? (existingProposal.venueName ?? "")
+          : input.venueName?.trim() || "",
+      venueAddress:
+        input.venueAddress === undefined
+          ? (existingProposal.venueAddress ?? "")
+          : input.venueAddress?.trim() || "",
+      subtotal:
+        typeof calculatedSubtotal === "number"
+          ? calculatedSubtotal
+          : calculatedSubtotal.toNumber(),
+      taxRate:
+        input.taxRate ??
+        (typeof existingProposal.taxRate === "number"
+          ? existingProposal.taxRate
+          : (existingProposal.taxRate?.toNumber() ?? 0)),
+      taxAmount:
+        typeof calculatedTax === "number"
+          ? calculatedTax
+          : calculatedTax.toNumber(),
       discountAmount: (() => {
         const d = input.discountAmount ?? existingProposal.discountAmount;
-        return typeof d === "number" ? d : (d as { toNumber(): number }).toNumber() ?? 0;
+        return typeof d === "number"
+          ? d
+          : ((d as { toNumber(): number }).toNumber() ?? 0);
       })(),
-      total: typeof calculatedTotal === "number"
-        ? calculatedTotal
-        : (calculatedTotal as { toNumber(): number }).toNumber(),
-      validUntil: input.validUntil !== undefined
-        ? (input.validUntil ? new Date(input.validUntil).getTime() : 0)
-        : (existingProposal.validUntil ? existingProposal.validUntil.getTime() : 0),
-      notes: input.notes !== undefined
-        ? (input.notes?.trim() || "")
-        : (existingProposal.notes ?? ""),
-      termsAndConditions: input.termsAndConditions !== undefined
-        ? (input.termsAndConditions?.trim() || "")
-        : (existingProposal.termsAndConditions ?? ""),
+      total:
+        typeof calculatedTotal === "number"
+          ? calculatedTotal
+          : (calculatedTotal as { toNumber(): number }).toNumber(),
+      validUntil:
+        input.validUntil === undefined
+          ? existingProposal.validUntil
+            ? existingProposal.validUntil.getTime()
+            : 0
+          : input.validUntil
+            ? new Date(input.validUntil).getTime()
+            : 0,
+      notes:
+        input.notes === undefined
+          ? (existingProposal.notes ?? "")
+          : input.notes?.trim() || "",
+      termsAndConditions:
+        input.termsAndConditions === undefined
+          ? (existingProposal.termsAndConditions ?? "")
+          : input.termsAndConditions?.trim() || "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
@@ -631,12 +656,12 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
 
   // Format total amount
   const totalAmount =
-    existingProposal.total !== null
-      ? new Intl.NumberFormat("en-US", {
+    existingProposal.total === null
+      ? undefined
+      : new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-        }).format(Number(existingProposal.total))
-      : undefined;
+        }).format(Number(existingProposal.total));
 
   // Send email using Resend
   try {

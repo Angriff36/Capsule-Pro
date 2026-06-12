@@ -12,14 +12,16 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
-import { createCustomBuiltins } from "@repo/manifest-runtime/runtime-engine";
-import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import {
   createPrepInventoryDemandMiddleware,
   createPrepListSeedMiddleware,
   type PrepDemandDiagnostic,
   type PrepSeedDiagnostic,
 } from "@repo/manifest-runtime/middleware";
+import {
+  createCustomBuiltins,
+  ManifestRuntimeEngine,
+} from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
@@ -195,9 +197,27 @@ async function seedMenuFixtures(runtime: Runtime, eventId: string) {
 
   // --- Ingredients linked to inventory items --------------------------------
   const ingredients = [
-    { id: "ing-flour", name: "AP Flour", category: "bake mix", allergens: "gluten", inventoryItemId: "inventory-flour" },
-    { id: "ing-sugar", name: "Sugar", category: "baked goods", allergens: "", inventoryItemId: "inventory-sugar" },
-    { id: "ing-lettuce", name: "Lettuce", category: "salad greens", allergens: "", inventoryItemId: "inventory-lettuce" },
+    {
+      id: "ing-flour",
+      name: "AP Flour",
+      category: "bake mix",
+      allergens: "gluten",
+      inventoryItemId: "inventory-flour",
+    },
+    {
+      id: "ing-sugar",
+      name: "Sugar",
+      category: "baked goods",
+      allergens: "",
+      inventoryItemId: "inventory-sugar",
+    },
+    {
+      id: "ing-lettuce",
+      name: "Lettuce",
+      category: "salad greens",
+      allergens: "",
+      inventoryItemId: "inventory-lettuce",
+    },
   ];
   for (const ing of ingredients) {
     await runtime.createInstance("Ingredient", {
@@ -208,9 +228,27 @@ async function seedMenuFixtures(runtime: Runtime, eventId: string) {
   }
 
   const inventory = [
-    { id: "inventory-flour", item_number: "FLOUR-001", name: "AP Flour", unitCost: 2, category: "dry-goods" },
-    { id: "inventory-sugar", item_number: "SUGAR-001", name: "Sugar", unitCost: 1, category: "dry-goods" },
-    { id: "inventory-lettuce", item_number: "LETTUCE-001", name: "Lettuce", unitCost: 2, category: "produce" },
+    {
+      id: "inventory-flour",
+      item_number: "FLOUR-001",
+      name: "AP Flour",
+      unitCost: 2,
+      category: "dry-goods",
+    },
+    {
+      id: "inventory-sugar",
+      item_number: "SUGAR-001",
+      name: "Sugar",
+      unitCost: 1,
+      category: "dry-goods",
+    },
+    {
+      id: "inventory-lettuce",
+      item_number: "LETTUCE-001",
+      name: "Lettuce",
+      unitCost: 2,
+      category: "produce",
+    },
   ];
   for (const item of inventory) {
     await runtime.createInstance("InventoryItem", {
@@ -252,9 +290,27 @@ async function seedUsFoods(runtime: Runtime) {
     qualificationStatus: "approved",
   });
   const catalog = [
-    { id: "cat-flour", itemNumber: "FLOUR-001", itemName: "AP Flour", baseUnitCost: 2.5, supplierSku: "USF-FLOUR-001" },
-    { id: "cat-sugar", itemNumber: "SUGAR-001", itemName: "Sugar", baseUnitCost: 1.5, supplierSku: "USF-SUGAR-001" },
-    { id: "cat-lettuce", itemNumber: "LETTUCE-001", itemName: "Lettuce", baseUnitCost: 2, supplierSku: "USF-LETTUCE-001" },
+    {
+      id: "cat-flour",
+      itemNumber: "FLOUR-001",
+      itemName: "AP Flour",
+      baseUnitCost: 2.5,
+      supplierSku: "USF-FLOUR-001",
+    },
+    {
+      id: "cat-sugar",
+      itemNumber: "SUGAR-001",
+      itemName: "Sugar",
+      baseUnitCost: 1.5,
+      supplierSku: "USF-SUGAR-001",
+    },
+    {
+      id: "cat-lettuce",
+      itemNumber: "LETTUCE-001",
+      itemName: "Lettuce",
+      baseUnitCost: 2,
+      supplierSku: "USF-LETTUCE-001",
+    },
   ];
   for (const row of catalog) {
     await runtime.createInstance("VendorCatalog", {
@@ -378,11 +434,16 @@ describe("Event confirmation auto-seeds the prep list and feeds the order draft"
 
     const prepLists = await storeProvider("PrepList").getAll();
     expect(prepLists).toHaveLength(1);
-    expect(prepLists[0]).toMatchObject({ eventId, totalItems: 0, status: "draft" });
+    expect(prepLists[0]).toMatchObject({
+      eventId,
+      totalItems: 0,
+      status: "draft",
+    });
     expect(await storeProvider("PrepListItem").getAll()).toHaveLength(0);
     expect(
       seedDiagnostics.some(
-        (d) => d.stage === "derive" && d.reason.includes("no derivable menu demand")
+        (d) =>
+          d.stage === "derive" && d.reason.includes("no derivable menu demand")
       )
     ).toBe(true);
   });

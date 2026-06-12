@@ -75,11 +75,18 @@ vi.mock("@/lib/manifest-response", async () => {
         },
         { status }
       ),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) =>
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) =>
       NextResponse.json(
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
@@ -122,10 +129,17 @@ describe("CRM Extended API", () => {
     vi.clearAllMocks();
     vi.mocked(requireCurrentUser).mockResolvedValue(TEST_CURRENT_USER as never);
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "test-id" }, events: [] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: "test-id" },
+          events: [],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
   });
 
@@ -298,7 +312,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime failure"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Runtime failure")
+        );
 
         const request = makeRequest("/api/lead/create", { name: "Crash" });
         const response = await leadCreate(request);
@@ -348,7 +364,10 @@ describe("CRM Extended API", () => {
           expect.objectContaining({
             entity: "Lead",
             command: "update",
-            body: expect.objectContaining({ id: "lead-001", name: "Updated Lead" }),
+            body: expect.objectContaining({
+              id: "lead-001",
+              name: "Updated Lead",
+            }),
             user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           })
         );
@@ -424,7 +443,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/lead/archive", { id: "lead-001" });
         const response = await leadArchive(request);
@@ -473,7 +494,10 @@ describe("CRM Extended API", () => {
           expect.objectContaining({
             entity: "Lead",
             command: "disqualify",
-            body: expect.objectContaining({ id: "lead-003", reason: "No budget" }),
+            body: expect.objectContaining({
+              id: "lead-003",
+              reason: "No budget",
+            }),
             user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           })
         );
@@ -628,7 +652,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime failure"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Runtime failure")
+        );
 
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
@@ -800,7 +826,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("DB failure"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("DB failure")
+        );
 
         const request = makeRequest("/api/clientcontact/create", {
           clientId: "client-001",
@@ -858,14 +886,19 @@ describe("CRM Extended API", () => {
           expect.objectContaining({
             entity: "ClientContact",
             command: "update",
-            body: expect.objectContaining({ id: "contact-001", name: "Updated Name" }),
+            body: expect.objectContaining({
+              id: "contact-001",
+              name: "Updated Name",
+            }),
             user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           })
         );
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientcontact/update", {
           id: "contact-001",
@@ -943,7 +976,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientcontact/set-primary", {
           id: "contact-001",
@@ -1022,7 +1057,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientcontact/remove", {
           id: "contact-001",
@@ -1192,7 +1229,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime failure"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Runtime failure")
+        );
 
         const request = makeRequest("/api/clientinteraction/create", {
           clientId: "client-001",
@@ -1258,7 +1297,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientinteraction/update", {
           id: "interaction-001",
@@ -1385,7 +1426,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "interaction-001",
@@ -1557,7 +1600,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime failure"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Runtime failure")
+        );
 
         const request = makeRequest("/api/clientpreference/create", {
           clientId: "client-001",
@@ -1637,7 +1682,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientpreference/update", {
           id: "pref-001",
@@ -1716,7 +1763,9 @@ describe("CRM Extended API", () => {
       });
 
       it("should return 500 on unexpected error", async () => {
-        vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected"));
+        vi.mocked(runManifestCommand).mockRejectedValue(
+          new Error("Unexpected")
+        );
 
         const request = makeRequest("/api/clientpreference/remove", {
           id: "pref-001",

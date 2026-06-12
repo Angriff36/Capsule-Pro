@@ -16,13 +16,13 @@ import ErrorState from "../components/ErrorState";
 import { getAuthToken } from "../store/auth";
 
 interface UserProfile {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
+  createdAt: string;
   email: string | null;
+  firstName: string | null;
+  id: string;
+  lastName: string | null;
   phone: string | null;
   role: string;
-  createdAt: string;
 }
 
 interface ProfileResponse {

@@ -20,22 +20,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 interface RecipesTab {
-  value: string;
-  label: string;
   count?: number;
+  label: string;
+  value: string;
 }
 
 interface RecipesToolbarProps {
-  tabs: RecipesTab[];
   activeTab: string;
-  initialQuery?: string;
   initialCategory?: string;
   initialDietary?: string;
+  initialQuery?: string;
   initialStatus?: string;
   primaryAction?: {
     label: string;
     href: string;
   };
+  tabs: RecipesTab[];
 }
 
 const buildSearchParams = (

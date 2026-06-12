@@ -47,32 +47,32 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  listEventWaitlistEntries,
   eventWaitlistEntryAddGuest,
-  eventWaitlistEntryUpdateRsvp,
   eventWaitlistEntryPromote,
+  eventWaitlistEntryUpdateRsvp,
+  listEventWaitlistEntries,
 } from "@/app/lib/manifest-client.generated";
 
 interface Guest {
-  id: string;
-  guest_name: string;
+  created_at: string;
   guest_email: string | null;
+  guest_name: string;
   guest_phone: string | null;
+  id: string;
+  rsvp_responded_at: string | null;
   rsvp_status: string;
   waitlist_position: number | null;
-  rsvp_responded_at: string | null;
-  created_at: string;
 }
 
 interface Summary {
-  total: number;
-  confirmed: number;
-  pending: number;
-  declined: number;
-  tentative: number;
-  waitlisted: number;
   capacity: number | null;
+  confirmed: number;
+  declined: number;
+  pending: number;
   spotsRemaining: number | null;
+  tentative: number;
+  total: number;
+  waitlisted: number;
 }
 
 const STATUS_CONFIG: Record<
@@ -138,11 +138,21 @@ export default function WaitlistPage() {
       const guestList = result.data as unknown as Guest[];
       setGuests(guestList);
       // Compute summary from the returned guest list
-      const confirmed = guestList.filter((g) => g.rsvp_status === "confirmed").length;
-      const pending = guestList.filter((g) => g.rsvp_status === "pending").length;
-      const declined = guestList.filter((g) => g.rsvp_status === "declined").length;
-      const tentative = guestList.filter((g) => g.rsvp_status === "tentative").length;
-      const waitlisted = guestList.filter((g) => g.rsvp_status === "waitlisted").length;
+      const confirmed = guestList.filter(
+        (g) => g.rsvp_status === "confirmed"
+      ).length;
+      const pending = guestList.filter(
+        (g) => g.rsvp_status === "pending"
+      ).length;
+      const declined = guestList.filter(
+        (g) => g.rsvp_status === "declined"
+      ).length;
+      const tentative = guestList.filter(
+        (g) => g.rsvp_status === "tentative"
+      ).length;
+      const waitlisted = guestList.filter(
+        (g) => g.rsvp_status === "waitlisted"
+      ).length;
       setSummary({
         total: guestList.length,
         confirmed,
@@ -205,13 +215,15 @@ export default function WaitlistPage() {
   const handleUpdateRSVP = async (guestId: string, status: string) => {
     setUpdating(guestId);
     try {
-      const result = await eventWaitlistEntryUpdateRsvp({ id: guestId, status });
+      const result = await eventWaitlistEntryUpdateRsvp({
+        id: guestId,
+        status,
+      });
 
-      const promoted = (result as Record<string, unknown> | undefined)?.autoPromoted as Record<string, unknown> | undefined;
+      const promoted = (result as Record<string, unknown> | undefined)
+        ?.autoPromoted as Record<string, unknown> | undefined;
       if (promoted) {
-        toast.success(
-          `Auto-promoted ${promoted.guest_name} from waitlist!`
-        );
+        toast.success(`Auto-promoted ${promoted.guest_name} from waitlist!`);
       }
       fetchGuests();
     } catch (err) {
@@ -241,7 +253,7 @@ export default function WaitlistPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -251,11 +263,11 @@ export default function WaitlistPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button onClick={() => router.back()} size="sm" variant="ghost">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold">Guest Waitlist & RSVP</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-semibold text-2xl">Guest Waitlist & RSVP</h1>
+          <p className="text-muted-foreground text-sm">
             Manage guest RSVPs and waitlist for this event
           </p>
         </div>
@@ -264,27 +276,27 @@ export default function WaitlistPage() {
       {/* Summary Cards */}
       {summary && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     Total Guests
                   </span>
                 </div>
-                <p className="text-2xl font-semibold mt-1">{summary.total}</p>
+                <p className="mt-1 font-semibold text-2xl">{summary.total}</p>
               </CardContent>
             </Card>
             <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     Confirmed
                   </span>
                 </div>
-                <p className="text-2xl font-semibold mt-1 text-green-600">
+                <p className="mt-1 font-semibold text-2xl text-green-600">
                   {summary.confirmed}
                 </p>
               </CardContent>
@@ -293,9 +305,9 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm text-muted-foreground">Pending</span>
+                  <span className="text-muted-foreground text-sm">Pending</span>
                 </div>
-                <p className="text-2xl font-semibold mt-1 text-yellow-600">
+                <p className="mt-1 font-semibold text-2xl text-yellow-600">
                   {summary.pending}
                 </p>
               </CardContent>
@@ -304,11 +316,11 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ListOrdered className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     Waitlisted
                   </span>
                 </div>
-                <p className="text-2xl font-semibold mt-1 text-blue-600">
+                <p className="mt-1 font-semibold text-2xl text-blue-600">
                   {summary.waitlisted}
                 </p>
               </CardContent>
@@ -317,14 +329,14 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ArrowRightToLine className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     Spots Left
                   </span>
                 </div>
-                <p className="text-2xl font-semibold mt-1">
-                  {summary.capacity !== null
-                    ? summary.spotsRemaining
-                    : "Unlimited"}
+                <p className="mt-1 font-semibold text-2xl">
+                  {summary.capacity === null
+                    ? "Unlimited"
+                    : summary.spotsRemaining}
                 </p>
               </CardContent>
             </Card>
@@ -334,13 +346,13 @@ export default function WaitlistPage() {
           {summary.capacity !== null && (
             <Card tone="canvas">
               <CardContent className="pt-6">
-                <div className="flex justify-between text-sm mb-2">
+                <div className="mb-2 flex justify-between text-sm">
                   <span className="text-muted-foreground">Capacity</span>
                   <span className="font-medium">
                     {summary.confirmed} / {summary.capacity}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full rounded-full transition-all ${capacityPct >= 100 ? "bg-red-500" : capacityPct >= 80 ? "bg-yellow-500" : "bg-green-500"}`}
                     style={{ width: `${capacityPct}%` }}
@@ -359,7 +371,7 @@ export default function WaitlistPage() {
           <Dialog onOpenChange={setAddOpen} open={addOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" /> Add Guest
+                <Plus className="mr-1 h-4 w-4" /> Add Guest
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -442,7 +454,7 @@ export default function WaitlistPage() {
                   </Button>
                   <Button disabled={adding} onClick={handleAddGuest}>
                     {adding && (
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                     )}
                     Add Guest
                   </Button>
@@ -486,7 +498,7 @@ export default function WaitlistPage() {
                             }
                             value={guest.rsvp_status}
                           >
-                            <SelectTrigger className={`w-32 h-8 ${cfg.color}`}>
+                            <SelectTrigger className={`h-8 w-32 ${cfg.color}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -508,12 +520,12 @@ export default function WaitlistPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        {guest.waitlist_position !== null ? (
+                        {guest.waitlist_position === null ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
                           <Badge className="text-blue-600" variant="outline">
                             #{guest.waitlist_position}
                           </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -543,7 +555,7 @@ export default function WaitlistPage() {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="py-8 text-center text-muted-foreground text-sm">
               No guests yet. Add the first guest to get started.
             </p>
           )}

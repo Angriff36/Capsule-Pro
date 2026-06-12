@@ -17,15 +17,15 @@ import type { ContractStatus } from "./types";
 import { CONTRACT_STATUSES } from "./validation";
 
 interface ContractListFilters {
-  status?: ContractStatus;
-  eventId?: string;
   clientId?: string;
+  eventId?: string;
   expiring?: boolean;
+  status?: ContractStatus;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -230,6 +230,14 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "EventContract", command: "create", body: { ...rawBody, tenantId: user.tenantId, status: "draft" }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "EventContract",
+    command: "create",
+    body: { ...rawBody, tenantId: user.tenantId, status: "draft" },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

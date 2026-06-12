@@ -1,6 +1,18 @@
 "use client";
 
 import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -22,18 +34,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  PageBody,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import { useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom analytics endpoints (/api/events/:id/profitability,
 // /api/analytics/events/profitability) — not entity CRUD routes, no generated client equivalents.
@@ -95,11 +95,11 @@ export function ProfitabilityDashboard({
         {[...new Array(4)].map((_, i) => (
           <Card key={i} tone="canvas">
             <CardHeader>
-              <div className="h-4 w-24 animate-pulse bg-muted rounded" />
-              <div className="h-3 w-16 mt-2 animate-pulse bg-muted rounded" />
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="mt-2 h-3 w-16 animate-pulse rounded bg-muted" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 w-full animate-pulse bg-muted rounded mt-2" />
+              <div className="mt-2 h-8 w-full animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
         ))}
@@ -124,7 +124,7 @@ export function ProfitabilityDashboard({
         </CommandBandHeader>
         <CommandBandActions>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium" htmlFor="period-select">
+            <label className="font-medium text-sm" htmlFor="period-select">
               Period:
             </label>
             <Select onValueChange={setSelectedPeriod} value={selectedPeriod}>
@@ -147,10 +147,10 @@ export function ProfitabilityDashboard({
             <Card tone="canvas">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <div className="text-center">
-                  <h3 className="text-lg font-medium mb-2">
+                  <h3 className="mb-2 font-medium text-lg">
                     No profitability data available
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Profitability metrics will appear as events are completed
                   </p>
                 </div>
@@ -224,9 +224,15 @@ export function ProfitabilityDashboard({
                         <TableHead>Period</TableHead>
                         <TableHead className="text-right">Events</TableHead>
                         <TableHead className="text-right">Revenue</TableHead>
-                        <TableHead className="text-right">Avg Margin %</TableHead>
-                        <TableHead className="text-right">Food Cost %</TableHead>
-                        <TableHead className="text-right">Labor Cost %</TableHead>
+                        <TableHead className="text-right">
+                          Avg Margin %
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Food Cost %
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Labor Cost %
+                        </TableHead>
                         <TableHead className="text-right">Overhead %</TableHead>
                       </TableRow>
                     </TableHeader>

@@ -13,8 +13,8 @@ import { toast } from "sonner";
 import { deleteTagGlobally } from "../../clients/actions";
 
 interface DeleteTagButtonProps {
-  tag: string;
   clientCount: number;
+  tag: string;
 }
 
 export function DeleteTagButton({ tag, clientCount }: DeleteTagButtonProps) {

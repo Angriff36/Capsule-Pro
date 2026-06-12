@@ -219,11 +219,10 @@ export async function GET(
         : [];
     const staffMemberById = new Map(
       staffMembers.map(
-        (e: {
-          id: string;
-          displayName: string;
-          role: string | null;
-        }) => [e.id, e]
+        (e: { id: string; displayName: string; role: string | null }) => [
+          e.id,
+          e,
+        ]
       )
     );
 
@@ -270,7 +269,9 @@ export async function GET(
       const recipeVersion = dish?.recipeId
         ? latestVersionByRecipe.get(dish.recipeId)
         : undefined;
-      if (!(dish && recipeVersion)) continue;
+      if (!(dish && recipeVersion)) {
+        continue;
+      }
       const scaleFactor =
         link.quantityServings && recipeVersion.yieldQuantity
           ? link.quantityServings / Number(recipeVersion.yieldQuantity)

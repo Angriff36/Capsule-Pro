@@ -6,79 +6,82 @@ import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
 export interface BottleneckSuggestion {
-  id: string;
-  type: string;
-  priority: string;
-  title: string;
+  aiGenerated: boolean;
   description: string;
-  reasoning: string;
   estimatedImpact: {
     area: string;
     improvement: string;
     confidence: string;
   };
+  id: string;
   implementation: {
     effort: string;
     timeframe: string;
   };
+  priority: string;
+  reasoning: string;
   steps?: string[];
-  aiGenerated: boolean;
+  title: string;
+  type: string;
 }
 
 export interface BottleneckItem {
-  id: string;
-  category: string;
-  type: string;
-  severity: string;
-  title: string;
-  description: string;
   affectedEntity: {
     type: string;
     id: string;
     name: string;
   } | null;
+  category: string;
+  description: string;
+  detectedAt: string;
+  id: string;
   metrics: {
     currentValue: number;
     thresholdValue: number;
     percentOverThreshold: number;
     trend: string;
   };
+  severity: string;
   suggestion: BottleneckSuggestion | null;
-  detectedAt: string;
+  title: string;
+  type: string;
 }
 
 export interface BottleneckAnalysis {
+  analyzedAt: string;
+  bottlenecks: BottleneckItem[];
+  healthScore: {
+    overall: number;
+    byCategory: Record<string, number>;
+  };
   meta: {
     period: string;
     startDate: string;
     endDate: string;
     locationId: string | null;
   };
-  healthScore: {
-    overall: number;
-    byCategory: Record<string, number>;
-  };
   summary: {
     total: number;
     bySeverity: Record<string, number>;
     byCategory: Record<string, number>;
   };
-  bottlenecks: BottleneckItem[];
-  analyzedAt: string;
 }
 
 export interface UseBottlenecksOptions {
-  period?: string;
   category?: string;
-  locationId?: string;
-  useAi?: boolean;
   enabled?: boolean;
+  locationId?: string;
+  period?: string;
+  useAi?: boolean;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const expectRecord = (value: unknown, path: string): Record<string, unknown> => {
+const expectRecord = (
+  value: unknown,
+  path: string
+): Record<string, unknown> => {
   invariant(isRecord(value), `${path} must be an object`);
   return value;
 };
@@ -89,12 +92,17 @@ const expectString = (value: unknown, path: string): string => {
 };
 
 const expectNumber = (value: unknown, path: string): number => {
-  invariant(typeof value === "number" && Number.isFinite(value), `${path} must be a number`);
+  invariant(
+    typeof value === "number" && Number.isFinite(value),
+    `${path} must be a number`
+  );
   return value;
 };
 
 const expectStringOrNull = (value: unknown, path: string): string | null => {
-  if (value === null) return null;
+  if (value === null) {
+    return null;
+  }
   return expectString(value, path);
 };
 
@@ -103,8 +111,14 @@ export function parseBottleneckAnalysis(payload: unknown): BottleneckAnalysis {
   const meta = expectRecord(root.meta, "meta");
   const healthScore = expectRecord(root.healthScore, "healthScore");
   const summary = expectRecord(root.summary, "summary");
-  const byCategory = expectRecord(summary.byCategory ?? {}, "summary.byCategory");
-  const bySeverity = expectRecord(summary.bySeverity ?? {}, "summary.bySeverity");
+  const byCategory = expectRecord(
+    summary.byCategory ?? {},
+    "summary.byCategory"
+  );
+  const bySeverity = expectRecord(
+    summary.bySeverity ?? {},
+    "summary.bySeverity"
+  );
 
   const bottlenecks = Array.isArray(root.bottlenecks) ? root.bottlenecks : [];
 
@@ -141,33 +155,75 @@ export function parseBottleneckAnalysis(payload: unknown): BottleneckAnalysis {
     },
     bottlenecks: bottlenecks.map((item, index) => {
       const record = expectRecord(item, `bottlenecks[${index}]`);
-      const metrics = expectRecord(record.metrics, `bottlenecks[${index}].metrics`);
+      const metrics = expectRecord(
+        record.metrics,
+        `bottlenecks[${index}].metrics`
+      );
       const suggestionRaw = record.suggestion;
       let suggestion: BottleneckSuggestion | null = null;
 
       if (suggestionRaw !== null && suggestionRaw !== undefined) {
-        const s = expectRecord(suggestionRaw, `bottlenecks[${index}].suggestion`);
-        const impact = expectRecord(s.estimatedImpact, `bottlenecks[${index}].suggestion.estimatedImpact`);
-        const implementation = expectRecord(s.implementation, `bottlenecks[${index}].suggestion.implementation`);
+        const s = expectRecord(
+          suggestionRaw,
+          `bottlenecks[${index}].suggestion`
+        );
+        const impact = expectRecord(
+          s.estimatedImpact,
+          `bottlenecks[${index}].suggestion.estimatedImpact`
+        );
+        const implementation = expectRecord(
+          s.implementation,
+          `bottlenecks[${index}].suggestion.implementation`
+        );
         suggestion = {
           id: expectString(s.id, `bottlenecks[${index}].suggestion.id`),
           type: expectString(s.type, `bottlenecks[${index}].suggestion.type`),
-          priority: expectString(s.priority, `bottlenecks[${index}].suggestion.priority`),
-          title: expectString(s.title, `bottlenecks[${index}].suggestion.title`),
-          description: expectString(s.description, `bottlenecks[${index}].suggestion.description`),
-          reasoning: expectString(s.reasoning, `bottlenecks[${index}].suggestion.reasoning`),
+          priority: expectString(
+            s.priority,
+            `bottlenecks[${index}].suggestion.priority`
+          ),
+          title: expectString(
+            s.title,
+            `bottlenecks[${index}].suggestion.title`
+          ),
+          description: expectString(
+            s.description,
+            `bottlenecks[${index}].suggestion.description`
+          ),
+          reasoning: expectString(
+            s.reasoning,
+            `bottlenecks[${index}].suggestion.reasoning`
+          ),
           estimatedImpact: {
-            area: expectString(impact.area, `bottlenecks[${index}].suggestion.estimatedImpact.area`),
-            improvement: expectString(impact.improvement, `bottlenecks[${index}].suggestion.estimatedImpact.improvement`),
-            confidence: expectString(impact.confidence, `bottlenecks[${index}].suggestion.estimatedImpact.confidence`),
+            area: expectString(
+              impact.area,
+              `bottlenecks[${index}].suggestion.estimatedImpact.area`
+            ),
+            improvement: expectString(
+              impact.improvement,
+              `bottlenecks[${index}].suggestion.estimatedImpact.improvement`
+            ),
+            confidence: expectString(
+              impact.confidence,
+              `bottlenecks[${index}].suggestion.estimatedImpact.confidence`
+            ),
           },
           implementation: {
-            effort: expectString(implementation.effort, `bottlenecks[${index}].suggestion.implementation.effort`),
-            timeframe: expectString(implementation.timeframe, `bottlenecks[${index}].suggestion.implementation.timeframe`),
+            effort: expectString(
+              implementation.effort,
+              `bottlenecks[${index}].suggestion.implementation.effort`
+            ),
+            timeframe: expectString(
+              implementation.timeframe,
+              `bottlenecks[${index}].suggestion.implementation.timeframe`
+            ),
           },
           steps: Array.isArray(s.steps)
             ? s.steps.map((step, stepIndex) =>
-                expectString(step, `bottlenecks[${index}].suggestion.steps[${stepIndex}]`)
+                expectString(
+                  step,
+                  `bottlenecks[${index}].suggestion.steps[${stepIndex}]`
+                )
               )
             : undefined,
           aiGenerated: s.aiGenerated === true,
@@ -177,33 +233,66 @@ export function parseBottleneckAnalysis(payload: unknown): BottleneckAnalysis {
       const affectedRaw = record.affectedEntity;
       let affectedEntity: BottleneckItem["affectedEntity"] = null;
       if (affectedRaw !== null && affectedRaw !== undefined) {
-        const affected = expectRecord(affectedRaw, `bottlenecks[${index}].affectedEntity`);
+        const affected = expectRecord(
+          affectedRaw,
+          `bottlenecks[${index}].affectedEntity`
+        );
         affectedEntity = {
-          type: expectString(affected.type, `bottlenecks[${index}].affectedEntity.type`),
-          id: expectString(affected.id, `bottlenecks[${index}].affectedEntity.id`),
-          name: expectString(affected.name, `bottlenecks[${index}].affectedEntity.name`),
+          type: expectString(
+            affected.type,
+            `bottlenecks[${index}].affectedEntity.type`
+          ),
+          id: expectString(
+            affected.id,
+            `bottlenecks[${index}].affectedEntity.id`
+          ),
+          name: expectString(
+            affected.name,
+            `bottlenecks[${index}].affectedEntity.name`
+          ),
         };
       }
 
       return {
         id: expectString(record.id, `bottlenecks[${index}].id`),
-        category: expectString(record.category, `bottlenecks[${index}].category`),
+        category: expectString(
+          record.category,
+          `bottlenecks[${index}].category`
+        ),
         type: expectString(record.type, `bottlenecks[${index}].type`),
-        severity: expectString(record.severity, `bottlenecks[${index}].severity`),
+        severity: expectString(
+          record.severity,
+          `bottlenecks[${index}].severity`
+        ),
         title: expectString(record.title, `bottlenecks[${index}].title`),
-        description: expectString(record.description, `bottlenecks[${index}].description`),
+        description: expectString(
+          record.description,
+          `bottlenecks[${index}].description`
+        ),
         affectedEntity,
         metrics: {
-          currentValue: expectNumber(metrics.currentValue, `bottlenecks[${index}].metrics.currentValue`),
-          thresholdValue: expectNumber(metrics.thresholdValue, `bottlenecks[${index}].metrics.thresholdValue`),
+          currentValue: expectNumber(
+            metrics.currentValue,
+            `bottlenecks[${index}].metrics.currentValue`
+          ),
+          thresholdValue: expectNumber(
+            metrics.thresholdValue,
+            `bottlenecks[${index}].metrics.thresholdValue`
+          ),
           percentOverThreshold: expectNumber(
             metrics.percentOverThreshold,
             `bottlenecks[${index}].metrics.percentOverThreshold`
           ),
-          trend: expectString(metrics.trend, `bottlenecks[${index}].metrics.trend`),
+          trend: expectString(
+            metrics.trend,
+            `bottlenecks[${index}].metrics.trend`
+          ),
         },
         suggestion,
-        detectedAt: expectString(record.detectedAt, `bottlenecks[${index}].detectedAt`),
+        detectedAt: expectString(
+          record.detectedAt,
+          `bottlenecks[${index}].detectedAt`
+        ),
       };
     }),
     analyzedAt: expectString(root.analyzedAt, "analyzedAt"),
@@ -215,16 +304,24 @@ export async function fetchBottleneckAnalysis(
 ): Promise<BottleneckAnalysis> {
   const { period = "30d", category, locationId, useAi = true } = options;
   const params = new URLSearchParams({ period, useAi: String(useAi) });
-  if (category && category !== "all") params.set("category", category);
-  if (locationId) params.set("locationId", locationId);
+  if (category && category !== "all") {
+    params.set("category", category);
+  }
+  if (locationId) {
+    params.set("locationId", locationId);
+  }
 
-  const response = await apiFetch(`/api/analytics/bottlenecks?${params.toString()}`);
+  const response = await apiFetch(
+    `/api/analytics/bottlenecks?${params.toString()}`
+  );
   if (!response.ok) {
     const error = await response
       .json()
       .catch(() => ({ message: "Failed to fetch bottleneck analysis" }));
     throw new Error(
-      typeof error.message === "string" ? error.message : "Failed to fetch bottleneck analysis"
+      typeof error.message === "string"
+        ? error.message
+        : "Failed to fetch bottleneck analysis"
     );
   }
 
@@ -247,7 +344,9 @@ export function useBottlenecks(options: UseBottlenecksOptions = {}) {
   const refetch = useCallback(() => setTick((value) => value + 1), []);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     let cancelled = false;
     setIsLoading(true);
@@ -255,7 +354,9 @@ export function useBottlenecks(options: UseBottlenecksOptions = {}) {
 
     fetchBottleneckAnalysis({ period, category, locationId, useAi })
       .then((result) => {
-        if (!cancelled) setData(result);
+        if (!cancelled) {
+          setData(result);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -263,7 +364,9 @@ export function useBottlenecks(options: UseBottlenecksOptions = {}) {
         }
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       });
 
     return () => {

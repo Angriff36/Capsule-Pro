@@ -6,46 +6,39 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
+  getDeletedAtField,
   getPrismaDelegate,
   getTenantField,
-  getDeletedAtField,
 } from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
 
 interface DependencyNode {
-  id: string;
-  entity: string;
-  displayName: string;
-  isDeleted: boolean;
   canRestore: boolean;
+  displayName: string;
+  entity: string;
+  id: string;
+  isDeleted: boolean;
   restoreOrder?: number;
 }
 
 interface DependencyEdge {
+  description: string;
   from: string;
   to: string;
   type: "required" | "optional";
-  description: string;
 }
 
 interface DependencyAnalysisResult {
+  dependents: Array<{
+    node: DependencyNode;
+    edge: DependencyEdge;
+  }>;
   entity: {
     id: string;
     type: string;
     displayName: string;
   };
-  summary: {
-    totalDependents: number;
-    deletedDependents: number;
-    activeDependents: number;
-    canRestore: boolean;
-    recommendedAction: "restore" | "cascade_restore" | "cannot_restore";
-  };
-  dependents: Array<{
-    node: DependencyNode;
-    edge: DependencyEdge;
-  }>;
   restorePlan?: {
     steps: Array<{
       entityId: string;
@@ -55,6 +48,13 @@ interface DependencyAnalysisResult {
       reason: string;
     }>;
     warnings: string[];
+  };
+  summary: {
+    totalDependents: number;
+    deletedDependents: number;
+    activeDependents: number;
+    canRestore: boolean;
+    recommendedAction: "restore" | "cascade_restore" | "cannot_restore";
   };
 }
 
@@ -453,7 +453,9 @@ async function findSoftDeletedEntity(
 ): Promise<Record<string, unknown> | null> {
   try {
     const delegate = getPrismaDelegate(entityType, database);
-    if (!delegate) return null;
+    if (!delegate) {
+      return null;
+    }
 
     const tenantField = getTenantField(entityType);
     const deletedAtField = getDeletedAtField(entityType);
@@ -491,11 +493,15 @@ async function analyzeEntityDependencies(
       (d) => d.referencedEntity === entityType
     );
 
-    if (!relevantDependency) continue;
+    if (!relevantDependency) {
+      continue;
+    }
 
     try {
       const delegate = getPrismaDelegate(dependentType, database);
-      if (!delegate) continue;
+      if (!delegate) {
+        continue;
+      }
 
       const tenantField = getTenantField(dependentType);
       const deletedAtField = getDeletedAtField(dependentType);
@@ -632,7 +638,10 @@ async function analyzeEntityDependencies(
   };
 }
 
-function generateDisplayName(entityType: string, record: Record<string, unknown>): string {
+function generateDisplayName(
+  entityType: string,
+  record: Record<string, unknown>
+): string {
   const fieldMap: Partial<Record<string, string[]>> = {
     Event: ["title"],
     Client: ["name"],

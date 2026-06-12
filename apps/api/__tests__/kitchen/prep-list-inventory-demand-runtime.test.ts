@@ -2,12 +2,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
-import { createCustomBuiltins } from "@repo/manifest-runtime/runtime-engine";
-import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
 } from "@repo/manifest-runtime/middleware";
+import {
+  createCustomBuiltins,
+  ManifestRuntimeEngine,
+} from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
@@ -177,7 +179,12 @@ async function seedPrepList(
   runtime: Runtime,
   prepListId: string,
   eventId: string,
-  items: Array<{ id: string; ingredientId: string; ingredientName: string; scaledQuantity: number }>
+  items: Array<{
+    id: string;
+    ingredientId: string;
+    ingredientName: string;
+    scaledQuantity: number;
+  }>
 ) {
   await runtime.createInstance("PrepList", {
     id: prepListId,
@@ -219,8 +226,18 @@ describe("Prep list finalization derives inventory demand", () => {
 
     // --- Prep list 1: flour 8kg + butter 3kg --------------------------------
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
-      { id: "prep-item-flour-1", ingredientId: "inventory-flour", ingredientName: "AP Flour", scaledQuantity: 8 },
-      { id: "prep-item-butter-1", ingredientId: "inventory-butter", ingredientName: "Butter", scaledQuantity: 3 },
+      {
+        id: "prep-item-flour-1",
+        ingredientId: "inventory-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 8,
+      },
+      {
+        id: "prep-item-butter-1",
+        ingredientId: "inventory-butter",
+        ingredientName: "Butter",
+        scaledQuantity: 3,
+      },
     ]);
 
     const finalize1 = await runtime.runCommand(
@@ -230,14 +247,22 @@ describe("Prep list finalization derives inventory demand", () => {
     );
     expect(finalize1.success).toBe(true);
     expect(finalize1.emittedEvents?.map((event) => event.name)).toEqual(
-      expect.arrayContaining(["PrepListFinalized", "InventoryReserved", "InventoryReserved"])
+      expect.arrayContaining([
+        "PrepListFinalized",
+        "InventoryReserved",
+        "InventoryReserved",
+      ])
     );
 
     const inventoryStore = storeProvider("InventoryItem");
-    await expect(inventoryStore.getById("inventory-flour")).resolves.toMatchObject({
+    await expect(
+      inventoryStore.getById("inventory-flour")
+    ).resolves.toMatchObject({
       quantityReserved: 8,
     });
-    await expect(inventoryStore.getById("inventory-butter")).resolves.toMatchObject({
+    await expect(
+      inventoryStore.getById("inventory-butter")
+    ).resolves.toMatchObject({
       quantityReserved: 4,
     });
 
@@ -260,15 +285,27 @@ describe("Prep list finalization derives inventory demand", () => {
     });
     expect(String(requisitions[0].requisitionNumber)).toMatch(/^PREP-DRAFT-/);
     expect(String(requisitions[0].justification)).toContain("US Foods");
-    expect(String(requisitions[0].notes)).toContain("[prep:prep-list-demand-001]");
+    expect(String(requisitions[0].notes)).toContain(
+      "[prep:prep-list-demand-001]"
+    );
 
     // --- Prep list 2 (same week): flour 6kg more + sugar 2kg ----------------
     // WHY: ten prep lists at the start of a busy week must grow ONE order
     // draft (quantities merged per item), not create ten requisitions the
     // manager has to combine by hand.
     await seedPrepList(runtime, "prep-list-demand-002", "event-demand-002", [
-      { id: "prep-item-flour-2", ingredientId: "inventory-flour", ingredientName: "AP Flour", scaledQuantity: 6 },
-      { id: "prep-item-sugar-2", ingredientId: "inventory-sugar", ingredientName: "Sugar", scaledQuantity: 2 },
+      {
+        id: "prep-item-flour-2",
+        ingredientId: "inventory-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 6,
+      },
+      {
+        id: "prep-item-sugar-2",
+        ingredientId: "inventory-sugar",
+        ingredientName: "Sugar",
+        scaledQuantity: 2,
+      },
     ]);
 
     const finalize2 = await runtime.runCommand(
@@ -287,8 +324,12 @@ describe("Prep list finalization derives inventory demand", () => {
       subtotal: 53,
       estimatedTotal: 53,
     });
-    expect(String(requisitions[0].notes)).toContain("[prep:prep-list-demand-001]");
-    expect(String(requisitions[0].notes)).toContain("[prep:prep-list-demand-002]");
+    expect(String(requisitions[0].notes)).toContain(
+      "[prep:prep-list-demand-001]"
+    );
+    expect(String(requisitions[0].notes)).toContain(
+      "[prep:prep-list-demand-002]"
+    );
 
     const requisitionItems = await requisitionItemStore.getAll();
     expect(requisitionItems).toHaveLength(3);
@@ -323,7 +364,12 @@ describe("Prep list finalization derives inventory demand", () => {
     await seedInventory(runtime);
     await seedUsFoodsSupplierAndCatalog(runtime);
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
-      { id: "prep-item-flour-1", ingredientId: "inventory-flour", ingredientName: "AP Flour", scaledQuantity: 8 },
+      {
+        id: "prep-item-flour-1",
+        ingredientId: "inventory-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 8,
+      },
     ]);
 
     const first = await runtime.runCommand(
@@ -357,10 +403,14 @@ describe("Prep list finalization derives inventory demand", () => {
     expect(refinalized.success).toBe(true);
 
     const inventoryStore = storeProvider("InventoryItem");
-    await expect(inventoryStore.getById("inventory-flour")).resolves.toMatchObject({
+    await expect(
+      inventoryStore.getById("inventory-flour")
+    ).resolves.toMatchObject({
       quantityReserved: 8, // not 16
     });
-    const requisitionItems = await storeProvider("PurchaseRequisitionItem").getAll();
+    const requisitionItems = await storeProvider(
+      "PurchaseRequisitionItem"
+    ).getAll();
     expect(requisitionItems).toHaveLength(1);
     expect(requisitionItems[0]).toMatchObject({ quantityRequested: 8 }); // not 16
 
@@ -372,7 +422,12 @@ describe("Prep list finalization derives inventory demand", () => {
     await seedInventory(runtime);
     // NOTE: no supplier / catalog seeded.
     await seedPrepList(runtime, "prep-list-demand-001", "event-demand-001", [
-      { id: "prep-item-flour-1", ingredientId: "inventory-flour", ingredientName: "AP Flour", scaledQuantity: 8 },
+      {
+        id: "prep-item-flour-1",
+        ingredientId: "inventory-flour",
+        ingredientName: "AP Flour",
+        scaledQuantity: 8,
+      },
     ]);
 
     const finalize = await runtime.runCommand(
@@ -387,7 +442,9 @@ describe("Prep list finalization derives inventory demand", () => {
       storeProvider("InventoryItem").getById("inventory-flour")
     ).resolves.toMatchObject({ quantityReserved: 8 });
     // ...but no order draft is produced, and the reason is visible.
-    await expect(storeProvider("PurchaseRequisition").getAll()).resolves.toHaveLength(0);
+    await expect(
+      storeProvider("PurchaseRequisition").getAll()
+    ).resolves.toHaveLength(0);
     const supplierDiag = diagnostics.find((d) => d.stage === "supplier");
     expect(supplierDiag?.reason).toContain("no active US Foods supplier");
   });

@@ -22,39 +22,39 @@ export const ConflictType = {
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
 
 export interface Conflict {
-  id: string;
-  type: ConflictType;
-  severity: ConflictSeverity;
-  title: string;
-  description: string;
   affectedEntities: {
     type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];
-  suggestedAction?: string;
-  resolutionOptions?: ResolutionOption[];
   createdAt: Date;
+  description: string;
+  id: string;
+  resolutionOptions?: ResolutionOption[];
+  severity: ConflictSeverity;
+  suggestedAction?: string;
+  title: string;
+  type: ConflictType;
 }
 
 export interface ResolutionOption {
-  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
-  description: string;
   affectedEntities: {
     type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];
+  description: string;
   estimatedImpact: "low" | "medium" | "high";
+  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
 }
 
 export interface ConflictDetectionRequest {
   boardId?: string;
+  entityTypes?: ConflictType[];
   timeRange?: {
     start: Date;
     end: Date;
   };
-  entityTypes?: ConflictType[];
 }
 
 export interface DetectorWarning {
@@ -63,13 +63,13 @@ export interface DetectorWarning {
 }
 
 export interface ConflictDetectionResult {
+  analyzedAt: Date;
   conflicts: Conflict[];
   summary: {
     total: number;
     bySeverity: Record<ConflictSeverity, number>;
     byType: Record<ConflictType, number>;
   };
-  analyzedAt: Date;
   /** Warnings from individual detectors that partially failed */
   warnings?: DetectorWarning[];
 }
@@ -85,9 +85,9 @@ export interface ConflictApiError {
     | "INVALID_REQUEST"
     | "VALIDATION_ERROR"
     | "DETECTION_FAILED";
-  message: string;
-  /** Guidance for the user on how to proceed */
-  guidance?: string;
   /** Correlation ID for end-to-end tracing */
   correlationId?: string;
+  /** Guidance for the user on how to proceed */
+  guidance?: string;
+  message: string;
 }

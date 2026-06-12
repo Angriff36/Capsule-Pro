@@ -19,8 +19,8 @@ interface MobileShellProperties {
 
 interface NavItem {
   href: string;
-  label: string;
   icon: ReactNode;
+  label: string;
 }
 
 const navItems: NavItem[] = [
@@ -94,7 +94,7 @@ export default function MobileShell({ children }: MobileShellProperties) {
       {/* Bottom navigation */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white shadow-lg"
+        className="fixed right-0 bottom-0 left-0 z-50 border-slate-200 border-t bg-white shadow-lg"
       >
         <div className="flex h-16 items-center justify-around px-2">
           {navItems.map((item) => {
@@ -115,7 +115,7 @@ export default function MobileShell({ children }: MobileShellProperties) {
                   variant="ghost"
                 >
                   {item.icon}
-                  <span className="text-[10px] font-medium">{item.label}</span>
+                  <span className="font-medium text-[10px]">{item.label}</span>
                 </Button>
               </Link>
             );

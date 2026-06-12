@@ -4,14 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  listEventBudgets as _listEventBudgets,
   getEventBudget as _getEventBudget,
   listBudgetLineItems as _listBudgetLineItems,
+  listEventBudgets as _listEventBudgets,
+  budgetLineItemCreate,
+  budgetLineItemRemove,
+  budgetLineItemUpdate,
   eventBudgetCreate,
   eventBudgetUpdate,
-  budgetLineItemCreate,
-  budgetLineItemUpdate,
-  budgetLineItemRemove,
 } from "@/app/lib/manifest-client.generated";
 
 // Types
@@ -30,84 +30,84 @@ export type BudgetLineItemCategory =
   | "other";
 
 export interface BudgetLineItem {
-  id: string;
-  tenantId: string;
+  actualAmount: number;
+  budgetedAmount: number;
   budgetId: string;
   category: BudgetLineItemCategory;
-  name: string;
-  description: string | null;
-  budgetedAmount: number;
-  actualAmount: number;
-  varianceAmount: number;
-  sortOrder: number;
-  notes: string | null;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
+  description: string | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  sortOrder: number;
+  tenantId: string;
+  updatedAt: Date;
+  varianceAmount: number;
 }
 
 export interface EventBudget {
-  tenantId: string;
-  id: string;
+  createdAt: Date;
+  deletedAt: Date | null;
   eventId: string;
-  version: number;
+  id: string;
+  lineItems?: BudgetLineItem[];
+  notes: string | null;
   status: EventBudgetStatus;
-  totalBudgetAmount: number;
+  tenantId: string;
   totalActualAmount: number;
+  totalBudgetAmount: number;
+  updatedAt: Date;
   varianceAmount: number;
   variancePercentage: number;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  lineItems?: BudgetLineItem[];
+  version: number;
 }
 
 export interface CreateEventBudgetInput {
   eventId: string;
+  lineItems?: CreateBudgetLineItemInput[];
+  notes?: string;
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
-  notes?: string;
-  lineItems?: CreateBudgetLineItemInput[];
 }
 
 export interface CreateBudgetLineItemInput {
-  category: BudgetLineItemCategory;
-  name: string;
-  description?: string;
   budgetedAmount: number;
-  sortOrder?: number;
+  category: BudgetLineItemCategory;
+  description?: string;
+  name: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export interface UpdateEventBudgetInput {
+  notes?: string;
   status?: EventBudgetStatus;
   totalBudgetAmount?: number;
-  notes?: string;
 }
 
 export interface UpdateBudgetLineItemInput {
-  category?: BudgetLineItemCategory;
-  name?: string;
-  description?: string;
-  budgetedAmount?: number;
   actualAmount?: number;
-  sortOrder?: number;
+  budgetedAmount?: number;
+  category?: BudgetLineItemCategory;
+  description?: string;
+  name?: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export interface EventBudgetFilters {
   eventId?: string;
-  status?: EventBudgetStatus;
-  page?: number;
   limit?: number;
+  page?: number;
+  status?: EventBudgetStatus;
 }
 
 export interface EventBudgetListResponse {
   budgets: EventBudget[];
-  total: number;
-  page: number;
   limit: number;
+  page: number;
+  total: number;
   totalPages: number;
 }
 
@@ -163,8 +163,12 @@ export async function getBudgets(
 ): Promise<EventBudget[]> {
   try {
     const query: Record<string, string | number> = {};
-    if (filters.eventId) query.eventId = filters.eventId;
-    if (filters.status) query.status = filters.status;
+    if (filters.eventId) {
+      query.eventId = filters.eventId;
+    }
+    if (filters.status) {
+      query.status = filters.status;
+    }
     query.page = filters.page || 1;
     query.limit = filters.limit || 50;
 
@@ -179,7 +183,9 @@ export async function getBudgets(
 export async function getBudget(budgetId: string): Promise<EventBudget> {
   try {
     const result = await _getEventBudget(budgetId);
-    if (!result) throw new Error("Failed to fetch budget");
+    if (!result) {
+      throw new Error("Failed to fetch budget");
+    }
     return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error fetching budget:", error);
@@ -196,7 +202,9 @@ export async function createBudget(
       totalBudgetAmount: input.totalBudgetAmount,
       notes: input.notes,
     });
-    if (!result) throw new Error("Failed to create budget");
+    if (!result) {
+      throw new Error("Failed to create budget");
+    }
     return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error creating budget:", error);
@@ -213,7 +221,9 @@ export async function updateBudget(
       totalBudgetAmount: input.totalBudgetAmount,
       notes: input.notes,
     });
-    if (!result) throw new Error("Failed to update budget");
+    if (!result) {
+      throw new Error("Failed to update budget");
+    }
     return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error updating budget:", error);
@@ -265,7 +275,9 @@ export async function createLineItem(
       sortOrder: input.sortOrder,
       notes: input.notes,
     });
-    if (!result) throw new Error("Failed to create line item");
+    if (!result) {
+      throw new Error("Failed to create line item");
+    }
     return result as unknown as BudgetLineItem;
   } catch (error) {
     console.error("Error creating line item:", error);
@@ -285,7 +297,9 @@ export async function updateLineItem(
       description: input.description,
       notes: input.notes,
     });
-    if (!result) throw new Error("Failed to update line item");
+    if (!result) {
+      throw new Error("Failed to update line item");
+    }
     return result as unknown as BudgetLineItem;
   } catch (error) {
     console.error("Error updating line item:", error);
@@ -299,7 +313,9 @@ export async function deleteLineItem(
 ): Promise<void> {
   try {
     const result = await budgetLineItemRemove({});
-    if (!result) throw new Error("Failed to delete line item");
+    if (!result) {
+      throw new Error("Failed to delete line item");
+    }
   } catch (error) {
     console.error("Error deleting line item:", error);
     throw error;

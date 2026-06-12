@@ -36,9 +36,9 @@ const blogFilterChipVariants = cva(
 export interface BlogFilterChipProps
   extends VariantProps<typeof blogFilterChipVariants> {
   children: ReactNode;
+  className?: string;
   onSelect?: () => void;
   selected?: boolean;
-  className?: string;
 }
 
 export function BlogFilterChip({

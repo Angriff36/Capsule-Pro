@@ -26,13 +26,13 @@ import {
 import { employmentTypeOptions, roleOptions } from "../constants";
 
 interface Employee {
-  id: string;
   email: string;
+  employmentType: string;
   firstName: string;
+  id: string;
+  isActive: boolean;
   lastName: string;
   role: string;
-  isActive: boolean;
-  employmentType: string;
 }
 
 const initialState: ActionState = { status: "idle" };
@@ -47,8 +47,8 @@ const SubmitButton = () => {
 };
 
 interface EditStaffDialogProps {
-  employee: Employee;
   children?: React.ReactNode;
+  employee: Employee;
 }
 
 export const EditStaffDialog = ({
@@ -78,7 +78,7 @@ export const EditStaffDialog = ({
       <DialogTrigger asChild>
         {children || (
           <button
-            className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[30px] border border-hairline bg-transparent text-foreground hover:bg-soft-stone h-8 px-4 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[30px] border border-hairline bg-transparent px-4 font-medium text-[13px] text-foreground outline-none transition-colors hover:bg-soft-stone focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50"
             type="button"
           >
             Edit
@@ -199,7 +199,7 @@ export const EditStaffDialog = ({
           </div>
         </form>
 
-        <div className="border-t pt-4 mt-4">
+        <div className="mt-4 border-t pt-4">
           <form action={deleteAction}>
             <input name="id" type="hidden" value={employee.id} />
             <Button className="w-full" type="submit" variant="destructive">

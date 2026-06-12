@@ -38,13 +38,22 @@ vi.mock("@/lib/manifest-response", async () => {
         { status }
       )
     ),
-    manifestErrorResponse: vi.fn((message: string | { error: string; diagnostics?: unknown[] }, status: number) => {
-      const body =
-        typeof message === "string"
-          ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
-      return NextResponse.json(body, { status });
-    }),
+    manifestErrorResponse: vi.fn(
+      (
+        message: string | { error: string; diagnostics?: unknown[] },
+        status: number
+      ) => {
+        const body =
+          typeof message === "string"
+            ? { success: false, message }
+            : {
+                success: false,
+                error: message.error,
+                diagnostics: message.diagnostics ?? [],
+              };
+        return NextResponse.json(body, { status });
+      }
+    ),
   };
 });
 vi.mock("@/app/lib/invariant", () => ({
@@ -115,16 +124,20 @@ function makeRequest(body: Record<string, unknown>): NextRequest {
 
 function successResponse(data: Record<string, unknown>) {
   return new Response(
-    JSON.stringify({ success: true, result: data, events: [{ type: "created", payload: data }] }),
+    JSON.stringify({
+      success: true,
+      result: data,
+      events: [{ type: "created", payload: data }],
+    }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
 }
 
 function errorResponse(message: string, status = 400) {
-  return new Response(
-    JSON.stringify({ success: false, message }),
-    { status, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ success: false, message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -8,15 +8,15 @@
 import { database, type Prisma } from "@repo/database";
 
 export interface AuditEntryInput {
-  tenantId: string;
-  tableSchema: string;
-  tableName: string;
-  recordId: string;
   action: "insert" | "update" | "delete";
-  oldValues?: Record<string, unknown>;
-  newValues?: Record<string, unknown>;
-  performedBy?: string;
   ipAddress?: string;
+  newValues?: Record<string, unknown>;
+  oldValues?: Record<string, unknown>;
+  performedBy?: string;
+  recordId: string;
+  tableName: string;
+  tableSchema: string;
+  tenantId: string;
   userAgent?: string;
 }
 

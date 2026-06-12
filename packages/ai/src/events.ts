@@ -13,27 +13,27 @@ export type EventType =
   | "toolError";
 
 export interface ProgressEvent {
-  type: "progress";
-  stage: string;
-  percentage: number;
-  message: string;
   estimatedTimeRemaining?: number;
+  message: string;
+  percentage: number;
+  stage: string;
+  type: "progress";
 }
 
 export interface ToolEvent {
-  type: "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
-  toolName: string;
-  toolCallId: string;
   data?: unknown;
   error?: SDKError;
+  toolCallId: string;
+  toolName: string;
+  type: "toolStarted" | "toolProgress" | "toolCompleted" | "toolError";
 }
 
 export interface LifecycleEvent {
-  type: "started" | "completed" | "error" | "cancelled";
   agentId: string;
-  timestamp: Date;
   data?: unknown;
   error?: SDKError;
+  timestamp: Date;
+  type: "started" | "completed" | "error" | "cancelled";
 }
 
 export type AgentEvent = ProgressEvent | ToolEvent | LifecycleEvent;

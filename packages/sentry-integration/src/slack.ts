@@ -6,33 +6,33 @@ import { WebClient } from "@slack/web-api";
 export interface SlackConfig {
   /** Bot token (xoxb-...) for Web API */
   botToken?: string;
-  /** Webhook URL for incoming webhooks */
-  webhookUrl?: string;
   /** Channel ID to post to (e.g., C1234567890) */
   channelId?: string;
+  /** Webhook URL for incoming webhooks */
+  webhookUrl?: string;
 }
 
 /**
  * PR notification payload
  */
 export interface PRNotificationPayload {
-  prUrl: string;
-  prNumber: number;
-  issueTitle: string;
-  issueUrl: string;
   branchName: string;
   environment?: string | null;
+  issueTitle: string;
+  issueUrl: string;
+  prNumber: number;
+  prUrl: string;
 }
 
 /**
  * Error notification payload
  */
 export interface ErrorNotificationPayload {
+  errorMessage: string;
   issueTitle: string;
   issueUrl: string;
-  errorMessage: string;
-  retryCount: number;
   maxRetries: number;
+  retryCount: number;
 }
 
 /**
@@ -294,6 +294,5 @@ export class SlackNotifier {
 /**
  * Create a Slack notifier
  */
-export const createSlackNotifier = (config: SlackConfig): SlackNotifier => {
-  return new SlackNotifier(config);
-};
+export const createSlackNotifier = (config: SlackConfig): SlackNotifier =>
+  new SlackNotifier(config);

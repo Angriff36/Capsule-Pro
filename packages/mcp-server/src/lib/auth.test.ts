@@ -115,7 +115,9 @@ describe("resolveIdentity (stdio)", () => {
 
   it("falls back to admin when no owner found", async () => {
     const prisma = createMockPrisma(async (args) => {
-      if (args.where.role === "owner") return null;
+      if (args.where.role === "owner") {
+        return null;
+      }
       if (args.where.role === "admin") {
         return {
           id: "admin-1",
@@ -138,8 +140,12 @@ describe("resolveIdentity (stdio)", () => {
 
   it("falls back to any active user when no owner or admin found", async () => {
     const prisma = createMockPrisma(async (args) => {
-      if (args.where.role === "owner") return null;
-      if (args.where.role === "admin") return null;
+      if (args.where.role === "owner") {
+        return null;
+      }
+      if (args.where.role === "admin") {
+        return null;
+      }
       // No role filter = any active user
       return {
         id: "user-1",

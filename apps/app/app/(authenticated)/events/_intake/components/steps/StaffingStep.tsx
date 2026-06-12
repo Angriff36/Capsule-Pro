@@ -9,27 +9,27 @@ const STAFFING_LEVELS = [
     value: "minimal",
     label: "Minimal",
     description: "Drop-off and setup only. Your team handles the rest.",
-    icon: <Truck className="w-4 h-4" />,
+    icon: <Truck className="h-4 w-4" />,
   },
   {
     value: "standard",
     label: "Standard Service",
     description:
       "Setup, buffet attendants, and cleanup. The essentials covered.",
-    icon: <UserCheck className="w-4 h-4" />,
+    icon: <UserCheck className="h-4 w-4" />,
   },
   {
     value: "elevated",
     label: "Elevated Service",
     description: "Dedicated servers, passed apps, and attentive table service.",
-    icon: <Star className="w-4 h-4" />,
+    icon: <Star className="h-4 w-4" />,
   },
   {
     value: "white-glove",
     label: "White Glove",
     description:
       "Full captain-led team. Synchronized courses, formal presentation, floor management.",
-    icon: <Crown className="w-4 h-4" />,
+    icon: <Crown className="h-4 w-4" />,
   },
 ];
 
@@ -49,7 +49,7 @@ export default function StaffingStep({ formData, updateField }: Props) {
         title="Your service team"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {STAFFING_LEVELS.map((level) => (
           <SelectCard
             description={level.description}

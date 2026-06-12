@@ -4,10 +4,10 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface MonthlyTrend {
+  count: number;
   month: string;
   totalCost: number;
   totalQuantity: number;
-  count: number;
 }
 
 /**
@@ -75,11 +75,11 @@ export async function GET(request: Request) {
 
   // Group data based on groupBy parameter
   interface WasteGroup {
+    count: number;
+    entries: typeof entries;
     key: string;
     totalCost: number;
     totalQuantity: number;
-    count: number;
-    entries: typeof entries;
   }
   const groupedData: Record<string, WasteGroup> = {};
   for (const entry of entries) {

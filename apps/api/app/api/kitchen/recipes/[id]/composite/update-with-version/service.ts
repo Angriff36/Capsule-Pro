@@ -2,50 +2,50 @@ import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import {
   database,
   type IngredientInput,
-  resolveIngredients,
   type Prisma,
+  resolveIngredients,
 } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { getBlockingConstraints } from "@repo/manifest-runtime/route-helpers";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 type TransactionClient = Prisma.TransactionClient;
 
 interface ResolvedIngredientInput {
   ingredientId: string;
-  quantity: number;
-  unitId: number;
-  preparationNotes?: string;
   isOptional?: boolean;
+  preparationNotes?: string;
+  quantity: number;
   sortOrder: number;
+  unitId: number;
 }
 
 interface RawIngredientInput {
-  name: string;
-  quantity: number;
-  unit?: string | null;
-  preparationNotes?: string | null;
   isOptional?: boolean;
+  name: string;
+  preparationNotes?: string | null;
+  quantity: number;
   sortOrder: number;
+  unit?: string | null;
 }
 
 type IngredientInputItem = ResolvedIngredientInput | RawIngredientInput;
 
 export interface UpdateRecipeRequest {
-  name?: string;
   category?: string;
+  cookTimeMinutes?: number;
   cuisineType?: string;
   description?: string;
-  tags?: string[];
-  yieldQuantity?: number;
-  yieldUnitId?: number;
-  yieldDescription?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  restTimeMinutes?: number;
   difficultyLevel?: number;
-  instructions?: string;
-  notes?: string;
   ingredients?: IngredientInputItem[];
+  instructions?: string;
+  name?: string;
+  notes?: string;
+  override?: {
+    reasonCode: string;
+    details: string;
+  };
+  prepTimeMinutes?: number;
+  restTimeMinutes?: number;
   steps?: {
     stepNumber: number;
     instruction: string;
@@ -57,10 +57,10 @@ export interface UpdateRecipeRequest {
     videoUrl?: string;
     imageUrl?: string;
   }[];
-  override?: {
-    reasonCode: string;
-    details: string;
-  };
+  tags?: string[];
+  yieldDescription?: string;
+  yieldQuantity?: number;
+  yieldUnitId?: number;
 }
 
 interface UpdateRecipeWithVersionInput {
@@ -71,12 +71,12 @@ interface UpdateRecipeWithVersionInput {
 }
 
 export interface UpdateRecipeWithVersionResult {
-  version: unknown;
-  ingredients: unknown[];
-  steps: unknown[];
-  newVersionNumber: number;
-  events: unknown[];
   constraintOutcomes: ConstraintOutcome[];
+  events: unknown[];
+  ingredients: unknown[];
+  newVersionNumber: number;
+  steps: unknown[];
+  version: unknown;
 }
 
 export class ConstraintBlockedError extends Error {
@@ -196,7 +196,8 @@ function buildVersionCreatePayload(
     versionNumber: newVersionNumber,
     yieldQuantity: body.yieldQuantity ?? Number(latestVersion.yieldQuantity),
     yieldUnitId: body.yieldUnitId ?? latestVersion.yieldUnitId,
-    yieldDescription: body.yieldDescription ?? latestVersion.yieldDescription ?? "",
+    yieldDescription:
+      body.yieldDescription ?? latestVersion.yieldDescription ?? "",
     prepTimeMinutes: body.prepTimeMinutes ?? latestVersion.prepTimeMinutes ?? 0,
     cookTimeMinutes: body.cookTimeMinutes ?? latestVersion.cookTimeMinutes ?? 0,
     restTimeMinutes: body.restTimeMinutes ?? latestVersion.restTimeMinutes ?? 0,

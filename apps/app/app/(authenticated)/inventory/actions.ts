@@ -1,10 +1,10 @@
 "use server";
 
-import { type InventoryItem, database } from "@repo/database";
+import { database, type InventoryItem } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -58,7 +58,7 @@ const getTags = (formData: FormData, key: string): string[] => {
 const getBoolean = (formData: FormData, key: string): boolean | undefined => {
   const value = getString(formData, key);
   if (!value) {
-    return undefined;
+    return;
   }
   return value === "true" || value === "1" || value === "on";
 };
@@ -228,16 +228,25 @@ export const updateInventoryItem = async (
     body: {
       id: itemId,
       name: name ?? existing.name,
-      description: description !== undefined ? (description ?? "") : (existing.description ?? ""),
+      description:
+        description === undefined
+          ? (existing.description ?? "")
+          : (description ?? ""),
       category: category ?? existing.category,
       unitOfMeasure: unitOfMeasure ?? existing.unitOfMeasure,
       unitCost: unitCost ?? Number(existing.unitCost),
       quantityOnHand: quantityOnHand ?? Number(existing.quantityOnHand),
       parLevel: parLevel ?? Number(existing.parLevel),
       reorder_level: reorder_level ?? Number(existing.reorder_level),
-      supplierId: supplierId !== undefined ? (supplierId ?? "") : (existing.supplierId ?? ""),
+      supplierId:
+        supplierId === undefined
+          ? (existing.supplierId ?? "")
+          : (supplierId ?? ""),
       tags: tags.length > 0 ? tags : (existing.tags ?? []),
-      fsa_status: fsa_status !== undefined ? (fsa_status ?? "") : (existing.fsa_status ?? ""),
+      fsa_status:
+        fsa_status === undefined
+          ? (existing.fsa_status ?? "")
+          : (fsa_status ?? ""),
       fsa_temp_logged: existing.fsa_temp_logged,
       fsa_allergen_info: existing.fsa_allergen_info,
       fsa_traceable: existing.fsa_traceable,

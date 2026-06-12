@@ -109,12 +109,15 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     // Governed write: update PayrollRun status via Manifest runtime
-    const runCommand =
-      status === "approved" ? "approve" : "reject";
+    const runCommand = status === "approved" ? "approve" : "reject";
     const runBody =
       status === "approved"
         ? { id: payrollRunId, approvedBy: approvedBy || userId }
-        : { id: payrollRunId, rejectedBy: userId, rejectReason: rejectReason || "" };
+        : {
+            id: payrollRunId,
+            rejectedBy: userId,
+            rejectReason: rejectReason || "",
+          };
 
     const runResult = await runManifestCommand({
       entity: "PayrollRun",
@@ -129,9 +132,13 @@ export async function PUT(request: Request, context: RouteContext) {
     });
 
     if (runResult.status >= 400) {
-      const errorBody = await runResult.json().catch(() => ({ message: "Command failed" }));
+      const errorBody = await runResult
+        .json()
+        .catch(() => ({ message: "Command failed" }));
       return NextResponse.json(
-        { message: `Failed to update payroll run: ${(errorBody as Record<string, unknown>).message ?? "unknown error"}` },
+        {
+          message: `Failed to update payroll run: ${(errorBody as Record<string, unknown>).message ?? "unknown error"}`,
+        },
         { status: runResult.status }
       );
     }
@@ -159,7 +166,10 @@ export async function PUT(request: Request, context: RouteContext) {
 
     // Best-effort history creation — don't fail the approval if history write fails
     if (historyResult.status >= 400) {
-      log.error("Failed to create approval history record:", { historyBody, status: historyResult.status });
+      log.error("Failed to create approval history record:", {
+        historyBody,
+        status: historyResult.status,
+      });
     }
 
     // Read back the updated run for the response

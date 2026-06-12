@@ -15,20 +15,20 @@ import { captureException } from "@sentry/node";
  * Input for triggering prep list auto-generation
  */
 export interface PrepListAutoGenerationInput {
+  /** Optional batch multiplier (defaults to 1) */
+  batchMultiplier?: number;
   /** Database client or transaction */
   db: PrismaClient | Prisma.TransactionClient;
-  /** Tenant identifier */
-  tenantId: string;
+  /** Optional dietary restrictions */
+  dietaryRestrictions?: string[];
   /** Event ID to generate prep list for */
   eventId: string;
   /** Event title for naming the prep list */
   eventTitle: string;
   /** Guest count for scaling */
   guestCount: number;
-  /** Optional batch multiplier (defaults to 1) */
-  batchMultiplier?: number;
-  /** Optional dietary restrictions */
-  dietaryRestrictions?: string[];
+  /** Tenant identifier */
+  tenantId: string;
   /** User ID who triggered the generation */
   userId: string;
 }
@@ -37,10 +37,10 @@ export interface PrepListAutoGenerationInput {
  * Result of prep list auto-generation
  */
 export interface PrepListAutoGenerationResult {
-  success: boolean;
-  prepListId?: string;
   error?: string;
   generatedAt: Date;
+  prepListId?: string;
+  success: boolean;
 }
 
 /**

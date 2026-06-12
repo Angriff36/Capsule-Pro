@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { env } from "@/env";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { env } from "@/env";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 
@@ -107,7 +107,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { provider } = body as { provider: string };
 
-    if (!(provider && (SUPPORTED_PROVIDERS as readonly string[]).includes(provider))) {
+    if (
+      !(
+        provider &&
+        (SUPPORTED_PROVIDERS as readonly string[]).includes(provider)
+      )
+    ) {
       return NextResponse.json(
         {
           error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,

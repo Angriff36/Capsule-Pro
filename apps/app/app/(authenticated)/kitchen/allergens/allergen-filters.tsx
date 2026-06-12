@@ -48,9 +48,9 @@ const DIETARY_RESTRICTIONS = [
 ] as const;
 
 interface AllergenFiltersProps {
-  initialQuery?: string;
   initialAllergen?: string;
   initialDietary?: string;
+  initialQuery?: string;
 }
 
 export function AllergenFilters({
@@ -94,7 +94,7 @@ export function AllergenFilters({
       {/* Search Bar */}
       <form className="flex gap-2" onSubmit={handleSearch}>
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             defaultValue={initialQuery}
@@ -156,21 +156,21 @@ export function AllergenFilters({
       {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 rounded-md bg-muted p-3">
-          <span className="text-muted-foreground text-sm font-medium">
+          <span className="font-medium text-muted-foreground text-sm">
             Active filters:
           </span>
           {initialQuery && (
-            <span className="bg-background rounded border px-2 py-1 text-sm">
+            <span className="rounded border bg-background px-2 py-1 text-sm">
               Search: &quot;{initialQuery}&quot;
             </span>
           )}
           {initialAllergen !== "all" && (
-            <span className="bg-background rounded border px-2 py-1 text-sm">
+            <span className="rounded border bg-background px-2 py-1 text-sm">
               Allergen: &quot;{initialAllergen}&quot;
             </span>
           )}
           {initialDietary !== "all" && (
-            <span className="bg-background rounded border px-2 py-1 text-sm">
+            <span className="rounded border bg-background px-2 py-1 text-sm">
               Dietary: &quot;{initialDietary}&quot;
             </span>
           )}

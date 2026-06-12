@@ -15,18 +15,18 @@ import {
 } from "@/lib/manifest-response";
 
 export interface TeamActivityItem {
-  id: string;
-  kind: "claim" | "release" | "progress";
-  taskId: string;
-  taskTitle: string | null;
+  action: string;
+  createdAt: string;
+  detail: string | null;
+  employeeAvatarUrl: string | null;
   employeeId: string;
   employeeName: string | null;
-  employeeAvatarUrl: string | null;
-  action: string;
-  detail: string | null;
-  oldStatus: string | null;
+  id: string;
+  kind: "claim" | "release" | "progress";
   newStatus: string | null;
-  createdAt: string;
+  oldStatus: string | null;
+  taskId: string;
+  taskTitle: string | null;
 }
 
 const DEFAULT_LIMIT = 15;
@@ -102,7 +102,9 @@ export async function GET(request: NextRequest) {
 
     const formatName = (id: string): string | null => {
       const u = employeeById.get(id);
-      if (!u) return null;
+      if (!u) {
+        return null;
+      }
       const full = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
       return full || u.email || null;
     };

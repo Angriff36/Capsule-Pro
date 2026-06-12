@@ -32,19 +32,21 @@ export function createPostgresStoreProvider(
 
     const tableName = tableNameMap[entityName];
     if (!tableName) {
-      return undefined; // Use default (memory) store for unknown entities
+      return; // Use default (memory) store for unknown entities
     }
 
     // Dynamically import PostgresStore only when databaseUrl is provided
     // This avoids requiring the pg package in environments that don't need it
     try {
-      const { PostgresStore: PGStore } = require(/* turbopackIgnore: true */ "@angriff36/manifest/stores");
+      const {
+        PostgresStore: PGStore,
+      } = require(/* turbopackIgnore: true */ "@angriff36/manifest/stores");
       return new PGStore({
         connectionString: databaseUrl,
         tableName,
       }) as Store;
     } catch {
-      return undefined; // Fall back to memory store if PostgresStore is unavailable
+      return; // Fall back to memory store if PostgresStore is unavailable
     }
   };
 }

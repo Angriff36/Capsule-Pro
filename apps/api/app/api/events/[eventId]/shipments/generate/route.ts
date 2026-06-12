@@ -18,29 +18,24 @@ import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface InventoryRequirement {
+  hasStock: boolean;
   inventoryItemId: string;
   inventoryItemName: string;
   itemNumber: string;
-  unitOfMeasure: string;
-  unitCost: number;
   quantityOnHand: number;
   requiredQuantity: number;
-  hasStock: boolean;
+  unitCost: number;
+  unitOfMeasure: string;
 }
 
 interface GenerateShipmentRequest {
   locationId?: string;
-  scheduledDate?: string;
   notes?: string;
+  scheduledDate?: string;
   validateStock?: boolean;
 }
 
 interface GenerateShipmentResponse {
-  shipment: {
-    id: string;
-    shipmentNumber: string;
-    status: string;
-  };
   items: Array<{
     id: string;
     itemName: string;
@@ -48,12 +43,17 @@ interface GenerateShipmentResponse {
     unitOfMeasure: string;
     hasStock: boolean;
   }>;
-  warnings: string[];
+  shipment: {
+    id: string;
+    shipmentNumber: string;
+    status: string;
+  };
   stockIssues: Array<{
     itemName: string;
     required: number;
     available: number;
   }>;
+  warnings: string[];
 }
 
 /**
@@ -198,7 +198,10 @@ export async function POST(
     const { locationId, scheduledDate, notes, validateStock = true } = body;
 
     // Get inventory requirements from prep lists
-    const requirements = await getEventInventoryRequirements(user.tenantId, eventId);
+    const requirements = await getEventInventoryRequirements(
+      user.tenantId,
+      eventId
+    );
 
     if (requirements.length === 0) {
       return NextResponse.json(

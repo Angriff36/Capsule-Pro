@@ -32,29 +32,29 @@ import {
 } from "../../components/vc-shared";
 
 interface VendorContract {
-  id: string;
+  annualSpendCommitment: number;
+  approvedAt: string | null;
+  approvedBy: string | null;
+  autoRenew: boolean;
+  complianceScore: number;
   contractNumber: string;
+  contractType: string;
+  createdAt: string;
+  currencyCode: string;
+  deliveryTerms: string | null;
+  endDate: string | null;
+  id: string;
+  minimumOrderQuantity: number;
+  notes: string | null;
+  onTimeDeliveryRate: number;
+  paymentTerms: string;
+  qualityRating: number;
+  renewalTermDays: number;
+  slaBreachCount: number;
+  startDate: string;
+  status: string;
   vendorId: string;
   vendorName: string | null;
-  contractType: string;
-  status: string;
-  startDate: string;
-  endDate: string | null;
-  autoRenew: boolean;
-  renewalTermDays: number;
-  paymentTerms: string;
-  deliveryTerms: string | null;
-  minimumOrderQuantity: number;
-  annualSpendCommitment: number;
-  currencyCode: string;
-  complianceScore: number;
-  slaBreachCount: number;
-  onTimeDeliveryRate: number;
-  qualityRating: number;
-  notes: string | null;
-  approvedBy: string | null;
-  approvedAt: string | null;
-  createdAt: string;
 }
 
 const WORKFLOW_ACTIONS: Record<
@@ -100,7 +100,9 @@ export default function VendorContractDetailPage() {
   };
 
   const handleAction = async (command: string) => {
-    if (!contract) return;
+    if (!contract) {
+      return;
+    }
     if (command === "reject" || command === "terminate") {
       setPendingCommand(command);
       setReasonText("");
@@ -119,7 +121,9 @@ export default function VendorContractDetailPage() {
   };
 
   const confirmReasonAction = async () => {
-    if (!(contract && pendingCommand && reasonText.trim())) return;
+    if (!(contract && pendingCommand && reasonText.trim())) {
+      return;
+    }
     const command = pendingCommand;
     setUpdating(command);
     setReasonDialogOpen(false);
@@ -175,11 +179,11 @@ export default function VendorContractDetailPage() {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">
+            <h1 className="font-semibold text-2xl">
               {contract.contractNumber}
             </h1>
             <Badge className={config.color}>
-              <Icon className="h-3 w-3 mr-1" />
+              <Icon className="mr-1 h-3 w-3" />
               {config.label}
             </Badge>
             <Badge variant="outline">{typeLabel}</Badge>
@@ -199,7 +203,7 @@ export default function VendorContractDetailPage() {
               variant={action.variant || "default"}
             >
               {updating === action.command && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               {action.label}
             </Button>
@@ -211,45 +215,45 @@ export default function VendorContractDetailPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Compliance</CardTitle>
+            <CardTitle className="font-medium text-sm">Compliance</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {contract.complianceScore}%
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               On-Time Delivery
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {Number(contract.onTimeDeliveryRate)}%
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Quality Rating
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {Number(contract.qualityRating)}/5
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SLA Breaches</CardTitle>
+            <CardTitle className="font-medium text-sm">SLA Breaches</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{contract.slaBreachCount}</div>
+            <div className="font-bold text-2xl">{contract.slaBreachCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -344,7 +348,7 @@ export default function VendorContractDetailPage() {
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{contract.notes}</p>
+            <p className="text-muted-foreground text-sm">{contract.notes}</p>
           </CardContent>
         </Card>
       )}

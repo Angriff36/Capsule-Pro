@@ -44,11 +44,11 @@ import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
-  qACheckCreate,
   qACheckComplete,
-  qATemperatureLogLog,
+  qACheckCreate,
   qACorrectiveActionCreate,
   qACorrectiveActionMarkResolved,
+  qATemperatureLogLog,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -56,37 +56,37 @@ import {
 // ---------------------------------------------------------------------------
 
 interface QualityCheckItem {
+  criterion: string;
   id: string;
   itemName: string;
-  criterion: string;
 }
 
 interface QualityCheck {
-  id: string;
   checkType: string;
-  title: string;
-  status: string;
-  items: QualityCheckItem[];
   completedAt: string | null;
+  id: string;
+  items: QualityCheckItem[];
   scheduledAt: string | null;
+  status: string;
+  title: string;
 }
 
 interface TemperatureLog {
   id: string;
+  itemName: string | null;
+  loggedAt: string;
   logType: string;
   temperature: number;
   unit: string;
   withinRange: boolean | null;
-  itemName: string | null;
-  loggedAt: string;
 }
 
 interface CorrectiveAction {
-  id: string;
-  title: string;
-  status: string;
-  severity: string;
   dueDate: string | null;
+  id: string;
+  severity: string;
+  status: string;
+  title: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,11 +239,11 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
     >
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="mr-1 h-4 w-4" />
           New Check
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Quality Check</DialogTitle>
           <DialogDescription>
@@ -322,7 +322,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
                 type="button"
                 variant="outline"
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus className="mr-1 h-3 w-3" />
                 Add Item
               </Button>
             </div>
@@ -330,7 +330,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
               <div className="space-y-2">
                 {checklistItems.map((item, i) => (
                   <div
-                    className="flex gap-2 items-start"
+                    className="flex items-start gap-2"
                     key={`cl-${String(i)}`}
                   >
                     <Input
@@ -377,7 +377,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
             )}
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -467,7 +467,7 @@ export function CompleteCheckDialog({
           Complete
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Complete Quality Check</DialogTitle>
           <DialogDescription>
@@ -506,14 +506,14 @@ export function CompleteCheckDialog({
             <div className="space-y-2">
               <Label>Checklist Results</Label>
               {checklistItems.map((item) => (
-                <div className="border rounded-md p-3 space-y-2" key={item.id}>
+                <div className="space-y-2 rounded-md border p-3" key={item.id}>
                   <div className="font-medium text-sm">{item.itemName}</div>
                   {item.criterion && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       Criterion: {item.criterion}
                     </div>
                   )}
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <label className="flex items-center gap-1 text-sm">
                       <input
                         checked={itemResults[item.id]?.passed ?? false}
@@ -531,7 +531,7 @@ export function CompleteCheckDialog({
                       Passed
                     </label>
                     <Input
-                      className="flex-1 h-8 text-sm"
+                      className="h-8 flex-1 text-sm"
                       onChange={(e) =>
                         setItemResults((prev) => ({
                           ...prev,
@@ -545,7 +545,7 @@ export function CompleteCheckDialog({
                       value={itemResults[item.id]?.value ?? ""}
                     />
                     <Input
-                      className="flex-1 h-8 text-sm"
+                      className="h-8 flex-1 text-sm"
                       onChange={(e) =>
                         setItemResults((prev) => ({
                           ...prev,
@@ -564,7 +564,7 @@ export function CompleteCheckDialog({
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button disabled={loading || !status} type="submit">
@@ -682,7 +682,7 @@ export function LogTemperatureDialog({ onSuccess }: { onSuccess: () => void }) {
     >
       <DialogTrigger asChild>
         <Button size="sm">
-          <Thermometer className="h-4 w-4 mr-1" />
+          <Thermometer className="mr-1 h-4 w-4" />
           Log Temperature
         </Button>
       </DialogTrigger>
@@ -787,7 +787,7 @@ export function LogTemperatureDialog({ onSuccess }: { onSuccess: () => void }) {
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -915,11 +915,11 @@ export function CreateCorrectiveActionDialog({
     >
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="mr-1 h-4 w-4" />
           New Action
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Corrective Action</DialogTitle>
           <DialogDescription>
@@ -1017,7 +1017,7 @@ export function CreateCorrectiveActionDialog({
             </div>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button disabled={loading || !title.trim()} type="submit">
@@ -1138,7 +1138,7 @@ export function ResolveActionDialog({
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button disabled={loading || !status} type="submit">
@@ -1195,18 +1195,18 @@ export function ChecksTabContent({
           };
           return (
             <Card
-              className="hover:border-primary/50 transition-colors"
+              className="transition-colors hover:border-primary/50"
               key={type}
               tone="soft-stone"
             >
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <ClipboardCheck className="h-4 w-4" />
                   {label}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {counts.total} total checks
                 </p>
                 <div className="mt-3 flex gap-2">
@@ -1221,14 +1221,14 @@ export function ChecksTabContent({
 
       {qualityChecks.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="font-medium text-sm text-muted-foreground">
+          <h3 className="font-medium text-muted-foreground text-sm">
             Recent Checks
           </h3>
           {qualityChecks.slice(0, 10).map((qc) => (
             <Card key={qc.id} tone="canvas">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
                     {qc.status === "passed" ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : qc.status === "failed" ? (
@@ -1253,7 +1253,7 @@ export function ChecksTabContent({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4 text-muted-foreground text-xs">
                   <span>
                     Type: {checkTypeLabels[qc.checkType] ?? qc.checkType}
                   </span>
@@ -1286,7 +1286,7 @@ export function ChecksTabContent({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground py-4">
+        <p className="py-4 text-muted-foreground text-sm">
           No quality checks recorded yet.
         </p>
       )}
@@ -1317,7 +1317,7 @@ export function TemperatureTabContent({
             <Card key={type} tone="soft-stone">
               <CardContent className="pt-4">
                 <div className="font-medium">{label}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {count} {count === 1 ? "log" : "logs"}
                 </div>
               </CardContent>
@@ -1335,7 +1335,7 @@ export function TemperatureTabContent({
             <div className="space-y-2">
               {temperatureLogs.map((log) => (
                 <div
-                  className="flex items-center justify-between py-2 border-b last:border-0"
+                  className="flex items-center justify-between border-b py-2 last:border-0"
                   key={log.id}
                 >
                   <div className="flex items-center gap-3">
@@ -1353,7 +1353,7 @@ export function TemperatureTabContent({
                         log.logType.replace("_", " ")}
                     </span>
                     {log.itemName && (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {log.itemName}
                       </span>
                     )}
@@ -1362,7 +1362,7 @@ export function TemperatureTabContent({
                     <span className="font-mono">
                       {Number(log.temperature)}&deg;{log.unit}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       {new Date(log.loggedAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -1382,7 +1382,7 @@ export function TemperatureTabContent({
           </CardContent>
         </Card>
       ) : (
-        <p className="text-sm text-muted-foreground py-4">
+        <p className="py-4 text-muted-foreground text-sm">
           No temperature logs recorded yet.
         </p>
       )}
@@ -1427,7 +1427,7 @@ export function CorrectiveActionsTabContent({
           <Badge variant="outline">{severityCounts.low} Low</Badge>
         )}
         {correctiveActions.length === 0 && (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             No corrective actions
           </span>
         )}
@@ -1450,7 +1450,7 @@ export function CorrectiveActionsTabContent({
                       )}
                       <span className="font-medium">{action.title}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 text-muted-foreground text-sm">
                       {action.dueDate && (
                         <span>
                           Due:{" "}
@@ -1494,7 +1494,7 @@ export function CorrectiveActionsTabContent({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground py-4">
+        <p className="py-4 text-muted-foreground text-sm">
           No corrective actions recorded yet.
         </p>
       )}

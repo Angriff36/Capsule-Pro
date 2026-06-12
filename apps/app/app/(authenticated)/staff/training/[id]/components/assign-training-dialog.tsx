@@ -42,7 +42,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { listStaffMembers, trainingAssignmentCreate } from "@/app/lib/manifest-client.generated";
+import {
+  listStaffMembers,
+  trainingAssignmentCreate,
+} from "@/app/lib/manifest-client.generated";
 
 const formSchema = z.object({
   employeeId: z.string().optional(),
@@ -53,10 +56,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface Employee {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
   email: string;
+  firstName: string | null;
+  id: string;
+  lastName: string | null;
 }
 
 interface AssignTrainingDialogProps {

@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { describe, expect, it, vi } from "vitest";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import KitchenPage from "@/app/(authenticated)/kitchen/page";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),

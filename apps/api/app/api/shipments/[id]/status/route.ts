@@ -17,15 +17,12 @@
 
 import { auth } from "@repo/auth/server";
 import type { Shipment } from "@repo/database";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import {
-  getTenantIdForOrg,
-  resolveCurrentUser,
-} from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
@@ -57,23 +54,23 @@ const STATUS_TO_COMMAND: Record<string, string> = {
 };
 
 interface ShipmentStatusRequestBody {
-  status: string;
-  shipped_date?: string | null;
   actual_delivery_date?: string | null;
   delivered_by?: string | null;
   received_by?: string | null;
+  shipped_date?: string | null;
   signature?: string | null;
+  status: string;
 }
 
 interface ShipmentItem {
+  expiration_date: Date | null;
   id: string;
   item_id: string;
-  quantity_shipped: number;
-  quantity_received: number;
-  quantity_damaged: number;
-  unit_cost: number;
   lot_number: string | null;
-  expiration_date: Date | null;
+  quantity_damaged: number;
+  quantity_received: number;
+  quantity_shipped: number;
+  unit_cost: number;
 }
 
 // ========== Helper Functions ==========
@@ -429,7 +426,12 @@ async function processPreparationInventory(
       userContext
     );
 
-    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve, userContext);
+    await reduceInventoryQuantity(
+      tenantId,
+      item.item_id,
+      quantityToReserve,
+      userContext
+    );
   }
 }
 
@@ -453,7 +455,7 @@ async function createReversalTransaction(
       tenantId,
       itemId: item.item_id,
       transactionType: TRANSACTION_TYPE_TRANSFER,
-      quantity: quantity,
+      quantity,
       unitCost: item.unit_cost ?? 0,
       referenceType: "shipment",
       referenceId: shipmentId,
@@ -498,7 +500,12 @@ async function processCancellationInventory(
       userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore, userContext);
+    await updateInventoryQuantity(
+      tenantId,
+      item.item_id,
+      quantityToRestore,
+      userContext
+    );
   }
 }
 
@@ -539,7 +546,12 @@ async function processDeliveryInventory(
       userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, goodQuantity, userContext);
+    await updateInventoryQuantity(
+      tenantId,
+      item.item_id,
+      goodQuantity,
+      userContext
+    );
   }
 }
 
@@ -752,13 +764,7 @@ export async function POST(
     }
 
     // Build command body and execute via Manifest runtime
-    const commandBody = buildCommandBody(
-      command,
-      id,
-      tenantId,
-      user.id,
-      body
-    );
+    const commandBody = buildCommandBody(command, id, tenantId, user.id, body);
 
     const manifestResult = await runManifestCommand({
       entity: "Shipment",
@@ -789,8 +795,18 @@ export async function POST(
     }
 
     // Handle inventory updates on delivery
-    const userContext = { id: user.id, tenantId: user.tenantId, role: user.role };
-    await handleInventoryOnDelivery(updated, existing.status, tenantId, id, userContext);
+    const userContext = {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    };
+    await handleInventoryOnDelivery(
+      updated,
+      existing.status,
+      tenantId,
+      id,
+      userContext
+    );
 
     // Handle inventory reservation on preparation (outgoing shipments)
     await handleInventoryOnPreparation(

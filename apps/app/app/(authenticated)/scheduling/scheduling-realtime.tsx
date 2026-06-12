@@ -17,9 +17,7 @@ const isOpenShiftEvent = (name?: string) =>
 
 const SchedulingRealtime = ({ tenantId }: SchedulingRealtimeProps) => {
   const router = useRouter();
-  const enabled = Boolean(
-    tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED
-  );
+  const enabled = Boolean(tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED);
 
   const handleMessage = useCallback(
     (message: RealtimeEventMessage) => {

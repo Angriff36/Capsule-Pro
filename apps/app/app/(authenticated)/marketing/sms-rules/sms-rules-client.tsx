@@ -51,15 +51,15 @@ function formatRecipientType(type: string): string {
 }
 
 interface SmsRule {
-  id: string;
-  name: string;
-  description: string | null;
-  triggerType: string;
-  recipientType: string;
-  customMessage: string | null;
-  isActive: boolean;
-  priority: number;
   createdAt: string | null;
+  customMessage: string | null;
+  description: string | null;
+  id: string;
+  isActive: boolean;
+  name: string;
+  priority: number;
+  recipientType: string;
+  triggerType: string;
 }
 
 interface SmsRulesClientProps {
@@ -83,8 +83,12 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
 
   const filtered = useMemo(() => {
     let result = rules;
-    if (filter === "active") result = result.filter((r) => r.isActive);
-    if (filter === "inactive") result = result.filter((r) => !r.isActive);
+    if (filter === "active") {
+      result = result.filter((r) => r.isActive);
+    }
+    if (filter === "inactive") {
+      result = result.filter((r) => !r.isActive);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -105,7 +109,9 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: rule.id }),
       });
-      if (!res.ok) throw new Error("Failed to update rule");
+      if (!res.ok) {
+        throw new Error("Failed to update rule");
+      }
       toast.success(
         rule.isActive
           ? `"${rule.name}" deactivated`
@@ -137,7 +143,9 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
           priority: createForm.priority,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create rule");
+      if (!res.ok) {
+        throw new Error("Failed to create rule");
+      }
       toast.success("SMS rule created");
       setCreateOpen(false);
       setCreateForm({
@@ -157,10 +165,10 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
 
   if (rules.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+      <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
         <MessageSquare className="mb-4 size-10 text-muted-foreground" />
-        <h3 className="text-lg font-medium">No SMS rules</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h3 className="font-medium text-lg">No SMS rules</h3>
+        <p className="mt-1 text-muted-foreground text-sm">
           Create your first SMS automation rule.
         </p>
         <Dialog onOpenChange={setCreateOpen} open={createOpen}>
@@ -190,7 +198,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
       {/* Filter bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearch(e.target.value)}
@@ -201,7 +209,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
         <div className="flex items-center gap-2">
           {(["all", "active", "inactive"] as const).map((f) => (
             <button
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${
                 filter === f
                   ? "bg-ink text-white"
                   : "border border-hairline bg-canvas text-muted-foreground hover:bg-soft-stone"
@@ -234,7 +242,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
 
       {/* Rules list */}
       <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-        <div className="grid grid-cols-[1fr_160px_120px_80px_100px] gap-2 border-b border-hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="grid grid-cols-[1fr_160px_120px_80px_100px] gap-2 border-hairline border-b px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
           <span>Rule</span>
           <span>Trigger</span>
           <span>Recipient</span>
@@ -242,7 +250,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
           <span>Status</span>
         </div>
         {filtered.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-12 text-center text-muted-foreground text-sm">
             No rules match your filters.
           </div>
         ) : (
@@ -255,22 +263,22 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
                 <div className="min-w-0">
                   <span className="font-medium">{rule.name}</span>
                   {rule.description && (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate text-muted-foreground text-xs">
                       {rule.description}
                     </p>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatTriggerType(rule.triggerType)}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatRecipientType(rule.recipientType)}
                 </span>
-                <span className="text-xs font-mono text-muted-foreground">
+                <span className="font-mono text-muted-foreground text-xs">
                   {rule.priority}
                 </span>
                 <button
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
+                  className={`rounded-full px-2.5 py-0.5 font-medium text-[11px] uppercase tracking-wide transition-colors ${
                     rule.isActive
                       ? "bg-ink text-white"
                       : "border border-hairline bg-canvas text-muted-foreground"

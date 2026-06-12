@@ -81,14 +81,14 @@ export async function createFacility(formData: FormData) {
 // ── FacilityArea ────────────────────────────────────────────────────────────
 
 export interface CreateFacilityAreaInput {
-  venueId?: string;
-  name: string;
-  code?: string;
   areaType?: string;
-  floor?: string;
+  code?: string;
   description?: string;
+  floor?: string;
+  name: string;
   squareFeet?: number;
   status?: string;
+  venueId?: string;
 }
 
 export async function createFacilityArea(input: CreateFacilityAreaInput) {
@@ -127,17 +127,17 @@ export async function createFacilityArea(input: CreateFacilityAreaInput) {
 // ── FacilityAsset ───────────────────────────────────────────────────────────
 
 export interface CreateFacilityAssetInput {
-  name: string;
+  areaId?: string;
   assetType?: string;
-  serialNumber?: string;
   manufacturer?: string;
   model?: string;
-  purchaseDate?: string;
-  purchaseCost?: number;
-  warrantyExpiry?: string;
-  areaId?: string;
-  status?: string;
+  name: string;
   notes?: string;
+  purchaseCost?: number;
+  purchaseDate?: string;
+  serialNumber?: string;
+  status?: string;
+  warrantyExpiry?: string;
 }
 
 export async function createFacilityAsset(input: CreateFacilityAssetInput) {
@@ -195,14 +195,14 @@ export async function createFacilityAsset(input: CreateFacilityAssetInput) {
 
 export interface CreateWorkOrderInput {
   areaId?: string;
-  equipmentId?: string;
-  workOrderType?: string;
-  priority?: string;
-  title: string;
-  description?: string;
   assignedTo?: string;
-  scheduledDate?: string;
+  description?: string;
+  equipmentId?: string;
   notes?: string;
+  priority?: string;
+  scheduledDate?: string;
+  title: string;
+  workOrderType?: string;
 }
 
 export async function createWorkOrder(input: CreateWorkOrderInput) {
@@ -262,15 +262,15 @@ export async function createWorkOrder(input: CreateWorkOrderInput) {
 
 export interface CreatePMScheduleInput {
   areaId?: string;
-  equipmentId?: string;
-  title: string;
+  assignedTo?: string;
   description?: string;
+  equipmentId?: string;
+  estimatedCost?: number;
+  estimatedHours?: number;
   frequency?: string;
   intervalDays?: number;
   nextDueAt: string;
-  assignedTo?: string;
-  estimatedHours?: number;
-  estimatedCost?: number;
+  title: string;
 }
 
 export async function createPMSchedule(input: CreatePMScheduleInput) {
@@ -365,7 +365,9 @@ export async function completeSchedule(scheduleId: string) {
     where: { tenantId, id: scheduleId },
   });
 
-  if (!schedule) throw new Error("Schedule not found");
+  if (!schedule) {
+    throw new Error("Schedule not found");
+  }
 
   // Calculate the next due date by advancing past now.
   const now = new Date();

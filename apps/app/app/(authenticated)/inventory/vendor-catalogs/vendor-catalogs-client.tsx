@@ -80,37 +80,37 @@ import {
 // ---------------------------------------------------------------------------
 
 interface VendorCatalog {
-  id: string;
-  tenantId: string;
-  supplierId: string;
-  itemNumber: string;
-  itemName: string;
-  description: string | null;
-  category: string | null;
   baseUnitCost: number;
+  category: string | null;
+  createdAt: string;
   currency: string;
-  unitOfMeasure: string;
-  leadTimeDays: number | null;
-  leadTimeMinDays: number | null;
-  leadTimeMaxDays: number | null;
-  minimumOrderQuantity: number | null;
-  orderMultiple: number | null;
-  isActive: boolean;
+  deletedAt: string | null;
+  description: string | null;
   effectiveFrom: string | null;
   effectiveTo: string | null;
-  supplierSku: string | null;
-  notes: string | null;
-  tags: string[];
+  id: string;
+  isActive: boolean;
+  itemName: string;
+  itemNumber: string;
   lastCostUpdate: string | null;
-  createdAt: string;
+  leadTimeDays: number | null;
+  leadTimeMaxDays: number | null;
+  leadTimeMinDays: number | null;
+  minimumOrderQuantity: number | null;
+  notes: string | null;
+  orderMultiple: number | null;
+  supplierId: string;
+  supplierSku: string | null;
+  tags: string[];
+  tenantId: string;
+  unitOfMeasure: string;
   updatedAt: string;
-  deletedAt: string | null;
 }
 
 interface Supplier {
+  code: string | null;
   id: string;
   name: string;
-  code: string | null;
 }
 
 type CatalogFormData = {
@@ -261,11 +261,19 @@ export function VendorCatalogsClient() {
         c.itemName.toLowerCase().includes(q) ||
         c.itemNumber.toLowerCase().includes(q) ||
         (c.category ?? "").toLowerCase().includes(q);
-      if (!matchesSearch) return false;
+      if (!matchesSearch) {
+        return false;
+      }
     }
-    if (categoryFilter !== "all" && c.category !== categoryFilter) return false;
-    if (statusFilter === "active" && !c.isActive) return false;
-    if (statusFilter === "inactive" && c.isActive) return false;
+    if (categoryFilter !== "all" && c.category !== categoryFilter) {
+      return false;
+    }
+    if (statusFilter === "active" && !c.isActive) {
+      return false;
+    }
+    if (statusFilter === "inactive" && c.isActive) {
+      return false;
+    }
     return true;
   });
 
@@ -317,11 +325,11 @@ export function VendorCatalogsClient() {
       currency: catalog.currency,
       unitOfMeasure: catalog.unitOfMeasure,
       leadTimeDays:
-        catalog.leadTimeDays != null ? String(catalog.leadTimeDays) : "",
+        catalog.leadTimeDays == null ? "" : String(catalog.leadTimeDays),
       minimumOrderQuantity:
-        catalog.minimumOrderQuantity != null
-          ? String(catalog.minimumOrderQuantity)
-          : "1",
+        catalog.minimumOrderQuantity == null
+          ? "1"
+          : String(catalog.minimumOrderQuantity),
       effectiveFrom: catalog.effectiveFrom
         ? catalog.effectiveFrom.split("T")[0]
         : "",
@@ -409,7 +417,9 @@ export function VendorCatalogsClient() {
   // ---------------------------------------------------------------------------
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setIsDeleting(true);
     try {
       await vendorCatalogSoftDelete({ id: deleteTarget.id });
@@ -432,7 +442,9 @@ export function VendorCatalogsClient() {
   // ---------------------------------------------------------------------------
 
   const handleDeactivate = async () => {
-    if (!deactivateTarget) return;
+    if (!deactivateTarget) {
+      return;
+    }
     setIsDeactivating(true);
     try {
       if (deactivateTarget.isActive) {
@@ -525,7 +537,7 @@ export function VendorCatalogsClient() {
         <KitchenOperationalHero
           actions={
             <Button
-              className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+              className="rounded-full bg-white px-5 font-medium text-[#17171c] text-[13px] hover:bg-white/90"
               onClick={openCreateModal}
             >
               <PlusIcon className="mr-2 size-4" />
@@ -566,11 +578,11 @@ export function VendorCatalogsClient() {
           <KitchenDashboardFilterAside>
             <div className="space-y-4">
               <div className="space-y-2.5">
-                <Label className="text-xs font-mono uppercase tracking-[0.28em] text-muted-foreground">
+                <Label className="font-mono text-muted-foreground text-xs uppercase tracking-[0.28em]">
                   Search
                 </Label>
                 <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     className="pl-9"
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -581,7 +593,7 @@ export function VendorCatalogsClient() {
               </div>
 
               <div className="space-y-2.5">
-                <Label className="text-xs font-mono uppercase tracking-[0.28em] text-muted-foreground">
+                <Label className="font-mono text-muted-foreground text-xs uppercase tracking-[0.28em]">
                   Category
                 </Label>
                 <Select
@@ -605,7 +617,7 @@ export function VendorCatalogsClient() {
               </div>
 
               <div className="space-y-2.5">
-                <Label className="text-xs font-mono uppercase tracking-[0.28em] text-muted-foreground">
+                <Label className="font-mono text-muted-foreground text-xs uppercase tracking-[0.28em]">
                   Status
                 </Label>
                 <Select
@@ -644,7 +656,7 @@ export function VendorCatalogsClient() {
                 <div className="mb-4 rounded-full bg-muted p-4">
                   <PackageIcon className="size-8 text-muted-foreground" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold">
+                <h3 className="mb-2 font-semibold text-lg">
                   {searchQuery ||
                   categoryFilter !== "all" ||
                   statusFilter !== "all"
@@ -715,14 +727,14 @@ export function VendorCatalogsClient() {
                         </TableCell>
                         <TableCell>{catalog.unitOfMeasure}</TableCell>
                         <TableCell className="text-right">
-                          {catalog.leadTimeDays != null
-                            ? `${catalog.leadTimeDays}d`
-                            : "--"}
+                          {catalog.leadTimeDays == null
+                            ? "--"
+                            : `${catalog.leadTimeDays}d`}
                         </TableCell>
                         <TableCell className="text-right">
-                          {catalog.minimumOrderQuantity != null
-                            ? Number(catalog.minimumOrderQuantity)
-                            : "--"}
+                          {catalog.minimumOrderQuantity == null
+                            ? "--"
+                            : Number(catalog.minimumOrderQuantity)}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -775,7 +787,7 @@ export function VendorCatalogsClient() {
                 </Table>
 
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between border-t border-hairline px-4 py-4">
+                  <div className="flex items-center justify-between border-hairline border-t px-4 py-4">
                     <div className="text-muted-foreground text-sm">
                       Showing{" "}
                       {Math.min(
@@ -820,7 +832,9 @@ export function VendorCatalogsClient() {
       {/* ----------------------------------------------------------------- */}
       <Dialog
         onOpenChange={(open) => {
-          if (!open) closeForm();
+          if (!open) {
+            closeForm();
+          }
         }}
         open={formOpen}
       >
@@ -1076,7 +1090,9 @@ export function VendorCatalogsClient() {
       {/* ----------------------------------------------------------------- */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         open={!!deleteTarget}
       >
@@ -1110,7 +1126,9 @@ export function VendorCatalogsClient() {
       {/* ----------------------------------------------------------------- */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeactivateTarget(null);
+          if (!open) {
+            setDeactivateTarget(null);
+          }
         }}
         open={!!deactivateTarget}
       >
@@ -1148,7 +1166,9 @@ export function VendorCatalogsClient() {
       {/* ----------------------------------------------------------------- */}
       <Dialog
         onOpenChange={(open) => {
-          if (!open) setCostTarget(null);
+          if (!open) {
+            setCostTarget(null);
+          }
         }}
         open={!!costTarget}
       >
@@ -1166,7 +1186,7 @@ export function VendorCatalogsClient() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Current Cost</Label>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {costTarget
                     ? formatCurrency(Number(costTarget.baseUnitCost), {
                         currency: costTarget.currency,

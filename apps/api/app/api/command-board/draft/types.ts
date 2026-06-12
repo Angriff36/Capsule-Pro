@@ -14,10 +14,10 @@ import type {
  */
 export interface SaveDraftRequest {
   cards: CommandBoardCard[];
-  viewport: ViewportState;
   connections: CommandBoardConnection[];
   groups: CommandBoardGroup[];
   timestamp: string;
+  viewport: ViewportState;
 }
 
 /**
@@ -32,7 +32,6 @@ export interface DraftResponse {
  * Load draft response
  */
 export interface LoadDraftResponse {
-  success: boolean;
   draft: {
     cards: CommandBoardCard[];
     viewport: ViewportState;
@@ -40,4 +39,5 @@ export interface LoadDraftResponse {
     groups: CommandBoardGroup[];
     updatedAt: string;
   } | null;
+  success: boolean;
 }

@@ -5,42 +5,35 @@ import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
 export interface VendorRecipeCostSummary {
+  costPerYield: number;
+  foodCostPercent: number | null;
+  ingredientCount: number;
+  lastCalculated: Date | null;
+  margin: number | null;
+  menuPrice: number | null;
   recipeId: string;
   recipeName: string;
   recipeVersionId: string;
+  totalCost: number;
   yieldQuantity: number;
   yieldUnit: string | null;
-  totalCost: number;
-  costPerYield: number;
-  foodCostPercent: number | null;
-  menuPrice: number | null;
-  margin: number | null;
-  ingredientCount: number;
-  lastCalculated: Date | null;
 }
 
 export interface IngredientCostDetail {
+  adjustedQuantity: number;
+  costPercentOfTotal: number;
   ingredientId: string;
   ingredientName: string;
-  quantity: number;
-  unit: string;
-  wasteFactor: number;
-  adjustedQuantity: number;
   lowestVendorCost: number;
-  vendorName: string | null;
-  vendorItemCount: number;
+  quantity: number;
   totalCost: number;
-  costPercentOfTotal: number;
+  unit: string;
+  vendorItemCount: number;
+  vendorName: string | null;
+  wasteFactor: number;
 }
 
 export interface VendorRecipeCostBreakdown {
-  recipe: {
-    id: string;
-    name: string;
-    description: string | null;
-    yieldQuantity: number;
-    yieldUnit: string | null;
-  };
   costs: {
     totalCost: number;
     costPerYield: number;
@@ -48,6 +41,13 @@ export interface VendorRecipeCostBreakdown {
     foodCostPercent: number | null;
   };
   ingredients: IngredientCostDetail[];
+  recipe: {
+    id: string;
+    name: string;
+    description: string | null;
+    yieldQuantity: number;
+    yieldUnit: string | null;
+  };
   vendors: Array<{
     name: string | null;
     itemCost: number;
@@ -56,18 +56,18 @@ export interface VendorRecipeCostBreakdown {
 
 export interface CostingSummaryStats {
   avgFoodCostPercent: number;
-  totalRecipeValue: number;
   highestMarginDish: {
     name: string;
     margin: number;
   } | null;
+  highFoodCostAlerts: number;
   lowestMarginDish: {
     name: string;
     margin: number;
   } | null;
   recipesWithCostData: number;
   totalRecipes: number;
-  highFoodCostAlerts: number;
+  totalRecipeValue: number;
 }
 
 /**

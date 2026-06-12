@@ -15,14 +15,14 @@ import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // Define types
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 interface SignatureFilters {
-  signerEmail?: string;
   dateFrom?: string;
   dateTo?: string;
+  signerEmail?: string;
 }
 
 interface SignatureListResponse {
@@ -259,6 +259,22 @@ export async function POST(
 ) {
   const { id: contractId } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "ContractSignature", command: "create", body: { ...rawBody, contractId, tenantId: user.tenantId, ipAddress: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown" }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "ContractSignature",
+    command: "create",
+    body: {
+      ...rawBody,
+      contractId,
+      tenantId: user.tenantId,
+      ipAddress:
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

@@ -42,8 +42,8 @@
  * @vitest-environment node
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextResponse } from "next/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const TENANT_ID = "00000000-0000-0000-0000-000000000010";
 // Valid v4 UUIDs (Zod's .uuid() requires version=4 and variant in [89ab]).
@@ -136,10 +136,7 @@ function manifestSuccess(result: Record<string, unknown> = {}) {
 }
 
 function manifestError(message: string, status = 500) {
-  return NextResponse.json(
-    { success: false, message },
-    { status }
-  );
+  return NextResponse.json({ success: false, message }, { status });
 }
 
 const params = Promise.resolve({ id: CASE_ID });

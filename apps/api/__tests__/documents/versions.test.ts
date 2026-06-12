@@ -55,12 +55,16 @@ vi.mock("@repo/database", () => ({
 vi.mock("@/lib/pagination", () => ({
   clampLimit: (raw: string | null) => {
     const parsed = Number.parseInt(raw ?? "", 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) return 50;
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return 50;
+    }
     return Math.min(parsed, 200);
   },
   clampOffset: (raw: string | null) => {
     const parsed = Number.parseInt(raw ?? "", 10);
-    if (!Number.isFinite(parsed) || parsed < 0) return 0;
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return 0;
+    }
     return parsed;
   },
 }));
@@ -68,24 +72,50 @@ vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }, { status }),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) =>
       NextResponse.json(
-        typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) =>
+      NextResponse.json(
+        typeof message === "string"
+          ? { success: false, message }
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
 });
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
-    if (!condition) { const err = new Error(message); err.name = "InvariantError"; throw err; }
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
   },
 }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 // ---------------------------------------------------------------------------
 // Import mocked modules AFTER vi.mock declarations
@@ -176,8 +206,12 @@ describe("Document Versioning API Routes", () => {
 
   describe("POST /api/documents/versions/commands/create (via dispatcher)", () => {
     const TEST_DOC_CURRENT_USER = {
-      id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin",
-      email: "test@test.com", firstName: "Test", lastName: "User",
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@test.com",
+      firstName: "Test",
+      lastName: "User",
     };
 
     it("returns 401 when unauthenticated (InvariantError)", async () => {
@@ -186,10 +220,21 @@ describe("Document Versioning API Routes", () => {
       authErr.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authErr);
 
-      const { POST: dispatch } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST: dispatch } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       const res = await dispatch(
-        makePostRequest({ documentType: "recipe", documentId: TEST_DOC_ID, content: {} }),
-        { params: Promise.resolve({ entity: "DocumentVersion", command: "create" }) }
+        makePostRequest({
+          documentType: "recipe",
+          documentId: TEST_DOC_ID,
+          content: {},
+        }),
+        {
+          params: Promise.resolve({
+            entity: "DocumentVersion",
+            command: "create",
+          }),
+        }
       );
 
       expect(res.status).toBe(401);
@@ -197,18 +242,37 @@ describe("Document Versioning API Routes", () => {
 
     it("delegates to runManifestCommand with correct entity/command", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
-      vi.mocked(requireCurrentUser).mockResolvedValue(TEST_DOC_CURRENT_USER as never);
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
+      vi.mocked(requireCurrentUser).mockResolvedValue(
+        TEST_DOC_CURRENT_USER as never
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "v1" }, events: [] }), {
-          status: 200, headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({ success: true, result: { id: "v1" }, events: [] }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
-      const { POST: dispatch } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const { POST: dispatch } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
+      );
       const res = await dispatch(
-        makePostRequest({ documentType: "recipe", documentId: TEST_DOC_ID, content: { title: "Test" } }),
-        { params: Promise.resolve({ entity: "DocumentVersion", command: "create" }) }
+        makePostRequest({
+          documentType: "recipe",
+          documentId: TEST_DOC_ID,
+          content: { title: "Test" },
+        }),
+        {
+          params: Promise.resolve({
+            entity: "DocumentVersion",
+            command: "create",
+          }),
+        }
       );
 
       expect(res.status).toBe(200);
@@ -224,8 +288,12 @@ describe("Document Versioning API Routes", () => {
 
   describe("POST /api/documents/versions/commands/restore (via dispatcher)", () => {
     const TEST_DOC_CURRENT_USER = {
-      id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin",
-      email: "test@test.com", firstName: "Test", lastName: "User",
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@test.com",
+      firstName: "Test",
+      lastName: "User",
     };
 
     it("returns 401 when unauthenticated (InvariantError)", async () => {
@@ -234,30 +302,46 @@ describe("Document Versioning API Routes", () => {
       authErr.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authErr);
 
-      const { POST: dispatch } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-      const res = await dispatch(
-        makePostRequest({ versionId: "v1" }),
-        { params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }) }
+      const { POST: dispatch } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
+      const res = await dispatch(makePostRequest({ versionId: "v1" }), {
+        params: Promise.resolve({
+          entity: "DocumentVersion",
+          command: "restore",
+        }),
+      });
 
       expect(res.status).toBe(401);
     });
 
     it("delegates to runManifestCommand with restore command", async () => {
       const { requireCurrentUser } = await import("@/app/lib/tenant");
-      const { runManifestCommand } = await import("@/lib/manifest/execute-command");
-      vi.mocked(requireCurrentUser).mockResolvedValue(TEST_DOC_CURRENT_USER as never);
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
+      vi.mocked(requireCurrentUser).mockResolvedValue(
+        TEST_DOC_CURRENT_USER as never
+      );
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "v2" }, events: [] }), {
-          status: 200, headers: { "Content-Type": "application/json" },
-        })
+        new Response(
+          JSON.stringify({ success: true, result: { id: "v2" }, events: [] }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
       );
 
-      const { POST: dispatch } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-      const res = await dispatch(
-        makePostRequest({ versionId: "v1" }),
-        { params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }) }
+      const { POST: dispatch } = await import(
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
+      const res = await dispatch(makePostRequest({ versionId: "v1" }), {
+        params: Promise.resolve({
+          entity: "DocumentVersion",
+          command: "restore",
+        }),
+      });
 
       expect(res.status).toBe(200);
       expect(runManifestCommand).toHaveBeenCalledWith(

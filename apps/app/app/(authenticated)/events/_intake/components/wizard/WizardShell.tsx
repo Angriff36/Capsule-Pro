@@ -10,11 +10,11 @@ import MenuWizardShell from "./MenuWizardShell";
 export type WizardMode = "intake" | "menu";
 
 interface WizardShellProps {
-  mode?: WizardMode;
-  pricingRules?: PricingRules;
   costProvider?: CostDataProvider;
   menuPricingConfig?: MenuPricingConfig;
+  mode?: WizardMode;
   ownerViewConfig?: OwnerViewConfig;
+  pricingRules?: PricingRules;
 }
 
 export default function WizardShell({

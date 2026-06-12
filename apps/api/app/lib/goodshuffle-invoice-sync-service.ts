@@ -19,11 +19,11 @@ import {
 } from "./goodshuffle-client";
 
 export interface InvoiceSyncOptions {
-  tenantId: string;
-  startDate?: Date;
-  endDate?: Date;
-  dryRun?: boolean;
   direction?: "convoy_to_goodshuffle" | "goodshuffle_to_convoy" | "both";
+  dryRun?: boolean;
+  endDate?: Date;
+  startDate?: Date;
+  tenantId: string;
 }
 
 /**
@@ -269,8 +269,12 @@ async function createConvoyBudgetFromGoodshuffle(
       body: {
         tenantId,
         eventId,
-        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
-        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(
+          2
+        ),
+        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(
+          2
+        ),
       },
     }
   );
@@ -351,8 +355,12 @@ async function updateConvoyBudgetFromGoodshuffle(
       body: {
         id: convoyBudgetId,
         tenantId,
-        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
-        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(
+          2
+        ),
+        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(
+          2
+        ),
       },
     }
   );

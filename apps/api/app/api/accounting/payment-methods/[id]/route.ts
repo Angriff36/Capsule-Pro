@@ -151,12 +151,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const action = body.action;
 
     // Map HTTP actions to Manifest commands
-    const commandMap: Record<string, { command: string; body: Record<string, unknown> }> = {
+    const commandMap: Record<
+      string,
+      { command: string; body: Record<string, unknown> }
+    > = {
       "mark-as-default": { command: "markAsDefault", body: { id } },
-      "verify": { command: "verify", body: { id, method: body.method || "manual" } },
-      "flag-for-fraud": { command: "flagForFraud", body: { id, reason: body.reason || "" } },
+      verify: {
+        command: "verify",
+        body: { id, method: body.method || "manual" },
+      },
+      "flag-for-fraud": {
+        command: "flagForFraud",
+        body: { id, reason: body.reason || "" },
+      },
       "mark-expired": { command: "markExpired", body: { id } },
-      "remove": { command: "remove", body: { id } },
+      remove: { command: "remove", body: { id } },
     };
 
     const mapped = commandMap[action];

@@ -26,36 +26,33 @@ export const parseISODateToLocal = (isoString: string | Date): Date => {
  * Hydration-safe currency formatter.
  * Memoize this in your component if using frequently.
  */
-export const createCurrencyFormatter = (locale = "en-US") => {
-  return new Intl.NumberFormat(locale, {
+export const createCurrencyFormatter = (locale = "en-US") =>
+  new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 2,
   });
-};
 
 export { formatCurrency } from "@repo/design-system/lib/format-currency";
 
 /**
  * Hydration-safe short date formatter (month: short, day: numeric).
  */
-export const createShortDateFormatter = (locale = "en-US") => {
-  return new Intl.DateTimeFormat(locale, {
+export const createShortDateFormatter = (locale = "en-US") =>
+  new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
   });
-};
 
 /**
  * Hydration-safe calendar date formatter for calendar URLs (YYYY-MM-DD format).
  */
-export const createCalendarDateFormatter = () => {
-  return new Intl.DateTimeFormat("en-CA", {
+export const createCalendarDateFormatter = () =>
+  new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-};
 
 /**
  * Format event format enum to display label.
@@ -112,12 +109,11 @@ export const scaleIngredients = (
 /**
  * Date utility functions.
  */
-export const startOfDay = (date: Date) => {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-};
+export const startOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-export const endOfDay = (date: Date) => {
-  return new Date(
+export const endOfDay = (date: Date) =>
+  new Date(
     date.getFullYear(),
     date.getMonth(),
     date.getDate(),
@@ -126,11 +122,9 @@ export const endOfDay = (date: Date) => {
     59,
     999
   );
-};
 
-export const addDays = (date: Date, days: number) => {
-  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-};
+export const addDays = (date: Date, days: number) =>
+  new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 
 /**
  * Get the time zone label for the current locale.

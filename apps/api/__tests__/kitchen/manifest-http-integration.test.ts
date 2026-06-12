@@ -16,23 +16,54 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) => new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        }),
+        { status }
+      )
+  ),
   manifestErrorResponse: vi.fn((message, status = 400) => {
-    const body = typeof message === "string" ? { success: false, message } : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    const body =
+      typeof message === "string"
+        ? { success: false, message }
+        : {
+            success: false,
+            error: message.error,
+            diagnostics: message.diagnostics ?? [],
+          };
     return new Response(JSON.stringify(body), { status });
   }),
 }));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); this.name = "InvariantError"; } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+      this.name = "InvariantError";
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
-vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -66,7 +97,15 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
     vi.mocked(requireCurrentUser).mockResolvedValue(mockCurrentUser as never);
   });
 
-  for (const cmd of ["claim", "start", "complete", "release", "reassign", "update-quantity", "cancel"]) {
+  for (const cmd of [
+    "claim",
+    "start",
+    "complete",
+    "release",
+    "reassign",
+    "update-quantity",
+    "cancel",
+  ]) {
     describe(`POST PrepTask.${cmd}`, () => {
       it("should import and expose the route handler", async () => {
         expect(manifestDispatch).toBeDefined();
@@ -76,9 +115,20 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   }
 
   it("should reject unauthorized claim requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("PrepTask", "claim")(makeRequest({ id: "task-001", userId: "user-001", stationId: "station-a" }));
+    const response = await dispatch(
+      "PrepTask",
+      "claim"
+    )(
+      makeRequest({
+        id: "task-001",
+        userId: "user-001",
+        stationId: "station-a",
+      })
+    );
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -88,10 +138,22 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
 
   it("should handle claim requests with valid data", async () => {
     vi.mocked(runManifestCommand).mockResolvedValueOnce(
-      manifestSuccessResponse({ result: { id: "task-001", status: "in_progress" }, events: [] })
+      manifestSuccessResponse({
+        result: { id: "task-001", status: "in_progress" },
+        events: [],
+      })
     );
 
-    const response = await dispatch("PrepTask", "claim")(makeRequest({ id: "task-001", userId: "user-001", stationId: "station-a" }));
+    const response = await dispatch(
+      "PrepTask",
+      "claim"
+    )(
+      makeRequest({
+        id: "task-001",
+        userId: "user-001",
+        stationId: "station-a",
+      })
+    );
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -107,9 +169,14 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
   });
 
   it("should reject unauthorized menu update requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("Menu", "update")(makeRequest({ id: "menu-001", name: "Updated Menu" }));
+    const response = await dispatch(
+      "Menu",
+      "update"
+    )(makeRequest({ id: "menu-001", name: "Updated Menu" }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -124,9 +191,14 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   });
 
   it("should reject unauthorized station assign-task requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("Station", "assign-task")(makeRequest({ stationId: "station-001", taskId: "task-001" }));
+    const response = await dispatch(
+      "Station",
+      "assign-task"
+    )(makeRequest({ stationId: "station-001", taskId: "task-001" }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -141,9 +213,14 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   });
 
   it("should reject unauthorized inventory reserve requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("InventoryItem", "reserve")(makeRequest({ itemId: "item-001", quantity: 10 }));
+    const response = await dispatch(
+      "InventoryItem",
+      "reserve"
+    )(makeRequest({ itemId: "item-001", quantity: 10 }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -158,9 +235,14 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
   });
 
   it("should reject unauthorized recipe update requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("Recipe", "update")(makeRequest({ id: "recipe-001", name: "Updated Recipe" }));
+    const response = await dispatch(
+      "Recipe",
+      "update"
+    )(makeRequest({ id: "recipe-001", name: "Updated Recipe" }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -175,9 +257,20 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
   });
 
   it("should reject unauthorized dish update-pricing requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("Dish", "update-pricing")(makeRequest({ id: "dish-001", costPerPortionCents: 500, salesPriceCents: 1500 }));
+    const response = await dispatch(
+      "Dish",
+      "update-pricing"
+    )(
+      makeRequest({
+        id: "dish-001",
+        costPerPortionCents: 500,
+        salesPriceCents: 1500,
+      })
+    );
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -192,9 +285,14 @@ describe("Manifest HTTP Integration - Ingredient Commands", () => {
   });
 
   it("should reject unauthorized ingredient update-allergens requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("Ingredient", "update-allergens")(makeRequest({ id: "ingredient-001", allergens: ["gluten", "dairy"] }));
+    const response = await dispatch(
+      "Ingredient",
+      "update-allergens"
+    )(makeRequest({ id: "ingredient-001", allergens: ["gluten", "dairy"] }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -209,9 +307,14 @@ describe("Manifest HTTP Integration - RecipeIngredient Commands", () => {
   });
 
   it("should reject unauthorized recipe-ingredient update-quantity requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("RecipeIngredient", "update-quantity")(makeRequest({ id: "ri-001", quantity: 500 }));
+    const response = await dispatch(
+      "RecipeIngredient",
+      "update-quantity"
+    )(makeRequest({ id: "ri-001", quantity: 500 }));
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -226,9 +329,14 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   });
 
   it("should reject unauthorized prep-list finalize requests", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(new InvariantError("Unauthenticated"));
+    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+      new InvariantError("Unauthenticated")
+    );
 
-    const response = await dispatch("PrepList", "finalize")(makeRequest({ id: "prep-list-001" }));
+    const response = await dispatch(
+      "PrepList",
+      "finalize"
+    )(makeRequest({ id: "prep-list-001" }));
     const data = await response.json();
 
     expect(response.status).toBe(401);

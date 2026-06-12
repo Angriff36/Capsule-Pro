@@ -15,13 +15,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { InvariantError } from "@/app/lib/invariant";
 import { resolveCurrentUser } from "@/app/lib/tenant";
-import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -65,7 +65,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const user = await resolveCurrentUser(request);
 
     const { id: sessionId } = await context.params;
-    const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+    const body = (await request.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
 
     // Find the session by sessionId (not id) — read, constitution §10
     const session = await database.cycleCountSession.findFirst({
@@ -117,7 +120,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const countedQuantity = toNumber(record.countedQuantity);
       const variance = countedQuantity - expectedQuantity;
       const variancePct =
-        expectedQuantity > 0 ? Math.abs((variance / expectedQuantity) * 100) : 0;
+        expectedQuantity > 0
+          ? Math.abs((variance / expectedQuantity) * 100)
+          : 0;
       const accuracyScore =
         expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
 

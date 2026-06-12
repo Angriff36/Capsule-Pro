@@ -14,56 +14,56 @@ export type TimeOffType =
   | "OTHER";
 
 export interface TimeOffRequest {
-  id: string;
-  tenant_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  start_date: Date;
-  end_date: Date;
-  reason: string | null;
-  status: TimeOffStatus;
-  request_type: TimeOffType;
   created_at: Date;
-  updated_at: Date;
+  employee_email: string;
+  employee_first_name: string | null;
+  employee_id: string;
+  employee_last_name: string | null;
+  employee_role: string;
+  end_date: Date;
+  id: string;
   processed_at: Date | null;
   processed_by: string | null;
   processed_by_first_name: string | null;
   processed_by_last_name: string | null;
+  reason: string | null;
   rejection_reason: string | null;
+  request_type: TimeOffType;
+  start_date: Date;
+  status: TimeOffStatus;
+  tenant_id: string;
+  updated_at: Date;
 }
 
 export interface CreateTimeOffRequestInput {
   employeeId: string;
-  startDate: string; // ISO date string
   endDate: string; // ISO date string
   reason?: string;
   requestType: TimeOffType;
+  startDate: string; // ISO date string
 }
 
 export interface UpdateTimeOffStatusInput {
-  status: TimeOffStatus;
   rejectionReason?: string; // Required when status is REJECTED
+  status: TimeOffStatus;
 }
 
 export interface TimeOffRequestFilters {
   employeeId?: string;
-  status?: TimeOffStatus;
-  startDate?: string; // Filter requests starting on or after this date
   endDate?: string; // Filter requests ending on or before this date
-  requestType?: TimeOffType;
-  page?: number;
   limit?: number;
+  page?: number;
+  requestType?: TimeOffType;
+  startDate?: string; // Filter requests starting on or after this date
+  status?: TimeOffStatus;
 }
 
 export interface TimeOffRequestsListResponse {
-  requests: TimeOffRequest[];
   pagination: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
   };
+  requests: TimeOffRequest[];
 }

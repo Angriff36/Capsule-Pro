@@ -26,7 +26,7 @@ export const EventsPageClient = () => {
         open={isModalOpen}
       />
       <button
-        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-primary text-primary-foreground hover:scale-110 transition-transform"
+        className="fixed right-6 bottom-6 flex h-14 w-14 items-center justify-center rounded-full border border-primary/30 bg-primary text-primary-foreground transition-transform hover:scale-110"
         onClick={() => setIsModalOpen(true)}
         type="button"
       >

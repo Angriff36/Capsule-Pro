@@ -196,7 +196,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[TimeEntry/POST] Delegating to manifest clockIn command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "TimeEntry",

@@ -12,17 +12,17 @@
  * (pure, dependency-injected); this route owns auth + IO wiring only.
  */
 
-import type { NextRequest } from "next/server";
-import { captureException } from "@sentry/nextjs";
 import { database, type Prisma } from "@repo/database";
+import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
 import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
-import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import type { CommitDeps } from "@/lib/event-board/commit-event-board-drafts";
 import { commitEventBoardDrafts } from "@/lib/event-board/commit-event-board-drafts";
+import { manifestErrorResponse } from "@/lib/manifest-response";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
@@ -92,7 +92,9 @@ const deps: CommitDeps = {
   },
 
   loadDraftCards: async (tx, boardId, tenantId) => {
-    const rows = await (tx as Prisma.TransactionClient).commandBoardCard.findMany({
+    const rows = await (
+      tx as Prisma.TransactionClient
+    ).commandBoardCard.findMany({
       where: { tenantId, boardId, deletedAt: null },
       select: {
         id: true,

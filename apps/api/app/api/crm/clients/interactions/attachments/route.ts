@@ -8,8 +8,8 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { deleteFile, uploadFile } from "@repo/storage";
 import { log } from "@repo/observability/log";
+import { deleteFile, uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,7 +40,7 @@ const MAX_FILES_PER_UPLOAD = 5;
  */
 export async function POST(request: Request) {
   const { orgId, userId } = await auth();
-  if (!orgId || !userId) {
+  if (!(orgId && userId)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 

@@ -21,12 +21,21 @@
  */
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "..", "manifest", "ir", "kitchen.ir.json");
+const irPath = join(
+  here,
+  "..",
+  "..",
+  "..",
+  "..",
+  "manifest",
+  "ir",
+  "kitchen.ir.json"
+);
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
@@ -45,7 +54,8 @@ const PARENT_OWNED = ["eventId", "clientId"] as const;
 describe("RevenueRecognitionSchedule create — does not require invoice-owned eventId/clientId", () => {
   it("links to Invoice via belongsTo (so context is resolvable from invoiceId)", () => {
     const rel = schedule.relationships.find(
-      (r: { kind: string; target: string }) => r.kind === "belongsTo" && r.target === "Invoice"
+      (r: { kind: string; target: string }) =>
+        r.kind === "belongsTo" && r.target === "Invoice"
     );
     expect(rel).toBeDefined();
     expect(rel.foreignKey.fields).toContain("invoiceId");
@@ -57,20 +67,26 @@ describe("RevenueRecognitionSchedule create — does not require invoice-owned e
   });
 
   it("does NOT ask the caller for the invoice-owned eventId/clientId", () => {
-    const params = new Set(createCmd.parameters.map((p: { name: string }) => p.name));
+    const params = new Set(
+      createCmd.parameters.map((p: { name: string }) => p.name)
+    );
     const duplicated = PARENT_OWNED.filter((f) => params.has(f));
     expect(duplicated).toEqual([]);
   });
 
   it("declares the inherited fields it stores (so propagation has a target)", () => {
-    const props = new Set(schedule.properties.map((p: { name: string }) => p.name));
+    const props = new Set(
+      schedule.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(props.has(f)).toBe(true);
     }
   });
 
   it("the inherited fields are genuinely Invoice-owned (the duplication it avoids)", () => {
-    const invoiceProps = new Set(invoice.properties.map((p: { name: string }) => p.name));
+    const invoiceProps = new Set(
+      invoice.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(invoiceProps.has(f)).toBe(true);
     }
@@ -81,9 +97,13 @@ describe("RevenueRecognitionSchedule create — does not require invoice-owned e
     // it must stay a create param so the generic resolver excludes it from
     // inheritance (otherwise the invoice's metadata would silently bleed onto the
     // schedule). See the FALSE_POSITIVE entry in parent-context-overrides.json.
-    const params = new Set(createCmd.parameters.map((p: { name: string }) => p.name));
+    const params = new Set(
+      createCmd.parameters.map((p: { name: string }) => p.name)
+    );
     expect(params.has("metadata")).toBe(true);
-    const invoiceProps = new Set(invoice.properties.map((p: { name: string }) => p.name));
+    const invoiceProps = new Set(
+      invoice.properties.map((p: { name: string }) => p.name)
+    );
     expect(invoiceProps.has("metadata")).toBe(true);
   });
 });

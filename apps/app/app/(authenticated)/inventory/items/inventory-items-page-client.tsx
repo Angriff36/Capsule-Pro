@@ -137,7 +137,14 @@ export const InventoryItemsPageClient = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchQuery, categoryFilter, supplierFilter, stockStatusFilter, fsaStatusFilter]);
+  }, [
+    page,
+    searchQuery,
+    categoryFilter,
+    supplierFilter,
+    stockStatusFilter,
+    fsaStatusFilter,
+  ]);
 
   useEffect(() => {
     loadItems();
@@ -439,7 +446,7 @@ export const InventoryItemsPageClient = () => {
             <div className="flex items-center justify-between rounded-xl border bg-muted/50 p-4">
               <div className="flex items-center gap-3">
                 <span className="font-medium text-sm">
-                  {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""}{" "}
+                  {selectedIds.size} item{selectedIds.size === 1 ? "" : "s"}{" "}
                   selected
                 </span>
                 <Button onClick={clearSelection} size="sm" variant="ghost">
@@ -511,9 +518,7 @@ export const InventoryItemsPageClient = () => {
                 <PackageIcon className="size-8 text-muted-foreground" />
               </div>
               <h3 className="mb-2 font-semibold text-lg">
-                {hasActiveFilters
-                  ? "No items found"
-                  : "No inventory items yet"}
+                {hasActiveFilters ? "No items found" : "No inventory items yet"}
               </h3>
               <p className="mb-4 text-muted-foreground text-sm">
                 {hasActiveFilters
@@ -535,8 +540,7 @@ export const InventoryItemsPageClient = () => {
                     <TableHead className="w-10">
                       <Checkbox
                         checked={
-                          items.length > 0 &&
-                          selectedIds.size === items.length
+                          items.length > 0 && selectedIds.size === items.length
                         }
                         onCheckedChange={toggleSelectAll}
                       />

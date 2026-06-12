@@ -7,45 +7,45 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface CurrentMetrics {
-  total_events: string;
-  budgeted_revenue: string;
+  actual_food_cost: string;
+  actual_labor_cost: string;
+  actual_other_cost: string;
   actual_revenue: string;
   budgeted_food_cost: string;
-  actual_food_cost: string;
   budgeted_labor_cost: string;
-  actual_labor_cost: string;
   budgeted_other_cost: string;
-  actual_other_cost: string;
+  budgeted_revenue: string;
+  total_events: string;
 }
 
 interface PreviousMetrics {
-  total_events: string;
-  budgeted_revenue: string;
-  actual_revenue: string;
   actual_food_cost: string;
   actual_labor_cost: string;
+  actual_revenue: string;
+  budgeted_revenue: string;
+  total_events: string;
 }
 
 interface LedgerData {
-  pending_proposals: string;
   active_contracts: string;
   deposits_received: string;
+  pending_proposals: string;
 }
 
 interface FinanceMetrics {
-  budgetedRevenue: number;
+  actualFoodCost: number;
+  actualLaborCost: number;
+  actualOtherCost: number;
   actualRevenue: number;
   budgetedFoodCost: number;
-  actualFoodCost: number;
   budgetedLaborCost: number;
-  actualLaborCost: number;
   budgetedOtherCost: number;
-  actualOtherCost: number;
-  previousRevenue: number;
+  budgetedRevenue: number;
+  grossProfitMargin: number;
   previousFoodCost: number;
   previousLaborCost: number;
+  previousRevenue: number;
   totalCost: number;
-  grossProfitMargin: number;
 }
 
 function calculateDateRange(period: string) {

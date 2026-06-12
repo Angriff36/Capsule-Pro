@@ -1,16 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltipContent,
-} from "@repo/design-system/components/ui/chart";
 import {
   CommandBand,
   CommandBandActions,
@@ -22,6 +11,13 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -39,22 +35,16 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import type {
+  MenuEngineeringData,
+  MenuItemAnalysis,
+} from "@/app/lib/menu-engineering";
 import {
   formatCurrency,
   formatPercent,
   getQuadrantInfo,
   useMenuEngineering,
-} from "@/app/lib/menu-engineering";
-import type {
-  MenuItemAnalysis,
-  MenuEngineeringData,
 } from "@/app/lib/menu-engineering";
 
 const COLORS = {
@@ -80,7 +70,7 @@ const MenuEngineeringSkeleton = () => (
 
     <OperationalColumn>
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-6 lg:grid-cols-4">
@@ -99,7 +89,7 @@ const MenuEngineeringSkeleton = () => (
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Menu Analysis
         </h2>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -145,7 +135,7 @@ const ErrorState = ({ error }: { error: Error }) => (
       <Card className="border-destructive/50 bg-destructive/10">
         <CardContent className="flex items-center gap-2 p-6">
           <AlertCircle className="size-5 text-destructive" />
-          <p className="text-sm text-destructive-foreground">
+          <p className="text-destructive-foreground text-sm">
             Failed to load menu engineering data. {error.message}
           </p>
         </CardContent>
@@ -155,11 +145,11 @@ const ErrorState = ({ error }: { error: Error }) => (
 );
 
 interface MetricCardProps {
+  change?: number;
+  format?: "currency" | "percent" | "number";
+  icon: React.ReactNode;
   title: string;
   value: string | number;
-  change?: number;
-  icon: React.ReactNode;
-  format?: "currency" | "percent" | "number";
 }
 
 const MetricCard = ({
@@ -170,8 +160,10 @@ const MetricCard = ({
   format = "number",
 }: MetricCardProps) => {
   const formatValue = (val: string | number) => {
-    const numValue = typeof val === "string" ? parseFloat(val) : val;
-    if (isNaN(numValue)) return "N/A";
+    const numValue = typeof val === "string" ? Number.parseFloat(val) : val;
+    if (isNaN(numValue)) {
+      return "N/A";
+    }
 
     switch (format) {
       case "currency":
@@ -186,16 +178,16 @@ const MetricCard = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="font-medium text-muted-foreground text-sm">
           {title}
         </CardTitle>
         <div className="text-muted-foreground">{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{formatValue(value)}</div>
+        <div className="font-bold text-2xl">{formatValue(value)}</div>
         {change !== undefined && (
           <p
-            className={`text-xs flex items-center gap-1 mt-1 ${
+            className={`mt-1 flex items-center gap-1 text-xs ${
               change >= 0 ? "text-emerald-600" : "text-red-600"
             }`}
           >
@@ -221,14 +213,18 @@ const QuadrantDistributionChart = ({
 }: QuadrantDistributionChartProps) => {
   const data = [
     { name: "Star", value: distribution.star, color: COLORS.star },
-    { name: "Plowhorse", value: distribution.plowhorse, color: COLORS.plowhorse },
+    {
+      name: "Plowhorse",
+      value: distribution.plowhorse,
+      color: COLORS.plowhorse,
+    },
     { name: "Puzzle", value: distribution.puzzle, color: COLORS.puzzle },
     { name: "Dog", value: distribution.dog, color: COLORS.dog },
   ].filter((item) => item.value > 0);
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+      <div className="flex h-64 items-center justify-center text-muted-foreground text-sm">
         No menu item data available
       </div>
     );
@@ -238,28 +234,28 @@ const QuadrantDistributionChart = ({
     <ResponsiveContainer height={300} width="100%">
       <PieChart>
         <Pie
-          data={data}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={100}
-          paddingAngle={2}
+          data={data}
           dataKey="value"
+          innerRadius={60}
           label={({ name, percent }) =>
             `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
           }
+          outerRadius={100}
+          paddingAngle={2}
         >
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
+            <Cell fill={entry.color} key={`cell-${index}`} />
           ))}
         </Pie>
         <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
               return (
-                <div className="bg-background border rounded-lg shadow-lg p-2">
+                <div className="rounded-lg border bg-background p-2 shadow-lg">
                   <p className="font-semibold">{payload[0].name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {payload[0].value} items
                   </p>
                 </div>
@@ -274,8 +270,8 @@ const QuadrantDistributionChart = ({
 };
 
 interface MenuItemTableRowProps {
-  item: MenuItemAnalysis;
   avgMargin: number;
+  item: MenuItemAnalysis;
 }
 
 const MenuItemTableRow = ({ item, avgMargin }: MenuItemTableRowProps) => {
@@ -283,21 +279,21 @@ const MenuItemTableRow = ({ item, avgMargin }: MenuItemTableRowProps) => {
   const marginVsAverage = item.marginPercent - avgMargin;
 
   return (
-    <tr className="border-b hover:bg-muted/50 transition-colors">
+    <tr className="border-b transition-colors hover:bg-muted/50">
       <td className="p-3 align-middle">
         <div className="font-medium">{item.dishName}</div>
         {item.category && (
           <div className="text-muted-foreground text-xs">{item.category}</div>
         )}
       </td>
-      <td className="p-3 align-middle text-right">
+      <td className="p-3 text-right align-middle">
         {formatCurrency(item.totalRevenue)}
       </td>
-      <td className="p-3 align-middle text-right">
+      <td className="p-3 text-right align-middle">
         <div className="font-medium">{formatPercent(item.marginPercent)}</div>
         {marginVsAverage !== 0 && (
           <div
-            className={`text-xs flex items-center justify-end gap-1 ${
+            className={`flex items-center justify-end gap-1 text-xs ${
               marginVsAverage >= 0 ? "text-emerald-600" : "text-red-600"
             }`}
           >
@@ -310,10 +306,10 @@ const MenuItemTableRow = ({ item, avgMargin }: MenuItemTableRowProps) => {
           </div>
         )}
       </td>
-      <td className="p-3 align-middle text-center">
+      <td className="p-3 text-center align-middle">
         <div className="flex items-center justify-center gap-2">
           <div
-            className="w-16 bg-muted rounded-full h-2 relative"
+            className="relative h-2 w-16 rounded-full bg-muted"
             title={`Popularity: ${item.popularityScore}/100`}
           >
             <div
@@ -327,17 +323,17 @@ const MenuItemTableRow = ({ item, avgMargin }: MenuItemTableRowProps) => {
               style={{ width: `${item.popularityScore}%` }}
             />
           </div>
-          <span className="text-xs text-muted-foreground w-8">
+          <span className="w-8 text-muted-foreground text-xs">
             {item.popularityScore}
           </span>
         </div>
       </td>
-      <td className="p-3 align-middle text-center">
+      <td className="p-3 text-center align-middle">
         <Badge className={quadrantInfo.bgColor}>
           <span className={quadrantInfo.color}>{quadrantInfo.name}</span>
         </Badge>
       </td>
-      <td className="p-3 align-middle text-right">
+      <td className="p-3 text-right align-middle">
         {formatCurrency(item.contributionMargin)}
       </td>
     </tr>
@@ -345,8 +341,8 @@ const MenuItemTableRow = ({ item, avgMargin }: MenuItemTableRowProps) => {
 };
 
 interface RecommendationsPanelProps {
-  recommendations: string[];
   quadrantDistribution: MenuEngineeringData["quadrantDistribution"];
+  recommendations: string[];
 }
 
 const RecommendationsPanel = ({
@@ -375,37 +371,37 @@ const RecommendationsPanel = ({
         <div className="space-y-3">
           {/* Quadrant Summary */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+            <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-3 dark:bg-emerald-950/30">
               <div className="size-3 rounded-full bg-emerald-500" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">Stars</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm">Stars</div>
                 <div className="text-muted-foreground text-xs">
                   {quadrantDistribution.star} items
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+            <div className="flex items-center gap-2 rounded-lg bg-blue-50 p-3 dark:bg-blue-950/30">
               <div className="size-3 rounded-full bg-blue-500" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">Plowhorses</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm">Plowhorses</div>
                 <div className="text-muted-foreground text-xs">
                   {quadrantDistribution.plowhorse} items
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30">
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
               <div className="size-3 rounded-full bg-amber-500" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">Puzzles</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm">Puzzles</div>
                 <div className="text-muted-foreground text-xs">
                   {quadrantDistribution.puzzle} items
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 dark:bg-red-950/30">
               <div className="size-3 rounded-full bg-red-500" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">Dogs</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm">Dogs</div>
                 <div className="text-muted-foreground text-xs">
                   {quadrantDistribution.dog} items
                 </div>
@@ -417,10 +413,10 @@ const RecommendationsPanel = ({
           <div className="space-y-2 pt-2">
             {recommendations.map((recommendation, index) => (
               <div
+                className="flex items-start gap-2 rounded-lg bg-muted/50 p-3"
                 key={index}
-                className="flex items-start gap-2 p-3 rounded-lg bg-muted/50"
               >
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex-shrink-0 mt-0.5">
+                <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground text-xs">
                   {index + 1}
                 </div>
                 <p className="text-sm">{recommendation}</p>
@@ -435,9 +431,9 @@ const RecommendationsPanel = ({
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <PieChartIcon className="size-16 text-muted-foreground/50 mb-4" />
-    <h3 className="text-lg font-semibold mb-2">No Menu Data Available</h3>
-    <p className="text-muted-foreground text-sm max-w-md">
+    <PieChartIcon className="mb-4 size-16 text-muted-foreground/50" />
+    <h3 className="mb-2 font-semibold text-lg">No Menu Data Available</h3>
+    <p className="max-w-md text-muted-foreground text-sm">
       Start adding dishes to your events to see menu engineering insights. The
       analysis will show contribution margins, popularity scores, and strategic
       recommendations.
@@ -479,7 +475,7 @@ const MenuEngineeringPageClient = () => {
             </CommandBandLede>
           </div>
           <CommandBandActions>
-            <Select value={period} onValueChange={handlePeriodChange}>
+            <Select onValueChange={handlePeriodChange} value={period}>
               <SelectTrigger className="w-[180px] border-white/25 bg-transparent text-white">
                 <SelectValue placeholder="Select period" />
               </SelectTrigger>
@@ -495,37 +491,35 @@ const MenuEngineeringPageClient = () => {
       </CommandBand>
 
       <OperationalColumn>
-        {!hasData ? (
-          <EmptyState />
-        ) : (
+        {hasData ? (
           <>
             {/* Performance Overview */}
             <section className="space-y-4">
               <SectionHeader title="Performance Overview" />
               <div className="grid gap-6 lg:grid-cols-4">
                 <MetricCard
+                  format="currency"
+                  icon={<DollarSign className="size-4" />}
                   title="Total Revenue"
                   value={data.summary.totalRevenue}
-                  icon={<DollarSign className="size-4" />}
-                  format="currency"
                 />
                 <MetricCard
+                  format="currency"
+                  icon={<TrendingUp className="size-4" />}
                   title="Contribution Margin"
                   value={data.summary.totalContributionMargin}
-                  icon={<TrendingUp className="size-4" />}
-                  format="currency"
                 />
                 <MetricCard
+                  format="percent"
+                  icon={<PercentIcon />}
                   title="Average Margin"
                   value={data.summary.averageMarginPercent}
-                  icon={<PercentIcon />}
-                  format="percent"
                 />
                 <MetricCard
+                  format="number"
+                  icon={<OrderIcon />}
                   title="Total Orders"
                   value={data.summary.totalOrders}
-                  icon={<OrderIcon />}
-                  format="number"
                 />
               </div>
             </section>
@@ -536,7 +530,7 @@ const MenuEngineeringPageClient = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Menu Matrix Distribution</CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Distribution of items by performance quadrant
                   </p>
                 </CardHeader>
@@ -549,8 +543,8 @@ const MenuEngineeringPageClient = () => {
 
               {/* Recommendations */}
               <RecommendationsPanel
-                recommendations={data.recommendations}
                 quadrantDistribution={data.quadrantDistribution}
+                recommendations={data.recommendations}
               />
             </div>
 
@@ -564,10 +558,16 @@ const MenuEngineeringPageClient = () => {
                       <thead>
                         <tr className="border-b bg-muted/50">
                           <th className="p-3 text-left font-medium">Dish</th>
-                          <th className="p-3 text-right font-medium">Revenue</th>
+                          <th className="p-3 text-right font-medium">
+                            Revenue
+                          </th>
                           <th className="p-3 text-right font-medium">Margin</th>
-                          <th className="p-3 text-center font-medium">Popularity</th>
-                          <th className="p-3 text-center font-medium">Quadrant</th>
+                          <th className="p-3 text-center font-medium">
+                            Popularity
+                          </th>
+                          <th className="p-3 text-center font-medium">
+                            Quadrant
+                          </th>
                           <th className="p-3 text-right font-medium">
                             Contribution
                           </th>
@@ -576,9 +576,9 @@ const MenuEngineeringPageClient = () => {
                       <tbody>
                         {data.menuItems.map((item) => (
                           <MenuItemTableRow
-                            key={item.dishId}
-                            item={item}
                             avgMargin={data.summary.averageMarginPercent}
+                            item={item}
+                            key={item.dishId}
                           />
                         ))}
                       </tbody>
@@ -589,10 +589,10 @@ const MenuEngineeringPageClient = () => {
             </section>
 
             {/* Category Analysis */}
-            <CategoryAnalysisSection
-              categoryAnalysis={data.categoryAnalysis}
-            />
+            <CategoryAnalysisSection categoryAnalysis={data.categoryAnalysis} />
           </>
+        ) : (
+          <EmptyState />
         )}
       </OperationalColumn>
     </PageCanvas>
@@ -604,7 +604,9 @@ function CategoryAnalysisSection({
 }: {
   categoryAnalysis: MenuEngineeringData["categoryAnalysis"];
 }) {
-  if (categoryAnalysis.length === 0) return null;
+  if (categoryAnalysis.length === 0) {
+    return null;
+  }
 
   return (
     <section className="space-y-4">
@@ -645,7 +647,7 @@ const CategoryAnalysisTable = ({
             </thead>
             <tbody>
               {categoryAnalysis.map((category, index) => (
-                <tr key={index} className="border-b hover:bg-muted/50">
+                <tr className="border-b hover:bg-muted/50" key={index}>
                   <td className="p-3 font-medium">{category.category}</td>
                   <td className="p-3 text-right">{category.totalDishes}</td>
                   <td className="p-3 text-right">{category.totalOrders}</td>
@@ -680,15 +682,15 @@ const CategoryAnalysisTable = ({
 
 const PercentIcon = () => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
     fill="none"
+    height="16"
     stroke="currentColor"
-    strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width="16"
+    xmlns="http://www.w3.org/2000/svg"
   >
     <path d="M4 12a8 8 0 0 1 8-8" />
     <path d="M4 12a8 8 0 0 0 8 8" />
@@ -699,15 +701,15 @@ const PercentIcon = () => (
 
 const OrderIcon = () => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
     fill="none"
+    height="16"
     stroke="currentColor"
-    strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width="16"
+    xmlns="http://www.w3.org/2000/svg"
   >
     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
     <path d="M3 6h18" />

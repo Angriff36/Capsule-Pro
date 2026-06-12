@@ -20,19 +20,33 @@
  */
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "..", "manifest", "ir", "kitchen.ir.json");
+const irPath = join(
+  here,
+  "..",
+  "..",
+  "..",
+  "..",
+  "manifest",
+  "ir",
+  "kitchen.ir.json"
+);
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
-const asset = ir.entities.find((e: { name: string }) => e.name === "FacilityAsset");
-const workOrder = ir.entities.find((e: { name: string }) => e.name === "FacilityWorkOrder");
+const asset = ir.entities.find(
+  (e: { name: string }) => e.name === "FacilityAsset"
+);
+const workOrder = ir.entities.find(
+  (e: { name: string }) => e.name === "FacilityWorkOrder"
+);
 const createCmd = ir.commands.find(
-  (c: { entity: string; name: string }) => c.entity === "FacilityWorkOrder" && c.name === "create"
+  (c: { entity: string; name: string }) =>
+    c.entity === "FacilityWorkOrder" && c.name === "create"
 );
 
 // Asset-owned location context a work order should inherit rather than ask for.
@@ -42,7 +56,8 @@ const PARENT_OWNED = ["facilityId", "areaId"] as const;
 describe("FacilityWorkOrder create — does not require asset-owned facility/area input", () => {
   it("links to FacilityAsset via belongsTo (so context is resolvable from assetId)", () => {
     const rel = workOrder.relationships.find(
-      (r: { kind: string; target: string }) => r.kind === "belongsTo" && r.target === "FacilityAsset"
+      (r: { kind: string; target: string }) =>
+        r.kind === "belongsTo" && r.target === "FacilityAsset"
     );
     expect(rel).toBeDefined();
     expect(rel.foreignKey.fields).toContain("assetId");
@@ -54,20 +69,26 @@ describe("FacilityWorkOrder create — does not require asset-owned facility/are
   });
 
   it("does NOT ask the caller for the asset-owned facility/area fields", () => {
-    const params = new Set(createCmd.parameters.map((p: { name: string }) => p.name));
+    const params = new Set(
+      createCmd.parameters.map((p: { name: string }) => p.name)
+    );
     const duplicated = PARENT_OWNED.filter((f) => params.has(f));
     expect(duplicated).toEqual([]);
   });
 
   it("declares the asset-owned snapshot fields it inherits (so they can be stored)", () => {
-    const props = new Set(workOrder.properties.map((p: { name: string }) => p.name));
+    const props = new Set(
+      workOrder.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(props.has(f)).toBe(true);
     }
   });
 
   it("the inherited fields are genuinely FacilityAsset-owned (the duplication it avoids)", () => {
-    const assetProps = new Set(asset.properties.map((p: { name: string }) => p.name));
+    const assetProps = new Set(
+      asset.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(assetProps.has(f)).toBe(true);
     }

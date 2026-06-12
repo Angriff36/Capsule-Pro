@@ -15,13 +15,13 @@ import type { FormEvent, ReactNode } from "react";
  * inside the handler.
  */
 export interface FooterNewsletterProps {
-  label?: ReactNode;
+  className?: string;
   description?: ReactNode;
+  footnote?: ReactNode;
+  label?: ReactNode;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   placeholder?: string;
   submitAriaLabel?: string;
-  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
-  footnote?: ReactNode;
-  className?: string;
 }
 
 export function FooterNewsletter({

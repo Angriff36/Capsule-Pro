@@ -12,8 +12,8 @@
  * @packageDocumentation
  */
 
-import type { McpIdentity, TransportMode } from "../types.js";
 import { keys } from "../keys.js";
+import type { McpIdentity, TransportMode } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // Minimal Prisma interface (avoids importing @repo/database directly)

@@ -99,7 +99,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -112,7 +114,9 @@ class Mem implements Store {
   }
 }
 
-function makeProvider(): (entity: string) => Store & { getAll(): Promise<Record<string, unknown>[]> } {
+function makeProvider(): (
+  entity: string
+) => Store & { getAll(): Promise<Record<string, unknown>[]> } {
   const stores = new Map<string, Mem>();
   return (entity: string) => {
     let store = stores.get(entity);
@@ -134,8 +138,11 @@ describe("Event board commit path — IR conformance", () => {
     const provider = makeProvider();
     const engine = new ManifestRuntimeEngine(
       ir,
-      { tenantId: USER.tenantId, user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
-      { storeProvider: provider, customBuiltins: createCustomBuiltins() },
+      {
+        tenantId: USER.tenantId,
+        user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
+      },
+      { storeProvider: provider, customBuiltins: createCustomBuiltins() }
     );
 
     const result = await runManifestCommandCore(
@@ -152,10 +159,13 @@ describe("Event board commit path — IR conformance", () => {
           shiftEnd: SHIFT_END,
         },
         user: { ...USER },
-      },
+      }
     );
 
-    expect(result.ok, result.ok ? "" : (result as { message?: string }).message).toBe(true);
+    expect(
+      result.ok,
+      result.ok ? "" : (result as { message?: string }).message
+    ).toBe(true);
 
     // The result must carry the created instance id.
     const created = result.ok ? (result.result as { id?: string }) : null;
@@ -176,8 +186,11 @@ describe("Event board commit path — IR conformance", () => {
     const provider = makeProvider();
     const engine = new ManifestRuntimeEngine(
       ir,
-      { tenantId: USER.tenantId, user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
-      { storeProvider: provider, customBuiltins: createCustomBuiltins() },
+      {
+        tenantId: USER.tenantId,
+        user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
+      },
+      { storeProvider: provider, customBuiltins: createCustomBuiltins() }
     );
 
     // Step 1: Create the draft card — engine auto-persists for `create` commands
@@ -203,13 +216,18 @@ describe("Event board commit path — IR conformance", () => {
           entityType: "User",
         },
         user: { ...USER },
-      },
+      }
     );
 
-    expect(createResult.ok, createResult.ok ? "" : (createResult as { message?: string }).message).toBe(true);
+    expect(
+      createResult.ok,
+      createResult.ok ? "" : (createResult as { message?: string }).message
+    ).toBe(true);
 
     // result.result carries { id } for a create
-    const createdCard = createResult.ok ? (createResult.result as { id: string }) : null;
+    const createdCard = createResult.ok
+      ? (createResult.result as { id: string })
+      : null;
     expect(createdCard?.id).toBeTruthy();
     const cardId = createdCard!.id;
 
@@ -230,10 +248,13 @@ describe("Event board commit path — IR conformance", () => {
         },
         user: { ...USER },
         instanceId: cardId,
-      },
+      }
     );
 
-    expect(updateResult.ok, updateResult.ok ? "" : (updateResult as { message?: string }).message).toBe(true);
+    expect(
+      updateResult.ok,
+      updateResult.ok ? "" : (updateResult as { message?: string }).message
+    ).toBe(true);
 
     // Read back from the store to verify persisted state
     const cards = await provider("CommandBoardCard").getAll();
@@ -254,8 +275,11 @@ describe("Event board commit path — IR conformance", () => {
     const provider = makeProvider();
     const engine = new ManifestRuntimeEngine(
       ir,
-      { tenantId: USER.tenantId, user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
-      { storeProvider: provider, customBuiltins: createCustomBuiltins() },
+      {
+        tenantId: USER.tenantId,
+        user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
+      },
+      { storeProvider: provider, customBuiltins: createCustomBuiltins() }
     );
 
     const result = await runManifestCommandCore(
@@ -280,7 +304,7 @@ describe("Event board commit path — IR conformance", () => {
           entityType: "User",
         },
         user: { ...USER },
-      },
+      }
     );
 
     expect(result.ok).toBe(false);
@@ -291,7 +315,7 @@ describe("Event board commit path — IR conformance", () => {
     };
     expect(failure.kind).toBe("constraint_blocked");
     const blockedConstraint = failure.constraintOutcomes?.find(
-      (o) => !o.passed && o.code === "validCardType",
+      (o) => !o.passed && o.code === "validCardType"
     );
     expect(blockedConstraint).toBeDefined();
   });

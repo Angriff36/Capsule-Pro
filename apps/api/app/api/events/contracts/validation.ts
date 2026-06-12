@@ -19,42 +19,42 @@ export const CONTRACT_STATUSES = [
 export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
 export interface ContractFilters {
-  search?: string;
-  status?: ContractStatus;
-  eventId?: string;
   clientId?: string;
   dateFrom?: string;
   dateTo?: string;
-}
-
-export interface CreateContractRequest {
-  eventId: string;
-  clientId: string;
-  title?: string;
-  notes?: string;
-  expiresAt?: string | Date;
-  documentUrl?: string;
-  documentType?: string;
-}
-
-export interface UpdateContractRequest {
-  id: string;
   eventId?: string;
-  clientId?: string;
-  title?: string;
-  notes?: string;
-  expiresAt?: string | Date;
-  documentUrl?: string;
-  documentType?: string;
+  search?: string;
   status?: ContractStatus;
 }
 
+export interface CreateContractRequest {
+  clientId: string;
+  documentType?: string;
+  documentUrl?: string;
+  eventId: string;
+  expiresAt?: string | Date;
+  notes?: string;
+  title?: string;
+}
+
+export interface UpdateContractRequest {
+  clientId?: string;
+  documentType?: string;
+  documentUrl?: string;
+  eventId?: string;
+  expiresAt?: string | Date;
+  id: string;
+  notes?: string;
+  status?: ContractStatus;
+  title?: string;
+}
+
 export interface ContractSignatureData {
-  signerName: string;
-  signerEmail: string;
-  signerTitle?: string;
-  signatureDate: string | Date;
   ipAddress?: string;
+  signatureDate: string | Date;
+  signerEmail: string;
+  signerName: string;
+  signerTitle?: string;
   userAgent?: string;
 }
 

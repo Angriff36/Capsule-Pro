@@ -4,20 +4,19 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { getTenantIdForOrg } from "../../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { getTenantIdForOrg } from "../../../lib/tenant";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
 export interface SetupEventStepResult {
   completed: boolean;
-  skipped: boolean;
   detail: string;
   error?: string;
+  skipped: boolean;
 }
 
 export interface SetupEventCompletelyResult {
-  success: boolean;
   eventName: string;
   steps: {
     clientAssigned: SetupEventStepResult;
@@ -28,6 +27,7 @@ export interface SetupEventCompletelyResult {
     contractCreated: SetupEventStepResult;
     budgetCreated: SetupEventStepResult;
   };
+  success: boolean;
 }
 
 // ── Action ───────────────────────────────────────────────────────────────
@@ -272,7 +272,9 @@ export async function setupEventCompletely(
            FROM tenant_events.event_staff
            WHERE "tenantId" = ${tenantId}::text AND "eventId" = ${eventId}::text AND "staffMemberId" = ${emp.id}::text AND "deletedAt" IS NULL`;
 
-        if (alreadyAssigned.length > 0) continue;
+        if (alreadyAssigned.length > 0) {
+          continue;
+        }
 
         // Route through Manifest runtime (EventStaff.create) instead of raw SQL.
         // Placeholder shift = event date (no real shift schedule at setup time).
@@ -289,7 +291,11 @@ export async function setupEventCompletely(
             shiftStart: shiftPlaceholder,
             shiftEnd: shiftPlaceholder,
           },
-          user: { id: currentUser.id, tenantId: currentUser.tenantId, role: currentUser.role },
+          user: {
+            id: currentUser.id,
+            tenantId: currentUser.tenantId,
+            role: currentUser.role,
+          },
         });
 
         if (assignResult.ok) {

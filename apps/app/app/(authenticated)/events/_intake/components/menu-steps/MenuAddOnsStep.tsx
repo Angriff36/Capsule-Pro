@@ -10,44 +10,44 @@ const BAR_OPTIONS = [
     value: "none",
     label: "No Bar",
     description: "Food only",
-    icon: <CircleOff className="w-4 h-4" />,
+    icon: <CircleOff className="h-4 w-4" />,
   },
   {
     value: "beer-wine",
     label: "Beer & Wine",
     description: "Curated selection",
-    icon: <Beer className="w-4 h-4" />,
+    icon: <Beer className="h-4 w-4" />,
   },
   {
     value: "full-bar",
     label: "Full Bar",
     description: "Standard spirits, beer, wine",
-    icon: <GlassWater className="w-4 h-4" />,
+    icon: <GlassWater className="h-4 w-4" />,
   },
   {
     value: "premium-bar",
     label: "Premium Bar",
     description: "Top-shelf & craft cocktails",
-    icon: <Martini className="w-4 h-4" />,
+    icon: <Martini className="h-4 w-4" />,
   },
   {
     value: "byob-service",
     label: "BYOB",
     description: "You supply, we bartend",
-    icon: <Wine className="w-4 h-4" />,
+    icon: <Wine className="h-4 w-4" />,
   },
 ];
 
 interface Props {
+  costCache?: Record<string, DishCost>;
   formData: MenuFormData;
+  showCost?: boolean;
+  showPrice?: boolean;
+  toggleMenuItem: (id: string) => void;
   updateField: <K extends keyof MenuFormData>(
     field: K,
     value: MenuFormData[K]
   ) => void;
-  toggleMenuItem: (id: string) => void;
-  showPrice?: boolean;
-  showCost?: boolean;
-  costCache?: Record<string, DishCost>;
 }
 
 export default function MenuAddOnsStep({
@@ -70,10 +70,10 @@ export default function MenuAddOnsStep({
       />
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Desserts
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {desserts.map((item) => (
             <MenuItemCard
               cost={costCache?.[item.id]}
@@ -90,10 +90,10 @@ export default function MenuAddOnsStep({
 
       {lateNight.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-3">
+          <label className="mb-3 block font-medium text-sm text-stone-700">
             Late Night Bites
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {lateNight.map((item) => (
               <MenuItemCard
                 cost={costCache?.[item.id]}
@@ -110,10 +110,10 @@ export default function MenuAddOnsStep({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
+        <label className="mb-3 block font-medium text-sm text-stone-700">
           Bar service
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {BAR_OPTIONS.map((opt) => (
             <SelectCard
               description={opt.description}

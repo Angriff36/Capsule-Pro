@@ -16,6 +16,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface PredictiveLTVProps {
+  className?: string;
   data: {
     averagePredictedLTV: number;
     confidence: number;
@@ -27,7 +28,6 @@ interface PredictiveLTVProps {
       growthRate: number;
     }>;
   };
-  className?: string;
 }
 
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
@@ -69,7 +69,7 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {data.clientSegments.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="py-8 text-center text-muted-foreground text-sm">
             Not enough data for LTV analysis
           </p>
         ) : (
@@ -83,13 +83,13 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
                   />
                   <XAxis
                     axisLine={false}
-                    className="text-xs fill-muted-foreground"
+                    className="fill-muted-foreground text-xs"
                     dataKey="name"
                     tickLine={false}
                   />
                   <YAxis
                     axisLine={false}
-                    className="text-xs fill-muted-foreground"
+                    className="fill-muted-foreground text-xs"
                     tickFormatter={(value) => formatCurrency(value)}
                     tickLine={false}
                   />

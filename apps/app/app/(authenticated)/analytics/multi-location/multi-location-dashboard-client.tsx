@@ -45,75 +45,84 @@ import { Fragment, useReducer } from "react";
 
 // Types for the multi-location dashboard data
 interface LocationMetricBreakdown {
+  actual?: number;
+  budgeted?: number;
+  change?: number;
+  completed?: number;
+  formatted: string;
+  itemCount?: number;
   locationId: string;
   locationName: string;
-  value: number;
-  formatted: string;
-  change?: number;
-  budgeted?: number;
-  actual?: number;
   total?: number;
-  completed?: number;
-  itemCount?: number;
+  value: number;
 }
 
 interface KPI {
-  id: string;
-  title: string;
-  value: number;
-  formatted: string;
+  category: string;
   change: number;
   changeFormatted: string;
-  trend: "up" | "down" | "neutral";
-  category: string;
+  formatted: string;
+  id: string;
   locationBreakdown: LocationMetricBreakdown[];
+  title: string;
+  trend: "up" | "down" | "neutral";
+  value: number;
 }
 
 interface Benchmark {
-  id: string;
-  title: string;
-  currentValue: number;
-  target: number;
-  formatted: string;
-  targetFormatted: string;
-  status: "above" | "below" | "near";
   category: string;
+  currentValue: number;
+  formatted: string;
+  id: string;
+  status: "above" | "below" | "near";
+  target: number;
+  targetFormatted: string;
+  title: string;
 }
 
 interface LocationMetrics {
-  revenue: number;
-  revenueFormatted: string;
+  completionRate: number;
+  completionRateFormatted: string;
+  eventCount: number;
+  inventoryValue: number;
+  inventoryValueFormatted: string;
   laborUtilization: number;
   laborUtilizationFormatted: string;
+  margin: number;
+  marginFormatted: string;
+  revenue: number;
+  revenueFormatted: string;
+  revenuePerStaff: number;
+  staffCount: number;
   wasteCost: number;
   wasteCostFormatted: string;
   wastePercent: number;
   wastePercentFormatted: string;
-  margin: number;
-  marginFormatted: string;
-  eventCount: number;
-  completionRate: number;
-  completionRateFormatted: string;
-  inventoryValue: number;
-  inventoryValueFormatted: string;
-  staffCount: number;
-  revenuePerStaff: number;
 }
 
 interface LocationComparison {
+  isPrimary: boolean;
   locationId: string;
   locationName: string;
-  isPrimary: boolean;
   metrics: LocationMetrics;
 }
 
 interface DashboardData {
+  benchmarks: Benchmark[];
+  kpis: KPI[];
+  locationComparison: LocationComparison[];
   locations: Array<{
     id: string;
     name: string;
     isPrimary: boolean;
     timezone: string | null;
   }>;
+  rankings: {
+    topRevenue: LocationComparison[];
+    topMargin: LocationComparison[];
+    topCompletion: LocationComparison[];
+    lowestWaste: LocationComparison[];
+  };
   summary: {
     totalLocations: number;
     totalRevenue: number;
@@ -126,15 +135,6 @@ interface DashboardData {
       previousEnd: string;
     };
   };
-  kpis: KPI[];
-  benchmarks: Benchmark[];
-  locationComparison: LocationComparison[];
-  rankings: {
-    topRevenue: LocationComparison[];
-    topMargin: LocationComparison[];
-    topCompletion: LocationComparison[];
-    lowestWaste: LocationComparison[];
-  };
 }
 
 interface MultiLocationDashboardClientProps {
@@ -145,11 +145,11 @@ type Period = "7d" | "30d" | "90d" | "12m";
 type KPICategory = "financial" | "operational" | "inventory" | "productivity";
 
 interface DashboardState {
-  period: Period;
-  selectedKPIs: string[];
   expandedKPI: string | null;
   expandedLocation: string | null;
+  period: Period;
   selectedCategories: KPICategory[];
+  selectedKPIs: string[];
   showBenchmarkAlertsOnly: boolean;
 }
 
@@ -281,9 +281,9 @@ function MultiLocationDashboardClient({
             <MonoLabel tone="dark">Analytics / Multi-Location</MonoLabel>
             <DisplayHeading>Multi-Location Executive Dashboard</DisplayHeading>
             <CommandBandLede>
-              Compare performance across{" "}
-              {initialData.summary.totalLocations} location
-              {initialData.summary.totalLocations !== 1 ? "s" : ""}
+              Compare performance across {initialData.summary.totalLocations}{" "}
+              location
+              {initialData.summary.totalLocations === 1 ? "" : "s"}
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -303,7 +303,7 @@ function MultiLocationDashboardClient({
       <OperationalColumn>
         {/* Period Selector */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Period:</span>
+          <span className="text-muted-foreground text-sm">Period:</span>
           {(Object.keys(PERIOD_LABELS) as Period[]).map((period) => (
             <button
               className={`rounded-md px-3 py-1 text-sm transition-colors ${
@@ -330,7 +330,7 @@ function MultiLocationDashboardClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Across all locations
               </p>
             </CardContent>
@@ -343,7 +343,7 @@ function MultiLocationDashboardClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Team members across locations
               </p>
             </CardContent>
@@ -356,7 +356,7 @@ function MultiLocationDashboardClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Active locations being tracked
               </p>
             </CardContent>
@@ -370,7 +370,7 @@ function MultiLocationDashboardClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Weighted average across locations
               </p>
             </CardContent>
@@ -379,12 +379,12 @@ function MultiLocationDashboardClient({
 
         {/* Category Filters */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Categories:</span>
+          <span className="text-muted-foreground text-sm">Categories:</span>
           {(Object.keys(CATEGORY_LABELS) as KPICategory[]).map((category) => (
             <button
               className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-colors ${
                 state.selectedCategories.includes(category)
-                  ? "bg-primary/10 text-primary border border-primary/20"
+                  ? "border border-primary/20 bg-primary/10 text-primary"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
               key={category}
@@ -433,7 +433,7 @@ function MultiLocationDashboardClient({
                 <CardContent>
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`text-xs font-medium ${
+                      className={`font-medium text-xs ${
                         kpi.change >= 0
                           ? kpi.trend === "up"
                             ? "text-green-600"
@@ -449,7 +449,7 @@ function MultiLocationDashboardClient({
 
                   {state.expandedKPI === kpi.id && (
                     <div className="mt-4 space-y-2 border-t pt-4">
-                      <p className="text-xs font-medium text-muted-foreground">
+                      <p className="font-medium text-muted-foreground text-xs">
                         Breakdown by Location
                       </p>
                       {kpi.locationBreakdown.map((breakdown) => (
@@ -494,7 +494,7 @@ function MultiLocationDashboardClient({
             <button
               className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm transition-colors ${
                 state.showBenchmarkAlertsOnly
-                  ? "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                  ? "border border-yellow-500/20 bg-yellow-500/10 text-yellow-600"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
               onClick={() => dispatch({ type: "TOGGLE_ALERTS_ONLY" })}
@@ -524,7 +524,9 @@ function MultiLocationDashboardClient({
                     </CardDescription>
                     {getBenchmarkStatusIcon(benchmark.status)}
                   </div>
-                  <CardTitle className="text-xl">{benchmark.formatted}</CardTitle>
+                  <CardTitle className="text-xl">
+                    {benchmark.formatted}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between text-xs">
@@ -559,9 +561,9 @@ function MultiLocationDashboardClient({
 
         {/* Location Comparison Table */}
         <LocationComparisonSection
+          dispatch={dispatch}
           initialData={initialData}
           state={state}
-          dispatch={dispatch}
         />
       </OperationalColumn>
     </PageCanvas>
@@ -575,7 +577,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
       <div className="grid gap-4 md:grid-cols-2">
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
               <TrendingUp className="h-4 w-4 text-green-500" />
               Highest Revenue
             </CardTitle>
@@ -589,7 +591,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
                         index === 0
                           ? "bg-muted/50 text-foreground"
                           : index === 1
@@ -619,7 +621,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
 
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
               <TrendingUp className="h-4 w-4 text-green-500" />
               Highest Margins
             </CardTitle>
@@ -633,7 +635,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
                         index === 0
                           ? "bg-muted/50 text-foreground"
                           : index === 1
@@ -663,7 +665,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
 
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               Best Completion Rates
             </CardTitle>
@@ -677,7 +679,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
                         index === 0
                           ? "bg-muted/50 text-foreground"
                           : index === 1
@@ -707,7 +709,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
 
         <Card tone="canvas">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
               <TrendingDown className="h-4 w-4 text-green-500" />
               Lowest Waste %
             </CardTitle>
@@ -721,7 +723,7 @@ function RankingCards({ initialData }: { initialData: DashboardData }) {
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
                         index === 0
                           ? "bg-muted/50 text-foreground"
                           : index === 1
@@ -807,8 +809,7 @@ function LocationComparisonSection({
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            {state.expandedLocation ===
-                            location.locationId ? (
+                            {state.expandedLocation === location.locationId ? (
                               <ChevronDown className="h-4 w-4" />
                             ) : (
                               <ChevronRight className="h-4 w-4" />
@@ -849,7 +850,7 @@ function LocationComparisonSection({
                           <TableCell className="bg-muted/30" colSpan={7}>
                             <div className="grid gap-4 py-4 md:grid-cols-4">
                               <div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                   Inventory Value
                                 </p>
                                 <p className="font-medium">
@@ -857,7 +858,7 @@ function LocationComparisonSection({
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                   Waste Cost
                                 </p>
                                 <p className="font-medium">
@@ -865,7 +866,7 @@ function LocationComparisonSection({
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                   Event Count
                                 </p>
                                 <p className="font-medium">
@@ -873,7 +874,7 @@ function LocationComparisonSection({
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                   Staff Count
                                 </p>
                                 <p className="font-medium">
@@ -896,5 +897,5 @@ function LocationComparisonSection({
   );
 }
 
-export { MultiLocationDashboardClient };
 export type { DashboardData, DashboardState };
+export { MultiLocationDashboardClient };

@@ -53,14 +53,14 @@ export type PrismaErrorType =
  * Result of translating a Prisma error, with HTTP status and response body
  */
 export interface PrismaErrorResult {
-  /** HTTP status code to return */
-  status: number;
-  /** Error type classification */
-  type: PrismaErrorType;
   /** Whether the error was a recognized Prisma error */
   mapped: boolean;
   /** Error message safe to return to client */
   message: string;
+  /** HTTP status code to return */
+  status: number;
+  /** Error type classification */
+  type: PrismaErrorType;
 }
 
 /**

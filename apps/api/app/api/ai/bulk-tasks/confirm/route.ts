@@ -9,16 +9,16 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 export const runtime = "nodejs";
 
 interface TaskInput {
-  taskType: string;
-  name: string;
   dishId?: string | null;
-  quantityTotal: number;
-  startByDate: string;
   dueByDate: string;
   dueByTime?: string;
-  priority: number;
   estimatedMinutes?: number;
+  name: string;
   notes?: string;
+  priority: number;
+  quantityTotal: number;
+  startByDate: string;
+  taskType: string;
 }
 
 export async function POST(request: Request) {

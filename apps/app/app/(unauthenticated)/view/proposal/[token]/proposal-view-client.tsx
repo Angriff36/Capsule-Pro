@@ -45,6 +45,36 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 interface ProposalViewClientProps {
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+  event: {
+    title: string;
+    eventDate: string | null;
+    venueName: string | null;
+  } | null;
+  isExpired: boolean;
+  lead: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+  lineItems: Array<{
+    id: string;
+    itemType: string;
+    category: string;
+    description: string;
+    quantity: number;
+    unitOfMeasure: string | null;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+  organization: string;
   proposal: {
     id: string;
     proposalNumber: string;
@@ -68,36 +98,6 @@ interface ProposalViewClientProps {
     acceptedAt: string | null;
     rejectedAt: string | null;
   };
-  lineItems: Array<{
-    id: string;
-    itemType: string;
-    category: string;
-    description: string;
-    quantity: number;
-    unitOfMeasure: string | null;
-    unitPrice: number;
-    totalPrice: number;
-  }>;
-  client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-    phone: string | null;
-  } | null;
-  lead: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-    phone: string | null;
-  } | null;
-  event: {
-    title: string;
-    eventDate: string | null;
-    venueName: string | null;
-  } | null;
-  organization: string;
-  isExpired: boolean;
   publicToken: string;
 }
 
@@ -359,7 +359,7 @@ export function ProposalViewClient({
               <CardContent className="grid gap-4">
                 {proposal.eventDate && (
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Event Date
                     </span>
                     <p className="font-medium">
@@ -370,7 +370,7 @@ export function ProposalViewClient({
 
                 {proposal.eventType && (
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Event Type
                     </span>
                     <p className="font-medium">{proposal.eventType}</p>
@@ -379,7 +379,7 @@ export function ProposalViewClient({
 
                 {proposal.guestCount && (
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Guest Count
                     </span>
                     <p className="flex items-center gap-2 font-medium">
@@ -393,7 +393,7 @@ export function ProposalViewClient({
                   <>
                     <Separator />
                     <div className="grid gap-2">
-                      <span className="text-muted-foreground text-sm font-medium">
+                      <span className="font-medium text-muted-foreground text-sm">
                         Venue
                       </span>
                       {proposal.venueName && (
@@ -441,7 +441,7 @@ export function ProposalViewClient({
               <Card>
                 <CardContent className="p-4">
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Valid Until
                     </span>
                     <p
@@ -469,7 +469,7 @@ export function ProposalViewClient({
                   Proposal Summary
                 </CardTitle>
                 <CardDescription>
-                  {lineItems.length} item{lineItems.length !== 1 ? "s" : ""}{" "}
+                  {lineItems.length} item{lineItems.length === 1 ? "" : "s"}{" "}
                   included in this proposal
                 </CardDescription>
               </CardHeader>
@@ -529,7 +529,7 @@ export function ProposalViewClient({
                     <span>{currencyFormatter.format(proposal.subtotal)}</span>
                   </div>
                   {proposal.discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
+                    <div className="flex justify-between text-green-600 text-sm">
                       <span>Discount</span>
                       <span>
                         -{currencyFormatter.format(proposal.discountAmount)}
@@ -559,7 +559,7 @@ export function ProposalViewClient({
                     <Separator className="my-4" />
                     <div className="grid gap-2">
                       <span className="font-medium text-sm">Notes</span>
-                      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                      <p className="whitespace-pre-wrap text-muted-foreground text-sm">
                         {proposal.notes}
                       </p>
                     </div>
@@ -574,7 +574,7 @@ export function ProposalViewClient({
                       <span className="font-medium text-sm">
                         Terms & Conditions
                       </span>
-                      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                      <p className="whitespace-pre-wrap text-muted-foreground text-sm">
                         {proposal.termsAndConditions}
                       </p>
                     </div>

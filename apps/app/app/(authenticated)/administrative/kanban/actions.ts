@@ -4,23 +4,23 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 export type AdminTaskStatus = "backlog" | "in_progress" | "review" | "done";
 export type AdminTaskPriority = "low" | "medium" | "high";
 
 export interface AdminTaskItem {
-  id: string;
-  title: string;
-  description: string | null;
-  status: AdminTaskStatus;
-  priority: AdminTaskPriority;
-  category: string | null;
-  dueDate: Date | null;
   assignedTo: string | null;
+  category: string | null;
   createdBy: string | null;
+  description: string | null;
+  dueDate: Date | null;
+  id: string;
   ownerName: string;
+  priority: AdminTaskPriority;
+  status: AdminTaskStatus;
+  title: string;
 }
 
 const adminStatuses: AdminTaskStatus[] = [

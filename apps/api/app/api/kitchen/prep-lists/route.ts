@@ -18,14 +18,14 @@ import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface PrepListListFilters {
   eventId?: string;
-  status?: string;
-  station?: string;
   search?: string;
+  station?: string;
+  status?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -243,7 +243,10 @@ export async function POST(request: NextRequest) {
   log.info("[PrepList/POST] Delegating to manifest create command");
 
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return await runManifestCommand({
     entity: "PrepList",

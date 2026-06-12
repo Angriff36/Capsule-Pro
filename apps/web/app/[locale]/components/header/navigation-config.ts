@@ -1,15 +1,15 @@
 import type { Dictionary } from "@repo/internationalization";
 
 export interface NavigationItem {
-  title: string;
-  href?: string;
   description?: string;
+  href?: string;
   items?: SubNavigationItem[];
+  title: string;
 }
 
 export interface SubNavigationItem {
-  title: string;
   href: string;
+  title: string;
 }
 
 /**

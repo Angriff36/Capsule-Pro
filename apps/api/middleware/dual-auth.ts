@@ -27,12 +27,12 @@ import {
 // ============================================================================
 
 export interface DualAuthResult {
+  apiKeyContext?: ApiKeyContext;
   authenticated: boolean;
   authMethod: "session" | "api_key" | "none";
+  error?: Response;
   tenantId: string | null;
   userId: string | null;
-  apiKeyContext?: ApiKeyContext;
-  error?: Response;
 }
 
 // ============================================================================

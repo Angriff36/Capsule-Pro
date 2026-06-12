@@ -43,28 +43,28 @@ import {
 // =============================================================================
 
 export interface ActivityFeedItem {
-  id: string;
-  tenantId: string;
+  action: string;
   activityType:
     | "entity_change"
     | "ai_approval"
     | "collaborator_action"
     | "system_event";
-  entityType: string | null;
-  entityId: string | null;
-  action: string;
-  title: string;
+  correlationId: string | null;
+  createdAt: string | Date;
   description: string | null;
+  entityId: string | null;
+  entityType: string | null;
+  id: string;
+  importance: "low" | "normal" | "high" | "urgent";
   metadata: Record<string, unknown> | null;
+  parentId: string | null;
   performedBy: string | null;
   performerName: string | null;
-  correlationId: string | null;
-  parentId: string | null;
-  sourceType: string | null;
   sourceId: string | null;
-  importance: "low" | "normal" | "high" | "urgent";
+  sourceType: string | null;
+  tenantId: string;
+  title: string;
   visibility: string;
-  createdAt: string | Date;
 }
 
 export interface ActivityFeedResponse {
@@ -75,25 +75,25 @@ export interface ActivityFeedResponse {
 
 export interface ActivityFeedProps {
   activities: ActivityFeedItem[];
+  emptyState?: React.ReactNode;
   hasMore?: boolean;
   isLoading?: boolean;
+  onActivityClick?: (activity: ActivityFeedItem) => void;
+  onEntityClick?: (entityType: string, entityId: string) => void;
+  onFilterChange?: (filters: ActivityFilters) => void;
   onLoadMore?: () => void;
   onRefresh?: () => void;
-  onFilterChange?: (filters: ActivityFilters) => void;
   onSearchChange?: (query: string) => void;
-  onActivityClick?: (activity: ActivityFeedItem) => void;
   onUserClick?: (userId: string) => void;
-  onEntityClick?: (entityType: string, entityId: string) => void;
-  emptyState?: React.ReactNode;
 }
 
 export interface ActivityFilters {
   activityType?: string;
+  endDate?: string;
   entityType?: string;
   importance?: string;
   performedBy?: string;
   startDate?: string;
-  endDate?: string;
 }
 
 // =============================================================================
@@ -179,10 +179,18 @@ function formatTimestamp(timestamp: string | Date): string {
   const diffHours = Math.floor(diffMs / 3_600_000);
   const diffDays = Math.floor(diffMs / 86_400_000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) {
+    return "Just now";
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
 
   return date.toLocaleDateString("en-US", {
     month: "short",
@@ -209,8 +217,8 @@ function formatFullTimestamp(timestamp: string | Date): string {
 interface ActivityItemProps {
   activity: ActivityFeedItem;
   onClick?: (activity: ActivityFeedItem) => void;
-  onUserClick?: (userId: string) => void;
   onEntityClick?: (entityType: string, entityId: string) => void;
+  onUserClick?: (userId: string) => void;
   showGrouped?: boolean;
 }
 
@@ -245,7 +253,7 @@ function ActivityItem({
 
   return (
     <div
-      className={`group relative flex items-start gap-3 p-3 rounded-lg transition-colors ${
+      className={`group relative flex items-start gap-3 rounded-lg p-3 transition-colors ${
         onClick ? "cursor-pointer hover:bg-muted/50" : ""
       } ${showGrouped ? "ml-8" : ""}`}
       onClick={handleClick}
@@ -259,16 +267,16 @@ function ActivityItem({
     >
       {/* Icon */}
       <div
-        className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border ${typeColor}`}
+        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border ${typeColor}`}
       >
         {getActivityTypeIcon(activity.activityType)}
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <p className="font-medium text-sm">{activity.title}</p>
               {activity.importance !== "normal" && (
                 <Badge
@@ -280,11 +288,11 @@ function ActivityItem({
               )}
             </div>
             {activity.description && (
-              <p className="text-muted-foreground text-sm mt-0.5 line-clamp-2">
+              <p className="mt-0.5 line-clamp-2 text-muted-foreground text-sm">
                 {activity.description}
               </p>
             )}
-            <div className="flex items-center gap-3 mt-1.5 text-muted-foreground text-xs">
+            <div className="mt-1.5 flex items-center gap-3 text-muted-foreground text-xs">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 <time
@@ -296,7 +304,7 @@ function ActivityItem({
               </span>
               {activity.performerName && (
                 <button
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 transition-colors hover:text-foreground"
                   onClick={handleUserClick}
                   type="button"
                 >
@@ -306,7 +314,7 @@ function ActivityItem({
               )}
               {activity.entityType && activity.entityId && (
                 <button
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 transition-colors hover:text-foreground"
                   onClick={handleEntityClick}
                   type="button"
                 >
@@ -323,7 +331,7 @@ function ActivityItem({
 
         {/* Metadata preview for certain types */}
         {activity.metadata && activity.activityType === "entity_change" && (
-          <div className="mt-2 p-2 bg-muted/30 rounded text-xs text-muted-foreground">
+          <div className="mt-2 rounded bg-muted/30 p-2 text-muted-foreground text-xs">
             {Boolean(
               (activity.metadata as { oldValues?: unknown }).oldValues
             ) && <span>Changed properties</span>}
@@ -333,7 +341,7 @@ function ActivityItem({
 
       {/* Grouped indicator */}
       {showGrouped && (
-        <div className="absolute left-0 top-8 bottom-0 w-px bg-border" />
+        <div className="absolute top-8 bottom-0 left-0 w-px bg-border" />
       )}
     </div>
   );
@@ -347,8 +355,8 @@ interface ActivityGroupProps {
   activities: ActivityFeedItem[];
   groupDate: Date;
   onActivityClick?: (activity: ActivityFeedItem) => void;
-  onUserClick?: (userId: string) => void;
   onEntityClick?: (entityType: string, entityId: string) => void;
+  onUserClick?: (userId: string) => void;
 }
 
 function ActivityGroup({
@@ -379,8 +387,8 @@ function ActivityGroup({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur px-3 py-2">
-        <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+      <div className="sticky top-0 z-10 bg-background/95 px-3 py-2 backdrop-blur">
+        <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
           {getGroupTitle(groupDate)}
         </span>
       </div>
@@ -405,10 +413,10 @@ function ActivityGroup({
 // =============================================================================
 
 interface ActivityFilterBarProps {
-  filters: ActivityFilters;
-  onFiltersChange: (filters: ActivityFilters) => void;
   activityTypes?: Array<{ value: string; label: string }>;
   entityTypes?: string[];
+  filters: ActivityFilters;
+  onFiltersChange: (filters: ActivityFilters) => void;
   resultCount?: number;
 }
 
@@ -435,13 +443,13 @@ function ActivityFilterBar({
     Object.keys(filters).length > 0 || searchQuery.length > 0;
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border-b">
-      <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-col items-start justify-between gap-3 border-b p-4 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="h-9 w-64 rounded-md border border-input bg-background pl-9 pr-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="h-9 w-64 rounded-md border border-input bg-background pr-3 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search activities..."
             type="search"
@@ -496,7 +504,7 @@ function ActivityFilterBar({
         {/* Clear Filters */}
         {hasActiveFilters && (
           <Button onClick={handleClearFilters} size="sm" variant="ghost">
-            <X className="h-4 w-4 mr-1" />
+            <X className="mr-1 h-4 w-4" />
             Clear Filters
           </Button>
         )}
@@ -594,12 +602,12 @@ export function ActivityFeed({
       <CardContent className="p-0">
         {activities.length === 0 ? (
           (emptyState ?? (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="bg-muted/20 rounded-full p-4 mb-4">
+            <div className="flex flex-col items-center justify-center px-4 py-16">
+              <div className="mb-4 rounded-full bg-muted/20 p-4">
                 <Activity className="h-8 w-8 text-muted-foreground/50" />
               </div>
-              <h3 className="font-medium text-lg mb-1">No activities yet</h3>
-              <p className="text-muted-foreground text-sm text-center max-w-sm">
+              <h3 className="mb-1 font-medium text-lg">No activities yet</h3>
+              <p className="max-w-sm text-center text-muted-foreground text-sm">
                 Activities will appear here as you and your team make changes to
                 the system.
               </p>
@@ -620,7 +628,7 @@ export function ActivityFeed({
 
             {/* Load More */}
             {hasMore && (
-              <div className="p-4 border-t">
+              <div className="border-t p-4">
                 <Button
                   className="w-full"
                   disabled={isLoading}
@@ -629,7 +637,7 @@ export function ActivityFeed({
                 >
                   {isLoading ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Loading...
                     </>
                   ) : (
@@ -650,11 +658,11 @@ export function ActivityFeed({
 // =============================================================================
 
 export interface ActivityStatsProps {
-  totalCount: number;
-  todayCount: number;
-  weekCount: number;
-  byType: Record<string, number>;
   byEntity: Record<string, number>;
+  byType: Record<string, number>;
+  todayCount: number;
+  totalCount: number;
+  weekCount: number;
 }
 
 export function ActivityStats({
@@ -669,16 +677,16 @@ export function ActivityStats({
     .slice(0, 5);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
       {/* Total Activities */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
+            <div className="rounded-lg bg-primary/10 p-2">
               <Activity className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">
+              <p className="font-bold text-2xl">
                 {totalCount.toLocaleString()}
               </p>
               <p className="text-muted-foreground text-xs">Total Activities</p>
@@ -691,11 +699,11 @@ export function ActivityStats({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-500/10 p-2 rounded-lg">
+            <div className="rounded-lg bg-blue-500/10 p-2">
               <Calendar className="h-5 w-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{todayCount}</p>
+              <p className="font-bold text-2xl">{todayCount}</p>
               <p className="text-muted-foreground text-xs">Today</p>
             </div>
           </div>
@@ -706,11 +714,11 @@ export function ActivityStats({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="bg-green-500/10 p-2 rounded-lg">
+            <div className="rounded-lg bg-green-500/10 p-2">
               <TrendingUp className="h-5 w-5 text-green-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{weekCount}</p>
+              <p className="font-bold text-2xl">{weekCount}</p>
               <p className="text-muted-foreground text-xs">This Week</p>
             </div>
           </div>
@@ -726,8 +734,8 @@ export function ActivityStats({
 
 export interface ActivityTimelineProps {
   activities: ActivityFeedItem[];
-  onActivityClick?: (activity: ActivityFeedItem) => void;
   limit?: number;
+  onActivityClick?: (activity: ActivityFeedItem) => void;
 }
 
 export function ActivityTimeline({
@@ -743,13 +751,13 @@ export function ActivityTimeline({
         <div className="relative" key={activity.id}>
           {/* Timeline line */}
           {index < displayedActivities.length - 1 && (
-            <div className="absolute left-4 top-8 bottom-0 w-px -ml-px bg-border" />
+            <div className="absolute top-8 bottom-0 left-4 -ml-px w-px bg-border" />
           )}
 
           <div className="flex gap-3">
             {/* Icon */}
             <div
-              className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border ${getActivityTypeColor(activity.activityType)}`}
+              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border ${getActivityTypeColor(activity.activityType)}`}
             >
               {getActivityTypeIcon(activity.activityType)}
             </div>
@@ -758,11 +766,11 @@ export function ActivityTimeline({
             <div className="flex-1 pb-4">
               <p className="font-medium text-sm">{activity.title}</p>
               {activity.description && (
-                <p className="text-muted-foreground text-sm mt-0.5">
+                <p className="mt-0.5 text-muted-foreground text-sm">
                   {activity.description}
                 </p>
               )}
-              <p className="text-muted-foreground text-xs mt-1">
+              <p className="mt-1 text-muted-foreground text-xs">
                 {formatTimestamp(activity.createdAt)}
                 {activity.performerName && ` • ${activity.performerName}`}
               </p>
@@ -786,25 +794,25 @@ export function ActivityFeedEmptyState({
   hasFilters?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="bg-muted/20 rounded-full p-4 mb-4">
+    <div className="flex flex-col items-center justify-center px-4 py-16">
+      <div className="mb-4 rounded-full bg-muted/20 p-4">
         {hasFilters ? (
           <Filter className="h-8 w-8 text-muted-foreground/50" />
         ) : (
           <Activity className="h-8 w-8 text-muted-foreground/50" />
         )}
       </div>
-      <h3 className="font-medium text-lg mb-1">
+      <h3 className="mb-1 font-medium text-lg">
         {hasFilters ? "No activities match your filters" : "No activities yet"}
       </h3>
-      <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
+      <p className="mb-4 max-w-sm text-center text-muted-foreground text-sm">
         {hasFilters
           ? "Try adjusting your filter criteria to see more results."
           : "Activities will appear here as you and your team make changes to the system."}
       </p>
       {onRefresh && (
         <Button onClick={onRefresh} size="sm" variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       )}

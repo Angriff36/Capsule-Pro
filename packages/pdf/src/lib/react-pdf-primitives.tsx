@@ -8,14 +8,14 @@
  * Cast once here instead of in every template.
  */
 import {
+  pdf,
   Document as ReactPdfDocument,
   Image as ReactPdfImage,
   Link as ReactPdfLink,
   Page as ReactPdfPage,
-  StyleSheet,
   Text as ReactPdfText,
   View as ReactPdfView,
-  pdf,
+  StyleSheet,
 } from "@react-pdf/renderer";
 import type { ComponentType, ReactElement, ReactNode } from "react";
 
@@ -68,11 +68,10 @@ export const Page = asComponent<PageProps>(ReactPdfPage);
 export const View = asComponent<BoxProps>(ReactPdfView);
 export const Text = asComponent<TextProps>(ReactPdfText);
 export const Image = asComponent<ImageProps>(ReactPdfImage);
-export const Link = asComponent<WithChildren<{ src?: string; style?: PdfStyle }>>(
-  ReactPdfLink
-);
+export const Link =
+  asComponent<WithChildren<{ src?: string; style?: PdfStyle }>>(ReactPdfLink);
 
-export { StyleSheet, pdf };
+export { pdf, StyleSheet };
 
 /** Bridge workspace ReactElement to react-pdf's pdf() input type. */
 export function renderToPdf(component: ReactElement) {

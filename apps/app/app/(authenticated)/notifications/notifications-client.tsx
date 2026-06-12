@@ -2,6 +2,10 @@
 
 import { BlogFilterChip } from "@repo/design-system/components/blocks/blog-filter-chip";
 import {
+  FilteredEmptyState,
+  NoNotificationsState,
+} from "@repo/design-system/components/blocks/illustrated-empty-states";
+import {
   MonoLabel,
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
@@ -16,32 +20,33 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import {
-  FilteredEmptyState,
-  NoNotificationsState,
-} from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { Bell, BellOff, CheckCircle, Eye, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { notificationMarkDismissed, notificationMarkRead, notificationRemove, listNotifications } from "@/app/lib/manifest-client.generated";
+import {
+  listNotifications,
+  notificationMarkDismissed,
+  notificationMarkRead,
+  notificationRemove,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface Notification {
-  tenantId: string;
-  id: string;
-  recipient_employee_id: string;
-  notification_type: string;
-  title: string;
-  body: string | null;
   action_url: string | null;
-  isRead: boolean;
-  readAt: string | null;
-  createdAt: string;
+  body: string | null;
   correlation_id: string | null;
+  createdAt: string;
+  id: string;
+  isRead: boolean;
+  notification_type: string;
+  readAt: string | null;
+  recipient_employee_id: string;
+  tenantId: string;
+  title: string;
 }
 
 type StatusFilter = "all" | "unread" | "read" | "dismissed";
@@ -221,9 +226,7 @@ export function NotificationsClient({
     setMarkingAllRead(true);
     try {
       const results = await Promise.allSettled(
-        unread.map((n) =>
-          notificationMarkRead({ id: n.id })
-        )
+        unread.map((n) => notificationMarkRead({ id: n.id }))
       );
       const failed = results.filter((r) => r.status === "rejected").length;
       if (failed > 0) {
@@ -283,12 +286,12 @@ export function NotificationsClient({
           <div className="space-y-1">
             <div className="ds-body-large text-ink">{n.title}</div>
             {n.body && (
-              <div className="ds-caption text-ink/50 line-clamp-2 max-w-md">
+              <div className="ds-caption line-clamp-2 max-w-md text-ink/50">
                 {n.body}
               </div>
             )}
             <div className="flex items-center gap-2 pt-1">
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-medium text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 {typeLabel(n.notification_type)}
               </span>
             </div>
@@ -429,19 +432,19 @@ export function NotificationsClient({
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        statusFilter !== "all" ? (
+        statusFilter === "all" ? (
+          <NoNotificationsState />
+        ) : (
           <FilteredEmptyState
             itemName="notifications"
             onClearFilters={() => setStatusFilter("all")}
           />
-        ) : (
-          <NoNotificationsState />
         )
       ) : (
         <ResearchTable
           caption={
             <MonoLabel tone="dark">
-              {filtered.length} notification{filtered.length !== 1 ? "s" : ""}
+              {filtered.length} notification{filtered.length === 1 ? "" : "s"}
             </MonoLabel>
           }
           linkComponent={({ href, className, children }) => (

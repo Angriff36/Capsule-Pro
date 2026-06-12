@@ -4,13 +4,16 @@
 // Run: node manifest/scripts/derive-prisma-options.mjs
 
 import { readFileSync, writeFileSync } from "fs";
-import { resolve, dirname } from "path";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
-const SCHEMA_PATH = resolve(PROJECT_ROOT, "packages/database/prisma/schema.prisma");
+const SCHEMA_PATH = resolve(
+  PROJECT_ROOT,
+  "packages/database/prisma/schema.prisma"
+);
 const IR_PATH = resolve(PROJECT_ROOT, "manifest/ir/kitchen.ir.json");
 const OUTPUT_PATH = resolve(__dirname, "prisma-options.generated.json");
 
@@ -26,7 +29,8 @@ const RE_BLOCK_SCHEMA = /@@schema\("([^"]+)"\)/;
 const RE_BLOCK_ID = /@@id\(\[([^\]]+)\]\)/;
 const RE_BLOCK_INDEX = /@@index\(\[([^\]]+)\]\)/;
 const RE_BLOCK_UNIQUE = /@@unique\(\[([^\]]+)\]/;
-const RE_RELATION = /@relation\((?:[^)]*?\s+)?fields:\s*\[([^\]]+)\]\s*,\s*references:\s*\[([^\]]+)\]/;
+const RE_RELATION =
+  /@relation\((?:[^)]*?\s+)?fields:\s*\[([^\]]+)\]\s*,\s*references:\s*\[([^\]]+)\]/;
 const RE_BACK_RELATION = /^\w+\s+\w+(\[\])?\s+@relation\(/;
 const RE_DECIMAL = /Decimal\((\d+),\s*(\d+)\)/;
 const RE_WORD_START = /^(\w+)/;
@@ -37,14 +41,20 @@ function parseSchema(text) {
   const len = text.length;
   while (pos < len) {
     const m = text.substring(pos).match(RE_MODEL_START);
-    if (!m) break;
+    if (!m) {
+      break;
+    }
     const name = m[1];
     const start = pos + m.index + m[0].length;
     let depth = 1;
     let i = start;
     while (i < len && depth > 0) {
-      if (text[i] === "{") depth++;
-      if (text[i] === "}") depth--;
+      if (text[i] === "{") {
+        depth++;
+      }
+      if (text[i] === "}") {
+        depth--;
+      }
       i++;
     }
     models.set(name, text.substring(start, i - 1));
@@ -58,12 +68,18 @@ function extractDefaults(line) {
   let searchFrom = 0;
   while (true) {
     const idx = line.indexOf("@default(", searchFrom);
-    if (idx === -1) break;
+    if (idx === -1) {
+      break;
+    }
     let depth = 1;
     let j = idx + 9;
     while (j < line.length && depth > 0) {
-      if (line[j] === "(") depth++;
-      if (line[j] === ")") depth--;
+      if (line[j] === "(") {
+        depth++;
+      }
+      if (line[j] === ")") {
+        depth--;
+      }
       j++;
     }
     results.push(line.substring(idx, j));
@@ -75,22 +91,36 @@ function extractDefaults(line) {
 function parseFieldLine(line) {
   const field = {};
   const fm = line.match(RE_FIELD);
-  if (!fm) return null;
+  if (!fm) {
+    return null;
+  }
   field.name = fm[1];
   field.type = fm[2];
 
   const mm = line.match(RE_MAP);
-  if (mm) field.map = mm[1];
+  if (mm) {
+    field.map = mm[1];
+  }
 
   const dm = line.match(RE_DB);
-  if (dm) field.db = dm[1];
+  if (dm) {
+    field.db = dm[1];
+  }
 
   const defaults = extractDefaults(line);
-  if (defaults.length > 0) field.defaults = defaults;
+  if (defaults.length > 0) {
+    field.defaults = defaults;
+  }
 
-  if (line.includes("@updatedAt")) field.updatedAt = true;
-  if (RE_ATID.test(line)) field.isId = true;
-  if (RE_ATUNIQUE.test(line) && !line.includes("@@unique")) field.isUnique = true;
+  if (line.includes("@updatedAt")) {
+    field.updatedAt = true;
+  }
+  if (RE_ATID.test(line)) {
+    field.isId = true;
+  }
+  if (RE_ATUNIQUE.test(line) && !line.includes("@@unique")) {
+    field.isUnique = true;
+  }
 
   const rm = line.match(RE_RELATION);
   if (rm) {
@@ -123,13 +153,19 @@ function parseModelBlock(body) {
   for (const line of lines) {
     // Block-level attributes
     const mm = line.match(RE_BLOCK_MAP);
-    if (mm) result.tableMapping = mm[1];
+    if (mm) {
+      result.tableMapping = mm[1];
+    }
 
     const sm = line.match(RE_BLOCK_SCHEMA);
-    if (sm) result.schema = sm[1];
+    if (sm) {
+      result.schema = sm[1];
+    }
 
     const im = line.match(RE_BLOCK_ID);
-    if (im) result.compositeId = im[1].split(",").map((s) => s.trim());
+    if (im) {
+      result.compositeId = im[1].split(",").map((s) => s.trim());
+    }
 
     const xm = line.match(RE_BLOCK_INDEX);
     if (xm) {
@@ -153,19 +189,29 @@ function parseModelBlock(body) {
 
     // Skip non-field lines
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@")) continue;
+    if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("@@")) {
+      continue;
+    }
 
     // Skip back-relation lines
-    if (RE_BACK_RELATION.test(trimmed) && !trimmed.includes("fields:")) continue;
+    if (RE_BACK_RELATION.test(trimmed) && !trimmed.includes("fields:")) {
+      continue;
+    }
 
     const field = parseFieldLine(trimmed);
-    if (field) result.fields.push(field);
+    if (field) {
+      result.fields.push(field);
+    }
   }
 
   // Build structured mappings
   for (const field of result.fields) {
-    if (field.map) result.columnMappings[field.name] = field.map;
-    if (field.db) result.dbAttributes[field.name] = field.db;
+    if (field.map) {
+      result.columnMappings[field.name] = field.map;
+    }
+    if (field.db) {
+      result.dbAttributes[field.name] = field.db;
+    }
 
     // Fix 2 & 4: Filter and fix field default attributes
     const isStringField = /^String(\??|\[\])?$/.test(field.type);
@@ -176,17 +222,24 @@ function parseModelBlock(body) {
       const fixedDefaults = [];
       for (const d of field.defaults) {
         const m = d.match(/^@default\((.+)\)$/s);
-        if (!m) { fixedDefaults.push(d); continue; }
+        if (!m) {
+          fixedDefaults.push(d);
+          continue;
+        }
         const inner = m[1];
 
         // Fix 4: Skip @default(now()) on DateTime fields.
         // PrismaProjection generates DateTime fields as String from IR,
         // so now() becomes invalid in the generated schema.
-        if (inner === "now()" && isDateTimeField) continue;
+        if (inner === "now()" && isDateTimeField) {
+          continue;
+        }
 
         // Fix 4: Skip @default([...]) -- PrismaProjection flattens list types to
         // scalar, so list defaults become invalid in the generated schema.
-        if (inner.startsWith("[")) continue;
+        if (inner.startsWith("[")) {
+          continue;
+        }
 
         // Fix 2: Wrap bare identifiers in quotes.
         // PrismaProjection generates ALL fields as String from IR, so enum defaults
@@ -199,33 +252,40 @@ function parseModelBlock(body) {
         const isNumber = /^-?\d+(\.\d+)?$/.test(inner);
         const isList = /^\[/.test(inner);
 
-        if (!isQuoted && !isFuncCall && !isBool && !isNumber && !isList) {
-          fixedDefaults.push('@default("' + inner + '")');
-        } else {
+        if (isQuoted || isFuncCall || isBool || isNumber || isList) {
           fixedDefaults.push(d);
+        } else {
+          fixedDefaults.push('@default("' + inner + '")');
         }
       }
       field.defaults = fixedDefaults;
     }
 
     const attrs = [];
-    if (field.defaults && field.defaults.length > 0) attrs.push(...field.defaults);
-    if (field.updatedAt) attrs.push("@updatedAt");
-    if (attrs.length > 0) result.fieldAttributes[field.name] = attrs;
+    if (field.defaults && field.defaults.length > 0) {
+      attrs.push(...field.defaults);
+    }
+    if (field.updatedAt) {
+      attrs.push("@updatedAt");
+    }
+    if (attrs.length > 0) {
+      result.fieldAttributes[field.name] = attrs;
+    }
 
     if (field.db && field.db.startsWith("Decimal(")) {
       const pm = field.db.match(RE_DECIMAL);
       if (pm) {
         result.precision[field.name] = {
-          precision: parseInt(pm[1]),
-          scale: parseInt(pm[2]),
+          precision: Number.parseInt(pm[1]),
+          scale: Number.parseInt(pm[2]),
         };
       }
     }
 
     if (field.relation) {
       for (let i = 0; i < field.relation.fields.length; i++) {
-        result.foreignKeys[field.relation.fields[i]] = field.relation.references[i];
+        result.foreignKeys[field.relation.fields[i]] =
+          field.relation.references[i];
       }
     }
   }
@@ -250,11 +310,17 @@ function parseModelBlock(body) {
   const remapIndexFields = (fields) =>
     fields.map((f) => {
       // 1. Exact match in reverse column mapping (mapped fields with different names)
-      if (reverseColMap[f]) return reverseColMap[f];
+      if (reverseColMap[f]) {
+        return reverseColMap[f];
+      }
       // 2. Already camelCase and a known field name (no conversion needed)
-      if (camelFieldNames.has(f)) return f;
+      if (camelFieldNames.has(f)) {
+        return f;
+      }
       // 3. Snake_case -> convert to camelCase (IR/PrismaProjection convention)
-      if (f.includes("_")) return snakeToCamel(f);
+      if (f.includes("_")) {
+        return snakeToCamel(f);
+      }
       return f;
     });
 
@@ -303,43 +369,60 @@ function buildOptions(irEntities, prismaModels) {
 
       // Try PascalCase version (handles camelCase accessors from PascalCase models)
       if (!model) {
-        const pascalCase = accessorOverride[0].toUpperCase() + accessorOverride.slice(1);
+        const pascalCase =
+          accessorOverride[0].toUpperCase() + accessorOverride.slice(1);
         model = prismaModels.get(pascalCase);
         modelName = pascalCase;
       }
     }
 
     if (!model) {
-      report.noPrismaModel.push(entityName + (modelName !== entityName ? ` (tried ${modelName})` : ""));
+      report.noPrismaModel.push(
+        entityName + (modelName === entityName ? "" : ` (tried ${modelName})`)
+      );
       continue;
     }
 
     try {
       const parsed = parseModelBlock(model);
 
-      if (parsed.tableMapping) options.tableMappings[entityName] = parsed.tableMapping;
-      if (Object.keys(parsed.columnMappings).length > 0)
+      if (parsed.tableMapping) {
+        options.tableMappings[entityName] = parsed.tableMapping;
+      }
+      if (Object.keys(parsed.columnMappings).length > 0) {
         options.columnMappings[entityName] = parsed.columnMappings;
-      if (Object.keys(parsed.dbAttributes).length > 0)
+      }
+      if (Object.keys(parsed.dbAttributes).length > 0) {
         options.dbAttributes[entityName] = parsed.dbAttributes;
-      if (Object.keys(parsed.fieldAttributes).length > 0)
+      }
+      if (Object.keys(parsed.fieldAttributes).length > 0) {
         options.fieldAttributes[entityName] = parsed.fieldAttributes;
-      if (Object.keys(parsed.precision).length > 0)
+      }
+      if (Object.keys(parsed.precision).length > 0) {
         options.precision[entityName] = parsed.precision;
+      }
 
       const allIndexes = [...parsed.indexes, ...parsed.uniqueIndexes];
-      if (allIndexes.length > 0) options.indexes[entityName] = allIndexes;
+      if (allIndexes.length > 0) {
+        options.indexes[entityName] = allIndexes;
+      }
 
-      if (Object.keys(parsed.foreignKeys).length > 0)
+      if (Object.keys(parsed.foreignKeys).length > 0) {
         options.foreignKeys[entityName] = parsed.foreignKeys;
-      if (parsed.schema) options.multiSchema.entitySchema[entityName] = parsed.schema;
-      if (parsed.compositeId) options._compositeIds[entityName] = parsed.compositeId;
-      if (parsed.uniqueIndexes.length > 0)
+      }
+      if (parsed.schema) {
+        options.multiSchema.entitySchema[entityName] = parsed.schema;
+      }
+      if (parsed.compositeId) {
+        options._compositeIds[entityName] = parsed.compositeId;
+      }
+      if (parsed.uniqueIndexes.length > 0) {
         options._uniqueIndexes[entityName] = parsed.uniqueIndexes;
+      }
 
       report.matched.push({
         entity: entityName,
-        resolvedModel: modelName !== entityName ? modelName : undefined,
+        resolvedModel: modelName === entityName ? undefined : modelName,
         tableMapping: !!parsed.tableMapping,
         columnMappings: Object.keys(parsed.columnMappings).length,
         dbAttributes: Object.keys(parsed.dbAttributes).length,

@@ -29,9 +29,9 @@ type ExplainTarget = "entity" | "command" | "policy";
 
 interface ExplainArgs {
   contentHash: string;
-  target: ExplainTarget;
-  name: string;
   entityName?: string;
+  name: string;
+  target: ExplainTarget;
 }
 
 interface ExplainResult {
@@ -53,7 +53,9 @@ let explainModule: ExplainModule | null = null;
 
 async function loadSessionStoreModule(): Promise<SessionStoreModule> {
   if (!sessionStoreModule) {
-    sessionStoreModule = (await import(sessionStoreModulePath)) as SessionStoreModule;
+    sessionStoreModule = (await import(
+      sessionStoreModulePath
+    )) as SessionStoreModule;
   }
   return sessionStoreModule;
 }

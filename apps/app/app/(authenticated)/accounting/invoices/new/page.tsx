@@ -38,11 +38,11 @@ const INVOICE_TYPES = [
 ];
 
 interface LineItem {
-  id: string;
   description: string;
+  id: string;
   quantity: number;
-  unitPrice: number;
   taxRate: number;
+  unitPrice: number;
 }
 
 function createEmptyLineItem(): LineItem {
@@ -112,10 +112,18 @@ export default function NewInvoicePage() {
         paymentTerms: Number(paymentTerms) || 30,
       };
 
-      if (clientId.trim()) body.clientId = clientId.trim();
-      if (dueDate) body.dueDate = dueDate;
-      if (notes.trim()) body.notes = notes.trim();
-      if (internalNotes.trim()) body.internalNotes = internalNotes.trim();
+      if (clientId.trim()) {
+        body.clientId = clientId.trim();
+      }
+      if (dueDate) {
+        body.dueDate = dueDate;
+      }
+      if (notes.trim()) {
+        body.notes = notes.trim();
+      }
+      if (internalNotes.trim()) {
+        body.internalNotes = internalNotes.trim();
+      }
       if (invoiceType === "DEPOSIT" && depositPercentage) {
         body.depositPercentage = Number(depositPercentage);
       }
@@ -162,7 +170,7 @@ export default function NewInvoicePage() {
             <ArrowLeft className="size-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">New Invoice</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">New Invoice</h1>
       </div>
 
       <Separator />
@@ -297,7 +305,7 @@ export default function NewInvoicePage() {
           </CardHeader>
           <CardContent>
             {lineItems.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
+              <p className="py-8 text-center text-muted-foreground text-sm">
                 No line items added. Click "Add Item" or submit without line
                 items to create a draft.
               </p>
@@ -379,7 +387,7 @@ export default function NewInvoicePage() {
                 <Separator />
 
                 <div className="flex justify-end">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Total:{" "}
                     <span className="font-semibold">
                       {new Intl.NumberFormat("en-US", {

@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -35,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { format } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -45,43 +45,43 @@ import { getEventsForDropdown } from "../actions";
 import { getProposalTemplates } from "../templates/actions";
 
 interface LineItem {
+  description: string;
   id: string;
   itemType: string;
-  description: string;
+  notes?: string;
   quantity: number;
   unitPrice: number;
-  notes?: string;
 }
 
 interface ClientOption {
-  id: string;
   company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
   email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
 }
 
 interface TemplateOption {
-  id: string;
-  name: string;
   eventType: string | null;
+  id: string;
   isDefault: boolean;
+  name: string;
 }
 
 interface EventOption {
-  id: string;
-  title: string;
   eventDate: Date | null;
   eventType: string | null;
+  id: string;
   status: string;
+  title: string;
 }
 
 interface ProposalFormProps {
-  proposal: Proposal | null;
   action: (
     previousState: { redirect: string } | null,
     formData: FormData
   ) => Promise<{ redirect: string } | null>;
+  proposal: Proposal | null;
   submitLabel: string;
 }
 
@@ -290,7 +290,7 @@ export function ProposalForm({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Basic Info */}
           <Card>
             <CardHeader>
@@ -506,7 +506,7 @@ export function ProposalForm({
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Add new line item */}
-              <div className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/50">
+              <div className="flex flex-col gap-3 rounded-lg border bg-muted/50 p-4">
                 <div className="grid gap-3 md:grid-cols-5">
                   <div className="space-y-1">
                     <Label className="text-xs" htmlFor="new-item-type">
@@ -600,7 +600,7 @@ export function ProposalForm({
 
               {/* Line items table */}
               {lineItems.length > 0 && (
-                <div className="border rounded-lg">
+                <div className="rounded-lg border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -649,7 +649,7 @@ export function ProposalForm({
               )}
 
               {lineItems.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="py-8 text-center text-muted-foreground">
                   No items added yet. Add items above to build your proposal.
                 </p>
               )}
@@ -718,7 +718,7 @@ export function ProposalForm({
                 />
               </div>
 
-              <div className="border-t my-2" />
+              <div className="my-2 border-t" />
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -732,15 +732,15 @@ export function ProposalForm({
                   <span className="font-medium">${taxAmount.toFixed(2)}</span>
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
+                  <div className="flex justify-between text-green-600 text-sm">
                     <span>Discount</span>
                     <span className="font-medium">
                       -${discountAmount.toFixed(2)}
                     </span>
                   </div>
                 )}
-                <div className="border-t my-1" />
-                <div className="flex justify-between text-lg font-bold">
+                <div className="my-1 border-t" />
+                <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
@@ -761,7 +761,7 @@ export function ProposalForm({
                   id="validUntil"
                   name="validUntil"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Leave empty for no expiration
                 </p>
               </div>

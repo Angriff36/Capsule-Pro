@@ -44,62 +44,70 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getInvoice, invoiceApplyPayment, invoiceMarkAsPaid, invoiceMarkOverdue, invoiceSend, invoiceSendReminder, invoiceVoidInvoice } from "@/app/lib/manifest-client.generated";
+import {
+  getInvoice,
+  invoiceApplyPayment,
+  invoiceMarkAsPaid,
+  invoiceMarkOverdue,
+  invoiceSend,
+  invoiceSendReminder,
+  invoiceVoidInvoice,
+} from "@/app/lib/manifest-client.generated";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
 
 interface InvoiceClient {
-  id: string;
   company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
   email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
 }
 
 interface InvoiceEvent {
+  eventDate: string | null;
   id: string;
   title: string;
-  eventDate: string | null;
 }
 
 interface InvoiceLineItem {
-  id: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  taxRate: number;
   amount: number;
+  description: string;
+  id: string;
+  quantity: number;
+  taxRate: number;
+  unitPrice: number;
 }
 
 interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  invoiceType: string;
-  status: string;
-  clientId: string | null;
-  eventId: string | null;
-  subtotal: string;
-  taxAmount: string;
-  discountAmount: string;
-  total: string;
-  amountPaid: string;
   amountDue: string;
+  amountPaid: string;
+  client?: InvoiceClient;
+  clientId: string | null;
+  createdAt: string;
+  depositPaid: string | null;
   depositPercentage: string | null;
   depositRequired: string | null;
-  depositPaid: string | null;
-  paymentTerms: number | null;
+  discountAmount: string;
   dueDate: string | null;
-  paidAt: string | null;
-  issuedAt: string | null;
-  sentAt: string | null;
-  notes: string | null;
-  internalNotes: string | null;
-  lineItems: InvoiceLineItem[];
-  createdAt: string;
-  updatedAt: string;
-  client?: InvoiceClient;
   event?: InvoiceEvent;
+  eventId: string | null;
+  id: string;
+  internalNotes: string | null;
+  invoiceNumber: string;
+  invoiceType: string;
+  issuedAt: string | null;
+  lineItems: InvoiceLineItem[];
+  notes: string | null;
+  paidAt: string | null;
+  paymentTerms: number | null;
+  sentAt: string | null;
+  status: string;
+  subtotal: string;
+  taxAmount: string;
+  total: string;
+  updatedAt: string;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -126,7 +134,9 @@ const typeLabels: Record<string, string> = {
 };
 
 const formatDate = (dateStr: string | null | undefined) => {
-  if (!dateStr) return "—";
+  if (!dateStr) {
+    return "—";
+  }
   return new Date(dateStr).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -153,7 +163,9 @@ export default function InvoiceDetailPage() {
     setError(null);
     try {
       const data = await getInvoice(id);
-      if (!data) throw new Error("Invoice not found");
+      if (!data) {
+        throw new Error("Invoice not found");
+      }
       setInvoice(data as unknown as Invoice);
     } catch (err) {
       const message =
@@ -310,13 +322,13 @@ export default function InvoiceDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">
+              <h1 className="font-semibold text-2xl tracking-tight">
                 {invoice.invoiceNumber}
               </h1>
               <Badge className={status.className}>{status.label}</Badge>
               <Badge variant="outline">{typeLabel}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Created {formatDate(invoice.createdAt)}
               {invoice.dueDate && ` · Due ${formatDate(invoice.dueDate)}`}
             </p>
@@ -398,40 +410,40 @@ export default function InvoiceDetailPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <DollarSign className="size-4" />
               Total
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
+            <p className="font-semibold text-2xl">
               {formatCurrency(invoice.total)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <CheckCircle className="size-4" />
               Paid
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-green-600">
+            <p className="font-semibold text-2xl text-green-600">
               {formatCurrency(invoice.amountPaid)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Clock className="size-4" />
               Due
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p
-              className={`text-2xl font-semibold ${Number(invoice.amountDue) > 0 ? "text-orange-600" : ""}`}
+              className={`font-semibold text-2xl ${Number(invoice.amountDue) > 0 ? "text-orange-600" : ""}`}
             >
               {formatCurrency(invoice.amountDue)}
             </p>
@@ -439,12 +451,12 @@ export default function InvoiceDetailPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="font-medium text-muted-foreground text-sm">
               Payment Terms
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
+            <p className="font-semibold text-2xl">
               {invoice.paymentTerms ?? "—"} days
             </p>
           </CardContent>
@@ -459,10 +471,10 @@ export default function InvoiceDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Client</p>
+              <p className="text-muted-foreground text-sm">Client</p>
               {invoice.client ? (
                 <Link
-                  className="text-sm font-medium underline-offset-4 hover:underline"
+                  className="font-medium text-sm underline-offset-4 hover:underline"
                   href={`/crm/clients/${invoice.client.id}`}
                 >
                   {clientName}
@@ -472,10 +484,10 @@ export default function InvoiceDetailPage() {
               )}
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Event</p>
+              <p className="text-muted-foreground text-sm">Event</p>
               {invoice.event ? (
                 <Link
-                  className="text-sm font-medium underline-offset-4 hover:underline"
+                  className="font-medium text-sm underline-offset-4 hover:underline"
                   href={`/events/${invoice.event.id}`}
                 >
                   {invoice.event.title}
@@ -591,7 +603,7 @@ export default function InvoiceDetailPage() {
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{invoice.notes}</p>
+                <p className="whitespace-pre-wrap text-sm">{invoice.notes}</p>
               </CardContent>
             </Card>
           )}
@@ -601,7 +613,7 @@ export default function InvoiceDetailPage() {
                 <CardTitle>Internal Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap">
+                <p className="whitespace-pre-wrap text-sm">
                   {invoice.internalNotes}
                 </p>
               </CardContent>

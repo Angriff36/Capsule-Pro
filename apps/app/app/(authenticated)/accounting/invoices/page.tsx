@@ -13,10 +13,14 @@ import { InvoicesClient } from "./invoices-client";
 
 export default async function InvoicesPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const invoices = await database.invoice.findMany({
     where: { tenantId },

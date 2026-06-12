@@ -3,48 +3,48 @@
 import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
-import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 const AI_MODEL = "gpt-4o-mini";
 
 export type TaskSection = "prep" | "setup" | "cleanup";
 
 export interface TaskBreakdownItem {
-  id: string;
-  name: string;
-  description?: string;
-  section: TaskSection;
-  durationMinutes: number;
-  startTime?: string;
-  endTime?: string;
-  relativeTime?: string;
   assignment?: string;
-  ingredients?: string[];
-  steps?: string[];
-  isCritical: boolean;
-  dueInHours?: number;
-  historicalContext?: string;
   confidence?: number;
+  description?: string;
+  dueInHours?: number;
+  durationMinutes: number;
+  endTime?: string;
+  historicalContext?: string;
+  id: string;
+  ingredients?: string[];
+  isCritical: boolean;
+  name: string;
+  relativeTime?: string;
+  section: TaskSection;
+  startTime?: string;
+  steps?: string[];
 }
 
 export interface TaskBreakdown {
-  prep: TaskBreakdownItem[];
-  setup: TaskBreakdownItem[];
   cleanup: TaskBreakdownItem[];
-  totalPrepTime: number;
-  totalSetupTime: number;
-  totalCleanupTime: number;
-  guestCount: number;
+  disclaimer?: string;
   eventDate: Date;
   generatedAt: Date;
+  guestCount: number;
   historicalEventCount?: number;
-  disclaimer?: string;
+  prep: TaskBreakdownItem[];
+  setup: TaskBreakdownItem[];
+  totalCleanupTime: number;
+  totalPrepTime: number;
+  totalSetupTime: number;
 }
 
 export interface GenerateTaskBreakdownParams {
-  eventId: string;
   customInstructions?: string;
+  eventId: string;
 }
 
 export async function generateTaskBreakdown({

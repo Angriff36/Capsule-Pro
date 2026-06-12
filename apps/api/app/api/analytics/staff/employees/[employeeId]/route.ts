@@ -6,17 +6,17 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface TaskMetrics {
-  total_tasks: string;
-  completed_tasks: string;
   avg_duration_hours: string;
+  completed_tasks: string;
   on_time_tasks: string;
+  total_tasks: string;
 }
 
 interface TimeEntryMetrics {
-  total_shifts: string;
   attended_shifts: string;
   punctual_shifts: string;
   total_hours: string;
+  total_shifts: string;
   unique_days: string;
 }
 
@@ -26,32 +26,32 @@ interface TaskProgressMetrics {
 }
 
 interface EmployeeMetrics {
-  employeeId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string | null;
-  hireDate: Date | null;
-  avatarUrl: string | null;
-  taskCompletionRate: number;
-  totalTasks: number;
-  completedTasks: number;
-  averageTaskDuration: number;
-  onTimeTaskRate: number;
   attendanceRate: number;
-  totalShifts: number;
   attendedShifts: number;
-  punctualityRate: number;
+  avatarUrl: string | null;
   averageHoursPerWeek: number;
-  qualityScore: number;
-  taskRejectionRate: number;
-  reworkRate: number;
-  efficiencyScore: number;
-  tasksPerHour: number;
-  revenueGenerated: number;
+  averageTaskDuration: number;
   clientInteractions: number;
+  completedTasks: number;
+  efficiencyScore: number;
+  email: string;
+  employeeId: string;
   eventParticipation: number;
+  firstName: string;
+  hireDate: Date | null;
+  lastName: string;
+  onTimeTaskRate: number;
+  punctualityRate: number;
+  qualityScore: number;
+  revenueGenerated: number;
+  reworkRate: number;
+  role: string | null;
+  taskCompletionRate: number;
+  taskRejectionRate: number;
+  tasksPerHour: number;
   totalHoursWorked: number;
+  totalShifts: number;
+  totalTasks: number;
 }
 
 function getDateFromPeriod(period: string): Date {

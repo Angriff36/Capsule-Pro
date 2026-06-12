@@ -18,28 +18,28 @@ import { runManifestCommand } from "@/lib/manifest-command";
 export type EmailTemplateType = email_template_type;
 
 export interface EmailTemplateFilters {
+  isActive?: boolean;
   search?: string;
   templateType?: EmailTemplateType;
-  isActive?: boolean;
 }
 
 export interface CreateEmailTemplateInput {
-  name: string;
-  templateType: EmailTemplateType;
-  subject: string;
   body: string;
-  mergeFields?: string[];
   isDefault?: boolean;
+  mergeFields?: string[];
+  name: string;
+  subject: string;
+  templateType: EmailTemplateType;
 }
 
 export interface UpdateEmailTemplateInput {
-  name?: string;
-  templateType?: EmailTemplateType;
-  subject?: string;
   body?: string;
-  mergeFields?: string[];
   isActive?: boolean;
   isDefault?: boolean;
+  mergeFields?: string[];
+  name?: string;
+  subject?: string;
+  templateType?: EmailTemplateType;
 }
 
 /**
@@ -222,7 +222,9 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
           templateType: tpl.templateType,
           subject: tpl.subject,
           body: tpl.body,
-          mergeFields: JSON.stringify(tpl.mergeFields as string[] | null ?? []),
+          mergeFields: JSON.stringify(
+            (tpl.mergeFields as string[] | null) ?? []
+          ),
           isActive: tpl.isActive,
           isDefault: false,
         },
@@ -328,7 +330,9 @@ export async function updateEmailTemplate(
           templateType: tpl.templateType,
           subject: tpl.subject,
           body: tpl.body,
-          mergeFields: JSON.stringify(tpl.mergeFields as string[] | null ?? []),
+          mergeFields: JSON.stringify(
+            (tpl.mergeFields as string[] | null) ?? []
+          ),
           isActive: tpl.isActive,
           isDefault: false,
         },
@@ -351,7 +355,9 @@ export async function updateEmailTemplate(
       body: input.body ?? existing.body,
       // Manifest declares mergeFields: string, Prisma column is Json.
       // Pass array directly — GenericPrismaStore handles coercion.
-      mergeFields: JSON.stringify(input.mergeFields ?? (existing.mergeFields as string[] | null) ?? []),
+      mergeFields: JSON.stringify(
+        input.mergeFields ?? (existing.mergeFields as string[] | null) ?? []
+      ),
       isActive: input.isActive ?? existing.isActive,
       isDefault: input.isDefault ?? existing.isDefault,
     },

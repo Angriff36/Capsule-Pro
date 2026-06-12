@@ -24,10 +24,10 @@ import {
 import Link from "next/link";
 
 interface InventoryNavItem {
-  href: string;
-  label: string;
   description: string;
+  href: string;
   icon: LucideIcon;
+  label: string;
 }
 
 const navItems: InventoryNavItem[] = [

@@ -7,9 +7,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
 interface BulkApproveRequest {
-  timeEntryIds: string[];
   approve?: boolean;
-  rejectionReason?: string;
   editRequests?: Array<{
     timeEntryId: string;
     requestedClockIn?: string;
@@ -22,6 +20,8 @@ interface BulkApproveRequest {
     exceptionType: string;
     notes: string;
   }>;
+  rejectionReason?: string;
+  timeEntryIds: string[];
 }
 
 type TxClient = Omit<

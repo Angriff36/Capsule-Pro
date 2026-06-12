@@ -83,14 +83,28 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; constructor(m: string) { super(m); } }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+    constructor(m: string) {
+      super(m);
+    }
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
 
 // ---------------------------------------------------------------------------
@@ -98,7 +112,8 @@ vi.mock("@repo/notifications", () => ({}));
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, resolveCurrentUser, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, resolveCurrentUser, requireCurrentUser } =
+  await import("@/app/lib/tenant");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // ---------------------------------------------------------------------------
@@ -116,7 +131,10 @@ const PROPOSAL_ID = "prop-001";
 // ---------------------------------------------------------------------------
 
 function authedOrg() {
-  vi.mocked(auth).mockResolvedValue({ orgId: ORG_ID, userId: CLERK_ID } as never);
+  vi.mocked(auth).mockResolvedValue({
+    orgId: ORG_ID,
+    userId: CLERK_ID,
+  } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT_ID as never);
 }
 
@@ -163,10 +181,13 @@ function setupListMocks(proposals: unknown[] = []) {
 }
 
 function mockSuccessResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify({ success: true, result: data, events: [] }), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ success: true, result: data, events: [] }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
 
 // ===========================================================================
@@ -179,7 +200,9 @@ describe("GET /api/crm/proposals (list)", () => {
     authedOrg();
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("returns 401 for unauthenticated requests", async () => {
     unauthed();
@@ -281,15 +304,32 @@ describe("GET /api/crm/proposals/[id] (detail)", () => {
     authedOrg();
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("returns proposal with line items on success", async () => {
-    const proposal = makeProposal({ clientId: "client-001", leadId: "lead-001" });
+    const proposal = makeProposal({
+      clientId: "client-001",
+      leadId: "lead-001",
+    });
     mockProposalFindFirst.mockResolvedValue(proposal);
-    mockClientFindFirst.mockResolvedValue({ id: "client-001", company_name: "Acme" });
-    mockLeadFindFirst.mockResolvedValue({ id: "lead-001", companyName: "LeadCo" });
+    mockClientFindFirst.mockResolvedValue({
+      id: "client-001",
+      company_name: "Acme",
+    });
+    mockLeadFindFirst.mockResolvedValue({
+      id: "lead-001",
+      companyName: "LeadCo",
+    });
     mockLineItemFindMany.mockResolvedValue([
-      { id: "li-001", proposalId: PROPOSAL_ID, category: "food", description: "Catering", sortOrder: 0 },
+      {
+        id: "li-001",
+        proposalId: PROPOSAL_ID,
+        category: "food",
+        description: "Catering",
+        sortOrder: 0,
+      },
     ]);
 
     const { GET } = await import("@/app/api/crm/proposals/[id]/route");
@@ -344,18 +384,24 @@ describe("POST /api/crm/proposals (create)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: USER_ID, tenantId: TENANT_ID, role: "admin",
+      id: USER_ID,
+      tenantId: TENANT_ID,
+      role: "admin",
     } as never);
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: PROPOSAL_ID, status: "draft" })
     );
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("delegates to runManifestCommand with Proposal/create", async () => {
     const { POST } = await import("@/app/api/crm/proposals/route");
-    const res = await POST(postRequest("/api/crm/proposals", { title: "New Proposal" }));
+    const res = await POST(
+      postRequest("/api/crm/proposals", { title: "New Proposal" })
+    );
 
     expect(res.status).toBe(200);
     expect(runManifestCommand).toHaveBeenCalledWith(
@@ -383,24 +429,33 @@ describe("PUT /api/crm/proposals/[id] (update)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: USER_ID, tenantId: TENANT_ID, role: "admin",
+      id: USER_ID,
+      tenantId: TENANT_ID,
+      role: "admin",
     } as never);
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: PROPOSAL_ID, status: "draft" })
     );
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("delegates to runManifestCommand with Proposal/update and includes id", async () => {
     const { PUT } = await import("@/app/api/crm/proposals/[id]/route");
-    const req = new NextRequest(new URL(`/api/crm/proposals/${PROPOSAL_ID}`, "http://localhost:3000"), {
-      method: "PUT",
-      body: JSON.stringify({ title: "Updated" }),
-      headers: { "Content-Type": "application/json" },
-    });
+    const req = new NextRequest(
+      new URL(`/api/crm/proposals/${PROPOSAL_ID}`, "http://localhost:3000"),
+      {
+        method: "PUT",
+        body: JSON.stringify({ title: "Updated" }),
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
-    const res = await PUT(req, { params: Promise.resolve({ id: PROPOSAL_ID }) });
+    const res = await PUT(req, {
+      params: Promise.resolve({ id: PROPOSAL_ID }),
+    });
 
     expect(res.status).toBe(200);
     expect(runManifestCommand).toHaveBeenCalledWith(
@@ -421,23 +476,32 @@ describe("DELETE /api/crm/proposals/[id] (withdraw)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: USER_ID, tenantId: TENANT_ID, role: "admin",
+      id: USER_ID,
+      tenantId: TENANT_ID,
+      role: "admin",
     } as never);
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: PROPOSAL_ID, status: "withdrawn" })
     );
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("delegates to runManifestCommand with Proposal/withdraw", async () => {
     const { DELETE } = await import("@/app/api/crm/proposals/[id]/route");
-    const req = new NextRequest(new URL(`/api/crm/proposals/${PROPOSAL_ID}`, "http://localhost:3000"), {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    const req = new NextRequest(
+      new URL(`/api/crm/proposals/${PROPOSAL_ID}`, "http://localhost:3000"),
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
-    const res = await DELETE(req, { params: Promise.resolve({ id: PROPOSAL_ID }) });
+    const res = await DELETE(req, {
+      params: Promise.resolve({ id: PROPOSAL_ID }),
+    });
 
     expect(res.status).toBe(200);
     expect(runManifestCommand).toHaveBeenCalledWith(
@@ -465,13 +529,20 @@ describe("POST via dispatcher — Proposal commands", () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
       mockSuccessResponse({ id: PROPOSAL_ID, status: "draft" })
     );
-    const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+    const mod = await import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
     POST_dispatch = mod.POST;
   });
 
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-  const dispatchProposal = (command: string, body: Record<string, unknown> = {}) =>
+  const dispatchProposal = (
+    command: string,
+    body: Record<string, unknown> = {}
+  ) =>
     POST_dispatch(postRequest(`/api/crm/proposals/commands/${command}`, body), {
       params: Promise.resolve({ entity: "Proposal", command }),
     });
@@ -495,9 +566,13 @@ describe("POST via dispatcher — Proposal commands", () => {
 
   it("returns 403 on policy denial", async () => {
     vi.mocked(runManifestCommand).mockResolvedValue(
-      new Response(JSON.stringify({ success: false, message: "Access denied" }), {
-        status: 403, headers: { "Content-Type": "application/json" },
-      })
+      new Response(
+        JSON.stringify({ success: false, message: "Access denied" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
 
     const res = await dispatchProposal("create");

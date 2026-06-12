@@ -17,25 +17,25 @@ import type { TopLevelSpec } from "vega-lite";
 type FieldType = "quantitative" | "nominal" | "ordinal" | "temporal";
 
 interface EncodingSlot {
+  /** Accepted Vega-Lite data types */
+  acceptedTypes: FieldType[];
   /** Slot name shown in UI */
   label: string;
   /** Placeholder field name in the spec template */
   placeholder: string;
-  /** Accepted Vega-Lite data types */
-  acceptedTypes: FieldType[];
   /** Whether this slot must be filled */
   required: boolean;
 }
 
 interface ChartTypeDefinition {
-  id: string;
-  name: string;
   category: ChartCategory;
   description: string;
-  /** Vega-Lite spec template with placeholder field names */
-  spec: TopLevelSpec;
   /** Encoding slots the user must/can fill */
   encodings: EncodingSlot[];
+  id: string;
+  name: string;
+  /** Vega-Lite spec template with placeholder field names */
+  spec: TopLevelSpec;
   /** Tags for search */
   tags: string[];
 }
@@ -53,9 +53,9 @@ type ChartCategory =
   | "multiview";
 
 interface CategoryMeta {
+  description: string;
   id: ChartCategory;
   label: string;
-  description: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -1846,14 +1846,14 @@ const CHART_TYPES: ChartTypeDefinition[] = [
 // Exports
 // ---------------------------------------------------------------------------
 
-export { CATEGORIES, CHART_TYPES };
 export type {
+  CategoryMeta,
   ChartCategory,
   ChartTypeDefinition,
-  CategoryMeta,
   EncodingSlot,
   FieldType,
 };
+export { CATEGORIES, CHART_TYPES };
 
 /**
  * Replace placeholder field names in a spec with actual column names.
@@ -1902,6 +1902,4 @@ function buildSpec(
   } as TopLevelSpec;
 }
 
-export { isFacetedSpec };
-
-export { buildSpec, replaceFields };
+export { buildSpec, isFacetedSpec, replaceFields };

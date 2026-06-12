@@ -116,7 +116,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+    const manifestUser = {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    };
 
     // Verify case exists (read — bypasses Manifest per §10)
     const collectionCase = await database.collectionCase.findFirst({

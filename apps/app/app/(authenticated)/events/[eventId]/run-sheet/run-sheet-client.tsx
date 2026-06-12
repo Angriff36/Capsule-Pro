@@ -14,14 +14,12 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface RunSheetDish {
+  allergens: string[];
+  course?: string;
+  description?: string;
+  dietaryTags: string[];
   id: string;
   name: string;
-  description?: string;
-  allergens: string[];
-  dietaryTags: string[];
-  course?: string;
-  servings?: number;
-  source: "battle-board" | "event-menu";
   recipe?: {
     title: string;
     yieldQuantity: number;
@@ -35,32 +33,35 @@ interface RunSheetDish {
     }>;
     instructions: string | null;
   } | null;
+  servings?: number;
+  source: "battle-board" | "event-menu";
 }
 
 interface RunSheetStaff {
+  assignmentRole: string | null;
   id: string;
   name: string;
   role: string | null;
-  assignmentRole: string | null;
 }
 
 interface RunSheetTimeline {
-  id: string;
-  title: string;
   description?: string;
-  startTime: string | null;
   endTime: string | null;
+  id: string;
   isCompleted: boolean;
+  startTime: string | null;
+  title: string;
 }
 
 interface ShoppingItem {
+  dishes: string[];
   name: string;
   quantity: number;
   unit: string | null;
-  dishes: string[];
 }
 
 interface RunSheetData {
+  dishes: RunSheetDish[];
   event: {
     id: string;
     title: string;
@@ -72,12 +73,11 @@ interface RunSheetData {
     status: string | null;
     client: { id: string; name: string; email?: string; phone?: string } | null;
   };
-  dishes: RunSheetDish[];
+  generatedAt: string;
+  shoppingList: ShoppingItem[];
+  source: "battle-board" | "event-menu";
   staff: RunSheetStaff[];
   timeline: RunSheetTimeline[];
-  shoppingList: ShoppingItem[];
-  generatedAt: string;
-  source: "battle-board" | "event-menu";
 }
 
 interface RunSheetClientProps {
@@ -118,7 +118,9 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
   };
 
   const handleExportCSV = () => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
     const rows: string[][] = [["Section", "Item", "Details", "Notes"]];
     for (const dish of data.dishes) {
@@ -185,7 +187,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       <div className="mx-auto max-w-4xl px-4 py-8 text-center">
         <p className="text-muted-foreground">Failed to load run sheet data.</p>
         <Link
-          className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          className="mt-4 inline-flex items-center gap-1 text-primary text-sm hover:underline"
           href={`/events/${eventId}`}
         >
           <ArrowLeft className="h-3 w-3" /> Back to event
@@ -224,13 +226,13 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       <div className="mb-6 flex items-start justify-between print:hidden">
         <div>
           <Link
-            className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="mb-2 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
             href={`/events/${eventId}`}
           >
             <ArrowLeft className="h-3 w-3" /> Back to event
           </Link>
-          <h1 className="text-2xl font-bold">{data.event.title} — Run Sheet</h1>
-          <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+          <h1 className="font-bold text-2xl">{data.event.title} — Run Sheet</h1>
+          <div className="mt-1 flex items-center gap-4 text-muted-foreground text-sm">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" /> {eventDate}
             </span>
@@ -246,12 +248,12 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
             )}
           </div>
           {data.event.client && (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-muted-foreground text-sm">
               Client: {data.event.client.name}
               {data.event.client.email && ` (${data.event.client.email})`}
             </p>
           )}
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-muted-foreground text-xs">
             Source:{" "}
             {data.source === "battle-board"
               ? "Finalized Battle Board"
@@ -261,14 +263,14 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-sm hover:bg-accent"
             onClick={handleExportCSV}
             type="button"
           >
             <Download className="h-3.5 w-3.5" /> CSV
           </button>
           <button
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground text-sm hover:bg-primary/90"
             onClick={handlePrint}
             type="button"
           >
@@ -278,8 +280,8 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       </div>
 
       {/* Print-only header */}
-      <div className="hidden print:block mb-4">
-        <h1 className="text-xl font-bold">{data.event.title} — Run Sheet</h1>
+      <div className="mb-4 hidden print:block">
+        <h1 className="font-bold text-xl">{data.event.title} — Run Sheet</h1>
         <p className="text-sm">
           {eventDate} | {data.event.venueName ?? "TBD"} |{" "}
           {data.event.guestCount ?? 0} guests
@@ -293,7 +295,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       <div className="mb-4 flex gap-1 rounded-xl border border-border bg-background/95 p-1 print:hidden">
         {sections.map((s) => (
           <button
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-sm transition-all ${
               activeSection === s.key
                 ? "bg-ink text-ink-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -314,7 +316,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "menu" && (
         <div className="space-y-3 print:space-y-2">
           {data.dishes.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="py-8 text-center text-muted-foreground text-sm">
               No dishes assigned to this event.
             </p>
           ) : (
@@ -327,17 +329,17 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                   <div>
                     <h3 className="font-medium">{dish.name}</h3>
                     {dish.description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">
+                      <p className="mt-0.5 text-muted-foreground text-sm">
                         {dish.description}
                       </p>
                     )}
                     {dish.course && (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-muted-foreground text-xs">
                         Course: {dish.course}
                       </p>
                     )}
                     {dish.servings && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Servings: {dish.servings}
                       </p>
                     )}
@@ -345,7 +347,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                   <div className="flex flex-wrap gap-1">
                     {dish.allergens.map((a) => (
                       <span
-                        className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs text-destructive"
+                        className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-destructive text-xs"
                         key={a}
                       >
                         {a}
@@ -362,8 +364,8 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                   </div>
                 </div>
                 {dish.recipe && (
-                  <div className="mt-3 border-t border-border pt-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                  <div className="mt-3 border-border border-t pt-3">
+                    <p className="mb-2 font-medium text-muted-foreground text-xs">
                       Recipe: {dish.recipe.title}
                       {dish.recipe.prepTimeMinutes &&
                         ` — Prep: ${dish.recipe.prepTimeMinutes}min`}
@@ -371,7 +373,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                         ` — Cook: ${dish.recipe.cookTimeMinutes}min`}
                     </p>
                     {dish.recipe.instructions && (
-                      <p className="text-xs text-muted-foreground whitespace-pre-line">
+                      <p className="whitespace-pre-line text-muted-foreground text-xs">
                         {dish.recipe.instructions}
                       </p>
                     )}
@@ -387,20 +389,20 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "staff" && (
         <div className="rounded-lg border border-border bg-card">
           {data.staff.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="py-8 text-center text-muted-foreground text-sm">
               No staff assigned to this event.
             </p>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                <tr className="border-border border-b">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Name
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Role
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Assignment
                   </th>
                 </tr>
@@ -408,14 +410,14 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
               <tbody>
                 {data.staff.map((s) => (
                   <tr
-                    className="border-b border-border last:border-0"
+                    className="border-border border-b last:border-0"
                     key={s.id}
                   >
                     <td className="px-4 py-2 text-sm">{s.name}</td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-2 text-muted-foreground text-sm">
                       {s.role ?? "—"}
                     </td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-2 text-muted-foreground text-sm">
                       {s.assignmentRole ?? "—"}
                     </td>
                   </tr>
@@ -430,7 +432,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "timeline" && (
         <div className="space-y-2">
           {data.timeline.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="py-8 text-center text-muted-foreground text-sm">
               No timeline items for this event.
             </p>
           ) : (
@@ -444,21 +446,21 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                 key={item.id}
               >
                 <div
-                  className={`h-2 w-2 rounded-full shrink-0 ${item.isCompleted ? "bg-success" : "bg-muted-foreground"}`}
+                  className={`h-2 w-2 shrink-0 rounded-full ${item.isCompleted ? "bg-success" : "bg-muted-foreground"}`}
                 />
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <p
-                    className={`text-sm font-medium ${item.isCompleted ? "line-through text-muted-foreground" : ""}`}
+                    className={`font-medium text-sm ${item.isCompleted ? "text-muted-foreground line-through" : ""}`}
                   >
                     {item.title}
                   </p>
                   {item.description && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {item.description}
                     </p>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground shrink-0">
+                <div className="shrink-0 text-muted-foreground text-xs">
                   {item.startTime
                     ? new Date(item.startTime).toLocaleTimeString("en-US", {
                         hour: "numeric",
@@ -483,24 +485,24 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "shopping" && (
         <div className="rounded-lg border border-border bg-card">
           {data.shoppingList.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="py-8 text-center text-muted-foreground text-sm">
               No ingredient data available. Add recipes to dishes to generate a
               shopping list.
             </p>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                <tr className="border-border border-b">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Ingredient
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Quantity
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Unit
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">
                     Used In
                   </th>
                 </tr>
@@ -508,19 +510,19 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
               <tbody>
                 {data.shoppingList.map((item, idx) => (
                   <tr
-                    className="border-b border-border last:border-0"
+                    className="border-border border-b last:border-0"
                     key={`${item.name}-${idx}`}
                   >
-                    <td className="px-4 py-2 text-sm font-medium">
+                    <td className="px-4 py-2 font-medium text-sm">
                       {item.name}
                     </td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-2 text-muted-foreground text-sm">
                       {item.quantity.toFixed(1)}
                     </td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-2 text-muted-foreground text-sm">
                       {item.unit ?? "units"}
                     </td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                    <td className="px-4 py-2 text-muted-foreground text-xs">
                       {item.dishes.join(", ")}
                     </td>
                   </tr>

@@ -54,6 +54,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type {
+  CycleCountSessionStatus,
+  CycleCountSessionType,
+} from "@/app/(authenticated)/cycle-counting/types";
 import { formatCurrency } from "@/app/lib/format";
 import {
   cycleCountSessionCancel,
@@ -64,7 +68,6 @@ import {
   listCycleCountSessions as listCycleCountSessionsGenerated,
 } from "@/app/lib/manifest-client.generated";
 import type { CycleCountSession as GeneratedCycleCountSession } from "@/app/lib/manifest-types.generated";
-import type { CycleCountSessionType, CycleCountSessionStatus } from "@/app/(authenticated)/cycle-counting/types";
 import type { StorageLocation } from "@/app/lib/stock-levels";
 import { listLocations } from "@/app/lib/stock-levels";
 
@@ -297,7 +300,7 @@ export const CycleCountClient = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Cycle Counts
           </h1>
           <p className="text-muted-foreground">
@@ -314,54 +317,54 @@ export const CycleCountClient = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Total Sessions
             </CardTitle>
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCount}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{totalCount}</div>
+            <p className="text-muted-foreground text-xs">
               All time cycle count sessions
             </p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Draft</CardTitle>
+            <CardTitle className="font-medium text-sm">Draft</CardTitle>
             <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{draftSessions}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{draftSessions}</div>
+            <p className="text-muted-foreground text-xs">
               Sessions awaiting start
             </p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <CardTitle className="font-medium text-sm">In Progress</CardTitle>
             <PlayIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressSessions}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{inProgressSessions}</div>
+            <p className="text-muted-foreground text-xs">
               Active counting sessions
             </p>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Total Variance
             </CardTitle>
             <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(totalVariance)}
             </div>
-            <p className="text-xs text-muted-foreground">Across all sessions</p>
+            <p className="text-muted-foreground text-xs">Across all sessions</p>
           </CardContent>
         </Card>
       </div>
@@ -436,13 +439,13 @@ export const CycleCountClient = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell className="text-center py-8" colSpan={7}>
+                  <TableCell className="py-8 text-center" colSpan={7}>
                     Loading sessions...
                   </TableCell>
                 </TableRow>
               ) : filteredSessions.length === 0 ? (
                 <TableRow>
-                  <TableCell className="text-center py-8" colSpan={7}>
+                  <TableCell className="py-8 text-center" colSpan={7}>
                     No sessions found
                   </TableCell>
                 </TableRow>
@@ -451,11 +454,9 @@ export const CycleCountClient = () => {
                   <TableRow key={session.id}>
                     <TableCell className="font-medium">
                       <div>
-                        <div className="font-medium">
-                          {session.sessionName}
-                        </div>
+                        <div className="font-medium">{session.sessionName}</div>
                         {session.notes && (
-                          <div className="text-sm text-muted-foreground truncate max-w-md">
+                          <div className="max-w-md truncate text-muted-foreground text-sm">
                             {session.notes}
                           </div>
                         )}
@@ -463,12 +464,22 @@ export const CycleCountClient = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {countTypeLabel[session.countType as CycleCountSessionType] ?? session.countType}
+                        {countTypeLabel[
+                          session.countType as CycleCountSessionType
+                        ] ?? session.countType}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant[session.status as CycleCountSessionStatus] ?? "secondary"}>
-                        {statusLabel[session.status as CycleCountSessionStatus] ?? session.status}
+                      <Badge
+                        variant={
+                          statusVariant[
+                            session.status as CycleCountSessionStatus
+                          ] ?? "secondary"
+                        }
+                      >
+                        {statusLabel[
+                          session.status as CycleCountSessionStatus
+                        ] ?? session.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -479,11 +490,11 @@ export const CycleCountClient = () => {
                     <TableCell className="text-right">
                       <span
                         className={
-                          (session.totalVariance ?? 0) !== 0
-                            ? (session.totalVariance ?? 0) > 0
+                          (session.totalVariance ?? 0) === 0
+                            ? ""
+                            : (session.totalVariance ?? 0) > 0
                               ? "text-green-600"
                               : "text-red-600"
-                            : ""
                         }
                       >
                         {formatCurrency(Math.abs(session.totalVariance ?? 0))}
@@ -596,7 +607,7 @@ export const CycleCountClient = () => {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, totalCount)} of{" "}
           {totalCount} sessions
         </div>

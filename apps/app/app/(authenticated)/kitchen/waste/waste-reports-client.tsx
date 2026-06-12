@@ -48,7 +48,7 @@ export function WasteReportsClient() {
 
   if (error || !data) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-destructive text-sm">
         {error ?? "Failed to load waste reports"}
       </div>
     );
@@ -58,24 +58,24 @@ export function WasteReportsClient() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
         <div>
-          <p className="text-sm text-muted-foreground">Total Cost</p>
-          <p className="text-2xl font-bold">
+          <p className="text-muted-foreground text-sm">Total Cost</p>
+          <p className="font-bold text-2xl">
             ${data.summary.totalCost.toFixed(2)}
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Total Quantity</p>
-          <p className="text-2xl font-bold">
+          <p className="text-muted-foreground text-sm">Total Quantity</p>
+          <p className="font-bold text-2xl">
             {data.summary.totalQuantity.toFixed(2)}
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Entries</p>
-          <p className="text-2xl font-bold">{data.summary.entryCount}</p>
+          <p className="text-muted-foreground text-sm">Entries</p>
+          <p className="font-bold text-2xl">{data.summary.entryCount}</p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Avg Cost/Entry</p>
-          <p className="text-2xl font-bold">
+          <p className="text-muted-foreground text-sm">Avg Cost/Entry</p>
+          <p className="font-bold text-2xl">
             ${data.summary.avgCostPerEntry.toFixed(2)}
           </p>
         </div>
@@ -91,14 +91,14 @@ export function WasteReportsClient() {
             >
               <div>
                 <p className="font-medium">{item.label}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {item.count} entries - {item.avgQuantityPerEntry.toFixed(2)}{" "}
                   avg qty
                 </p>
               </div>
               <div className="text-right">
                 <p className="font-medium">${item.totalCost.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   ${item.avgCostPerEntry.toFixed(2)}/entry
                 </p>
               </div>

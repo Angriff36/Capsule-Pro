@@ -27,17 +27,19 @@ vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...data }), { status })
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(JSON.stringify({ success: true, ...data }), { status })
   ),
-  manifestErrorResponse: vi.fn((data, status = 400) =>
-    new Response(
-      JSON.stringify({
-        success: false,
-        ...(typeof data === "string" ? { message: data } : data),
-      }),
-      { status }
-    )
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          ...(typeof data === "string" ? { message: data } : data),
+        }),
+        { status }
+      )
   ),
 }));
 vi.mock("@/app/lib/invariant", () => ({
@@ -59,7 +61,16 @@ vi.mock("@/lib/manifest/issue-log", () => ({
 // Keep existing mocks
 vi.mock("@repo/database", () => ({
   database: {
-    inventoryTransfer: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    inventoryTransfer: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     $queryRaw: vi.fn(),
     $transaction: vi.fn((fn) => fn({})),
     $connect: vi.fn(),
@@ -74,7 +85,10 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/pagination", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/pagination")>("@/lib/pagination");
+  const actual =
+    await vi.importActual<typeof import("@/lib/pagination")>(
+      "@/lib/pagination"
+    );
   return actual;
 });
 
@@ -89,16 +103,12 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import(
   "@/app/lib/tenant"
 );
-const { runManifestCommand } = await import(
-  "@/lib/manifest/execute-command"
-);
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
 
 import { GET as listTransfers } from "@/app/api/inventory/transfers/list/route";
-import {
-  POST as commandPost,
-} from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as commandPost } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // --- Constants ---
 
@@ -168,7 +178,11 @@ function createMockTransfer(overrides: Record<string, unknown> = {}) {
 function mockManifestSuccess(result: Record<string, unknown> = {}) {
   vi.mocked(runManifestCommand).mockResolvedValue(
     new Response(
-      JSON.stringify({ success: true, result: { id: "transfer-001", ...result }, events: [] }),
+      JSON.stringify({
+        success: true,
+        result: { id: "transfer-001", ...result },
+        events: [],
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     )
   );
@@ -176,10 +190,10 @@ function mockManifestSuccess(result: Record<string, unknown> = {}) {
 
 function mockManifestError(message: string, status = 400) {
   vi.mocked(runManifestCommand).mockResolvedValue(
-    new Response(
-      JSON.stringify({ success: false, message }),
-      { status, headers: { "Content-Type": "application/json" } }
-    )
+    new Response(JSON.stringify({ success: false, message }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    })
   );
 }
 
@@ -356,7 +370,10 @@ describe("Inventory Transfers API", () => {
 
     it("delegates approve to runManifestCommand", async () => {
       mockCurrentUser();
-      mockManifestSuccess({ status: "approved", approvedAt: new Date("2026-04-02").toISOString() });
+      mockManifestSuccess({
+        status: "approved",
+        approvedAt: new Date("2026-04-02").toISOString(),
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

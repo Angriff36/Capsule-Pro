@@ -186,7 +186,10 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     expect(res.status).toBe(200);
     expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        body: expect.objectContaining({ userId: OTHER_INTERNAL, reason: "restructuring" }),
+        body: expect.objectContaining({
+          userId: OTHER_INTERNAL,
+          reason: "restructuring",
+        }),
       })
     );
   });

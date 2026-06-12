@@ -11,13 +11,13 @@ export default async function NewMenuPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <Header
         page="Create New Menu"
         pages={["Kitchen Ops", "Recipes", "Menus"]}
       />
       <div className="flex-1 p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="mx-auto max-w-4xl">
           <NewMenuFormClient />
         </div>
       </div>

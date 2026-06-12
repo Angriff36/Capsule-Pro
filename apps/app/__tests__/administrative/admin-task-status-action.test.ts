@@ -42,8 +42,8 @@ vi.mock("@repo/database", () => ({
 
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { updateAdminTaskStatus } from "../../app/(authenticated)/administrative/kanban/actions";
 
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
@@ -87,7 +87,9 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
 
   it("routes the status change through the governed command — no direct prisma write (constitution §9)", async () => {
     mockCurrentStatus("review");
-    await updateAdminTaskStatus(form({ taskId: TASK_ID, status: "in_progress" }));
+    await updateAdminTaskStatus(
+      form({ taskId: TASK_ID, status: "in_progress" })
+    );
 
     expect(runCommand).toHaveBeenCalledTimes(1);
     expect(runCommand).toHaveBeenCalledWith(

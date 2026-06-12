@@ -96,7 +96,7 @@ export async function GET(request: Request) {
         WHERE ea.tenant_id = ${tenantId}
           AND ea.deleted_at IS NULL
           ${employeeId ? Prisma.sql`AND ea.employee_id = ${employeeId}` : Prisma.empty}
-          ${dayOfWeek !== null ? Prisma.sql`AND ea.day_of_week = ${dayOfWeek}` : Prisma.empty}
+          ${dayOfWeek === null ? Prisma.empty : Prisma.sql`AND ea.day_of_week = ${dayOfWeek}`}
           ${
             effectiveDate
               ? Prisma.sql`
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
         WHERE ea.tenant_id = ${tenantId}
           AND ea.deleted_at IS NULL
           ${employeeId ? Prisma.sql`AND ea.employee_id = ${employeeId}` : Prisma.empty}
-          ${dayOfWeek !== null ? Prisma.sql`AND ea.day_of_week = ${dayOfWeek}` : Prisma.empty}
+          ${dayOfWeek === null ? Prisma.empty : Prisma.sql`AND ea.day_of_week = ${dayOfWeek}`}
           ${
             effectiveDate
               ? Prisma.sql`
@@ -165,7 +165,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "EmployeeAvailability",
     command: "create",

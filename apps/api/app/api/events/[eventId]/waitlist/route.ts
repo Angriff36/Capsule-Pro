@@ -68,7 +68,7 @@ export async function GET(
   ).length;
   const total = guests.length;
   const spotsRemaining =
-    maxCapacity !== null ? Math.max(0, maxCapacity - confirmed) : null;
+    maxCapacity === null ? null : Math.max(0, maxCapacity - confirmed);
 
   return NextResponse.json({
     data: {

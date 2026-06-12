@@ -29,10 +29,7 @@ function loadStationManifestSource(): string {
  * Load inventory manifest source from file
  */
 function loadInventoryManifestSource(): string {
-  return readFileSync(
-    join(MANIFESTS_DIR, "inventory-rules.manifest"),
-    "utf-8"
-  );
+  return readFileSync(join(MANIFESTS_DIR, "inventory-rules.manifest"), "utf-8");
 }
 
 /**
@@ -53,10 +50,7 @@ function loadMenuManifestSource(): string {
  * Load prep list manifest source from file
  */
 function loadPrepListManifestSource(): string {
-  return readFileSync(
-    join(MANIFESTS_DIR, "prep-list-rules.manifest"),
-    "utf-8"
-  );
+  return readFileSync(join(MANIFESTS_DIR, "prep-list-rules.manifest"), "utf-8");
 }
 
 // Cached compiled IR for each manifest

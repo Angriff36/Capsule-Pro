@@ -17,8 +17,8 @@
  * Output: manifest/generated/kysely/database.ts
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -36,8 +36,15 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 // This is the same approach needed for any projection not yet in the exports map.
 // On Windows, dynamic import requires a file:// URL, not a bare path.
 const generatorPath = join(
-  root, "node_modules", "@angriff36", "manifest",
-  "dist", "manifest", "projections", "kysely", "generator.js"
+  root,
+  "node_modules",
+  "@angriff36",
+  "manifest",
+  "dist",
+  "manifest",
+  "projections",
+  "kysely",
+  "generator.js"
 );
 const generatorUrl = import.meta.resolve(
   `file://${generatorPath.replace(/\\/g, "/")}`
@@ -74,7 +81,9 @@ for (const d of result.diagnostics || []) {
 }
 
 if (errors.length > 0) {
-  console.error(`\n[kysely] ${errors.length} error(s) — some entities may have been skipped.`);
+  console.error(
+    `\n[kysely] ${errors.length} error(s) — some entities may have been skipped.`
+  );
 }
 
 // ── Write output ──
@@ -88,9 +97,14 @@ const code = result.artifacts[0].code;
 writeFileSync(OUT_FILE, code);
 
 // ── Summary ──
-const tableCount = (code.match(/^export interface \w+Table \{$/gm) || []).length;
+const tableCount = (code.match(/^export interface \w+Table \{$/gm) || [])
+  .length;
 const dbEntries = (code.match(/^\s+\w+: \w+Table;$/gm) || []).length;
 
-console.log(`\n[kysely] Generated: ${tableCount} table interfaces, ${dbEntries} DB mappings`);
-console.log(`[kysely] Diagnostics: ${errors.length} errors, ${warnings.length} warnings, ${info.length} info (skipped entities)`);
+console.log(
+  `\n[kysely] Generated: ${tableCount} table interfaces, ${dbEntries} DB mappings`
+);
+console.log(
+  `[kysely] Diagnostics: ${errors.length} errors, ${warnings.length} warnings, ${info.length} info (skipped entities)`
+);
 console.log(`[kysely] Output: ${OUT_FILE}`);

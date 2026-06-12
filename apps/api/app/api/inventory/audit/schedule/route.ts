@@ -23,22 +23,22 @@ type Frequency = (typeof VALID_FREQUENCIES)[number];
 
 // Request body types
 interface CreateScheduleBody {
-  name: string;
-  frequency: Frequency;
-  dayOfWeek?: number | null;
   dayOfMonth?: number | null;
-  time: string;
+  dayOfWeek?: number | null;
+  frequency: Frequency;
   isActive?: boolean;
+  name: string;
+  time: string;
 }
 
 interface UpdateScheduleBody {
-  id: string;
-  name?: string;
-  frequency?: Frequency;
-  dayOfWeek?: number | null;
   dayOfMonth?: number | null;
-  time?: string;
+  dayOfWeek?: number | null;
+  frequency?: Frequency;
+  id: string;
   isActive?: boolean;
+  name?: string;
+  time?: string;
 }
 
 interface DeleteScheduleBody {
@@ -52,7 +52,9 @@ function isValidFrequency(value: unknown): value is Frequency {
 }
 
 function isValidTime(value: unknown): boolean {
-  if (typeof value !== "string") return false;
+  if (typeof value !== "string") {
+    return false;
+  }
   // Validate HH:MM format (24-hour)
   const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
   return timeRegex.test(value);
@@ -104,7 +106,7 @@ export async function GET() {
     log.error("Failed to get audit schedules", { error });
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
     if (!body.name || typeof body.name !== "string") {
       return NextResponse.json(
         { message: "name is required and must be a string" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -133,14 +135,14 @@ export async function POST(request: NextRequest) {
         {
           message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!isValidTime(body.time)) {
       return NextResponse.json(
         { message: "time must be in HH:MM format (24-hour)" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -149,13 +151,13 @@ export async function POST(request: NextRequest) {
       if (body.dayOfWeek === undefined || body.dayOfWeek === null) {
         return NextResponse.json(
           { message: "dayOfWeek is required for weekly frequency" },
-          { status: 400 },
+          { status: 400 }
         );
       }
       if (!isValidDayOfWeek(body.dayOfWeek)) {
         return NextResponse.json(
           { message: "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -164,13 +166,13 @@ export async function POST(request: NextRequest) {
       if (body.dayOfMonth === undefined || body.dayOfMonth === null) {
         return NextResponse.json(
           { message: "dayOfMonth is required for monthly frequency" },
-          { status: 400 },
+          { status: 400 }
         );
       }
       if (!isValidDayOfMonth(body.dayOfMonth)) {
         return NextResponse.json(
           { message: "dayOfMonth must be between 1 and 31" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -195,7 +197,7 @@ export async function POST(request: NextRequest) {
     log.error("Failed to create audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -214,7 +216,7 @@ export async function PATCH(request: NextRequest) {
     if (!body.id || typeof body.id !== "string") {
       return NextResponse.json(
         { message: "id is required and must be a string" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -230,7 +232,7 @@ export async function PATCH(request: NextRequest) {
     if (!existing) {
       return NextResponse.json(
         { message: "Audit schedule not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -238,7 +240,7 @@ export async function PATCH(request: NextRequest) {
     if (body.name !== undefined && typeof body.name !== "string") {
       return NextResponse.json(
         { message: "name must be a string" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -247,14 +249,14 @@ export async function PATCH(request: NextRequest) {
         {
           message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (body.time !== undefined && !isValidTime(body.time)) {
       return NextResponse.json(
         { message: "time must be in HH:MM format (24-hour)" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -265,7 +267,7 @@ export async function PATCH(request: NextRequest) {
     ) {
       return NextResponse.json(
         { message: "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -276,25 +278,37 @@ export async function PATCH(request: NextRequest) {
     ) {
       return NextResponse.json(
         { message: "dayOfMonth must be between 1 and 31" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (body.isActive !== undefined && typeof body.isActive !== "boolean") {
       return NextResponse.json(
         { message: "isActive must be a boolean" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Build command body — only include fields that were provided
     const commandBody: Record<string, unknown> = {};
-    if (body.name !== undefined) commandBody.name = body.name;
-    if (body.frequency !== undefined) commandBody.frequency = body.frequency;
-    if (body.time !== undefined) commandBody.time = body.time;
-    if (body.dayOfWeek !== undefined) commandBody.dayOfWeek = body.dayOfWeek;
-    if (body.dayOfMonth !== undefined) commandBody.dayOfMonth = body.dayOfMonth;
-    if (body.isActive !== undefined) commandBody.isActive = body.isActive;
+    if (body.name !== undefined) {
+      commandBody.name = body.name;
+    }
+    if (body.frequency !== undefined) {
+      commandBody.frequency = body.frequency;
+    }
+    if (body.time !== undefined) {
+      commandBody.time = body.time;
+    }
+    if (body.dayOfWeek !== undefined) {
+      commandBody.dayOfWeek = body.dayOfWeek;
+    }
+    if (body.dayOfMonth !== undefined) {
+      commandBody.dayOfMonth = body.dayOfMonth;
+    }
+    if (body.isActive !== undefined) {
+      commandBody.isActive = body.isActive;
+    }
 
     // Delegate update to Manifest runtime
     return runManifestCommand({
@@ -309,7 +323,7 @@ export async function PATCH(request: NextRequest) {
     log.error("Failed to update audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -328,7 +342,7 @@ export async function DELETE(request: NextRequest) {
     if (!body.id || typeof body.id !== "string") {
       return NextResponse.json(
         { message: "id is required and must be a string" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -344,7 +358,7 @@ export async function DELETE(request: NextRequest) {
     if (!existing) {
       return NextResponse.json(
         { message: "Audit schedule not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -361,7 +375,7 @@ export async function DELETE(request: NextRequest) {
     log.error("Failed to delete audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

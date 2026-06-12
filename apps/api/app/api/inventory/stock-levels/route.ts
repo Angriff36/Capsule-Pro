@@ -17,8 +17,8 @@ import type {
 } from "./types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -354,10 +354,10 @@ interface QueryContext {
 }
 
 interface ProcessedStockLevels {
-  stockLevels: StockLevelWithStatus[];
-  totalValue: number;
   belowParCount: number;
   outOfStockCount: number;
+  stockLevels: StockLevelWithStatus[];
+  totalValue: number;
 }
 
 /**
@@ -507,9 +507,9 @@ function addItemStockLevelForLocation(
 
 interface StockLevelQueryResult {
   items: QueryContext["items"];
+  locationFilter: string | null;
   stockByItemAndLocation: QueryContext["stockByItemAndLocation"];
   storageLocations: QueryContext["storageLocations"];
-  locationFilter: string | null;
 }
 
 /**

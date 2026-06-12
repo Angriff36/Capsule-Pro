@@ -15,15 +15,15 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface MenuListFilters {
   category?: string;
-  search?: string;
   isActive?: boolean;
-  minGuests?: number;
   maxGuests?: number;
+  minGuests?: number;
+  search?: string;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

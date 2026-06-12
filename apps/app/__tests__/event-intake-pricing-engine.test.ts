@@ -5,8 +5,8 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { calculateEstimate } from "../app/(authenticated)/events/_intake/engine/pricingEngine";
 import { defaultPricingRules } from "../app/(authenticated)/events/_intake/config/pricingRules";
+import { calculateEstimate } from "../app/(authenticated)/events/_intake/engine/pricingEngine";
 import type { WizardFormData } from "../app/(authenticated)/events/_intake/types/wizard";
 
 const BASE_FORM: WizardFormData = {
@@ -63,7 +63,13 @@ describe("pricingEngine", () => {
 
   test("minimum spend floor is enforced", () => {
     const tiny = calculateEstimate(
-      { ...BASE_FORM, guestCount: 1, serviceStyle: "", barService: "", staffingLevel: "" },
+      {
+        ...BASE_FORM,
+        guestCount: 1,
+        serviceStyle: "",
+        barService: "",
+        staffingLevel: "",
+      },
       defaultPricingRules
     );
     expect(tiny.low).toBeGreaterThanOrEqual(defaultPricingRules.minimumSpend);

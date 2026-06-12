@@ -64,13 +64,13 @@ import { apiFetch } from "@/app/lib/api";
 // ---------------------------------------------------------------------------
 
 export interface TeamMemberRow {
-  id: string;
+  createdAt: string;
   email: string;
   firstName: string;
+  id: string;
+  isActive: boolean;
   lastName: string;
   role: string;
-  isActive: boolean;
-  createdAt: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -272,7 +272,7 @@ function MemberDetailDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-sm">
               {getInitials(member)}
             </div>
             <div>
@@ -300,7 +300,7 @@ function MemberDetailDialog({
             <span>{dateFormatter.format(new Date(member.createdAt))}</span>
 
             <span className="text-muted-foreground">ID</span>
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-muted-foreground text-xs">
               {member.id}
             </span>
           </div>
@@ -519,7 +519,7 @@ export function TeamClient({
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
             onChange={(e) => setSearch(e.target.value)}
@@ -549,8 +549,8 @@ export function TeamClient({
         <Card>
           <CardContent className="py-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No members found</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-lg">No members found</p>
+            <p className="text-muted-foreground text-sm">
               {search || statusFilter !== "all"
                 ? "Try adjusting your search or filter."
                 : "Team members will appear here once they are added."}
@@ -587,7 +587,7 @@ export function TeamClient({
                   <TableRow key={member.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-xs">
                           {getInitials(member)}
                         </div>
                         <span className="font-medium">
@@ -657,7 +657,9 @@ export function TeamClient({
       <MemberDetailDialog
         member={detailMember}
         onOpenChange={(open) => {
-          if (!open) setDetailMember(null);
+          if (!open) {
+            setDetailMember(null);
+          }
         }}
         open={detailMember !== null}
       />
@@ -667,7 +669,9 @@ export function TeamClient({
         member={roleDialogMember}
         onConfirm={handleChangeRole}
         onOpenChange={(open) => {
-          if (!open) setRoleDialogMember(null);
+          if (!open) {
+            setRoleDialogMember(null);
+          }
         }}
         onRoleChange={setSelectedRole}
         open={roleDialogMember !== null}
@@ -680,7 +684,9 @@ export function TeamClient({
         loading={deactivateLoading}
         onConfirm={handleDeactivate}
         onOpenChange={(open) => {
-          if (!open) setDeactivateMember(null);
+          if (!open) {
+            setDeactivateMember(null);
+          }
         }}
         open={deactivateMember !== null}
         title="Deactivate Team Member"

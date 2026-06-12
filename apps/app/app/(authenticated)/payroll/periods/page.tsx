@@ -18,7 +18,6 @@ import {
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
@@ -63,21 +62,24 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { listPayrollPeriods, payrollPeriodCreate } from "@/app/lib/manifest-client.generated";
+import {
+  listPayrollPeriods,
+  payrollPeriodCreate,
+} from "@/app/lib/manifest-client.generated";
 
 interface PayrollPeriod {
-  id: string;
-  tenantId: string;
-  periodStart: Date;
-  periodEnd: Date;
-  status: "open" | "closed" | "processing";
   createdAt: Date;
+  id: string;
+  periodEnd: Date;
+  periodStart: Date;
+  status: "open" | "closed" | "processing";
+  tenantId: string;
   updatedAt: Date;
 }
 
 interface PaginationInfo {
-  page: number;
   limit: number;
+  page: number;
   total: number;
   totalPages: number;
 }
@@ -286,22 +288,22 @@ export default function PayrollPeriodsPage() {
             <MetricCell>
               <MetricLabel>Open</MetricLabel>
               <MetricValue>{String(openCount)}</MetricValue>
-              <div className="text-xs text-white/55">Awaiting processing</div>
+              <div className="text-white/55 text-xs">Awaiting processing</div>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Processing</MetricLabel>
               <MetricValue>{String(processingCount)}</MetricValue>
-              <div className="text-xs text-white/55">In progress</div>
+              <div className="text-white/55 text-xs">In progress</div>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Closed</MetricLabel>
               <MetricValue>{String(closedCount)}</MetricValue>
-              <div className="text-xs text-white/55">Finalized</div>
+              <div className="text-white/55 text-xs">Finalized</div>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Total</MetricLabel>
               <MetricValue>{String(pagination.total)}</MetricValue>
-              <div className="text-xs text-white/55">All periods</div>
+              <div className="text-white/55 text-xs">All periods</div>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>
@@ -330,7 +332,7 @@ export default function PayrollPeriodsPage() {
         </section>
 
         {periods.length === 0 ? (
-          <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-6 py-16 text-center">
+          <div className="rounded-[22px] border border-hairline border-dashed bg-canvas px-6 py-16 text-center">
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -338,9 +340,9 @@ export default function PayrollPeriodsPage() {
                 </EmptyMedia>
                 <EmptyTitle>No payroll periods found</EmptyTitle>
                 <EmptyDescription>
-                  {statusFilter !== "all"
-                    ? "No periods match the selected filter. Try changing the status filter."
-                    : "Create your first payroll period to get started."}
+                  {statusFilter === "all"
+                    ? "Create your first payroll period to get started."
+                    : "No periods match the selected filter. Try changing the status filter."}
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>

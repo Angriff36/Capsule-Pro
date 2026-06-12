@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { GET as getAvailableTasks } from "@/app/api/kitchen/tasks/available/route";
 import { GET as getTasks } from "@/app/api/kitchen/tasks/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),

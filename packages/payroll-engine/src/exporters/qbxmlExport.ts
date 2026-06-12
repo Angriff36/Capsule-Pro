@@ -5,26 +5,26 @@ import type { PayrollPeriod, PayrollRecord } from "../models";
  * QuickBooks Desktop XML Export Configuration
  */
 export interface QBXMLExportOptions {
+  accountMappings?: QBAccountMappings;
   companyName?: string;
   journalEntryPrefix?: string;
-  accountMappings?: QBAccountMappings;
 }
 
 /**
  * QuickBooks GL Account Mappings
  */
 export interface QBAccountMappings {
-  wagesExpense: string; // Expense account for regular wages
-  overtimeExpense: string; // Expense account for overtime
-  tipsExpense: string; // Expense account for tips
-  federalTaxPayable: string; // Liability for federal tax
-  stateTaxPayable: string; // Liability for state tax
-  socialSecurityPayable: string; // Liability for SS
-  medicarePayable: string; // Liability for Medicare
   benefitsPayable: string; // Liability for benefits deductions
-  retirementPayable: string; // Liability for 401k
-  garnishmentsPayable: string; // Liability for garnishments
   cashAccount: string; // Cash/Bank account for net pay
+  federalTaxPayable: string; // Liability for federal tax
+  garnishmentsPayable: string; // Liability for garnishments
+  medicarePayable: string; // Liability for Medicare
+  overtimeExpense: string; // Expense account for overtime
+  retirementPayable: string; // Liability for 401k
+  socialSecurityPayable: string; // Liability for SS
+  stateTaxPayable: string; // Liability for state tax
+  tipsExpense: string; // Expense account for tips
+  wagesExpense: string; // Expense account for regular wages
 }
 
 /**

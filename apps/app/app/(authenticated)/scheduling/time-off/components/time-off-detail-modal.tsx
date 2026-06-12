@@ -20,10 +20,10 @@ import type {
 import { deleteTimeOffRequest, updateTimeOffStatus } from "../actions";
 
 interface TimeOffDetailModalProps {
-  open: boolean;
   onClose: () => void;
-  timeOffRequest: TimeOffRequest | null;
   onDelete?: () => void;
+  open: boolean;
+  timeOffRequest: TimeOffRequest | null;
 }
 
 // Helper to get status badge style
@@ -194,24 +194,22 @@ export function TimeOffDetailModal({
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleString("en-US", {
+  const formatDateTime = (date: Date) =>
+    date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   const calculateDuration = (start: Date, end: Date) => {
     const diffMs = end.getTime() - start.getTime();
@@ -241,7 +239,7 @@ export function TimeOffDetailModal({
   return (
     <>
       <Dialog onOpenChange={onClose} open={open}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Time-Off Request Details</DialogTitle>
             <DialogDescription>
@@ -253,8 +251,8 @@ export function TimeOffDetailModal({
 
           <div className="flex flex-col gap-6">
             {/* Employee Info */}
-            <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/20">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="flex items-start gap-4 rounded-lg border bg-muted/20 p-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <UserIcon className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1">
@@ -262,7 +260,7 @@ export function TimeOffDetailModal({
                   {timeOffRequest.employeeFirstName}{" "}
                   {timeOffRequest.employeeLastName}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {timeOffRequest.employeeEmail}
                 </p>
                 <div className="mt-2 flex gap-2">
@@ -275,17 +273,17 @@ export function TimeOffDetailModal({
 
             {/* Date Range & Duration */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-start gap-3 p-4 border rounded-lg">
-                <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex items-start gap-3 rounded-lg border p-4">
+                <ClockIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Date Range</p>
+                  <p className="text-muted-foreground text-sm">Date Range</p>
                   <p className="font-medium">
                     {formatDate(timeOffRequest.start_date)}
                   </p>
                   <p className="text-sm">
                     {formatDate(timeOffRequest.end_date)}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="mt-1 text-muted-foreground text-xs">
                     Duration:{" "}
                     {calculateDuration(
                       timeOffRequest.start_date,
@@ -295,12 +293,12 @@ export function TimeOffDetailModal({
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-4 border rounded-lg">
+              <div className="flex items-start gap-3 rounded-lg border p-4">
                 <div
-                  className={`h-5 w-5 rounded-full border mt-0.5 ${getTypeColor(timeOffRequest.request_type)}`}
+                  className={`mt-0.5 h-5 w-5 rounded-full border ${getTypeColor(timeOffRequest.request_type)}`}
                 />
                 <div>
-                  <p className="text-sm text-muted-foreground">Request Type</p>
+                  <p className="text-muted-foreground text-sm">Request Type</p>
                   <p className="font-medium">
                     {timeOffRequest.request_type.replace(/_/g, " ")}
                   </p>
@@ -309,8 +307,8 @@ export function TimeOffDetailModal({
             </div>
 
             {/* Status */}
-            <div className="p-4 border rounded-lg bg-muted/20">
-              <p className="text-sm text-muted-foreground mb-2">Status</p>
+            <div className="rounded-lg border bg-muted/20 p-4">
+              <p className="mb-2 text-muted-foreground text-sm">Status</p>
               <div className="flex items-center gap-2">
                 <Badge variant={getStatusBadgeVariant(timeOffRequest.status)}>
                   {timeOffRequest.status.replace(/_/g, " ")}
@@ -320,8 +318,8 @@ export function TimeOffDetailModal({
 
             {/* Reason */}
             {timeOffRequest.reason && (
-              <div className="p-4 border rounded-lg bg-muted/20">
-                <p className="text-sm text-muted-foreground mb-1">Reason</p>
+              <div className="rounded-lg border bg-muted/20 p-4">
+                <p className="mb-1 text-muted-foreground text-sm">Reason</p>
                 <p className="text-sm">{timeOffRequest.reason}</p>
               </div>
             )}
@@ -329,11 +327,11 @@ export function TimeOffDetailModal({
             {/* Rejection Reason */}
             {timeOffRequest.status === "REJECTED" &&
               timeOffRequest.rejection_reason && (
-                <div className="p-4 border rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-1">
+                <div className="rounded-lg border bg-muted/50 p-4">
+                  <p className="mb-1 text-muted-foreground text-sm">
                     Rejection Reason
                   </p>
-                  <p className="text-sm text-foreground">
+                  <p className="text-foreground text-sm">
                     {timeOffRequest.rejection_reason}
                   </p>
                 </div>
@@ -341,7 +339,7 @@ export function TimeOffDetailModal({
 
             {/* Processing Info */}
             {timeOffRequest.status !== "PENDING" && (
-              <div className="grid gap-4 text-sm text-muted-foreground">
+              <div className="grid gap-4 text-muted-foreground text-sm">
                 <div className="flex justify-between">
                   <span>Processed By:</span>
                   <span>
@@ -359,7 +357,7 @@ export function TimeOffDetailModal({
             )}
 
             {/* Metadata */}
-            <div className="grid gap-4 text-sm text-muted-foreground">
+            <div className="grid gap-4 text-muted-foreground text-sm">
               <div className="flex justify-between">
                 <span>Request ID:</span>
                 <span className="font-mono">
@@ -377,7 +375,7 @@ export function TimeOffDetailModal({
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 border-t pt-4">
               {availableActions.PENDING.includes("approve") && (
                 <Button
                   className="bg-green-600 hover:bg-green-700"
@@ -426,7 +424,7 @@ export function TimeOffDetailModal({
                   {isLoading ? (
                     <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Trash2Icon className="h-4 w-4 mr-2" />
+                    <Trash2Icon className="mr-2 h-4 w-4" />
                   )}
                   Delete
                 </Button>
@@ -451,11 +449,11 @@ export function TimeOffDetailModal({
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">
+                <label className="font-medium text-sm">
                   Reason for rejection
                 </label>
                 <textarea
-                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Please explain why this request is being rejected..."
                   rows={4}

@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 
 export interface ReqStatusConfig {
-  label: string;
   color: string;
   icon: React.ComponentType<{ className?: string }>;
+  label: string;
 }
 
 export const REQ_STATUS_CONFIG: Record<string, ReqStatusConfig> = {

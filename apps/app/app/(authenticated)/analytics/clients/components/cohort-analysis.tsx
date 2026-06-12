@@ -18,6 +18,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 
 interface CohortAnalysisProps {
+  className?: string;
   data: Array<{
     cohort: string;
     month0: number;
@@ -33,7 +34,6 @@ interface CohortAnalysisProps {
     month10: number;
     month11: number;
   }>;
-  className?: string;
 }
 
 function getRetentionColor(value: number): string {
@@ -83,7 +83,7 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
             <TableRow>
               <TableHead>Cohort</TableHead>
               {months.map((month) => (
-                <TableHead className="text-center px-1" key={month}>
+                <TableHead className="px-1 text-center" key={month}>
                   {month}
                 </TableHead>
               ))}
@@ -103,10 +103,10 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
                     `month${index as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}` as keyof typeof row
                   ] as number;
                   return (
-                    <TableCell className="py-1 px-0.5" key={index}>
+                    <TableCell className="px-0.5 py-1" key={index}>
                       <div
                         className={cn(
-                          "h-8 w-full rounded text-center text-xs flex items-center justify-center text-white font-medium",
+                          "flex h-8 w-full items-center justify-center rounded text-center font-medium text-white text-xs",
                           getRetentionColor(value)
                         )}
                       >
@@ -119,7 +119,7 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
             ))}
           </TableBody>
         </Table>
-        <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-4 flex items-center gap-4 text-muted-foreground text-xs">
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded bg-emerald-500/90" />
             <span>80%+</span>

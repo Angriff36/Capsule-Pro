@@ -44,13 +44,13 @@ export function StatsOverviewBlock() {
         return (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="font-medium text-sm">
                 {stat.label}
               </CardTitle>
-              <Icon className="text-muted-foreground size-4" />
+              <Icon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="font-bold text-2xl">{stat.value}</div>
               <p className="text-muted-foreground text-xs">
                 <span className={stat.changeTone}>{stat.change}</span> from last
                 month

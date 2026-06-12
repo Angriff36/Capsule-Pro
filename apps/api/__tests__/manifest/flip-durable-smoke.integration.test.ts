@@ -25,11 +25,11 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterAll, describe, expect, it } from "vitest";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { afterAll, describe, expect, it } from "vitest";
 // Production wrapper: binds the real prisma/log/sentry singletons + the flip.
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 
 // ---------------------------------------------------------------------------
 // Config / guards
@@ -59,21 +59,21 @@ const FLIPPED = [
 // Metadata-derived body builder (mirrors GenericPrismaStore.buildCreateData)
 // ---------------------------------------------------------------------------
 interface FieldMeta {
-  name: string;
-  irName: string;
-  type: string;
-  isEnum: boolean;
-  isList: boolean;
-  optional: boolean;
   hasDefault: boolean;
-  isUpdatedAt: boolean;
+  irName: string;
+  isEnum: boolean;
   isId: boolean;
+  isList: boolean;
+  isUpdatedAt: boolean;
+  name: string;
+  optional: boolean;
+  type: string;
 }
 interface ModelMeta {
   accessor: string;
-  pkFields: string[];
-  hasDeletedAt: boolean;
   fields: FieldMeta[];
+  hasDeletedAt: boolean;
+  pkFields: string[];
 }
 
 function loadMetadata(): Record<string, ModelMeta> {
@@ -87,8 +87,9 @@ function loadMetadata(): Record<string, ModelMeta> {
   let depth = 0;
   let end = -1;
   for (let i = b; i < src.length; i++) {
-    if (src[i] === "{") depth++;
-    else if (src[i] === "}") {
+    if (src[i] === "{") {
+      depth++;
+    } else if (src[i] === "}") {
       depth--;
       if (depth === 0) {
         end = i + 1;
@@ -102,7 +103,9 @@ function loadMetadata(): Record<string, ModelMeta> {
 const META = ENABLED ? loadMetadata() : {};
 
 function dummyFor(f: FieldMeta): unknown {
-  if (f.isList) return [`smoke-${f.name}`];
+  if (f.isList) {
+    return [`smoke-${f.name}`];
+  }
   switch (f.type) {
     case "Int":
     case "BigInt":
@@ -132,11 +135,15 @@ function buildBody(meta: ModelMeta): Record<string, unknown> {
     if (f.isId || f.name === "id" || f.name === "tenantId" || f.isUpdatedAt) {
       continue;
     }
-    if (f.optional || f.hasDefault) continue;
+    if (f.optional || f.hasDefault) {
+      continue;
+    }
     body[f.irName] = dummyFor(f);
   }
   // Common guard parity: ensure a non-empty name when the model has one.
-  if (meta.fields.some((f) => f.name === "name")) body.name = "smoke-test";
+  if (meta.fields.some((f) => f.name === "name")) {
+    body.name = "smoke-test";
+  }
   return body;
 }
 
@@ -179,7 +186,7 @@ afterAll(async () => {
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
-describe.skipIf(!ENABLED || !TENANT_ID)("flip durable smoke (real DB)", () => {
+describe.skipIf(!(ENABLED && TENANT_ID))("flip durable smoke (real DB)", () => {
   for (const entity of FLIPPED) {
     it(`${entity}.create persists to the real typed table, not manifest_entity`, async () => {
       const meta = META[entity];

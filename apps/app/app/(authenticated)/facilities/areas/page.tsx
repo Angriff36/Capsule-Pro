@@ -21,6 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -31,17 +39,13 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { LayoutGrid, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { facilityAreaEdit, facilityAreaRemove, listFacilityAreas } from "@/app/lib/manifest-client.generated";
+import {
+  facilityAreaEdit,
+  facilityAreaRemove,
+  listFacilityAreas,
+} from "@/app/lib/manifest-client.generated";
 import { createFacilityArea } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -110,7 +114,9 @@ export default function AreasPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       if (editing) {
@@ -195,7 +201,7 @@ export default function AreasPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-semibold text-2xl tracking-tight">
               Facility Areas
             </h1>
             <p className="text-muted-foreground">
@@ -203,7 +209,7 @@ export default function AreasPage() {
             </p>
           </div>
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Area
           </Button>
         </div>
@@ -227,13 +233,13 @@ export default function AreasPage() {
                   </EmptyMedia>
                   <EmptyTitle>No facility areas yet</EmptyTitle>
                   <EmptyDescription>
-                    Define areas within your facility — kitchens, storage
-                    rooms, dining halls, and more — to organize operations.
+                    Define areas within your facility — kitchens, storage rooms,
+                    dining halls, and more — to organize operations.
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button onClick={openCreate} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Add your first area
                   </Button>
                 </EmptyContent>
@@ -252,7 +258,7 @@ export default function AreasPage() {
                     <div className="flex-1">
                       <div className="font-medium">{area.name}</div>
                       {area.code && (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           {area.code}
                         </div>
                       )}
@@ -261,12 +267,12 @@ export default function AreasPage() {
                           {area.areaType?.replace("_", " ")}
                         </Badge>
                         {area.squareFeet && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {area.squareFeet} sq ft
                           </span>
                         )}
                         {area.floor && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             Floor: {area.floor}
                           </span>
                         )}
@@ -423,7 +429,9 @@ export default function AreasPage() {
         <AlertDialog
           onOpenChange={(open) => {
             setDeleteDialogOpen(open);
-            if (!open) setAreaToDelete(null);
+            if (!open) {
+              setAreaToDelete(null);
+            }
           }}
           open={deleteDialogOpen}
         >
@@ -444,7 +452,9 @@ export default function AreasPage() {
                 className="bg-red-600 hover:bg-red-700"
                 disabled={deleting === areaToDelete?.id}
                 onClick={() => {
-                  if (areaToDelete) handleDelete(areaToDelete.id);
+                  if (areaToDelete) {
+                    handleDelete(areaToDelete.id);
+                  }
                 }}
               >
                 {deleting === areaToDelete?.id ? (

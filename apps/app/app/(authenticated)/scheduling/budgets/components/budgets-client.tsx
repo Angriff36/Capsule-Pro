@@ -198,7 +198,7 @@ export function BudgetsClient() {
       <div className="space-y-0.5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-semibold text-2xl tracking-tight">
               Labor Budgets
             </h1>
             <p className="text-muted-foreground">
@@ -230,33 +230,33 @@ export function BudgetsClient() {
 
       {/* Performance Overview Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="font-medium text-sm">
                 Active Budgets
               </CardTitle>
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <CardDescription>{budgets.length} total budgets</CardDescription>
-              <div className="text-2xl font-bold">{activeBudgets}</div>
+              <div className="font-bold text-2xl">{activeBudgets}</div>
             </CardContent>
           </Card>
 
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="font-medium text-sm">
                 Total Budget Target
               </CardTitle>
               <DollarSignIcon className="size-4 text-blue-600" />
             </CardHeader>
             <CardContent>
               <CardDescription>Cost-based budgets only</CardDescription>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 ${totalBudgetTarget.toFixed(2)}
               </div>
             </CardContent>
@@ -264,7 +264,7 @@ export function BudgetsClient() {
 
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="font-medium text-sm">
                 Actual Spend
               </CardTitle>
               <DollarSignIcon className="size-4 text-purple-600" />
@@ -275,7 +275,7 @@ export function BudgetsClient() {
                   ? `${((totalActualSpend / totalBudgetTarget) * 100).toFixed(1)}% utilized`
                   : "N/A"}
               </CardDescription>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 ${totalActualSpend.toFixed(2)}
               </div>
             </CardContent>
@@ -285,10 +285,10 @@ export function BudgetsClient() {
 
       {/* Filters Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
+        <h2 className="font-medium text-muted-foreground text-sm">Filters</h2>
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pl-10"
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -362,7 +362,7 @@ export function BudgetsClient() {
 
       {/* Budgets Table Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Budgets ({filteredBudgets.length})
         </h2>
         <Card tone="canvas">
@@ -410,7 +410,7 @@ export function BudgetsClient() {
                           <div>
                             <div className="font-medium">{budget.name}</div>
                             {budget.description && (
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-muted-foreground text-sm">
                                 {budget.description}
                               </div>
                             )}
@@ -436,7 +436,7 @@ export function BudgetsClient() {
                               Event: {budget.event_id.slice(0, 8)}...
                             </span>
                           ) : (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-muted-foreground text-sm">
                               Ongoing
                             </span>
                           )}
@@ -447,7 +447,7 @@ export function BudgetsClient() {
                               {getBudgetUnitSymbol(budget.budget_unit)}
                               {budget.budget_target.toFixed(2)}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               {budget.budget_unit === "hours"
                                 ? "hours"
                                 : "cost"}
@@ -460,13 +460,13 @@ export function BudgetsClient() {
                               <span
                                 className={getUtilizationColor(utilizationPct)}
                               >
-                                {budget.actual_spend !== null
-                                  ? formatUtilization(
+                                {budget.actual_spend === null
+                                  ? "No data"
+                                  : formatUtilization(
                                       budget.actual_spend,
                                       budget.budget_target,
                                       budget.budget_unit
-                                    )
-                                  : "No data"}
+                                    )}
                               </span>
                               {budget.actual_spend !== null && (
                                 <span
@@ -548,11 +548,11 @@ export function BudgetsClient() {
 
 // Delete Confirmation Modal
 interface BudgetDeleteModalProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
   budget: LaborBudget | null;
   loading: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  open: boolean;
 }
 
 function BudgetDeleteModal({
@@ -567,12 +567,12 @@ function BudgetDeleteModal({
       className={`fixed inset-0 z-50 flex items-center justify-center ${open ? "" : "hidden"}`}
     >
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-md rounded-lg bg-white p-6 border border-hairline dark:bg-gray-900">
+      <div className="relative z-50 w-full max-w-md rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
         <div className="mb-4">
           <XCircleIcon className="h-12 w-12 text-red-600" />
         </div>
-        <h3 className="text-lg font-semibold">Delete Budget</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h3 className="font-semibold text-lg">Delete Budget</h3>
+        <p className="mt-2 text-muted-foreground text-sm">
           Are you sure you want to delete the budget &quot;{budget?.name}&quot;?
           This action cannot be undone.
         </p>

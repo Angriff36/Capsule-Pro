@@ -23,8 +23,8 @@ const ToolsInventoryImportPage = () => (
           <MonoLabel tone="dark">Tools / Inventory Import</MonoLabel>
           <DisplayHeading>Bulk Inventory Import</DisplayHeading>
           <CommandBandLede>
-            Upload a Goodshuffle Pro inventory export (.xlsx) to bulk-add
-            or update items in your Capsule Pro inventory.
+            Upload a Goodshuffle Pro inventory export (.xlsx) to bulk-add or
+            update items in your Capsule Pro inventory.
           </CommandBandLede>
         </div>
       </CommandBandHeader>

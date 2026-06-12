@@ -72,7 +72,7 @@ export default async function LeadDetailPage({
   const serializedLead = {
     ...lead,
     estimatedValue:
-      lead.estimatedValue != null ? Number(lead.estimatedValue) : null,
+      lead.estimatedValue == null ? null : Number(lead.estimatedValue),
   };
 
   const serializedInteractions = interactions.map((i) => ({
@@ -117,14 +117,14 @@ export default async function LeadDetailPage({
             <MetricCell>
               <MetricLabel>Estimated value</MetricLabel>
               <MetricValue>
-                {lead.estimatedValue != null
-                  ? new Intl.NumberFormat("en-US", {
+                {lead.estimatedValue == null
+                  ? "\u2014"
+                  : new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0,
-                    }).format(Number(lead.estimatedValue))
-                  : "\u2014"}
+                    }).format(Number(lead.estimatedValue))}
               </MetricValue>
             </MetricCell>
             <MetricCell>
@@ -138,13 +138,13 @@ export default async function LeadDetailPage({
             <MetricCell>
               <MetricLabel>Days until event</MetricLabel>
               <MetricValue>
-                {daysUntil != null
-                  ? daysUntil > 0
+                {daysUntil == null
+                  ? "\u2014"
+                  : daysUntil > 0
                     ? `${daysUntil}d`
                     : daysUntil === 0
                       ? "Today"
-                      : "Past"
-                  : "\u2014"}
+                      : "Past"}
               </MetricValue>
             </MetricCell>
             <MetricCell>

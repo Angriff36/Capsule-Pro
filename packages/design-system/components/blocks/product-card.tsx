@@ -26,14 +26,14 @@ const DefaultLink: LinkComponent = ({ href, className, children }) => (
 );
 
 export interface ProductCardProps {
-  title: ReactNode;
-  description: ReactNode;
-  mark?: ReactNode;
   bullets?: string[];
-  ctaLabel?: string;
-  ctaHref?: string;
-  linkComponent?: LinkComponent;
   className?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  description: ReactNode;
+  linkComponent?: LinkComponent;
+  mark?: ReactNode;
+  title: ReactNode;
 }
 
 export function ProductCard({

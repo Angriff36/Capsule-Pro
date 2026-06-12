@@ -64,21 +64,21 @@ import { toast } from "sonner";
 interface ManifestTestPlaygroundProps {
   entities: EntityListItem[];
   executionEnabled?: boolean;
-  onLoadEntityDetail?: (entityName: string) => Promise<EntityDetail>;
   onExecuteCommand?: (
     entityName: string,
     commandName: string,
     testData: Record<string, unknown>,
     options?: { dryRun?: boolean; captureSnapshot?: boolean }
   ) => Promise<ExecutionResult>;
+  onLoadEntityDetail?: (entityName: string) => Promise<EntityDetail>;
   onLoadHistory?: (entityName?: string) => Promise<ExecutionHistoryEntry[]>;
 }
 
 interface EntityListItem {
-  name: string;
-  displayName: string;
   commands: string[];
   constraints: string[];
+  displayName: string;
+  name: string;
   policies: string[];
 }
 
@@ -236,7 +236,7 @@ export function ManifestTestPlayground({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="flex items-center gap-2 font-bold text-3xl tracking-tight">
             <Flame className="h-8 w-8" />
             Rules Playground
           </h1>
@@ -260,16 +260,16 @@ export function ManifestTestPlayground({
                 Load History
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[600px] overflow-y-auto">
+            <DialogContent className="max-h-[600px] max-w-2xl overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Execution History</DialogTitle>
                 <DialogDescription>
                   View and replay previous command executions
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-2 mt-4">
+              <div className="mt-4 space-y-2">
                 {history.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="py-4 text-center text-muted-foreground text-sm">
                     No execution history found
                   </p>
                 ) : (
@@ -289,7 +289,7 @@ export function ManifestTestPlayground({
                               <X className="h-4 w-4 text-destructive" />
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {new Date(entry.timestamp).toLocaleString()}
                           </p>
                         </div>
@@ -319,7 +319,7 @@ export function ManifestTestPlayground({
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Column: Command Selection & Input */}
         <div className="space-y-4">
           {/* Entity & Command Selection */}
@@ -347,9 +347,9 @@ export function ManifestTestPlayground({
                   <SelectContent>
                     {entities.map((entity) => (
                       <SelectItem key={entity.name} value={entity.name}>
-                        <div className="flex items-center justify-between w-full gap-4">
+                        <div className="flex w-full items-center justify-between gap-4">
                           <span>{entity.displayName}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {entity.commands.length} actions
                           </span>
                         </div>
@@ -432,7 +432,7 @@ export function ManifestTestPlayground({
                 value={testData}
               />
               {testDataError && (
-                <p className="text-sm text-destructive">{testDataError}</p>
+                <p className="text-destructive text-sm">{testDataError}</p>
               )}
 
               {/* Command Parameters Reference */}
@@ -495,7 +495,7 @@ export function ManifestTestPlayground({
                 )}
               </Button>
               {!executionEnabled && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Running actions is disabled in this build.
                 </p>
               )}
@@ -566,7 +566,7 @@ export function ManifestTestPlayground({
                           onToggle={() => toggleSection("output")}
                           title="Result payload"
                         >
-                          <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
+                          <pre className="overflow-x-auto rounded bg-muted p-3 text-xs">
                             {JSON.stringify(
                               executionResult.output?.result,
                               null,
@@ -592,7 +592,7 @@ export function ManifestTestPlayground({
                                       <Badge variant="outline">
                                         {event.name}
                                       </Badge>
-                                      <pre className="bg-muted p-2 rounded text-xs mt-2 overflow-x-auto">
+                                      <pre className="mt-2 overflow-x-auto rounded bg-muted p-2 text-xs">
                                         {JSON.stringify(event.payload, null, 2)}
                                       </pre>
                                     </Card>
@@ -614,7 +614,7 @@ export function ManifestTestPlayground({
 
                   <TabsContent className="space-y-2" value="guards">
                     {executionResult.guards.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No guards defined
                       </p>
                     ) : (
@@ -639,7 +639,7 @@ export function ManifestTestPlayground({
                                 ) : (
                                   <X className="h-4 w-4 text-destructive" />
                                 )}
-                                <span className="text-sm font-medium">
+                                <span className="font-medium text-sm">
                                   Guard #{guard.index + 1}
                                 </span>
                               </div>
@@ -652,12 +652,12 @@ export function ManifestTestPlayground({
                               </Badge>
                             </div>
                             {guard.expression && (
-                              <pre className="bg-muted p-2 rounded text-xs mt-2 overflow-x-auto">
+                              <pre className="mt-2 overflow-x-auto rounded bg-muted p-2 text-xs">
                                 {guard.expression}
                               </pre>
                             )}
                             {guard.message && (
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="mt-1 text-muted-foreground text-xs">
                                 {guard.message}
                               </p>
                             )}
@@ -669,7 +669,7 @@ export function ManifestTestPlayground({
 
                   <TabsContent className="space-y-2" value="constraints">
                     {executionResult.constraints.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No constraints evaluated
                       </p>
                     ) : (
@@ -700,7 +700,7 @@ export function ManifestTestPlayground({
                                 ) : (
                                   <AlertCircle className="h-4 w-4" />
                                 )}
-                                <span className="text-sm font-medium">
+                                <span className="font-medium text-sm">
                                   {constraint.name}
                                 </span>
                               </div>
@@ -728,7 +728,7 @@ export function ManifestTestPlayground({
                               </div>
                             </div>
                             {constraint.message && (
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="mt-1 text-muted-foreground text-xs">
                                 {constraint.message}
                               </p>
                             )}
@@ -750,18 +750,18 @@ export function ManifestTestPlayground({
                             <CheckCircle2 className="h-4 w-4 text-green-500" />
                           )}
                           <div>
-                            <p className="text-sm font-medium">
+                            <p className="font-medium text-sm">
                               {executionResult.policy.denied
                                 ? "Policy Denied"
                                 : "Policy Allowed"}
                             </p>
                             {executionResult.policy.policyName && (
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-muted-foreground text-xs">
                                 Policy: {executionResult.policy.policyName}
                               </p>
                             )}
                             {executionResult.policy.reason && (
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-muted-foreground text-xs">
                                 {executionResult.policy.reason}
                               </p>
                             )}
@@ -769,7 +769,7 @@ export function ManifestTestPlayground({
                         </div>
                       </Card>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No policy evaluation result
                       </p>
                     )}
@@ -793,8 +793,8 @@ export function ManifestTestPlayground({
                   <Card className="p-3" key={snapshot.id}>
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium">{snapshot.id}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-sm">{snapshot.id}</p>
+                        <p className="text-muted-foreground text-xs">
                           {new Date(snapshot.timestamp).toLocaleString()}
                         </p>
                       </div>
@@ -821,15 +821,15 @@ export function ManifestTestPlayground({
                   Action run history for {selectedEntity || "all entities"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+              <CardContent className="max-h-96 space-y-2 overflow-y-auto">
                 {history.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="py-4 text-center text-muted-foreground text-sm">
                     No execution history found
                   </p>
                 ) : (
                   history.map((entry) => (
                     <Card
-                      className="p-2 cursor-pointer hover:bg-muted/50"
+                      className="cursor-pointer p-2 hover:bg-muted/50"
                       key={entry.id}
                       onClick={() => handleReplayFromHistory(entry)}
                     >
@@ -841,10 +841,10 @@ export function ManifestTestPlayground({
                             <X className="h-3 w-3 text-destructive" />
                           )}
                           <div>
-                            <p className="text-xs font-medium">
+                            <p className="font-medium text-xs">
                               {entry.entityName}.{entry.commandName}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {new Date(entry.timestamp).toLocaleString()}
                             </p>
                           </div>
@@ -867,12 +867,12 @@ export function ManifestTestPlayground({
         <CardHeader>
           <CardTitle className="text-base">Documentation</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <CardContent className="space-y-2 text-muted-foreground text-sm">
           <p>
             The Rules Playground helps you explore actions and the rules around
             them.
           </p>
-          <ul className="list-disc pl-5 space-y-1">
+          <ul className="list-disc space-y-1 pl-5">
             <li>
               <strong>Preview:</strong> Checks rules without making changes
             </li>
@@ -907,10 +907,10 @@ export function ManifestTestPlayground({
 
 // Helper component for collapsible sections
 interface CollapsibleSectionProps {
-  title: string;
+  children: React.ReactNode;
   expanded: boolean;
   onToggle: () => void;
-  children: React.ReactNode;
+  title: string;
 }
 
 function CollapsibleSection({
@@ -920,13 +920,13 @@ function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   return (
-    <div className="border rounded-lg">
+    <div className="rounded-lg border">
       <button
-        className="w-full px-3 py-2 flex items-center justify-between hover:bg-muted/50"
+        className="flex w-full items-center justify-between px-3 py-2 hover:bg-muted/50"
         onClick={onToggle}
         type="button"
       >
-        <span className="text-sm font-medium">{title}</span>
+        <span className="font-medium text-sm">{title}</span>
         {expanded ? (
           <ChevronDown className="h-4 w-4" />
         ) : (

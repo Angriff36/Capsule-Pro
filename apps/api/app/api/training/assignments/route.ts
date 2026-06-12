@@ -69,61 +69,63 @@ export async function GET(request: Request) {
     where: { tenantId, id: { in: employeeIds }, deletedAt: null },
     select: { id: true, firstName: true, lastName: true, email: true },
   });
-  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const employeesById = new Map(
+    employees.map((employee) => [employee.id, employee])
+  );
 
   const typedAssignments: TrainingAssignment[] = assignments.map((a) => {
     const employee = a.employeeId ? employeesById.get(a.employeeId) : undefined;
     const completion = a.completions[0];
     return {
-    id: a.id,
-    tenant_id: a.tenantId,
-    module_id: a.moduleId,
-    employee_id: a.employeeId,
-    assigned_to_all: a.assignedToAll,
-    assigned_by: a.assignedBy,
-    due_date: a.dueDate,
-    status: a.status as AssignmentStatus,
-    assigned_at: a.assignedAt,
-    created_at: a.createdAt,
-    updated_at: a.updatedAt,
-    employee_first_name: employee?.firstName ?? null,
-    employee_last_name: employee?.lastName ?? null,
-    employee_email: employee?.email,
-    module: {
-      id: a.moduleId,
+      id: a.id,
       tenant_id: a.tenantId,
-      title: a.module.title,
-      content_type: a.module.contentType as
-        | "document"
-        | "video"
-        | "quiz"
-        | "interactive",
-      description: a.module.description,
-      content_url: a.module.contentUrl,
-      duration_minutes: a.module.durationMinutes,
-      category: a.module.category,
-      is_required: a.module.isRequired,
-      is_active: a.module.isActive,
-      created_by: a.module.createdBy,
-      created_at: a.module.createdAt,
-      updated_at: a.module.updatedAt,
-    },
-    completion: completion
-      ? {
-          id: completion.id,
-          tenant_id: completion.tenantId,
-          assignment_id: a.id,
-          employee_id: completion.employeeId,
-          module_id: completion.moduleId,
-          started_at: completion.startedAt,
-          completed_at: completion.completedAt,
-          score: completion.score ? Number(completion.score) : null,
-          passed: completion.passed,
-          notes: completion.notes,
-          created_at: completion.createdAt,
-          updated_at: completion.updatedAt,
-        }
-      : undefined,
+      module_id: a.moduleId,
+      employee_id: a.employeeId,
+      assigned_to_all: a.assignedToAll,
+      assigned_by: a.assignedBy,
+      due_date: a.dueDate,
+      status: a.status as AssignmentStatus,
+      assigned_at: a.assignedAt,
+      created_at: a.createdAt,
+      updated_at: a.updatedAt,
+      employee_first_name: employee?.firstName ?? null,
+      employee_last_name: employee?.lastName ?? null,
+      employee_email: employee?.email,
+      module: {
+        id: a.moduleId,
+        tenant_id: a.tenantId,
+        title: a.module.title,
+        content_type: a.module.contentType as
+          | "document"
+          | "video"
+          | "quiz"
+          | "interactive",
+        description: a.module.description,
+        content_url: a.module.contentUrl,
+        duration_minutes: a.module.durationMinutes,
+        category: a.module.category,
+        is_required: a.module.isRequired,
+        is_active: a.module.isActive,
+        created_by: a.module.createdBy,
+        created_at: a.module.createdAt,
+        updated_at: a.module.updatedAt,
+      },
+      completion: completion
+        ? {
+            id: completion.id,
+            tenant_id: completion.tenantId,
+            assignment_id: a.id,
+            employee_id: completion.employeeId,
+            module_id: completion.moduleId,
+            started_at: completion.startedAt,
+            completed_at: completion.completedAt,
+            score: completion.score ? Number(completion.score) : null,
+            passed: completion.passed,
+            notes: completion.notes,
+            created_at: completion.createdAt,
+            updated_at: completion.updatedAt,
+          }
+        : undefined,
     };
   });
 
@@ -146,7 +148,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "TrainingAssignment",

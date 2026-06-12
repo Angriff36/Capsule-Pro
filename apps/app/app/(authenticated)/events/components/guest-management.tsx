@@ -73,20 +73,20 @@ import {
 } from "@/app/lib/manifest-client.generated";
 
 interface EventDish {
-  link_id: string;
-  dish_id: string;
-  name: string;
   category: string | null;
-  dietary_tags: string[] | null;
   course: string | null;
+  dietary_tags: string[] | null;
+  dish_id: string;
+  link_id: string;
+  name: string;
 }
 
 interface ConflictAlert {
-  type: "allergen" | "dietary";
-  severity: "critical" | "warning";
   dishName: string;
-  restriction: string;
   message: string;
+  restriction: string;
+  severity: "critical" | "warning";
+  type: "allergen" | "dietary";
 }
 
 interface GuestManagementProps {
@@ -415,7 +415,9 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      await eventGuestCreate({ eventId, ...formData } as unknown as Parameters<typeof eventGuestCreate>[0]);
+      await eventGuestCreate({ eventId, ...formData } as unknown as Parameters<
+        typeof eventGuestCreate
+      >[0]);
 
       await fetchGuests(searchQuery);
       setIsAddDialogOpen(false);
@@ -441,7 +443,10 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      await eventGuestUpdate({ id: selectedGuest.id, ...formData } as unknown as Parameters<typeof eventGuestUpdate>[0]);
+      await eventGuestUpdate({
+        id: selectedGuest.id,
+        ...formData,
+      } as unknown as Parameters<typeof eventGuestUpdate>[0]);
 
       await fetchGuests(searchQuery);
       setIsEditDialogOpen(false);
@@ -463,7 +468,9 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   };
 
   const deleteGuest = async () => {
-    if (!guestToDelete) return;
+    if (!guestToDelete) {
+      return;
+    }
     const guestId = guestToDelete;
     setDeleteDialogOpen(false);
     setGuestToDelete(null);
@@ -486,7 +493,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Guest Management</h2>
+          <h2 className="font-semibold text-xl">Guest Management</h2>
           <p className="text-muted-foreground text-sm">
             Manage guest list, dietary restrictions, and special meals
           </p>
@@ -498,7 +505,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
               Add Guest
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Guest</DialogTitle>
               <DialogDescription>
@@ -621,7 +628,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                   ))}
                 </div>
                 {formData.dietaryRestrictions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {formData.dietaryRestrictions.map((restriction) => (
                       <Badge
                         className="gap-1"
@@ -630,7 +637,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                       >
                         {restriction}
                         <button
-                          className="hover:bg-destructive/20 rounded-full p-0.5"
+                          className="rounded-full p-0.5 hover:bg-destructive/20"
                           onClick={() => removeDietaryRestriction(restriction)}
                           type="button"
                         >
@@ -664,7 +671,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
 
               {/* Allergen Restrictions */}
               <div className="space-y-4">
-                <h3 className="font-medium text-sm text-destructive">
+                <h3 className="font-medium text-destructive text-sm">
                   Allergen Restrictions
                 </h3>
                 <p className="text-muted-foreground text-xs">
@@ -699,7 +706,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                   ))}
                 </div>
                 {formData.allergenRestrictions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {formData.allergenRestrictions.map((allergen) => (
                       <Badge
                         className="gap-1"
@@ -708,7 +715,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                       >
                         {allergen}
                         <button
-                          className="hover:bg-background/20 rounded-full p-0.5"
+                          className="rounded-full p-0.5 hover:bg-background/20"
                           onClick={() => removeAllergen(allergen)}
                           type="button"
                         >
@@ -764,18 +771,18 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                       <div
                         className={`flex items-start gap-2 rounded-md p-3 ${
                           conflict.severity === "critical"
-                            ? "bg-destructive/10 border border-destructive/20"
-                            : "bg-muted/20 border border-hairline"
+                            ? "border border-destructive/20 bg-destructive/10"
+                            : "border border-hairline bg-muted/20"
                         }`}
                         key={index}
                       >
                         {conflict.severity === "critical" ? (
-                          <AlertCircleIcon className="size-4 flex-shrink-0 mt-0.5 text-destructive" />
+                          <AlertCircleIcon className="mt-0.5 size-4 flex-shrink-0 text-destructive" />
                         ) : (
-                          <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
+                          <AlertTriangleIcon className="mt-0.5 size-4 flex-shrink-0 text-muted-foreground" />
                         )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">
                             {conflict.message}
                           </p>
                           <p className="text-muted-foreground text-xs">
@@ -888,7 +895,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
 
       {/* Search */}
       <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -935,7 +942,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell className="text-center py-8" colSpan={7}>
+                <TableCell className="py-8 text-center" colSpan={7}>
                   <div className="flex items-center justify-center">
                     <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   </div>
@@ -943,7 +950,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
               </TableRow>
             ) : guests.length === 0 ? (
               <TableRow>
-                <TableCell className="text-center py-8" colSpan={7}>
+                <TableCell className="py-8 text-center" colSpan={7}>
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <UserIcon className="size-8" />
                     <p>No guests found</p>
@@ -1127,7 +1134,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
         }}
         open={isEditDialogOpen}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Guest</DialogTitle>
             <DialogDescription>
@@ -1247,7 +1254,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                 ))}
               </div>
               {formData.dietaryRestrictions.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {formData.dietaryRestrictions.map((restriction) => (
                     <Badge
                       className="gap-1"
@@ -1256,7 +1263,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                     >
                       {restriction}
                       <button
-                        className="hover:bg-destructive/20 rounded-full p-0.5"
+                        className="rounded-full p-0.5 hover:bg-destructive/20"
                         onClick={() => removeDietaryRestriction(restriction)}
                         type="button"
                       >
@@ -1290,7 +1297,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
 
             {/* Allergen Restrictions */}
             <div className="space-y-4">
-              <h3 className="font-medium text-sm text-destructive">
+              <h3 className="font-medium text-destructive text-sm">
                 Allergen Restrictions
               </h3>
               <p className="text-muted-foreground text-xs">
@@ -1325,7 +1332,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                 ))}
               </div>
               {formData.allergenRestrictions.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {formData.allergenRestrictions.map((allergen) => (
                     <Badge
                       className="gap-1"
@@ -1334,7 +1341,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                     >
                       {allergen}
                       <button
-                        className="hover:bg-background/20 rounded-full p-0.5"
+                        className="rounded-full p-0.5 hover:bg-background/20"
                         onClick={() => removeAllergen(allergen)}
                         type="button"
                       >
@@ -1390,18 +1397,18 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                     <div
                       className={`flex items-start gap-2 rounded-md p-3 ${
                         conflict.severity === "critical"
-                          ? "bg-destructive/10 border border-destructive/20"
-                          : "bg-muted/20 border border-hairline"
+                          ? "border border-destructive/20 bg-destructive/10"
+                          : "border border-hairline bg-muted/20"
                       }`}
                       key={index}
                     >
                       {conflict.severity === "critical" ? (
-                        <AlertCircleIcon className="size-4 flex-shrink-0 mt-0.5 text-destructive" />
+                        <AlertCircleIcon className="mt-0.5 size-4 flex-shrink-0 text-destructive" />
                       ) : (
-                        <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
+                        <AlertTriangleIcon className="mt-0.5 size-4 flex-shrink-0 text-muted-foreground" />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">
                           {conflict.message}
                         </p>
                         <p className="text-muted-foreground text-xs">

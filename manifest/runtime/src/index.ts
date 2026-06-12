@@ -39,157 +39,156 @@
 // ============ Type Exports ============
 
 export type {
-  KitchenOpsContext,
-  WorkflowMetadataOptions,
-  PrepTaskCommandResult,
-  StationCommandResult,
-  InventoryCommandResult,
-  RecipeCommandResult,
   DishCommandResult,
+  InventoryCommandResult,
+  KitchenOpsContext,
   MenuCommandResult,
   MenuDishCommandResult,
   PrepListCommandResult,
   PrepListItemCommandResult,
+  PrepTaskCommandResult,
+  RecipeCommandResult,
+  StationCommandResult,
+  WorkflowMetadataOptions,
 } from "./kitchen/types";
 
 // ============ Utility Exports ============
 
-export { getWorkflowOptions } from "./kitchen/workflow";
 export { createPostgresStoreProvider } from "./kitchen/postgres-store";
+export { getWorkflowOptions } from "./kitchen/workflow";
 
 // ============ Runtime Factory Exports ============
 
 export {
-  createPrepTaskRuntime,
-  createStationRuntime,
   createInventoryRuntime,
-  createRecipeRuntime,
+  createKitchenOpsRuntime,
   createMenuRuntime,
   createPrepListRuntime,
-  createKitchenOpsRuntime,
+  createPrepTaskRuntime,
+  createRecipeRuntime,
+  createStationRuntime,
 } from "./kitchen/runtime-factories";
 
 // ============ Prep Task Commands ============
 
 export {
-  claimPrepTask,
-  startPrepTask,
-  completePrepTask,
-  releasePrepTask,
-  reassignPrepTask,
-  updatePrepTaskQuantity,
   cancelPrepTask,
+  claimPrepTask,
+  completePrepTask,
   createPrepTask,
+  reassignPrepTask,
+  releasePrepTask,
+  startPrepTask,
+  updatePrepTaskQuantity,
 } from "./kitchen/commands/prep-task";
 
 // ============ Station Commands ============
 
 export {
+  activateStation,
   assignTaskToStation,
+  createStation,
+  deactivateStation,
   removeTaskFromStation,
   updateStationCapacity,
-  deactivateStation,
-  activateStation,
   updateStationEquipment,
-  createStation,
 } from "./kitchen/commands/station";
 
 // ============ Inventory Commands ============
 
 export {
-  reserveInventory,
-  consumeInventory,
-  wasteInventory,
   adjustInventory,
-  restockInventory,
-  releaseInventoryReservation,
+  consumeInventory,
   createInventoryItem,
+  releaseInventoryReservation,
+  reserveInventory,
+  restockInventory,
+  wasteInventory,
 } from "./kitchen/commands/inventory";
 
 // ============ Recipe Commands ============
 
 export {
-  updateRecipe,
-  deactivateRecipe,
   activateRecipe,
   createIngredient,
-  createRecipeVersion,
-  createRecipeIngredient,
   createRecipe,
+  createRecipeIngredient,
+  createRecipeVersion,
+  deactivateRecipe,
+  updateRecipe,
 } from "./kitchen/commands/recipe";
 
 // ============ Dish Commands ============
 
 export {
-  updateDishPricing,
-  updateDishLeadTime,
   createDish,
+  updateDishLeadTime,
+  updateDishPricing,
 } from "./kitchen/commands/dish";
 
 // ============ Menu Commands ============
 
 export {
-  updateMenu,
   activateMenu,
-  deactivateMenu,
   createMenu,
   createMenuDish,
+  deactivateMenu,
+  updateMenu,
 } from "./kitchen/commands/menu";
 
 // ============ Prep List Commands ============
 
 export {
-  updatePrepList,
-  updatePrepListBatchMultiplier,
-  finalizePrepList,
   activatePrepList,
-  deactivatePrepList,
-  markPrepListCompleted,
   cancelPrepList,
-  updatePrepListItemQuantity,
-  updatePrepListItemStation,
-  updatePrepListItemNotes,
-  markPrepListItemCompleted,
-  markPrepListItemUncompleted,
   createPrepList,
   createPrepListItem,
+  deactivatePrepList,
+  finalizePrepList,
+  markPrepListCompleted,
+  markPrepListItemCompleted,
+  markPrepListItemUncompleted,
+  updatePrepList,
+  updatePrepListBatchMultiplier,
+  updatePrepListItemNotes,
+  updatePrepListItemQuantity,
+  updatePrepListItemStation,
 } from "./kitchen/commands/prep-list";
 
 // ============ Event Handling ============
 
 export {
-  setupKitchenOpsEventListeners,
   getKitchenOpsEventLog,
+  setupKitchenOpsEventListeners,
 } from "./kitchen/event-listeners";
 
 // ============ Instance Creation ============
 
 export {
+  createInventoryItemInstance,
   createPrepTaskInstance,
   createStationInstance,
-  createInventoryItemInstance,
 } from "./kitchen/instances";
 
 // ============ Constraint Handling ============
 
+export type {
+  CommandResultWithConstraints,
+  ConstraintSeverity,
+  OverrideReasonCode,
+} from "./kitchen/constraint-outcomes";
 export {
-  OVERRIDE_REASON_CODES,
-  isConstraintActionable,
-  hasActionableConstraints,
-  getActionableConstraints,
-  getBlockingConstraints,
-  getWarningConstraints,
   canProceedWithConstraints,
   createOverrideRequest,
   formatConstraintOutcome,
   formatGuardFailure,
   formatPolicyDenial,
-} from "./kitchen/constraint-outcomes";
-
-export type {
-  OverrideReasonCode,
-  ConstraintSeverity,
-  CommandResultWithConstraints,
+  getActionableConstraints,
+  getBlockingConstraints,
+  getWarningConstraints,
+  hasActionableConstraints,
+  isConstraintActionable,
+  OVERRIDE_REASON_CODES,
 } from "./kitchen/constraint-outcomes";
 
 // ============ Prisma Store Exports ============
@@ -202,15 +201,14 @@ export {
 
 // ============ Prep List Auto-Generation Exports ============
 
+export type {
+  PrepListAutoGenerationInput,
+  PrepListAutoGenerationResult,
+} from "./prep-list-autogeneration";
 export {
   generatePrepListImmediately,
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
-} from "./prep-list-autogeneration";
-
-export type {
-  PrepListAutoGenerationInput,
-  PrepListAutoGenerationResult,
 } from "./prep-list-autogeneration";
 
 // ============ Optional Feature Modules ============

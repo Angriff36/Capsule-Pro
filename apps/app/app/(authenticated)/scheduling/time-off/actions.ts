@@ -2,8 +2,6 @@
 
 import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateTimeOffRequestInput,
   TimeOffRequest,
@@ -17,6 +15,8 @@ import {
   validateTimeOffDates,
   verifyEmployee,
 } from "@/app/lib/staff/time-off/validation";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 /**
  * Get time-off requests with optional filters
@@ -36,7 +36,9 @@ function buildTimeOffWhere(
     deletedAt: null,
     ...(params.employeeId ? { employeeId: params.employeeId } : {}),
     ...(params.status ? { status: params.status } : {}),
-    ...(params.startDate ? { endDate: { gte: new Date(params.startDate) } } : {}),
+    ...(params.startDate
+      ? { endDate: { gte: new Date(params.startDate) } }
+      : {}),
     ...(params.endDate ? { startDate: { lte: new Date(params.endDate) } } : {}),
     ...(params.requestType ? { requestType: params.requestType } : {}),
   };
@@ -63,7 +65,9 @@ async function mapTimeOffRequests(
   const userIds = Array.from(
     new Set(
       records.flatMap((record) =>
-        record.reviewedBy ? [record.employeeId, record.reviewedBy] : [record.employeeId]
+        record.reviewedBy
+          ? [record.employeeId, record.reviewedBy]
+          : [record.employeeId]
       )
     )
   );
@@ -306,7 +310,9 @@ export async function updateTimeOffStatus(
   });
 
   if (!result.ok) {
-    throw new Error(result.message || "Failed to update time-off request status");
+    throw new Error(
+      result.message || "Failed to update time-off request status"
+    );
   }
 
   revalidatePath("/scheduling/time-off");

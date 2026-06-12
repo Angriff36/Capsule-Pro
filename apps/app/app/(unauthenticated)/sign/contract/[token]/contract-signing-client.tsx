@@ -43,6 +43,12 @@ import { toast } from "sonner";
 import { SignaturePad } from "@/app/(authenticated)/events/contracts/components/signature-pad";
 
 interface ContractSigningClientProps {
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+  } | null;
   contract: {
     id: string;
     title: string;
@@ -58,20 +64,14 @@ interface ContractSigningClientProps {
     eventDate: string;
     venueName: string | null;
   } | null;
-  client: {
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
+  isExpired: boolean;
+  organization: string;
   signatures: Array<{
     id: string;
     signerName: string;
     signerEmail: string | null;
     signedAt: string;
   }>;
-  organization: string;
-  isExpired: boolean;
   signingToken: string;
 }
 
@@ -269,7 +269,7 @@ export function ContractSigningClient({
             <CardContent className="grid gap-4">
               {contract.contractNumber && (
                 <div className="grid gap-1">
-                  <span className="text-muted-foreground text-sm font-medium">
+                  <span className="font-medium text-muted-foreground text-sm">
                     Contract Number
                   </span>
                   <p className="font-medium">{contract.contractNumber}</p>
@@ -280,7 +280,7 @@ export function ContractSigningClient({
                 <>
                   <Separator />
                   <div className="grid gap-2">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Event
                     </span>
                     <p className="font-medium">{event.title}</p>
@@ -306,7 +306,7 @@ export function ContractSigningClient({
                 <>
                   <Separator />
                   <div className="grid gap-2">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Client
                     </span>
                     <p className="font-medium">{clientName}</p>
@@ -323,7 +323,7 @@ export function ContractSigningClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Expires
                     </span>
                     <p
@@ -344,10 +344,10 @@ export function ContractSigningClient({
                 <>
                   <Separator />
                   <div className="grid gap-1">
-                    <span className="text-muted-foreground text-sm font-medium">
+                    <span className="font-medium text-muted-foreground text-sm">
                       Notes
                     </span>
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="whitespace-pre-wrap text-sm">
                       {contract.notes}
                     </p>
                   </div>
@@ -365,7 +365,7 @@ export function ContractSigningClient({
               </CardTitle>
               <CardDescription>
                 {signatures.length} signature
-                {signatures.length !== 1 ? "s" : ""} captured
+                {signatures.length === 1 ? "" : "s"} captured
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">

@@ -3,12 +3,12 @@
 import { useServerInsertedHTML } from "next/navigation";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
 import {
   applyThemeToDocument,
@@ -22,24 +22,24 @@ const DEFAULT_THEMES = ["light", "dark"] as const;
 const STORAGE_KEY = "theme";
 
 export interface ThemeProviderProps {
-  children: ReactNode;
   attribute?: "class" | `data-${string}`;
+  children: ReactNode;
   defaultTheme?: string;
-  enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
-  storageKey?: string;
+  enableSystem?: boolean;
   forcedTheme?: string;
-  themes?: string[];
   nonce?: string;
+  storageKey?: string;
+  themes?: string[];
 }
 
 interface ThemeContextValue {
-  theme: string | undefined;
-  setTheme: (theme: string | ((current: string | undefined) => string)) => void;
   forcedTheme?: string;
   resolvedTheme: string | undefined;
-  themes: string[];
+  setTheme: (theme: string | ((current: string | undefined) => string)) => void;
   systemTheme: "light" | "dark" | undefined;
+  theme: string | undefined;
+  themes: string[];
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -180,7 +180,9 @@ export const ThemeProvider = ({
   );
 
   return (
-    <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={contextValue}>
+      {children}
+    </ThemeContext.Provider>
   );
 };
 

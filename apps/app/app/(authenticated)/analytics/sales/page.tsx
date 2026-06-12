@@ -1,22 +1,23 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  PageCanvas,
   CommandBand,
-  CommandBandHeader,
   CommandBandActions,
+  CommandBandHeader,
   CommandBandLede,
   DisplayHeading,
-  MonoLabel,
   MetricBand,
   MetricCell,
   MetricLabel,
   MetricValue,
-  PageBody,
+  MonoLabel,
   OperationalColumn,
+  PageBody,
+  PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -25,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -280,16 +280,16 @@ const AnalyticsSalesPage = async () => {
         <OperationalColumn>
           <section className="space-y-4">
             <SectionHeader
-              title="Recent proposals"
-              description="Current opportunities linked to leads, clients, and upcoming events."
               actions={
                 <Link
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  className="font-medium text-primary text-sm underline-offset-4 hover:underline"
                   href="/crm/pipeline"
                 >
                   Open CRM pipeline
                 </Link>
               }
+              description="Current opportunities linked to leads, clients, and upcoming events."
+              title="Recent proposals"
             />
 
             <div className="overflow-hidden rounded-lg border bg-card">
@@ -363,16 +363,16 @@ const AnalyticsSalesPage = async () => {
 
           <section className="space-y-4">
             <SectionHeader
-              title="Latest invoices"
-              description="Collection visibility for the newest billed events."
               actions={
                 <Link
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  className="font-medium text-primary text-sm underline-offset-4 hover:underline"
                   href="/accounting/payments"
                 >
                   Open payments dashboard
                 </Link>
               }
+              description="Collection visibility for the newest billed events."
+              title="Latest invoices"
             />
 
             <div className="overflow-hidden rounded-lg border bg-card">

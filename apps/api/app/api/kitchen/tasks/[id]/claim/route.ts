@@ -1,6 +1,5 @@
 import { database } from "@repo/database";
 import { triggerTaskAssignedSms } from "@repo/notifications";
-import { NextResponse } from "next/server";
 import { resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
@@ -41,8 +40,7 @@ export async function POST(request: Request, context: RouteContext) {
       taskId: id,
       taskName: task.title,
       employeeId: user.id,
-      employeeName:
-        `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      employeeName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
       dueDate: task.dueDate?.toISOString(),
     }).catch(() => {});
   }

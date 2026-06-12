@@ -131,9 +131,9 @@ function ChartBuilder({ data }: ChartBuilderProps) {
       {/* Left: Chart Type Selector */}
       <div className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            className="pl-8 h-9"
+            className="h-9 pl-8"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search charts..."
             value={searchQuery}
@@ -164,10 +164,10 @@ function ChartBuilder({ data }: ChartBuilderProps) {
         </div>
 
         {/* Chart type grid */}
-        <div className="max-h-[600px] overflow-y-auto space-y-1 pr-1">
+        <div className="max-h-[600px] space-y-1 overflow-y-auto pr-1">
           {filteredCharts.map((chart) => (
             <button
-              className={`w-full text-left rounded-lg border p-2.5 transition-colors hover:bg-accent ${
+              className={`w-full rounded-lg border p-2.5 text-left transition-colors hover:bg-accent ${
                 selectedChart?.id === chart.id
                   ? "border-primary bg-accent"
                   : "border-transparent"
@@ -176,14 +176,14 @@ function ChartBuilder({ data }: ChartBuilderProps) {
               onClick={() => handleSelectChart(chart)}
               type="button"
             >
-              <div className="text-sm font-medium">{chart.name}</div>
-              <div className="text-xs text-muted-foreground line-clamp-1">
+              <div className="font-medium text-sm">{chart.name}</div>
+              <div className="line-clamp-1 text-muted-foreground text-xs">
                 {chart.description}
               </div>
             </button>
           ))}
           {filteredCharts.length === 0 && (
-            <div className="text-sm text-muted-foreground py-4 text-center">
+            <div className="py-4 text-center text-muted-foreground text-sm">
               No charts match your search.
             </div>
           )}
@@ -202,12 +202,12 @@ function ChartBuilder({ data }: ChartBuilderProps) {
           />
         ) : selectedChart ? (
           <Card>
-            <CardContent className="flex items-center justify-center h-[400px]">
-              <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
+            <CardContent className="flex h-[400px] items-center justify-center">
+              <div className="space-y-2 text-center">
+                <p className="text-muted-foreground text-sm">
                   Map the required columns to see a preview.
                 </p>
-                <div className="flex flex-wrap gap-1 justify-center">
+                <div className="flex flex-wrap justify-center gap-1">
                   {requiredSlots
                     .filter((s) => !mappings[s.placeholder])
                     .map((s) => (
@@ -221,10 +221,10 @@ function ChartBuilder({ data }: ChartBuilderProps) {
           </Card>
         ) : (
           <Card>
-            <CardContent className="flex items-center justify-center h-[400px]">
-              <div className="text-center space-y-2">
-                <p className="text-lg font-medium">Select a chart type</p>
-                <p className="text-sm text-muted-foreground">
+            <CardContent className="flex h-[400px] items-center justify-center">
+              <div className="space-y-2 text-center">
+                <p className="font-medium text-lg">Select a chart type</p>
+                <p className="text-muted-foreground text-sm">
                   Choose from {CHART_TYPES.length} chart types in the sidebar,
                   then map your data columns.
                 </p>
@@ -285,7 +285,7 @@ function ChartBuilder({ data }: ChartBuilderProps) {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Column Mappings</Label>
+                  <Label className="font-medium text-xs">Column Mappings</Label>
                 </div>
                 <ColumnMapper
                   columns={columns}
@@ -302,7 +302,7 @@ function ChartBuilder({ data }: ChartBuilderProps) {
                   <CardTitle className="text-sm">Export</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Use the PNG, SVG, or Copy buttons below the chart to export.
                     You can also right-click the chart to save the image.
                   </p>
@@ -321,7 +321,7 @@ function ChartBuilder({ data }: ChartBuilderProps) {
         ) : (
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Select a chart type from the sidebar to configure it.
               </p>
             </CardContent>

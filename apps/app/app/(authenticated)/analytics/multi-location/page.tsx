@@ -78,7 +78,7 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
   } catch {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
+        <h1 className="font-bold text-2xl">Analytics Unavailable</h1>
         <p className="text-muted-foreground">
           Unable to load analytics data. Please try again later.
         </p>
@@ -117,7 +117,7 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
   if (locations.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <h1 className="text-2xl font-bold">No Locations Found</h1>
+        <h1 className="font-bold text-2xl">No Locations Found</h1>
         <p className="text-muted-foreground">
           Add locations to your organization to view the multi-location
           dashboard.
@@ -343,7 +343,9 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
 
   currentRevenueRows.forEach((item) => {
     const metrics = locationMetrics.get(item.locationId);
-    if (metrics) metrics.revenue = item.revenue;
+    if (metrics) {
+      metrics.revenue = item.revenue;
+    }
   });
 
   laborUtilizationRows.forEach((item) => {
@@ -356,7 +358,9 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
 
   wasteCostRows.forEach((item) => {
     const metrics = locationMetrics.get(item.locationId);
-    if (metrics) metrics.wasteCost = item.wasteCost;
+    if (metrics) {
+      metrics.wasteCost = item.wasteCost;
+    }
   });
 
   marginRows.forEach((item) => {
@@ -385,7 +389,9 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
 
   staffingRows.forEach((item) => {
     const metrics = locationMetrics.get(item.locationId);
-    if (metrics) metrics.staffCount = item.staffCount;
+    if (metrics) {
+      metrics.staffCount = item.staffCount;
+    }
   });
 
   const totalRevenue = Array.from(locationMetrics.values()).reduce(

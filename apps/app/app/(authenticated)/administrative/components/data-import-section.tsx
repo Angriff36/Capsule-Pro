@@ -9,13 +9,13 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { FileTextIcon } from "lucide-react";
 
 interface DocumentRow {
-  id: string;
-  file_name: string;
-  file_type: string;
-  parse_status: string;
-  parse_error: string | null;
   created_at: Date;
   event_id: string | null;
+  file_name: string;
+  file_type: string;
+  id: string;
+  parse_error: string | null;
+  parse_status: string;
 }
 
 interface DataImportSectionProps {
@@ -68,7 +68,7 @@ function DocumentItem({
   return (
     <div className="space-y-2">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-sm font-medium">
+        <span className="font-medium text-sm">
           {index + 1}. {getFileTypeLabel(doc.file_type)}
         </span>
         <Badge
@@ -81,19 +81,19 @@ function DocumentItem({
       <div className="flex items-center gap-2 rounded-md border border-dashed p-2">
         <FileTextIcon className="size-8 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{doc.file_name}</p>
+          <p className="truncate font-medium text-sm">{doc.file_name}</p>
           {doc.parse_error ? (
-            <p className="text-xs text-destructive">{doc.parse_error}</p>
+            <p className="text-destructive text-xs">{doc.parse_error}</p>
           ) : (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {doc.event_id ? "Linked to event" : "Processing..."}
             </p>
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-muted-foreground text-xs">
         {doc.parse_status === "error" && (
-          <span className="text-destructive hover:underline cursor-pointer">
+          <span className="cursor-pointer text-destructive hover:underline">
             View Errors
           </span>
         )}
@@ -123,7 +123,7 @@ export function DataImportSection({ documents }: DataImportSectionProps) {
               />
             ))
         ) : (
-          <div className="text-center text-sm text-muted-foreground py-4">
+          <div className="py-4 text-center text-muted-foreground text-sm">
             No recent imports
           </div>
         )}

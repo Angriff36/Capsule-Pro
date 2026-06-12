@@ -36,12 +36,12 @@ const CampaignsPage = async () => {
       </CommandBand>
 
       <OperationalColumn>
-        <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
           <Megaphone className="mb-4 size-10 text-muted-foreground" />
-          <h3 className="text-lg font-medium text-ink">
+          <h3 className="font-medium text-ink text-lg">
             Campaigns — Coming Soon
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-muted-foreground text-sm">
             Campaign management features are currently in development. Check
             back soon for multi-channel campaign tools.
           </p>

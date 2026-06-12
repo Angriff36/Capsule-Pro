@@ -22,8 +22,7 @@ let _schemaEnsured = false;
  */
 export function getPool(): Pool {
   if (!_pool) {
-    const connectionString =
-      process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error(
         "DIRECT_URL or DATABASE_URL required for Manifest Postgres adapters"
@@ -49,7 +48,9 @@ export function getPool(): Pool {
  * Called once per process lifetime (subsequent calls are no-ops).
  */
 export async function ensureManifestSchema(): Promise<void> {
-  if (_schemaEnsured) return;
+  if (_schemaEnsured) {
+    return;
+  }
   const pool = getPool();
 
   // -- Audit records table --------------------------------------------------

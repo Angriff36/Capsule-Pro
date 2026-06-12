@@ -36,28 +36,28 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface AuditLogEntry {
+  action: string;
+  createdAt: string;
   id: string;
+  ipAddress: string | null;
+  newValues: unknown;
+  oldValues: unknown;
+  performedBy: string | null;
+  performedByEmail: string | null;
+  performedByName: string | null;
+  recordId: string;
   tableName: string;
   tableSchema: string;
-  recordId: string;
-  action: string;
-  oldValues: unknown;
-  newValues: unknown;
-  performedBy: string | null;
-  performedByName: string | null;
-  performedByEmail: string | null;
-  ipAddress: string | null;
   userAgent: string | null;
-  createdAt: string;
 }
 
 interface AuditLogResponse {
   entries: AuditLogEntry[];
-  total: number;
-  page: number;
   limit: number;
-  totalPages: number;
+  page: number;
   tableNames: string[];
+  total: number;
+  totalPages: number;
 }
 
 const ACTION_OPTIONS = ["all", "insert", "update", "delete"] as const;
@@ -100,12 +100,12 @@ function formatTableName(name: string): string {
 function JsonPreview({ label, data }: { label: string; data: unknown }) {
   if (!data) {
     return (
-      <div className="text-sm italic text-muted-foreground">{label}: None</div>
+      <div className="text-muted-foreground text-sm italic">{label}: None</div>
     );
   }
   return (
     <div className="space-y-1">
-      <div className="text-sm font-medium text-muted-foreground">{label}</div>
+      <div className="font-medium text-muted-foreground text-sm">{label}</div>
       <pre className="max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs">
         {JSON.stringify(data, null, 2)}
       </pre>
@@ -248,7 +248,7 @@ export function AuditLogClient() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4">
         <div className="relative">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <SearchIcon className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             className="w-56 pl-9"
             onChange={(e) => setSearch(e.target.value)}
@@ -361,7 +361,7 @@ export function AuditLogClient() {
           </Table>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Page {page} of {totalPages || 1}
             </p>
             <div className="flex gap-2">

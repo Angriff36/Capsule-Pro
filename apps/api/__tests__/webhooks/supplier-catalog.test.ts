@@ -45,14 +45,25 @@ vi.mock("@/lib/database", () => ({
   },
 }));
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@/app/lib/invariant", () => {
-  class InvariantError extends Error { name = "InvariantError" as const; }
+  class InvariantError extends Error {
+    name = "InvariantError" as const;
+  }
   return { invariant: vi.fn(), InvariantError };
 });
-vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/notifications", () => ({}));
 
 vi.mock("@repo/supplier-connectors", () => ({
@@ -130,7 +141,10 @@ function mockEnvSecret(connectorId: string, secret: string | undefined) {
   return envKey;
 }
 
-function createPostRequest(payload: unknown, headers: Record<string, string> = {}) {
+function createPostRequest(
+  payload: unknown,
+  headers: Record<string, string> = {}
+) {
   return new Request("http://localhost/api/webhooks/supplier-catalog", {
     method: "POST",
     headers: {
@@ -143,7 +157,10 @@ function createPostRequest(payload: unknown, headers: Record<string, string> = {
 }
 
 function setupSupplierAndUser() {
-  mockSupplierFindFirst.mockResolvedValue({ id: SUPPLIER_ID, tenantId: TENANT_ID });
+  mockSupplierFindFirst.mockResolvedValue({
+    id: SUPPLIER_ID,
+    tenantId: TENANT_ID,
+  });
   mockUserFindFirst.mockResolvedValue({ id: "admin-user", role: "admin" });
   mockVendorCatalogFindUnique.mockResolvedValue(null); // no existing catalog entry → create
   vi.mocked(runManifestCommand).mockResolvedValue(
@@ -191,11 +208,14 @@ describe("Supplier Catalog Webhook", () => {
     });
 
     it("returns 400 for invalid JSON body", async () => {
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "not-valid-json{{{",
-      });
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "not-valid-json{{{",
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -215,7 +235,9 @@ describe("Supplier Catalog Webhook", () => {
     });
 
     it("returns 400 for invalid event type", async () => {
-      const request = createPostRequest(createValidPayload({ event: "invalid.event" }));
+      const request = createPostRequest(
+        createValidPayload({ event: "invalid.event" })
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(400);
@@ -235,7 +257,9 @@ describe("Supplier Catalog Webhook", () => {
     it("returns 400 for unknown connectorId", async () => {
       vi.mocked(connectorRegistry.get).mockReturnValue(undefined);
       mockEnvSecret("unknown-connector", undefined);
-      const request = createPostRequest(createValidPayload({ connectorId: "unknown-connector" }));
+      const request = createPostRequest(
+        createValidPayload({ connectorId: "unknown-connector" })
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -245,11 +269,14 @@ describe("Supplier Catalog Webhook", () => {
 
     it("returns 401 when X-Supplier-Signature header is missing", async () => {
       const payload = createValidPayload();
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(401);
@@ -352,16 +379,38 @@ describe("Supplier Catalog Webhook", () => {
       setupSupplierAndUser();
       vi.mocked(runManifestCommand)
         .mockResolvedValueOnce(
-          new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } })
+          new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
         )
         .mockResolvedValueOnce(
-          new Response("error", { status: 500, headers: { "Content-Type": "application/json" } })
+          new Response("error", {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          })
         );
 
       const payload = createValidPayload({
         products: [
-          { externalId: "ext-001", sku: "SKU-001", name: "Product A", unitCost: 10, currency: "USD", unitOfMeasure: "each", available: true },
-          { externalId: "ext-002", sku: "SKU-002", name: "Product B", unitCost: 20, currency: "USD", unitOfMeasure: "case", available: false },
+          {
+            externalId: "ext-001",
+            sku: "SKU-001",
+            name: "Product A",
+            unitCost: 10,
+            currency: "USD",
+            unitOfMeasure: "each",
+            available: true,
+          },
+          {
+            externalId: "ext-002",
+            sku: "SKU-002",
+            name: "Product B",
+            unitCost: 20,
+            currency: "USD",
+            unitOfMeasure: "case",
+            available: false,
+          },
         ],
       });
       const request = createPostRequest(payload);
@@ -375,7 +424,9 @@ describe("Supplier Catalog Webhook", () => {
 
     it("handles pricing.changed event", async () => {
       setupSupplierAndUser();
-      const request = createPostRequest(createValidPayload({ event: "pricing.changed" }));
+      const request = createPostRequest(
+        createValidPayload({ event: "pricing.changed" })
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -385,7 +436,9 @@ describe("Supplier Catalog Webhook", () => {
 
     it("handles availability.changed event", async () => {
       setupSupplierAndUser();
-      const request = createPostRequest(createValidPayload({ event: "availability.changed" }));
+      const request = createPostRequest(
+        createValidPayload({ event: "availability.changed" })
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -405,16 +458,21 @@ describe("Supplier Catalog Webhook", () => {
     });
 
     it("returns 401 without auth", async () => {
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog");
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(401);
     });
 
     it("returns 200 with valid CRON_SECRET", async () => {
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
-        headers: { authorization: "Bearer test-cron-secret" },
-      });
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog",
+        {
+          headers: { authorization: "Bearer test-cron-secret" },
+        }
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -423,9 +481,12 @@ describe("Supplier Catalog Webhook", () => {
     });
 
     it("lists connector metadata when authenticated", async () => {
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
-        headers: { authorization: "Bearer test-cron-secret" },
-      });
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog",
+        {
+          headers: { authorization: "Bearer test-cron-secret" },
+        }
+      );
       const response = await GET(request);
       const body = await response.json();
 
@@ -436,9 +497,12 @@ describe("Supplier Catalog Webhook", () => {
     });
 
     it("lists supported events when authenticated", async () => {
-      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
-        headers: { authorization: "Bearer test-cron-secret" },
-      });
+      const request = new Request(
+        "http://localhost/api/webhooks/supplier-catalog",
+        {
+          headers: { authorization: "Bearer test-cron-secret" },
+        }
+      );
       const response = await GET(request);
       const body = await response.json();
 

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       FROM tenant_facilities.maintenance_work_orders
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
+        ${status === "all" ? Prisma.empty : Prisma.sql`AND status = ${status}`}
         ${priority ? Prisma.sql`AND priority = ${priority}` : Prisma.empty}
         ${areaId ? Prisma.sql`AND area_id = ${areaId}::uuid` : Prisma.empty}
         ${workOrderType ? Prisma.sql`AND work_order_type = ${workOrderType}` : Prisma.empty}

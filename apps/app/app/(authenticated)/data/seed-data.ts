@@ -1,55 +1,55 @@
 export interface RecipeSeed {
+  allergens: string[];
+  cost: number;
+  cuisine: string;
   id: string;
   name: string;
   version: number;
-  cuisine: string;
-  cost: number;
   yield: number;
-  allergens: string[];
 }
 
 export interface PrepListSeed {
+  assignedTo: string;
+  eventId: string;
   id: string;
   name: string;
   station: string;
-  eventId: string;
-  assignedTo: string;
   status: "pending" | "in-progress" | "complete";
 }
 
 export interface EventSeed {
-  id: string;
-  name: string;
-  date: string;
-  location: string;
   budget: number;
+  date: string;
+  id: string;
+  location: string;
   margin: number;
+  name: string;
   status: "planning" | "on-site" | "complete";
 }
 
 export interface StaffSeed {
-  id: string;
+  availability: string[];
   firstName: string;
+  id: string;
   lastName: string;
   role: string;
   station: string;
-  availability: string[];
 }
 
 export interface ClientSeed {
-  id: string;
-  name: string;
   contact: string;
-  lifetimeValue: number;
+  id: string;
   lastEvent: string;
+  lifetimeValue: number;
+  name: string;
 }
 
 export interface FinanceSeed {
-  period: string;
-  revenue: number;
   cogs: number;
   labor: number;
   netMargin: number;
+  period: string;
+  revenue: number;
 }
 
 export const seedRecipes: RecipeSeed[] = [

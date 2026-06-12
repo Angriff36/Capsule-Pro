@@ -37,16 +37,9 @@ export type AdjustmentReason =
   | "other";
 
 export interface StockLevelWithStatus {
-  tenantId: string;
+  createdAt: Date;
   id: string;
   inventoryItemId: string;
-  storageLocationId: string | null;
-  quantityOnHand: number;
-  reorderLevel: number;
-  parLevel: number | null;
-  lastCountedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
   item: {
     id: string;
     itemNumber: string;
@@ -55,25 +48,32 @@ export interface StockLevelWithStatus {
     unitCost: number;
     unit: string | null;
   };
+  lastCountedAt: Date | null;
+  parLevel: number | null;
+  parStatus: "below_par" | "at_par" | "above_par" | "no_par_set";
+  quantityOnHand: number;
+  reorderLevel: number;
+  reorderStatus: StockReorderStatus;
+  stockOutRisk: boolean;
   storageLocation: {
     id: string;
     name: string;
   } | null;
-  reorderStatus: StockReorderStatus;
+  storageLocationId: string | null;
+  tenantId: string;
   totalValue: number;
-  parStatus: "below_par" | "at_par" | "above_par" | "no_par_set";
-  stockOutRisk: boolean;
+  updatedAt: Date;
 }
 
 export interface StockLevelFilters {
-  search?: string;
   category?: string;
+  limit?: number;
   locationId?: string;
-  reorderStatus?: StockReorderStatus;
   lowStock?: boolean;
   outOfStock?: boolean;
   page?: number;
-  limit?: number;
+  reorderStatus?: StockReorderStatus;
+  search?: string;
 }
 
 export interface StockLevelListResponse {
@@ -93,18 +93,16 @@ export interface StockLevelListResponse {
 }
 
 export interface CreateAdjustmentRequest {
-  inventoryItemId: string;
-  storageLocationId: string | null;
-  quantity: number;
   adjustmentType: "increase" | "decrease";
-  reason: AdjustmentReason;
+  inventoryItemId: string;
   notes?: string;
+  quantity: number;
+  reason: AdjustmentReason;
   referenceId?: string;
+  storageLocationId: string | null;
 }
 
 export interface CreateAdjustmentResponse {
-  success: boolean;
-  message: string;
   adjustment: {
     id: string;
     previousQuantity: number;
@@ -112,49 +110,51 @@ export interface CreateAdjustmentResponse {
     adjustmentAmount: number;
     transactionId: string;
   };
+  message: string;
   stockLevel: StockLevelWithStatus;
+  success: boolean;
 }
 
 export interface InventoryTransaction {
-  tenantId: string;
+  createdAt: Date;
   id: string;
   inventoryItemId: string;
-  transactionType: TransactionType;
-  quantity: number;
-  unitCost: number | null;
-  totalCost: number | null;
-  referenceId: string | null;
-  referenceType: string | null;
-  storageLocationId: string | null;
-  reason: AdjustmentReason | null;
-  notes: string | null;
-  performedBy: string | null;
-  createdAt: Date;
   item: {
     id: string;
     itemNumber: string;
     name: string;
     category: string;
   } | null;
-  storageLocation: {
-    id: string;
-    name: string;
-  } | null;
+  notes: string | null;
+  performedBy: string | null;
   performedByUser: {
     id: string;
     name: string;
     email: string;
   } | null;
+  quantity: number;
+  reason: AdjustmentReason | null;
+  referenceId: string | null;
+  referenceType: string | null;
+  storageLocation: {
+    id: string;
+    name: string;
+  } | null;
+  storageLocationId: string | null;
+  tenantId: string;
+  totalCost: number | null;
+  transactionType: TransactionType;
+  unitCost: number | null;
 }
 
 export interface TransactionFilters {
-  inventoryItemId?: string;
-  transactionType?: TransactionType;
-  locationId?: string;
-  startDate?: string;
   endDate?: string;
-  page?: number;
+  inventoryItemId?: string;
   limit?: number;
+  locationId?: string;
+  page?: number;
+  startDate?: string;
+  transactionType?: TransactionType;
 }
 
 export interface TransactionListResponse {
@@ -168,13 +168,13 @@ export interface TransactionListResponse {
 }
 
 export interface StorageLocation {
-  id: string;
-  tenantId: string;
-  name: string;
-  locationType: string;
   address: string | null;
-  isActive: boolean;
   createdAt: Date;
+  id: string;
+  isActive: boolean;
+  locationType: string;
+  name: string;
+  tenantId: string;
   updatedAt: Date;
 }
 

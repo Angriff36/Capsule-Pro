@@ -15,39 +15,39 @@ import { Prisma } from "@repo/database/standalone";
  */
 interface IngredientNutrition {
   caloriesPer100g: number | null;
-  proteinPer100g: number | null;
   carbohydratesPer100g: number | null;
+  cholesterolPer100mg: number | null;
   fatPer100g: number | null;
   fiberPer100g: number | null;
-  sugarPer100g: number | null;
+  proteinPer100g: number | null;
   sodiumPer100mg: number | null;
-  cholesterolPer100mg: number | null;
+  sugarPer100g: number | null;
 }
 
 /**
  * Vitamin and mineral data (optional/when available)
  */
 export interface VitaminsMinerals {
-  vitaminA?: number; // IU
-  vitaminC?: number; // mg
   calcium?: number; // % Daily Value
+  copper?: number; // mg
+  folate?: number; // mcg DFE
+  iodine?: number; // mcg
   iron?: number; // % Daily Value
+  magnesium?: number; // % Daily Value
+  manganese?: number; // mg
+  niacin?: number; // mg
+  phosphorus?: number; // % Daily Value
+  riboflavin?: number; // mg
+  selenium?: number; // mcg
+  thiamin?: number; // mg
+  vitaminA?: number; // IU
+  vitaminB6?: number; // mg
+  vitaminB12?: number; // mcg
+  vitaminC?: number; // mg
   vitaminD?: number; // mcg
   vitaminE?: number; // mg
   vitaminK?: number; // mcg
-  thiamin?: number; // mg
-  riboflavin?: number; // mg
-  niacin?: number; // mg
-  vitaminB6?: number; // mg
-  vitaminB12?: number; // mcg
-  folate?: number; // mcg DFE
-  phosphorus?: number; // % Daily Value
-  iodine?: number; // mcg
-  magnesium?: number; // % Daily Value
   zinc?: number; // % Daily Value
-  selenium?: number; // mcg
-  copper?: number; // mg
-  manganese?: number; // mg
 }
 
 /**
@@ -77,47 +77,47 @@ const DAILY_VALUES = {
  * FDA compliance requirements
  */
 export interface FDAComplianceInfo {
+  isCompliant: boolean;
+  requiredNutrients: string[];
   servingSize: string;
   servingsPerContainer: number;
-  isCompliant: boolean;
   warnings: string[];
-  requiredNutrients: string[];
 }
 
 /**
  * Complete nutrition label data
  */
 export interface NutritionLabel {
-  recipeVersionId: string;
-  recipeName: string;
-  servingSize: string;
-  servingsPerContainer: number;
-  perServing: NutrientsPerServing;
-  perContainer: NutrientsPerServing;
-  percentDailyValues: PercentDailyValues;
   allergens: AllergenInfo;
   fdaCompliance: FDAComplianceInfo;
-  ingredientsList: string;
   generatedAt: Date;
+  ingredientsList: string;
+  perContainer: NutrientsPerServing;
+  percentDailyValues: PercentDailyValues;
+  perServing: NutrientsPerServing;
+  recipeName: string;
+  recipeVersionId: string;
+  servingSize: string;
+  servingsPerContainer: number;
 }
 
 /**
  * Nutritional values per serving
  */
 export interface NutrientsPerServing {
+  addedSugars: number; // g
   calories: number;
   caloriesFromFat: number;
-  totalFat: number; // g
-  saturatedFat: number; // g
-  transFat: number; // g
   cholesterol: number; // mg
-  sodium: number; // mg
-  potassium: number; // mg
-  totalCarbohydrate: number; // g
   dietaryFiber: number; // g
-  totalSugars: number; // g
-  addedSugars: number; // g
+  potassium: number; // mg
   protein: number; // g
+  saturatedFat: number; // g
+  sodium: number; // mg
+  totalCarbohydrate: number; // g
+  totalFat: number; // g
+  totalSugars: number; // g
+  transFat: number; // g
   vitamins: VitaminsMinerals;
 }
 
@@ -125,22 +125,22 @@ export interface NutrientsPerServing {
  * Percent daily values
  */
 export interface PercentDailyValues {
-  totalFat: number; // %
-  saturatedFat: number; // %
-  transFat: number; // %
-  cholesterol: number; // %
-  sodium: number; // %
-  potassium: number; // %
-  totalCarbohydrate: number; // %
-  dietaryFiber: number; // %
-  totalSugars: number; // %
   addedSugars: number; // %
-  protein: number; // %
-  vitaminD: number; // %
   calcium: number; // %
+  cholesterol: number; // %
+  dietaryFiber: number; // %
   iron: number; // %
+  potassium: number; // %
+  protein: number; // %
+  saturatedFat: number; // %
+  sodium: number; // %
+  totalCarbohydrate: number; // %
+  totalFat: number; // %
+  totalSugars: number; // %
+  transFat: number; // %
   vitaminA: number; // %
   vitaminC: number; // %
+  vitaminD: number; // %
 }
 
 /**
@@ -148,9 +148,9 @@ export interface PercentDailyValues {
  */
 export interface AllergenInfo {
   contains: string[];
-  mayContain: string[];
   freeFrom: string[];
   highlights: string[];
+  mayContain: string[];
 }
 
 /**
@@ -172,13 +172,13 @@ const MAJOR_ALLERGENS = [
  * Ingredient with nutrition data from database
  */
 interface RecipeIngredientNutrition {
+  allergens: string[];
+  ingredientCategory: string | null;
+  ingredientName: string;
+  nutrition: IngredientNutrition;
+  preparationNotes: string | null;
   quantity: number;
   unitId: number;
-  preparationNotes: string | null;
-  nutrition: IngredientNutrition;
-  allergens: string[];
-  ingredientName: string;
-  ingredientCategory: string | null;
 }
 
 /**
@@ -477,11 +477,18 @@ function validateFDACompliance(
   const requiredNutrients: string[] = [];
 
   // Check required nutrients are present
-  if (nutrients.totalFat < 0) warnings.push("Total fat value required");
-  if (nutrients.sodium < 0) warnings.push("Sodium value required");
-  if (nutrients.totalCarbohydrate < 0)
+  if (nutrients.totalFat < 0) {
+    warnings.push("Total fat value required");
+  }
+  if (nutrients.sodium < 0) {
+    warnings.push("Sodium value required");
+  }
+  if (nutrients.totalCarbohydrate < 0) {
     warnings.push("Carbohydrate value required");
-  if (nutrients.protein < 0) warnings.push("Protein value required");
+  }
+  if (nutrients.protein < 0) {
+    warnings.push("Protein value required");
+  }
 
   // Check serving size format
   if (!servingSize || servingSize.trim().length === 0) {
@@ -494,16 +501,33 @@ function validateFDACompliance(
   }
 
   // Track which nutrients have actual data
-  if (nutrients.totalFat > 0) requiredNutrients.push("Total Fat");
-  if (nutrients.saturatedFat > 0) requiredNutrients.push("Saturated Fat");
-  if (nutrients.transFat > 0) requiredNutrients.push("Trans Fat");
-  if (nutrients.cholesterol > 0) requiredNutrients.push("Cholesterol");
-  if (nutrients.sodium > 0) requiredNutrients.push("Sodium");
-  if (nutrients.totalCarbohydrate > 0)
+  if (nutrients.totalFat > 0) {
+    requiredNutrients.push("Total Fat");
+  }
+  if (nutrients.saturatedFat > 0) {
+    requiredNutrients.push("Saturated Fat");
+  }
+  if (nutrients.transFat > 0) {
+    requiredNutrients.push("Trans Fat");
+  }
+  if (nutrients.cholesterol > 0) {
+    requiredNutrients.push("Cholesterol");
+  }
+  if (nutrients.sodium > 0) {
+    requiredNutrients.push("Sodium");
+  }
+  if (nutrients.totalCarbohydrate > 0) {
     requiredNutrients.push("Total Carbohydrate");
-  if (nutrients.dietaryFiber > 0) requiredNutrients.push("Dietary Fiber");
-  if (nutrients.totalSugars > 0) requiredNutrients.push("Total Sugars");
-  if (nutrients.protein > 0) requiredNutrients.push("Protein");
+  }
+  if (nutrients.dietaryFiber > 0) {
+    requiredNutrients.push("Dietary Fiber");
+  }
+  if (nutrients.totalSugars > 0) {
+    requiredNutrients.push("Total Sugars");
+  }
+  if (nutrients.protein > 0) {
+    requiredNutrients.push("Protein");
+  }
 
   return {
     servingSize,

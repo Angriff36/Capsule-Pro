@@ -21,9 +21,9 @@ import {
 import { getAuthToken } from "../store/auth";
 
 interface AppSettings {
-  hapticFeedback: boolean;
   autoRefresh: boolean;
   autoRefreshInterval: number;
+  hapticFeedback: boolean;
 }
 
 interface SettingsResponse {

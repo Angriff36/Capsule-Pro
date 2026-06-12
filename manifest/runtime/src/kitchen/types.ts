@@ -1,16 +1,10 @@
-import type {
-  CommandResult,
-  RuntimeContext,
-  Store,
-} from "@angriff36/manifest";
+import type { CommandResult, RuntimeContext, Store } from "@angriff36/manifest";
 
 /**
  * Kitchen Ops Runtime Context
  */
 export interface KitchenOpsContext extends RuntimeContext {
-  tenantId: string;
-  userId: string;
-  userRole?: string;
+  causationId?: string;
   /**
    * Optional workflow metadata for event correlation and tracing.
    * @example
@@ -22,28 +16,6 @@ export interface KitchenOpsContext extends RuntimeContext {
    * ```
    */
   correlationId?: string;
-  causationId?: string;
-  /**
-   * Optional evaluation limits to protect against runaway expressions.
-   * @default { maxExpressionDepth: 64, maxEvaluationSteps: 10_000 }
-   */
-  evaluationLimits?: {
-    maxExpressionDepth?: number;
-    maxEvaluationSteps?: number;
-  };
-  /**
-   * Optional deterministic mode to block adapter side effects (for testing/replay).
-   * When true, persist/publish/effect actions throw ManifestEffectBoundaryError.
-   * @default false
-   */
-  deterministicMode?: boolean;
-  /**
-   * Optional store provider for entity persistence.
-   * If provided, entities will be persisted using this store.
-   * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
-   * Defaults to undefined (in-memory storage).
-   */
-  storeProvider?: (entityName: string) => Store | undefined;
   /**
    * Optional connection string for PostgresStore.
    * If provided, entities will be persisted in PostgreSQL.
@@ -53,6 +25,27 @@ export interface KitchenOpsContext extends RuntimeContext {
    * integration with existing Prisma schema.
    */
   databaseUrl?: string;
+  /**
+   * Optional deterministic mode to block adapter side effects (for testing/replay).
+   * When true, persist/publish/effect actions throw ManifestEffectBoundaryError.
+   * @default false
+   */
+  deterministicMode?: boolean;
+  /**
+   * Optional evaluation limits to protect against runaway expressions.
+   * @default { maxExpressionDepth: 64, maxEvaluationSteps: 10_000 }
+   */
+  evaluationLimits?: {
+    maxExpressionDepth?: number;
+    maxEvaluationSteps?: number;
+  };
+  /**
+   * Optional store provider for entity persistence.
+   * If provided, entities will be persisted using this store.
+   * Use `createPrismaStoreProvider(prisma, tenantId)` for Prisma-backed storage.
+   * Defaults to undefined (in-memory storage).
+   */
+  storeProvider?: (entityName: string) => Store | undefined;
   /**
    * Optional telemetry callbacks for observability.
    * Use this to integrate with Sentry, Logtail, or other telemetry services.
@@ -129,25 +122,28 @@ export interface KitchenOpsContext extends RuntimeContext {
       entityName?: string
     ) => void;
   };
+  tenantId: string;
+  userId: string;
+  userRole?: string;
 }
 
 /**
  * Result of a prep task command
  */
 export interface PrepTaskCommandResult extends CommandResult {
-  taskId: string;
-  claimedBy?: string;
   claimedAt?: number;
+  claimedBy?: string;
   status?: string;
+  taskId: string;
 }
 
 /**
  * Result of a station command
  */
 export interface StationCommandResult extends CommandResult {
-  stationId: string;
-  currentTaskCount?: number;
   capacity?: number;
+  currentTaskCount?: number;
+  stationId: string;
 }
 
 /**
@@ -155,67 +151,67 @@ export interface StationCommandResult extends CommandResult {
  */
 export interface InventoryCommandResult extends CommandResult {
   itemId: string;
+  quantityAvailable?: number;
   quantityOnHand?: number;
   quantityReserved?: number;
-  quantityAvailable?: number;
 }
 
 /**
  * Result of a recipe command
  */
 export interface RecipeCommandResult extends CommandResult {
-  recipeId: string;
-  name?: string;
   isActive?: boolean;
+  name?: string;
+  recipeId: string;
 }
 
 /**
  * Result of a dish command
  */
 export interface DishCommandResult extends CommandResult {
+  costPerPerson?: number;
   dishId: string;
   name?: string;
   pricePerPerson?: number;
-  costPerPerson?: number;
 }
 
 /**
  * Result of a menu command
  */
 export interface MenuCommandResult extends CommandResult {
+  isActive?: boolean;
   menuId: string;
   name?: string;
-  isActive?: boolean;
 }
 
 /**
  * Result of a menu dish command
  */
 export interface MenuDishCommandResult extends CommandResult {
+  dishId?: string;
   menuDishId: string;
   menuId?: string;
-  dishId?: string;
 }
 
 /**
  * Result of a prep list command
  */
 export interface PrepListCommandResult extends CommandResult {
-  prepListId: string;
   name?: string;
+  prepListId: string;
   status?: string;
-  totalItems?: number;
   totalEstimatedTime?: number;
+  totalItems?: number;
 }
 
 /**
  * Result of a prep list item command
  */
 export interface PrepListItemCommandResult extends CommandResult {
-  itemId: string;
-  prepListId: string;
   ingredientName?: string;
   isCompleted?: boolean;
+  itemId: string;
+  prepListId: string;
 }
 
 /**
@@ -223,7 +219,7 @@ export interface PrepListItemCommandResult extends CommandResult {
  * These are passed through to enable event correlation and tracing.
  */
 export interface WorkflowMetadataOptions {
-  correlationId?: string;
   causationId?: string;
+  correlationId?: string;
   idempotencyKey?: string;
 }

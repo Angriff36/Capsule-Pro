@@ -2,46 +2,16 @@
   "total_violations": 91,
   "files_with_violations": 39,
   "top_files": [
-    [
-      ".\\events\\documents\\parse\\route.ts",
-      9
-    ],
-    [
-      ".\\calendar\\sync\\trigger\\route.ts",
-      7
-    ],
-    [
-      ".\\inventory\\cycle-count\\sessions\\[id]\\finalize\\route.ts",
-      6
-    ],
-    [
-      ".\\cron\\webhook-retry\\route.ts",
-      5
-    ],
-    [
-      ".\\integrations\\webhooks\\retry\\route.ts",
-      5
-    ],
-    [
-      ".\\kitchen\\import\\route.ts",
-      5
-    ],
-    [
-      ".\\accounting\\payments\\route.ts",
-      4
-    ],
-    [
-      ".\\accounting\\revenue-recognition\\schedules\\[id]\\route.ts",
-      4
-    ],
-    [
-      ".\\command-board\\simulations\\route.ts",
-      4
-    ],
-    [
-      ".\\integrations\\webhooks\\dlq\\[id]\\retry\\route.ts",
-      4
-    ]
+    [".\\events\\documents\\parse\\route.ts", 9],
+    [".\\calendar\\sync\\trigger\\route.ts", 7],
+    [".\\inventory\\cycle-count\\sessions\\[id]\\finalize\\route.ts", 6],
+    [".\\cron\\webhook-retry\\route.ts", 5],
+    [".\\integrations\\webhooks\\retry\\route.ts", 5],
+    [".\\kitchen\\import\\route.ts", 5],
+    [".\\accounting\\payments\\route.ts", 4],
+    [".\\accounting\\revenue-recognition\\schedules\\[id]\\route.ts", 4],
+    [".\\command-board\\simulations\\route.ts", 4],
+    [".\\integrations\\webhooks\\dlq\\[id]\\retry\\route.ts", 4]
   ],
   "all_files": {
     ".\\events\\documents\\parse\\route.ts": 9,

@@ -6,14 +6,14 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface ModuleNavItem {
-  title: string;
   href: string;
+  title: string;
 }
 
 interface ModuleShellProperties {
-  title: string;
-  navItems: ModuleNavItem[];
   children: ReactNode;
+  navItems: ModuleNavItem[];
+  title: string;
 }
 
 export const ModuleShell = ({

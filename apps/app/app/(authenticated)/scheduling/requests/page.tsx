@@ -11,39 +11,39 @@ export const metadata: Metadata = {
 };
 
 interface TimeOffRequestRow {
-  id: string;
-  employeeId: string;
   employeeFirstName: string | null;
+  employeeId: string;
   employeeLastName: string | null;
   employeeRole: string;
+  end_date: Date;
+  id: string;
+  reason: string | null;
   request_type: string;
   start_date: Date;
-  end_date: Date;
-  reason: string | null;
   status: string;
   submitted_at: Date;
 }
 
 interface TimecardEditRow {
-  id: string;
-  employeeId: string;
+  created_at: Date;
   employeeFirstName: string | null;
+  employeeId: string;
   employeeLastName: string | null;
   employeeRole: string;
+  id: string;
   reason: string;
   status: string;
-  created_at: Date;
 }
 
 export interface UnifiedRequest {
-  id: string;
-  type: "time_off" | "timecard_edit";
+  detail: string;
   employee: string;
   employeeRole: string;
-  detail: string;
-  submitted: string;
-  status: string;
+  id: string;
   reason: string | null;
+  status: string;
+  submitted: string;
+  type: "time_off" | "timecard_edit";
 }
 
 export default async function SchedulingRequestsPage() {
@@ -76,7 +76,9 @@ export default async function SchedulingRequestsPage() {
       },
       select: { id: true, firstName: true, lastName: true, role: true },
     });
-    const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+    const employeesById = new Map(
+      employees.map((employee) => [employee.id, employee])
+    );
     timeOffRequests = rows.map((row) => {
       const employee = employeesById.get(row.employeeId);
       return {
@@ -112,7 +114,9 @@ export default async function SchedulingRequestsPage() {
       },
       select: { id: true, firstName: true, lastName: true, role: true },
     });
-    const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+    const employeesById = new Map(
+      employees.map((employee) => [employee.id, employee])
+    );
     timecardEdits = rows.map((row) => {
       const employee = employeesById.get(row.employeeId);
       return {
@@ -142,10 +146,16 @@ export default async function SchedulingRequestsPage() {
   const timeAgo = (date: Date): string => {
     const diffMs = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diffMs / 60_000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) {
+      return "just now";
+    }
+    if (mins < 60) {
+      return `${mins}m ago`;
+    }
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) {
+      return `${hours}h ago`;
+    }
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   };
@@ -158,7 +168,7 @@ export default async function SchedulingRequestsPage() {
         [r.employeeFirstName, r.employeeLastName].filter(Boolean).join(" ") ||
         "Unknown",
       employeeRole: r.employeeRole || "Staff",
-      detail: `${formatRequestType(r.request_type)} · ${new Date(r.start_date).toLocaleDateString()}${r.start_date.toDateString() !== r.end_date.toDateString() ? ` – ${new Date(r.end_date).toLocaleDateString()}` : ""}`,
+      detail: `${formatRequestType(r.request_type)} · ${new Date(r.start_date).toLocaleDateString()}${r.start_date.toDateString() === r.end_date.toDateString() ? "" : ` – ${new Date(r.end_date).toLocaleDateString()}`}`,
       submitted: timeAgo(r.submitted_at),
       status: r.status,
       reason: r.reason,
@@ -180,14 +190,14 @@ export default async function SchedulingRequestsPage() {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Request Queue</h1>
+        <h1 className="font-semibold text-2xl tracking-tight">Request Queue</h1>
         <p className="text-muted-foreground">
           Review and approve time-off requests, timecard edits, and shift
           changes.
         </p>
       </div>
       {loadError && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-800 text-sm">
           {loadError}. The page shows available data below.
         </div>
       )}

@@ -14,29 +14,29 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export interface RecipeStep {
-  stepNumber: number;
-  instruction: string;
   durationMinutes: number | null;
-  temperatureValue: number | null;
-  temperatureUnit: string | null;
   equipmentNeeded: string[] | null;
+  imageUrl: string | null;
+  instruction: string;
+  stepNumber: number;
+  temperatureUnit: string | null;
+  temperatureValue: number | null;
   tips: string | null;
   videoUrl: string | null;
-  imageUrl: string | null;
 }
 
 export interface RecipeStepsResponse {
+  cookTimeMinutes: number | null;
+  description: string | null;
+  prepTimeMinutes: number | null;
   recipeId: string;
   recipeName: string;
   recipeVersionId: string;
-  description: string | null;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
   restTimeMinutes: number | null;
-  yieldQuantity: number | null;
-  yieldUnit: string | null;
   steps: RecipeStep[];
   totalDuration: number; // Total time in minutes for all timed steps
+  yieldQuantity: number | null;
+  yieldUnit: string | null;
 }
 
 /**

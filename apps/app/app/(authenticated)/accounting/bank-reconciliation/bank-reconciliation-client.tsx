@@ -14,6 +14,7 @@ import { Landmark, Plus, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+
 // NOTE: Keeping apiFetch for all calls — bank-reconciliation endpoint is a custom aggregation with no generated client
 
 // ---------------------------------------------------------------------------
@@ -23,30 +24,30 @@ import { apiFetch } from "@/app/lib/api";
 type ReconciliationStatus = "RECONCILED" | "PENDING" | "IN_PROGRESS";
 
 interface BankReconciliationRecord {
-  id: string;
-  accountNumber: string;
   accountName: string;
-  description: string | null;
+  accountNumber: string;
   bookBalance: number;
-  statementBalance: number;
+  description: string | null;
   difference: number;
-  status: ReconciliationStatus;
+  id: string;
   lastReconciledDate: string | null;
+  statementBalance: number;
+  status: ReconciliationStatus;
   transactionCount: number;
 }
 
 interface ReconciliationMetrics {
-  totalAccounts: number;
-  reconciledCount: number;
-  unreconciledCount: number;
   lastReconciledDate: string | null;
+  reconciledCount: number;
+  totalAccounts: number;
+  unreconciledCount: number;
 }
 
 interface InitialMetrics {
-  totalAccounts: number;
-  reconciledCount: number;
-  unreconciledCount: number;
   lastReconciledDate: string | null;
+  reconciledCount: number;
+  totalAccounts: number;
+  unreconciledCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,7 +55,9 @@ interface InitialMetrics {
 // ---------------------------------------------------------------------------
 
 const formatDate = (d: string | null) => {
-  if (!d) return "\u2014";
+  if (!d) {
+    return "\u2014";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -104,12 +107,16 @@ export function BankReconciliationClient({
         page: String(page),
         limit: "25",
       });
-      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
 
       const res = await apiFetch(
         `/api/accounting/bank-reconciliation?${params.toString()}`
       );
-      if (!res.ok) throw new Error("Failed to load bank reconciliation data");
+      if (!res.ok) {
+        throw new Error("Failed to load bank reconciliation data");
+      }
 
       const data = await res.json();
       setAccounts(data.data ?? []);
@@ -135,7 +142,9 @@ export function BankReconciliationClient({
   // ---------------------------------------------------------------------------
 
   const filteredAccounts = accounts.filter((a) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const q = searchQuery.toLowerCase();
     return (
       a.accountName.toLowerCase().includes(q) ||
@@ -153,7 +162,7 @@ export function BankReconciliationClient({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <input
               className="h-9 w-64 rounded-md border border-hairline bg-transparent px-10 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -207,7 +216,7 @@ export function BankReconciliationClient({
       )}
 
       {!isLoading && filteredAccounts.length === 0 && (
-        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
           {searchQuery || statusFilter !== "all"
             ? "No accounts match the current filters. Try adjusting your search or filters."
             : "No bank accounts found. Add bank accounts to your chart of accounts to start reconciling."}
@@ -217,7 +226,7 @@ export function BankReconciliationClient({
       {!isLoading && filteredAccounts.length > 0 && (
         <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
           {/* Header row */}
-          <div className="grid grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="grid grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <span>Account</span>
             <span>Account name</span>
             <span>Book balance</span>
@@ -230,7 +239,7 @@ export function BankReconciliationClient({
           {/* Data rows */}
           {filteredAccounts.map((account) => (
             <div
-              className="grid grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+              className="grid grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
               key={account.id}
             >
               {/* Account number */}

@@ -70,40 +70,40 @@ type ConflictType =
   | "financial";
 
 interface AffectedEntity {
-  type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
   id: string;
   name: string;
+  type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
 }
 
 interface ResolutionOption {
-  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
-  description: string;
   affectedEntities: AffectedEntity[];
+  description: string;
   estimatedImpact: "low" | "medium" | "high";
+  type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
 }
 
 interface Conflict {
-  id: string;
-  type: ConflictType;
-  severity: ConflictSeverity;
-  title: string;
-  description: string;
   affectedEntities: AffectedEntity[];
-  suggestedAction?: string;
-  resolutionOptions?: ResolutionOption[];
   createdAt: string;
+  description: string;
+  id: string;
+  resolutionOptions?: ResolutionOption[];
+  severity: ConflictSeverity;
+  suggestedAction?: string;
+  title: string;
+  type: ConflictType;
 }
 
 interface ConflictSummary {
-  total: number;
   bySeverity: Record<ConflictSeverity, number>;
   byType: Record<ConflictType, number>;
+  total: number;
 }
 
 interface ConflictDetectionResult {
+  analyzedAt: string;
   conflicts: Conflict[];
   summary: ConflictSummary;
-  analyzedAt: string;
   warnings?: { detectorType: ConflictType; message: string }[];
 }
 
@@ -269,8 +269,8 @@ function StatCard({
           <Icon className={`h-4 w-4 ${color ?? "text-muted-foreground"}`} />
         </div>
         <div>
-          <p className="text-2xl font-bold leading-none">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="font-bold text-2xl leading-none">{value}</p>
+          <p className="text-muted-foreground text-sm">{label}</p>
         </div>
       </CardContent>
     </Card>
@@ -329,7 +329,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
         {conflict.suggestedAction && (
           <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3">
             <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {conflict.suggestedAction}
             </p>
           </div>
@@ -353,7 +353,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-sm font-medium">
+                      <span className="font-medium text-sm">
                         {option.description}
                       </span>
                     </div>
@@ -362,7 +362,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
                     </Badge>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       Affects:
                     </span>
                     {option.affectedEntities.map((entity) => (
@@ -448,9 +448,13 @@ export function ConflictsClient() {
   }, [activeTab]);
 
   const filteredConflicts = useMemo(() => {
-    if (!result) return [];
+    if (!result) {
+      return [];
+    }
     const tabConfig = TAB_CONFIG.find((t) => t.value === activeTab);
-    if (!tabConfig || activeTab === "all") return result.conflicts;
+    if (!tabConfig || activeTab === "all") {
+      return result.conflicts;
+    }
     return result.conflicts.filter((c) => tabConfig.types.includes(c.type));
   }, [result, activeTab]);
 
@@ -522,11 +526,11 @@ export function ConflictsClient() {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="font-medium text-foreground text-sm">
                         Some detectors had issues
                       </p>
                       {result.warnings.map((w, i) => (
-                        <p className="text-xs text-muted-foreground" key={i}>
+                        <p className="text-muted-foreground text-xs" key={i}>
                           {w.message}
                         </p>
                       ))}
@@ -585,12 +589,12 @@ export function ConflictsClient() {
               <Card>
                 <CardContent className="flex flex-col items-center gap-2 py-12">
                   <CheckCircle2 className="h-10 w-10 text-green-500" />
-                  <p className="text-sm font-medium text-green-700">
+                  <p className="font-medium text-green-700 text-sm">
                     No{" "}
                     {tab.value === "all" ? "" : tab.label.toLowerCase() + " "}
                     conflicts detected
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     All clear for the next 14 days. Run detection again after
                     making schedule changes.
                   </p>
@@ -605,10 +609,10 @@ export function ConflictsClient() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                     <ShieldAlert className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="mt-2 text-sm font-medium">
+                  <p className="mt-2 font-medium text-sm">
                     No conflicts analyzed yet
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Click &quot;Detect Conflicts&quot; to scan for scheduling,
                     equipment, inventory, and venue conflicts across your
                     operations.
@@ -619,7 +623,7 @@ export function ConflictsClient() {
 
             {/* Analyzed timestamp */}
             {result?.analyzedAt && (
-              <p className="text-center text-xs text-muted-foreground">
+              <p className="text-center text-muted-foreground text-xs">
                 Analyzed at {new Date(result.analyzedAt).toLocaleString()}
               </p>
             )}

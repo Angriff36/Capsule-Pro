@@ -25,10 +25,10 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn().mockResolvedValue(
-    new Response(
-      JSON.stringify({ success: true, result: {}, events: [] }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    )
+    new Response(JSON.stringify({ success: true, result: {}, events: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
   ),
 }));
 
@@ -50,7 +50,11 @@ vi.mock("@/lib/manifest-response", async () => {
       const body =
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            };
       return NextResponse.json(body, { status });
     },
   };
@@ -306,7 +310,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("create route delegates to runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-new", status: "draft" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-new", status: "draft" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -353,7 +361,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("update route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -392,7 +404,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("submit route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -430,7 +446,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("approve route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -468,7 +488,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("reject route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -507,7 +531,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("activate route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -545,7 +573,11 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("terminate route passes correct entity and command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "vc-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -649,7 +681,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("returns 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: false, message: "Contract number is required" }),
+          JSON.stringify({
+            success: false,
+            message: "Contract number is required",
+          }),
           { status: 422, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -675,7 +710,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     it("returns 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ success: false, message: "Policy denied: AdminOnly" }),
+          JSON.stringify({
+            success: false,
+            message: "Policy denied: AdminOnly",
+          }),
           { status: 403, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -725,7 +763,9 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 500 on unexpected exception", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValueOnce(new Error("Unexpected error"));
+      vi.mocked(runManifestCommand).mockRejectedValueOnce(
+        new Error("Unexpected error")
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"

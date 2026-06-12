@@ -27,8 +27,8 @@ type BoardMode = "all" | "unclaimed" | "at-risk" | "my-tasks";
 
 interface TaskSection {
   key: string;
-  title: string;
   tasks: Task[];
+  title: string;
 }
 
 function isDoneStatus(status: string): boolean {
@@ -101,11 +101,13 @@ export default function TasksScreen() {
     startTask.isPending ||
     completeTask.isPending;
 
-  const uniqueStations = useMemo(() => {
-    return Array.from(
-      new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean))
-    );
-  }, [availableTasks]);
+  const uniqueStations = useMemo(
+    () =>
+      Array.from(
+        new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean))
+      ),
+    [availableTasks]
+  );
 
   useMemo(() => {
     AsyncStorage.getItem(MY_STATION_KEY).then((savedStation) => {
@@ -115,20 +117,25 @@ export default function TasksScreen() {
     });
   }, []);
 
-  const filteredAvailableTasks = useMemo(() => {
-    return availableTasks.filter((task) => {
-      if (filters.station && !(task.tags || []).includes(filters.station)) {
-        return false;
-      }
-      if (filters.myStation && !(task.tags || []).includes(filters.myStation)) {
-        return false;
-      }
-      if (filters.minPriority && task.priority > filters.minPriority) {
-        return false;
-      }
-      return true;
-    });
-  }, [availableTasks, filters]);
+  const filteredAvailableTasks = useMemo(
+    () =>
+      availableTasks.filter((task) => {
+        if (filters.station && !(task.tags || []).includes(filters.station)) {
+          return false;
+        }
+        if (
+          filters.myStation &&
+          !(task.tags || []).includes(filters.myStation)
+        ) {
+          return false;
+        }
+        if (filters.minPriority && task.priority > filters.minPriority) {
+          return false;
+        }
+        return true;
+      }),
+    [availableTasks, filters]
+  );
 
   const visibleAvailableTasks = useMemo(() => {
     if (boardMode === "all") {
@@ -407,7 +414,13 @@ export default function TasksScreen() {
         </View>
 
         <View style={styles.taskActions}>
-          {boardMode !== "my-tasks" ? (
+          {boardMode === "my-tasks" ? (
+            <View style={styles.assigneeAvatar}>
+              <Text style={styles.assigneeInitial}>
+                {(task.claims[0]?.user?.firstName?.[0] || "Y").toUpperCase()}
+              </Text>
+            </View>
+          ) : (
             <TouchableOpacity
               disabled={isMutating || task.isAvailable === false}
               onPress={() => handleClaim(task.id)}
@@ -415,12 +428,6 @@ export default function TasksScreen() {
             >
               <Text style={styles.claimCircleText}>+</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.assigneeAvatar}>
-              <Text style={styles.assigneeInitial}>
-                {(task.claims[0]?.user?.firstName?.[0] || "Y").toUpperCase()}
-              </Text>
-            </View>
           )}
 
           {statusPill(task)}

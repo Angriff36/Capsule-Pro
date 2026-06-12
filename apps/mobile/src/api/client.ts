@@ -9,9 +9,9 @@ const DEFAULT_API_BASE_URL =
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_BASE_URL;
 
 interface FetchOptions extends Omit<RequestInit, "body"> {
-  token?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any;
+  token?: string;
 }
 
 export async function apiClient<T>(

@@ -54,7 +54,7 @@ const AdministrativeChatPage = async () => {
     return (
       <div className="space-y-6">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Operational Chat
           </h1>
           <p className="text-muted-foreground">
@@ -78,7 +78,7 @@ const AdministrativeChatPage = async () => {
   return (
     <div className="space-y-8">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Operational Chat
         </h1>
         <p className="text-muted-foreground">

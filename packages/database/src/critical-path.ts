@@ -20,20 +20,20 @@ function invariant(condition: unknown, message: string): asserts condition {
 }
 
 export interface TaskForCPM {
+  dependencies: string[];
+  endTime: Date;
   id: string;
   startTime: Date;
-  endTime: Date;
-  dependencies: string[];
 }
 
 export interface CriticalPathResult {
-  taskId: string;
-  earliestStart: Date; // ES
   earliestFinish: Date; // EF
-  latestStart: Date; // LS
-  latestFinish: Date; // LF
-  slackMinutes: number;
+  earliestStart: Date; // ES
   isOnCriticalPath: boolean;
+  latestFinish: Date; // LF
+  latestStart: Date; // LS
+  slackMinutes: number;
+  taskId: string;
 }
 
 /**
@@ -98,9 +98,8 @@ export function calculateCriticalPath(
   const isCritical = new Map<string, boolean>();
 
   // Helper to add minutes to a date
-  const addMinutes = (date: Date, minutes: number): Date => {
-    return new Date(date.getTime() + minutes * 60 * 1000);
-  };
+  const addMinutes = (date: Date, minutes: number): Date =>
+    new Date(date.getTime() + minutes * 60 * 1000);
 
   // ============================================================
   // FORWARD PASS: Calculate ES and EF for each task

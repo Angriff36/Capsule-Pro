@@ -30,7 +30,9 @@ const SYNC_LOOKBACK_DAYS = 30;
 const SYNC_LOOKAHEAD_DAYS = 7;
 
 function isSyncDue(lastSyncAt: Date | null, intervalMinutes: number): boolean {
-  if (!lastSyncAt) return true;
+  if (!lastSyncAt) {
+    return true;
+  }
   const nextSyncAt = new Date(
     lastSyncAt.getTime() + intervalMinutes * 60 * 1000
   );

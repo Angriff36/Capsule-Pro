@@ -48,32 +48,27 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 interface SerializedEventContract {
-  contractType: "event";
-  id: string;
-  tenantId: string;
-  eventId: string;
-  clientId: string;
-  contractNumber: string | null;
-  title: string;
-  status: string;
-  documentUrl: string | null;
-  documentType: string | null;
-  notes: string | null;
-  signingToken: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  event: {
-    id: string;
-    title: string;
-    eventDate: string | null;
-  } | null;
   client: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  clientId: string;
+  contractNumber: string | null;
+  contractType: "event";
+  createdAt: string;
+  documentType: string | null;
+  documentUrl: string | null;
+  event: {
+    id: string;
+    title: string;
+    eventDate: string | null;
+  } | null;
+  eventId: string;
+  expiresAt: string | null;
+  id: string;
+  notes: string | null;
   signatures: Array<{
     id: string;
     signedAt: string | null;
@@ -81,37 +76,42 @@ interface SerializedEventContract {
     signerEmail: string | null;
     ipAddress: string | null;
   }>;
+  signingToken: string | null;
+  status: string;
+  tenantId: string;
+  title: string;
+  updatedAt: string;
 }
 
 interface SerializedVendorContract {
-  contractType: "vendor";
-  id: string;
-  tenantId: string;
+  approvedAt: string | null;
+  approvedBy: string | null;
+  autoRenew: boolean;
+  complianceScore: number | null;
   contractNumber: string | null;
+  contractType: "vendor";
+  contractTypeLabel: string | null;
+  contractUrl: string | null;
+  createdAt: string;
+  endDate: string | null;
+  id: string;
+  lastComplianceReview: string | null;
+  notes: string | null;
+  noticeDaysBeforeRenewal: number | null;
+  onTimeDeliveryRate: number | null;
+  paymentTerms: string | null;
+  qualityRating: number | null;
+  renewalTermDays: number | null;
+  slaBreachCount: number | null;
+  startDate: string | null;
+  status: string;
+  tenantId: string;
+  terminatedAt: string | null;
+  terminatedBy: string | null;
+  terminationReason: string | null;
+  updatedAt: string;
   vendorId: string | null;
   vendorName: string | null;
-  contractTypeLabel: string | null;
-  status: string;
-  startDate: string | null;
-  endDate: string | null;
-  autoRenew: boolean;
-  renewalTermDays: number | null;
-  noticeDaysBeforeRenewal: number | null;
-  paymentTerms: string | null;
-  contractUrl: string | null;
-  notes: string | null;
-  complianceScore: number | null;
-  slaBreachCount: number | null;
-  onTimeDeliveryRate: number | null;
-  qualityRating: number | null;
-  lastComplianceReview: string | null;
-  approvedBy: string | null;
-  approvedAt: string | null;
-  terminatedBy: string | null;
-  terminatedAt: string | null;
-  terminationReason: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 type SerializedContract = SerializedEventContract | SerializedVendorContract;
@@ -121,7 +121,9 @@ type SerializedContract = SerializedEventContract | SerializedVendorContract;
 // ---------------------------------------------------------------------------
 
 function daysUntil(isoDate: string | null): number | null {
-  if (!isoDate) return null;
+  if (!isoDate) {
+    return null;
+  }
   const target = new Date(isoDate);
   const now = new Date();
   return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -420,9 +422,9 @@ export default async function ContractDetailPage({
               <MetricCell>
                 <MetricLabel>Compliance score</MetricLabel>
                 <MetricValue>
-                  {vcContract!.complianceScore !== null
-                    ? `${vcContract!.complianceScore}%`
-                    : "\u2014"}
+                  {vcContract!.complianceScore === null
+                    ? "\u2014"
+                    : `${vcContract!.complianceScore}%`}
                 </MetricValue>
               </MetricCell>
               <MetricCell>

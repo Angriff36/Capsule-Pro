@@ -1,5 +1,11 @@
-import { Document, Page, StyleSheet, Text, View } from "../lib/react-pdf-primitives";
 import type React from "react";
+import {
+  Document,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "../lib/react-pdf-primitives";
 import type { PackingListPDFData } from "../types";
 
 type PackingListItem = PackingListPDFData["items"][number];

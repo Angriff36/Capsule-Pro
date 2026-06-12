@@ -76,10 +76,10 @@ const QualityAssurancePage = async () => {
   }));
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto space-y-6 py-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quality Assurance</h1>
+          <h1 className="font-bold text-2xl">Quality Assurance</h1>
           <p className="text-muted-foreground">
             HACCP compliance and food safety monitoring
           </p>
@@ -89,15 +89,15 @@ const QualityAssurancePage = async () => {
       <Tabs className="space-y-4" defaultValue="checks">
         <TabsList>
           <TabsTrigger value="checks">
-            <ClipboardCheck className="h-4 w-4 mr-2" />
+            <ClipboardCheck className="mr-2 h-4 w-4" />
             Quality Checks ({qualityChecks.length})
           </TabsTrigger>
           <TabsTrigger value="temperature">
-            <Thermometer className="h-4 w-4 mr-2" />
+            <Thermometer className="mr-2 h-4 w-4" />
             Temperature Logs ({temperatureLogs.length})
           </TabsTrigger>
           <TabsTrigger value="corrective">
-            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertTriangle className="mr-2 h-4 w-4" />
             Corrective Actions ({correctiveActions.length})
           </TabsTrigger>
         </TabsList>

@@ -39,9 +39,9 @@ const PredictiveLTV = dynamic(
 );
 
 interface CLVDashboardProps {
-  metrics: ClientLTVMetrics;
-  clients: ClientLTVMetrics["topClients"];
   className?: string;
+  clients: ClientLTVMetrics["topClients"];
+  metrics: ClientLTVMetrics;
 }
 
 export function CLVDashboard({

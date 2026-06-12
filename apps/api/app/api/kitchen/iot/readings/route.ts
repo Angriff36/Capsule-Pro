@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     log.error("List readings error:", error);
     return NextResponse.json(
       { error: "Failed to list readings" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (!probeId || temperature === undefined) {
       return NextResponse.json(
         { error: "Probe ID and temperature are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           // Re-use minTemp/maxTemp from current probe — this is a status-update
           // side-effect, not a threshold change. The command updates lastReading.
           lastReading: temperature,
-          batteryLevel: batteryLevel !== undefined ? batteryLevel : undefined,
+          batteryLevel: batteryLevel === undefined ? undefined : batteryLevel,
         },
         user: { id: userId, tenantId, role: "" },
         instanceId: probeId,
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
     log.error("Create reading error:", error);
     return NextResponse.json(
       { error: "Failed to record reading" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

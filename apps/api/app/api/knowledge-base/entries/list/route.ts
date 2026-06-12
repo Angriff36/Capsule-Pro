@@ -13,18 +13,18 @@ import {
 } from "@/lib/manifest-response";
 
 export interface KnowledgeBaseEntry {
-  id: string;
-  tenantId: string;
-  slug: string;
-  title: string;
-  content: string | null;
-  category: string | null;
-  tags: string[] | null;
-  status: "draft" | "published" | "archived";
   authorId: string | null;
+  category: string | null;
+  content: string | null;
   createdAt: Date;
-  updatedAt: Date;
+  id: string;
   publishedAt: Date | null;
+  slug: string;
+  status: "draft" | "published" | "archived";
+  tags: string[] | null;
+  tenantId: string;
+  title: string;
+  updatedAt: Date;
 }
 
 interface KnowledgeBaseListResponse {

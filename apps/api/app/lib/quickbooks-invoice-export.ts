@@ -9,68 +9,68 @@
  * Invoice data structure for QuickBooks export
  */
 export interface InvoiceRecord {
-  /** Unique invoice number */
-  invoiceNumber: string;
-  /** Customer name (must match QuickBooks customer) */
-  customerName: string;
+  /** Currency code */
+  currency?: string;
   /** Customer email for delivery */
   customerEmail?: string | null;
-  /** Invoice date */
-  invoiceDate: Date;
+  /** Customer name (must match QuickBooks customer) */
+  customerName: string;
+  /** Discount amount */
+  discountAmount: number;
   /** Due date */
   dueDate: Date;
+  /** Invoice date */
+  invoiceDate: Date;
+  /** Unique invoice number */
+  invoiceNumber: string;
   /** Line items on the invoice */
   lineItems: InvoiceLineItem[];
+  /** Memo/notes */
+  memo?: string | null;
   /** Subtotal before tax */
   subtotal: number;
   /** Tax amount */
   taxAmount: number;
-  /** Discount amount */
-  discountAmount: number;
   /** Total amount */
   totalAmount: number;
-  /** Memo/notes */
-  memo?: string | null;
-  /** Currency code */
-  currency?: string;
 }
 
 /**
  * Line item on an invoice
  */
 export interface InvoiceLineItem {
-  /** Item name/ID in QuickBooks */
-  item: string;
+  /** Line amount (quantity * rate) */
+  amount: number;
   /** Description of the line item */
   description: string;
+  /** Item name/ID in QuickBooks */
+  item: string;
   /** Quantity */
   quantity: number;
   /** Unit rate/price */
   rate: number;
-  /** Line amount (quantity * rate) */
-  amount: number;
-  /** Whether the item is taxable */
-  taxable?: boolean;
   /** Service date if different from invoice date */
   serviceDate?: Date | null;
+  /** Whether the item is taxable */
+  taxable?: boolean;
 }
 
 /**
  * Account mappings for QuickBooks invoice export
  */
 export interface QBInvoiceAccountMappings {
-  /** Default income account for service items */
-  incomeAccount: string;
-  /** Tax code for taxable items */
-  taxCode: string;
-  /** Tax code for non-taxable items */
-  nonTaxCode: string;
   /** Default item name for catering services */
   cateringItem: string;
-  /** Default item name for service charges */
-  serviceChargeItem: string;
   /** Default item name for discounts */
   discountItem: string;
+  /** Default income account for service items */
+  incomeAccount: string;
+  /** Tax code for non-taxable items */
+  nonTaxCode: string;
+  /** Default item name for service charges */
+  serviceChargeItem: string;
+  /** Tax code for taxable items */
+  taxCode: string;
 }
 
 /**
@@ -89,12 +89,12 @@ const DEFAULT_QB_INVOICE_MAPPINGS: QBInvoiceAccountMappings = {
  * Export options
  */
 export interface QBInvoiceExportOptions {
-  /** Include header row */
-  includeHeader?: boolean;
-  /** Date format: US (MM/DD/YYYY) or ISO (YYYY-MM-DD) */
-  dateFormat?: "us" | "iso";
   /** Account mappings */
   accountMappings?: Partial<QBInvoiceAccountMappings>;
+  /** Date format: US (MM/DD/YYYY) or ISO (YYYY-MM-DD) */
+  dateFormat?: "us" | "iso";
+  /** Include header row */
+  includeHeader?: boolean;
   /** Payment terms (days) */
   paymentTerms?: number;
 }
@@ -423,9 +423,9 @@ export function exportInvoicesToIIF(
  * Export result
  */
 export interface InvoiceExportResult {
-  format: "qbOnlineCsv" | "iif";
   content: string;
   filename: string;
+  format: "qbOnlineCsv" | "iif";
   mimeType: string;
 }
 

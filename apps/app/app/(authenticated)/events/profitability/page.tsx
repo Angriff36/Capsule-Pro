@@ -16,35 +16,35 @@ import { Header } from "../../components/header";
 import { ProfitabilityPageClient } from "./profitability-page-client";
 
 interface ProfitabilityRow {
-  id: string;
-  tenant_id: string;
-  event_id: string;
-  budgeted_revenue: number;
-  budgeted_food_cost: number;
-  budgeted_labor_cost: number;
-  budgeted_overhead: number;
-  budgeted_total_cost: number;
-  budgeted_gross_margin: number;
-  budgeted_gross_margin_pct: number;
-  actual_revenue: number;
   actual_food_cost: number;
-  actual_labor_cost: number;
-  actual_overhead: number;
-  actual_total_cost: number;
   actual_gross_margin: number;
   actual_gross_margin_pct: number;
-  revenue_variance: number;
-  food_cost_variance: number;
-  labor_cost_variance: number;
-  total_cost_variance: number;
-  margin_variance_pct: number;
+  actual_labor_cost: number;
+  actual_overhead: number;
+  actual_revenue: number;
+  actual_total_cost: number;
+  budgeted_food_cost: number;
+  budgeted_gross_margin: number;
+  budgeted_gross_margin_pct: number;
+  budgeted_labor_cost: number;
+  budgeted_overhead: number;
+  budgeted_revenue: number;
+  budgeted_total_cost: number;
   calculated_at: Date;
   calculation_method: string;
-  notes: string | null;
   created_at: Date;
-  updated_at: Date;
-  event_title: string | null;
   event_date: Date | null;
+  event_id: string;
+  event_title: string | null;
+  food_cost_variance: number;
+  id: string;
+  labor_cost_variance: number;
+  margin_variance_pct: number;
+  notes: string | null;
+  revenue_variance: number;
+  tenant_id: string;
+  total_cost_variance: number;
+  updated_at: Date;
 }
 
 const EventProfitabilityPage = async () => {
@@ -184,7 +184,7 @@ const EventProfitabilityPage = async () => {
 
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Event Profitability
           </h1>
           <p className="text-muted-foreground">

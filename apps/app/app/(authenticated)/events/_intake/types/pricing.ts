@@ -1,50 +1,50 @@
 export interface PerPersonRange {
+  high: number;
   label: string;
   low: number;
-  high: number;
 }
 
 export interface ServiceStyleModifier {
   label: string;
-  multiplierLow: number;
   multiplierHigh: number;
+  multiplierLow: number;
 }
 
 export interface StaffingModifier {
   label: string;
-  perPersonAddonLow: number;
   perPersonAddonHigh: number;
+  perPersonAddonLow: number;
 }
 
 export interface BarModifier {
   label: string;
-  perPersonLow: number;
   perPersonHigh: number;
+  perPersonLow: number;
 }
 
 export interface RentalAddon {
-  label: string;
-  flatFeeLow: number;
   flatFeeHigh: number;
+  flatFeeLow: number;
+  label: string;
 }
 
 export interface AddOnItem {
   label: string;
-  perPersonLow: number;
   perPersonHigh: number;
+  perPersonLow: number;
 }
 
 export interface PricingRules {
-  basePerPerson: PerPersonRange[];
-  serviceStyleModifiers: Record<string, ServiceStyleModifier>;
-  staffingModifiers: Record<string, StaffingModifier>;
-  barModifiers: Record<string, BarModifier>;
-  rentalAddons: Record<string, RentalAddon>;
   addOnItems: Record<string, AddOnItem>;
+  barModifiers: Record<string, BarModifier>;
+  basePerPerson: PerPersonRange[];
   courseCountModifier: {
     baseCount: number;
     perExtraCourseLow: number;
     perExtraCourseHigh: number;
   };
   minimumSpend: number;
+  rentalAddons: Record<string, RentalAddon>;
+  serviceStyleModifiers: Record<string, ServiceStyleModifier>;
+  staffingModifiers: Record<string, StaffingModifier>;
 }

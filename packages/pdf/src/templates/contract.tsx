@@ -1,5 +1,11 @@
-import { Document, Page, StyleSheet, Text, View } from "../lib/react-pdf-primitives";
 import type React from "react";
+import {
+  Document,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "../lib/react-pdf-primitives";
 import type { ContractPDFData } from "../types";
 
 const styles = StyleSheet.create({
@@ -188,13 +194,12 @@ interface ContractPDFProps {
  * - Expiration information
  */
 export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
 
   const formatDateTime = (date: Date) => {
     const d = new Date(date);
@@ -229,9 +234,8 @@ export const ContractPDF: React.FC<ContractPDFProps> = ({ data }) => {
     }
   };
 
-  const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
+  const formatStatus = (status: string) =>
+    status.charAt(0).toUpperCase() + status.slice(1);
 
   const isExpired = data.contract.expiresAt
     ? new Date(data.contract.expiresAt) < new Date()

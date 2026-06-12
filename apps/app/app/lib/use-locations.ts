@@ -13,18 +13,18 @@ import { apiFetch } from "@/app/lib/api";
 // ============================================================================
 
 export interface TenantLocation {
-  id: string;
-  name: string;
   address_line_1: string | null;
   address_line_2: string | null;
   city: string | null;
-  state_province: string | null;
-  postal_code: string | null;
   country_code: string | null;
-  timezone: string | null;
-  is_primary: boolean;
-  is_active: boolean;
   created_at: Date;
+  id: string;
+  is_active: boolean;
+  is_primary: boolean;
+  name: string;
+  postal_code: string | null;
+  state_province: string | null;
+  timezone: string | null;
   updated_at: Date;
 }
 

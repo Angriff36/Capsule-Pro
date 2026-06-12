@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
       if (staff.length > 0) {
         const tempStr =
-          temperature != null ? `${Number(temperature).toFixed(1)}°F` : "N/A";
+          temperature == null ? "N/A" : `${Number(temperature).toFixed(1)}°F`;
         const subject = `[IoT Alert] ${alertType} — ${probeId ?? "Unknown probe"}`;
         const emailBody = [
           "<h2>IoT Temperature Alert</h2>",

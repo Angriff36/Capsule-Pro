@@ -18,7 +18,7 @@ const getSentryEnvironment = (): string | undefined => {
     return nodeEnv;
   }
 
-  return undefined;
+  return;
 };
 
 init({

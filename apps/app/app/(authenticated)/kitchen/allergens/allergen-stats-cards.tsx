@@ -18,18 +18,18 @@ import {
 } from "lucide-react";
 
 interface AllergenStats {
-  recipesWithAllergens: number;
-  dishesWithAllergens: number;
   activeGuestRestrictions: number;
+  dishesWithAllergens: number;
   pendingWarnings: number;
+  recipesWithAllergens: number;
 }
 
 interface StatCard {
+  bgColor: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  bgColor: string;
 }
 
 export function AllergenStatsCards({ stats }: { stats: AllergenStats }) {
@@ -70,12 +70,12 @@ export function AllergenStatsCards({ stats }: { stats: AllergenStats }) {
         <Card key={card.title} tone="soft-stone">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-lg ${card.bgColor}`}>
+              <div className={`rounded-lg p-3 ${card.bgColor}`}>
                 <card.icon className={`h-6 w-6 ${card.color}`} />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">{card.title}</p>
-                <p className="text-2xl font-bold">{card.value}</p>
+                <p className="font-bold text-2xl">{card.value}</p>
               </div>
             </div>
           </CardContent>

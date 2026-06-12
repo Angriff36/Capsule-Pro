@@ -67,11 +67,15 @@ const opts = {
 };
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
-  if (a === "--strict") opts.strict = true;
-  else if (a === "--json") opts.json = args[++i];
-  else if (a === "--md") opts.md = args[++i];
-  else if (a === "--root") opts.root = path.resolve(args[++i]);
-  else if (a === "-h" || a === "--help") {
+  if (a === "--strict") {
+    opts.strict = true;
+  } else if (a === "--json") {
+    opts.json = args[++i];
+  } else if (a === "--md") {
+    opts.md = args[++i];
+  } else if (a === "--root") {
+    opts.root = path.resolve(args[++i]);
+  } else if (a === "-h" || a === "--help") {
     console.log(
       "Usage: node scripts/manifest/audit-direct-writes.mjs [--strict] [--json path] [--md path] [--root dir]"
     );
@@ -203,7 +207,9 @@ async function walk(dir, acc) {
     return acc;
   }
   for (const ent of entries) {
-    if (SKIP_DIRS.has(ent.name)) continue;
+    if (SKIP_DIRS.has(ent.name)) {
+      continue;
+    }
     const full = path.join(dir, ent.name);
     if (ent.isDirectory()) {
       await walk(full, acc);
@@ -226,18 +232,42 @@ function classify(relPath) {
 function classifySurface(relPath) {
   // Coarse surface bucket for grouping in the report.
   const p = relPath.replace(/\\/g, "/");
-  if (p.startsWith("apps/api/app/api/")) return "apps/api route";
-  if (p.startsWith("apps/api/app/lib/")) return "apps/api lib helper";
-  if (p.startsWith("apps/api/lib/")) return "apps/api lib helper";
-  if (p.startsWith("apps/api/")) return "apps/api other";
-  if (p.includes("apps/app/app/(authenticated)/")) return "apps/app server action";
-  if (p.includes("apps/app/app/(unauthenticated)/")) return "apps/app unauthenticated";
-  if (p.startsWith("apps/app/app/lib/")) return "apps/app lib helper";
-  if (p.startsWith("apps/app/lib/")) return "apps/app lib helper";
-  if (p.startsWith("apps/app/")) return "apps/app other";
-  if (p.startsWith("apps/mobile/")) return "apps/mobile";
-  if (p.startsWith("apps/web/")) return "apps/web";
-  if (p.startsWith("packages/")) return "packages";
+  if (p.startsWith("apps/api/app/api/")) {
+    return "apps/api route";
+  }
+  if (p.startsWith("apps/api/app/lib/")) {
+    return "apps/api lib helper";
+  }
+  if (p.startsWith("apps/api/lib/")) {
+    return "apps/api lib helper";
+  }
+  if (p.startsWith("apps/api/")) {
+    return "apps/api other";
+  }
+  if (p.includes("apps/app/app/(authenticated)/")) {
+    return "apps/app server action";
+  }
+  if (p.includes("apps/app/app/(unauthenticated)/")) {
+    return "apps/app unauthenticated";
+  }
+  if (p.startsWith("apps/app/app/lib/")) {
+    return "apps/app lib helper";
+  }
+  if (p.startsWith("apps/app/lib/")) {
+    return "apps/app lib helper";
+  }
+  if (p.startsWith("apps/app/")) {
+    return "apps/app other";
+  }
+  if (p.startsWith("apps/mobile/")) {
+    return "apps/mobile";
+  }
+  if (p.startsWith("apps/web/")) {
+    return "apps/web";
+  }
+  if (p.startsWith("packages/")) {
+    return "packages";
+  }
   return "other";
 }
 
@@ -245,7 +275,9 @@ function routePath(relPath) {
   // Convert an apps/{api,app}/app/api/.../route.ts path to a URL surface.
   const p = relPath.replace(/\\/g, "/");
   const m = p.match(/^apps\/(api|app)\/app\/api\/(.+)\/route\.ts$/);
-  if (!m) return null;
+  if (!m) {
+    return null;
+  }
   return "/api/" + m[2];
 }
 
@@ -277,7 +309,9 @@ async function scanFile(absPath) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trimStart();
-    if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue;
+    if (trimmed.startsWith("//") || trimmed.startsWith("*")) {
+      continue;
+    }
     DIRECT_WRITE_RE.lastIndex = 0;
     let m;
     while ((m = DIRECT_WRITE_RE.exec(line)) !== null) {
@@ -304,10 +338,14 @@ async function readJsonSafe(filePath) {
 }
 
 function loadBypassPaths(bypassDoc) {
-  if (!bypassDoc || !Array.isArray(bypassDoc.bypasses)) return new Set();
+  if (!(bypassDoc && Array.isArray(bypassDoc.bypasses))) {
+    return new Set();
+  }
   const set = new Set();
   for (const entry of bypassDoc.bypasses) {
-    if (typeof entry?.path === "string") set.add(entry.path);
+    if (typeof entry?.path === "string") {
+      set.add(entry.path);
+    }
   }
   return set;
 }
@@ -325,19 +363,29 @@ function loadBypassPaths(bypassDoc) {
 function buildGovernedModelMap(entitiesDoc) {
   /** @type {Map<string, string>} prismaModelKey → entityName */
   const map = new Map();
-  if (!entitiesDoc || !Array.isArray(entitiesDoc.entities)) return map;
+  if (!(entitiesDoc && Array.isArray(entitiesDoc.entities))) {
+    return map;
+  }
   for (const e of entitiesDoc.entities) {
-    if (typeof e?.name !== "string") continue;
-    if (e.classification && e.classification !== "governed") continue;
+    if (typeof e?.name !== "string") {
+      continue;
+    }
+    if (e.classification && e.classification !== "governed") {
+      continue;
+    }
     const name = e.name;
     // Form 1: PascalCase first letter lowered.
     const camel = name.charAt(0).toLowerCase() + name.slice(1);
     map.set(camel, name);
     // Form 2: snake_case (lowercase, _ between words).
     const snake = name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
-    if (!map.has(snake)) map.set(snake, name);
+    if (!map.has(snake)) {
+      map.set(snake, name);
+    }
     // Form 3: plural snake_case (Capsule sometimes pluralizes table models).
-    if (!map.has(snake + "s")) map.set(snake + "s", name);
+    if (!map.has(snake + "s")) {
+      map.set(snake + "s", name);
+    }
   }
   return map;
 }
@@ -367,14 +415,18 @@ async function main() {
   let totalHits = 0;
   for (const abs of files) {
     const { rel, hits, deprecatedAlias } = await scanFile(abs);
-    if (hits.length === 0) continue;
+    if (hits.length === 0) {
+      continue;
+    }
     totalHits += hits.length;
     // Tag each hit with the governed entity name when the model maps to one.
     let fileTouchesGoverned = false;
     for (const h of hits) {
       const entity = governedModels.get(h.model) ?? null;
       h.governedEntity = entity;
-      if (entity) fileTouchesGoverned = true;
+      if (entity) {
+        fileTouchesGoverned = true;
+      }
     }
     const cls = classify(rel);
     findings.push({
@@ -403,9 +455,15 @@ async function main() {
   // constitution per §"Direct-write rules" (writes against governed entities
   // outside the runtime). Non-governed direct writes are allowed by the
   // constitution and are reported only for visibility.
-  const reportedAliasGoverned = reportedAlias.filter((f) => f.touchesGovernedEntity);
-  const reportedNoAliasGoverned = reportedNoAlias.filter((f) => f.touchesGovernedEntity);
-  const reportedNoAliasUngoverned = reportedNoAlias.filter((f) => !f.touchesGovernedEntity);
+  const reportedAliasGoverned = reportedAlias.filter(
+    (f) => f.touchesGovernedEntity
+  );
+  const reportedNoAliasGoverned = reportedNoAlias.filter(
+    (f) => f.touchesGovernedEntity
+  );
+  const reportedNoAliasUngoverned = reportedNoAlias.filter(
+    (f) => !f.touchesGovernedEntity
+  );
 
   // ----- JSON report -----
   await fs.mkdir(path.dirname(JSON_OUT), { recursive: true });
@@ -454,7 +512,9 @@ async function main() {
   md.push(`- Files scanned: ${summary.totals.filesScanned}`);
   md.push(`- Files with hits: ${summary.totals.filesWithHits}`);
   md.push(`- Total hits: ${summary.totals.totalHits}`);
-  md.push(`- Allowed (allowlist / test / runtime): ${summary.totals.allowedFiles}`);
+  md.push(
+    `- Allowed (allowlist / test / runtime): ${summary.totals.allowedFiles}`
+  );
   md.push(`- Reported (need review): ${summary.totals.reportedFiles}`);
   md.push(
     `  - With \`DEPRECATED ALIAS\` marker: ${summary.totals.reportedDeprecatedAliasFiles}` +
@@ -482,7 +542,9 @@ async function main() {
     md.push(`### \`${f.file}\``);
     md.push("");
     md.push(`- Surface: ${f.surface}`);
-    if (f.route) md.push(`- Route: \`${f.route}\``);
+    if (f.route) {
+      md.push(`- Route: \`${f.route}\``);
+    }
     md.push(`- Hits: ${f.hits.length}`);
     for (const h of f.hits) {
       const gov = h.governedEntity ? ` [governed: ${h.governedEntity}]` : "";
@@ -506,7 +568,9 @@ async function main() {
         "`bypasses.json` with a real `whyRuntimeNotRequired`."
     );
     md.push("");
-    for (const f of reportedNoAliasGoverned) writeFinding(f);
+    for (const f of reportedNoAliasGoverned) {
+      writeFinding(f);
+    }
   }
 
   if (reportedAliasGoverned.length > 0) {
@@ -519,7 +583,9 @@ async function main() {
         "in-file blocker. This is the natural migration backlog."
     );
     md.push("");
-    for (const f of reportedAliasGoverned) writeFinding(f);
+    for (const f of reportedAliasGoverned) {
+      writeFinding(f);
+    }
   }
 
   if (reportedNoAliasUngoverned.length > 0) {
@@ -609,8 +675,12 @@ async function main() {
   process.stdout.write(
     `[direct-write-audit] Governed entity model keys (camel + snake forms): ${summary.totals.governedEntityModelKeys}\n`
   );
-  process.stdout.write(`[direct-write-audit] JSON: ${path.relative(ROOT, JSON_OUT)}\n`);
-  process.stdout.write(`[direct-write-audit] MD:   ${path.relative(ROOT, MD_OUT)}\n`);
+  process.stdout.write(
+    `[direct-write-audit] JSON: ${path.relative(ROOT, JSON_OUT)}\n`
+  );
+  process.stdout.write(
+    `[direct-write-audit] MD:   ${path.relative(ROOT, MD_OUT)}\n`
+  );
 
   if (opts.strict) {
     // Strict = any governed-entity hit that is neither in an alias shim

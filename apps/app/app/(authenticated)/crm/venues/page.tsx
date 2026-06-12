@@ -72,7 +72,7 @@ export default async function CrmVenuesPage() {
 
       <OperationalColumn>
         <SectionHeader
-          count={`${venues.length} venue${venues.length !== 1 ? "s" : ""}`}
+          count={`${venues.length} venue${venues.length === 1 ? "" : "s"}`}
           description={`${activeCount} active — registered venues and event sites.`}
           eyebrow="Sites"
           title="Your Venues"
@@ -94,7 +94,7 @@ export default async function CrmVenuesPage() {
                 key={venue.id}
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-canvas text-ink border border-hairline">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-hairline bg-canvas text-ink">
                     <Building2 className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ export default async function CrmVenuesPage() {
                         <Badge variant="secondary">Inactive</Badge>
                       )}
                     </div>
-                    <div className="space-y-0.5 text-sm text-muted-foreground">
+                    <div className="space-y-0.5 text-muted-foreground text-sm">
                       {venue.city || venue.stateProvince ? (
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />

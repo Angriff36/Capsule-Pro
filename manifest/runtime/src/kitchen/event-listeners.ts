@@ -5,7 +5,7 @@
  * and retrieve emitted event logs
  */
 
-import type { RuntimeEngine, EmittedEvent } from "@angriff36/manifest";
+import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 
 /**
  * Setup event listeners for kitchen operations

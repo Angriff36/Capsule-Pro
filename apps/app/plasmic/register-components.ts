@@ -56,9 +56,9 @@ import * as Tooltip from "@repo/design-system/components/ui/tooltip";
 import type { ComponentType } from "react";
 
 interface RegisterMeta {
-  name: string;
-  importPath: string;
   importName: string;
+  importPath: string;
+  name: string;
   props?: Record<string, unknown>;
   withChildren?: boolean;
 }

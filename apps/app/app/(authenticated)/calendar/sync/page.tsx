@@ -29,14 +29,14 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface SyncStatus {
-  id: string;
-  provider: string;
   calendarName: string | null;
-  status: string;
-  lastSyncAt: string | null;
-  lastSyncStatus: string | null;
-  lastSyncError: string | null;
   enabled: boolean;
+  id: string;
+  lastSyncAt: string | null;
+  lastSyncError: string | null;
+  lastSyncStatus: string | null;
+  provider: string;
+  status: string;
 }
 
 const PROVIDERS = [
@@ -169,9 +169,8 @@ export default function CalendarSyncPage() {
     }
   };
 
-  const getSyncForProvider = (providerId: string): SyncStatus | undefined => {
-    return syncs.find((s) => s.provider === providerId);
-  };
+  const getSyncForProvider = (providerId: string): SyncStatus | undefined =>
+    syncs.find((s) => s.provider === providerId);
 
   const getStatusBadge = (sync: SyncStatus | undefined) => {
     if (!sync || sync.status === "disconnected") {
@@ -196,7 +195,7 @@ export default function CalendarSyncPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Calendar Sync
           </h1>
         </div>
@@ -262,7 +261,7 @@ export default function CalendarSyncPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {sync?.lastSyncAt && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Last synced: {new Date(sync.lastSyncAt).toLocaleString()}
                       {sync.lastSyncStatus && (
                         <span className="ml-2">({sync.lastSyncStatus})</span>
@@ -270,12 +269,12 @@ export default function CalendarSyncPage() {
                     </div>
                   )}
                   {sync?.lastSyncError && (
-                    <div className="text-sm text-red-600">
+                    <div className="text-red-600 text-sm">
                       Error: {sync.lastSyncError}
                     </div>
                   )}
                   {sync?.calendarName && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Calendar: {sync.calendarName}
                     </div>
                   )}
@@ -335,7 +334,7 @@ export default function CalendarSyncPage() {
         <CardHeader>
           <CardTitle className="text-lg">Setup Instructions</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
+        <CardContent className="space-y-4 text-muted-foreground text-sm">
           <p>
             <strong>Google Calendar:</strong>
           </p>
@@ -354,16 +353,16 @@ export default function CalendarSyncPage() {
             <li>Create OAuth 2.0 credentials</li>
             <li>
               Add the redirect URI:{" "}
-              <code className="bg-muted rounded px-1">
+              <code className="rounded bg-muted px-1">
                 {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:2221"}
                 /api/calendar/sync/callback/google
               </code>
             </li>
             <li>
               Set{" "}
-              <code className="bg-muted rounded px-1">GOOGLE_CLIENT_ID</code>{" "}
+              <code className="rounded bg-muted px-1">GOOGLE_CLIENT_ID</code>{" "}
               and{" "}
-              <code className="bg-muted rounded px-1">
+              <code className="rounded bg-muted px-1">
                 GOOGLE_CLIENT_SECRET
               </code>{" "}
               in your environment
@@ -388,16 +387,16 @@ export default function CalendarSyncPage() {
             <li>Register a new application</li>
             <li>
               Add the redirect URI:{" "}
-              <code className="bg-muted rounded px-1">
+              <code className="rounded bg-muted px-1">
                 {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:2221"}
                 /api/calendar/sync/callback/outlook
               </code>
             </li>
             <li>
               Set{" "}
-              <code className="bg-muted rounded px-1">MICROSOFT_CLIENT_ID</code>{" "}
+              <code className="rounded bg-muted px-1">MICROSOFT_CLIENT_ID</code>{" "}
               and{" "}
-              <code className="bg-muted rounded px-1">
+              <code className="rounded bg-muted px-1">
                 MICROSOFT_CLIENT_SECRET
               </code>{" "}
               in your environment

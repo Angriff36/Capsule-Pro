@@ -37,14 +37,24 @@ vi.mock("@/lib/manifest-response", async () => {
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
       NextResponse.json(
-        { success: true, ...(typeof data === "object" && data !== null ? data : { data }) },
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
         { status }
       ),
-    manifestErrorResponse: (message: string | { error: string; diagnostics?: unknown[] }, status: number) =>
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) =>
       NextResponse.json(
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
@@ -54,14 +64,22 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
-    if (!condition) { const err = new Error(message); err.name = "InvariantError"; throw err; }
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
   },
 }));
 
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
 const { requireCurrentUser } = await import("@/app/lib/tenant");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
@@ -88,7 +106,10 @@ const TEST_CURRENT_USER = {
   lastName: "User",
 };
 
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: RequestInit = {}
+): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
@@ -100,14 +121,19 @@ function createMockRequest(url: string, options: RequestInit = {}): NextRequest 
 
 function ok(data: Record<string, unknown>) {
   return new Response(JSON.stringify({ success: true, ...data }), {
-    status: 200, headers: { "Content-Type": "application/json" },
+    status: 200,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
 function fail(status: number, message: string, diagnostics?: unknown[]) {
-  return new Response(JSON.stringify({ success: false, message, diagnostics: diagnostics ?? [] }), {
-    status, headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ success: false, message, diagnostics: diagnostics ?? [] }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
 
 describe("EventBudget Command Routes", () => {
@@ -126,9 +152,13 @@ describe("EventBudget Command Routes", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
 
       expect(response.status).toBe(401);
@@ -138,21 +168,32 @@ describe("EventBudget Command Routes", () => {
 
     it("should create budget and return 200 with result on success", async () => {
       const budgetResult = {
-        id: TEST_BUDGET_ID, tenantId: TEST_TENANT_ID,
-        eventId: TEST_EVENT_ID, version: 1, status: "draft", totalBudgetAmount: 5000,
+        id: TEST_BUDGET_ID,
+        tenantId: TEST_TENANT_ID,
+        eventId: TEST_EVENT_ID,
+        version: 1,
+        status: "draft",
+        totalBudgetAmount: 5000,
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
         ok({ result: budgetResult, events: [{ type: "EventBudgetCreated" }] })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST",
-        body: JSON.stringify({
-          eventId: TEST_EVENT_ID, totalBudgetAmount: 5000, status: "draft",
-          notes: "Q4 event budget",
-          lineItems: [{ category: "food", name: "Catering", budgetedAmount: 2000 }],
-        }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            totalBudgetAmount: 5000,
+            status: "draft",
+            notes: "Q4 event budget",
+            lineItems: [
+              { category: "food", name: "Catering", budgetedAmount: 2000 },
+            ],
+          }),
+        }
+      );
       const response = await createPOST(request);
       const data = await response.json();
 
@@ -165,18 +206,27 @@ describe("EventBudget Command Routes", () => {
         expect.objectContaining({
           entity: "EventBudget",
           command: "create",
-          body: expect.objectContaining({ eventId: TEST_EVENT_ID, totalBudgetAmount: 5000 }),
+          body: expect.objectContaining({
+            eventId: TEST_EVENT_ID,
+            totalBudgetAmount: 5000,
+          }),
           user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
         })
       );
     });
 
     it("should return 403 on policy denial", async () => {
-      vi.mocked(runManifestCommand).mockResolvedValue(fail(403, "Access denied: BudgetManagerOnly"));
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        fail(403, "Access denied: BudgetManagerOnly")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
 
       expect(response.status).toBe(403);
@@ -187,9 +237,13 @@ describe("EventBudget Command Routes", () => {
         fail(422, "Guard failed: Event must be in draft status")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
 
       expect(response.status).toBe(422);
@@ -200,20 +254,30 @@ describe("EventBudget Command Routes", () => {
         fail(400, "Budget already exists for this event")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
 
       expect(response.status).toBe(400);
     });
 
     it("should return 500 when runtime throws an exception", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Database connection lost"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Database connection lost")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
 
       expect(response.status).toBe(500);
@@ -227,9 +291,13 @@ describe("EventBudget Command Routes", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/update", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID, totalBudgetAmount: 7000 }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID, totalBudgetAmount: 7000 }),
+        }
+      );
       const response = await updatePOST(request);
 
       expect(response.status).toBe(401);
@@ -237,18 +305,29 @@ describe("EventBudget Command Routes", () => {
 
     it("should update budget and return 200 on success", async () => {
       const updatedResult = {
-        id: TEST_BUDGET_ID, tenantId: TEST_TENANT_ID,
-        eventId: TEST_EVENT_ID, version: 2, status: "draft",
-        totalBudgetAmount: 7000, notes: "Revised budget",
+        id: TEST_BUDGET_ID,
+        tenantId: TEST_TENANT_ID,
+        eventId: TEST_EVENT_ID,
+        version: 2,
+        status: "draft",
+        totalBudgetAmount: 7000,
+        notes: "Revised budget",
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
         ok({ result: updatedResult, events: [{ type: "EventBudgetUpdated" }] })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/update", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_BUDGET_ID, totalBudgetAmount: 7000, notes: "Revised budget" }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_BUDGET_ID,
+            totalBudgetAmount: 7000,
+            notes: "Revised budget",
+          }),
+        }
+      );
       const response = await updatePOST(request);
       const data = await response.json();
 
@@ -260,7 +339,10 @@ describe("EventBudget Command Routes", () => {
         expect.objectContaining({
           entity: "EventBudget",
           command: "update",
-          body: expect.objectContaining({ id: TEST_BUDGET_ID, totalBudgetAmount: 7000 }),
+          body: expect.objectContaining({
+            id: TEST_BUDGET_ID,
+            totalBudgetAmount: 7000,
+          }),
         })
       );
     });
@@ -270,9 +352,13 @@ describe("EventBudget Command Routes", () => {
         ok({ result: { id: TEST_BUDGET_ID }, events: [] })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/update", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID, notes: "Updated" }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID, notes: "Updated" }),
+        }
+      );
       await updatePOST(request);
 
       expect(runManifestCommand).toHaveBeenCalledWith(
@@ -287,20 +373,30 @@ describe("EventBudget Command Routes", () => {
         fail(422, "Guard failed: Cannot update a finalized budget")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/update", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID, totalBudgetAmount: 9999 }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID, totalBudgetAmount: 9999 }),
+        }
+      );
       const response = await updatePOST(request);
 
       expect(response.status).toBe(422);
     });
 
     it("should return 500 when runtime throws during update", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Unexpected DB error"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Unexpected DB error")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/update", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await updatePOST(request);
 
       expect(response.status).toBe(500);
@@ -314,9 +410,13 @@ describe("EventBudget Command Routes", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await approvePOST(request);
 
       expect(response.status).toBe(401);
@@ -324,17 +424,27 @@ describe("EventBudget Command Routes", () => {
 
     it("should approve budget and return 200 on success", async () => {
       const approvedResult = {
-        id: TEST_BUDGET_ID, tenantId: TEST_TENANT_ID,
-        eventId: TEST_EVENT_ID, status: "approved",
-        approvedBy: TEST_USER_ID, approvedAt: new Date().toISOString(),
+        id: TEST_BUDGET_ID,
+        tenantId: TEST_TENANT_ID,
+        eventId: TEST_EVENT_ID,
+        status: "approved",
+        approvedBy: TEST_USER_ID,
+        approvedAt: new Date().toISOString(),
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        ok({ result: approvedResult, events: [{ type: "EventBudgetApproved" }] })
+        ok({
+          result: approvedResult,
+          events: [{ type: "EventBudgetApproved" }],
+        })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await approvePOST(request);
       const data = await response.json();
 
@@ -356,9 +466,13 @@ describe("EventBudget Command Routes", () => {
         fail(403, "Access denied: BudgetApproverRole")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await approvePOST(request);
 
       expect(response.status).toBe(403);
@@ -369,31 +483,47 @@ describe("EventBudget Command Routes", () => {
         fail(422, "Guard failed: Budget must have at least one line item")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await approvePOST(request);
 
       expect(response.status).toBe(422);
     });
 
     it("should return 400 when budget not found for approval", async () => {
-      vi.mocked(runManifestCommand).mockResolvedValue(fail(400, "Budget not found"));
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        fail(400, "Budget not found")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: "nonexistent-id" }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: "nonexistent-id" }),
+        }
+      );
       const response = await approvePOST(request);
 
       expect(response.status).toBe(400);
     });
 
     it("should return 500 when runtime throws during approval", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Connection timeout"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Connection timeout")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/approve", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/approve",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await approvePOST(request);
 
       expect(response.status).toBe(500);
@@ -407,9 +537,13 @@ describe("EventBudget Command Routes", () => {
       authError.name = "InvariantError";
       vi.mocked(requireCurrentUser).mockRejectedValue(authError);
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await finalizePOST(request);
 
       expect(response.status).toBe(401);
@@ -417,18 +551,29 @@ describe("EventBudget Command Routes", () => {
 
     it("should finalize budget and return 200 on success", async () => {
       const finalizedResult = {
-        id: TEST_BUDGET_ID, tenantId: TEST_TENANT_ID,
-        eventId: TEST_EVENT_ID, status: "finalized",
-        finalizedBy: TEST_USER_ID, finalizedAt: new Date().toISOString(),
-        totalActualAmount: 4800, varianceAmount: 200,
+        id: TEST_BUDGET_ID,
+        tenantId: TEST_TENANT_ID,
+        eventId: TEST_EVENT_ID,
+        status: "finalized",
+        finalizedBy: TEST_USER_ID,
+        finalizedAt: new Date().toISOString(),
+        totalActualAmount: 4800,
+        varianceAmount: 200,
       };
       vi.mocked(runManifestCommand).mockResolvedValue(
-        ok({ result: finalizedResult, events: [{ type: "EventBudgetFinalized" }] })
+        ok({
+          result: finalizedResult,
+          events: [{ type: "EventBudgetFinalized" }],
+        })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await finalizePOST(request);
       const data = await response.json();
 
@@ -450,9 +595,13 @@ describe("EventBudget Command Routes", () => {
         ok({ result: { id: TEST_BUDGET_ID, status: "finalized" }, events: [] })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       await finalizePOST(request);
 
       expect(runManifestCommand).toHaveBeenCalledWith(
@@ -467,9 +616,13 @@ describe("EventBudget Command Routes", () => {
         fail(403, "Access denied: FinanceAdminOnly")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await finalizePOST(request);
 
       expect(response.status).toBe(403);
@@ -480,20 +633,30 @@ describe("EventBudget Command Routes", () => {
         fail(422, "Guard failed: Budget must be in approved status")
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await finalizePOST(request);
 
       expect(response.status).toBe(422);
     });
 
     it("should return 500 when runtime throws during finalization", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Transaction deadlock"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Transaction deadlock")
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/finalize", {
-        method: "POST", body: JSON.stringify({ id: TEST_BUDGET_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/finalize",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_BUDGET_ID }),
+        }
+      );
       const response = await finalizePOST(request);
 
       expect(response.status).toBe(500);
@@ -504,12 +667,19 @@ describe("EventBudget Command Routes", () => {
   describe("Response shape and error handling", () => {
     it("success responses should contain success and result", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        ok({ result: { id: TEST_BUDGET_ID, status: "draft" }, events: [{ type: "EventBudgetCreated" }] })
+        ok({
+          result: { id: TEST_BUDGET_ID, status: "draft" },
+          events: [{ type: "EventBudgetCreated" }],
+        })
       );
 
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const response = await createPOST(request);
       const data = await response.json();
 
@@ -518,9 +688,13 @@ describe("EventBudget Command Routes", () => {
     });
 
     it("should handle malformed JSON body gracefully (swallowed by dispatcher)", async () => {
-      const request = createMockRequest("http://localhost:3000/api/eventbudget/create", {
-        method: "POST", body: "not valid json {{{",
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/eventbudget/create",
+        {
+          method: "POST",
+          body: "not valid json {{{",
+        }
+      );
       const response = await createPOST(request);
 
       // Dispatcher uses request.json().catch(() => ({})) so invalid JSON becomes empty body

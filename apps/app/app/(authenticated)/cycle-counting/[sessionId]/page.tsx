@@ -62,14 +62,14 @@ export default async function SessionPage({
     <div className="p-6">
       <div className="mb-6">
         <button
-          className="text-gray-600 hover:text-gray-900 mb-4"
+          className="mb-4 text-gray-600 hover:text-gray-900"
           onClick={() => redirect("/cycle-counting")}
           type="button"
         >
           ← Back to Sessions
         </button>
 
-        <h1 className="text-2xl font-semibold tracking-tight mb-2">
+        <h1 className="mb-2 font-semibold text-2xl tracking-tight">
           {session.sessionName}
         </h1>
 
@@ -83,13 +83,13 @@ export default async function SessionPage({
         <form action={handleSubmit} className="space-y-4">
           <div>
             <label
-              className="block text-sm font-medium mb-2"
+              className="mb-2 block font-medium text-sm"
               htmlFor="itemNumber"
             >
               Item Number
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemNumber"
               name="itemNumber"
               placeholder="Enter item number"
@@ -100,13 +100,13 @@ export default async function SessionPage({
 
           <div>
             <label
-              className="block text-sm font-medium mb-2"
+              className="mb-2 block font-medium text-sm"
               htmlFor="itemName"
             >
               Item Name
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemName"
               name="itemName"
               placeholder="Enter item name"
@@ -117,13 +117,13 @@ export default async function SessionPage({
 
           <div>
             <label
-              className="block text-sm font-medium mb-2"
+              className="mb-2 block font-medium text-sm"
               htmlFor="expectedQuantity"
             >
               Expected Quantity
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="expectedQuantity"
               name="expectedQuantity"
               placeholder="Enter expected quantity"
@@ -135,13 +135,13 @@ export default async function SessionPage({
 
           <div>
             <label
-              className="block text-sm font-medium mb-2"
+              className="mb-2 block font-medium text-sm"
               htmlFor="countedQuantity"
             >
               Counted Quantity
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="countedQuantity"
               name="countedQuantity"
               placeholder="Enter counted quantity"
@@ -152,11 +152,11 @@ export default async function SessionPage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="barcode">
+            <label className="mb-2 block font-medium text-sm" htmlFor="barcode">
               Barcode (optional)
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="barcode"
               name="barcode"
               placeholder="Scan or enter barcode"
@@ -165,11 +165,11 @@ export default async function SessionPage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="notes">
+            <label className="mb-2 block font-medium text-sm" htmlFor="notes">
               Notes (optional)
             </label>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-sm border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="notes"
               name="notes"
               placeholder="Optional notes..."
@@ -178,7 +178,7 @@ export default async function SessionPage({
           </div>
 
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-sm bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             formAction="submit"
             type="submit"
           >
@@ -187,10 +187,10 @@ export default async function SessionPage({
         </form>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Count Records</h2>
+          <h2 className="mb-4 font-semibold text-xl">Count Records</h2>
 
           {records.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="py-12 text-center text-gray-500">
               No count records yet. Start counting items.
             </div>
           ) : (

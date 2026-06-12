@@ -29,7 +29,9 @@ function isNextHTTPErrorFallback(error: unknown): boolean {
  */
 const Error = ({ error, reset }: ErrorProperties) => {
   useEffect(() => {
-    if (isNextHTTPErrorFallback(error)) return;
+    if (isNextHTTPErrorFallback(error)) {
+      return;
+    }
     // Log to Sentry with additional context
     captureException(error, {
       tags: {
@@ -43,8 +45,8 @@ const Error = ({ error, reset }: ErrorProperties) => {
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-semibold">Something went wrong</h1>
-      <p className="text-muted-foreground max-w-md">
+      <h1 className="font-semibold text-2xl">Something went wrong</h1>
+      <p className="max-w-md text-muted-foreground">
         We encountered an unexpected error. Please try again or contact support
         if the problem persists.
       </p>

@@ -31,11 +31,11 @@ export default defineConfig({
         }
         // DO NOT intercept database imports for integration tests
         // We want the real database connection
-        return undefined;
+        return;
       },
       load(_id) {
         // DO NOT mock database loads
-        return undefined;
+        return;
       },
     },
   ],

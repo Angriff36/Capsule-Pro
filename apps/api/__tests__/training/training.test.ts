@@ -45,7 +45,9 @@ vi.mock("@repo/database", () => ({
     empty: { strings: [], values: [] },
     Decimal: class DecimalMock {
       value: string;
-      constructor(v: string | number) { this.value = String(v); }
+      constructor(v: string | number) {
+        this.value = String(v);
+      }
     },
   },
 }));
@@ -84,11 +86,18 @@ vi.mock("@/lib/manifest-response", async () => {
       )
     ),
     manifestErrorResponse: vi.fn(
-      (message: string | { error: string; diagnostics?: unknown[] }, status: number) => {
+      (
+        message: string | { error: string; diagnostics?: unknown[] },
+        status: number
+      ) => {
         const body =
           typeof message === "string"
             ? { success: false, message }
-            : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+            : {
+                success: false,
+                error: message.error,
+                diagnostics: message.diagnostics ?? [],
+              };
         return NextResponse.json(body, { status });
       }
     ),
@@ -143,7 +152,11 @@ import {
   POST as createModuleViaHandler,
   GET as listModules,
 } from "@/app/api/training/modules/route";
-import { getTenantIdForOrg, requireCurrentUser, resolveCurrentUser } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -254,7 +267,9 @@ describe("Training API", () => {
         },
       ];
 
-      vi.mocked(database.trainingModule.findMany).mockResolvedValue(mockRows as never);
+      vi.mocked(database.trainingModule.findMany).mockResolvedValue(
+        mockRows as never
+      );
       vi.mocked(database.trainingModule.count).mockResolvedValue(2);
 
       const request = new NextRequest("http://localhost/api/training/modules");
@@ -270,7 +285,9 @@ describe("Training API", () => {
     });
 
     it("should pass category filter to query", async () => {
-      vi.mocked(database.trainingModule.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.trainingModule.findMany).mockResolvedValue(
+        [] as never
+      );
       vi.mocked(database.trainingModule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
@@ -286,7 +303,9 @@ describe("Training API", () => {
     });
 
     it("should clamp limit to 200 maximum", async () => {
-      vi.mocked(database.trainingModule.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.trainingModule.findMany).mockResolvedValue(
+        [] as never
+      );
       vi.mocked(database.trainingModule.count).mockResolvedValue(0);
 
       const request = new NextRequest(
@@ -300,7 +319,9 @@ describe("Training API", () => {
     });
 
     it("should handle empty results gracefully", async () => {
-      vi.mocked(database.trainingModule.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.trainingModule.findMany).mockResolvedValue(
+        [] as never
+      );
       vi.mocked(database.trainingModule.count).mockResolvedValue(0);
 
       const request = new NextRequest("http://localhost/api/training/modules");
@@ -330,7 +351,9 @@ describe("Training API", () => {
         updatedAt: new Date("2026-01-15"),
         _count: { assignments: 10, completions: 5 },
       };
-      vi.mocked(database.trainingModule.findMany).mockResolvedValue([row] as never);
+      vi.mocked(database.trainingModule.findMany).mockResolvedValue([
+        row,
+      ] as never);
       vi.mocked(database.trainingModule.count).mockResolvedValue(1);
 
       const request = new NextRequest("http://localhost/api/training/modules");
@@ -489,7 +512,9 @@ describe("Training API", () => {
         updatedAt: new Date("2026-01-15"),
       };
 
-      vi.mocked(database.trainingModule.findFirst).mockResolvedValue(mockRow as never);
+      vi.mocked(database.trainingModule.findFirst).mockResolvedValue(
+        mockRow as never
+      );
 
       const request = new NextRequest(
         "http://localhost/api/training/modules/mod-001"
@@ -505,7 +530,9 @@ describe("Training API", () => {
     });
 
     it("should return 404 when module not found", async () => {
-      vi.mocked(database.trainingModule.findFirst).mockResolvedValue(null as never);
+      vi.mocked(database.trainingModule.findFirst).mockResolvedValue(
+        null as never
+      );
 
       const request = new NextRequest(
         "http://localhost/api/training/modules/nonexistent"
@@ -524,7 +551,6 @@ describe("Training API", () => {
   // MODULES -- Create via handler (POST /api/training/modules)
   // =======================================================================
   describe("POST /api/training/modules (via runManifestCommand)", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
@@ -622,7 +648,10 @@ describe("Training API", () => {
         expect.objectContaining({
           entity: "TrainingModule",
           command: "update",
-          body: expect.objectContaining({ id: "mod-001", title: "Updated Title" }),
+          body: expect.objectContaining({
+            id: "mod-001",
+            title: "Updated Title",
+          }),
           user: expect.objectContaining({
             id: TEST_USER_ID,
             tenantId: TEST_TENANT_ID,
@@ -670,14 +699,15 @@ describe("Training API", () => {
   // MODULES -- Create command (POST /api/training/modules/commands/create)
   // =======================================================================
   describe("POST /api/training/modules/commands/create", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "Unauthorized"
+        ) as never
       );
 
       const request = new NextRequest(
@@ -700,7 +730,11 @@ describe("Training API", () => {
     it("should create a module through runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "mod-new" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "mod-new" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -768,7 +802,6 @@ describe("Training API", () => {
   // MODULES -- Update command (POST /api/training/modules/commands/update)
   // =======================================================================
   describe("POST /api/training/modules/commands/update", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
@@ -776,7 +809,11 @@ describe("Training API", () => {
     it("should update a module through runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "mod-001", title: "Updated Title" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "mod-001", title: "Updated Title" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -813,7 +850,9 @@ describe("Training API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "Unauthorized"
+        ) as never
       );
 
       const request = new NextRequest(
@@ -838,7 +877,6 @@ describe("Training API", () => {
   // MODULES -- Soft-delete command
   // =======================================================================
   describe("POST /api/training/modules/commands/soft-delete", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
@@ -846,7 +884,11 @@ describe("Training API", () => {
     it("should soft-delete a module through runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "mod-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "mod-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -880,7 +922,9 @@ describe("Training API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "Unauthorized"
+        ) as never
       );
 
       const request = new NextRequest(
@@ -965,9 +1009,13 @@ describe("Training API", () => {
         mockPrismaAssignment({ id: "assign-2", employeeId: "emp-002" }),
       ];
 
-      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue(mockRows as never);
+      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue(
+        mockRows as never
+      );
       vi.mocked(database.trainingAssignment.count).mockResolvedValue(2);
-      vi.mocked(database.user.findMany).mockResolvedValue([mockEmployee] as never);
+      vi.mocked(database.user.findMany).mockResolvedValue([
+        mockEmployee,
+      ] as never);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments"
@@ -1000,9 +1048,13 @@ describe("Training API", () => {
         ],
       });
 
-      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([row] as never);
+      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([
+        row,
+      ] as never);
       vi.mocked(database.trainingAssignment.count).mockResolvedValue(1);
-      vi.mocked(database.user.findMany).mockResolvedValue([mockEmployee] as never);
+      vi.mocked(database.user.findMany).mockResolvedValue([
+        mockEmployee,
+      ] as never);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments"
@@ -1019,9 +1071,13 @@ describe("Training API", () => {
     it("should have undefined completion when no completion record", async () => {
       const row = mockPrismaAssignment({ completions: [] });
 
-      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([row] as never);
+      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([
+        row,
+      ] as never);
       vi.mocked(database.trainingAssignment.count).mockResolvedValue(1);
-      vi.mocked(database.user.findMany).mockResolvedValue([mockEmployee] as never);
+      vi.mocked(database.user.findMany).mockResolvedValue([
+        mockEmployee,
+      ] as never);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments"
@@ -1052,9 +1108,13 @@ describe("Training API", () => {
         },
       });
 
-      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([row] as never);
+      vi.mocked(database.trainingAssignment.findMany).mockResolvedValue([
+        row,
+      ] as never);
       vi.mocked(database.trainingAssignment.count).mockResolvedValue(1);
-      vi.mocked(database.user.findMany).mockResolvedValue([mockEmployee] as never);
+      vi.mocked(database.user.findMany).mockResolvedValue([
+        mockEmployee,
+      ] as never);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments"
@@ -1317,14 +1377,15 @@ describe("Training API", () => {
   // ASSIGNMENTS -- Create command (auto-generated via dispatcher)
   // =======================================================================
   describe("POST /api/training/assignments/commands/create", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "Unauthorized"
+        ) as never
       );
 
       const request = new NextRequest(
@@ -1347,7 +1408,11 @@ describe("Training API", () => {
     it("should create an assignment through runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "assign-new" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "assign-new" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -1418,7 +1483,6 @@ describe("Training API", () => {
   // ASSIGNMENTS -- Soft-delete command (auto-generated via dispatcher)
   // =======================================================================
   describe("POST /api/training/assignments/commands/soft-delete", () => {
-
     beforeEach(() => {
       setupUserLookup();
     });
@@ -1426,7 +1490,11 @@ describe("Training API", () => {
     it("should soft-delete an assignment through runManifestCommand", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(
-          JSON.stringify({ success: true, result: { id: "assign-001" }, events: [] }),
+          JSON.stringify({
+            success: true,
+            result: { id: "assign-001" },
+            events: [],
+          }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )
       );
@@ -1460,7 +1528,9 @@ describe("Training API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "Unauthorized"
+        ) as never
       );
 
       const request = new NextRequest(
@@ -1554,10 +1624,18 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
-          if (queryCallCount === 2) return [{ id: "emp-001" }] as never;
-          if (queryCallCount === 3) return [] as never; // no existing completion
-          if (queryCallCount === 4) return [{ id: "emp-001" }] as never;
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [{ id: "emp-001" }] as never;
+          }
+          if (queryCallCount === 3) {
+            return [] as never; // no existing completion
+          }
+          if (queryCallCount === 4) {
+            return [{ id: "emp-001" }] as never;
+          }
           return [] as never;
         });
 
@@ -1604,8 +1682,12 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
-          if (queryCallCount === 2) return [{ id: "emp-001" }] as never;
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [{ id: "emp-001" }] as never;
+          }
           if (queryCallCount === 3) {
             return [
               { id: "comp-existing", started_at: new Date("2026-01-19") },
@@ -1636,9 +1718,13 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
           // Return a different employee ID
-          if (queryCallCount === 2) return [{ id: "emp-other" }] as never;
+          if (queryCallCount === 2) {
+            return [{ id: "emp-other" }] as never;
+          }
           return [] as never;
         });
 
@@ -1668,9 +1754,15 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [assignedToAllAssignment] as never;
-          if (queryCallCount === 2) return [] as never; // no existing completions
-          if (queryCallCount === 3) return [] as never; // no employee record
+          if (queryCallCount === 1) {
+            return [assignedToAllAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [] as never; // no existing completions
+          }
+          if (queryCallCount === 3) {
+            return [] as never; // no employee record
+          }
           return [] as never;
         });
 
@@ -1705,9 +1797,15 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
-          if (queryCallCount === 2) return [{ id: "emp-001" }] as never; // auth check
-          if (queryCallCount === 3) return [{ id: "emp-001" }] as never; // employeeId lookup
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [{ id: "emp-001" }] as never; // auth check
+          }
+          if (queryCallCount === 3) {
+            return [{ id: "emp-001" }] as never; // employeeId lookup
+          }
           return [] as never;
         });
 
@@ -1762,9 +1860,15 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
-          if (queryCallCount === 2) return [{ id: "emp-001" }] as never; // auth check
-          if (queryCallCount === 3) return [{ id: "emp-001" }] as never; // employeeId lookup
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [{ id: "emp-001" }] as never; // auth check
+          }
+          if (queryCallCount === 3) {
+            return [{ id: "emp-001" }] as never; // employeeId lookup
+          }
           return [] as never;
         });
 
@@ -1774,7 +1878,9 @@ describe("Training API", () => {
             headers: { "Content-Type": "application/json" },
           })
         );
-        vi.mocked(database.trainingCompletion.findFirst).mockResolvedValue(null as never);
+        vi.mocked(database.trainingCompletion.findFirst).mockResolvedValue(
+          null as never
+        );
         vi.mocked(database.trainingCompletion.upsert).mockResolvedValue({
           id: "comp-001",
           completedAt: new Date("2026-01-22"),
@@ -1801,8 +1907,12 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
-          if (queryCallCount === 2) return [{ id: "emp-other" }] as never;
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [{ id: "emp-other" }] as never;
+          }
           return [] as never;
         });
 
@@ -1830,8 +1940,12 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [assignedToAllAssignment] as never;
-          if (queryCallCount === 2) return [] as never; // no employee record
+          if (queryCallCount === 1) {
+            return [assignedToAllAssignment] as never;
+          }
+          if (queryCallCount === 2) {
+            return [] as never; // no employee record
+          }
           return [] as never;
         });
 
@@ -1865,7 +1979,9 @@ describe("Training API", () => {
         let queryCallCount = 0;
         queryRawMock.mockImplementation(async () => {
           queryCallCount++;
-          if (queryCallCount === 1) return [mockAssignment] as never;
+          if (queryCallCount === 1) {
+            return [mockAssignment] as never;
+          }
           return [] as never;
         });
 
@@ -1905,7 +2021,9 @@ describe("Training API", () => {
       let queryCallCount = 0;
       queryRawMock.mockImplementation(async () => {
         queryCallCount++;
-        if (queryCallCount === 1) return [mockAssignment] as never;
+        if (queryCallCount === 1) {
+          return [mockAssignment] as never;
+        }
         throw new Error("Database crash");
       });
 

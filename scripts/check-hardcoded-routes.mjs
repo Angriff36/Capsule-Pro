@@ -206,7 +206,9 @@ function main() {
     console.error(
       'Fix: Import route helpers from "@/lib/routes" instead of hardcoding /api/ paths.'
     );
-    console.error('See docs/audits/hardcoded-routes-violations.md for the migration plan.');
+    console.error(
+      "See docs/audits/hardcoded-routes-violations.md for the migration plan."
+    );
     console.error(
       "Run `node scripts/check-hardcoded-routes.mjs` locally to see the full violation list.\n"
     );

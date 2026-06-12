@@ -15,11 +15,11 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface TodayStats {
-  total_shifts: number;
-  filled_shifts: number;
-  unfilled_shifts: number;
   active_employees: number;
+  filled_shifts: number;
   total_hours: number;
+  total_shifts: number;
+  unfilled_shifts: number;
 }
 
 interface CoverageResponse {
@@ -76,7 +76,7 @@ const KitchenSchedulePage = () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Kitchen Schedule
         </h1>
         <p className="text-muted-foreground">
@@ -87,7 +87,7 @@ const KitchenSchedulePage = () => {
 
       {/* Scheduling Navigation Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Staff Scheduling
         </h2>
         <Card>
@@ -120,7 +120,7 @@ const KitchenSchedulePage = () => {
 
       {/* Features Overview Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Features Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
@@ -131,8 +131,8 @@ const KitchenSchedulePage = () => {
                 Shift Management
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
+            <CardContent className="text-muted-foreground text-sm">
+              <ul className="list-disc space-y-1 pl-4">
                 <li>Create and edit shifts</li>
                 <li>Assign staff to stations</li>
                 <li>Manage overtime and breaks</li>
@@ -148,8 +148,8 @@ const KitchenSchedulePage = () => {
                 Team Availability
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc pl-4 space-y-1">
+            <CardContent className="text-muted-foreground text-sm">
+              <ul className="list-disc space-y-1 pl-4">
                 <li>Track employee availability</li>
                 <li>Manage time-off requests</li>
                 <li>View skills and certifications</li>
@@ -162,62 +162,62 @@ const KitchenSchedulePage = () => {
 
       {/* Quick Stats Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Quick Stats
         </h2>
         <Card>
           <CardContent className="pt-6">
             <div className="grid gap-6 md:grid-cols-4">
               <div className="text-center">
-                <div className="text-2xl font-bold">
+                <div className="font-bold text-2xl">
                   {loading ? (
                     <Loader2 className="mx-auto size-6 animate-spin" />
                   ) : (
                     (todayShifts ?? 0)
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Today&apos;s Shifts
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">
+                <div className="font-bold text-2xl">
                   {loading ? (
                     <Loader2 className="mx-auto size-6 animate-spin" />
                   ) : (
                     (staffOnDuty ?? 0)
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Staff On Duty
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">
+                <div className="font-bold text-2xl">
                   {loading ? (
                     <Loader2 className="mx-auto size-6 animate-spin" />
                   ) : (
                     (coverageAlerts ?? 0)
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Coverage Alerts
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">
+                <div className="font-bold text-2xl">
                   {loading ? (
                     <Loader2 className="mx-auto size-6 animate-spin" />
                   ) : (
                     (pendingRequests ?? 0)
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Pending Requests
                 </div>
               </div>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground text-center">
+            <p className="mt-4 text-center text-muted-foreground text-sm">
               Navigate to Staff module for full scheduling functionality.
             </p>
           </CardContent>

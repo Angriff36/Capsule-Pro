@@ -1,5 +1,5 @@
-import { getBoardFull } from "../actions";
 import { Header } from "../../../components/header";
+import { getBoardFull } from "../actions";
 import { BattleBoardEditorClient } from "./battle-board-editor-client";
 
 interface PageProps {

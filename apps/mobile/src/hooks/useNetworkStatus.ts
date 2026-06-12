@@ -4,9 +4,9 @@ import NetInfo, { type NetInfoState } from "@react-native-community/netinfo";
 import { useEffect, useState } from "react";
 
 export interface NetworkStatus {
-  isOnline: boolean;
   isConnected: boolean | null;
   isInternetReachable: boolean | null;
+  isOnline: boolean;
   type: string | null;
 }
 

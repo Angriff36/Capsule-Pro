@@ -231,7 +231,9 @@ export const ShipmentsPageClient = () => {
 
   // Remove item from shipment
   const handleRemoveItem = async (itemId: string) => {
-    if (!selectedShipment) return;
+    if (!selectedShipment) {
+      return;
+    }
     try {
       await shipmentItemSoftDelete({ id: itemId });
       toast.success("Item removed from shipment");
@@ -350,9 +352,8 @@ export const ShipmentsPageClient = () => {
   };
 
   // Get allowed status transitions
-  const getAllowedTransitions = (shipment: Shipment): ShipmentStatus[] => {
-    return getAllowedStatusTransitions(shipment.status);
-  };
+  const getAllowedTransitions = (shipment: Shipment): ShipmentStatus[] =>
+    getAllowedStatusTransitions(shipment.status);
 
   // Handle download packing list PDF
   const handleDownloadPackingList = async (shipment: Shipment) => {
@@ -401,7 +402,7 @@ export const ShipmentsPageClient = () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Warehouse Shipments
         </h1>
         <p className="text-muted-foreground">
@@ -413,7 +414,7 @@ export const ShipmentsPageClient = () => {
 
       {/* Performance Overview Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -459,7 +460,7 @@ export const ShipmentsPageClient = () => {
       {/* Shipments Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Shipments ({totalCount})
           </h2>
           <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -471,7 +472,7 @@ export const ShipmentsPageClient = () => {
           <CardContent className="space-y-4 pt-6">
             {/* Filters */}
             <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[200px]">
+              <div className="min-w-[200px] flex-1">
                 <Label htmlFor="search">Search</Label>
                 <Input
                   id="search"
@@ -618,7 +619,7 @@ export const ShipmentsPageClient = () => {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Showing {(page - 1) * limit + 1} to{" "}
                   {Math.min(page * limit, totalCount)} of {totalCount} shipments
                 </div>
@@ -656,7 +657,7 @@ export const ShipmentsPageClient = () => {
                   {selectedShipment.shipment_number ||
                     `SHP-${selectedShipment.id.slice(0, 8)}`}
                 </CardTitle>
-                <div className="flex gap-2 mt-2">
+                <div className="mt-2 flex gap-2">
                   <Badge
                     className={getShipmentStatusColor(selectedShipment.status)}
                   >
@@ -733,8 +734,8 @@ export const ShipmentsPageClient = () => {
 
             {/* Items */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-semibold text-lg">
                   Packing List ({selectedShipment.total_items} items)
                 </h3>
                 <Button onClick={() => setIsAddItemModalOpen(true)} size="sm">
@@ -744,7 +745,7 @@ export const ShipmentsPageClient = () => {
               </div>
 
               {shipmentItems.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   No items in this shipment yet. Add items to create a packing
                   list.
                 </div>
@@ -808,7 +809,7 @@ export const ShipmentsPageClient = () => {
 
       {/* Create Shipment Modal */}
       <Dialog onOpenChange={setIsCreateModalOpen} open={isCreateModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Shipment</DialogTitle>
             <DialogDescription>

@@ -13,13 +13,13 @@ import {
 import type React from "react";
 
 export interface InvoiceTemplateProps {
-  readonly clientName: string;
-  readonly invoiceNumber: string;
   readonly amountDue: string;
+  readonly clientName: string;
   readonly currency: string;
   readonly dueDate?: string;
-  readonly paymentUrl: string;
+  readonly invoiceNumber: string;
   readonly notes?: string;
+  readonly paymentUrl: string;
 }
 
 const formatCurrency = (amount: string, currency: string): string => {

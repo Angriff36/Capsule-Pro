@@ -20,13 +20,13 @@ interface BundleClaimRequest {
 }
 
 interface ClaimedTask {
-  taskId: string;
   status: string;
+  taskId: string;
 }
 
 interface FailedTask {
-  taskId: string;
   reason: string;
+  taskId: string;
 }
 
 export async function POST(request: Request) {
@@ -150,8 +150,7 @@ export async function POST(request: Request) {
   // Fire-and-forget SMS triggers for each claimed task
   if (claimedTasks.length > 0) {
     const taskMap = new Map(tasks.map((t) => [t.id, t]));
-    const fullName =
-      `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
     for (const claimed of claimedTasks) {
       const task = taskMap.get(claimed.taskId);
       triggerTaskAssignedSms({

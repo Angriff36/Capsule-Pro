@@ -30,7 +30,9 @@ const NOISE_PREFIXES = [
 ];
 
 function isNoise(name: string): boolean {
-  if (!name) return false;
+  if (!name) {
+    return false;
+  }
   return NOISE_PREFIXES.some((prefix) => name.startsWith(prefix));
 }
 
@@ -51,6 +53,8 @@ export function tracesSampler(ctx: {
   name: string;
   normalizedRequest?: unknown;
 }): number {
-  if (isNoise(ctx.name)) return 0;
+  if (isNoise(ctx.name)) {
+    return 0;
+  }
   return getTracesSampleRate();
 }

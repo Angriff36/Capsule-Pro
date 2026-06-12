@@ -120,7 +120,11 @@ describe("Manifest Runtime - VendorContract active lifecycle", () => {
 
     const result = await runtime.runCommand(
       "recordSlaBreach",
-      { userId: "u1", breachType: "late_delivery", description: "Shipment late" },
+      {
+        userId: "u1",
+        breachType: "late_delivery",
+        description: "Shipment late",
+      },
       { entityName: "VendorContract", instanceId: "vc-1" }
     );
 

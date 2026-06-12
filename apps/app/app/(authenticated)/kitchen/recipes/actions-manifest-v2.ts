@@ -68,9 +68,9 @@ const uploadImage = async (
 };
 
 interface OverrideRequestInput {
+  authorizedBy: string;
   constraintCode: string;
   reason: string;
-  authorizedBy: string;
   timestamp: number;
 }
 
@@ -97,12 +97,12 @@ function createOverrideRequests(
  * Contains constraint outcomes and redirect info for client-side handling
  */
 export interface ManifestActionResult {
-  success: boolean;
   constraintOutcomes?: ConstraintOutcome[];
-  redirectUrl?: string;
+  dishId?: string;
   error?: string;
   recipeId?: string;
-  dishId?: string;
+  redirectUrl?: string;
+  success: boolean;
 }
 
 // ============ Public Actions ============

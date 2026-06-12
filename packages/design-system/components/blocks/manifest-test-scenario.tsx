@@ -39,10 +39,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface ManifestTestScenarioProps {
-  entityName: string;
   commandName?: string;
-  onRunTest: (scenario: TestScenario) => Promise<TestResult>;
+  entityName: string;
   existingScenarios?: TestScenario[];
+  onRunTest: (scenario: TestScenario) => Promise<TestResult>;
 }
 
 type DraftScenario = Omit<TestScenario, "testData"> & {
@@ -190,13 +190,13 @@ export function ManifestTestScenario({
               size="sm"
               variant="outline"
             >
-              <Play className="h-4 w-4 mr-1" />
+              <Play className="mr-1 h-4 w-4" />
               Run All
             </Button>
             <Dialog onOpenChange={setIsCreateOpen} open={isCreateOpen}>
               <DialogTrigger asChild>
                 <Button size="sm">
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="mr-1 h-4 w-4" />
                   New Scenario
                 </Button>
               </DialogTrigger>
@@ -262,7 +262,7 @@ export function ManifestTestScenario({
                   <Separator />
 
                   <div>
-                    <h4 className="text-sm font-medium mb-3">
+                    <h4 className="mb-3 font-medium text-sm">
                       Expected Results
                     </h4>
                     <div className="space-y-3">
@@ -310,9 +310,9 @@ export function ManifestTestScenario({
 
       <CardContent className="space-y-3">
         {scenarios.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="py-8 text-center text-muted-foreground">
             <p className="text-sm">No test scenarios defined yet.</p>
-            <p className="text-xs mt-1">
+            <p className="mt-1 text-xs">
               Create a scenario to test guards and constraints.
             </p>
           </div>
@@ -339,11 +339,11 @@ export function ManifestTestScenario({
 }
 
 interface TestScenarioCardProps {
-  scenario: TestScenario;
+  onDelete: () => void;
+  onRun: () => void;
   result?: TestResult;
   running: boolean;
-  onRun: () => void;
-  onDelete: () => void;
+  scenario: TestScenario;
 }
 
 function TestScenarioCard({
@@ -372,17 +372,17 @@ function TestScenarioCard({
             </div>
 
             {scenario.description && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {scenario.description}
               </p>
             )}
 
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs px-2 py-1 bg-muted rounded">
+              <span className="rounded bg-muted px-2 py-1 text-xs">
                 {scenario.entityName}
               </span>
               {scenario.commandName && (
-                <span className="text-xs px-2 py-1 bg-muted rounded">
+                <span className="rounded bg-muted px-2 py-1 text-xs">
                   {scenario.commandName}
                 </span>
               )}
@@ -395,11 +395,11 @@ function TestScenarioCard({
 
                 {result.results?.guards && result.results.guards.length > 0 && (
                   <div>
-                    <span className="text-xs font-medium">Guards:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <span className="font-medium text-xs">Guards:</span>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {result.results.guards.map((guard, i) => (
                         <span
-                          className={`text-xs px-2 py-0.5 rounded ${
+                          className={`rounded px-2 py-0.5 text-xs ${
                             guard.passed
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
@@ -417,11 +417,11 @@ function TestScenarioCard({
                 {result.results?.constraints &&
                   result.results.constraints.length > 0 && (
                     <div>
-                      <span className="text-xs font-medium">Constraints:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <span className="font-medium text-xs">Constraints:</span>
+                      <div className="mt-1 flex flex-wrap gap-1">
                         {result.results.constraints.map((constraint) => (
                           <span
-                            className={`text-xs px-2 py-0.5 rounded ${
+                            className={`rounded px-2 py-0.5 text-xs ${
                               constraint.passed
                                 ? "bg-green-100 text-green-800"
                                 : "bg-red-100 text-red-800"
@@ -438,9 +438,9 @@ function TestScenarioCard({
 
                 {result.results?.policy && (
                   <div>
-                    <span className="text-xs font-medium">Policy:</span>
+                    <span className="font-medium text-xs">Policy:</span>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded ml-2 ${
+                      className={`ml-2 rounded px-2 py-0.5 text-xs ${
                         result.results.policy.denied
                           ? "bg-red-100 text-red-800"
                           : "bg-green-100 text-green-800"

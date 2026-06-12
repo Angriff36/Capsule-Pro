@@ -1,60 +1,60 @@
 export interface TimelineTask {
-  id: string;
-  eventId: string;
-  title: string;
-  description?: string;
-  startTime: string; // ISO time string for the event day
-  endTime: string;
-  status: "not_started" | "in_progress" | "completed" | "delayed" | "blocked";
-  priority: "low" | "medium" | "high" | "critical";
-  category: string;
   assigneeId?: string;
   assigneeName?: string;
-  progress: number; // 0-100
-  dependencies: string[]; // Array of task IDs this task depends on
-  isOnCriticalPath: boolean;
-  slackMinutes: number;
-  notes?: string;
+  category: string;
   createdAt: string;
+  dependencies: string[]; // Array of task IDs this task depends on
+  description?: string;
+  endTime: string;
+  eventId: string;
+  id: string;
+  isOnCriticalPath: boolean;
+  notes?: string;
+  priority: "low" | "medium" | "high" | "critical";
+  progress: number; // 0-100
+  slackMinutes: number;
+  startTime: string; // ISO time string for the event day
+  status: "not_started" | "in_progress" | "completed" | "delayed" | "blocked";
+  title: string;
   updatedAt: string;
 }
 
 export interface StaffMember {
+  availability: "available" | "at_capacity" | "overbooked";
+  avatarUrl?: string;
+  currentTaskCount: number;
   id: string;
   name: string;
   role: string;
-  avatarUrl?: string;
-  availability: "available" | "at_capacity" | "overbooked";
-  currentTaskCount: number;
   skills: string[];
 }
 
 export interface TimelineState {
-  tasks: TimelineTask[];
-  staff: StaffMember[];
   selectedTaskIds: string[];
+  showCriticalPath: boolean;
+  showDependencies: boolean;
+  staff: StaffMember[];
+  tasks: TimelineTask[];
   viewport: {
     zoom: number;
     scrollX: number;
     scrollY: number;
   };
-  showDependencies: boolean;
-  showCriticalPath: boolean;
 }
 
 export interface TaskPosition {
-  startTime: number; // Minutes from event start
   duration: number; // Minutes
   row: number;
+  startTime: number; // Minutes from event start
 }
 
 export interface DragState {
   isDragging: boolean;
-  taskId: string | null;
+  originalDuration: number;
+  originalStartTime: number;
   startX: number;
   startY: number;
-  originalStartTime: number;
-  originalDuration: number;
+  taskId: string | null;
 }
 
 export const TASK_STATUS_COLORS = {

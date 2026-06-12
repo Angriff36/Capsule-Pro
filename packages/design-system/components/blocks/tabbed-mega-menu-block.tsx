@@ -22,22 +22,22 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface MegaMenuItem {
-  icon: LucideIcon;
-  title: string;
   description: string;
   href?: string;
+  icon: LucideIcon;
+  title: string;
 }
 
 interface MegaMenuTab {
-  value: string;
-  label: string;
   items: MegaMenuItem[];
+  label: string;
+  value: string;
 }
 
 interface TabbedMegaMenuBlockProps {
-  tabs?: MegaMenuTab[];
-  ctaText?: string;
   ctaDescription?: string;
+  ctaText?: string;
+  tabs?: MegaMenuTab[];
 }
 
 const defaultTabs: MegaMenuTab[] = [
@@ -173,7 +173,7 @@ export function TabbedMegaMenuBlock({
                     ))}
                   </Tabs>
                   <div className="rounded-lg bg-muted p-4">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       <strong>{ctaText}</strong> {ctaDescription}
                     </p>
                   </div>

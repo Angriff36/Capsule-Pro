@@ -69,8 +69,7 @@ init({
 
 async function main() {
   // 1. Determine server mode
-  const mode: ServerMode =
-    env.MCP_SERVER_MODE === "admin" ? "admin" : "tenant";
+  const mode: ServerMode = env.MCP_SERVER_MODE === "admin" ? "admin" : "tenant";
 
   // 2. Initialize Prisma
   // biome-ignore lint/suspicious/noExplicitAny: database is the full PrismaClient; PrismaLike is a structural subset

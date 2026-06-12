@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
-import { log } from "@repo/observability/log";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
@@ -79,7 +79,12 @@ export async function POST(request: NextRequest) {
       endDate?: string;
     };
 
-    if (!(provider && (SUPPORTED_PROVIDERS as readonly string[]).includes(provider))) {
+    if (
+      !(
+        provider &&
+        (SUPPORTED_PROVIDERS as readonly string[]).includes(provider)
+      )
+    ) {
       return NextResponse.json(
         {
           error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,

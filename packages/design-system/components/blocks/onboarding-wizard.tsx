@@ -26,25 +26,25 @@ import { Progress } from "../ui/progress";
  */
 
 export interface WizardStep {
-  id: string;
-  title: string;
+  actionHref?: string;
+  actionLabel?: string;
   description: string;
   icon?: React.ReactNode;
+  id: string;
   illustration?: React.ReactNode;
-  actionLabel?: string;
-  actionHref?: string;
   skipable?: boolean;
+  title: string;
 }
 
 interface OnboardingWizardProps {
+  className?: string;
   isOpen: boolean;
   onClose: () => void;
   onComplete?: () => void;
-  steps: WizardStep[];
-  startStep?: number;
   showProgress?: boolean;
   showSkip?: boolean;
-  className?: string;
+  startStep?: number;
+  steps: WizardStep[];
 }
 
 export function OnboardingWizard({
@@ -117,7 +117,7 @@ export function OnboardingWizard({
     <Dialog onOpenChange={(open) => !open && onClose()} open={isOpen}>
       <DialogContent
         className={cn(
-          "sm:max-w-[600px] gap-0 p-0 overflow-hidden",
+          "gap-0 overflow-hidden p-0 sm:max-w-[600px]",
           "[&_[data-slot='dialog-close']]:top-4 [&_[data-slot='dialog-close']]:right-4",
           className
         )}
@@ -126,11 +126,11 @@ export function OnboardingWizard({
         {/* Progress Bar */}
         {showProgress && (
           <div className="px-6 pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-medium text-muted-foreground text-sm">
                 Step {currentStep + 1} of {steps.length}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {Math.round(progress)}% complete
               </span>
             </div>
@@ -149,8 +149,8 @@ export function OnboardingWizard({
                 <button
                   className={cn(
                     "flex shrink-0 items-center justify-center rounded-full transition-all duration-200",
-                    "size-8 text-sm font-medium",
-                    isCurrent && "bg-primary text-primary-foreground scale-110",
+                    "size-8 font-medium text-sm",
+                    isCurrent && "scale-110 bg-primary text-primary-foreground",
                     isCompleted && "bg-primary/20 text-primary",
                     !(isCurrent || isCompleted) &&
                       "bg-muted text-muted-foreground"
@@ -184,11 +184,11 @@ export function OnboardingWizard({
             "px-6 py-6 transition-all duration-300",
             isAnimating &&
               direction === "forward" &&
-              "opacity-0 -translate-x-4",
-            isAnimating && direction === "backward" && "opacity-0 translate-x-4"
+              "-translate-x-4 opacity-0",
+            isAnimating && direction === "backward" && "translate-x-4 opacity-0"
           )}
         >
-          <DialogHeader className="text-center space-y-3">
+          <DialogHeader className="space-y-3 text-center">
             <div className="flex justify-center">
               {currentStepData.illustration ||
                 (currentStepData.icon && (
@@ -208,10 +208,10 @@ export function OnboardingWizard({
 
         {/* Footer */}
         <DialogFooter className="flex-col gap-3 px-6 pb-6 sm:flex-row sm:justify-between">
-          <div className="flex gap-2 sm:w-auto w-full">
+          <div className="flex w-full gap-2 sm:w-auto">
             {!isFirstStep && (
               <Button
-                className="sm:w-auto w-full"
+                className="w-full sm:w-auto"
                 disabled={isAnimating}
                 onClick={handleBack}
                 type="button"
@@ -222,7 +222,7 @@ export function OnboardingWizard({
             )}
             {showSkip && (currentStepData.skipable ?? true) && (
               <Button
-                className="sm:w-auto w-full"
+                className="w-full sm:w-auto"
                 disabled={isAnimating}
                 onClick={handleSkip}
                 type="button"
@@ -233,11 +233,11 @@ export function OnboardingWizard({
             )}
           </div>
 
-          <div className="flex gap-2 sm:w-auto w-full">
+          <div className="flex w-full gap-2 sm:w-auto">
             {currentStepData.actionHref ? (
               <Button
                 asChild
-                className="sm:w-auto w-full"
+                className="w-full sm:w-auto"
                 disabled={isAnimating}
                 onClick={handleNext}
                 type="button"
@@ -249,7 +249,7 @@ export function OnboardingWizard({
               </Button>
             ) : (
               <Button
-                className="sm:w-auto w-full"
+                className="w-full sm:w-auto"
                 disabled={isAnimating}
                 onClick={handleNext}
                 type="button"
@@ -272,8 +272,8 @@ export function OnboardingWizard({
  * for use directly in empty states
  */
 interface InlineWizardProps {
-  steps: Omit<WizardStep, "skipable">[];
   className?: string;
+  steps: Omit<WizardStep, "skipable">[];
 }
 
 export function InlineWizard({ steps, className }: InlineWizardProps) {
@@ -324,8 +324,8 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
               <div
                 className={cn(
                   "flex shrink-0 items-center justify-center rounded-full transition-all duration-200",
-                  "size-8 text-sm font-medium",
-                  isCurrent && "bg-primary text-primary-foreground scale-110",
+                  "size-8 font-medium text-sm",
+                  isCurrent && "scale-110 bg-primary text-primary-foreground",
                   isCompleted && "bg-primary/20 text-primary",
                   !(isCurrent || isCompleted) &&
                     "bg-muted text-muted-foreground"
@@ -353,9 +353,9 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
       {/* Step Content */}
       <div
         className={cn(
-          "flex min-w-0 flex-1 flex-col items-center gap-4 transition-all duration-300 max-w-sm",
-          isAnimating && direction === "forward" && "opacity-0 -translate-x-4",
-          isAnimating && direction === "backward" && "opacity-0 translate-x-4"
+          "flex min-w-0 max-w-sm flex-1 flex-col items-center gap-4 transition-all duration-300",
+          isAnimating && direction === "forward" && "-translate-x-4 opacity-0",
+          isAnimating && direction === "backward" && "translate-x-4 opacity-0"
         )}
       >
         {currentStepData.illustration ||
@@ -365,7 +365,7 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
             </div>
           ))}
         <div className="space-y-2">
-          <h3 className="text-lg font-medium tracking-tight">
+          <h3 className="font-medium text-lg tracking-tight">
             {currentStepData.title}
           </h3>
           <p className="text-muted-foreground text-sm/relaxed">
@@ -375,7 +375,7 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
       </div>
 
       {/* Navigation */}
-      <div className="flex gap-2 w-full max-w-sm">
+      <div className="flex w-full max-w-sm gap-2">
         {!isFirstStep && (
           <Button
             className="flex-1"
@@ -421,12 +421,12 @@ export function InlineWizard({ steps, className }: InlineWizardProps) {
  * TriggerButton - A button that opens the wizard
  */
 interface TriggerButtonProps {
-  onClick: () => void;
-  label?: string;
-  variant?: React.ComponentProps<typeof Button>["variant"];
-  size?: React.ComponentProps<typeof Button>["size"];
-  icon?: React.ReactNode;
   className?: string;
+  icon?: React.ReactNode;
+  label?: string;
+  onClick: () => void;
+  size?: React.ComponentProps<typeof Button>["size"];
+  variant?: React.ComponentProps<typeof Button>["variant"];
 }
 
 export function WizardTriggerButton({

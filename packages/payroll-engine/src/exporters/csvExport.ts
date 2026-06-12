@@ -5,11 +5,11 @@ import type { PayrollPeriod, PayrollRecord } from "../models";
  * CSV Export Configuration
  */
 export interface CsvExportOptions {
-  includeHeader?: boolean;
-  delimiter?: string;
-  dateFormat?: "iso" | "us" | "qb";
-  maskSensitiveData?: boolean;
   customColumns?: string[];
+  dateFormat?: "iso" | "us" | "qb";
+  delimiter?: string;
+  includeHeader?: boolean;
+  maskSensitiveData?: boolean;
 }
 
 /**

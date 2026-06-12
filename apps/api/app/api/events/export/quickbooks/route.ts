@@ -240,8 +240,12 @@ export async function POST(request: NextRequest) {
 
     if (startDate || endDate) {
       const eventDateFilter: Record<string, Date> = {};
-      if (startDate) eventDateFilter.gte = new Date(startDate);
-      if (endDate) eventDateFilter.lte = new Date(endDate);
+      if (startDate) {
+        eventDateFilter.gte = new Date(startDate);
+      }
+      if (endDate) {
+        eventDateFilter.lte = new Date(endDate);
+      }
       where.eventDate = eventDateFilter;
     }
 

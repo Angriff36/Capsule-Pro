@@ -30,7 +30,7 @@ interface ValidationTableProps {
 
 function ValidationTable({ results }: ValidationTableProps) {
   if (!results.length) {
-    return <div className="text-sm text-muted-foreground">No results.</div>;
+    return <div className="text-muted-foreground text-sm">No results.</div>;
   }
   const isRateMetric = (metric: string) =>
     metric.toLowerCase().includes("ratio") ||
@@ -105,5 +105,5 @@ function ValidationTable({ results }: ValidationTableProps) {
   );
 }
 
-export { ValidationTable };
 export type { ValidationTableProps };
+export { ValidationTable };

@@ -44,7 +44,9 @@ const mocks = vi.hoisted(() => ({
 // Mock manifest runtime to avoid DATABASE_URL env validation at import time
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn().mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({ success: true, result: {}, emittedEvents: [] }),
+    runCommand: vi
+      .fn()
+      .mockResolvedValue({ success: true, result: {}, emittedEvents: [] }),
   }),
 }));
 

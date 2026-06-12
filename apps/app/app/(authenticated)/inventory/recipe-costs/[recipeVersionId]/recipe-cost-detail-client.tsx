@@ -193,7 +193,7 @@ export const RecipeCostDetailClient = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex h-96 items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <LoaderIcon className="h-8 w-8 animate-spin text-muted-foreground" />
           <p className="text-muted-foreground">
@@ -206,13 +206,13 @@ export const RecipeCostDetailClient = ({
 
   if (error || !costData?.recipe) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex h-96 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">
+          <p className="mb-4 text-red-500">
             {error?.message || "Failed to load recipe cost details"}
           </p>
           <Button onClick={() => refetch()} variant="outline">
-            <RefreshCwIcon className="h-4 w-4 mr-2" />
+            <RefreshCwIcon className="mr-2 h-4 w-4" />
             Retry
           </Button>
         </div>
@@ -235,16 +235,16 @@ export const RecipeCostDetailClient = ({
       <div className="flex items-center gap-4">
         <Button asChild size="sm" variant="ghost">
           <a href="/inventory/recipe-costs">
-            <ChevronLeftIcon className="h-4 w-4 mr-1" />
+            <ChevronLeftIcon className="mr-1 h-4 w-4" />
             Back to Recipes
           </a>
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             {recipe.name}
           </h1>
           {recipe.description && (
-            <p className="text-muted-foreground mt-1">{recipe.description}</p>
+            <p className="mt-1 text-muted-foreground">{recipe.description}</p>
           )}
         </div>
       </div>
@@ -253,46 +253,46 @@ export const RecipeCostDetailClient = ({
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Cost</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(totalCost)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               For {recipe.yieldQuantity || 0} {recipe.yieldUnit || "units"}
             </p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Cost Per Yield
             </CardTitle>
             <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(costPerYield)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Per {recipe.yieldUnit || "unit"}
             </p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Cost Per Portion
             </CardTitle>
             <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {costPerPortion ? formatCurrency(costPerPortion) : "-"}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {recipe.portionSize
                 ? `For ${recipe.portionSize} ${recipe.portionUnit || "portion"}`
                 : "Portion size not set"}
@@ -301,16 +301,16 @@ export const RecipeCostDetailClient = ({
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="font-medium text-sm">
               Last Calculated
             </CardTitle>
             <RefreshCwIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-medium">
+            <div className="font-medium text-sm">
               {formatDate(lastCalculated)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {ingredients.length} ingredients
             </p>
           </CardContent>
@@ -324,7 +324,7 @@ export const RecipeCostDetailClient = ({
           tone="canvas"
         >
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <ScaleIcon className="h-5 w-5" />
               Scaled Recipe Cost
             </CardTitle>
@@ -335,15 +335,15 @@ export const RecipeCostDetailClient = ({
           <CardContent>
             <div className="flex items-center gap-8">
               <div>
-                <p className="text-sm text-muted-foreground">Original Cost</p>
-                <p className="text-2xl font-bold">
+                <p className="text-muted-foreground text-sm">Original Cost</p>
+                <p className="font-bold text-2xl">
                   {formatCurrency(scaledCost.original)}
                 </p>
               </div>
               <div className="text-2xl">→</div>
               <div>
-                <p className="text-sm text-muted-foreground">Scaled Cost</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-muted-foreground text-sm">Scaled Cost</p>
+                <p className="font-bold text-2xl text-foreground">
                   {formatCurrency(scaledCost.scaled)}
                 </p>
               </div>
@@ -356,12 +356,12 @@ export const RecipeCostDetailClient = ({
       <div className="flex flex-wrap gap-2">
         <Button disabled={isRecalculating} onClick={handleRecalculate}>
           <RefreshCwIcon
-            className={`h-4 w-4 mr-2 ${isRecalculating ? "animate-spin" : ""}`}
+            className={`mr-2 h-4 w-4 ${isRecalculating ? "animate-spin" : ""}`}
           />
           {isRecalculating ? "Recalculating..." : "Recalculate Costs"}
         </Button>
         <Button onClick={() => setScaleModalOpen(true)} variant="outline">
-          <ScaleIcon className="h-4 w-4 mr-2" />
+          <ScaleIcon className="mr-2 h-4 w-4" />
           Scale Recipe
         </Button>
         <Button
@@ -370,7 +370,7 @@ export const RecipeCostDetailClient = ({
           variant="outline"
         >
           <TrendingUpIcon
-            className={`h-4 w-4 mr-2 ${isUpdatingBudgets ? "animate-spin" : ""}`}
+            className={`mr-2 h-4 w-4 ${isUpdatingBudgets ? "animate-spin" : ""}`}
           />
           {isUpdatingBudgets ? "Updating..." : "Update Event Budgets"}
         </Button>
@@ -438,9 +438,9 @@ export const RecipeCostDetailClient = ({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <div className="w-16 bg-muted/50 rounded-full h-2">
+                        <div className="h-2 w-16 rounded-full bg-muted/50">
                           <div
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="h-2 rounded-full bg-blue-600"
                             style={{
                               width: `${Math.min(costPercentage, 100)}%`,
                             }}
@@ -454,7 +454,7 @@ export const RecipeCostDetailClient = ({
                     <TableCell>
                       {ingredient.hasInventoryItem ? (
                         <Badge className="bg-green-600" variant="default">
-                          <CheckIcon className="h-3 w-3 mr-1" />
+                          <CheckIcon className="mr-1 h-3 w-3" />
                           Linked
                         </Badge>
                       ) : (
@@ -475,7 +475,7 @@ export const RecipeCostDetailClient = ({
                   </TableRow>
                 );
               })}
-              <TableRow className="font-bold bg-muted">
+              <TableRow className="bg-muted font-bold">
                 <TableCell>Total</TableCell>
                 <TableCell />
                 <TableCell />
@@ -514,7 +514,7 @@ export const RecipeCostDetailClient = ({
                 type="number"
                 value={targetPortions}
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Current yield: {recipe.yieldQuantity || 0}{" "}
                 {recipe.yieldUnit || "units"}
               </p>
@@ -525,7 +525,7 @@ export const RecipeCostDetailClient = ({
               Cancel
             </Button>
             <Button disabled={!targetPortions} onClick={handleScaleRecipe}>
-              <ScaleIcon className="h-4 w-4 mr-2" />
+              <ScaleIcon className="mr-2 h-4 w-4" />
               Scale Recipe
             </Button>
           </DialogFooter>
@@ -553,12 +553,12 @@ export const RecipeCostDetailClient = ({
                 type="number"
                 value={wasteFactor}
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 A waste factor of 1.0 means no waste. 1.10 means 10% waste.
               </p>
             </div>
             {selectedIngredient && (
-              <div className="p-4 bg-muted rounded-lg">
+              <div className="rounded-lg bg-muted p-4">
                 <p className="text-sm">
                   <strong>Current:</strong>{" "}
                   {formatQuantity(selectedIngredient.quantity)}{" "}
@@ -575,7 +575,7 @@ export const RecipeCostDetailClient = ({
               Cancel
             </Button>
             <Button disabled={!wasteFactor} onClick={handleUpdateWasteFactor}>
-              <CheckIcon className="h-4 w-4 mr-2" />
+              <CheckIcon className="mr-2 h-4 w-4" />
               Update Waste Factor
             </Button>
           </DialogFooter>

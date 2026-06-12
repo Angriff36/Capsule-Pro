@@ -16,10 +16,10 @@
  * Invoice.metadata, fails here.
  */
 
-import { RuntimeEngine, type Store } from "@angriff36/manifest";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { RuntimeEngine, type Store } from "@angriff36/manifest";
 import { describe, expect, it } from "vitest";
 import { resolveParentContext } from "../parent-context-resolver.js";
 
@@ -53,7 +53,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -66,7 +68,10 @@ class Mem implements Store {
   }
 }
 
-function makeProvider(): { provider: (entity: string) => Store; stores: Map<string, Mem> } {
+function makeProvider(): {
+  provider: (entity: string) => Store;
+  stores: Map<string, Mem>;
+} {
   const stores = new Map<string, Mem>();
   const provider = (entity: string): Store => {
     let store = stores.get(entity);
@@ -80,7 +85,11 @@ function makeProvider(): { provider: (entity: string) => Store; stores: Map<stri
 }
 
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
-  return new RuntimeEngine(ir, { user: { id: "u1", tenantId: TENANT } }, { storeProvider: provider });
+  return new RuntimeEngine(
+    ir,
+    { user: { id: "u1", tenantId: TENANT } },
+    { storeProvider: provider }
+  );
 }
 
 async function seedInvoice(
@@ -102,7 +111,9 @@ async function seedInvoice(
 
 // Body a real caller sends: the parent link + schedule-specific input only —
 // no eventId/clientId (those are inherited from the Invoice).
-function createBody(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function createBody(
+  overrides: Record<string, unknown> = {}
+): Record<string, unknown> {
   return {
     invoiceId: INVOICE_ID,
     contractId: "contract-rr-1",
@@ -194,7 +205,11 @@ describe("RevenueRecognitionSchedule create — inherits Invoice-owned eventId/c
     const { inheritedFields } = await resolveParentContext(runtime, {
       entity: "RevenueRecognitionSchedule",
       command: "create",
-      body: { contractId: "contract-rr-1", totalAmount: 1000, method: "IMMEDIATE" },
+      body: {
+        contractId: "contract-rr-1",
+        totalAmount: 1000,
+        method: "IMMEDIATE",
+      },
     });
 
     expect(inheritedFields).toEqual([]);

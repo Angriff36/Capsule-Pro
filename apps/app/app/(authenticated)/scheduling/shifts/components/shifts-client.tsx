@@ -46,28 +46,28 @@ import { ShiftDetailModal } from "./shift-detail-modal";
 import { ShiftForm } from "./shift-form";
 
 interface Shift {
-  id: string;
-  schedule_id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
+  created_at: Date;
   employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
   employeeRole: string;
+  id: string;
   location_id: string;
   location_name: string;
-  shift_start: Date;
-  shift_end: Date;
-  role_during_shift: string | null;
   notes: string | null;
-  created_at: Date;
+  role_during_shift: string | null;
+  schedule_id: string;
+  shift_end: Date;
+  shift_start: Date;
   updated_at: Date;
 }
 
 interface Employee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
   email: string;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
   role: string;
 }
 
@@ -182,20 +182,18 @@ export function ShiftsClient() {
     setAssignmentModalOpen(true);
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
     });
-  };
 
   const calculateDuration = (start: Date, end: Date) => {
     const diffMs = end.getTime() - start.getTime();
@@ -340,7 +338,7 @@ export function ShiftsClient() {
         actions={
           <>
             <Button
-              className="rounded-full border border-white/30 bg-transparent px-5 text-[13px] font-medium text-white hover:bg-white/10 hover:text-white"
+              className="rounded-full border border-white/30 bg-transparent px-5 font-medium text-[13px] text-white hover:bg-white/10 hover:text-white"
               onClick={() => setBulkAssignmentModalOpen(true)}
               size="sm"
               variant="outline"
@@ -349,7 +347,7 @@ export function ShiftsClient() {
               Bulk assign
             </Button>
             <Button
-              className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
+              className="rounded-full bg-white px-5 font-medium text-[13px] text-primary hover:bg-white/90"
               onClick={() => setCreateModalOpen(true)}
               size="sm"
             >
@@ -425,7 +423,7 @@ export function ShiftsClient() {
                 }
                 value={filters.employeeId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All employees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -449,7 +447,7 @@ export function ShiftsClient() {
                 }
                 value={filters.locationId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All locations" />
                 </SelectTrigger>
                 <SelectContent>

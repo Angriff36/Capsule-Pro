@@ -14,9 +14,9 @@ export type EventStage =
   | "follow-ups-sent";
 
 interface StageConfig {
+  description: string;
   id: EventStage;
   label: string;
-  description: string;
 }
 
 const STAGES: StageConfig[] = [
@@ -55,8 +55,8 @@ const STAGES: StageConfig[] = [
 ];
 
 interface EventTimelineProps {
-  currentStage: EventStage;
   className?: string;
+  currentStage: EventStage;
   onStageClick?: (stage: EventStage) => void;
 }
 
@@ -70,17 +70,17 @@ export function EventTimeline({
   return (
     <div className={cn("space-y-4", className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Event Timeline</h3>
-        <span className="text-xs text-muted-foreground">
+        <h3 className="font-semibold text-sm">Event Timeline</h3>
+        <span className="text-muted-foreground text-xs">
           {currentIndex + 1} of {STAGES.length} stages complete
         </span>
       </div>
 
       <div className="relative">
         {/* Progress line */}
-        <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
+        <div className="absolute top-0 left-4 h-full w-0.5 bg-border" />
         <div
-          className="absolute left-4 top-0 h-full bg-primary transition-all duration-500"
+          className="absolute top-0 left-4 h-full bg-primary transition-all duration-500"
           style={{
             height: `${Math.min(100, (currentIndex / (STAGES.length - 1)) * 100)}%`,
           }}
@@ -117,19 +117,19 @@ export function EventTimeline({
                 <div className="min-w-0 flex-1">
                   <span
                     className={cn(
-                      "block text-sm font-medium",
+                      "block font-medium text-sm",
                       isComplete ? "text-foreground" : "text-muted-foreground",
                       isCurrent && "text-primary"
                     )}
                   >
                     {stage.label}
                   </span>
-                  <span className="block text-xs text-muted-foreground">
+                  <span className="block text-muted-foreground text-xs">
                     {stage.description}
                   </span>
                 </div>
                 {isCurrent && (
-                  <span className="flex-shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                  <span className="flex-shrink-0 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
                     Current
                   </span>
                 )}
@@ -144,8 +144,8 @@ export function EventTimeline({
 
 // Compact version for cards
 interface EventTimelineCompactProps {
-  currentStage: EventStage;
   className?: string;
+  currentStage: EventStage;
 }
 
 export function EventTimelineCompact({

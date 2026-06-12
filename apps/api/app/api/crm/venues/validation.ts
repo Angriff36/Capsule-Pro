@@ -39,7 +39,7 @@ function validateOptionalString(
   maxLength = 1000
 ): string | undefined {
   if (value === undefined || value === null || value === "") {
-    return undefined;
+    return;
   }
   invariant(typeof value === "string", `${field} must be a string`);
   invariant(
@@ -55,7 +55,7 @@ function validateOptionalEmail(
 ): string | undefined {
   const str = validateOptionalString(value, field, 320);
   if (str === undefined) {
-    return undefined;
+    return;
   }
   invariant(EMAIL_REGEX.test(str), `${field} must be a valid email address`);
   return str;
@@ -63,7 +63,7 @@ function validateOptionalEmail(
 
 function validateOptionalCountryCode(value: unknown): string | undefined {
   if (value === undefined || value === null || value === "") {
-    return undefined;
+    return;
   }
   invariant(typeof value === "string", "countryCode must be a string");
   invariant(
@@ -75,7 +75,7 @@ function validateOptionalCountryCode(value: unknown): string | undefined {
 
 function validateOptionalCapacity(value: unknown): number | undefined {
   if (value === undefined || value === null) {
-    return undefined;
+    return;
   }
   invariant(typeof value === "number", "capacity must be a number");
   invariant(Number.isInteger(value), "capacity must be an integer");
@@ -85,7 +85,7 @@ function validateOptionalCapacity(value: unknown): number | undefined {
 
 function validateOptionalTags(value: unknown): string[] | undefined {
   if (value === undefined || value === null) {
-    return undefined;
+    return;
   }
   invariant(Array.isArray(value), "tags must be an array");
   for (const tag of value) {
@@ -99,7 +99,7 @@ function validateOptionalJson(
   field: string
 ): unknown | undefined {
   if (value === undefined || value === null) {
-    return undefined;
+    return;
   }
   // Equipment list / preferred vendors are stored as JSONB. Accept anything
   // JSON-serializable; the Prisma client handles serialization.

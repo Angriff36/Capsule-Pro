@@ -125,7 +125,9 @@ function parsePrismaSchema(source) {
     const lines = body.split("\n");
     for (const rawLine of lines) {
       const line = rawLine.trim();
-      if (!line || line.startsWith("//")) continue;
+      if (!line || line.startsWith("//")) {
+        continue;
+      }
 
       // @@map("table_name") — captures the underlying table
       const mapMatch = line.match(/^@@map\("([^"]+)"\)/);
@@ -134,11 +136,15 @@ function parsePrismaSchema(source) {
         continue;
       }
       // Skip model-level directives we don't need
-      if (line.startsWith("@@")) continue;
+      if (line.startsWith("@@")) {
+        continue;
+      }
 
       // Field line: <name> <type>[?|[]] <attributes...>
       const fieldMatch = line.match(/^(\w+)\s+(\w+)(\??|\[\])?\s*(.*)$/);
-      if (!fieldMatch) continue;
+      if (!fieldMatch) {
+        continue;
+      }
       const [, fieldName, typeName, modifier, rest] = fieldMatch;
 
       const optional = modifier === "?";
@@ -190,12 +196,14 @@ function parsePrismaSchema(source) {
 function requiredCreateFields(model) {
   return model.fields.filter(
     (f) =>
-      !f.optional &&
-      !f.hasDefault &&
-      !f.isRelation &&
-      !f.isUpdatedAt &&
-      !f.isId &&
-      !f.isArray
+      !(
+        f.optional ||
+        f.hasDefault ||
+        f.isRelation ||
+        f.isUpdatedAt ||
+        f.isId ||
+        f.isArray
+      )
   );
 }
 
@@ -284,26 +292,28 @@ function buildCommandParams(cmd) {
 function buildCreateMutationTargets(cmd) {
   const set = new Set();
   for (const a of cmd?.actions ?? []) {
-    if (a.kind === "mutate" && a.target) set.add(a.target);
+    if (a.kind === "mutate" && a.target) {
+      set.add(a.target);
+    }
   }
   return set;
 }
 
 function hasManifestDefault(prop) {
   // The IR represents defaults a few different ways; check the common keys.
-  if (!prop) return false;
-  if ("default" in prop && prop.default !== undefined) return true;
-  if ("defaultValue" in prop && prop.defaultValue !== undefined) return true;
+  if (!prop) {
+    return false;
+  }
+  if ("default" in prop && prop.default !== undefined) {
+    return true;
+  }
+  if ("defaultValue" in prop && prop.defaultValue !== undefined) {
+    return true;
+  }
   return false;
 }
 
-function checkEntity({
-  modelName,
-  model,
-  ir,
-  governedSet,
-  allowlist,
-}) {
+function checkEntity({ modelName, model, ir, governedSet, allowlist }) {
   const entityName = modelName; // assume Prisma model name == manifest entity name
   const irEntity = entityFromIR(ir, entityName);
   const createCmd = createCommandFromIR(ir, entityName);
@@ -336,29 +346,37 @@ function checkEntity({
   const allowed = [];
 
   for (const field of required) {
-    if (ignoredFields.has(field.name)) continue;
+    if (ignoredFields.has(field.name)) {
+      continue;
+    }
 
     const expectedKind = manifestKindFor(field.prismaType);
     // Also check camelCase variant: Prisma uses snake_case column names
     // (e.g. first_name) while manifest uses camelCase (firstName).
-    const camelName = field.name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    const camelName = field.name.replace(/_([a-z])/g, (_, c) =>
+      c.toUpperCase()
+    );
     const irParam = params.get(field.name) || params.get(camelName);
     const irProp = props.get(field.name) || props.get(camelName);
     const declaredAsParam = !!irParam;
-    const declaredAsPropWithDefault =
-      !!irProp && hasManifestDefault(irProp);
+    const declaredAsPropWithDefault = !!irProp && hasManifestDefault(irProp);
     const mutatedByCreate =
       createMutations.has(field.name) || createMutations.has(camelName);
 
     let actualKind = null;
-    if (irParam) actualKind = irParam.type?.name ?? null;
-    else if (irProp) actualKind = irProp.type?.name ?? null;
+    if (irParam) {
+      actualKind = irParam.type?.name ?? null;
+    } else if (irProp) {
+      actualKind = irProp.type?.name ?? null;
+    }
 
     // Normalize semantic manifest types (datetime, money, int, decimal)
     // to their base types so they compare correctly against Prisma mappings.
     const normalizedActual = normalizeManifestType(actualKind ?? "");
     const typeMismatch =
-      actualKind && expectedKind !== "unknown" && normalizedActual !== expectedKind;
+      actualKind &&
+      expectedKind !== "unknown" &&
+      normalizedActual !== expectedKind;
 
     const declared =
       declaredAsParam || declaredAsPropWithDefault || mutatedByCreate;
@@ -476,7 +494,9 @@ function checkEntity({
 // datetime/money/int/decimal all into "number", which is exactly why
 // datetime-vs-Int drift was previously invisible. Groups keep them distinct.
 function prismaTypeGroup(field, knownModels) {
-  if (field.isRelation) return "relation";
+  if (field.isRelation) {
+    return "relation";
+  }
   switch (field.prismaType) {
     case "DateTime":
       return "temporal";
@@ -528,7 +548,9 @@ function loadModelMetadata() {
     console.error(
       `[schema-drift] Model metadata not found: ${PATHS.modelMetadata}`
     );
-    console.error("[schema-drift] Run `pnpm manifest:generate-metadata` first.");
+    console.error(
+      "[schema-drift] Run `pnpm manifest:generate-metadata` first."
+    );
     process.exit(2);
   }
   return JSON.parse(readFileSync(PATHS.modelMetadata, "utf-8"));
@@ -564,7 +586,9 @@ function checkIrParity({ irEntity, metaEntry, prismaModels, allowlist }) {
   const allowed = [];
 
   for (const prop of irEntity.properties ?? []) {
-    if (ignoredFields.has(prop.name)) continue;
+    if (ignoredFields.has(prop.name)) {
+      continue;
+    }
 
     const metaField = fieldByIrName.get(prop.name);
     if (!metaField) {
@@ -586,7 +610,9 @@ function checkIrParity({ irEntity, metaEntry, prismaModels, allowlist }) {
     }
 
     const prismaField = prismaFieldByName.get(metaField.name);
-    if (!prismaField) continue; // metadata/schema parse disagreement — generator owns this
+    if (!prismaField) {
+      continue; // metadata/schema parse disagreement — generator owns this
+    }
 
     const irType = prop.type?.name ?? "unknown";
     const accepts =
@@ -656,7 +682,9 @@ function renderMarkdown(summary, results) {
     lines.push("");
     lines.push(`### ${r.entityName}`);
     for (const v of r.violations) {
-      lines.push(`- **${v.severity}** \`${v.field}\` (Prisma: \`${v.prismaType}\`)`);
+      lines.push(
+        `- **${v.severity}** \`${v.field}\` (Prisma: \`${v.prismaType}\`)`
+      );
       lines.push(`    - ${v.recommendation}`);
       if (v.actualManifestKind) {
         lines.push(
@@ -671,11 +699,19 @@ function renderMarkdown(summary, results) {
   lines.push("");
   lines.push("Per constitution §14, the resolution order is:");
   lines.push("");
-  lines.push("1. **Add to manifest** — update the entity's `.manifest` source: add the field as a `command create` parameter or as a `property` with a default, then run `pnpm manifest:compile`.");
-  lines.push("2. **Adapter-derived rule** — if the field is intentionally infrastructural (e.g. looked up from a parent entity), add an entry to `scripts/manifest/schema-drift-allowlist.json` under `adapterDerived.<Entity>.<field>` with `{ \"rule\": \"...\", \"owner\": \"...\", \"reviewBy\": \"YYYY-MM-DD\" }`.");
-  lines.push("3. **Documented bypass** — if neither path is currently viable, add an entry under `nonconforming.<Entity>.<field>` with `{ \"reason\": \"...\", \"owner\": \"...\", \"removalPlan\": \"...\", \"reviewBy\": \"YYYY-MM-DD\" }`. The bypass is technical debt with a name attached, not permission.");
+  lines.push(
+    "1. **Add to manifest** — update the entity's `.manifest` source: add the field as a `command create` parameter or as a `property` with a default, then run `pnpm manifest:compile`."
+  );
+  lines.push(
+    '2. **Adapter-derived rule** — if the field is intentionally infrastructural (e.g. looked up from a parent entity), add an entry to `scripts/manifest/schema-drift-allowlist.json` under `adapterDerived.<Entity>.<field>` with `{ "rule": "...", "owner": "...", "reviewBy": "YYYY-MM-DD" }`.'
+  );
+  lines.push(
+    '3. **Documented bypass** — if neither path is currently viable, add an entry under `nonconforming.<Entity>.<field>` with `{ "reason": "...", "owner": "...", "removalPlan": "...", "reviewBy": "YYYY-MM-DD" }`. The bypass is technical debt with a name attached, not permission.'
+  );
   lines.push("");
-  lines.push("Per §14, do not change Prisma first to make the violation go away.");
+  lines.push(
+    "Per §14, do not change Prisma first to make the violation go away."
+  );
   return lines.join("\n");
 }
 
@@ -685,7 +721,9 @@ function renderMarkdown(summary, results) {
 
 function main() {
   if (!existsSync(PATHS.prismaSchema)) {
-    console.error(`[schema-drift] Prisma schema not found: ${PATHS.prismaSchema}`);
+    console.error(
+      `[schema-drift] Prisma schema not found: ${PATHS.prismaSchema}`
+    );
     process.exit(2);
   }
   const prismaSource = readFileSync(PATHS.prismaSchema, "utf-8");
@@ -810,7 +848,9 @@ function main() {
       console.error(
         `[schema-drift] STRICT: ${fresh.length} NEW violation(s) not in baseline:`
       );
-      for (const k of fresh.slice(0, 50)) console.error(`  - ${k}`);
+      for (const k of fresh.slice(0, 50)) {
+        console.error(`  - ${k}`);
+      }
       process.exit(1);
     }
     console.log(

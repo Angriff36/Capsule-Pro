@@ -13,28 +13,28 @@ import { apiFetch } from "@/app/lib/api";
 import { allergenWarningAcknowledge } from "@/app/lib/manifest-client.generated";
 
 interface AllergenConflict {
-  guestId: string;
-  guestName: string;
+  allergens: string[];
   dishId: string;
   dishName: string;
-  allergens: string[];
+  guestId: string;
+  guestName: string;
   severity: "critical" | "warning";
   type: "allergen_conflict" | "dietary_conflict";
 }
 
 interface AllergenWarning {
-  id: string;
-  eventId: string;
-  dishId: string | null;
-  warningType: string;
-  allergens: string[];
-  affectedGuests: string[];
-  severity: string;
-  isAcknowledged: boolean;
-  acknowledgedBy: string | null;
   acknowledgedAt: string | null;
-  resolvedAt: string | null;
+  acknowledgedBy: string | null;
+  affectedGuests: string[];
+  allergens: string[];
   createdAt: string;
+  dishId: string | null;
+  eventId: string;
+  id: string;
+  isAcknowledged: boolean;
+  resolvedAt: string | null;
+  severity: string;
+  warningType: string;
 }
 
 interface AllergenSectionProps {
@@ -99,7 +99,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
     let cancelled = false;
     setIsLoading(true);
     Promise.all([runAllergenCheck(), fetchWarnings()]).finally(() => {
-      if (!cancelled) setIsLoading(false);
+      if (!cancelled) {
+        setIsLoading(false);
+      }
     });
     return () => {
       cancelled = true;
@@ -130,7 +132,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   if (isLoading) {
     return (
       <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
+        <h3 className="font-medium text-muted-foreground text-sm">
           Loading allergen data...
         </h3>
       </div>
@@ -143,14 +145,14 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   return (
     <div className="space-y-4">
       {/* Conflict Summary */}
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Allergen & Dietary Check</h3>
+            <h3 className="font-semibold text-sm">Allergen & Dietary Check</h3>
           </div>
           <button
-            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 font-medium text-xs hover:bg-accent disabled:opacity-50"
             disabled={isChecking}
             onClick={runAllergenCheck}
             type="button"
@@ -169,20 +171,20 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
         ) : (
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg bg-destructive/10 p-2 text-center">
-              <p className="text-lg font-bold text-destructive">
+              <p className="font-bold text-destructive text-lg">
                 {conflictSummary.critical}
               </p>
-              <p className="text-xs text-muted-foreground">Critical</p>
+              <p className="text-muted-foreground text-xs">Critical</p>
             </div>
             <div className="rounded-lg bg-warning/10 p-2 text-center">
-              <p className="text-lg font-bold text-warning">
+              <p className="font-bold text-lg text-warning">
                 {conflictSummary.warning}
               </p>
-              <p className="text-xs text-muted-foreground">Dietary</p>
+              <p className="text-muted-foreground text-xs">Dietary</p>
             </div>
             <div className="rounded-lg bg-muted p-2 text-center">
-              <p className="text-lg font-bold">{conflictSummary.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="font-bold text-lg">{conflictSummary.total}</p>
+              <p className="text-muted-foreground text-xs">Total</p>
             </div>
           </div>
         )}
@@ -190,7 +192,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
         {conflicts.length > 0 && (
           <div>
             <button
-              className="flex w-full items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="flex w-full items-center justify-between font-medium text-muted-foreground text-xs hover:text-foreground"
               onClick={() => setExpandedConflicts(!expandedConflicts)}
               type="button"
             >
@@ -222,7 +224,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                         <div className="mt-1 flex flex-wrap gap-1">
                           {conflict.allergens.map((a) => (
                             <span
-                              className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                              className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium text-xs ${
                                 conflict.severity === "critical"
                                   ? "bg-destructive/15 text-destructive"
                                   : "bg-warning/15 text-warning"
@@ -235,7 +237,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                         </div>
                       </div>
                       <span
-                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                        className={`shrink-0 rounded-full px-1.5 py-0.5 font-medium text-xs ${
                           conflict.type === "allergen_conflict"
                             ? "bg-destructive/15 text-destructive"
                             : "bg-warning/15 text-warning"
@@ -256,7 +258,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
 
       {/* Warnings */}
       {warnings.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="space-y-3 rounded-xl border border-border bg-card p-4">
           <button
             className="flex w-full items-center justify-between"
             onClick={() => setExpandedWarnings(!expandedWarnings)}
@@ -264,7 +266,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
           >
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" />
-              <h3 className="text-sm font-semibold">
+              <h3 className="font-semibold text-sm">
                 Warnings ({unacknowledgedWarnings.length} active,{" "}
                 {acknowledgedWarnings.length} acknowledged)
               </h3>
@@ -292,7 +294,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                       </p>
                     </div>
                     <button
-                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 font-medium text-xs hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={acknowledgingIds.has(w.id)}
                       onClick={() => acknowledgeWarning(w.id)}
                       type="button"

@@ -376,7 +376,7 @@ describe("createManifestRuntime (shared factory)", () => {
         engineOptions.storeProvider(ir);
         expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
         expect(prismaStoreConstructorSpy).toHaveBeenCalledWith(
-          expect.objectContaining({ entityName: ir, tenantId: "tenant-1" }),
+          expect.objectContaining({ entityName: ir, tenantId: "tenant-1" })
         );
         expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
       }
@@ -432,7 +432,10 @@ describe("createManifestRuntime (shared factory)", () => {
       engineOptions.storeProvider("PrepList");
       expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
       expect(prismaStoreConstructorSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ entityName: "PrepList", tenantId: "tenant-1" }),
+        expect.objectContaining({
+          entityName: "PrepList",
+          tenantId: "tenant-1",
+        })
       );
       expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
     });

@@ -37,39 +37,39 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface RecipeStep {
-  stepNumber: number;
-  instruction: string;
   durationMinutes: number | null;
-  temperatureValue: number | null;
-  temperatureUnit: string | null;
   equipmentNeeded: string[] | null;
+  imageUrl: string | null;
+  instruction: string;
+  stepNumber: number;
+  temperatureUnit: string | null;
+  temperatureValue: number | null;
   tips: string | null;
   videoUrl: string | null;
-  imageUrl: string | null;
 }
 
 interface RecipeStepsResponse {
+  cookTimeMinutes: number | null;
+  description: string | null;
+  prepTimeMinutes: number | null;
   recipeId: string;
   recipeName: string;
   recipeVersionId: string;
-  description: string | null;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
   restTimeMinutes: number | null;
-  yieldQuantity: number | null;
-  yieldUnit: string | null;
   steps: RecipeStep[];
   totalDuration: number;
+  yieldQuantity: number | null;
+  yieldUnit: string | null;
 }
 
 interface RecipeIngredient {
   id: string;
+  isOptional: boolean;
   name: string;
+  notes: string | null;
+  orderIndex: number;
   quantity: number;
   unitCode: string;
-  notes: string | null;
-  isOptional: boolean;
-  orderIndex: number;
 }
 
 interface MobileRecipeClientProps {
@@ -427,8 +427,8 @@ export const MobileRecipeClient = ({
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
-          <p className="text-muted-foreground mt-4 text-sm">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent border-solid" />
+          <p className="mt-4 text-muted-foreground text-sm">
             Loading recipe...
           </p>
         </div>
@@ -451,7 +451,7 @@ export const MobileRecipeClient = ({
     <div className="flex min-h-0 flex-1 flex-col pb-safe">
       {/* Offline/Cache Status Indicator */}
       {isFromCache && (
-        <div className="flex items-center justify-between border-b border-hairline bg-muted/50 px-4 py-2 text-foreground">
+        <div className="flex items-center justify-between border-hairline border-b bg-muted/50 px-4 py-2 text-foreground">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm">
               <WifiOff className="h-4 w-4" />
@@ -460,7 +460,7 @@ export const MobileRecipeClient = ({
               </span>
             </div>
             {!isOnline && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 Last synced{" "}
                 {new Date(
                   Number.parseInt(
@@ -487,7 +487,7 @@ export const MobileRecipeClient = ({
       )}
 
       {/* Progress Bar */}
-      <div className="border-b border-hairline bg-background px-4 py-3">
+      <div className="border-hairline border-b bg-background px-4 py-3">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-medium">
             Step {currentStep + 1} of {recipe.steps.length}
@@ -546,7 +546,7 @@ export const MobileRecipeClient = ({
               {currentStepData.tips && (
                 <div className="flex gap-2 rounded-lg border border-hairline bg-muted/50 p-3">
                   <Info className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
-                  <p className="text-sm text-foreground">
+                  <p className="text-foreground text-sm">
                     {currentStepData.tips}
                   </p>
                 </div>
@@ -556,7 +556,7 @@ export const MobileRecipeClient = ({
                 currentStepData.equipmentNeeded.length > 0 && (
                   <div className="flex gap-2 rounded-lg border border-hairline bg-pale-blue/50 p-3">
                     <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-action-blue" />
-                    <div className="text-sm text-ink">
+                    <div className="text-ink text-sm">
                       <p className="font-medium">Equipment needed:</p>
                       <p className="text-muted-foreground">
                         {currentStepData.equipmentNeeded.join(", ")}
@@ -584,10 +584,10 @@ export const MobileRecipeClient = ({
                   <div className="flex items-center gap-3">
                     <Timer className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Step Timer
                       </p>
-                      <p className="text-2xl font-bold tabular-nums">
+                      <p className="font-bold text-2xl tabular-nums">
                         {timerSeconds > 0
                           ? formatTime(timerSeconds)
                           : formatMinutes(currentStepData.durationMinutes)}
@@ -634,7 +634,7 @@ export const MobileRecipeClient = ({
           {/* Navigation Buttons - Large for hands-free use */}
           <div className="flex gap-4">
             <Button
-              className="flex-1 h-16 text-lg"
+              className="h-16 flex-1 text-lg"
               disabled={currentStep === 0}
               onClick={goToPrevStep}
               variant="outline"
@@ -643,7 +643,7 @@ export const MobileRecipeClient = ({
               Previous
             </Button>
             <Button
-              className="flex-1 h-16 text-lg"
+              className="h-16 flex-1 text-lg"
               disabled={currentStep === recipe.steps.length - 1}
               onClick={goToNextStep}
             >
@@ -714,7 +714,7 @@ export const MobileRecipeClient = ({
                           </>
                         ) : (
                           <>
-                            <span className="text-muted-foreground line-through mr-1">
+                            <span className="mr-1 text-muted-foreground line-through">
                               {ingredient.quantity} {ingredient.unitCode}
                             </span>
                             <span className="text-primary">
@@ -751,7 +751,7 @@ export const MobileRecipeClient = ({
                 <div className="flex items-center gap-3 rounded-lg border border-hairline p-4">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Prep Time</p>
+                    <p className="text-muted-foreground text-sm">Prep Time</p>
                     <p className="font-semibold">
                       {formatMinutes(recipe.prepTimeMinutes)}
                     </p>
@@ -760,7 +760,7 @@ export const MobileRecipeClient = ({
                 <div className="flex items-center gap-3 rounded-lg border border-hairline p-4">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Cook Time</p>
+                    <p className="text-muted-foreground text-sm">Cook Time</p>
                     <p className="font-semibold">
                       {formatMinutes(recipe.cookTimeMinutes)}
                     </p>
@@ -770,8 +770,8 @@ export const MobileRecipeClient = ({
 
               {recipe.yieldQuantity && (
                 <div className="rounded-lg border border-hairline p-4">
-                  <p className="text-sm text-muted-foreground">Yield</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-muted-foreground text-sm">Yield</p>
+                  <p className="font-semibold text-lg">
                     {recipe.yieldQuantity} {recipe.yieldUnit || ""}
                   </p>
                 </div>
@@ -779,10 +779,10 @@ export const MobileRecipeClient = ({
 
               {recipe.totalDuration > 0 && (
                 <div className="rounded-lg border border-hairline p-4">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Total Timed Steps
                   </p>
-                  <p className="text-lg font-semibold">
+                  <p className="font-semibold text-lg">
                     {Math.floor(recipe.totalDuration / 60)}h{" "}
                     {recipe.totalDuration % 60}m
                   </p>

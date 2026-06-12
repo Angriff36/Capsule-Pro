@@ -46,15 +46,15 @@ import {
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { eventContractSend } from "@/app/lib/manifest-client.generated";
 import {
-  vendorContractSubmit,
-  vendorContractApprove,
-  vendorContractReject,
+  eventContractSend,
   vendorContractActivate,
-  vendorContractRenew,
-  vendorContractTerminate,
+  vendorContractApprove,
   vendorContractRecordSlaBreach,
+  vendorContractReject,
+  vendorContractRenew,
+  vendorContractSubmit,
+  vendorContractTerminate,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -62,32 +62,27 @@ import {
 // ---------------------------------------------------------------------------
 
 interface SerializedEventContract {
-  contractType: "event";
-  id: string;
-  tenantId: string;
-  eventId: string;
-  clientId: string;
-  contractNumber: string | null;
-  title: string;
-  status: string;
-  documentUrl: string | null;
-  documentType: string | null;
-  notes: string | null;
-  signingToken: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  event: {
-    id: string;
-    title: string;
-    eventDate: string | null;
-  } | null;
   client: {
     id: string;
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
   } | null;
+  clientId: string;
+  contractNumber: string | null;
+  contractType: "event";
+  createdAt: string;
+  documentType: string | null;
+  documentUrl: string | null;
+  event: {
+    id: string;
+    title: string;
+    eventDate: string | null;
+  } | null;
+  eventId: string;
+  expiresAt: string | null;
+  id: string;
+  notes: string | null;
   signatures: Array<{
     id: string;
     signedAt: string | null;
@@ -95,37 +90,42 @@ interface SerializedEventContract {
     signerEmail: string | null;
     ipAddress: string | null;
   }>;
+  signingToken: string | null;
+  status: string;
+  tenantId: string;
+  title: string;
+  updatedAt: string;
 }
 
 interface SerializedVendorContract {
-  contractType: "vendor";
-  id: string;
-  tenantId: string;
+  approvedAt: string | null;
+  approvedBy: string | null;
+  autoRenew: boolean;
+  complianceScore: number | null;
   contractNumber: string | null;
+  contractType: "vendor";
+  contractTypeLabel: string | null;
+  contractUrl: string | null;
+  createdAt: string;
+  endDate: string | null;
+  id: string;
+  lastComplianceReview: string | null;
+  notes: string | null;
+  noticeDaysBeforeRenewal: number | null;
+  onTimeDeliveryRate: number | null;
+  paymentTerms: string | null;
+  qualityRating: number | null;
+  renewalTermDays: number | null;
+  slaBreachCount: number | null;
+  startDate: string | null;
+  status: string;
+  tenantId: string;
+  terminatedAt: string | null;
+  terminatedBy: string | null;
+  terminationReason: string | null;
+  updatedAt: string;
   vendorId: string | null;
   vendorName: string | null;
-  contractTypeLabel: string | null;
-  status: string;
-  startDate: string | null;
-  endDate: string | null;
-  autoRenew: boolean;
-  renewalTermDays: number | null;
-  noticeDaysBeforeRenewal: number | null;
-  paymentTerms: string | null;
-  contractUrl: string | null;
-  notes: string | null;
-  complianceScore: number | null;
-  slaBreachCount: number | null;
-  onTimeDeliveryRate: number | null;
-  qualityRating: number | null;
-  lastComplianceReview: string | null;
-  approvedBy: string | null;
-  approvedAt: string | null;
-  terminatedBy: string | null;
-  terminatedAt: string | null;
-  terminationReason: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 type SerializedContract = SerializedEventContract | SerializedVendorContract;
@@ -153,7 +153,9 @@ const STATUS_COLORS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "\u2014";
+  if (!iso) {
+    return "\u2014";
+  }
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -162,7 +164,9 @@ function formatDate(iso: string | null): string {
 }
 
 function formatDateTime(iso: string | null): string {
-  if (!iso) return "\u2014";
+  if (!iso) {
+    return "\u2014";
+  }
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -175,7 +179,7 @@ function formatDateTime(iso: string | null): string {
 function statusBadge(status: string) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_COLORS[status] || "bg-slate-100 text-slate-600"}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs capitalize ${STATUS_COLORS[status] || "bg-slate-100 text-slate-600"}`}
     >
       {status}
     </span>
@@ -289,7 +293,7 @@ function EventContractDetail({
           {sig.signedAt ? formatDateTime(sig.signedAt) : "\u2014"}
         </span>
         {sig.ipAddress && (
-          <span className="ds-mono text-xs text-ink/40">
+          <span className="ds-mono text-ink/40 text-xs">
             IP: {sig.ipAddress}
           </span>
         )}
@@ -360,7 +364,7 @@ function EventContractDetail({
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-1">
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="font-medium text-muted-foreground text-sm">
                 Title
               </label>
               <p className="font-medium">{contract.title}</p>
@@ -370,7 +374,7 @@ function EventContractDetail({
 
             {contract.event && (
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Event
                 </label>
                 <Link
@@ -380,7 +384,7 @@ function EventContractDetail({
                   {contract.event.title}
                 </Link>
                 {contract.event.eventDate && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     <Calendar className="mr-1 inline h-3 w-3" />
                     {formatDate(contract.event.eventDate)}
                   </p>
@@ -392,7 +396,7 @@ function EventContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Client
                   </label>
                   <p className="font-medium">{clientName}</p>
@@ -404,13 +408,13 @@ function EventContractDetail({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Created
                 </label>
                 <p className="text-sm">{formatDateTime(contract.createdAt)}</p>
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Updated
                 </label>
                 <p className="text-sm">{formatDateTime(contract.updatedAt)}</p>
@@ -421,7 +425,7 @@ function EventContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Expires
                   </label>
                   <p className="text-sm">{formatDate(contract.expiresAt)}</p>
@@ -433,12 +437,12 @@ function EventContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Document
                   </label>
                   <div className="flex items-center gap-2">
                     <a
-                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                      className="inline-flex items-center gap-1 text-primary text-sm hover:underline"
                       href={contract.documentUrl}
                       rel="noopener"
                       target="_blank"
@@ -468,7 +472,7 @@ function EventContractDetail({
             {contract.notes ? (
               <p className="whitespace-pre-wrap text-sm">{contract.notes}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No notes recorded.
               </p>
             )}
@@ -485,14 +489,14 @@ function EventContractDetail({
           </CardTitle>
           <CardDescription>
             {contract.signatures.length} signature
-            {contract.signatures.length !== 1 ? "s" : ""} collected
+            {contract.signatures.length === 1 ? "" : "s"} collected
           </CardDescription>
         </CardHeader>
         <CardContent>
           {contract.signatures.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-12 text-center">
               <Signature className="mb-2 h-8 w-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No signatures captured yet.
               </p>
             </div>
@@ -500,7 +504,7 @@ function EventContractDetail({
             <>
               <MonoLabel className="mb-3 text-ink/50">
                 {contract.signatures.length} signature
-                {contract.signatures.length !== 1 ? "s" : ""}
+                {contract.signatures.length === 1 ? "" : "s"}
               </MonoLabel>
               <ResearchTable
                 linkComponent={({ href, className, children }) => (
@@ -530,15 +534,14 @@ function VendorContractDetail({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const executeCommand = useCallback(
-    async (
-      command: string,
-      label: string,
-      body?: Record<string, unknown>
-    ) => {
+    async (command: string, label: string, body?: Record<string, unknown>) => {
       setActionLoading(label);
       try {
         const payload = { instanceId: contract.id, ...body };
-        const commandFn: Record<string, (input: Record<string, unknown>) => Promise<unknown>> = {
+        const commandFn: Record<
+          string,
+          (input: Record<string, unknown>) => Promise<unknown>
+        > = {
           submit: vendorContractSubmit,
           approve: vendorContractApprove,
           reject: vendorContractReject,
@@ -548,7 +551,9 @@ function VendorContractDetail({
           recordSlaBreach: vendorContractRecordSlaBreach,
         };
         const fn = commandFn[command];
-        if (!fn) throw new Error(`Unknown command: ${command}`);
+        if (!fn) {
+          throw new Error(`Unknown command: ${command}`);
+        }
         await fn(payload);
         toast.success(`${label} completed`);
         window.location.reload();
@@ -685,7 +690,7 @@ function VendorContractDetail({
           <CardContent className="grid gap-4">
             {contract.vendorName && (
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Vendor
                 </label>
                 <p className="font-medium">{contract.vendorName}</p>
@@ -696,7 +701,7 @@ function VendorContractDetail({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Start date
                 </label>
                 <p className="text-sm">
@@ -705,7 +710,7 @@ function VendorContractDetail({
                 </p>
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   End date
                 </label>
                 <p className="text-sm">
@@ -719,7 +724,7 @@ function VendorContractDetail({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Auto-renew
                 </label>
                 <p className="text-sm">
@@ -730,7 +735,7 @@ function VendorContractDetail({
                 </p>
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Notice period
                 </label>
                 <p className="text-sm">
@@ -745,7 +750,7 @@ function VendorContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Payment terms
                   </label>
                   <p className="text-sm">{contract.paymentTerms}</p>
@@ -757,13 +762,13 @@ function VendorContractDetail({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Created
                 </label>
                 <p className="text-sm">{formatDateTime(contract.createdAt)}</p>
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Updated
                 </label>
                 <p className="text-sm">{formatDateTime(contract.updatedAt)}</p>
@@ -774,11 +779,11 @@ function VendorContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label className="font-medium text-muted-foreground text-sm">
                     Contract document
                   </label>
                   <a
-                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    className="inline-flex items-center gap-1 text-primary text-sm hover:underline"
                     href={contract.contractUrl}
                     rel="noopener"
                     target="_blank"
@@ -795,7 +800,7 @@ function VendorContractDetail({
               <>
                 <Separator />
                 <div className="grid gap-1">
-                  <label className="text-sm font-medium text-destructive">
+                  <label className="font-medium text-destructive text-sm">
                     Termination
                   </label>
                   <p className="text-sm">
@@ -803,7 +808,7 @@ function VendorContractDetail({
                     {contract.terminatedBy && ` by ${contract.terminatedBy}`}
                   </p>
                   {contract.terminationReason && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Reason: {contract.terminationReason}
                     </p>
                   )}
@@ -833,11 +838,11 @@ function VendorContractDetail({
                   Compliance score
                 </div>
                 <span
-                  className={`ds-mono text-sm font-medium ${complianceColor}`}
+                  className={`ds-mono font-medium text-sm ${complianceColor}`}
                 >
-                  {contract.complianceScore !== null
-                    ? `${contract.complianceScore}%`
-                    : "\u2014"}
+                  {contract.complianceScore === null
+                    ? "\u2014"
+                    : `${contract.complianceScore}%`}
                 </span>
               </div>
 
@@ -846,7 +851,7 @@ function VendorContractDetail({
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   SLA breaches
                 </div>
-                <span className={`ds-mono text-sm font-medium ${breachColor}`}>
+                <span className={`ds-mono font-medium text-sm ${breachColor}`}>
                   {contract.slaBreachCount ?? 0}
                 </span>
               </div>
@@ -856,10 +861,10 @@ function VendorContractDetail({
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   On-time delivery
                 </div>
-                <span className="ds-mono text-sm font-medium">
-                  {contract.onTimeDeliveryRate !== null
-                    ? `${contract.onTimeDeliveryRate}%`
-                    : "\u2014"}
+                <span className="ds-mono font-medium text-sm">
+                  {contract.onTimeDeliveryRate === null
+                    ? "\u2014"
+                    : `${contract.onTimeDeliveryRate}%`}
                 </span>
               </div>
 
@@ -868,10 +873,10 @@ function VendorContractDetail({
                   <Star className="h-4 w-4 text-muted-foreground" />
                   Quality rating
                 </div>
-                <span className="ds-mono text-sm font-medium">
-                  {contract.qualityRating !== null
-                    ? `${contract.qualityRating}/5`
-                    : "\u2014"}
+                <span className="ds-mono font-medium text-sm">
+                  {contract.qualityRating === null
+                    ? "\u2014"
+                    : `${contract.qualityRating}/5`}
                 </span>
               </div>
 
@@ -891,7 +896,7 @@ function VendorContractDetail({
             {/* Approval info */}
             {contract.approvedBy && (
               <div className="grid gap-1">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="font-medium text-muted-foreground text-sm">
                   Approved by
                 </label>
                 <p className="text-sm">
@@ -907,10 +912,7 @@ function VendorContractDetail({
             <Button
               disabled={actionLoading !== null}
               onClick={() =>
-                executeCommand(
-                  "recordSlaBreach",
-                  "Record SLA breach"
-                )
+                executeCommand("recordSlaBreach", "Record SLA breach")
               }
               size="sm"
               variant="outline"
@@ -936,7 +938,7 @@ function VendorContractDetail({
             {contract.notes ? (
               <p className="whitespace-pre-wrap text-sm">{contract.notes}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No notes recorded.
               </p>
             )}

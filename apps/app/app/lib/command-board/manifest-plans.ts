@@ -12,10 +12,10 @@ const PLAN_AGGREGATE_TYPE = "command_board_plan";
 const PENDING_EVENT_TYPE = "command_board.plan.pending";
 
 interface CreatePendingManifestPlanInput {
-  tenantId: string;
   boardId: string;
   plan: SuggestedManifestPlan;
   requestedBy: string | null;
+  tenantId: string;
 }
 
 export async function createPendingManifestPlan({
@@ -124,9 +124,9 @@ export async function updateManifestPlanRecord({
 }
 
 interface CreateManifestPlanAuditEventInput {
-  tenantId: string;
-  planId: string;
   payload: ManifestPlanRecordPayload;
+  planId: string;
+  tenantId: string;
 }
 
 export async function createManifestPlanAuditEvent({

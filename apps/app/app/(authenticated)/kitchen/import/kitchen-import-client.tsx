@@ -35,18 +35,18 @@ import { apiFetch } from "@/app/lib/api";
 type ImportType = "recipes" | "dishes" | "prep-lists";
 
 interface ImportSummary {
+  created: string[];
+  errors: string[];
   imported: number;
   skipped: number;
-  errors: string[];
-  created: string[];
 }
 
 interface TabConfig {
-  id: ImportType;
-  label: string;
+  csvColumns: string;
   description: string;
   icon: typeof ChefHatIcon;
-  csvColumns: string;
+  id: ImportType;
+  label: string;
 }
 
 const TABS: TabConfig[] = [
@@ -89,7 +89,9 @@ export function KitchenImportClient() {
   // ── File handling ────────────────────────────────────────────────
 
   const handleFiles = useCallback((fileList: FileList | null) => {
-    if (!fileList) return;
+    if (!fileList) {
+      return;
+    }
 
     const newFiles: File[] = [];
     const allowedExtensions = [".csv"];
@@ -179,7 +181,9 @@ export function KitchenImportClient() {
   // ── Helpers ───────────────────────────────────────────────────────
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -238,15 +242,15 @@ export function KitchenImportClient() {
                     onDrop={handleDrop}
                   >
                     <UploadIcon className="mb-4 h-10 w-10 text-muted-foreground" />
-                    <p className="mb-2 text-sm text-muted-foreground">
+                    <p className="mb-2 text-muted-foreground text-sm">
                       Drag and drop CSV files here, or click to browse
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Supports .csv files (images and PDFs coming soon)
                     </p>
                     <input
                       accept=".csv"
-                      className="mt-4 max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+                      className="mt-4 max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:font-medium file:text-sm"
                       multiple
                       onChange={(e) => handleFiles(e.target.files)}
                       type="file"
@@ -266,10 +270,10 @@ export function KitchenImportClient() {
                             <div className="flex items-center gap-3">
                               <FileIcon className="h-5 w-5 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">
+                                <p className="font-medium text-sm">
                                   {file.name}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                   {formatBytes(file.size)} • CSV
                                 </p>
                               </div>
@@ -290,10 +294,10 @@ export function KitchenImportClient() {
 
                   {/* CSV Column Reference */}
                   <div className="rounded-lg border bg-muted/30 p-4">
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    <p className="mb-2 font-medium text-muted-foreground text-xs">
                       Expected CSV columns:
                     </p>
-                    <code className="text-xs text-muted-foreground break-all">
+                    <code className="break-all text-muted-foreground text-xs">
                       {tab.csvColumns}
                     </code>
                   </div>
@@ -348,22 +352,22 @@ export function KitchenImportClient() {
             {/* Summary Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-                <p className="text-2xl font-bold text-green-700">
+                <p className="font-bold text-2xl text-green-700">
                   {result.imported}
                 </p>
-                <p className="text-xs text-green-600">Imported</p>
+                <p className="text-green-600 text-xs">Imported</p>
               </div>
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
-                <p className="text-2xl font-bold text-amber-700">
+                <p className="font-bold text-2xl text-amber-700">
                   {result.skipped}
                 </p>
-                <p className="text-xs text-amber-600">Skipped</p>
+                <p className="text-amber-600 text-xs">Skipped</p>
               </div>
               <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-                <p className="text-2xl font-bold text-red-700">
+                <p className="font-bold text-2xl text-red-700">
                   {result.errors.length}
                 </p>
-                <p className="text-xs text-red-600">Errors</p>
+                <p className="text-red-600 text-xs">Errors</p>
               </div>
             </div>
 
@@ -394,7 +398,7 @@ export function KitchenImportClient() {
                 <div className="max-h-60 overflow-auto rounded-lg border border-destructive/30">
                   {result.errors.map((err, i) => (
                     <div
-                      className="flex items-start gap-2 border-b border-destructive/10 p-2 px-3 text-sm last:border-b-0"
+                      className="flex items-start gap-2 border-destructive/10 border-b p-2 px-3 text-sm last:border-b-0"
                       key={i}
                     >
                       <AlertCircleIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />

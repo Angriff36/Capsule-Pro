@@ -25,11 +25,11 @@ const DefaultLink: LinkComponent = ({ href, className, children }) => (
 );
 
 export interface AnnouncementBarProps {
-  message: ReactNode;
-  ctaLabel?: string;
-  ctaHref?: string;
-  linkComponent?: LinkComponent;
   className?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  linkComponent?: LinkComponent;
+  message: ReactNode;
 }
 
 export function AnnouncementBar({

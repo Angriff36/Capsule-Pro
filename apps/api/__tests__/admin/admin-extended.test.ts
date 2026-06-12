@@ -109,7 +109,9 @@ vi.mock("@/lib/database", async () => {
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
@@ -206,10 +208,10 @@ function dispatchSuccess(
   result: Record<string, unknown> = { id: "test-id" },
   events: unknown[] = []
 ) {
-  return new Response(
-    JSON.stringify({ success: true, result, events }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ success: true, result, events }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 // --- Tests ---
@@ -564,7 +566,9 @@ describe("Admin Extended API", () => {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
           vi.mocked(requireCurrentUser).mockRejectedValue(
-            new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+            new (await import("@/app/lib/invariant")).InvariantError(
+              "Unauthorized"
+            ) as never
           );
 
           const response = await handler(
@@ -582,10 +586,9 @@ describe("Admin Extended API", () => {
 
         it("should return 200 on successful command", async () => {
           vi.mocked(runManifestCommand).mockResolvedValue(
-            dispatchSuccess(
-              { id: "result-id", archived: true },
-              [{ type: "archived" }]
-            )
+            dispatchSuccess({ id: "result-id", archived: true }, [
+              { type: "archived" },
+            ])
           );
 
           const response = await handler(
@@ -665,17 +668,35 @@ describe("Admin Extended API", () => {
       });
     }
 
-    testManifestRoute("POST archive", archiveParticipant, "AdminChatParticipant", "archive", {
-      instanceId: "participant-001",
-    });
+    testManifestRoute(
+      "POST archive",
+      archiveParticipant,
+      "AdminChatParticipant",
+      "archive",
+      {
+        instanceId: "participant-001",
+      }
+    );
 
-    testManifestRoute("POST clear-history", clearHistory, "AdminChatParticipant", "clearHistory", {
-      instanceId: "participant-001",
-    });
+    testManifestRoute(
+      "POST clear-history",
+      clearHistory,
+      "AdminChatParticipant",
+      "clearHistory",
+      {
+        instanceId: "participant-001",
+      }
+    );
 
-    testManifestRoute("POST unarchive", unarchiveParticipant, "AdminChatParticipant", "unarchive", {
-      instanceId: "participant-001",
-    });
+    testManifestRoute(
+      "POST unarchive",
+      unarchiveParticipant,
+      "AdminChatParticipant",
+      "unarchive",
+      {
+        instanceId: "participant-001",
+      }
+    );
   });
 
   // =====================================================================
@@ -895,7 +916,9 @@ describe("Admin Extended API", () => {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
           vi.mocked(requireCurrentUser).mockRejectedValue(
-            new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+            new (await import("@/app/lib/invariant")).InvariantError(
+              "Unauthorized"
+            ) as never
           );
 
           const response = await handler(
@@ -909,10 +932,9 @@ describe("Admin Extended API", () => {
 
         it("should return 200 on success", async () => {
           vi.mocked(runManifestCommand).mockResolvedValue(
-            dispatchSuccess(
-              { sessionId: "session-001", status: "confirmed" },
-              [{ type: "session.confirmed" }]
-            )
+            dispatchSuccess({ sessionId: "session-001", status: "confirmed" }, [
+              { type: "session.confirmed" },
+            ])
           );
 
           const response = await handler(
@@ -978,22 +1000,46 @@ describe("Admin Extended API", () => {
       });
     }
 
-    testSessionCommand("POST cancel", sessionCancel, "AiEventSetupSession", "cancel", {
-      instanceId: "session-001",
-    });
+    testSessionCommand(
+      "POST cancel",
+      sessionCancel,
+      "AiEventSetupSession",
+      "cancel",
+      {
+        instanceId: "session-001",
+      }
+    );
 
-    testSessionCommand("POST confirm", sessionConfirm, "AiEventSetupSession", "confirm", {
-      instanceId: "session-001",
-    });
+    testSessionCommand(
+      "POST confirm",
+      sessionConfirm,
+      "AiEventSetupSession",
+      "confirm",
+      {
+        instanceId: "session-001",
+      }
+    );
 
-    testSessionCommand("POST mark-created", sessionMarkCreated, "AiEventSetupSession", "markCreated", {
-      instanceId: "session-001",
-    });
+    testSessionCommand(
+      "POST mark-created",
+      sessionMarkCreated,
+      "AiEventSetupSession",
+      "markCreated",
+      {
+        instanceId: "session-001",
+      }
+    );
 
-    testSessionCommand("POST parse", sessionParse, "AiEventSetupSession", "parse", {
-      instanceId: "session-001",
-      originalInput: "wedding for 50 guests",
-    });
+    testSessionCommand(
+      "POST parse",
+      sessionParse,
+      "AiEventSetupSession",
+      "parse",
+      {
+        instanceId: "session-001",
+        originalInput: "wedding for 50 guests",
+      }
+    );
 
     testSessionCommand(
       "POST update-confidence",
@@ -1021,7 +1067,9 @@ describe("Admin Extended API", () => {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
           vi.mocked(requireCurrentUser).mockRejectedValue(
-            new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+            new (await import("@/app/lib/invariant")).InvariantError(
+              "Unauthorized"
+            ) as never
           );
 
           const response = await handler(
@@ -1035,10 +1083,7 @@ describe("Admin Extended API", () => {
 
         it("should return 200 on success", async () => {
           vi.mocked(runManifestCommand).mockResolvedValue(
-            dispatchSuccess(
-              { id: "alert-001" },
-              [{ type: "alert.created" }]
-            )
+            dispatchSuccess({ id: "alert-001" }, [{ type: "alert.created" }])
           );
 
           const response = await handler(
@@ -1108,20 +1153,38 @@ describe("Admin Extended API", () => {
       });
     }
 
-    testAlertsCommand("POST create", alertsConfigCreate, "AlertsConfig", "create", {
-      name: "Low Stock Alert",
-      type: "inventory",
-      threshold: 10,
-    });
+    testAlertsCommand(
+      "POST create",
+      alertsConfigCreate,
+      "AlertsConfig",
+      "create",
+      {
+        name: "Low Stock Alert",
+        type: "inventory",
+        threshold: 10,
+      }
+    );
 
-    testAlertsCommand("POST update", alertsConfigUpdate, "AlertsConfig", "update", {
-      instanceId: "alert-001",
-      threshold: 20,
-    });
+    testAlertsCommand(
+      "POST update",
+      alertsConfigUpdate,
+      "AlertsConfig",
+      "update",
+      {
+        instanceId: "alert-001",
+        threshold: 20,
+      }
+    );
 
-    testAlertsCommand("POST remove", alertsConfigRemove, "AlertsConfig", "remove", {
-      instanceId: "alert-001",
-    });
+    testAlertsCommand(
+      "POST remove",
+      alertsConfigRemove,
+      "AlertsConfig",
+      "remove",
+      {
+        instanceId: "alert-001",
+      }
+    );
   });
 
   // =====================================================================
@@ -1138,7 +1201,9 @@ describe("Admin Extended API", () => {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
           vi.mocked(requireCurrentUser).mockRejectedValue(
-            new (await import("@/app/lib/invariant")).InvariantError("Unauthorized") as never
+            new (await import("@/app/lib/invariant")).InvariantError(
+              "Unauthorized"
+            ) as never
           );
 
           const response = await handler(
@@ -1152,10 +1217,9 @@ describe("Admin Extended API", () => {
 
         it("should return 200 on success", async () => {
           vi.mocked(runManifestCommand).mockResolvedValue(
-            dispatchSuccess(
-              { id: "allergen-001" },
-              [{ type: "allergen.created" }]
-            )
+            dispatchSuccess({ id: "allergen-001" }, [
+              { type: "allergen.created" },
+            ])
           );
 
           const response = await handler(
@@ -1247,20 +1311,38 @@ describe("Admin Extended API", () => {
       }
     );
 
-    testAllergenCommand("POST create", allergenCreate, "AllergenWarning", "create", {
-      allergenType: "peanut",
-      severity: "high",
-      dishId: "dish-001",
-      description: "Contains trace peanuts",
-    });
+    testAllergenCommand(
+      "POST create",
+      allergenCreate,
+      "AllergenWarning",
+      "create",
+      {
+        allergenType: "peanut",
+        severity: "high",
+        dishId: "dish-001",
+        description: "Contains trace peanuts",
+      }
+    );
 
-    testAllergenCommand("POST resolve", allergenResolve, "AllergenWarning", "resolve", {
-      instanceId: "allergen-001",
-      resolution: "Ingredient substituted",
-    });
+    testAllergenCommand(
+      "POST resolve",
+      allergenResolve,
+      "AllergenWarning",
+      "resolve",
+      {
+        instanceId: "allergen-001",
+        resolution: "Ingredient substituted",
+      }
+    );
 
-    testAllergenCommand("POST soft-delete", allergenSoftDelete, "AllergenWarning", "softDelete", {
-      instanceId: "allergen-001",
-    });
+    testAllergenCommand(
+      "POST soft-delete",
+      allergenSoftDelete,
+      "AllergenWarning",
+      "softDelete",
+      {
+        instanceId: "allergen-001",
+      }
+    );
   });
 });

@@ -377,15 +377,15 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
 
     // Define type for AI response to avoid any
     interface AiSuggestion {
-      suggestionType: string;
-      category: string;
-      priority: string;
-      title: string;
-      description: string;
-      reasoning: string;
-      actionType: string;
       actionPath?: string;
+      actionType: string;
+      category: string;
+      description: string;
       estimatedImpact?: string;
+      priority: string;
+      reasoning: string;
+      suggestionType: string;
+      title: string;
     }
 
     // Convert to SuggestedAction format
@@ -599,7 +599,7 @@ export async function GET(request: Request) {
     // Return response
     return NextResponse.json({
       suggestions,
-      summary: `Generated ${suggestions.length} AI-powered suggestion${suggestions.length !== 1 ? "s" : ""} based on current state.`,
+      summary: `Generated ${suggestions.length} AI-powered suggestion${suggestions.length === 1 ? "" : "s"} based on current state.`,
       generatedAt: new Date(),
       context: {
         timeframe,

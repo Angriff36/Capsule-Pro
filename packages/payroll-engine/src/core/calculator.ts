@@ -53,11 +53,11 @@ function roundHours(hours: number, rule: RoundingRule): number {
 }
 
 interface TipAllocationContext {
-  pool: TipPool;
-  employeeId: string;
-  employeeHours: number;
-  totalHoursAllEmployees: number;
   employeeCount: number;
+  employeeHours: number;
+  employeeId: string;
+  pool: TipPool;
+  totalHoursAllEmployees: number;
 }
 
 type TipAllocationStrategy = (context: TipAllocationContext) => Currency;
@@ -194,10 +194,10 @@ function applyDeductions(
 
     if (deduction.percentage !== undefined && deduction.percentage > 0) {
       amount = grossPay.percentage(deduction.percentage);
-    } else if (deduction.amount !== undefined) {
-      amount = money(deduction.amount);
-    } else {
+    } else if (deduction.amount === undefined) {
       continue; // Skip if no amount or percentage
+    } else {
+      amount = money(deduction.amount);
     }
 
     // Cap deduction if needed
@@ -227,16 +227,16 @@ function applyDeductions(
 }
 
 interface PayrollRecordBuildInput {
+  deductions: Deduction[];
   employee: Employee;
+  employeeCount: number;
+  periodEnd: Date;
+  periodId: string;
+  periodStart: Date;
   role: Role;
   timeEntries: TimeEntryInput[];
   tipPools: TipPool[];
-  deductions: Deduction[];
-  periodId: string;
-  periodStart: Date;
-  periodEnd: Date;
   totalHoursAllEmployees: number;
-  employeeCount: number;
 }
 
 function buildPayrollRecord(input: PayrollRecordBuildInput): PayrollRecord {

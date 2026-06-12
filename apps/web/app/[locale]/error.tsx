@@ -34,7 +34,9 @@ export default function LocaleError({ error, reset }: LocaleErrorProps) {
     error.message?.includes("Intl");
 
   useEffect(() => {
-    if (isNextHTTPErrorFallback(error)) return;
+    if (isNextHTTPErrorFallback(error)) {
+      return;
+    }
     console.error("[Locale Error]", {
       message: error.message,
       name: error.name,
@@ -60,7 +62,7 @@ export default function LocaleError({ error, reset }: LocaleErrorProps) {
             : "An unexpected error occurred. Please try again."}
         </p>
         <button
-          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-sm text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onClick={() => {
             if (isLocaleError) {
               window.location.href = "/en";

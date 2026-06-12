@@ -17,14 +17,14 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 interface RecipeListFilters {
   category?: string;
   cuisineType?: string;
+  isActive?: boolean;
   search?: string;
   tag?: string;
-  isActive?: boolean;
 }
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

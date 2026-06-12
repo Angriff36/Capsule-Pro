@@ -6,15 +6,15 @@ import { apiFetch } from "@/app/lib/api";
 
 // TypeScript types for Finance Analytics
 export interface FinanceHighlight {
-  label: string;
-  value: string;
-  trend: string;
   isPositive?: boolean;
+  label: string;
+  trend: string;
+  value: string;
 }
 
 export interface LedgerEntry {
-  label: string;
   amount: string;
+  label: string;
 }
 
 export interface FinanceAlert {
@@ -23,43 +23,43 @@ export interface FinanceAlert {
 }
 
 export interface FinanceMetrics {
-  totalEvents: number;
-  budgetedRevenue: number;
+  actualFoodCost: number;
+  actualLaborCost: number;
+  actualOtherCost: number;
   actualRevenue: number;
   budgetedFoodCost: number;
-  actualFoodCost: number;
   budgetedLaborCost: number;
-  actualLaborCost: number;
   budgetedOtherCost: number;
-  actualOtherCost: number;
-  totalCost: number;
+  budgetedRevenue: number;
   grossProfit: number;
   grossProfitMargin: number;
+  totalCost: number;
+  totalEvents: number;
 }
 
 export interface FinanceAnalyticsData {
+  financeAlerts: FinanceAlert[];
+  financeHighlights: FinanceHighlight[];
+  ledgerSummary: LedgerEntry[];
+  metrics: FinanceMetrics;
   summary: {
     period: string;
     startDate: string;
     endDate: string;
     locationId: string | null;
   };
-  financeHighlights: FinanceHighlight[];
-  ledgerSummary: LedgerEntry[];
-  financeAlerts: FinanceAlert[];
-  metrics: FinanceMetrics;
 }
 
 export interface UseFinanceAnalyticsOptions {
-  period?: "7d" | "30d" | "90d" | "12m";
-  locationId?: string;
   enabled?: boolean;
+  locationId?: string;
+  period?: "7d" | "30d" | "90d" | "12m";
 }
 
 export interface UseFinanceAnalyticsReturn {
   data: FinanceAnalyticsData | null;
-  isLoading: boolean;
   error: Error | null;
+  isLoading: boolean;
   refetch: () => void;
 }
 

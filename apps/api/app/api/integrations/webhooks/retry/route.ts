@@ -9,7 +9,6 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { toJson } from "@/lib/prisma-utils";
 import {
   determineNextStatus,
   sendWebhook,
@@ -20,6 +19,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { toJson } from "@/lib/prisma-utils";
 
 // Valid statuses
 const VALID_DELIVERY_STATUSES = [
@@ -31,8 +31,8 @@ const VALID_DELIVERY_STATUSES = [
 type DeliveryStatus = (typeof VALID_DELIVERY_STATUSES)[number];
 
 interface RetryDeliveriesRequest {
-  maxRetries?: number;
   deliveryLogId?: string; // Retry specific delivery
+  maxRetries?: number;
 }
 
 /**

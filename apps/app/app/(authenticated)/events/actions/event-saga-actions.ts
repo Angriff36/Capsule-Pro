@@ -2,9 +2,9 @@
 
 import { randomUUID } from "node:crypto";
 import { database } from "@repo/database";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { runManifestSaga } from "@/lib/manifest-saga";
-import { requireCurrentUser } from "@/app/lib/tenant";
 
 export type SagaActionResult = { ok: true } | { ok: false; error: string };
 
@@ -92,14 +92,14 @@ export async function finalizeEventWithReporting(
 }
 
 export interface AutoGeneratePrepListInput {
-  eventId: string;
-  name: string;
-  menuGroupsJson: string;
-  totalInstructionLines: number;
-  validInstructionLines: number;
   batchMultiplier?: number;
   dietaryRestrictions?: string;
+  eventId: string;
+  menuGroupsJson: string;
+  name: string;
   notes?: string;
+  totalInstructionLines: number;
+  validInstructionLines: number;
 }
 
 /**
@@ -138,7 +138,10 @@ export async function autoGeneratePrepListForEvent(
   });
 
   if (!shell.ok) {
-    return { ok: false, error: shell.message ?? "Failed to create prep list shell" };
+    return {
+      ok: false,
+      error: shell.message ?? "Failed to create prep list shell",
+    };
   }
 
   const sagaResult = await runManifestSaga({
@@ -191,7 +194,10 @@ export async function confirmEventWithOptionalPrepList(
   });
 
   if (!confirmResult.ok) {
-    return { ok: false, error: confirmResult.message ?? "Failed to confirm event" };
+    return {
+      ok: false,
+      error: confirmResult.message ?? "Failed to confirm event",
+    };
   }
 
   if (!prepSeed) {

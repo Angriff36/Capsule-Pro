@@ -93,8 +93,7 @@ export function getCommand(
   commandName: string
 ): IR["commands"][number] | undefined {
   return getCommands().find(
-    (command) =>
-      command.entity === entityName && command.name === commandName
+    (command) => command.entity === entityName && command.name === commandName
   );
 }
 

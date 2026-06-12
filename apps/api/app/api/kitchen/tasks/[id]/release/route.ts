@@ -19,7 +19,10 @@ interface RouteContext {
 export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   log.info("[KitchenTask/release] Delegating to manifest release command", {
     taskId: id,

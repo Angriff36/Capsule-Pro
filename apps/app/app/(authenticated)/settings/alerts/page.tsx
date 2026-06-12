@@ -23,10 +23,14 @@ import { AlertsConfigClient } from "./alerts-client";
 
 export default async function AlertsConfigPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [total, channels] = await Promise.all([
     database.alertsConfig.count({ where: { tenantId } }),
@@ -75,7 +79,7 @@ export default async function AlertsConfigPage() {
               <MetricLabel>Total Configs</MetricLabel>
               <MetricValue>{total}</MetricValue>
               <p className="text-sm text-white/70">
-                {channelCount} channel{channelCount !== 1 ? "s" : ""} configured
+                {channelCount} channel{channelCount === 1 ? "" : "s"} configured
               </p>
             </MetricCell>
             <MetricCell>
@@ -100,7 +104,7 @@ export default async function AlertsConfigPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
-            count={`${total} config${total !== 1 ? "s" : ""}`}
+            count={`${total} config${total === 1 ? "" : "s"}`}
             description="Manage alert notification channels and delivery destinations."
             eyebrow="Alerts"
             title="Alert Configurations"

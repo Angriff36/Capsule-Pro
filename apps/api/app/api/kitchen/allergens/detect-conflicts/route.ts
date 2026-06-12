@@ -9,11 +9,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Required for manifest runtime - must use Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -23,17 +23,17 @@ interface DetectConflictsRequest {
 }
 
 interface GuestData {
-  id: string;
-  guestName: string | null;
   allergenRestrictions: string[] | null;
   dietaryRestrictions: string[] | null;
+  guestName: string | null;
+  id: string;
 }
 
 interface DishData {
-  id: string;
-  name: string;
   allergens: string[];
   dietaryTags: string[];
+  id: string;
+  name: string;
 }
 
 /**

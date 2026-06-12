@@ -61,8 +61,8 @@ export default async function ProposalTemplatesPage() {
 
       <OperationalColumn>
         {templates.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
+          <div className="py-12 text-center">
+            <p className="mb-4 text-muted-foreground">
               No templates yet. Create your first template to get started.
             </p>
             <Button asChild>
@@ -98,7 +98,7 @@ export default async function ProposalTemplatesPage() {
                           )}
                         </div>
                         {template.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
+                          <p className="line-clamp-1 text-muted-foreground text-sm">
                             {template.description}
                           </p>
                         )}

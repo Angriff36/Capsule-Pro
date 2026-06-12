@@ -52,60 +52,60 @@ export interface ApiConstraintOutcome {
   code: string;
   /** Constraint display name */
   constraintName: string;
-  /** Severity level */
-  severity: ConstraintSeverity;
-  /** User-friendly error message */
-  message: string;
-  /** Formatted expression with values */
-  formatted: string;
   /** Structured details with resolved values */
   details?: Record<string, unknown>;
-  /** Whether constraint passed */
-  passed: boolean;
+  /** Formatted expression with values */
+  formatted: string;
+  /** User-friendly error message */
+  message: string;
   /** Whether constraint was overridden */
   overridden?: boolean;
   /** User who authorized override */
   overriddenBy?: string;
+  /** Whether constraint passed */
+  passed: boolean;
   /** Resolved expression values for debugging */
   resolved?: Array<{ expression: string; value: unknown }>;
+  /** Severity level */
+  severity: ConstraintSeverity;
 }
 
 /**
  * Standard error response format
  */
 export interface ApiErrorResponse {
-  success: false;
-  /** Human-readable error message */
-  message: string;
+  /** Workflow causation ID linking to trigger event */
+  causationId?: string;
+  /** Constraint violations that caused the error */
+  constraintOutcomes?: ApiConstraintOutcome[];
+  /** Workflow correlation ID for event grouping */
+  correlationId?: string;
+  /** Additional error context */
+  details?: Record<string, unknown>;
   /** Detailed error message (optional) */
   error?: string;
   /** Application-specific error code */
   errorCode?: string;
-  /** Constraint violations that caused the error */
-  constraintOutcomes?: ApiConstraintOutcome[];
-  /** Additional error context */
-  details?: Record<string, unknown>;
-  /** Workflow correlation ID for event grouping */
-  correlationId?: string;
-  /** Workflow causation ID linking to trigger event */
-  causationId?: string;
+  /** Human-readable error message */
+  message: string;
+  success: false;
 }
 
 /**
  * Standard success response format
  */
 export interface ApiSuccessResponse<T = unknown> {
-  success: true;
-  /** Response data */
-  data: T;
-  /** Constraint outcomes (warnings, info) */
-  constraintOutcomes?: ApiConstraintOutcome[];
-  /** Emitted events for reactive updates */
-  emittedEvents?: EmittedEvent[];
-  /** Workflow correlation ID for event grouping */
-  correlationId?: string;
   /** Workflow causation ID linking to trigger event */
   causationId?: string;
+  /** Constraint outcomes (warnings, info) */
+  constraintOutcomes?: ApiConstraintOutcome[];
+  /** Workflow correlation ID for event grouping */
+  correlationId?: string;
+  /** Response data */
+  data: T;
+  /** Emitted events for reactive updates */
+  emittedEvents?: EmittedEvent[];
+  success: true;
 }
 
 /**

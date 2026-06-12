@@ -17,24 +17,24 @@ import { requireTenantId } from "@/app/lib/tenant";
 /* -------------------------------------------------------------------------- */
 
 interface ReportLineItem {
-  category: string;
   accountName: string;
   amount: number;
+  category: string;
   percentage: number;
 }
 
 interface ReportSummary {
-  totalRevenue: number;
-  totalExpenses: number;
   netIncome: number;
+  totalExpenses: number;
+  totalRevenue: number;
 }
 
 interface FinancialReportResponse {
-  type: string;
-  startDate: string;
   endDate: string;
-  summary: ReportSummary;
   lineItems: ReportLineItem[];
+  startDate: string;
+  summary: ReportSummary;
+  type: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -42,7 +42,9 @@ interface FinancialReportResponse {
 /* -------------------------------------------------------------------------- */
 
 function parseDate(value: string | null, fallback: Date): Date {
-  if (!value) return fallback;
+  if (!value) {
+    return fallback;
+  }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? fallback : parsed;
 }

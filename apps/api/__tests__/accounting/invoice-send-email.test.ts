@@ -63,7 +63,9 @@ vi.mock("@repo/email", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireTenantId: vi.fn().mockResolvedValue("00000000-0000-0000-0000-000000000001"),
+  requireTenantId: vi
+    .fn()
+    .mockResolvedValue("00000000-0000-0000-0000-000000000001"),
   resolveCurrentUser: mocks.resolveCurrentUserMock,
 }));
 
@@ -151,7 +153,10 @@ const sentInvoiceWithClient = {
 
 function manifestSuccessResponse(data: unknown, status = 200) {
   return new Response(
-    JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }),
+    JSON.stringify({
+      success: true,
+      ...(typeof data === "object" && data !== null ? data : { data }),
+    }),
     { status, headers: { "content-type": "application/json" } }
   );
 }

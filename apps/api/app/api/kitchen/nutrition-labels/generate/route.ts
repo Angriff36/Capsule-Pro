@@ -12,20 +12,20 @@ const generateSchema = z.object({
 });
 
 interface NutritionInfo {
+  calcium: number;
   calories: number;
-  totalFat: number;
-  saturatedFat: number;
-  transFat: number;
   cholesterol: number;
-  sodium: number;
-  totalCarbs: number;
   dietaryFiber: number;
-  sugars: number;
+  iron: number;
   protein: number;
+  saturatedFat: number;
+  sodium: number;
+  sugars: number;
+  totalCarbs: number;
+  totalFat: number;
+  transFat: number;
   vitaminA: number;
   vitaminC: number;
-  calcium: number;
-  iron: number;
 }
 
 // USDA-style nutrition database (simplified)
@@ -457,7 +457,9 @@ export async function POST(request: NextRequest) {
 
     for (const ri of recipeIngredients) {
       const ingredient = ingredientMap.get(ri.ingredientId);
-      if (!ingredient) continue;
+      if (!ingredient) {
+        continue;
+      }
 
       const nutrition = findNutrition(ingredient.name);
 

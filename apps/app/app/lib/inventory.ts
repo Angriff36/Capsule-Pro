@@ -1,15 +1,14 @@
 "use client";
 
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
-import {
-  inventoryItemCreate,
-  inventoryItemUpdate,
-  inventoryItemSoftDelete,
-  listInventorySuppliers as _listInventorySuppliers,
-} from "@/app/lib/manifest-client.generated";
-import type { InventoryItem as GeneratedInventoryItem, InventorySupplier as GeneratedInventorySupplier } from "@/app/lib/manifest-types.generated";
 // NOTE: Keeping apiFetch for batch operations, CSV import, and custom supplier list endpoint
 import { apiFetch } from "@/app/lib/api";
+import {
+  inventoryItemCreate,
+  inventoryItemSoftDelete,
+  inventoryItemUpdate,
+} from "@/app/lib/manifest-client.generated";
+import type { InventoryItem as GeneratedInventoryItem } from "@/app/lib/manifest-types.generated";
 // Type definitions matching the API response
 export const FSA_STATUSES = [
   "unknown",
@@ -62,27 +61,27 @@ export type UnitOfMeasure = (typeof UNITS_OF_MEASURE)[number];
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export interface InventoryItem {
+  barcode: string | null;
+  category: string;
+  created_at: Date;
+  deleted_at: Date | null;
+  description: string | null;
+  fsa_allergen_info: boolean | null;
+  fsa_status: FSAStatus | null;
+  fsa_temp_logged: boolean | null;
+  fsa_traceable: boolean | null;
   id: string;
-  tenant_id: string;
   item_number: string;
   name: string;
-  description: string | null;
-  category: string;
-  unit_of_measure: string;
-  barcode: string | null;
-  unit_cost: number;
-  quantity_on_hand: number;
   par_level: number;
+  quantity_on_hand: number;
   reorder_level: number;
   supplier_id: string | null;
   tags: string[];
-  fsa_status: FSAStatus | null;
-  fsa_temp_logged: boolean | null;
-  fsa_allergen_info: boolean | null;
-  fsa_traceable: boolean | null;
-  created_at: Date;
+  tenant_id: string;
+  unit_cost: number;
+  unit_of_measure: string;
   updated_at: Date;
-  deleted_at: Date | null;
 }
 
 export interface InventoryItemWithStatus extends InventoryItem {
@@ -101,39 +100,39 @@ export interface InventoryItemListResponse {
 }
 
 export interface CreateInventoryItemRequest {
+  category: string;
+  description?: string;
+  fsa_allergen_info?: boolean;
+  fsa_status?: FSAStatus;
+  fsa_temp_logged?: boolean;
+  fsa_traceable?: boolean;
   item_number: string;
   name: string;
-  description?: string;
-  category: string;
-  unit_of_measure?: string;
-  unit_cost?: number;
-  quantity_on_hand?: number;
   par_level?: number;
+  quantity_on_hand?: number;
   reorder_level?: number;
   supplier_id?: string;
   tags?: string[];
-  fsa_status?: FSAStatus;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  unit_cost?: number;
+  unit_of_measure?: string;
 }
 
 export interface UpdateInventoryItemRequest {
+  category?: string;
+  description?: string;
+  fsa_allergen_info?: boolean;
+  fsa_status?: FSAStatus;
+  fsa_temp_logged?: boolean;
+  fsa_traceable?: boolean;
   item_number?: string;
   name?: string;
-  description?: string;
-  category?: string;
-  unit_of_measure?: string;
-  unit_cost?: number;
-  quantity_on_hand?: number;
   par_level?: number;
+  quantity_on_hand?: number;
   reorder_level?: number;
   supplier_id?: string;
   tags?: string[];
-  fsa_status?: FSAStatus;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  unit_cost?: number;
+  unit_of_measure?: string;
 }
 
 /**
@@ -155,16 +154,34 @@ export async function listInventoryItems(params: {
   // computed stock_status/total_value + server-side filters/pagination) differs
   // from generated listInventoryItems (/api/kitchen/inventory/list raw rows).
   const searchParams = new URLSearchParams();
-  if (params.search) searchParams.set("search", params.search);
-  if (params.category) searchParams.set("category", params.category);
-  if (params.supplierId) searchParams.set("supplier_id", params.supplierId);
-  if (params.stockStatus) searchParams.set("stock_status", params.stockStatus);
-  if (params.fsaStatus) searchParams.set("fsa_status", params.fsaStatus);
-  if (params.tags?.length) searchParams.set("tags", params.tags.join(","));
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.search) {
+    searchParams.set("search", params.search);
+  }
+  if (params.category) {
+    searchParams.set("category", params.category);
+  }
+  if (params.supplierId) {
+    searchParams.set("supplier_id", params.supplierId);
+  }
+  if (params.stockStatus) {
+    searchParams.set("stock_status", params.stockStatus);
+  }
+  if (params.fsaStatus) {
+    searchParams.set("fsa_status", params.fsaStatus);
+  }
+  if (params.tags?.length) {
+    searchParams.set("tags", params.tags.join(","));
+  }
+  if (params.page) {
+    searchParams.set("page", String(params.page));
+  }
+  if (params.limit) {
+    searchParams.set("limit", String(params.limit));
+  }
 
-  const response = await apiFetch(`/api/inventory/items?${searchParams.toString()}`);
+  const response = await apiFetch(
+    `/api/inventory/items?${searchParams.toString()}`
+  );
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Failed to list inventory items");
@@ -207,7 +224,9 @@ export async function createInventoryItem(
     fsa_allergen_info: request.fsa_allergen_info,
     fsa_traceable: request.fsa_traceable,
   });
-  if (!result) throw new Error("Failed to create inventory item");
+  if (!result) {
+    throw new Error("Failed to create inventory item");
+  }
   return result;
 }
 
@@ -230,10 +249,14 @@ export async function updateInventoryItem(
     tags: request.tags,
     fsa_status: request.fsa_status,
     fsa_temp_logged: request.fsa_temp_logged as unknown as string | undefined,
-    fsa_allergen_info: request.fsa_allergen_info as unknown as string | undefined,
+    fsa_allergen_info: request.fsa_allergen_info as unknown as
+      | string
+      | undefined,
     fsa_traceable: request.fsa_traceable as unknown as string | undefined,
   });
-  if (!result) throw new Error("Failed to update inventory item");
+  if (!result) {
+    throw new Error("Failed to update inventory item");
+  }
   return result;
 }
 
@@ -352,11 +375,13 @@ export async function listSuppliers(): Promise<Supplier[]> {
     throw new Error(error.message || "Failed to list suppliers");
   }
   const data = await response.json();
-  return (data.inventorySuppliers ?? []).map((s: { id: string; name: string; supplier_number: string }) => ({
-    id: s.id,
-    name: s.name,
-    supplier_number: s.supplier_number,
-  }));
+  return (data.inventorySuppliers ?? []).map(
+    (s: { id: string; name: string; supplier_number: string }) => ({
+      id: s.id,
+      name: s.name,
+      supplier_number: s.supplier_number,
+    })
+  );
 }
 
 export { formatCurrency };
@@ -373,22 +398,22 @@ export function formatQuantity(quantity: number): string {
 export interface BatchUpdateRequest {
   category?: ItemCategory;
   fsa_status?: FSAStatus;
+  reorder_level?: number;
   tags?: string[];
   unit_cost?: number;
-  reorder_level?: number;
 }
 
 export interface BatchUpdateResponse {
-  success: boolean;
   action: "update";
+  success: boolean;
   updated: number;
   updates: BatchUpdateRequest;
 }
 
 export interface BatchDeleteResponse {
-  success: boolean;
   action: "delete";
   deleted: number;
+  success: boolean;
 }
 
 export type BatchResponse = BatchUpdateResponse | BatchDeleteResponse;
@@ -437,13 +462,13 @@ export async function batchDeleteItems(
 }
 
 export interface ImportError {
-  row: number;
   message: string;
+  row: number;
 }
 
 export interface ImportResponse {
-  success: number;
   errors: ImportError[];
+  success: number;
 }
 
 // NOTE: Keeping apiFetch for CSV file import — no generated file upload equivalent

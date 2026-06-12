@@ -146,7 +146,9 @@ export async function GET(request: Request) {
     );
     for (const item of allLineItems) {
       const items = lineItemsByProposal.get(item.proposalId);
-      if (items) items.push(item);
+      if (items) {
+        items.push(item);
+      }
     }
 
     const proposalsWithLineItems = proposals.map((proposal) => ({
@@ -183,7 +185,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return await runManifestCommand({
     entity: "Proposal",
     command: "create",

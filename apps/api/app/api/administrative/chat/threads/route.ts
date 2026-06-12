@@ -15,29 +15,29 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 interface ThreadParticipantSummary {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
   avatarUrl: string | null;
+  email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
 }
 
 interface ThreadMessageSummary {
-  id: string;
-  text: string;
   authorName: string;
   createdAt: Date;
+  id: string;
+  text: string;
 }
 
 interface ThreadSummary {
-  id: string;
-  type: "team" | "direct";
-  title: string;
-  lastMessage: ThreadMessageSummary | null;
-  lastMessageAt: Date | null;
   archivedAt: Date | null;
   clearedAt: Date | null;
+  id: string;
+  lastMessage: ThreadMessageSummary | null;
+  lastMessageAt: Date | null;
   participant: ThreadParticipantSummary | null;
+  title: string;
+  type: "team" | "direct";
 }
 
 interface ParticipantRow {
@@ -114,8 +114,8 @@ const toThreadSummary = (
   };
 };
 
-const getEmployee = async (tenantId: string, authUserId: string) => {
-  return await database.user.findFirst({
+const getEmployee = async (tenantId: string, authUserId: string) =>
+  await database.user.findFirst({
     where: {
       tenantId,
       authUserId,
@@ -128,7 +128,6 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
       email: true,
     },
   });
-};
 
 /**
  * Ensures the team thread and current user's participant exist.
@@ -137,7 +136,14 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
 const ensureTeamThread = async (
   tenantId: string,
   employeeId: string,
-  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string }
+  user: {
+    id: string;
+    tenantId: string;
+    role: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }
 ) => {
   // Read: check if team thread already exists (read per constitution §10)
   let teamThread = await database.adminChatThread.findFirst({
@@ -431,15 +437,16 @@ export async function POST(request: Request) {
 
     // Ensure both participants exist via Manifest
     // Read: check current user's participant (read per constitution §10)
-    const existingSelfParticipant = await database.adminChatParticipant.findFirst({
-      where: {
-        tenantId,
-        threadId: thread.id,
-        userId: employee.id,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
+    const existingSelfParticipant =
+      await database.adminChatParticipant.findFirst({
+        where: {
+          tenantId,
+          threadId: thread.id,
+          userId: employee.id,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
 
     if (!existingSelfParticipant) {
       await runManifestCommand({
@@ -454,15 +461,16 @@ export async function POST(request: Request) {
     }
 
     // Read: check other participant (read per constitution §10)
-    const existingOtherParticipant = await database.adminChatParticipant.findFirst({
-      where: {
-        tenantId,
-        threadId: thread.id,
-        userId: participantId,
-        deletedAt: null,
-      },
-      select: { id: true, archivedAt: true },
-    });
+    const existingOtherParticipant =
+      await database.adminChatParticipant.findFirst({
+        where: {
+          tenantId,
+          threadId: thread.id,
+          userId: participantId,
+          deletedAt: null,
+        },
+        select: { id: true, archivedAt: true },
+      });
 
     if (!existingOtherParticipant) {
       await runManifestCommand({

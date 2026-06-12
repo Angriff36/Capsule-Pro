@@ -1,58 +1,61 @@
 "use client";
 
 import {
-  listEventBudgets as _listEventBudgets,
   getEventBudget as _getEventBudget,
+  listBudgetLineItems as _listBudgetLineItems,
+  listEventBudgets as _listEventBudgets,
+  budgetLineItemCreate,
+  budgetLineItemRemove,
+  budgetLineItemUpdate,
   eventBudgetCreate,
   eventBudgetUpdate,
-  listBudgetLineItems as _listBudgetLineItems,
-  budgetLineItemCreate,
-  budgetLineItemUpdate,
-  budgetLineItemRemove,
 } from "@/app/lib/manifest-client.generated";
-import type { EventBudget as GeneratedEventBudget, BudgetLineItem as GeneratedBudgetLineItem } from "@/app/lib/manifest-types.generated";
+import type {
+  BudgetLineItem as GeneratedBudgetLineItem,
+  EventBudget as GeneratedEventBudget,
+} from "@/app/lib/manifest-types.generated";
 // Type definitions matching the API response
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
 
 export interface BudgetLineItem {
-  id: string;
-  tenant_id: string;
-  budget_id: string;
-  category: BudgetCategory;
-  name: string;
-  description: string | null;
-  budgeted_amount: number;
   actual_amount: number;
-  variance_amount: number;
-  sort_order: number;
-  notes: string | null;
+  budget_id: string;
+  budgeted_amount: number;
+  category: BudgetCategory;
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
+  description: string | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  sort_order: number;
+  tenant_id: string;
+  updated_at: Date;
+  variance_amount: number;
 }
 
 export interface EventBudget {
-  id: string;
-  tenant_id: string;
-  event_id: string;
-  version: number;
-  status: EventBudgetStatus;
-  total_budget_amount: number;
-  total_actual_amount: number;
-  variance_amount: number;
-  variance_percentage: number;
-  notes: string | null;
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
-  line_items?: BudgetLineItem[];
   event?: {
     id: string;
     title: string;
     event_date: Date;
     client_name?: string;
   };
+  event_id: string;
+  id: string;
+  line_items?: BudgetLineItem[];
+  notes: string | null;
+  status: EventBudgetStatus;
+  tenant_id: string;
+  total_actual_amount: number;
+  total_budget_amount: number;
+  updated_at: Date;
+  variance_amount: number;
+  variance_percentage: number;
+  version: number;
 }
 
 export interface BudgetListResponse {
@@ -67,47 +70,47 @@ export interface BudgetListResponse {
 
 export interface CreateBudgetRequest {
   eventId: string;
-  version?: number;
-  status?: EventBudgetStatus;
-  notes?: string;
   lineItems?: CreateBudgetLineItemRequest[];
+  notes?: string;
+  status?: EventBudgetStatus;
+  version?: number;
 }
 
 export interface CreateBudgetLineItemRequest {
-  category: BudgetCategory;
-  name: string;
-  description?: string;
-  budgetedAmount: number;
   actualAmount?: number;
-  sortOrder?: number;
+  budgetedAmount: number;
+  category: BudgetCategory;
+  description?: string;
+  name: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export interface UpdateBudgetRequest {
-  version?: number;
-  status?: EventBudgetStatus;
   notes?: string;
+  status?: EventBudgetStatus;
+  version?: number;
 }
 
 export interface CreateLineItemRequest {
+  actualAmount?: number;
+  budgetedAmount: number;
   budgetId: string;
   category: BudgetCategory;
-  name: string;
   description?: string;
-  budgetedAmount: number;
-  actualAmount?: number;
-  sortOrder?: number;
+  name: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 export interface UpdateLineItemRequest {
-  category?: BudgetCategory;
-  name?: string;
-  description?: string;
-  budgetedAmount?: number;
   actualAmount?: number;
-  sortOrder?: number;
+  budgetedAmount?: number;
+  category?: BudgetCategory;
+  description?: string;
+  name?: string;
   notes?: string;
+  sortOrder?: number;
 }
 
 /**
@@ -122,10 +125,18 @@ export async function listBudgets(params: {
   limit?: number;
 }): Promise<BudgetListResponse> {
   const query: Record<string, string | number> = {};
-  if (params.eventId) query.eventId = params.eventId;
-  if (params.status) query.status = params.status;
-  if (params.page) query.page = params.page;
-  if (params.limit) query.limit = params.limit;
+  if (params.eventId) {
+    query.eventId = params.eventId;
+  }
+  if (params.status) {
+    query.status = params.status;
+  }
+  if (params.page) {
+    query.page = params.page;
+  }
+  if (params.limit) {
+    query.limit = params.limit;
+  }
 
   return _listEventBudgets(query) as unknown as Promise<BudgetListResponse>;
 }
@@ -133,7 +144,9 @@ export async function listBudgets(params: {
 // Get a single budget by ID
 export async function getBudget(budgetId: string): Promise<EventBudget> {
   const result = await _getEventBudget(budgetId);
-  if (!result) throw new Error("Failed to get budget");
+  if (!result) {
+    throw new Error("Failed to get budget");
+  }
   return result as unknown as EventBudget;
 }
 
@@ -145,7 +158,9 @@ export async function createBudget(
     eventId: request.eventId,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to create budget");
+  if (!result) {
+    throw new Error("Failed to create budget");
+  }
   return result;
 }
 
@@ -158,7 +173,9 @@ export async function updateBudget(
     id: budgetId,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to update budget");
+  if (!result) {
+    throw new Error("Failed to update budget");
+  }
   return result;
 }
 
@@ -198,7 +215,9 @@ export async function createLineItem(
     sortOrder: request.sortOrder,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to create line item");
+  if (!result) {
+    throw new Error("Failed to create line item");
+  }
   return result;
 }
 
@@ -215,7 +234,9 @@ export async function updateLineItem(
     description: request.description,
     notes: request.notes,
   });
-  if (!result) throw new Error("Failed to update line item");
+  if (!result) {
+    throw new Error("Failed to update line item");
+  }
   return result;
 }
 

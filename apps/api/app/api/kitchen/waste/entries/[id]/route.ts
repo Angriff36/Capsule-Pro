@@ -6,23 +6,23 @@ import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface WasteEntryDetail {
-  id: string;
-  tenant_id: string;
-  inventory_item_id: string;
-  quantity: string;
-  unit_id: number | null;
-  reason_id: number;
-  notes: string | null;
-  event_id: string | null;
-  logged_by: string;
-  logged_at: Date;
   created_at: Date;
-  updated_at: Date;
   deleted_at: Date | null;
-  item_name: string | null;
-  item_category: string | null;
-  user_name: string | null;
+  event_id: string | null;
   event_name: string | null;
+  id: string;
+  inventory_item_id: string;
+  item_category: string | null;
+  item_name: string | null;
+  logged_at: Date;
+  logged_by: string;
+  notes: string | null;
+  quantity: string;
+  reason_id: number;
+  tenant_id: string;
+  unit_id: number | null;
+  updated_at: Date;
+  user_name: string | null;
 }
 
 /**
@@ -86,7 +86,10 @@ export async function PUT(
 ) {
   const { id } = await params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   return runManifestCommand({
     entity: "WasteEntry",

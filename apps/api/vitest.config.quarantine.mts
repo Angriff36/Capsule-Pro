@@ -40,7 +40,7 @@ export default defineConfig({
             "./test/mocks/@repo/generated/client.ts"
           );
         }
-        return undefined;
+        return;
       },
       load(id) {
         if (
@@ -58,7 +58,7 @@ export default defineConfig({
             export const tenantDatabase = () => ({});
           `;
         }
-        return undefined;
+        return;
       },
     },
   ],

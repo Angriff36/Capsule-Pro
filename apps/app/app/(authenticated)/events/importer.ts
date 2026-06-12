@@ -3,8 +3,8 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import type { MenuItem, ParsedEvent } from "@repo/event-parser";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { createEventSchema } from "./validation";
 
 type EventParserModule = typeof import("@repo/event-parser");
@@ -21,8 +21,8 @@ type ManifestUser = { id: string; tenantId: string; role: string };
 type CsvRow = Record<string, string>;
 
 interface ImportContext {
-  tenantId: string;
   locationId: string;
+  tenantId: string;
   unitIds: {
     pound?: number;
     each?: number;
@@ -380,8 +380,8 @@ const insertInventoryItem = async (
 };
 
 interface ItemClassification {
-  kind: "dish" | "recipe" | "ingredient" | "supply";
   category?: string;
+  kind: "dish" | "recipe" | "ingredient" | "supply";
   tags: string[];
 }
 
@@ -670,22 +670,22 @@ type MissingField =
   | "menuItems";
 
 interface MenuImportSummary {
-  missingQuantities: string[];
-  linkedDishes: number;
   createdDishes: number;
   createdRecipes: number;
+  linkedDishes: number;
+  missingQuantities: string[];
   updatedLinks: number;
 }
 
 interface AggregatedMenuItem {
-  name: string;
-  category: string | null;
-  serviceLocation: string | null;
-  quantity: number;
-  quantitySource: "parsed" | "details" | "headcount" | "fallback";
   allergens: Set<string>;
+  category: string | null;
   dietaryTags: Set<string>;
   instructions: Set<string>;
+  name: string;
+  quantity: number;
+  quantitySource: "parsed" | "details" | "headcount" | "fallback";
+  serviceLocation: string | null;
 }
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
@@ -1395,7 +1395,9 @@ export const importEventFromPdf = async ({
     user,
   });
   if (!eventResult.ok) {
-    throw new Error(eventResult.message || "Failed to create event from PDF import");
+    throw new Error(
+      eventResult.message || "Failed to create event from PDF import"
+    );
   }
   const eventId = (eventResult.result as { id?: string } | null)?.id;
   if (!eventId) {

@@ -165,13 +165,13 @@ export default function IntakeWizardShell({ pricingRules }: Props) {
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
-      <header className="bg-white/80 backdrop-blur-md border-b border-stone-100 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-stone-100 border-b bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-stone-800 rounded-lg flex items-center justify-center">
-              <UtensilsCrossed className="w-4 h-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800">
+              <UtensilsCrossed className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-semibold text-stone-800 tracking-tight hidden sm:block">
+            <span className="hidden font-semibold text-sm text-stone-800 tracking-tight sm:block">
               Event Inquiry
             </span>
           </div>
@@ -181,7 +181,7 @@ export default function IntakeWizardShell({ pricingRules }: Props) {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-4">
+      <div className="mx-auto max-w-4xl px-4 pt-6 pb-4 sm:px-6">
         <ProgressBar
           currentStep={wizard.currentStep}
           onStepClick={wizard.goToStep}
@@ -189,8 +189,8 @@ export default function IntakeWizardShell({ pricingRules }: Props) {
         />
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 md:p-10">
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 md:py-10">
+        <div className="rounded-2xl border border-stone-100 bg-white p-6 shadow-sm md:p-10">
           <div className="animate-fadeIn" key={wizard.currentStep}>
             {renderStep()}
           </div>
@@ -207,8 +207,8 @@ export default function IntakeWizardShell({ pricingRules }: Props) {
         </div>
       </main>
 
-      <footer className="text-center py-8 px-4">
-        <p className="text-xs text-stone-300">
+      <footer className="px-4 py-8 text-center">
+        <p className="text-stone-300 text-xs">
           All estimates are non-binding. Your information is handled with care
           and never shared.
         </p>

@@ -19,7 +19,12 @@ export function mergeTelemetryHooks(
     },
     onOverrideApplied(constraint, overrideReq, outcome, commandName) {
       for (const hook of hooks) {
-        hook?.onOverrideApplied?.(constraint, overrideReq, outcome, commandName);
+        hook?.onOverrideApplied?.(
+          constraint,
+          overrideReq,
+          outcome,
+          commandName
+        );
       }
     },
     onCommandExecuted(command, result, entityName) {

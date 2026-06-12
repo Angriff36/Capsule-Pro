@@ -15,16 +15,16 @@ import { describe, expect, it } from "vitest";
 // ---------------------------------------------------------------------------
 
 interface RouteEntry {
+  auth: boolean;
   id: string;
-  path: string;
   method: string;
   params: Array<{ name: string; type: string; location: string }>;
+  path: string;
   source: {
     kind: "entity-read" | "command";
     entity?: string;
     command?: string;
   };
-  auth: boolean;
   tenant: boolean;
 }
 
@@ -38,7 +38,9 @@ function matchRoute(
     : `/${url.split("?")[0]}`;
 
   for (const route of routes) {
-    if (route.method !== method) continue;
+    if (route.method !== method) {
+      continue;
+    }
 
     const paramNames: string[] = [];
     const pattern = route.path.replace(/:([^/]+)/g, (_, name) => {

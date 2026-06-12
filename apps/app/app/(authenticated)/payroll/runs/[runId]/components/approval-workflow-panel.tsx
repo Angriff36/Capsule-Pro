@@ -29,33 +29,33 @@ type PayrollRunStatus =
   | "failed";
 
 interface PayrollRun {
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  createdAt: Date;
+  employeeCount: number;
   id: string;
-  tenantId: string;
+  paidAt: Date | null;
   payrollPeriodId: string;
+  periodEnd: Date | null;
+  periodStart: Date | null;
   runDate: Date;
   status: PayrollRunStatus;
-  totalGross: number;
+  tenantId: string;
   totalDeductions: number;
+  totalGross: number;
   totalNet: number;
-  approvedBy: string | null;
-  approvedAt: Date | null;
-  paidAt: Date | null;
-  createdAt: Date;
   updatedAt: Date;
-  periodStart: Date | null;
-  periodEnd: Date | null;
-  employeeCount: number;
 }
 
 interface ApprovalWorkflowPanelProps {
-  run: PayrollRun;
-  canApprove: boolean;
-  canReject: boolean;
-  canFinalize: boolean;
   actionLoading: boolean;
+  canApprove: boolean;
+  canFinalize: boolean;
+  canReject: boolean;
   onApprove: () => void;
-  onReject: () => void;
   onFinalize: () => void;
+  onReject: () => void;
+  run: PayrollRun;
 }
 
 export default function ApprovalWorkflowPanel({
@@ -132,7 +132,7 @@ export default function ApprovalWorkflowPanel({
 
   return (
     <section>
-      <h2 className="font-medium text-sm text-muted-foreground mb-4">
+      <h2 className="mb-4 font-medium text-muted-foreground text-sm">
         Approval Workflow
       </h2>
 
@@ -165,7 +165,7 @@ export default function ApprovalWorkflowPanel({
             {/* Financial Summary */}
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-md bg-muted/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground text-sm">
                     Total Gross
@@ -177,7 +177,7 @@ export default function ApprovalWorkflowPanel({
               </div>
 
               <div className="rounded-md bg-muted/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <FileTextIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground text-sm">
                     Total Net
@@ -189,7 +189,7 @@ export default function ApprovalWorkflowPanel({
               </div>
 
               <div className="rounded-md bg-muted/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground text-sm">
                     Employees
@@ -206,7 +206,7 @@ export default function ApprovalWorkflowPanel({
               {canApprove && (
                 <>
                   <Button
-                    className="flex-1 min-w-[200px]"
+                    className="min-w-[200px] flex-1"
                     disabled={actionLoading}
                     onClick={onApprove}
                     size="lg"
@@ -237,7 +237,7 @@ export default function ApprovalWorkflowPanel({
 
               {canFinalize && (
                 <Button
-                  className="flex-1 min-w-[200px]"
+                  className="min-w-[200px] flex-1"
                   disabled={actionLoading}
                   onClick={onFinalize}
                   size="lg"
@@ -253,14 +253,14 @@ export default function ApprovalWorkflowPanel({
               )}
 
               {run.status === "paid" && (
-                <div className="flex-1 min-w-[200px] flex items-center justify-center gap-2 text-muted-foreground">
+                <div className="flex min-w-[200px] flex-1 items-center justify-center gap-2 text-muted-foreground">
                   <CheckCircleIcon className="h-5 w-5 text-green-600" />
                   <span className="font-medium">Payroll Complete</span>
                 </div>
               )}
 
               {run.status === "failed" && (
-                <div className="flex-1 min-w-[200px] flex items-center justify-center gap-2 text-destructive">
+                <div className="flex min-w-[200px] flex-1 items-center justify-center gap-2 text-destructive">
                   <AlertTriangleIcon className="h-5 w-5" />
                   <span className="font-medium">
                     Action Required - Contact Support

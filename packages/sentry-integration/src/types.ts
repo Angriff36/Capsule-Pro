@@ -8,7 +8,7 @@ const normalizeSentryEventTags = (
   val: unknown
 ): Record<string, string> | undefined => {
   if (val === null || val === undefined) {
-    return undefined;
+    return;
   }
   if (Array.isArray(val)) {
     const out: Record<string, string> = {};
@@ -31,7 +31,7 @@ const normalizeSentryEventTags = (
     }
     return out;
   }
-  return undefined;
+  return;
 };
 
 const sentryEventTagsSchema = z.preprocess(
@@ -47,7 +47,7 @@ const normalizeIssueAlertSettings = (
   val: unknown
 ): Record<string, unknown> | undefined => {
   if (val === null || val === undefined) {
-    return undefined;
+    return;
   }
   if (Array.isArray(val)) {
     const out: Record<string, unknown> = {};
@@ -67,7 +67,7 @@ const normalizeIssueAlertSettings = (
   if (typeof val === "object") {
     return val as Record<string, unknown>;
   }
-  return undefined;
+  return;
 };
 
 const issueAlertSettingsSchema = z.preprocess(
@@ -157,30 +157,30 @@ export type SentryIssueAlertPayload = z.infer<typeof SentryIssueAlertSchema>;
  * Parsed Sentry issue data for job processing
  */
 export interface ParsedSentryIssue {
-  issueId: string;
-  eventId: string | null;
-  organizationSlug: string;
-  projectSlug: string;
-  environment: string | null;
-  release: string | null;
-  title: string;
-  message: string | null;
   culprit: string | null;
-  issueUrl: string;
-  webUrl: string;
+  environment: string | null;
+  eventId: string | null;
   exceptionType: string | null;
   exceptionValue: string | null;
+  issueId: string;
+  issueUrl: string;
+  message: string | null;
+  organizationSlug: string;
+  projectSlug: string;
+  rawPayload: SentryIssueAlertPayload;
+  release: string | null;
   stackFrames: StackFrame[] | null;
   tags: Record<string, string>;
-  rawPayload: SentryIssueAlertPayload;
+  title: string;
+  webUrl: string;
 }
 
 export interface StackFrame {
+  absPath: string | null;
+  column: number | null;
   filename: string | null;
   function: string | null;
   line: number | null;
-  column: number | null;
-  absPath: string | null;
 }
 
 /**
@@ -197,41 +197,41 @@ export type SentryFixJobStatus =
  * Job creation input
  */
 export interface CreateSentryFixJobInput {
-  sentryIssueId: string;
-  sentryEventId: string | null;
-  organizationSlug: string;
-  projectSlug: string;
   environment: string | null;
-  release: string | null;
   issueTitle: string;
   issueUrl: string;
-  payloadSnapshot: SentryIssueAlertPayload;
   maxRetries?: number;
+  organizationSlug: string;
+  payloadSnapshot: SentryIssueAlertPayload;
+  projectSlug: string;
+  release: string | null;
+  sentryEventId: string | null;
+  sentryIssueId: string;
 }
 
 /**
  * Job update input
  */
 export interface UpdateSentryFixJobInput {
-  status?: SentryFixJobStatus;
   branchName?: string;
-  prUrl?: string;
-  prNumber?: number;
+  completedAt?: Date;
   errorMessage?: string;
+  prNumber?: number;
+  prUrl?: string;
   retryCount?: number;
   startedAt?: Date;
-  completedAt?: Date;
+  status?: SentryFixJobStatus;
 }
 
 /**
  * Job execution result
  */
 export interface JobExecutionResult {
-  success: boolean;
   branchName?: string;
-  prUrl?: string;
-  prNumber?: number;
   error?: string;
+  prNumber?: number;
+  prUrl?: string;
+  success: boolean;
 }
 
 /**
@@ -262,6 +262,4 @@ export const DEFAULT_BLOCKED_PATTERNS = [
 export const isBlockedPath = (
   filePath: string,
   blockedPatterns: RegExp[] = DEFAULT_BLOCKED_PATTERNS
-): boolean => {
-  return blockedPatterns.some((pattern) => pattern.test(filePath));
-};
+): boolean => blockedPatterns.some((pattern) => pattern.test(filePath));

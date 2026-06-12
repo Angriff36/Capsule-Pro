@@ -14,59 +14,59 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // Types for template operations
 export interface ProposalTemplateFilters {
-  search?: string;
   eventType?: string;
   isActive?: boolean;
+  search?: string;
 }
 
 export interface DefaultLineItem {
-  sortOrder: number;
-  itemType: string;
   category: string;
   description: string;
-  quantity: number;
-  unitOfMeasure?: string;
+  itemType: string;
   notes?: string;
+  quantity: number;
+  sortOrder: number;
+  unitOfMeasure?: string;
   unitPrice: number;
 }
 
 export interface ProposalBrandingInput {
+  accentColor?: string | null;
+  fontFamily?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;
-  accentColor?: string | null;
-  fontFamily?: string | null;
 }
 
 export interface CreateProposalTemplateInput {
-  name: string;
+  branding?: ProposalBrandingInput;
+  defaultLineItems?: DefaultLineItem[];
+  defaultNotes?: string | null;
+  defaultTaxRate?: number | null;
+  defaultTerms?: string | null;
   description?: string | null;
   eventType?: string | null;
-  defaultTerms?: string | null;
-  defaultTaxRate?: number | null;
-  defaultNotes?: string | null;
-  defaultLineItems?: DefaultLineItem[];
   isActive?: boolean;
   isDefault?: boolean;
-  branding?: ProposalBrandingInput;
+  name: string;
 }
 
 export interface UpdateProposalTemplateInput {
-  name?: string;
+  branding?: ProposalBrandingInput;
+  defaultLineItems?: DefaultLineItem[];
+  defaultNotes?: string | null;
+  defaultTaxRate?: number | null;
+  defaultTerms?: string | null;
   description?: string | null;
   eventType?: string | null;
-  defaultTerms?: string | null;
-  defaultTaxRate?: number | null;
-  defaultNotes?: string | null;
-  defaultLineItems?: DefaultLineItem[];
   isActive?: boolean;
   isDefault?: boolean;
-  branding?: ProposalBrandingInput;
+  name?: string;
 }
 
 /**
@@ -264,20 +264,51 @@ export async function updateProposalTemplate(
     command: "update",
     body: {
       id,
-      name: input.name !== undefined ? input.name.trim() : existingTemplate.name,
-      description: input.description !== undefined ? (input.description?.trim() || "") : (existingTemplate.description ?? ""),
-      eventType: input.eventType !== undefined ? (input.eventType?.trim() || "") : (existingTemplate.eventType ?? ""),
-      defaultTerms: input.defaultTerms !== undefined ? (input.defaultTerms?.trim() || "") : (existingTemplate.defaultTerms ?? ""),
-      defaultTaxRate: input.defaultTaxRate ?? Number(existingTemplate.defaultTaxRate),
-      defaultNotes: input.defaultNotes !== undefined ? (input.defaultNotes?.trim() || "") : (existingTemplate.defaultNotes ?? ""),
-      defaultLineItems: JSON.stringify(input.defaultLineItems ?? existingTemplate.defaultLineItems),
+      name:
+        input.name === undefined ? existingTemplate.name : input.name.trim(),
+      description:
+        input.description === undefined
+          ? (existingTemplate.description ?? "")
+          : input.description?.trim() || "",
+      eventType:
+        input.eventType === undefined
+          ? (existingTemplate.eventType ?? "")
+          : input.eventType?.trim() || "",
+      defaultTerms:
+        input.defaultTerms === undefined
+          ? (existingTemplate.defaultTerms ?? "")
+          : input.defaultTerms?.trim() || "",
+      defaultTaxRate:
+        input.defaultTaxRate ?? Number(existingTemplate.defaultTaxRate),
+      defaultNotes:
+        input.defaultNotes === undefined
+          ? (existingTemplate.defaultNotes ?? "")
+          : input.defaultNotes?.trim() || "",
+      defaultLineItems: JSON.stringify(
+        input.defaultLineItems ?? existingTemplate.defaultLineItems
+      ),
       isActive: input.isActive ?? existingTemplate.isActive,
       isDefault: input.isDefault ?? existingTemplate.isDefault,
-      logoUrl: input.branding !== undefined ? (input.branding.logoUrl?.trim() || "") : (existingTemplate.logoUrl ?? ""),
-      primaryColor: input.branding !== undefined ? (input.branding.primaryColor?.trim() || "") : (existingTemplate.primaryColor ?? ""),
-      secondaryColor: input.branding !== undefined ? (input.branding.secondaryColor?.trim() || "") : (existingTemplate.secondaryColor ?? ""),
-      accentColor: input.branding !== undefined ? (input.branding.accentColor?.trim() || "") : (existingTemplate.accentColor ?? ""),
-      fontFamily: input.branding !== undefined ? (input.branding.fontFamily?.trim() || "") : (existingTemplate.fontFamily ?? ""),
+      logoUrl:
+        input.branding === undefined
+          ? (existingTemplate.logoUrl ?? "")
+          : input.branding.logoUrl?.trim() || "",
+      primaryColor:
+        input.branding === undefined
+          ? (existingTemplate.primaryColor ?? "")
+          : input.branding.primaryColor?.trim() || "",
+      secondaryColor:
+        input.branding === undefined
+          ? (existingTemplate.secondaryColor ?? "")
+          : input.branding.secondaryColor?.trim() || "",
+      accentColor:
+        input.branding === undefined
+          ? (existingTemplate.accentColor ?? "")
+          : input.branding.accentColor?.trim() || "",
+      fontFamily:
+        input.branding === undefined
+          ? (existingTemplate.fontFamily ?? "")
+          : input.branding.fontFamily?.trim() || "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

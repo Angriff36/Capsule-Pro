@@ -55,7 +55,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface EditTrainingModuleDialogProps {
-  moduleId: string;
   defaultValues: {
     title: string;
     description: string;
@@ -66,6 +65,7 @@ interface EditTrainingModuleDialogProps {
     isRequired: boolean;
     isActive: boolean;
   };
+  moduleId: string;
 }
 
 export function EditTrainingModuleDialog({

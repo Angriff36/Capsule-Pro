@@ -25,15 +25,23 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
 
     const where: Record<string, unknown> = { tenantId };
-    if (eventId) where.eventId = eventId;
-    if (equipmentId) where.equipmentId = equipmentId;
-    if (logType) where.logType = logType;
+    if (eventId) {
+      where.eventId = eventId;
+    }
+    if (equipmentId) {
+      where.equipmentId = equipmentId;
+    }
+    if (logType) {
+      where.logType = logType;
+    }
     if (startDate || endDate) {
       where.loggedAt = {};
-      if (startDate)
+      if (startDate) {
         (where.loggedAt as Record<string, unknown>).gte = new Date(startDate);
-      if (endDate)
+      }
+      if (endDate) {
         (where.loggedAt as Record<string, unknown>).lte = new Date(endDate);
+      }
     }
 
     const logs = await database.temperatureLog.findMany({

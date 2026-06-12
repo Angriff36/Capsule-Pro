@@ -19,49 +19,49 @@ const OCCASION_TYPES = [
     value: "wedding",
     label: "Wedding",
     description: "Ceremony, reception, or both",
-    icon: <Heart className="w-4 h-4" />,
+    icon: <Heart className="h-4 w-4" />,
   },
   {
     value: "corporate",
     label: "Corporate Event",
     description: "Meetings, galas, retreats",
-    icon: <Building2 className="w-4 h-4" />,
+    icon: <Building2 className="h-4 w-4" />,
   },
   {
     value: "social",
     label: "Social Gathering",
     description: "Dinner party, reunion, holiday",
-    icon: <PartyPopper className="w-4 h-4" />,
+    icon: <PartyPopper className="h-4 w-4" />,
   },
   {
     value: "milestone",
     label: "Milestone Celebration",
     description: "Birthday, anniversary, retirement",
-    icon: <Cake className="w-4 h-4" />,
+    icon: <Cake className="h-4 w-4" />,
   },
   {
     value: "nonprofit",
     label: "Nonprofit / Fundraiser",
     description: "Galas, charity events",
-    icon: <Users className="w-4 h-4" />,
+    icon: <Users className="h-4 w-4" />,
   },
   {
     value: "graduation",
     label: "Graduation",
     description: "Commencement celebrations",
-    icon: <GraduationCap className="w-4 h-4" />,
+    icon: <GraduationCap className="h-4 w-4" />,
   },
   {
     value: "baby",
     label: "Baby Shower / Gender Reveal",
     description: "Intimate celebrations",
-    icon: <Baby className="w-4 h-4" />,
+    icon: <Baby className="h-4 w-4" />,
   },
   {
     value: "other",
     label: "Something Else",
     description: "Tell us more below",
-    icon: <Briefcase className="w-4 h-4" />,
+    icon: <Briefcase className="h-4 w-4" />,
   },
 ];
 
@@ -81,7 +81,7 @@ export default function EventVisionStep({ formData, updateField }: Props) {
         title="Tell us about your event"
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {OCCASION_TYPES.map((type) => (
           <SelectCard
             description={type.description}

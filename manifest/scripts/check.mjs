@@ -38,9 +38,9 @@ for (const p of requiredPaths) {
 }
 
 if (existsSync("manifest/source")) {
-  const manifestFiles = listFiles(
-    "manifest/source"
-  ).filter((f) => f.endsWith(".manifest"));
+  const manifestFiles = listFiles("manifest/source").filter((f) =>
+    f.endsWith(".manifest")
+  );
   if (manifestFiles.length === 0) {
     console.error(
       "[manifest/check] No .manifest files found under manifest/source."
@@ -86,9 +86,9 @@ if (!existsSync(irPath)) {
   }
 }
 
-const mergeReportPath =
-  "manifest/ir/kitchen.merge-report.json";
-const duplicateAllowlistPath = "manifest/governance/duplicate-drop-allowlist.json";
+const mergeReportPath = "manifest/ir/kitchen.merge-report.json";
+const duplicateAllowlistPath =
+  "manifest/governance/duplicate-drop-allowlist.json";
 if (existsSync(mergeReportPath) && existsSync(duplicateAllowlistPath)) {
   try {
     const mergeReport = JSON.parse(readFileSync(mergeReportPath, "utf-8"));
@@ -167,27 +167,19 @@ if (withCli) {
 // AI-assisted IR validation (schema, semantic checks, coverage scoring)
 const aiResult = spawnSync(
   process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-  ["exec", "manifest", "validate-ai", "manifest/ir/kitchen.ir.json", "--min-score", "100", "--format", "json"],
+  [
+    "exec",
+    "manifest",
+    "validate-ai",
+    "manifest/ir/kitchen.ir.json",
+    "--min-score",
+    "100",
+    "--format",
+    "json",
+  ],
   { stdio: "pipe", shell: process.platform === "win32" }
 );
-if (aiResult.status !== 0) {
-  try {
-    const parsed = JSON.parse(aiResult.stdout.toString());
-    const report = parsed.reports?.[0];
-    console.error(
-      `[manifest/check] AI IR validation FAILED (score ${parsed.overallScore}, min ${parsed.minScore})`
-    );
-    if (report?.diagnostics) {
-      for (const d of report.diagnostics.filter(d => d.severity !== 'info')) {
-        console.error(`  [${d.severity}] ${d.message}`);
-      }
-    }
-    ok = false;
-  } catch {
-    console.error("[manifest/check] AI IR validation FAILED. Check manifest/ir/kitchen.ir.json integrity.");
-    ok = false;
-  }
-} else {
+if (aiResult.status === 0) {
   try {
     const parsed = JSON.parse(aiResult.stdout.toString());
     console.log(
@@ -195,6 +187,25 @@ if (aiResult.status !== 0) {
     );
   } catch {
     console.log("[manifest/check] AI IR validation PASSED");
+  }
+} else {
+  try {
+    const parsed = JSON.parse(aiResult.stdout.toString());
+    const report = parsed.reports?.[0];
+    console.error(
+      `[manifest/check] AI IR validation FAILED (score ${parsed.overallScore}, min ${parsed.minScore})`
+    );
+    if (report?.diagnostics) {
+      for (const d of report.diagnostics.filter((d) => d.severity !== "info")) {
+        console.error(`  [${d.severity}] ${d.message}`);
+      }
+    }
+    ok = false;
+  } catch {
+    console.error(
+      "[manifest/check] AI IR validation FAILED. Check manifest/ir/kitchen.ir.json integrity."
+    );
+    ok = false;
   }
 }
 

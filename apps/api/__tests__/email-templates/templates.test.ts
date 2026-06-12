@@ -39,18 +39,35 @@ vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: (...args: any[]) => Response.json({ success: true, ...args[0] }, { status: args[1]?.status ?? 200 }),
-  manifestErrorResponse: (...args: any[]) => Response.json({ success: false, error: args[0] }, { status: args[1]?.status ?? 500 }),
+  manifestSuccessResponse: (...args: any[]) =>
+    Response.json(
+      { success: true, ...args[0] },
+      { status: args[1]?.status ?? 200 }
+    ),
+  manifestErrorResponse: (...args: any[]) =>
+    Response.json(
+      { success: false, error: args[0] },
+      { status: args[1]?.status ?? 500 }
+    ),
 }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
-    constructor(message: string) { super(message); this.name = "InvariantError"; }
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
   },
   invariant: (condition: unknown, message: string) => {
-    if (!condition) { const err = new Error(message); err.name = "InvariantError"; throw err; }
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
   },
 }));
-vi.mock("@repo/observability/log", () => ({ log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 import { auth } from "@repo/auth/server";
@@ -113,7 +130,9 @@ describe("Email Templates API", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: "user-001", tenantId: TEST_TENANT_ID, role: "admin",
+      id: "user-001",
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
     } as never);
 
     // Dynamic import routes after mocks are set up
@@ -829,7 +848,9 @@ describe("Email Templates Manifest Guards", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: "user-001", tenantId: TEST_TENANT_ID, role: "admin",
+      id: "user-001",
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
     } as never);
 
     const listRoute = await import(
@@ -941,7 +962,9 @@ describe("Email Templates Policy Tests", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: "user-001", tenantId: TEST_TENANT_ID, role: "admin",
+      id: "user-001",
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
     } as never);
 
     const listRoute = await import(
@@ -1019,7 +1042,9 @@ describe("Email Templates Integration Tests", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.mocked(resolveCurrentUser).mockResolvedValue({
-      id: "user-001", tenantId: TEST_TENANT_ID, role: "admin",
+      id: "user-001",
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
     } as never);
 
     const listRoute = await import(

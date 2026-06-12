@@ -1,7 +1,7 @@
 import "server-only";
 
-import { appendFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 export type ManifestIssueKind =
@@ -19,17 +19,9 @@ export type ManifestIssueKind =
   | "request_error";
 
 export interface ManifestIssueEntry {
-  ts: string;
-  kind: ManifestIssueKind;
-  entity?: string;
   command?: string;
-  message: string;
-  httpStatus?: number;
-  tenantId?: string;
-  userId?: string;
-  userRole?: string;
-  source?: "api" | "app" | "database";
   details?: Record<string, unknown>;
+  entity?: string;
   /**
    * True for kinds that represent an EXPECTED, user-facing validation outcome
    * (e.g. a guard rejecting an invalid transition) rather than a real system
@@ -40,6 +32,14 @@ export interface ManifestIssueEntry {
    * converts them to a no-op success upstream.
    */
   expected?: boolean;
+  httpStatus?: number;
+  kind: ManifestIssueKind;
+  message: string;
+  source?: "api" | "app" | "database";
+  tenantId?: string;
+  ts: string;
+  userId?: string;
+  userRole?: string;
 }
 
 /**
@@ -48,7 +48,9 @@ export interface ManifestIssueEntry {
  * GENUINE invalid transition (the user tried something not allowed) — still
  * surfaced as 422 to the caller, but it is not `[manifest-issue]` noise.
  */
-const EXPECTED_KINDS: ReadonlySet<ManifestIssueKind> = new Set(["guard_failed"]);
+const EXPECTED_KINDS: ReadonlySet<ManifestIssueKind> = new Set([
+  "guard_failed",
+]);
 
 type IssueInput = Omit<ManifestIssueEntry, "ts">;
 
@@ -69,7 +71,7 @@ function findMonorepoRoot(startDir: string): string | undefined {
 
     const parent = path.dirname(dir);
     if (parent === dir) {
-      return undefined;
+      return;
     }
     dir = parent;
   }

@@ -140,9 +140,9 @@ function isUserLeftPayload(
  * Simulated user context for testing multi-user scenarios
  */
 interface SimulatedUser {
+  tenantId: string;
   userId: string;
   userName: string;
-  tenantId: string;
 }
 
 /**

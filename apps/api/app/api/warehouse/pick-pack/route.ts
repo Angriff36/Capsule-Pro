@@ -17,14 +17,14 @@ type PickStatus = "pending" | "in_progress" | "picked" | "packed" | "shipped";
 
 interface PickQueueItem {
   id: string;
-  orderRef: string;
   itemName: string;
   itemNumber: string;
-  quantity: number;
   locationName: string;
-  storageType: string;
+  orderRef: string;
   priority: PickPriority;
+  quantity: number;
   status: PickStatus;
+  storageType: string;
   strategy: "FIFO" | "FEFO";
   transactionDate: Date;
 }
@@ -155,8 +155,12 @@ export async function GET(request: Request) {
     const derivePriority = (transactionDate: Date): PickPriority => {
       const hoursSinceTransaction =
         (Date.now() - new Date(transactionDate).getTime()) / (1000 * 60 * 60);
-      if (hoursSinceTransaction > 24) return "high";
-      if (hoursSinceTransaction > 8) return "medium";
+      if (hoursSinceTransaction > 24) {
+        return "high";
+      }
+      if (hoursSinceTransaction > 8) {
+        return "medium";
+      }
       return "low";
     };
 

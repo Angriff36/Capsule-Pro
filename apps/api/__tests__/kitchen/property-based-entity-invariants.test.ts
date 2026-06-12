@@ -31,14 +31,18 @@ import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
-import { describe, expect, it } from "vitest";
 import * as fc from "fast-check";
+import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function getRuntime(manifestFile: string) {
-  const manifestPath = join(process.cwd(), "../../manifest/source", manifestFile);
+  const manifestPath = join(
+    process.cwd(),
+    "../../manifest/source",
+    manifestFile
+  );
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
   if (!ir) {
@@ -46,10 +50,14 @@ async function getRuntime(manifestFile: string) {
       `Failed to compile ${manifestFile}: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
     );
   }
-  return new ManifestRuntimeEngine(enforceCommandOwnership(ir), {
-    tenantId: "test-tenant-456",
-    user: { id: "test-user-123", tenantId: "test-tenant-456", role: "admin" },
-  }, { storeProvider: inMemoryStoreProvider() });
+  return new ManifestRuntimeEngine(
+    enforceCommandOwnership(ir),
+    {
+      tenantId: "test-tenant-456",
+      user: { id: "test-user-123", tenantId: "test-tenant-456", role: "admin" },
+    },
+    { storeProvider: inMemoryStoreProvider() }
+  );
 }
 
 /** Extract a string property from a Manifest result instance */
@@ -77,7 +85,10 @@ async function runCommand(
   try {
     const result = await runtime.runCommand(command, input);
     if (result && typeof result === "object" && "success" in result) {
-      const r = result as { success: boolean; instance?: Record<string, unknown> };
+      const r = result as {
+        success: boolean;
+        instance?: Record<string, unknown>;
+      };
       return r.success ? (r.instance ?? null) : null;
     }
     return null;
@@ -94,8 +105,12 @@ async function commandSucceeds(
 ): Promise<boolean> {
   try {
     const result = await runtime.runCommand(command, input);
-    return result != null && typeof result === "object" && "success" in result &&
-      (result as { success: boolean }).success === true;
+    return (
+      result != null &&
+      typeof result === "object" &&
+      "success" in result &&
+      (result as { success: boolean }).success === true
+    );
   } catch {
     return false;
   }
@@ -108,10 +123,12 @@ const fcVendorContractCreate = fc.record({
   vendorId: fc.uuid(),
   vendorName: fc.string({ minLength: 1, maxLength: 100 }),
   contractType: fc.constantFrom("purchase", "service", "lease"),
-  startDate: fc.integer({ min: 1577836800000, max: 1767225600000 })
-    .map(ts => new Date(ts).toISOString()),
-  endDate: fc.integer({ min: 1735689600000, max: 2208988800000 })
-    .map(ts => new Date(ts).toISOString()),
+  startDate: fc
+    .integer({ min: 1_577_836_800_000, max: 1_767_225_600_000 })
+    .map((ts) => new Date(ts).toISOString()),
+  endDate: fc
+    .integer({ min: 1_735_689_600_000, max: 2_208_988_800_000 })
+    .map((ts) => new Date(ts).toISOString()),
   autoRenew: fc.boolean(),
   renewalTermDays: fc.integer({ min: 0, max: 365 }),
   paymentTerms: fc.constantFrom("NET_15", "NET_30", "NET_60", "NET_90"),
@@ -130,10 +147,11 @@ const fcCateringOrderCreate = fc.record({
   orderNumber: fc.string({ minLength: 1, maxLength: 20 }),
   customerId: fc.uuid(),
   eventId: fc.uuid(),
-  deliveryDate: fc.integer({ min: 1735689600000, max: 1767225600000 })
-    .map(ts => new Date(ts).toISOString()),
-  guestCount: fc.integer({ min: 1, max: 10000 }),
-  subtotalAmount: fc.integer({ min: 0, max: 1000000 }),
+  deliveryDate: fc
+    .integer({ min: 1_735_689_600_000, max: 1_767_225_600_000 })
+    .map((ts) => new Date(ts).toISOString()),
+  guestCount: fc.integer({ min: 1, max: 10_000 }),
+  subtotalAmount: fc.integer({ min: 0, max: 1_000_000 }),
 });
 
 const fcInventoryItemCreate = fc.record({
@@ -141,34 +159,42 @@ const fcInventoryItemCreate = fc.record({
   name: fc.string({ minLength: 1, maxLength: 100 }),
   category: fc.string({ minLength: 1, maxLength: 50 }),
   unitOfMeasure: fc.constantFrom("each", "kg", "lb", "liter", "gallon"),
-  unitCost: fc.integer({ min: 0, max: 100000 }),
-  quantityOnHand: fc.integer({ min: 0, max: 100000 }),
-  quantityReserved: fc.integer({ min: 0, max: 100000 }),
-  parLevel: fc.integer({ min: 0, max: 100000 }),
-  reorderLevel: fc.integer({ min: 0, max: 100000 }),
+  unitCost: fc.integer({ min: 0, max: 100_000 }),
+  quantityOnHand: fc.integer({ min: 0, max: 100_000 }),
+  quantityReserved: fc.integer({ min: 0, max: 100_000 }),
+  parLevel: fc.integer({ min: 0, max: 100_000 }),
+  reorderLevel: fc.integer({ min: 0, max: 100_000 }),
 });
 
 const fcPayrollRunCreate = fc.record({
   payrollPeriodId: fc.uuid(),
-  runDate: fc.integer({ min: 1735689600000, max: 1767225600000 })
-    .map(ts => new Date(ts).toISOString()),
-  totalGross: fc.integer({ min: 0, max: 10000000 }),
-  totalDeductions: fc.integer({ min: 0, max: 5000000 }),
-  totalNet: fc.integer({ min: 0, max: 10000000 }),
+  runDate: fc
+    .integer({ min: 1_735_689_600_000, max: 1_767_225_600_000 })
+    .map((ts) => new Date(ts).toISOString()),
+  totalGross: fc.integer({ min: 0, max: 10_000_000 }),
+  totalDeductions: fc.integer({ min: 0, max: 5_000_000 }),
+  totalNet: fc.integer({ min: 0, max: 10_000_000 }),
 });
 
 // ── VendorContract Invariants ───────────────────────────────────────────────
 
 describe("Property-Based: VendorContract invariants", () => {
   it("create is deterministic — same input always produces same status", async () => {
-    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
+    const runtime = await getRuntime(
+      "procurement/vendor-contract-rules.manifest"
+    );
     await fc.assert(
       fc.asyncProperty(fcVendorContractCreate, async (input) => {
         const r1 = await runCommand(runtime, "create", input);
         // Run again with different ID (store is shared, so use different contractNumber)
-        const input2 = { ...input, contractNumber: input.contractNumber + "-dup" };
+        const input2 = {
+          ...input,
+          contractNumber: input.contractNumber + "-dup",
+        };
         const r2 = await runCommand(runtime, "create", input2);
-        if (!r1 || !r2) return; // both may fail on constraints, that's fine
+        if (!(r1 && r2)) {
+          return; // both may fail on constraints, that's fine
+        }
         expect(getString(r2, "status")).toBe(getString(r1, "status"));
         expect(getBoolean(r2, "isActive")).toBe(getBoolean(r1, "isActive"));
       }),
@@ -177,39 +203,59 @@ describe("Property-Based: VendorContract invariants", () => {
   });
 
   it("transition safety — only declared transitions succeed from draft", async () => {
-    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
+    const runtime = await getRuntime(
+      "procurement/vendor-contract-rules.manifest"
+    );
     // Transitions from 'draft': to pending_approval or cancelled only
     const validTargets = ["pending_approval", "cancelled"];
-    const invalidTargets = ["active", "terminated", "renewed", "rejected", "pending_activation"];
+    const invalidTargets = [
+      "active",
+      "terminated",
+      "renewed",
+      "rejected",
+      "pending_activation",
+    ];
 
     await fc.assert(
-      fc.asyncProperty(fcVendorContractCreate, fc.constantFrom(...invalidTargets), async (input, targetStatus) => {
-        const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
-        // Trying to force the contract to an invalid status should fail
-        await commandSucceeds(runtime, "update", {
-          id: getString(instance, "id"),
-          status: targetStatus,
-        });
-        // The update might succeed (update may not mutate status), but the status
-        // should NOT have changed to the invalid target from draft
-        const updated = await runCommand(runtime, "update", {
-          id: getString(instance, "id"),
-        });
-        if (updated) {
-          expect(validTargets.concat(["draft"])).toContain(getString(updated, "status"));
+      fc.asyncProperty(
+        fcVendorContractCreate,
+        fc.constantFrom(...invalidTargets),
+        async (input, targetStatus) => {
+          const instance = await runCommand(runtime, "create", input);
+          if (!instance) {
+            return;
+          }
+          // Trying to force the contract to an invalid status should fail
+          await commandSucceeds(runtime, "update", {
+            id: getString(instance, "id"),
+            status: targetStatus,
+          });
+          // The update might succeed (update may not mutate status), but the status
+          // should NOT have changed to the invalid target from draft
+          const updated = await runCommand(runtime, "update", {
+            id: getString(instance, "id"),
+          });
+          if (updated) {
+            expect(validTargets.concat(["draft"])).toContain(
+              getString(updated, "status")
+            );
+          }
         }
-      }),
+      ),
       { numRuns: 30 }
     );
   });
 
   it("computed properties agree with state — isActive iff status=active", async () => {
-    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
+    const runtime = await getRuntime(
+      "procurement/vendor-contract-rules.manifest"
+    );
     await fc.assert(
       fc.asyncProperty(fcVendorContractCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const status = getString(instance, "status");
         const isActive = getBoolean(instance, "isActive");
         expect(isActive).toBe(status === "active");
@@ -230,7 +276,9 @@ describe("Property-Based: EventGuest invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const rsvp = getString(instance, "rsvpStatus");
         expect(rsvp).toBe("pending");
         expect(getBoolean(instance, "rsvpConfirmed")).toBe(false);
@@ -246,7 +294,9 @@ describe("Property-Based: EventGuest invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
 
         // From pending: confirm should work
         const confirmed = await runCommand(runtime, "rsvpConfirm", {
@@ -276,9 +326,13 @@ describe("Property-Based: EventGuest invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const hasDietary = getBoolean(instance, "hasDietaryRestrictions");
-        expect(hasDietary).toBe(!!input.dietaryRestrictions && input.dietaryRestrictions.length > 0);
+        expect(hasDietary).toBe(
+          !!input.dietaryRestrictions && input.dietaryRestrictions.length > 0
+        );
       }),
       { numRuns: 50 }
     );
@@ -293,7 +347,9 @@ describe("Property-Based: CateringOrder invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         expect(getString(instance, "orderStatus")).toBe("draft");
         expect(getBoolean(instance, "isDraft")).toBe(true);
         expect(getBoolean(instance, "isActive")).toBe(false);
@@ -307,13 +363,17 @@ describe("Property-Based: CateringOrder invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
 
         // confirm from draft should succeed
         const confirmed = await runCommand(runtime, "confirm", {
           id: getString(instance, "id"),
         });
-        if (!confirmed) return;
+        if (!confirmed) {
+          return;
+        }
         expect(getString(confirmed, "orderStatus")).toBe("confirmed");
         expect(getBoolean(confirmed, "isConfirmed")).toBe(true);
       }),
@@ -326,23 +386,41 @@ describe("Property-Based: CateringOrder invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         let inst = await runCommand(runtime, "create", input);
-        if (!inst) return;
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "orderStatus")).toBe("draft");
 
-        inst = await runCommand(runtime, "confirm", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "confirm", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "orderStatus")).toBe("confirmed");
 
-        inst = await runCommand(runtime, "startPreparation", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "startPreparation", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "orderStatus")).toBe("in_progress");
 
-        inst = await runCommand(runtime, "markDelivered", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "markDelivered", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "orderStatus")).toBe("delivered");
 
-        inst = await runCommand(runtime, "complete", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "complete", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "orderStatus")).toBe("completed");
         expect(getBoolean(inst, "isCompleted")).toBe(true);
       }),
@@ -359,7 +437,9 @@ describe("Property-Based: InventoryItem invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcInventoryItemCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const onHand = getNumber(instance, "quantityOnHand");
         const reserved = getNumber(instance, "quantityReserved");
         const available = getNumber(instance, "quantityAvailable");
@@ -374,7 +454,9 @@ describe("Property-Based: InventoryItem invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcInventoryItemCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const onHand = getNumber(instance, "quantityOnHand");
         const unitCost = getNumber(instance, "unitCost");
         const totalValue = getNumber(instance, "totalValue");
@@ -402,7 +484,9 @@ describe("Property-Based: InventoryItem invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcLowStock, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const available = getNumber(instance, "quantityAvailable");
         const reorderLevel = getNumber(instance, "reorderLevel");
         const needsReorder = getBoolean(instance, "needsReorder");
@@ -429,7 +513,9 @@ describe("Property-Based: InventoryItem invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcLowStock, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         const available = getNumber(instance, "quantityAvailable");
         const parLevel = getNumber(instance, "parLevel");
         expect(getBoolean(instance, "isBelowPar")).toBe(available < parLevel);
@@ -447,7 +533,9 @@ describe("Property-Based: PayrollRun invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         expect(getString(instance, "status")).toBe("pending");
         expect(getBoolean(instance, "isPending")).toBe(true);
         expect(getBoolean(instance, "isProcessing")).toBe(false);
@@ -463,7 +551,9 @@ describe("Property-Based: PayrollRun invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
 
         // pending → processing should succeed
         const processing = await runCommand(runtime, "process", {
@@ -483,19 +573,33 @@ describe("Property-Based: PayrollRun invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         let inst = await runCommand(runtime, "create", input);
-        if (!inst) return;
+        if (!inst) {
+          return;
+        }
 
-        inst = await runCommand(runtime, "process", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "process", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "status")).toBe("processing");
 
-        inst = await runCommand(runtime, "approve", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "approve", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "status")).toBe("approved");
         expect(getBoolean(inst, "isApproved")).toBe(true);
 
-        inst = await runCommand(runtime, "markPaid", { id: getString(inst, "id") });
-        if (!inst) return;
+        inst = await runCommand(runtime, "markPaid", {
+          id: getString(inst, "id"),
+        });
+        if (!inst) {
+          return;
+        }
         expect(getString(inst, "status")).toBe("paid");
         expect(getBoolean(inst, "isPaid")).toBe(true);
       }),
@@ -508,7 +612,9 @@ describe("Property-Based: PayrollRun invariants", () => {
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
-        if (!instance) return;
+        if (!instance) {
+          return;
+        }
         // At most one status flag should be true at any time
         const flags = [
           getBoolean(instance, "isPending"),

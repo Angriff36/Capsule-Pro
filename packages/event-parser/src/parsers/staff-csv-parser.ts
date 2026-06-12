@@ -6,8 +6,8 @@
 import type { StaffShift } from "../types/index.js";
 
 export interface StaffCsvParseResult {
-  shifts: Map<string, StaffShift[]>; // eventName -> shifts
   errors: string[];
+  shifts: Map<string, StaffShift[]>; // eventName -> shifts
   totalShifts: number;
 }
 

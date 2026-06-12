@@ -22,13 +22,16 @@
  */
 
 export interface RealtimeMessage {
-  /** Event name (e.g. "kitchen.task.claimed", "admin.chat.message"). */
-  name: string;
   /** Event payload — opaque to the registry, serialized as JSON for SSE. */
   data: unknown;
+  /** Event name (e.g. "kitchen.task.claimed", "admin.chat.message"). */
+  name: string;
 }
 
-export type RealtimeListener = (channel: string, message: RealtimeMessage) => void;
+export type RealtimeListener = (
+  channel: string,
+  message: RealtimeMessage
+) => void;
 
 const channelListeners = new Map<string, Set<RealtimeListener>>();
 
@@ -58,7 +61,10 @@ export function publish(channel: string, message: RealtimeMessage): number {
 /**
  * Subscribe to a single channel. Returns an unsubscribe function.
  */
-export function subscribe(channel: string, listener: RealtimeListener): () => void {
+export function subscribe(
+  channel: string,
+  listener: RealtimeListener
+): () => void {
   let set = channelListeners.get(channel);
   if (!set) {
     set = new Set();

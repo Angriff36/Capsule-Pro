@@ -28,24 +28,24 @@ import {
 } from "lucide-react";
 
 export interface EventTemplate {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  eventType: string;
-  defaultGuestCount: number;
-  defaultServiceStyle: string;
+  category: "social" | "corporate" | "specialty";
   defaultDuration: number; // hours
-  suggestedStaffRatio: string;
+  defaultGuestCount: number;
   defaultMenuSuggestions: string[];
+  defaultServiceStyle: string;
   defaultStaffing: {
     servers: number;
     bartenders: number;
     chefs: number;
     setupCrew: number;
   };
+  description: string;
+  eventType: string;
+  icon: React.ReactNode;
+  id: string;
+  name: string;
+  suggestedStaffRatio: string;
   tags: string[];
-  category: "social" | "corporate" | "specialty";
 }
 
 export const EVENT_TEMPLATES: EventTemplate[] = [
@@ -265,9 +265,9 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
 ];
 
 interface EventTemplateSelectorProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectTemplate: (template: EventTemplate) => void;
+  open: boolean;
 }
 
 const categoryColors = {
@@ -346,7 +346,7 @@ export function EventTemplateSelector({
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         {template.description}
                       </p>
                       <div className="flex flex-wrap gap-1">
@@ -360,7 +360,7 @@ export function EventTemplateSelector({
                           </Badge>
                         ))}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         <span className="font-medium">Staffing:</span>{" "}
                         {template.suggestedStaffRatio}
                       </div>

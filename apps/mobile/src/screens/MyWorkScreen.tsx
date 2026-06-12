@@ -169,7 +169,7 @@ export default function MyWorkScreen() {
         <View>
           <Text style={styles.title}>My Work</Text>
           <Text style={styles.subtitle}>
-            {totalTasks} task{totalTasks !== 1 ? "s" : ""} assigned
+            {totalTasks} task{totalTasks === 1 ? "" : "s"} assigned
           </Text>
         </View>
         <Text style={styles.autoRefreshHint}>Auto-refresh: 30s</Text>

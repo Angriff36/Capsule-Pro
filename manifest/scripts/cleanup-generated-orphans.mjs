@@ -26,7 +26,9 @@ const orphanPaths = [
 let removed = 0;
 for (const rel of orphanPaths) {
   const target = join(generatedRoot, rel);
-  if (!existsSync(target)) continue;
+  if (!existsSync(target)) {
+    continue;
+  }
   rmSync(target, { recursive: true, force: true });
   removed++;
   console.log(`[cleanup-generated] removed ${rel}`);

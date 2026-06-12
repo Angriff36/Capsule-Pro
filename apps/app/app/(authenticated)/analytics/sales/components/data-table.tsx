@@ -35,10 +35,10 @@ const getColumnsFromRows = (rows: DataRow[]) => {
 };
 
 interface DataTableProps {
-  rows: DataRow[];
   columns?: string[];
-  maxRows?: number;
   emptyText?: string;
+  maxRows?: number;
+  rows: DataRow[];
 }
 
 function DataTable({
@@ -51,7 +51,7 @@ function DataTable({
   const resolvedColumns = columns ?? getColumnsFromRows(previewRows);
   const displayColumns = resolvedColumns.slice(0, 6);
   if (!(previewRows.length && displayColumns.length)) {
-    return <div className="text-sm text-muted-foreground">{emptyText}</div>;
+    return <div className="text-muted-foreground text-sm">{emptyText}</div>;
   }
   const isNumericColumn = (column: string) =>
     previewRows.some((row) => typeof row[column] === "number");
@@ -90,5 +90,5 @@ function DataTable({
   );
 }
 
-export { DataTable, formatCellValue, formatNumber, getColumnsFromRows };
 export type { DataTableProps };
+export { DataTable, formatCellValue, formatNumber, getColumnsFromRows };

@@ -57,7 +57,7 @@ export type VendorCatalogCommandFn = (params: {
 export class SupplierSyncService {
   constructor(
     private prisma: SupplierSyncDb,
-    private runCommand: VendorCatalogCommandFn,
+    private runCommand: VendorCatalogCommandFn
   ) {}
 
   /**
@@ -65,7 +65,7 @@ export class SupplierSyncService {
    */
   async syncCatalog(
     connector: SupplierConnector,
-    config: SupplierConnectorConfig,
+    config: SupplierConnectorConfig
   ): Promise<SupplierSyncResult> {
     const startTime = Date.now();
     const errors: Array<{ sku: string; error: string }> = [];
@@ -89,7 +89,7 @@ export class SupplierSyncService {
       });
 
       const existingBySku = new Map(
-        existingEntries.map((e) => [e.itemNumber, e.id]),
+        existingEntries.map((e) => [e.itemNumber, e.id])
       );
 
       // Process each product via Manifest commands
@@ -98,7 +98,7 @@ export class SupplierSyncService {
           const body = this.mapToCommandBody(
             product,
             config.supplierId,
-            config.tenantId,
+            config.tenantId
           );
           const existingId = existingBySku.get(product.sku);
 
@@ -130,10 +130,7 @@ export class SupplierSyncService {
       }
 
       // Deactivate products no longer in catalog (individual Manifest deactivate commands)
-      if (
-        config.options?.syncFullCatalog !== false &&
-        existingBySku.size > 0
-      ) {
+      if (config.options?.syncFullCatalog !== false && existingBySku.size > 0) {
         const idsToDeactivate = Array.from(existingBySku.values());
         for (const id of idsToDeactivate) {
           try {
@@ -182,7 +179,7 @@ export class SupplierSyncService {
   async syncChanges(
     connector: SupplierConnector,
     config: SupplierConnectorConfig,
-    since: Date,
+    since: Date
   ): Promise<SupplierSyncResult> {
     const startTime = Date.now();
     const errors: Array<{ sku: string; error: string }> = [];
@@ -195,7 +192,9 @@ export class SupplierSyncService {
 
       // Filter to changed products
       const changedProducts = products.filter((p) => {
-        if (!p.effectiveFrom) return true;
+        if (!p.effectiveFrom) {
+          return true;
+        }
         return new Date(p.effectiveFrom) >= since;
       });
 
@@ -206,7 +205,7 @@ export class SupplierSyncService {
           const body = this.mapToCommandBody(
             product,
             config.supplierId,
-            config.tenantId,
+            config.tenantId
           );
           // Read bypasses Manifest per §10
           const existing = await this.prisma.vendorCatalog.findFirst({
@@ -276,7 +275,7 @@ export class SupplierSyncService {
   private mapToCommandBody(
     product: SupplierProduct,
     supplierId: string,
-    tenantId: string,
+    tenantId: string
   ): Record<string, unknown> {
     return {
       tenantId,

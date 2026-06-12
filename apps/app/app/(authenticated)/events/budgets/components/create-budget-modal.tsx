@@ -23,13 +23,13 @@ import type {
 } from "@/app/lib/use-event-budgets";
 
 interface CreateBudgetModalProps {
-  open: boolean;
+  budget?: EventBudget;
+  loading: boolean;
   onClose: () => void;
   onSave: (
     data: CreateEventBudgetInput | UpdateEventBudgetInput
   ) => Promise<void>;
-  budget?: EventBudget;
-  loading: boolean;
+  open: boolean;
 }
 
 export function CreateBudgetModal({
@@ -204,9 +204,9 @@ export function CreateBudgetModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">
+      <div className="relative z-50 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-semibold text-xl">
             {isEditing ? "Edit Budget" : "Create Budget"}
           </h2>
           <Button onClick={onClose} size="sm" variant="ghost">
@@ -227,7 +227,7 @@ export function CreateBudgetModal({
               value={eventId}
             />
             {errors.eventId && (
-              <p className="text-sm text-red-500 mt-1">{errors.eventId}</p>
+              <p className="mt-1 text-red-500 text-sm">{errors.eventId}</p>
             )}
           </div>
 
@@ -266,12 +266,12 @@ export function CreateBudgetModal({
               value={totalBudgetAmount}
             />
             {errors.totalBudgetAmount && (
-              <p className="text-sm text-red-500 mt-1">
+              <p className="mt-1 text-red-500 text-sm">
                 {errors.totalBudgetAmount}
               </p>
             )}
             {!isEditing && lineItemsTotal > 0 && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-muted-foreground text-sm">
                 Line items total: ${lineItemsTotal.toFixed(2)}
               </p>
             )}
@@ -291,7 +291,7 @@ export function CreateBudgetModal({
 
           {/* Line Items Section */}
           <div className="border-t pt-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <Label>Line Items</Label>
               <Button
                 onClick={addLineItem}
@@ -304,18 +304,18 @@ export function CreateBudgetModal({
             </div>
 
             {lineItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No line items. Add items to break down the budget.
               </p>
             ) : (
               <div className="space-y-3">
                 {lineItems.map((item, index) => (
                   <div
-                    className="border rounded-lg p-3 space-y-2"
+                    className="space-y-2 rounded-lg border p-3"
                     key={item.id}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
+                      <span className="font-medium text-sm">
                         Line Item {index + 1}
                       </span>
                       <Button
@@ -387,7 +387,7 @@ export function CreateBudgetModal({
                           value={item.budgetedAmount}
                         />
                         {errors[`lineItem_${index}_amount`] && (
-                          <p className="text-xs text-red-500">
+                          <p className="text-red-500 text-xs">
                             {errors[`lineItem_${index}_amount`]}
                           </p>
                         )}
@@ -412,7 +412,7 @@ export function CreateBudgetModal({
                         value={item.name}
                       />
                       {errors[`lineItem_${index}_name`] && (
-                        <p className="text-xs text-red-500">
+                        <p className="text-red-500 text-xs">
                           {errors[`lineItem_${index}_name`]}
                         </p>
                       )}
@@ -438,7 +438,7 @@ export function CreateBudgetModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 border-t pt-4">
             <Button disabled={loading} onClick={onClose} variant="outline">
               Cancel
             </Button>

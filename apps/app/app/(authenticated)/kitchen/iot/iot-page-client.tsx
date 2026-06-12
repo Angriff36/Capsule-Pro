@@ -46,47 +46,47 @@ import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface TemperatureProbe {
+  areaId?: string;
+  batteryLevel: number | null;
+  calibrationIntervalDays: number | null;
   id: string;
-  probeId: string;
-  name: string;
-  probeType: string;
-  status: string;
-  minTemp: number;
-  maxTemp: number;
+  lastCalibration: Date | null;
   lastReading: number | null;
   lastReadingAt: Date | null;
-  batteryLevel: number | null;
-  lastCalibration: Date | null;
-  nextCalibration: Date | null;
-  calibrationIntervalDays: number | null;
   locationId?: string;
-  areaId?: string;
+  maxTemp: number;
+  minTemp: number;
+  name: string;
+  nextCalibration: Date | null;
+  probeId: string;
+  probeType: string;
+  status: string;
 }
 
 interface TemperatureReading {
+  batteryLevel: number | null;
   id: string;
+  loggedAt: Date;
   probeId: string;
+  signalStrength: number | null;
   temperature: number;
   unit: string;
-  loggedAt: Date;
-  batteryLevel: number | null;
-  signalStrength: number | null;
 }
 
 interface IoTAlert {
-  id: string;
+  acknowledgedAt: Date | null;
   alertNumber: string;
-  probeId: string | null;
   alertType: string;
+  id: string;
+  message: string | null;
+  probeId: string | null;
+  resolvedAt: Date | null;
   severity: string;
   status: string;
-  title: string;
-  message: string | null;
   temperature: number | null;
   threshold: number | null;
+  title: string;
   triggeredAt: Date;
-  acknowledgedAt: Date | null;
-  resolvedAt: Date | null;
 }
 
 const severityColors = {
@@ -287,7 +287,9 @@ export function IoTPageClient() {
   }
 
   async function handleResolveAlert() {
-    if (!resolveAlertId) return;
+    if (!resolveAlertId) {
+      return;
+    }
     setResolveSubmitting(true);
     try {
       const res = await apiFetch(`/api/kitchen/iot/alerts/${resolveAlertId}`, {
@@ -334,21 +336,31 @@ export function IoTPageClient() {
   }
 
   function formatDate(date: Date | string | null): string {
-    if (!date) return "N/A";
+    if (!date) {
+      return "N/A";
+    }
     const d = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString();
   }
 
   function formatDateTime(date: Date | string | null): string {
-    if (!date) return "N/A";
+    if (!date) {
+      return "N/A";
+    }
     const d = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleString();
   }
 
   function getBatteryColor(level: number | null): string {
-    if (level === null) return "text-gray-400";
-    if (level >= 70) return "text-green-500";
-    if (level >= 30) return "text-yellow-500";
+    if (level === null) {
+      return "text-gray-400";
+    }
+    if (level >= 70) {
+      return "text-green-500";
+    }
+    if (level >= 30) {
+      return "text-yellow-500";
+    }
     return "text-red-500";
   }
 
@@ -357,8 +369,12 @@ export function IoTPageClient() {
     min: number,
     max: number
   ): string {
-    if (temp === null) return "text-gray-400";
-    if (temp < min || temp > max) return "text-red-500";
+    if (temp === null) {
+      return "text-gray-400";
+    }
+    if (temp < min || temp > max) {
+      return "text-red-500";
+    }
     return "text-green-500";
   }
 
@@ -380,10 +396,10 @@ export function IoTPageClient() {
   );
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Kitchen IoT</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Kitchen IoT</h1>
           <p className="text-muted-foreground">
             Real-time temperature monitoring and probe management
           </p>
@@ -395,7 +411,7 @@ export function IoTPageClient() {
       </div>
 
       {/* Status Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <Card
           className={
             criticalAlerts.length > 0 ? "border-red-500 bg-red-900/10" : ""
@@ -403,65 +419,65 @@ export function IoTPageClient() {
           tone="canvas"
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <AlertTriangle className="h-4 w-4" />
               Critical Alerts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="font-bold text-2xl text-red-600">
               {criticalAlerts.length}
             </div>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Bell className="h-4 w-4" />
               Active Alerts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="font-bold text-2xl text-orange-600">
               {activeAlerts.length}
             </div>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Radio className="h-4 w-4" />
               Offline Probes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-600">
+            <div className="font-bold text-2xl text-gray-600">
               {offlineProbes.length}
             </div>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Wrench className="h-4 w-4" />
               Calibration Due
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="font-bold text-2xl text-yellow-600">
               {calibrationDue.length}
             </div>
           </CardContent>
         </Card>
         <Card tone="canvas">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
               <Thermometer className="h-4 w-4" />
               Active Probes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="font-bold text-2xl text-green-600">
               {probes.filter((p) => p.status === "active").length}
             </div>
           </CardContent>
@@ -499,11 +515,11 @@ export function IoTPageClient() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   Loading probes...
                 </div>
               ) : probes.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   No probes registered. Register your first probe to start
                   monitoring temperatures.
                 </div>
@@ -517,7 +533,7 @@ export function IoTPageClient() {
                     const alertCount = getAlertCount(probe.id);
                     return (
                       <div
-                        className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
+                        className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50 ${
                           selectedProbe === probe.id
                             ? "ring-2 ring-primary"
                             : ""
@@ -545,7 +561,7 @@ export function IoTPageClient() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <div className="mt-2 flex items-center gap-4 text-muted-foreground text-sm">
                             <span>ID: {probe.probeId}</span>
                             <span>
                               Range: {probe.minTemp}°F - {probe.maxTemp}°F
@@ -556,7 +572,7 @@ export function IoTPageClient() {
                               <div className="flex items-center gap-2">
                                 <Thermometer className="h-4 w-4" />
                                 <span
-                                  className={`text-lg font-semibold ${getTemperatureColor(
+                                  className={`font-semibold text-lg ${getTemperatureColor(
                                     probe.lastReading,
                                     probe.minTemp,
                                     probe.maxTemp
@@ -565,7 +581,7 @@ export function IoTPageClient() {
                                   {probe.lastReading.toFixed(1)}°F
                                 </span>
                                 {probe.lastReadingAt && (
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-muted-foreground text-xs">
                                     {formatDateTime(probe.lastReadingAt)}
                                   </span>
                                 )}
@@ -579,7 +595,7 @@ export function IoTPageClient() {
                                 <span
                                   className={
                                     probe.batteryLevel < 20
-                                      ? "text-red-500 font-medium"
+                                      ? "font-medium text-red-500"
                                       : ""
                                   }
                                 >
@@ -594,7 +610,7 @@ export function IoTPageClient() {
                                   className={
                                     new Date(probe.nextCalibration) <=
                                     new Date()
-                                      ? "text-orange-500 font-medium"
+                                      ? "font-medium text-orange-500"
                                       : ""
                                   }
                                 >
@@ -650,19 +666,19 @@ export function IoTPageClient() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   Loading alerts...
                 </div>
               ) : activeAlerts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckIcon className="mx-auto h-12 w-12 text-green-500 mb-4" />
+                <div className="py-8 text-center text-muted-foreground">
+                  <CheckIcon className="mx-auto mb-4 h-12 w-12 text-green-500" />
                   No active alerts. All systems operating normally.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {activeAlerts.map((alert) => (
                     <div
-                      className="p-4 border rounded-lg border-l-4"
+                      className="rounded-lg border border-l-4 p-4"
                       key={alert.id}
                       style={{
                         borderLeftColor:
@@ -677,7 +693,7 @@ export function IoTPageClient() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="mb-2 flex items-center gap-3">
                             <h3 className="font-semibold">{alert.title}</h3>
                             <Badge
                               className={
@@ -693,9 +709,9 @@ export function IoTPageClient() {
                             </Badge>
                           </div>
                           {alert.message && (
-                            <p className="text-sm mb-2">{alert.message}</p>
+                            <p className="mb-2 text-sm">{alert.message}</p>
                           )}
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-muted-foreground text-sm">
                             <span>
                               Triggered: {formatDateTime(alert.triggeredAt)}
                             </span>
@@ -748,14 +764,14 @@ export function IoTPageClient() {
             </CardHeader>
             <CardContent>
               {readings.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   Select a probe to view readings
                 </div>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="max-h-96 space-y-2 overflow-y-auto">
                   {readings.map((reading) => (
                     <div
-                      className="flex items-center justify-between p-3 border rounded"
+                      className="flex items-center justify-between rounded border p-3"
                       key={reading.id}
                     >
                       <div className="flex items-center gap-3">
@@ -764,7 +780,7 @@ export function IoTPageClient() {
                           {reading.temperature.toFixed(1)}°{reading.unit}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
                         {reading.batteryLevel !== null && (
                           <span>Battery: {reading.batteryLevel}%</span>
                         )}
@@ -1021,7 +1037,7 @@ export function IoTPageClient() {
                   <span
                     className={
                       new Date(detailsProbe.nextCalibration) <= new Date()
-                        ? "text-orange-500 font-medium"
+                        ? "font-medium text-orange-500"
                         : "font-medium"
                     }
                   >

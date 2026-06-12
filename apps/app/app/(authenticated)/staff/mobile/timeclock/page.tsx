@@ -40,44 +40,44 @@ import { timeEntryClockIn } from "@/app/lib/manifest-client.generated";
 
 // Types
 interface Employee {
-  id: string;
   email: string;
   first_name: string | null;
-  last_name: string | null;
-  role: string;
-  is_active: boolean;
-  phone: string | null;
   hourly_rate: number | null;
+  id: string;
+  is_active: boolean;
+  last_name: string | null;
+  phone: string | null;
+  role: string;
 }
 
 interface ActiveTimeEntry {
-  id: string;
+  break_minutes: number;
   clock_in: string;
   clock_out: string | null;
-  break_minutes: number;
+  id: string;
   location_id: string | null;
   location_name: string | null;
-  shift_id: string | null;
   notes: string | null;
+  shift_id: string | null;
 }
 
 interface Location {
+  address: string | null;
   id: string;
   name: string;
-  address: string | null;
 }
 
 interface StatusResponse {
-  employee: Employee;
   activeTimeEntry: ActiveTimeEntry | null;
+  employee: Employee;
 }
 
 interface OfflineQueueItem {
   action: "clockIn" | "clockOut" | "startBreak" | "endBreak";
-  timestamp: string;
   data: Record<string, unknown>;
   location?: GeolocationCoordinates | null;
   photoDataUrl?: string;
+  timestamp: string;
 }
 
 function formatDuration(startDate: string): string {
@@ -258,9 +258,9 @@ export default function MobileTimeClockPage() {
   }, [isOnline, offlineQueue, activeTimeEntry, fetchStatus]);
 
   // Get current geolocation
-  const getCurrentLocation =
-    useCallback((): Promise<GeolocationCoordinates | null> => {
-      return new Promise((resolve) => {
+  const getCurrentLocation = useCallback(
+    (): Promise<GeolocationCoordinates | null> =>
+      new Promise((resolve) => {
         if (!navigator.geolocation) {
           resolve(null);
           return;
@@ -275,8 +275,9 @@ export default function MobileTimeClockPage() {
           },
           { enableHighAccuracy: true, timeout: 10_000 }
         );
-      });
-    }, []);
+      }),
+    []
+  );
 
   // Handle photo capture
   const handlePhotoCapture = useCallback(
@@ -522,7 +523,7 @@ export default function MobileTimeClockPage() {
 
       {/* Offline indicator banner */}
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 bg-muted/50 px-4 py-2 border-b border-hairline">
+        <div className="flex items-center justify-center gap-2 border-hairline border-b bg-muted/50 px-4 py-2">
           <WifiOff className="h-4 w-4 text-foreground" />
           <span className="font-medium text-foreground">
             You're offline. Actions will sync when you reconnect.
@@ -550,7 +551,7 @@ export default function MobileTimeClockPage() {
 
       {/* Sync queue indicator */}
       {offlineQueue.length > 0 && (
-        <div className="flex items-center justify-center gap-2 bg-muted/50 px-4 py-2 border-b border-hairline">
+        <div className="flex items-center justify-center gap-2 border-hairline border-b bg-muted/50 px-4 py-2">
           <AlertCircle className="h-4 w-4 text-foreground" />
           <span className="font-medium text-foreground">
             {offlineQueue.length} action{offlineQueue.length > 1 ? "s" : ""}{" "}
@@ -592,7 +593,7 @@ export default function MobileTimeClockPage() {
                     Clocked In
                   </span>
                 </div>
-                <div className="text-muted-foreground mb-1 text-sm">
+                <div className="mb-1 text-muted-foreground text-sm">
                   Since {formatTime(activeTimeEntry.clock_in)}
                   {activeTimeEntry.location_name && (
                     <span className="ml-2">
@@ -631,7 +632,7 @@ export default function MobileTimeClockPage() {
               <>
                 {/* Break Button */}
                 <Button
-                  className={`h-16 w-full text-lg font-bold ${
+                  className={`h-16 w-full font-bold text-lg ${
                     isOnBreak
                       ? "bg-amber-500 hover:bg-amber-600"
                       : "bg-blue-500 hover:bg-blue-600"
@@ -645,7 +646,7 @@ export default function MobileTimeClockPage() {
 
                 {/* Clock Out Button */}
                 <Button
-                  className="h-20 w-full bg-rose-500 text-xl font-bold hover:bg-rose-600"
+                  className="h-20 w-full bg-rose-500 font-bold text-xl hover:bg-rose-600"
                   disabled={isLoading}
                   onClick={handleClockOut}
                 >
@@ -655,7 +656,7 @@ export default function MobileTimeClockPage() {
               </>
             ) : (
               <Button
-                className="h-24 w-full bg-emerald-500 text-2xl font-bold hover:bg-emerald-600"
+                className="h-24 w-full bg-emerald-500 font-bold text-2xl hover:bg-emerald-600"
                 disabled={isLoading}
                 onClick={openClockInDialog}
               >
@@ -772,9 +773,9 @@ export default function MobileTimeClockPage() {
 
             {/* Location Warning */}
             {locationWarning && (
-              <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 border border-hairline">
+              <div className="flex items-center gap-2 rounded-lg border border-hairline bg-muted/50 p-3">
                 <AlertCircle className="h-4 w-4 text-foreground" />
-                <span className="text-sm text-foreground">
+                <span className="text-foreground text-sm">
                   {locationWarning}
                 </span>
               </div>
@@ -783,7 +784,7 @@ export default function MobileTimeClockPage() {
 
           <DialogFooter>
             <Button
-              className="h-14 bg-emerald-500 text-lg font-bold hover:bg-emerald-600"
+              className="h-14 bg-emerald-500 font-bold text-lg hover:bg-emerald-600"
               disabled={isLoading || !selectedLocationId}
               onClick={handleClockIn}
             >

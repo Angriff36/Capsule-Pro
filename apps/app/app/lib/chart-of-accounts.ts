@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  listChartOfAccounts as _listChartOfAccounts,
   getChartOfAccount as _getChartOfAccount,
+  listChartOfAccounts as _listChartOfAccounts,
   chartOfAccountCreate,
   chartOfAccountUpdate,
 } from "@/app/lib/manifest-client.generated";
@@ -29,15 +29,15 @@ export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 // Chart of Account types matching the Prisma schema
 export interface ChartOfAccount {
-  id: string;
-  tenant_id: string;
-  account_number: string;
   account_name: string;
+  account_number: string;
   account_type: AccountType;
-  parent_id: string | null;
-  is_active: boolean;
-  description: string | null;
   created_at: Date;
+  description: string | null;
+  id: string;
+  is_active: boolean;
+  parent_id: string | null;
+  tenant_id: string;
   updated_at: Date;
 }
 
@@ -47,21 +47,21 @@ export interface ChartOfAccountWithParent extends ChartOfAccount {
 
 // Request/Response types
 export interface CreateChartOfAccountRequest {
-  account_number: string;
   account_name: string;
+  account_number: string;
   account_type: AccountType;
-  parent_id?: string;
   description?: string;
   is_active?: boolean;
+  parent_id?: string;
 }
 
 export interface UpdateChartOfAccountRequest {
-  account_number?: string;
   account_name?: string;
+  account_number?: string;
   account_type?: AccountType;
-  parent_id?: string | null;
   description?: string;
   is_active?: boolean;
+  parent_id?: string | null;
 }
 
 export interface ChartOfAccountsListResponse {
@@ -75,11 +75,11 @@ export interface ChartOfAccountsListResponse {
 }
 
 export interface ChartOfAccountsFilters {
-  search?: string;
   account_type?: AccountType;
   include_inactive?: boolean;
-  page?: number;
   limit?: number;
+  page?: number;
+  search?: string;
 }
 
 // API Functions
@@ -91,13 +91,21 @@ export async function listChartOfAccounts(
   params: ChartOfAccountsFilters = {}
 ): Promise<ChartOfAccountsListResponse> {
   const query: Record<string, string | number> = {};
-  if (params.search) query.search = params.search;
-  if (params.account_type) query.account_type = params.account_type;
-  if (params.include_inactive) query.include_inactive = "true";
+  if (params.search) {
+    query.search = params.search;
+  }
+  if (params.account_type) {
+    query.account_type = params.account_type;
+  }
+  if (params.include_inactive) {
+    query.include_inactive = "true";
+  }
   query.page = params.page ?? 1;
   query.limit = params.limit ?? 50;
 
-  return _listChartOfAccounts(query) as unknown as Promise<ChartOfAccountsListResponse>;
+  return _listChartOfAccounts(
+    query
+  ) as unknown as Promise<ChartOfAccountsListResponse>;
 }
 
 /**
@@ -107,7 +115,9 @@ export async function getChartOfAccount(
   id: string
 ): Promise<ChartOfAccountWithParent> {
   const result = await _getChartOfAccount(id);
-  if (!result) throw new Error("Failed to fetch chart of account");
+  if (!result) {
+    throw new Error("Failed to fetch chart of account");
+  }
   return result as unknown as ChartOfAccountWithParent;
 }
 
@@ -124,7 +134,9 @@ export async function createChartOfAccount(
     parentId: data.parent_id,
     description: data.description,
   });
-  if (!result) throw new Error("Failed to create chart of account");
+  if (!result) {
+    throw new Error("Failed to create chart of account");
+  }
   return result;
 }
 
@@ -144,7 +156,9 @@ export async function updateChartOfAccount(
     description: data.description,
     isActive: data.is_active,
   });
-  if (!result) throw new Error("Failed to update chart of account");
+  if (!result) {
+    throw new Error("Failed to update chart of account");
+  }
   return result;
 }
 

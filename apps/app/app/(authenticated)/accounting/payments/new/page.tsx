@@ -48,10 +48,10 @@ const METHOD_TYPE_OPTIONS = [
 
 interface FormData {
   amount: string;
-  methodType: string;
   currency: string;
-  invoiceId: string;
   eventId: string;
+  invoiceId: string;
+  methodType: string;
   processor: string;
   reference: string;
 }
@@ -145,7 +145,7 @@ export default function NewPaymentPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Record Payment
           </h1>
           <p className="text-muted-foreground">

@@ -30,10 +30,10 @@ type PaymentMethodType =
   | "DIGITAL_WALLET";
 
 interface PaymentFormProps {
+  clientId?: string;
+  invoiceAmountDue: number;
   invoiceId: string;
   invoiceTotal: number;
-  invoiceAmountDue: number;
-  clientId?: string;
 }
 
 const paymentMethods: Array<{
@@ -44,29 +44,29 @@ const paymentMethods: Array<{
   {
     value: "CREDIT_CARD",
     label: "Credit Card",
-    icon: <CreditCard className="w-4 h-4" />,
+    icon: <CreditCard className="h-4 w-4" />,
   },
   {
     value: "DEBIT_CARD",
     label: "Debit Card",
-    icon: <CreditCard className="w-4 h-4" />,
+    icon: <CreditCard className="h-4 w-4" />,
   },
   {
     value: "ACH",
     label: "Bank Transfer (ACH)",
-    icon: <Building className="w-4 h-4" />,
+    icon: <Building className="h-4 w-4" />,
   },
   {
     value: "WIRE_TRANSFER",
     label: "Wire Transfer",
-    icon: <Building className="w-4 h-4" />,
+    icon: <Building className="h-4 w-4" />,
   },
-  { value: "CHECK", label: "Check", icon: <Banknote className="w-4 h-4" /> },
-  { value: "CASH", label: "Cash", icon: <Banknote className="w-4 h-4" /> },
+  { value: "CHECK", label: "Check", icon: <Banknote className="h-4 w-4" /> },
+  { value: "CASH", label: "Cash", icon: <Banknote className="h-4 w-4" /> },
   {
     value: "DIGITAL_WALLET",
     label: "Digital Wallet",
-    icon: <Smartphone className="w-4 h-4" />,
+    icon: <Smartphone className="h-4 w-4" />,
   },
 ];
 
@@ -150,10 +150,10 @@ export function PaymentFormClient({
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-bold">Record Payment</h2>
-        <p className="text-gray-500 mt-1">
+    <Card className="mx-auto max-w-2xl">
+      <div className="border-b p-6">
+        <h2 className="font-bold text-xl">Record Payment</h2>
+        <p className="mt-1 text-gray-500">
           Invoice Total:{" "}
           {new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -162,7 +162,7 @@ export function PaymentFormClient({
         </p>
       </div>
 
-      <form className="p-6 space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6 p-6" onSubmit={handleSubmit}>
         {/* Amount */}
         <div>
           <Label htmlFor="amount">Payment Amount</Label>
@@ -178,7 +178,7 @@ export function PaymentFormClient({
             type="number"
             value={amount}
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="mt-1 text-gray-500 text-sm">
             Amount Due:{" "}
             {new Intl.NumberFormat("en-US", {
               style: "currency",
@@ -190,10 +190,10 @@ export function PaymentFormClient({
         {/* Payment Method */}
         <div>
           <Label htmlFor="methodType">Payment Method</Label>
-          <div className="grid grid-cols-2 gap-3 mt-2">
+          <div className="mt-2 grid grid-cols-2 gap-3">
             {paymentMethods.map((method) => (
               <button
-                className={`flex items-center gap-2 p-3 border rounded-lg text-left transition-colors ${
+                className={`flex items-center gap-2 rounded-lg border p-3 text-left transition-colors ${
                   methodType === method.value
                     ? "border-primary bg-muted/50"
                     : "border-muted hover:border-muted-foreground"
@@ -237,7 +237,7 @@ export function PaymentFormClient({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4 border-t">
+        <div className="flex gap-3 border-t pt-4">
           <Button
             disabled={loading}
             onClick={() => router.back()}

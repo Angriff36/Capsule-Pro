@@ -48,9 +48,9 @@ export function CalendarBlock() {
           selected={date}
         />
       </CardContent>
-      <CardFooter className="flex flex-col items-start gap-3 border-t px-4 !pt-4">
+      <CardFooter className="!pt-4 flex flex-col items-start gap-3 border-t px-4">
         <div className="flex w-full items-center justify-between px-1">
-          <div className="text-sm font-medium">
+          <div className="font-medium text-sm">
             {date?.toLocaleDateString("en-US", {
               day: "numeric",
               month: "long",
@@ -73,7 +73,7 @@ export function CalendarBlock() {
         <div className="flex w-full flex-col gap-2">
           {events.map((event) => (
             <div
-              className="bg-muted after:bg-primary/70 relative rounded-sm p-2 pl-6 text-sm after:absolute after:inset-y-2 after:left-2 after:w-1 after:rounded-full"
+              className="relative rounded-sm bg-muted p-2 pl-6 text-sm after:absolute after:inset-y-2 after:left-2 after:w-1 after:rounded-full after:bg-primary/70"
               key={event.title}
             >
               <div className="font-medium">{event.title}</div>

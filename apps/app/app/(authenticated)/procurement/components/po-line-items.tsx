@@ -23,21 +23,21 @@ export interface POItem {
   item_id: string;
   item_name: string | null;
   item_number: string | null;
-  unit_of_measure: string | null;
+  quality_status: string | null;
   quantity_ordered: number;
   quantity_received: number;
-  unit_cost: number;
   total_cost: number;
-  quality_status: string | null;
+  unit_cost: number;
+  unit_of_measure: string | null;
 }
 
 export interface EditableLineItem {
   itemId: string;
   itemName: string;
   itemNumber: string;
-  unitOfMeasure: string;
   quantityOrdered: number;
   unitCost: number;
+  unitOfMeasure: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -73,7 +73,7 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
                     {item.item_name || item.item_id}
                   </span>
                   {item.item_number && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {item.item_number}
                     </p>
                   )}
@@ -85,7 +85,7 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
               <TableCell className="text-right">
                 <span
                   className={
-                    isComplete ? "text-green-600 font-medium" : "text-amber-600"
+                    isComplete ? "font-medium text-green-600" : "text-amber-600"
                   }
                 >
                   {Number(item.quantity_received)}
@@ -122,12 +122,12 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
 
 interface EditableLineItemsProps {
   items: EditableLineItem[];
+  onRemove: (itemId: string) => void;
   onUpdate: (
     itemId: string,
     field: "quantityOrdered" | "unitCost",
     value: string
   ) => void;
-  onRemove: (itemId: string) => void;
 }
 
 export function POLineItemsEditable({
@@ -156,14 +156,14 @@ export function POLineItemsEditable({
             <TableCell>
               <div>
                 <span className="font-medium">{li.itemName}</span>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {li.itemNumber} · {li.unitOfMeasure}
                 </p>
               </div>
             </TableCell>
             <TableCell className="text-right">
               <Input
-                className="w-24 ml-auto text-right"
+                className="ml-auto w-24 text-right"
                 min="0.01"
                 onChange={(e) =>
                   onUpdate(li.itemId, "quantityOrdered", e.target.value)
@@ -175,7 +175,7 @@ export function POLineItemsEditable({
             </TableCell>
             <TableCell className="text-right">
               <Input
-                className="w-24 ml-auto text-right"
+                className="ml-auto w-24 text-right"
                 min="0"
                 onChange={(e) =>
                   onUpdate(li.itemId, "unitCost", e.target.value)

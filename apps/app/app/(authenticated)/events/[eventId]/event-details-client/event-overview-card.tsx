@@ -41,17 +41,38 @@ const statusVariantMap = {
 } as const;
 
 interface EventOverviewCardProps {
+  aggregatedIngredientsCount: number;
+  availability: number;
+  capacity: number;
+  displayedTags: string[];
   event: Omit<Event, "budget" | "ticketPrice"> & {
     budget: number | null;
     ticketPrice: number | null;
   };
-  rsvpCount: number;
-  prepTasks: PrepTaskSummaryClient[];
-  aggregatedIngredientsCount: number;
+  eventDate: Date;
+  eventStart: Date;
+  eventStatusLabel: string;
+  featuredMediaUrl: string | null;
   inventoryStats: {
     tracked: number;
     low: number;
   };
+  isLimited: boolean;
+  isLive: boolean;
+  isPast: boolean;
+  isSaved: boolean;
+  isSoldOut: boolean;
+  missingFields: string[];
+  onEditEvent: () => void;
+  onInviteTeam: () => void;
+  // Handlers
+  onQuickRsvp: () => void;
+  onShare: () => void;
+  onToggleSave: () => void;
+  onUpdateDetails: () => void;
+  prepTasks: PrepTaskSummaryClient[];
+  rsvpCount: number;
+  saveReady: boolean;
   taskSummary: {
     pending: number;
     in_progress: number;
@@ -59,30 +80,9 @@ interface EventOverviewCardProps {
     canceled: number;
     other: number;
   };
-  isLive: boolean;
-  isPast: boolean;
-  isSoldOut: boolean;
-  isLimited: boolean;
-  availability: number;
-  capacity: number;
-  eventStatusLabel: string;
-  timeStatusLabel: string;
   ticketPriceLabel: string;
+  timeStatusLabel: string;
   timeZoneLabel: string;
-  eventDate: Date;
-  eventStart: Date;
-  isSaved: boolean;
-  saveReady: boolean;
-  featuredMediaUrl: string | null;
-  displayedTags: string[];
-  // Handlers
-  onQuickRsvp: () => void;
-  onToggleSave: () => void;
-  onShare: () => void;
-  onInviteTeam: () => void;
-  onEditEvent: () => void;
-  onUpdateDetails: () => void;
-  missingFields: string[];
 }
 
 function getTimeBadgeClass(isLive: boolean, isPast: boolean): string {
@@ -124,9 +124,13 @@ function getRsvpProgressLabel(isSoldOut: boolean, isLimited: boolean): string {
 }
 
 interface OperationsSnapshotProps {
-  rsvpCount: number;
+  aggregatedIngredientsCount: number;
   capacity: number;
+  inventoryStats: { tracked: number; low: number };
+  isLimited: boolean;
+  isSoldOut: boolean;
   prepTasks: PrepTaskSummaryClient[];
+  rsvpCount: number;
   taskSummary: {
     pending: number;
     in_progress: number;
@@ -134,10 +138,6 @@ interface OperationsSnapshotProps {
     canceled: number;
     other: number;
   };
-  inventoryStats: { tracked: number; low: number };
-  aggregatedIngredientsCount: number;
-  isSoldOut: boolean;
-  isLimited: boolean;
 }
 
 function OperationsSnapshot({
@@ -166,7 +166,7 @@ function OperationsSnapshot({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-muted-foreground text-xs">
             <span>RSVP progress</span>
             <span>
               {capacity > 0 ? `${rsvpCount}/${capacity}` : `${rsvpCount} RSVPs`}
@@ -178,31 +178,31 @@ function OperationsSnapshot({
               capacity > 0 ? Math.min((rsvpCount / capacity) * 100, 100) : 0
             }
           />
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-muted-foreground text-xs">
             {getRsvpProgressLabel(isSoldOut, isLimited)}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
               Prep tasks
             </div>
-            <div className="mt-2 text-2xl font-semibold">
+            <div className="mt-2 font-semibold text-2xl">
               {prepTasks.length}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-muted-foreground text-xs">
               {taskSummary.pending} pending • {taskSummary.in_progress} in
               progress • {taskSummary.completed} done
             </div>
           </div>
           <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
               Inventory coverage
             </div>
-            <div className="mt-2 text-2xl font-semibold">
+            <div className="mt-2 font-semibold text-2xl">
               {inventoryStats.tracked}/{aggregatedIngredientsCount}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-muted-foreground text-xs">
               {inventoryStats.low > 0
                 ? `${inventoryStats.low} low stock alerts`
                 : "All items tracked"}
@@ -286,7 +286,7 @@ export function EventOverviewCard({
                 <div className="font-semibold text-sm">
                   Event needs more details
                 </div>
-                <div className="text-xs text-amber-800">
+                <div className="text-amber-800 text-xs">
                   Missing:{" "}
                   {missingFields
                     .map((f) => {
@@ -313,7 +313,7 @@ export function EventOverviewCard({
 
       <section>
         <div className="mb-4 flex items-center gap-2">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="text-muted-foreground text-xs uppercase tracking-[0.25em]">
             Event Overview
           </p>
         </div>
@@ -323,7 +323,7 @@ export function EventOverviewCard({
             tone="canvas"
           >
             <CardHeader className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs uppercase tracking-[0.18em]">
                 <Badge
                   className={cn(
                     "border text-[11px]",
@@ -371,11 +371,11 @@ export function EventOverviewCard({
               </div>
               <div className="space-y-2">
                 {event.eventNumber && (
-                  <p className="font-mono text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                  <p className="font-mono font-semibold text-muted-foreground text-xs uppercase tracking-widest">
                     {event.eventNumber}
                   </p>
                 )}
-                <CardTitle className="text-2xl font-semibold tracking-tight">
+                <CardTitle className="font-semibold text-2xl tracking-tight">
                   {event.title}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -396,7 +396,7 @@ export function EventOverviewCard({
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     No tags yet
                   </span>
                 )}
@@ -405,33 +405,33 @@ export function EventOverviewCard({
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                     <CalendarDaysIcon className="size-3" />
                     Date & Time
                   </div>
-                  <div className="mt-2 text-lg font-semibold">
+                  <div className="mt-2 font-semibold text-lg">
                     {new Intl.DateTimeFormat("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
                     }).format(eventDate)}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     Not scheduled • {timeZoneLabel}
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
+                  <div className="mt-1 text-muted-foreground text-xs">
                     {timeStatusLabel}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                     <MapPinIcon className="size-3" />
                     Organizer / Venue
                   </div>
-                  <div className="mt-2 text-sm font-semibold">
+                  <div className="mt-2 font-semibold text-sm">
                     {event.venueName ?? "No organizer assigned"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {event.venueAddress ?? "No address"}
                   </div>
                   <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-success">
@@ -440,34 +440,34 @@ export function EventOverviewCard({
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                     <WalletIcon className="size-3" />
                     Pricing & Format
                   </div>
-                  <div className="mt-2 text-lg font-semibold">
+                  <div className="mt-2 font-semibold text-lg">
                     {ticketPriceLabel}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {event.ticketTier ?? "No tier assigned"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {formatEventFormat(event.eventFormat)}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                     <UsersIcon className="size-3" />
                     Capacity & RSVPs
                   </div>
-                  <div className="mt-2 text-lg font-semibold">
+                  <div className="mt-2 font-semibold text-lg">
                     {rsvpCount} RSVPs
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {capacity > 0
                       ? `${capacity} total capacity`
                       : "Not specified"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {getAvailabilityLabel(
                       isSoldOut,
                       isLimited,
@@ -564,12 +564,12 @@ export function EventOverviewCard({
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-muted/80 via-muted/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+              <div className="absolute right-0 bottom-0 left-0 p-5">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
                   Featured media
                 </p>
-                <p className="mt-1 text-lg font-semibold">{event.eventType}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="mt-1 font-semibold text-lg">{event.eventType}</p>
+                <p className="text-muted-foreground text-xs">
                   {event.venueName ?? "No venue assigned"} •{" "}
                   {new Intl.DateTimeFormat("en-US", {
                     month: "short",

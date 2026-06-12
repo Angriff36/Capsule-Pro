@@ -10,8 +10,7 @@ import { database, type Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { resolveCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   FSAStatus,
@@ -23,8 +22,8 @@ import type {
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**
@@ -259,7 +258,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[InventoryItem/POST] Delegating to manifest create command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "InventoryItem",
     command: "create",

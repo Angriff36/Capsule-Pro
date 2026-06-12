@@ -31,18 +31,18 @@ const isEventIdUuid = (value: string): boolean =>
   EVENT_ID_UUID_REGEX.test(value);
 
 interface ContractRow {
-  id: string;
-  title: string;
-  status: string;
-  contract_number: string | null;
-  document_url: string | null;
-  document_type: string | null;
-  notes: string | null;
-  expires_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
   client_id: string;
   client_name: string | null;
+  contract_number: string | null;
+  created_at: Date;
+  document_type: string | null;
+  document_url: string | null;
+  expires_at: Date | null;
+  id: string;
+  notes: string | null;
+  status: string;
+  title: string;
+  updated_at: Date;
 }
 
 interface EventContractsPageProps {

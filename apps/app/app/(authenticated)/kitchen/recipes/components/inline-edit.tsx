@@ -5,9 +5,9 @@ import { Check, Pencil, X } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 
 interface InlineTextInputProps {
-  value: string;
-  onSave: (value: string) => Promise<void>;
   className?: string;
+  onSave: (value: string) => Promise<void>;
+  value: string;
 }
 
 export function InlineTextInput({
@@ -51,7 +51,7 @@ export function InlineTextInput({
     return (
       <button
         className={cn(
-          "group/edit inline-flex items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
+          "group/edit -ml-1.5 inline-flex cursor-pointer items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 text-left outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
@@ -63,7 +63,7 @@ export function InlineTextInput({
         type="button"
       >
         <span className="truncate">{value}</span>
-        <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0" />
+        <Pencil className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/edit:opacity-100" />
       </button>
     );
   }
@@ -79,19 +79,23 @@ export function InlineTextInput({
     >
       <input
         autoFocus
-        className="h-6 px-0.5 text-sm bg-transparent outline-none w-full min-w-[100px]"
+        className="h-6 w-full min-w-[100px] bg-transparent px-0.5 text-sm outline-none"
         disabled={isPending}
         onBlur={save}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") save();
-          if (e.key === "Escape") cancel();
+          if (e.key === "Enter") {
+            save();
+          }
+          if (e.key === "Escape") {
+            cancel();
+          }
         }}
         ref={inputRef}
         value={draft}
       />
       <button
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--brand-leafy-green)] disabled:opacity-30"
         disabled={isPending || !draft.trim() || draft === value}
         onClick={(e) => {
           e.stopPropagation();
@@ -102,7 +106,7 @@ export function InlineTextInput({
         <Check className="h-3.5 w-3.5" />
       </button>
       <button
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-30"
         disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();
@@ -117,9 +121,9 @@ export function InlineTextInput({
 }
 
 interface InlinePriceInputProps {
-  value: string | null;
-  onSave: (value: string) => Promise<void>;
   className?: string;
+  onSave: (value: string) => Promise<void>;
+  value: string | null;
 }
 
 export function InlinePriceInput({
@@ -171,7 +175,7 @@ export function InlinePriceInput({
     return (
       <button
         className={cn(
-          "group/edit inline-flex items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
+          "group/edit -ml-1.5 inline-flex cursor-pointer items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 text-left outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
@@ -183,7 +187,7 @@ export function InlinePriceInput({
         type="button"
       >
         <span>{displayValue}</span>
-        <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0" />
+        <Pencil className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/edit:opacity-100" />
       </button>
     );
   }
@@ -200,14 +204,18 @@ export function InlinePriceInput({
       <span className="text-muted-foreground text-xs">$</span>
       <input
         autoFocus
-        className="h-6 w-20 px-0.5 text-sm bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="h-6 w-20 bg-transparent px-0.5 text-sm outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         disabled={isPending}
         min="0"
         onBlur={save}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") save();
-          if (e.key === "Escape") cancel();
+          if (e.key === "Enter") {
+            save();
+          }
+          if (e.key === "Escape") {
+            cancel();
+          }
         }}
         ref={inputRef}
         step="0.01"
@@ -215,7 +223,7 @@ export function InlinePriceInput({
         value={draft}
       />
       <button
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--brand-leafy-green)] disabled:opacity-30"
         disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();
@@ -226,7 +234,7 @@ export function InlinePriceInput({
         <Check className="h-3.5 w-3.5" />
       </button>
       <button
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-30"
         disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();

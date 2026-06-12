@@ -32,8 +32,8 @@ export function WasteStatsCards() {
         {[1, 2, 3, 4].map((i) => (
           <Card key={i} tone="soft-stone">
             <CardContent className="p-6">
-              <div className="h-4 w-24 animate-pulse bg-muted rounded mb-2" />
-              <div className="h-8 w-32 animate-pulse bg-muted rounded" />
+              <div className="mb-2 h-4 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-8 w-32 animate-pulse rounded bg-muted" />
             </CardContent>
           </Card>
         ))}
@@ -78,12 +78,12 @@ export function WasteStatsCards() {
         <Card key={card.title} tone="soft-stone">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-lg ${card.bgColor}`}>
+              <div className={`rounded-lg p-3 ${card.bgColor}`}>
                 <card.icon className={`h-6 w-6 ${card.color}`} />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{card.title}</p>
-                <p className="text-2xl font-bold">{card.value}</p>
+                <p className="text-muted-foreground text-sm">{card.title}</p>
+                <p className="font-bold text-2xl">{card.value}</p>
               </div>
             </div>
           </CardContent>

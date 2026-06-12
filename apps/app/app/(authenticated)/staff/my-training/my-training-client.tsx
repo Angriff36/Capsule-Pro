@@ -8,22 +8,22 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface TrainingRow {
+  readonly assigned_at: string;
+  readonly category: string | null;
+  readonly completed_at: string | null;
+  readonly content_type: string;
+  readonly content_url: string | null;
+  readonly due_date: string | null;
+  readonly duration_minutes: number | null;
   readonly id: string;
+  readonly is_required: boolean;
+  readonly module_description: string | null;
   readonly module_id: string;
   readonly module_title: string;
-  readonly module_description: string | null;
-  readonly content_type: string;
-  readonly duration_minutes: number | null;
-  readonly category: string | null;
-  readonly is_required: boolean;
-  readonly status: string;
-  readonly due_date: string | null;
-  readonly assigned_at: string;
-  readonly content_url: string | null;
-  readonly started_at: string | null;
-  readonly completed_at: string | null;
-  readonly score: number | null;
   readonly passed: boolean;
+  readonly score: number | null;
+  readonly started_at: string | null;
+  readonly status: string;
 }
 
 interface MyTrainingClientProperties {
@@ -31,7 +31,9 @@ interface MyTrainingClientProperties {
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -40,7 +42,9 @@ function formatDate(value: string | null) {
 }
 
 function daysUntilDue(dueDate: string | null): number | null {
-  if (!dueDate) return null;
+  if (!dueDate) {
+    return null;
+  }
   const due = new Date(dueDate);
   const now = new Date();
   return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -88,9 +92,9 @@ export function MyTrainingClient({ assignments }: MyTrainingClientProperties) {
 
   if (assignments.length === 0) {
     return (
-      <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-6 py-16 text-center">
+      <div className="rounded-[22px] border border-hairline border-dashed bg-canvas px-6 py-16 text-center">
         <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-muted-foreground text-sm">
           No training assignments yet. Check back when your manager assigns
           modules.
         </p>
@@ -124,17 +128,17 @@ export function MyTrainingClient({ assignments }: MyTrainingClientProperties) {
                   <div className="font-medium text-ink">
                     {assignment.module_title}
                     {assignment.is_required && (
-                      <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                      <span className="ml-2 font-mono text-[10px] text-muted-foreground uppercase tracking-[0.18em]">
                         Required
                       </span>
                     )}
                   </div>
                   {assignment.module_description && (
-                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    <p className="line-clamp-2 text-muted-foreground text-sm leading-relaxed">
                       {assignment.module_description}
                     </p>
                   )}
-                  <div className="flex flex-wrap items-center gap-3 pt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-3 pt-1 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                     <span>{assignment.content_type}</span>
                     {assignment.duration_minutes != null && (
                       <span className="flex items-center gap-1">
@@ -194,7 +198,7 @@ export function MyTrainingClient({ assignments }: MyTrainingClientProperties) {
             </div>
 
             {(assignment.due_date || assignment.completed_at) && (
-              <div className="mt-3 flex items-center gap-4 border-t border-hairline pt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="mt-3 flex items-center gap-4 border-hairline border-t pt-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                 {assignment.due_date && !isCompleted && (
                   <span
                     className={cn(

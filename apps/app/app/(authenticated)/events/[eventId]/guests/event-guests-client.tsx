@@ -30,22 +30,25 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { eventGuestUpdate, eventGuestSoftDelete } from "@/app/lib/manifest-client.generated";
+import {
+  eventGuestSoftDelete,
+  eventGuestUpdate,
+} from "@/app/lib/manifest-client.generated";
 
 interface Guest {
-  id: string;
-  guestName: string;
-  guestEmail: string | null;
-  guestPhone: string | null;
-  rsvpStatus: string;
-  dietaryRestrictions: string[];
-  specialMealRequired: boolean;
-  specialMealNotes: string | null;
-  tableAssignment: string | null;
-  mealPreference: string | null;
-  waitlistPosition: number | null;
-  notes: string | null;
   createdAt: string;
+  dietaryRestrictions: string[];
+  guestEmail: string | null;
+  guestName: string;
+  guestPhone: string | null;
+  id: string;
+  mealPreference: string | null;
+  notes: string | null;
+  rsvpStatus: string;
+  specialMealNotes: string | null;
+  specialMealRequired: boolean;
+  tableAssignment: string | null;
+  waitlistPosition: number | null;
 }
 
 interface EventGuestsClientProps {
@@ -65,31 +68,31 @@ const EMPTY_FORM = {
 };
 
 interface GuestRowProps {
-  guest: Guest;
-  editingId: string | null;
-  editForm: Partial<Guest>;
-  isPending: boolean;
   deleteTarget: string | null;
-  onRsvpChange: (id: string, status: string) => void;
-  onEdit: (guest: Guest) => void;
-  onSaveEdit: () => void;
+  editForm: Partial<Guest>;
+  editingId: string | null;
+  guest: Guest;
+  isPending: boolean;
   onDelete: (id: string) => void;
   onDeleteTarget: (id: string | null) => void;
-  setEditingId: (id: string | null) => void;
+  onEdit: (guest: Guest) => void;
+  onRsvpChange: (id: string, status: string) => void;
+  onSaveEdit: () => void;
   setEditForm: (form: Partial<Guest>) => void;
+  setEditingId: (id: string | null) => void;
 }
 
 interface GuestActionsProps {
+  deleteTarget: string | null;
   guest: Guest;
   isEditing: boolean;
   isPending: boolean;
-  deleteTarget: string | null;
-  onEdit: (guest: Guest) => void;
-  onSaveEdit: () => void;
   onDelete: (id: string) => void;
   onDeleteTarget: (id: string | null) => void;
-  setEditingId: (id: string | null) => void;
+  onEdit: (guest: Guest) => void;
+  onSaveEdit: () => void;
   setEditForm: (form: Partial<Guest>) => void;
+  setEditingId: (id: string | null) => void;
 }
 
 function GuestActions({
@@ -232,7 +235,7 @@ function GuestRow({
           onValueChange={(val) => onRsvpChange(guest.id, val)}
           value={guest.rsvpStatus.toLowerCase()}
         >
-          <SelectTrigger className="w-32 h-8">
+          <SelectTrigger className="h-8 w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -425,7 +428,18 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail ?? undefined, guestPhone: editForm.guestPhone ?? undefined, tableAssignment: editForm.tableAssignment ?? undefined, mealPreference: editForm.mealPreference ?? undefined, notes: editForm.notes ?? undefined, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions : undefined });
+        await eventGuestUpdate({
+          id: editingId,
+          guestName: editForm.guestName,
+          guestEmail: editForm.guestEmail ?? undefined,
+          guestPhone: editForm.guestPhone ?? undefined,
+          tableAssignment: editForm.tableAssignment ?? undefined,
+          mealPreference: editForm.mealPreference ?? undefined,
+          notes: editForm.notes ?? undefined,
+          dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions)
+            ? editForm.dietaryRestrictions
+            : undefined,
+        });
         toast.success("Guest updated");
         setEditingId(null);
         setEditForm({});
@@ -443,7 +457,7 @@ export function EventGuestsClient({
       {/* Capacity warning */}
       {isAtCapacity && (
         <div className="rounded-[22px] border border-coral/40 bg-coral/5 p-4">
-          <p className="text-sm font-medium text-coral">
+          <p className="font-medium text-coral text-sm">
             Capacity reached — {confirmedCount} of {maxCapacity} spots
             confirmed. New RSVPs will be waitlisted.
           </p>
@@ -452,14 +466,14 @@ export function EventGuestsClient({
 
       {/* Add guest dialog */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {guests.length} {guests.length === 1 ? "guest" : "guests"}
           {maxCapacity !== null && ` (capacity: ${maxCapacity})`}
         </div>
         <Dialog onOpenChange={setAddOpen} open={addOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" /> Add Guest
+              <Plus className="mr-1 h-4 w-4" /> Add Guest
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -556,7 +570,7 @@ export function EventGuestsClient({
                 </Button>
                 <Button disabled={isPending} onClick={handleAddGuest}>
                   {isPending && (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                   )}
                   Add Guest
                 </Button>

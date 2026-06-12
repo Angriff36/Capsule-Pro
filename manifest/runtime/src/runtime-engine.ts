@@ -41,12 +41,12 @@ interface ContextWithTelemetry {
 // ---------------------------------------------------------------------------
 
 interface RunCommandOptions {
+  causationId?: string;
+  correlationId?: string;
   entityName?: string;
+  idempotencyKey?: string;
   instanceId?: string;
   overrideRequests?: OverrideRequest[];
-  correlationId?: string;
-  causationId?: string;
-  idempotencyKey?: string;
 }
 
 /**
@@ -76,7 +76,7 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
     }
 
     if (!entityName) {
-      return undefined;
+      return;
     }
 
     const command = this.getCommands().find(
@@ -84,7 +84,7 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
         item.name === name && (item.entity === entityName || !item.entity)
     );
     if (!command) {
-      return undefined;
+      return;
     }
 
     if (command.entity) {
@@ -124,9 +124,9 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
       commandName === "create"
         ? options.instanceId
         : (options.instanceId ??
-            (typeof body.id === "string" && body.id.length > 0
-              ? body.id
-              : undefined));
+          (typeof body.id === "string" && body.id.length > 0
+            ? body.id
+            : undefined));
 
     if (entityName && commandName === "syncFromEvent" && instanceId) {
       try {
@@ -152,7 +152,9 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
           (result as unknown as { error?: unknown }).error ??
           (result as unknown as { message?: unknown }).message ??
           "unknown error";
-        const guard = (result as unknown as { guardFailure?: { formatted?: string } }).guardFailure;
+        const guard = (
+          result as unknown as { guardFailure?: { formatted?: string } }
+        ).guardFailure;
         const detail = guard?.formatted ?? String(err);
         console.error(
           `[manifest-runtime] command failed: ${options.entityName ?? "??"}.${commandName} — ${detail}`

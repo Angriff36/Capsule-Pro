@@ -14,22 +14,22 @@ import {
   RefreshCwIcon,
   SearchIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 
 /**
  * Override audit log entry from the API
  */
 interface OverrideAudit {
-  id: string;
-  tenantId: string;
-  entityType: string;
-  entityId: string;
-  constraintId: string;
-  overrideReason: string;
-  overriddenBy: string;
-  authorizedBy: string | null;
   authorizedAt: Date | string | null;
+  authorizedBy: string | null;
+  constraintId: string;
   createdAt: Date | string;
+  entityId: string;
+  entityType: string;
+  id: string;
+  overriddenBy: string;
+  overrideReason: string;
+  tenantId: string;
 }
 
 /**
@@ -103,88 +103,93 @@ export const AuditLogsClient = () => {
   /**
    * Fetch audit logs from the API
    */
-  const fetchAuditLogs = useCallback(async (showRefreshLoading = false) => {
-    if (showRefreshLoading) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (entityType) {
-        params.append("entityType", entityType);
-      }
-      if (entityId) {
-        params.append("entityId", entityId);
-      }
-
-      // If no filters, show recent logs across all entities
-      // The API requires entityType and entityId, so we'll fetch from multiple types
-      let allOverrides: OverrideAudit[] = [];
-
-      if (entityType || entityId) {
-        // Fetch with specific filters
-        if (entityType && entityId) {
-          const response = await fetch(
-            `/api/kitchen/overrides?entityType=${entityType}&entityId=${entityId}`,
-            { cache: "no-store" }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || "Failed to fetch audit logs");
-          }
-
-          const data: AuditLogsResponse = await response.json();
-          allOverrides = data.overrides || [];
-        } else {
-          // Need both params for API call
-          allOverrides = [];
-        }
+  const fetchAuditLogs = useCallback(
+    async (showRefreshLoading = false) => {
+      if (showRefreshLoading) {
+        setRefreshing(true);
       } else {
-        // Fetch recent logs from all entity types
-        const typesToFetch = ENTITY_TYPE_OPTIONS.slice(1).map(
-          (opt) => opt.value
-        );
-        // Use a placeholder entity ID to get recent overrides for the type
-        const promises = typesToFetch.slice(0, 5).map(async (type) => {
-          try {
+        setLoading(true);
+      }
+      setError(null);
+
+      try {
+        const params = new URLSearchParams();
+        if (entityType) {
+          params.append("entityType", entityType);
+        }
+        if (entityId) {
+          params.append("entityId", entityId);
+        }
+
+        // If no filters, show recent logs across all entities
+        // The API requires entityType and entityId, so we'll fetch from multiple types
+        let allOverrides: OverrideAudit[] = [];
+
+        if (entityType || entityId) {
+          // Fetch with specific filters
+          if (entityType && entityId) {
             const response = await fetch(
-              `/api/kitchen/overrides?entityType=${type}&entityId=recent`,
+              `/api/kitchen/overrides?entityType=${entityType}&entityId=${entityId}`,
               { cache: "no-store" }
             );
-            if (response.ok) {
-              const data: AuditLogsResponse = await response.json();
-              return data.overrides || [];
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(
+                errorData.message || "Failed to fetch audit logs"
+              );
             }
-            return [];
-          } catch {
-            return [];
+
+            const data: AuditLogsResponse = await response.json();
+            allOverrides = data.overrides || [];
+          } else {
+            // Need both params for API call
+            allOverrides = [];
           }
-        });
+        } else {
+          // Fetch recent logs from all entity types
+          const typesToFetch = ENTITY_TYPE_OPTIONS.slice(1).map(
+            (opt) => opt.value
+          );
+          // Use a placeholder entity ID to get recent overrides for the type
+          const promises = typesToFetch.slice(0, 5).map(async (type) => {
+            try {
+              const response = await fetch(
+                `/api/kitchen/overrides?entityType=${type}&entityId=recent`,
+                { cache: "no-store" }
+              );
+              if (response.ok) {
+                const data: AuditLogsResponse = await response.json();
+                return data.overrides || [];
+              }
+              return [];
+            } catch {
+              return [];
+            }
+          });
 
-        const results = await Promise.all(promises);
-        allOverrides = results.flat();
+          const results = await Promise.all(promises);
+          allOverrides = results.flat();
+        }
+
+        // Sort by creation date (newest first)
+        allOverrides.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        // Limit to 100 results
+        setAuditLogs(allOverrides.slice(0, 100));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        setAuditLogs([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      // Sort by creation date (newest first)
-      allOverrides.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      // Limit to 100 results
-      setAuditLogs(allOverrides.slice(0, 100));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-      setAuditLogs([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [entityType, entityId]);
+    },
+    [entityType, entityId]
+  );
 
   useEffect(() => {
     void fetchAuditLogs();
@@ -229,7 +234,7 @@ export const AuditLogsClient = () => {
 
         <form className="grid gap-4 sm:grid-cols-3" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 block text-xs text-slate-400">
+            <label className="mb-1.5 block text-slate-400 text-xs">
               Entity Type
             </label>
             <select
@@ -246,7 +251,7 @@ export const AuditLogsClient = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs text-slate-400">
+            <label className="mb-1.5 block text-slate-400 text-xs">
               Entity ID
             </label>
             <input
@@ -290,7 +295,7 @@ export const AuditLogsClient = () => {
           <div className="flex min-h-[200px] items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2Icon className="h-8 w-8 animate-spin text-blue-400" />
-              <p className="text-sm text-slate-400">Loading audit logs...</p>
+              <p className="text-slate-400 text-sm">Loading audit logs...</p>
             </div>
           </div>
         )}
@@ -300,7 +305,7 @@ export const AuditLogsClient = () => {
             <div className="text-center">
               <p className="text-rose-400">{error}</p>
               <button
-                className="mt-4 text-sm text-blue-400 hover:underline"
+                className="mt-4 text-blue-400 text-sm hover:underline"
                 onClick={() => void fetchAuditLogs()}
                 type="button"
               >
@@ -318,7 +323,7 @@ export const AuditLogsClient = () => {
                 <p className="font-medium text-slate-300">
                   No audit logs found
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-slate-500 text-sm">
                   {entityType || entityId
                     ? "Try adjusting your filters to see more results"
                     : "Override audit logs will appear here when constraints are overridden"}
@@ -349,7 +354,7 @@ export const AuditLogsClient = () => {
                           {formatDate(log.createdAt)}
                         </span>
                         {log.authorizedAt && (
-                          <span className="text-xs text-slate-500">
+                          <span className="text-slate-500 text-xs">
                             Auth: {formatDate(log.authorizedAt)}
                           </span>
                         )}
@@ -358,26 +363,26 @@ export const AuditLogsClient = () => {
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium">{log.entityType}</span>
-                        <span className="text-xs text-slate-500 font-mono">
+                        <span className="font-mono text-slate-500 text-xs">
                           {log.entityId.slice(0, 8)}...
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400">
+                      <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-1 font-medium text-amber-400 text-xs">
                         {formatConstraintCode(log.constraintId)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span
-                        className="max-w-[200px] block text-xs"
+                        className="block max-w-[200px] text-xs"
                         title={log.overrideReason}
                       >
                         {truncateText(log.overrideReason, 40)}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs text-slate-400 font-mono">
+                      <span className="font-mono text-slate-400 text-xs">
                         {log.overriddenBy.slice(0, 8)}...
                       </span>
                     </TableCell>
@@ -397,7 +402,7 @@ export const AuditLogsClient = () => {
             <p>Understanding constraint override tracking</p>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-slate-400 md:grid-cols-2">
+        <div className="grid gap-4 text-slate-400 text-sm md:grid-cols-2">
           <div>
             <p className="mb-2 font-medium text-slate-300">What's Tracked</p>
             <ul className="ml-4 list-disc space-y-1">

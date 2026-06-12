@@ -30,9 +30,9 @@ import { env } from "@/env";
  */
 
 interface RevalidateBody {
-  type: "path" | "tag";
   path?: string;
   tag?: string;
+  type: "path" | "tag";
 }
 
 const ALLOWED_PATHS = ["/", "/contact", "/pricing", "/blog"];

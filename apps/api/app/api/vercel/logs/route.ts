@@ -21,37 +21,37 @@ const VERCEL_DRAIN_SECRET = process.env.VERCEL_DRAIN_SIGNATURE_SECRET;
  * @see https://vercel.com/docs/log-drains
  */
 interface VercelLogPayload {
-  id: string;
+  branch?: string;
+  buildId?: string;
   deploymentId: string;
-  source: string;
+  destination?: string;
+  edgeType?: string;
+  entrypoint?: string;
+  environment?: string;
+  executionRegion?: string;
   host: string;
-  timestamp: number;
-  projectId: string;
+  id: string;
   level: "info" | "warning" | "error";
   message?: string;
-  buildId?: string;
-  entrypoint?: string;
-  destination?: string;
   path?: string;
-  type?: string;
-  statusCode?: number;
-  requestId?: string;
-  environment?: string;
-  branch?: string;
-  edgeType?: string;
+  projectId: string;
   projectName?: string;
-  executionRegion?: string;
-  traceId?: string;
+  requestId?: string;
+  source: string;
+  span?: {
+    id?: string;
+  };
   spanId?: string;
+  statusCode?: number;
+  timestamp: number;
   /**
    * Nested trace/span objects (Vercel format)
    */
   trace?: {
     id?: string;
   };
-  span?: {
-    id?: string;
-  };
+  traceId?: string;
+  type?: string;
   /**
    * Additional structured data from Vercel
    */
@@ -81,11 +81,8 @@ const VALID_LEVELS = ["info", "warning", "error"] as const;
  * @param signature - The signature from x-vercel-signature header
  * @returns true if signature is valid, false otherwise
  */
-function verifySignature(
-  rawBody: string,
-  signature: string | null
-): boolean {
-  if (!VERCEL_DRAIN_SECRET || !signature) {
+function verifySignature(rawBody: string, signature: string | null): boolean {
+  if (!(VERCEL_DRAIN_SECRET && signature)) {
     return false;
   }
 
@@ -129,9 +126,7 @@ function validateLogPayload(data: unknown): {
   if (typeof payload.source !== "string") {
     errors.push("source is required and must be a string");
   } else if (!(VALID_SOURCES as readonly string[]).includes(payload.source)) {
-    errors.push(
-      `source must be one of: ${VALID_SOURCES.join(", ")}`
-    );
+    errors.push(`source must be one of: ${VALID_SOURCES.join(", ")}`);
   }
 
   if (typeof payload.host !== "string") {
@@ -158,9 +153,7 @@ function validateLogPayload(data: unknown): {
 /**
  * Map Vercel log level to structured log format
  */
-function getLogLevel(
-  level: string
-): "info" | "warn" | "error" | "debug" {
+function getLogLevel(level: string): "info" | "warn" | "error" | "debug" {
   if (level === "warning") {
     return "warn";
   }
@@ -282,8 +275,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Handle both single log and batch array
   const payloads = Array.isArray(body) ? body : [body];
   const validPayloads: VercelLogPayload[] = [];
-  const validationErrors: Array<{ index: number; errors: string[] }> =
-    [];
+  const validationErrors: Array<{ index: number; errors: string[] }> = [];
 
   for (let i = 0; i < payloads.length; i++) {
     const { valid, errors } = validateLogPayload(payloads[i]);

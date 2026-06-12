@@ -16,9 +16,9 @@ import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireApiManager } from "@/app/lib/auth-roles";
 import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { translatePrismaError } from "@/lib/prisma-error";
 import { checkRateLimit } from "@/middleware/rate-limiter";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   captureException,
   type PaymentResponse,
@@ -200,7 +200,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         error: manifestResult.error,
       });
       return NextResponse.json(
-        { error: `Payment processing failed: ${manifestResult.error ?? "manifest rejection"}` },
+        {
+          error: `Payment processing failed: ${manifestResult.error ?? "manifest rejection"}`,
+        },
         { status: 500 }
       );
     }
@@ -385,7 +387,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         error: manifestResult.error,
       });
       return NextResponse.json(
-        { error: `Refund failed: ${manifestResult.error ?? "manifest rejection"}` },
+        {
+          error: `Refund failed: ${manifestResult.error ?? "manifest rejection"}`,
+        },
         { status: 500 }
       );
     }

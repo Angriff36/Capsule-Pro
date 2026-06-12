@@ -15,16 +15,16 @@ import { cn } from "@repo/design-system/lib/utils";
 import * as React from "react";
 
 export interface AmbientAnimationProps {
+  /** Children to wrap (the empty state content) */
+  children?: React.ReactNode;
+  /** Additional class names */
+  className?: string;
+  /** Intensity of the animation (0-1) */
+  intensity?: number;
   /** Whether the animation is visible */
   isVisible?: boolean;
   /** Animation variant */
   variant?: "particles" | "waves" | "pulse";
-  /** Intensity of the animation (0-1) */
-  intensity?: number;
-  /** Additional class names */
-  className?: string;
-  /** Children to wrap (the empty state content) */
-  children?: React.ReactNode;
 }
 
 /**
@@ -87,23 +87,25 @@ export function AmbientAnimation({
  * Soft floating particles that drift across the container
  */
 function ParticleFlow({ intensity }: { intensity: number }) {
-  const particles = React.useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 4 + 2,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: Math.random() * 10 + 15,
-      opacity: Math.random() * 0.3 + 0.1,
-    }));
-  }, []);
+  const particles = React.useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        id: i,
+        size: Math.random() * 4 + 2,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 5,
+        duration: Math.random() * 10 + 15,
+        opacity: Math.random() * 0.3 + 0.1,
+      })),
+    []
+  );
 
   return (
     <div className="absolute inset-0">
       {particles.map((particle) => (
         <div
-          className="animate-ambient-particle absolute rounded-full bg-muted-foreground/30"
+          className="absolute animate-ambient-particle rounded-full bg-muted-foreground/30"
           key={particle.id}
           style={{
             width: particle.size,
@@ -133,7 +135,7 @@ function WaveAnimation({ intensity }: { intensity: number }) {
   return (
     <div className="absolute inset-0">
       <div
-        className="animate-ambient-wave absolute inset-0 opacity-30"
+        className="absolute inset-0 animate-ambient-wave opacity-30"
         style={{
           background: `
             radial-gradient(ellipse at 30% 50%, hsl(var(--muted)) 0%, transparent 50%),
@@ -143,7 +145,7 @@ function WaveAnimation({ intensity }: { intensity: number }) {
         }}
       />
       <div
-        className="animate-ambient-wave-slow absolute inset-0 opacity-20"
+        className="absolute inset-0 animate-ambient-wave-slow opacity-20"
         style={{
           background: `
             radial-gradient(ellipse at 50% 30%, hsl(var(--primary) / 0.1) 0%, transparent 40%),
@@ -164,7 +166,7 @@ function PulseAnimation({ intensity }: { intensity: number }) {
   return (
     <div className="absolute inset-0">
       <div
-        className="animate-ambient-pulse absolute inset-0 rounded-lg"
+        className="absolute inset-0 animate-ambient-pulse rounded-lg"
         style={{
           background:
             "radial-gradient(circle at center, hsl(var(--muted) / 0.2) 0%, transparent 70%)",
@@ -172,7 +174,7 @@ function PulseAnimation({ intensity }: { intensity: number }) {
         }}
       />
       <div
-        className="animate-ambient-pulse-slow absolute inset-0 rounded-lg"
+        className="absolute inset-0 animate-ambient-pulse-slow rounded-lg"
         style={{
           background:
             "radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.05) 0%, transparent 50%)",

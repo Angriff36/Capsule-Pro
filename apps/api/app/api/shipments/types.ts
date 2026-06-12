@@ -28,46 +28,46 @@ export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
  * Shipment response shape matching Prisma model
  */
 export interface Shipment {
-  id: string;
-  tenant_id: string;
-  shipment_number: string;
-  status: ShipmentStatus;
+  actual_delivery_date: Date | null;
+  carrier: string | null;
+
+  // Audit fields
+  created_at: Date;
+  deleted_at: Date | null;
+
+  // Delivery confirmation
+  delivered_by: string | null;
+  estimated_delivery_date: Date | null;
 
   // Foreign Keys
   event_id: string | null;
-  supplier_id: string | null;
+  id: string;
+  internal_notes: string | null;
   location_id: string | null;
+
+  // Notes
+  notes: string | null;
+  received_by: string | null;
+  reference: string | null;
 
   // Dates
   scheduled_date: Date | null;
+  shipment_number: string;
   shipped_date: Date | null;
-  estimated_delivery_date: Date | null;
-  actual_delivery_date: Date | null;
+  shipping_cost: number | null;
+  shipping_method: string | null;
+  signature: string | null;
+  status: ShipmentStatus;
+  supplier_id: string | null;
+  tenant_id: string;
 
   // Financials
   total_items: number;
-  shipping_cost: number | null;
   total_value: number | null;
 
   // Tracking
   tracking_number: string | null;
-  carrier: string | null;
-  shipping_method: string | null;
-
-  // Delivery confirmation
-  delivered_by: string | null;
-  received_by: string | null;
-  signature: string | null;
-
-  // Notes
-  notes: string | null;
-  internal_notes: string | null;
-  reference: string | null;
-
-  // Audit fields
-  created_at: Date;
   updated_at: Date;
-  deleted_at: Date | null;
 }
 
 /**
@@ -81,35 +81,34 @@ export interface ShipmentWithItems extends Shipment {
  * Shipment Item response shape matching Prisma model
  */
 export interface ShipmentItem {
-  id: string;
-  tenant_id: string;
-  shipment_id: string;
-
-  // Foreign Keys
-  item_id: string;
-
-  // Quantities
-  quantity_shipped: number;
-  quantity_received: number;
-  quantity_damaged: number;
-
-  // Unit Information
-  unit_id: number | null;
-  unit_cost: number | null;
-
-  // Financials
-  total_cost: number;
-
   // Quality/Condition
   condition: string | null;
   condition_notes: string | null;
 
-  // Lot/Batch Information
-  lot_number: string | null;
-  expiration_date: Date | null;
-
   // Audit fields
   created_at: Date;
+  expiration_date: Date | null;
+  id: string;
+
+  // Foreign Keys
+  item_id: string;
+
+  // Lot/Batch Information
+  lot_number: string | null;
+  quantity_damaged: number;
+  quantity_received: number;
+
+  // Quantities
+  quantity_shipped: number;
+  shipment_id: string;
+  tenant_id: string;
+
+  // Financials
+  total_cost: number;
+  unit_cost: number | null;
+
+  // Unit Information
+  unit_id: number | null;
   updated_at: Date;
 }
 
@@ -117,109 +116,109 @@ export interface ShipmentItem {
  * Create shipment request
  */
 export interface CreateShipmentRequest {
-  shipment_number?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
-  scheduled_date?: string;
-  estimated_delivery_date?: string;
-  shipping_cost?: number;
-  tracking_number?: string;
   carrier?: string;
-  shipping_method?: string;
-  notes?: string;
+  estimated_delivery_date?: string;
+  event_id?: string;
   internal_notes?: string;
+  location_id?: string;
+  notes?: string;
+  scheduled_date?: string;
+  shipment_number?: string;
+  shipping_cost?: number;
+  shipping_method?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
+  tracking_number?: string;
 }
 
 /**
  * Update shipment request
  */
 export interface UpdateShipmentRequest {
-  shipment_number?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
-  scheduled_date?: string;
-  shipped_date?: string;
-  estimated_delivery_date?: string;
   actual_delivery_date?: string;
+  carrier?: string;
+  delivered_by?: string;
+  estimated_delivery_date?: string;
+  event_id?: string;
+  internal_notes?: string;
+  location_id?: string;
+  notes?: string;
+  received_by?: string;
+  reference?: string;
+  scheduled_date?: string;
+  shipment_number?: string;
+  shipped_date?: string;
   shipping_cost?: number;
+  shipping_method?: string;
+  signature?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
   total_value?: number;
   tracking_number?: string;
-  carrier?: string;
-  shipping_method?: string;
-  delivered_by?: string;
-  received_by?: string;
-  signature?: string;
-  notes?: string;
-  internal_notes?: string;
-  reference?: string;
 }
 
 /**
  * Update shipment status request
  */
 export interface UpdateShipmentStatusRequest {
-  status: ShipmentStatus;
   actual_delivery_date?: string;
   delivered_by?: string;
+  notes?: string;
   received_by?: string;
   signature?: string;
-  notes?: string;
+  status: ShipmentStatus;
 }
 
 /**
  * Create shipment item request
  */
 export interface CreateShipmentItemRequest {
-  item_id: string;
-  quantity_shipped: number;
-  quantity_received?: number;
-  quantity_damaged?: number;
-  unit_id?: number;
-  unit_cost?: number;
   condition?: string;
   condition_notes?: string;
-  lot_number?: string;
   expiration_date?: string;
+  item_id: string;
+  lot_number?: string;
+  quantity_damaged?: number;
+  quantity_received?: number;
+  quantity_shipped: number;
+  unit_cost?: number;
+  unit_id?: number;
 }
 
 /**
  * Update shipment item request
  */
 export interface UpdateShipmentItemRequest {
-  quantity_shipped?: number;
-  quantity_received?: number;
-  quantity_damaged?: number;
-  unit_id?: number;
-  unit_cost?: number;
   condition?: string;
   condition_notes?: string;
-  lot_number?: string;
   expiration_date?: string;
+  lot_number?: string;
+  quantity_damaged?: number;
+  quantity_received?: number;
+  quantity_shipped?: number;
+  unit_cost?: number;
+  unit_id?: number;
 }
 
 /**
  * List filters
  */
 export interface ShipmentFilters {
-  search?: string;
-  status?: ShipmentStatus;
-  event_id?: string;
-  supplier_id?: string;
-  location_id?: string;
   date_from?: string;
   date_to?: string;
+  event_id?: string;
+  location_id?: string;
+  search?: string;
+  status?: ShipmentStatus;
+  supplier_id?: string;
 }
 
 /**
  * Pagination params
  */
 export interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 /**

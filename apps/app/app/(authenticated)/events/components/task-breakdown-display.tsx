@@ -87,10 +87,10 @@ const _SECTION_COLORS = {
 } as const;
 
 interface TaskCardProps {
-  task: TaskBreakdownItem;
-  section: TaskSection;
-  onComplete?: (taskId: string, completed: boolean) => void;
   onAssign?: (taskId: string) => void;
+  onComplete?: (taskId: string, completed: boolean) => void;
+  section: TaskSection;
+  task: TaskBreakdownItem;
 }
 
 function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
@@ -238,7 +238,7 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
                   {task.historicalContext && (
                     <div className="rounded-lg bg-muted/50 p-3">
                       <div className="flex items-start gap-2">
-                        <SparklesIcon className="mt-0.5 size-4 text-purple-500 flex-shrink-0" />
+                        <SparklesIcon className="mt-0.5 size-4 flex-shrink-0 text-purple-500" />
                         <div>
                           <p className="mb-1 font-medium text-xs">
                             Historical Context
@@ -283,10 +283,10 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
 }
 
 interface TaskSectionProps {
+  onAssign?: (taskId: string) => void;
+  onComplete?: (taskId: string, completed: boolean) => void;
   section: TaskSection;
   tasks: TaskBreakdownItem[];
-  onComplete?: (taskId: string, completed: boolean) => void;
-  onAssign?: (taskId: string) => void;
 }
 
 function TaskSectionComponent({
@@ -366,12 +366,12 @@ function TaskSectionComponent({
 
 interface TaskBreakdownDisplayProps {
   breakdown: TaskBreakdown;
-  onRegenerate?: () => void;
-  onExport?: () => void;
-  onSave?: () => void;
-  isGenerating?: boolean;
   generationProgress?: string;
+  isGenerating?: boolean;
   onCancelGeneration?: () => void;
+  onExport?: () => void;
+  onRegenerate?: () => void;
+  onSave?: () => void;
 }
 
 export function TaskBreakdownDisplay({
@@ -655,15 +655,15 @@ export function TaskBreakdownSkeleton({
 }
 
 interface GenerateTaskBreakdownModalProps {
+  eventDate: string;
   eventId: string;
   eventTitle: string;
-  eventDate: string;
   guestCount: number;
-  venueName?: string;
-  onGenerate: (customInstructions?: string) => Promise<void>;
   isOpen?: boolean;
+  onGenerate: (customInstructions?: string) => Promise<void>;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
+  venueName?: string;
 }
 
 export function GenerateTaskBreakdownModal({

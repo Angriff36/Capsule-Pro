@@ -39,7 +39,7 @@ export default defineConfig({
             "./test/mocks/@repo/generated/client.ts"
           );
         }
-        return undefined;
+        return;
       },
       load(id) {
         // Intercept loading of the actual database index.ts file
@@ -59,7 +59,7 @@ export default defineConfig({
             export const tenantDatabase = () => ({});
           `;
         }
-        return undefined;
+        return;
       },
     },
   ],

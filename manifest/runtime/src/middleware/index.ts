@@ -7,8 +7,10 @@
  * @packageDocumentation
  */
 
-export { createRbacMiddleware, type RbacMiddlewareOptions } from "./rbac-middleware";
-export { createIdentityMiddleware, type IdentityMiddlewareOptions } from "./identity-middleware";
+export {
+  createIdentityMiddleware,
+  type IdentityMiddlewareOptions,
+} from "./identity-middleware";
 export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
@@ -20,3 +22,7 @@ export {
   type PrepListSeedMiddlewareOptions,
   type PrepSeedDiagnostic,
 } from "./prep-list-seed-middleware";
+export {
+  createRbacMiddleware,
+  type RbacMiddlewareOptions,
+} from "./rbac-middleware";

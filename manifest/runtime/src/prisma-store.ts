@@ -12,10 +12,10 @@ import type {
   KitchenTaskClaim,
   PrepTask,
   PrepTaskPlanWorkflow,
+  Prisma,
   PrismaClient,
   Station,
 } from "@repo/database/standalone";
-import { Prisma } from "@repo/database/standalone";
 import {
   createGenericPrismaStore,
   type PrismaClientLike,
@@ -24,7 +24,6 @@ import { EventPrismaStore } from "./prisma-stores/event-prisma-store";
 import { InventoryTransferPrismaStore } from "./prisma-stores/inventory-transfer-prisma-store";
 
 // Re-export stores that are used internally AND re-exported from index.ts
-
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -89,7 +88,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     });
 
     if (!task) {
-      return undefined;
+      return;
     }
 
     // Fetch active claims
@@ -153,7 +152,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     });
 
     if (!existing) {
-      return undefined;
+      return;
     }
 
     // Update the task
@@ -272,9 +271,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       notes: task.notes ?? "",
       stationId: "",
       claimedBy: activeClaim?.employeeId ?? "",
-      claimedAt: activeClaim?.claimedAt
-        ? activeClaim.claimedAt.getTime()
-        : 0,
+      claimedAt: activeClaim?.claimedAt ? activeClaim.claimedAt.getTime() : 0,
       createdAt: task.createdAt?.getTime() ?? 0,
       updatedAt: task.updatedAt?.getTime() ?? 0,
     };
@@ -349,7 +346,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       console.error(
         `[KitchenTaskPrismaStore] getById(${id}) returned null for tenant ${this.tenantId}`
       );
-      return undefined;
+      return;
     }
 
     const claims = await this.prisma.kitchenTaskClaim.findMany({
@@ -406,7 +403,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       console.error(
         `[KitchenTaskPrismaStore] update(${id}) — task not found for tenant ${this.tenantId}`
       );
-      return undefined;
+      return;
     }
 
     const updated = await this.prisma.kitchenTask.update({
@@ -673,7 +670,7 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       return this.mapToManifestEntity(updated);
     } catch (error) {
       reportOp(this, "update", error);
-      return undefined;
+      return;
     }
   }
 
@@ -807,7 +804,7 @@ export function createPrismaStoreProvider(
       case "Event":
         return new EventPrismaStore(prisma, tenantId);
       default: {
-        return undefined;
+        return;
       }
     }
   };
@@ -879,7 +876,7 @@ export class StationPrismaStore implements Store<EntityInstance> {
       return this.mapToManifestEntity(updated);
     } catch (error) {
       reportOp(this, "update", error);
-      return undefined;
+      return;
     }
   }
 
@@ -927,11 +924,11 @@ export class StationPrismaStore implements Store<EntityInstance> {
  * Configuration for PrismaStore
  */
 export interface PrismaStoreConfig {
-  prisma: PrismaClient;
   entityName: string;
-  tenantId: string;
-  outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
   eventCollector?: unknown[];
+  outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
+  prisma: PrismaClient;
+  tenantId: string;
   /** RuntimeContext.user.id — threaded through to per-entity stores that
    * audit-derive caller identity (e.g. InventoryTransfer.requestedBy). */
   userId?: string;
@@ -967,7 +964,7 @@ export class PrismaStore implements Store<EntityInstance> {
       createGenericPrismaStore(
         config.prisma as unknown as PrismaClientLike,
         config.entityName,
-        config.tenantId,
+        config.tenantId
       );
     this.outboxWriter = config.outboxWriter;
     this.eventCollector = config.eventCollector;

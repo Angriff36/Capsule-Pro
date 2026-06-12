@@ -14,28 +14,28 @@ type RouteParams = Promise<{
 }>;
 
 interface TimelineTask {
-  id: string;
-  title: string;
-  description: string | null;
-  start_time: string;
-  end_time: string;
-  status: string;
-  priority: string;
-  category: string | null;
   assignee_id: string | null;
   assignee_name: string | null;
-  progress: number;
+  category: string | null;
   dependencies: string[];
+  description: string | null;
+  end_time: string;
+  id: string;
   is_on_critical_path: boolean;
-  slack_minutes: number;
   notes: string | null;
+  priority: string;
+  progress: number;
+  slack_minutes: number;
+  start_time: string;
+  status: string;
+  title: string;
 }
 
 interface StaffMember {
+  assignment_count: bigint;
   id: string;
   name: string;
   role: string | null;
-  assignment_count: bigint;
 }
 
 /**

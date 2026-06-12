@@ -55,7 +55,7 @@ function validateEnumField(
 ): string | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "string" && validValues.includes(value),
@@ -74,7 +74,7 @@ function validateIntegerField(
 ): number | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "number" && Number.isInteger(value),
@@ -96,7 +96,7 @@ function validateObjectField(
 ): Record<string, unknown> | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "object" && value !== null && !Array.isArray(value),

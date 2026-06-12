@@ -16,7 +16,9 @@ child.on("error", (error) => {
 });
 
 child.on("exit", (code, signal) => {
-  if (code === 0) process.exit(0);
+  if (code === 0) {
+    process.exit(0);
+  }
 
   console.error(
     `[stripe] Stripe CLI exited (${signal ?? code}). Continuing without webhook forwarding.`

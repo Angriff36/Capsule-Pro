@@ -25,10 +25,10 @@ export function isUuid(value: string): boolean {
  * Validates and extracts query parameters
  */
 export interface WasteTrendsQueryParams {
-  period: Period;
   groupBy: GroupBy;
-  locationId?: string;
   inventoryItemId?: string;
+  locationId?: string;
+  period: Period;
 }
 
 export function validateQueryParams(
@@ -137,9 +137,8 @@ export async function fetchWasteEntries(
  * Groups waste entries by time period
  */
 export interface TrendDataPoint {
-  period: string;
-  totalCost: number;
-  totalQuantity: number;
+  avgCostPerEntry: number;
+  avgQuantityPerEntry: number;
   count: number;
   entries: Array<{
     loggedAt: Date;
@@ -147,8 +146,9 @@ export interface TrendDataPoint {
     quantity: { toNumber: () => number };
     inventoryItem: { name: string };
   }>;
-  avgCostPerEntry: number;
-  avgQuantityPerEntry: number;
+  period: string;
+  totalCost: number;
+  totalQuantity: number;
 }
 
 export function groupWasteEntriesByPeriod(

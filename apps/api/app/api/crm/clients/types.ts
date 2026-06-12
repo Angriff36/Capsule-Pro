@@ -18,89 +18,89 @@ export type ClientStatus = "active" | "inactive" | "prospect";
  * Full client record from database
  */
 export interface Client {
-  tenantId: string;
-  id: string;
-  clientType: string;
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  phone: string | null;
-  website: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
+  assignedTo: string | null;
   city: string | null;
-  stateProvince: string | null;
-  postalCode: string | null;
+  clientType: string;
+  company_name: string | null;
   countryCode: string | null;
+  createdAt: Date;
   defaultPaymentTerms: number | null;
+  deletedAt: Date | null;
+  email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
+  notes: string | null;
+  phone: string | null;
+  postalCode: string | null;
+  source: string | null;
+  stateProvince: string | null;
+  tags: string[];
   taxExempt: boolean;
   taxId: string | null;
-  notes: string | null;
-  tags: string[];
-  source: string | null;
-  assignedTo: string | null;
-  createdAt: Date;
+  tenantId: string;
   updatedAt: Date;
-  deletedAt: Date | null;
+  website: string | null;
 }
 
 /**
  * Client contact record
  */
 export interface ClientContact {
-  tenantId: string;
-  id: string;
   clientId: string;
-  first_name: string;
-  last_name: string;
-  title: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
   email: string | null;
+  first_name: string;
+  id: string;
+  isBillingContact: boolean;
+  isPrimary: boolean;
+  last_name: string;
+  notes: string | null;
   phone: string | null;
   phoneMobile: string | null;
-  isPrimary: boolean;
-  isBillingContact: boolean;
-  notes: string | null;
-  createdAt: Date;
+  tenantId: string;
+  title: string | null;
   updatedAt: Date;
-  deletedAt: Date | null;
 }
 
 /**
  * Client preference record
  */
 export interface ClientPreference {
-  tenantId: string;
-  id: string;
   clientId: string;
-  preferenceType: string;
-  preferenceKey: string;
-  preferenceValue: unknown;
-  notes: string | null;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
+  id: string;
+  notes: string | null;
+  preferenceKey: string;
+  preferenceType: string;
+  preferenceValue: unknown;
+  tenantId: string;
+  updatedAt: Date;
 }
 
 /**
  * Client interaction (communication log) record
  */
 export interface ClientInteraction {
-  tenantId: string;
-  id: string;
   clientId: string | null;
-  leadId: string | null;
-  employeeId: string;
-  interactionType: string;
-  interactionDate: Date;
-  subject: string | null;
-  description: string | null;
-  followUpDate: Date | null;
-  followUpCompleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
   correlation_id: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
+  description: string | null;
+  employeeId: string;
+  followUpCompleted: boolean;
+  followUpDate: Date | null;
+  id: string;
+  interactionDate: Date;
+  interactionType: string;
+  leadId: string | null;
+  subject: string | null;
+  tenantId: string;
+  updatedAt: Date;
 }
 
 /**
@@ -118,26 +118,26 @@ export type ClientWithDetails = Client & {
  * Create client request body
  */
 export interface CreateClientRequest {
-  clientType?: ClientType;
-  company_name?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
   addressLine1?: string;
   addressLine2?: string;
+  assignedTo?: string;
   city?: string;
-  stateProvince?: string;
-  postalCode?: string;
+  clientType?: ClientType;
+  company_name?: string;
   countryCode?: string;
   defaultPaymentTerms?: number;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  notes?: string;
+  phone?: string;
+  postalCode?: string;
+  source?: string;
+  stateProvince?: string;
+  tags?: string[];
   taxExempt?: boolean;
   taxId?: string;
-  notes?: string;
-  tags?: string[];
-  source?: string;
-  assignedTo?: string;
+  website?: string;
 }
 
 /**
@@ -149,25 +149,25 @@ export type UpdateClientRequest = Partial<CreateClientRequest>;
  * Create client contact request body
  */
 export interface CreateClientContactRequest {
-  first_name: string;
-  last_name: string;
-  title?: string;
   email?: string;
+  first_name: string;
+  isBillingContact?: boolean;
+  isPrimary?: boolean;
+  last_name: string;
+  notes?: string;
   phone?: string;
   phoneMobile?: string;
-  isPrimary?: boolean;
-  isBillingContact?: boolean;
-  notes?: string;
+  title?: string;
 }
 
 /**
  * Create client interaction request body
  */
 export interface CreateClientInteractionRequest {
-  interactionType: string;
-  subject?: string;
   description?: string;
   followUpDate?: string; // ISO date string
+  interactionType: string;
+  subject?: string;
 }
 
 /**
@@ -185,19 +185,19 @@ export type UpdateClientInteractionRequest = Partial<{
  * Client list filters
  */
 export interface ClientListFilters {
-  search?: string; // Search by name, company, email
-  tags?: string[]; // Filter by tags
   assignedTo?: string; // Filter by assigned employee
   clientType?: ClientType; // Filter by client type
+  search?: string; // Search by name, company, email
   source?: string; // Filter by source
+  tags?: string[]; // Filter by tags
 }
 
 /**
  * Pagination parameters
  */
 export interface PaginationParams {
-  page?: number;
   limit?: number;
+  page?: number;
 }
 
 /**

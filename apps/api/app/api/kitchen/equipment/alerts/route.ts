@@ -19,14 +19,14 @@ import {
 type Severity = "critical" | "warning" | "info";
 
 interface EquipmentAlert {
+  alertType: string;
+  currentValue: string;
   equipmentId: string;
   equipmentName: string;
-  alertType: string;
-  severity: Severity;
   message: string;
   metric: string;
+  severity: Severity;
   threshold: string;
-  currentValue: string;
 }
 
 export async function GET(request: NextRequest) {

@@ -59,58 +59,63 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { listBattleBoards, getBattleBoard, battleBoardCreate, battleBoardUpdate } from "@/app/lib/manifest-client.generated";
+import {
+  battleBoardCreate,
+  battleBoardUpdate,
+  getBattleBoard,
+  listBattleBoards,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface CommandBoardCard {
-  id: string;
-  tenant_id: string;
   board_id: string;
-  title: string;
-  content: string | null;
   card_type: string;
-  status: string;
+  color: string | null;
+  content: string | null;
+  created_at: string;
+  height: number;
+  id: string;
+  metadata: Record<string, unknown>;
   position_x: number;
   position_y: number;
-  width: number;
-  height: number;
-  z_index: number;
-  color: string | null;
-  metadata: Record<string, unknown>;
-  version: number;
-  created_at: string;
+  status: string;
+  tenant_id: string;
+  title: string;
   updated_at: string;
+  version: number;
+  width: number;
+  z_index: number;
 }
 
 interface CommandBoardListItem {
-  id: string;
-  tenant_id: string;
-  event_id: string | null;
-  name: string;
-  description: string | null;
-  status: string;
-  is_template: boolean;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
   cards_count: number;
+  created_at: string;
+  description: string | null;
+  event_id: string | null;
+  id: string;
+  is_template: boolean;
+  name: string;
+  status: string;
+  tags: string[];
+  tenant_id: string;
+  updated_at: string;
 }
 
 interface CommandBoardDetail {
-  id: string;
-  tenant_id: string;
-  event_id: string | null;
-  name: string;
-  description: string | null;
-  status: string;
-  is_template: boolean;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
   cards: CommandBoardCard[];
+  created_at: string;
+  description: string | null;
+  event_id: string | null;
+  id: string;
+  is_template: boolean;
+  name: string;
+  status: string;
+  tags: string[];
+  tenant_id: string;
+  updated_at: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +123,9 @@ interface CommandBoardDetail {
 // ---------------------------------------------------------------------------
 
 function formatDate(value: string | null | undefined): string {
-  if (!value) return "N/A";
+  if (!value) {
+    return "N/A";
+  }
   return new Date(value).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -127,7 +134,9 @@ function formatDate(value: string | null | undefined): string {
 }
 
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "N/A";
+  if (!value) {
+    return "N/A";
+  }
   return new Date(value).toLocaleString();
 }
 
@@ -174,11 +183,11 @@ function StatCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{label}</CardTitle>
+        <CardTitle className="font-medium text-sm">{label}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-bold text-2xl">{value}</div>
       </CardContent>
     </Card>
   );
@@ -201,8 +210,8 @@ function EmptyState({
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <Icon className="h-10 w-10 text-muted-foreground/50" />
       <div>
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground/75">{description}</p>
+        <p className="font-medium text-muted-foreground text-sm">{title}</p>
+        <p className="text-muted-foreground/75 text-xs">{description}</p>
       </div>
     </div>
   );
@@ -213,10 +222,10 @@ function EmptyState({
 // ---------------------------------------------------------------------------
 
 interface BoardFormData {
-  name: string;
   description: string;
   eventId: string;
   isTemplate: boolean;
+  name: string;
 }
 
 function BoardFormDialog({
@@ -383,7 +392,7 @@ function DeleteBoardDialog({
           <div className="rounded-md border bg-muted/50 p-3 text-sm">
             <span className="font-medium">{board.name}</span>
             {board.description && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-muted-foreground text-xs">
                 {board.description}
               </p>
             )}
@@ -447,7 +456,7 @@ function BoardCard({
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
           <span className="flex items-center gap-1">
             <StickyNote className="h-3 w-3" />
             {board.cards_count} {board.cards_count === 1 ? "card" : "cards"}
@@ -465,7 +474,7 @@ function BoardCard({
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-muted-foreground text-xs">
           <span>Updated {formatDate(board.updated_at)}</span>
         </div>
         <Separator />
@@ -517,9 +526,9 @@ function BoardDetailView({
             Back
           </Button>
           <div>
-            <h2 className="text-xl font-semibold">{board.name}</h2>
+            <h2 className="font-semibold text-xl">{board.name}</h2>
             {board.description && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {board.description}
               </p>
             )}
@@ -552,7 +561,7 @@ function BoardDetailView({
       </div>
 
       {/* Metadata */}
-      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap gap-4 text-muted-foreground text-sm">
         <span>Created {formatDateTime(board.created_at)}</span>
         <span>Updated {formatDateTime(board.updated_at)}</span>
         {board.event_id && <span>Event: {board.event_id}</span>}
@@ -598,7 +607,7 @@ function BoardDetailView({
                       <div>
                         <span className="font-medium">{card.title}</span>
                         {card.content && (
-                          <p className="mt-0.5 max-w-xs truncate text-xs text-muted-foreground">
+                          <p className="mt-0.5 max-w-xs truncate text-muted-foreground text-xs">
                             {card.content}
                           </p>
                         )}
@@ -616,7 +625,7 @@ function BoardDetailView({
                         {card.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       ({card.position_x}, {card.position_y})
                       <span className="ml-1">
                         {card.width}x{card.height}
@@ -632,12 +641,12 @@ function BoardDetailView({
                           <span className="text-xs">{card.color}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           None
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       {formatDate(card.updated_at)}
                     </TableCell>
                   </TableRow>
@@ -651,7 +660,7 @@ function BoardDetailView({
       {/* Tags */}
       {board.tags.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground">Tags</h3>
+          <h3 className="font-medium text-muted-foreground text-sm">Tags</h3>
           <div className="flex flex-wrap gap-1.5">
             {board.tags.map((tag) => (
               <Badge className="text-xs" key={tag} variant="outline">
@@ -820,7 +829,9 @@ export function BattleboardsClient() {
   };
 
   const handleEditSubmit = async (formData: BoardFormData) => {
-    if (!editTarget) return;
+    if (!editTarget) {
+      return;
+    }
     setSubmitting(true);
     try {
       const body: Record<string, unknown> = {
@@ -854,7 +865,9 @@ export function BattleboardsClient() {
   };
 
   const confirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setDeleting(true);
     try {
       const res = await apiFetch(`/api/command-board/${deleteTarget.id}`, {
@@ -910,7 +923,7 @@ export function BattleboardsClient() {
           {/* Toolbar */}
           <div className="flex items-center justify-between gap-4">
             <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="pl-9"
                 onChange={(e) => setSearch(e.target.value)}
@@ -996,7 +1009,9 @@ export function BattleboardsClient() {
         mode="edit"
         onOpenChange={(open) => {
           setEditOpen(open);
-          if (!open) setEditTarget(null);
+          if (!open) {
+            setEditTarget(null);
+          }
         }}
         onSubmit={handleEditSubmit}
         open={editOpen}
@@ -1009,7 +1024,9 @@ export function BattleboardsClient() {
         onConfirm={confirmDelete}
         onOpenChange={(open) => {
           setDeleteOpen(open);
-          if (!open) setDeleteTarget(null);
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         open={deleteOpen}
       />

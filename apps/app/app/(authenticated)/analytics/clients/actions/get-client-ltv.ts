@@ -7,27 +7,8 @@ import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface ClientLTVMetrics {
-  totalClients: number;
-  totalRevenue: number;
-  averageOrderValue: number;
   averageLTV: number;
-  medianLTV: number;
-  retentionRate: number;
-  topClients: Array<{
-    id: string;
-    name: string;
-    email: string | null;
-    lifetimeValue: number;
-    orderCount: number;
-    lastOrderDate: Date | null;
-    averageOrderValue: number;
-  }>;
-  revenueByMonth: Array<{
-    month: string;
-    revenue: number;
-    orders: number;
-    clients: number;
-  }>;
+  averageOrderValue: number;
   cohortData: Array<{
     cohort: string;
     month0: number;
@@ -43,6 +24,7 @@ export interface ClientLTVMetrics {
     month10: number;
     month11: number;
   }>;
+  medianLTV: number;
   predictiveLTV: {
     averagePredictedLTV: number;
     confidence: number;
@@ -54,24 +36,42 @@ export interface ClientLTVMetrics {
       growthRate: number;
     }>;
   };
+  retentionRate: number;
+  revenueByMonth: Array<{
+    month: string;
+    revenue: number;
+    orders: number;
+    clients: number;
+  }>;
+  topClients: Array<{
+    id: string;
+    name: string;
+    email: string | null;
+    lifetimeValue: number;
+    orderCount: number;
+    lastOrderDate: Date | null;
+    averageOrderValue: number;
+  }>;
+  totalClients: number;
+  totalRevenue: number;
 }
 
 interface OrderMonthData {
-  month: string;
-  total_revenue: string | number;
-  order_count: string | number;
   client_count: string | number;
+  month: string;
+  order_count: string | number;
+  total_revenue: string | number;
 }
 
 interface ClientLTVData {
-  id: string;
-  name: string;
-  email: string | null;
-  lifetimeValue: number;
-  orderCount: number;
-  lastOrderDate: Date | null;
   averageOrderValue: number;
   createdAt: Date;
+  email: string | null;
+  id: string;
+  lastOrderDate: Date | null;
+  lifetimeValue: number;
+  name: string;
+  orderCount: number;
 }
 
 export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {

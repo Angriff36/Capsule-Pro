@@ -17,7 +17,9 @@ export const initializeAnalytics = () => {
   const env = keys();
   const posthogKey = env.NEXT_PUBLIC_POSTHOG_KEY;
   const posthogHost = env.NEXT_PUBLIC_POSTHOG_HOST;
-  if (!(posthogKey && posthogHost)) return;
+  if (!(posthogKey && posthogHost)) {
+    return;
+  }
 
   // Lazy load PostHog to keep it out of the initial bundle.
   // Actual init is handled by PostHogProvider in posthog-provider.tsx

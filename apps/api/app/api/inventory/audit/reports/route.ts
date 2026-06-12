@@ -7,8 +7,8 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { log } from "@repo/observability/log";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
@@ -22,28 +22,28 @@ interface DateRangeFilter {
 }
 
 interface ReportFilters {
-  startDate?: string;
   endDate?: string;
-  locationId?: string;
   itemCategory?: string;
+  locationId?: string;
+  startDate?: string;
 }
 
 interface TrendDataPoint {
-  date: string;
   audits_completed: number;
   avg_accuracy: number;
-  total_variances: number;
+  date: string;
   items_counted: number;
+  total_variances: number;
 }
 
 interface DiscrepancyBreakdown {
-  by_type: Record<string, number>;
   by_severity: {
     low: number;
     medium: number;
     high: number;
     critical: number;
   };
+  by_type: Record<string, number>;
 }
 
 function parseDateFilters(searchParams: URLSearchParams): DateRangeFilter {
@@ -347,12 +347,12 @@ export async function GET(request: Request) {
 }
 
 interface CustomReportRequest {
-  name: string;
   description?: string;
-  report_type: "summary" | "detailed" | "variance_analysis" | "trend_analysis";
   filters: ReportFilters;
   group_by?: "day" | "week" | "month" | "location" | "item_category";
   include_items?: boolean;
+  name: string;
+  report_type: "summary" | "detailed" | "variance_analysis" | "trend_analysis";
   save_report?: boolean;
 }
 
@@ -795,12 +795,17 @@ export async function POST(request: Request) {
         }
       );
 
-      if (!manifestResult.ok) {
-        // Report save failed — log but don't fail the main response
-        log.error("[audit/reports] Failed to save report via Manifest:", manifestResult.message);
-      } else {
-        const resultData = manifestResult.result as Record<string, unknown> | undefined;
+      if (manifestResult.ok) {
+        const resultData = manifestResult.result as
+          | Record<string, unknown>
+          | undefined;
         savedReportId = String(resultData?.id ?? "");
+      } else {
+        // Report save failed — log but don't fail the main response
+        log.error(
+          "[audit/reports] Failed to save report via Manifest:",
+          manifestResult.message
+        );
       }
     }
 

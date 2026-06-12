@@ -72,17 +72,14 @@ async function fetchShipmentData(tenantId: string, shipmentId: string) {
 }
 
 interface ShipmentData {
-  id: string;
-  shipmentNumber: string;
-  status: string;
-  scheduledDate: Date | null;
-  shippedDate: Date | null;
-  estimatedDeliveryDate: Date | null;
   carrier: string | null;
-  trackingNumber: string | null;
-  shippingMethod: string | null;
-  shippingCost: number | null;
-  notes: string | null;
+  estimatedDeliveryDate: Date | null;
+  event: {
+    title: string;
+    venueName: string | null;
+    venueAddress: string | null;
+  } | null;
+  id: string;
   items: Array<{
     id: string;
     quantityShipped: bigint | number;
@@ -99,17 +96,6 @@ interface ShipmentData {
       item_number: string | null;
     } | null;
   }>;
-  event: {
-    title: string;
-    venueName: string | null;
-    venueAddress: string | null;
-  } | null;
-  supplier: {
-    name: string;
-    contact_person: string | null;
-    email: string | null;
-    phone: string | null;
-  } | null;
   location: {
     name: string;
     addressLine1: string | null;
@@ -118,6 +104,20 @@ interface ShipmentData {
     stateProvince: string | null;
     postalCode: string | null;
   } | null;
+  notes: string | null;
+  scheduledDate: Date | null;
+  shipmentNumber: string;
+  shippedDate: Date | null;
+  shippingCost: number | null;
+  shippingMethod: string | null;
+  status: string;
+  supplier: {
+    name: string;
+    contact_person: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+  trackingNumber: string | null;
 }
 
 function buildLocationAddress(
@@ -151,7 +151,7 @@ function buildFromAddress(shipment: ShipmentData): string | undefined {
       ", "
     );
   }
-  return undefined;
+  return;
 }
 
 function buildToAddress(shipment: ShipmentData): string | undefined {
@@ -170,7 +170,7 @@ function buildToAddress(shipment: ShipmentData): string | undefined {
       ", "
     );
   }
-  return undefined;
+  return;
 }
 
 function calculateTotalValue(shipment: ShipmentData): number {
@@ -220,7 +220,7 @@ function buildFromLocation(
       address: fromAddress,
     };
   }
-  return undefined;
+  return;
 }
 
 function buildToLocation(
@@ -239,7 +239,7 @@ function buildToLocation(
       address: toAddress,
     };
   }
-  return undefined;
+  return;
 }
 
 function buildPdfData(shipment: ShipmentData, generatedBy: string) {

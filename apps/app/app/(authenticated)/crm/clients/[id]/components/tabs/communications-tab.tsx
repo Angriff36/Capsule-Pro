@@ -39,41 +39,41 @@ import {
   SearchIcon,
   Trash2Icon,
   UploadIcon,
-  XIcon,
   UserIcon,
+  XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for attachment file upload/delete operations (FormData, binary)
+import { apiFetch } from "@/app/lib/api";
 import {
   createClientInteraction,
   deleteClientInteraction,
   getClientInteractions,
   updateClientInteraction,
 } from "../../../actions";
-// NOTE: Keeping apiFetch for attachment file upload/delete operations (FormData, binary)
-import { apiFetch } from "@/app/lib/api";
 
 interface CommunicationsTabProps {
   clientId: string;
 }
 
 interface Interaction {
+  description: string | null;
+  followUpCompleted: boolean;
+  followUpDate: Date | null;
   id: string;
+  interactionDate: Date;
   interactionType: string;
   subject: string | null;
-  description: string | null;
-  interactionDate: Date;
-  followUpDate: Date | null;
-  followUpCompleted: boolean;
 }
 
 interface Attachment {
-  id: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: string;
-  fileSize: number;
   createdAt: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  fileUrl: string;
+  id: string;
 }
 
 const INTERACTION_TYPES = [
@@ -114,7 +114,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
     setLoading(true);
     try {
       const data = await getClientInteractions(clientId, 50, 0, {
-        interactionType: filterType !== "all" ? filterType : undefined,
+        interactionType: filterType === "all" ? undefined : filterType,
         search: searchQuery || undefined,
       });
       setInteractions(data.data);
@@ -186,7 +186,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       "/api/crm/clients/interactions/attachments",
       { method: "POST", body: form }
     );
-    if (!response.ok) throw new Error("Failed to upload attachments");
+    if (!response.ok) {
+      throw new Error("Failed to upload attachments");
+    }
     return response.json();
   };
 
@@ -196,7 +198,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
         `/api/crm/clients/interactions/attachments?attachmentId=${attachment.id}`,
         { method: "DELETE" }
       );
-      if (!response.ok) throw new Error("Failed to delete attachment");
+      if (!response.ok) {
+        throw new Error("Failed to delete attachment");
+      }
       setInteractionAttachments((prev) => {
         const updated = { ...prev };
         for (const key of Object.keys(updated)) {
@@ -211,8 +215,12 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
@@ -255,7 +263,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedInteraction) return;
+    if (!selectedInteraction) {
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -289,7 +299,9 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!selectedInteraction) return;
+    if (!selectedInteraction) {
+      return;
+    }
 
     setSubmitting(true);
     try {

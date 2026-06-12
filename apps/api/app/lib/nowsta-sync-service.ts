@@ -17,16 +17,16 @@ import {
 } from "./nowsta-client";
 
 export interface SyncOptions {
-  tenantId: string;
-  startDate: Date;
-  endDate: Date;
   dryRun?: boolean;
+  endDate: Date;
+  startDate: Date;
+  tenantId: string;
 }
 
 export interface EmployeeMappingResult {
-  nowstaEmployeeId: string;
-  convoyEmployeeId: string | null;
   autoMapped: boolean;
+  convoyEmployeeId: string | null;
+  nowstaEmployeeId: string;
   reason: string;
 }
 

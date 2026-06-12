@@ -24,10 +24,14 @@ import { BankReconciliationClient } from "./bank-reconciliation-client";
 
 export default async function BankReconciliationPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   // Fetch summary metrics server-side
   const [bankAccountCount, reconciledCount, recentReconciledPayments] =
@@ -66,7 +70,9 @@ export default async function BankReconciliationPage() {
   const lastReconciledDate = recentReconciledPayments?.completedAt ?? null;
 
   const formatDate = (d: Date | null) => {
-    if (!d) return "\u2014";
+    if (!d) {
+      return "\u2014";
+    }
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",

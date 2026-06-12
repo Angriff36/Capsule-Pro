@@ -23,12 +23,17 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getPrepList, prepListItemMarkCompleted, prepListItemMarkUncompleted, prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
+import {
+  getPrepList,
+  prepListItemMarkCompleted,
+  prepListItemMarkUncompleted,
+  prepListItemUpdatePrepNotes,
+} from "@/app/lib/manifest-client.generated";
 import type { PrepList, PrepListItem } from "../../types";
 
 interface CompletionQueueItem {
-  itemId: string;
   completed: boolean;
+  itemId: string;
   timestamp: string;
 }
 
@@ -39,19 +44,19 @@ interface NoteQueueItem {
 }
 
 interface SwipeState {
+  isSwiping: boolean;
   itemId: string;
   translateX: number;
-  isSwiping: boolean;
 }
 
 // Extracted item renderer to reduce complexity
 interface PrepItemCardProps {
   item: PrepListItem;
-  swipeState: SwipeState | null;
   onToggleComplete: (item: PrepListItem) => void;
-  onTouchStart: (e: React.TouchEvent, itemId: string) => void;
-  onTouchMove: (e: React.TouchEvent, itemId: string) => void;
   onTouchEnd: (item: PrepListItem) => void;
+  onTouchMove: (e: React.TouchEvent, itemId: string) => void;
+  onTouchStart: (e: React.TouchEvent, itemId: string) => void;
+  swipeState: SwipeState | null;
 }
 
 function PrepItemCard({
@@ -72,7 +77,7 @@ function PrepItemCard({
     >
       {/* Swipe reveal background - note icon */}
       <div
-        className="absolute inset-y-0 right-0 flex items-center justify-center bg-amber-500 px-6 rounded-xl"
+        className="absolute inset-y-0 right-0 flex items-center justify-center rounded-xl bg-amber-500 px-6"
         style={{ opacity: Math.min(1, Math.abs(translateX) / 80) }}
       >
         <MessageSquare className="h-6 w-6 text-white" />
@@ -116,10 +121,10 @@ function PrepItemCard({
         </div>
 
         {/* Item details */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3
-              className={`text-lg font-medium truncate ${
+              className={`truncate font-medium text-lg ${
                 item.completed
                   ? "text-slate-400 line-through"
                   : "text-slate-900"
@@ -140,7 +145,7 @@ function PrepItemCard({
             )}
           </div>
           {item.notes && (
-            <p className="mt-1 text-amber-600 text-sm line-clamp-2">
+            <p className="mt-1 line-clamp-2 text-amber-600 text-sm">
               📝 {item.notes}
             </p>
           )}
@@ -460,7 +465,7 @@ export default function MobilePrepListDetailPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="font-bold text-xl text-slate-900">
+          <h1 className="font-bold text-slate-900 text-xl">
             {prepList?.name || "Loading..."}
           </h1>
           {prepList?.event && (

@@ -18,22 +18,22 @@ type PayrollRunStatus =
   | "failed";
 
 interface PayrollRun {
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  createdAt: Date;
+  employeeCount: number;
   id: string;
-  tenantId: string;
+  paidAt: Date | null;
   payrollPeriodId: string;
+  periodEnd: Date | null;
+  periodStart: Date | null;
   runDate: Date;
   status: PayrollRunStatus;
-  totalGross: number;
+  tenantId: string;
   totalDeductions: number;
+  totalGross: number;
   totalNet: number;
-  approvedBy: string | null;
-  approvedAt: Date | null;
-  paidAt: Date | null;
-  createdAt: Date;
   updatedAt: Date;
-  periodStart: Date | null;
-  periodEnd: Date | null;
-  employeeCount: number;
 }
 
 interface PayrollRunDetailsProps {
@@ -54,7 +54,7 @@ function formatDate(date: Date | null) {
 export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
   return (
     <section>
-      <h2 className="font-medium text-sm text-muted-foreground mb-4">
+      <h2 className="mb-4 font-medium text-muted-foreground text-sm">
         Payroll Run Summary
       </h2>
       <div className="grid gap-6 lg:grid-cols-3">
@@ -84,7 +84,7 @@ export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
             <Separator />
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Net Pay</span>
+                <span className="font-medium text-sm">Net Pay</span>
                 <DollarSignIcon className="h-4 w-4 text-primary" />
               </div>
               <p className="font-bold text-2xl text-primary">
@@ -175,16 +175,16 @@ export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               {run.approvedAt && (
-                <div className="rounded-md bg-muted/50 p-4 border border-hairline">
-                  <p className="text-muted-foreground text-sm mb-1">
+                <div className="rounded-md border border-hairline bg-muted/50 p-4">
+                  <p className="mb-1 text-muted-foreground text-sm">
                     Approved On
                   </p>
                   <p className="font-medium">{formatDate(run.approvedAt)}</p>
                 </div>
               )}
               {run.paidAt && (
-                <div className="rounded-md bg-muted/50 p-4 border border-hairline">
-                  <p className="text-muted-foreground text-sm mb-1">Paid On</p>
+                <div className="rounded-md border border-hairline bg-muted/50 p-4">
+                  <p className="mb-1 text-muted-foreground text-sm">Paid On</p>
                   <p className="font-medium">{formatDate(run.paidAt)}</p>
                 </div>
               )}

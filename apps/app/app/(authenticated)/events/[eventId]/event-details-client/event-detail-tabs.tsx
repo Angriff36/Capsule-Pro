@@ -54,23 +54,23 @@ const ALL_TAB_VALUES = new Set<string>([
 ]);
 
 interface EventDetailTabsProps {
-  eventId: string;
   battleBoardHref: string;
-  eventDate: string | Date | null | undefined;
-  eventStatus: string | null;
-  overview: ReactNode;
-  board: ReactNode;
-  menu: ReactNode;
-  copilot: ReactNode;
-  guests: ReactNode;
-  operations: ReactNode;
-  followups: ReactNode;
-  explore: ReactNode;
   battleboard?: ReactNode;
-  runSheet?: ReactNode;
-  kitchenTasks?: ReactNode;
+  board: ReactNode;
+  copilot: ReactNode;
+  eventDate: string | Date | null | undefined;
+  eventId: string;
+  eventStatus: string | null;
+  explore: ReactNode;
+  followups: ReactNode;
   guestCheckin?: ReactNode;
+  guests: ReactNode;
+  kitchenTasks?: ReactNode;
+  menu: ReactNode;
+  operations: ReactNode;
+  overview: ReactNode;
   reports?: ReactNode;
+  runSheet?: ReactNode;
 }
 
 const TAB_LABELS: Record<string, string> = {
@@ -93,9 +93,12 @@ function inferMode(
   eventDate: string | Date | null | undefined,
   eventStatus: string | null
 ): EventMode {
-  if (eventStatus === "completed" || eventStatus === "cancelled")
+  if (eventStatus === "completed" || eventStatus === "cancelled") {
     return "reports";
-  if (!eventDate) return "planning";
+  }
+  if (!eventDate) {
+    return "planning";
+  }
   const date = typeof eventDate === "string" ? new Date(eventDate) : eventDate;
   const hoursUntil = (date.getTime() - Date.now()) / (1000 * 60 * 60);
   if (
@@ -147,7 +150,9 @@ export function EventDetailTabs({
   );
 
   const [mode, setMode] = useState<EventMode>(() => {
-    if (typeof window === "undefined") return inferred;
+    if (typeof window === "undefined") {
+      return inferred;
+    }
     const stored = localStorage.getItem(`event-mode:${eventId}`);
     if (
       stored === "planning" ||
@@ -161,9 +166,13 @@ export function EventDetailTabs({
 
   // Sync with inferred mode when it changes (e.g., status update)
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      return;
+    }
     const stored = localStorage.getItem(`event-mode:${eventId}`);
-    if (!stored) setMode(inferred);
+    if (!stored) {
+      setMode(inferred);
+    }
   }, [inferred, eventId]);
 
   const handleModeChange = useCallback(
@@ -193,12 +202,16 @@ export function EventDetailTabs({
 
   const activeTab = useMemo(() => {
     const raw = searchParams?.get("tab") ?? null;
-    if (!raw) return tabsForMode[0] as string;
+    if (!raw) {
+      return tabsForMode[0] as string;
+    }
     return ALL_TAB_VALUES.has(raw) ? raw : (tabsForMode[0] as string);
   }, [searchParams, tabsForMode]);
 
   const handleTabChange = (tab: string) => {
-    if (!pathname || tab === activeTab) return;
+    if (!pathname || tab === activeTab) {
+      return;
+    }
     const nextSearchParams = new URLSearchParams(
       searchParams?.toString() ?? ""
     );
@@ -226,12 +239,12 @@ export function EventDetailTabs({
     explore,
     battleboard: battleboard ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <ClipboardList className="h-12 w-12 mb-3 opacity-40" />
+        <ClipboardList className="mb-3 h-12 w-12 opacity-40" />
         <p className="text-sm">
           Open the battle board to coordinate menu finalization.
         </p>
         <a
-          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
           href={battleBoardHref}
         >
           Open Battle Board
@@ -240,12 +253,12 @@ export function EventDetailTabs({
     ),
     "run-sheet": runSheet ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <FileText className="h-12 w-12 mb-3 opacity-40" />
+        <FileText className="mb-3 h-12 w-12 opacity-40" />
         <p className="text-sm">
           Generate a run sheet with menu, staff, timeline, and shopping list.
         </p>
         <a
-          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
           href={`/events/${eventId}/run-sheet`}
         >
           Open Run Sheet
@@ -256,12 +269,12 @@ export function EventDetailTabs({
     "guest-checkin": guestCheckin ?? guests,
     reports: reports ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <CalendarCheck className="h-12 w-12 mb-3 opacity-40" />
+        <CalendarCheck className="mb-3 h-12 w-12 opacity-40" />
         <p className="text-sm">
           Generate post-event reports and review performance.
         </p>
         <a
-          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
           href={`/events/${eventId}/reports`}
         >
           View Reports
@@ -288,7 +301,7 @@ export function EventDetailTabs({
           {modeConfig.map(({ value, label, icon: Icon }) => (
             <button
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium ring-offset-background transition-all",
+                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-sm ring-offset-background transition-all",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 mode === value
                   ? "bg-ink text-ink-foreground shadow-sm"
@@ -314,7 +327,7 @@ export function EventDetailTabs({
               <button
                 aria-selected={activeTab === tab}
                 className={cn(
-                  "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium ring-offset-background transition-all",
+                  "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-sm ring-offset-background transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   "disabled:pointer-events-none disabled:opacity-50",
                   activeTab === tab

@@ -270,7 +270,9 @@ export async function createAvailability(formData: FormData) {
       endTime: endTimeDate.toISOString(),
       isAvailable,
       effectiveFrom: createEffectiveFrom2.toISOString(),
-      effectiveUntil: effectiveUntilDate ? effectiveUntilDate.toISOString() : "",
+      effectiveUntil: effectiveUntilDate
+        ? effectiveUntilDate.toISOString()
+        : "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
@@ -347,23 +349,27 @@ export async function updateAvailability(
 
   // Merge: caller values override existing values.
   const dayOfWeek =
-    dayOfWeekRaw !== undefined ? Number.parseInt(dayOfWeekRaw, 10) : existing.day_of_week;
+    dayOfWeekRaw === undefined
+      ? existing.day_of_week
+      : Number.parseInt(dayOfWeekRaw, 10);
   const startTime = startTimeRaw ?? String(existing.start_time);
   const endTime = endTimeRaw ?? String(existing.end_time);
   const isAvailable =
-    isAvailableRaw !== undefined ? isAvailableRaw !== "false" : existing.is_available;
+    isAvailableRaw === undefined
+      ? existing.is_available
+      : isAvailableRaw !== "false";
   const effectiveFrom =
-    effectiveFromRaw !== undefined
-      ? effectiveFromRaw
-      : existing.effective_from
+    effectiveFromRaw === undefined
+      ? existing.effective_from
         ? existing.effective_from.toISOString()
-        : "";
+        : ""
+      : effectiveFromRaw;
   const effectiveUntil =
-    effectiveUntilRaw !== undefined
-      ? effectiveUntilRaw
-      : existing.effective_until
+    effectiveUntilRaw === undefined
+      ? existing.effective_until
         ? existing.effective_until.toISOString()
-        : "";
+        : ""
+      : effectiveUntilRaw;
 
   // Validate time format and range
   const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -413,7 +419,9 @@ export async function updateAvailability(
       endTime: endTimeDate.toISOString(),
       isAvailable,
       effectiveFrom: effectiveFromDate ? effectiveFromDate.toISOString() : "",
-      effectiveUntil: effectiveUntilDate ? effectiveUntilDate.toISOString() : "",
+      effectiveUntil: effectiveUntilDate
+        ? effectiveUntilDate.toISOString()
+        : "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

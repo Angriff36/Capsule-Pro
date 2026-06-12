@@ -45,53 +45,25 @@ export interface ConstraintOutcome {
   code: string;
   /** Constraint name for reference */
   constraintName: string;
-  /** Severity level of the constraint */
-  severity: "ok" | "warn" | "block";
+  /** Structured details for UI (resolved values) */
+  details?: Record<string, unknown>;
   /** Formatted expression string */
   formatted: string;
   /** Optional message from constraint */
   message?: string;
-  /** Structured details for UI (resolved values) */
-  details?: Record<string, unknown>;
-  /** Whether the constraint passed */
-  passed: boolean;
   /** Whether the constraint was overridden */
   overridden?: boolean;
   /** User who authorized the override */
   overriddenBy?: string;
+  /** Whether the constraint passed */
+  passed: boolean;
   /** Resolved expression values for debugging */
   resolved?: Array<{ expression: string; value: unknown }>;
+  /** Severity level of the constraint */
+  severity: "ok" | "warn" | "block";
 }
 
 export interface ConstraintOverrideDialogProps {
-  /**
-   * The constraint outcomes that require override
-   */
-  constraints: ConstraintOutcome[];
-  /**
-   * Whether the dialog is open
-   */
-  open: boolean;
-  /**
-   * Callback when the dialog open state changes
-   */
-  onOpenChange: (open: boolean) => void;
-  /**
-   * Callback when the user confirms the override
-   */
-  onConfirm: (reason: OverrideReasonCode, details: string) => void;
-  /**
-   * Callback when the user cancels
-   */
-  onCancel?: () => void;
-  /**
-   * Title for the dialog (default: "Action Blocked")
-   */
-  title?: string;
-  /**
-   * Description for the dialog (default: explains constraints)
-   */
-  description?: string;
   /**
    * The action the user is trying to perform (e.g., "claim this task")
    */
@@ -100,6 +72,34 @@ export interface ConstraintOverrideDialogProps {
    * Whether the user has permission to override
    */
   canOverride?: boolean;
+  /**
+   * The constraint outcomes that require override
+   */
+  constraints: ConstraintOutcome[];
+  /**
+   * Description for the dialog (default: explains constraints)
+   */
+  description?: string;
+  /**
+   * Callback when the user cancels
+   */
+  onCancel?: () => void;
+  /**
+   * Callback when the user confirms the override
+   */
+  onConfirm: (reason: OverrideReasonCode, details: string) => void;
+  /**
+   * Callback when the dialog open state changes
+   */
+  onOpenChange: (open: boolean) => void;
+  /**
+   * Whether the dialog is open
+   */
+  open: boolean;
+  /**
+   * Title for the dialog (default: "Action Blocked")
+   */
+  title?: string;
   /**
    * Whether this is a warning-only dialog (no override needed, just acknowledgment)
    */
@@ -183,7 +183,7 @@ export function ConstraintOverrideDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="max-h-[300px] overflow-y-auto space-y-3 py-2">
+        <div className="max-h-[300px] space-y-3 overflow-y-auto py-2">
           {actionableConstraints.map((constraint, index) => (
             <ConstraintAlert constraint={constraint} key={index} />
           ))}
@@ -195,7 +195,7 @@ export function ConstraintOverrideDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <label
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 htmlFor="override-reason"
               >
                 Reason for override
@@ -221,7 +221,7 @@ export function ConstraintOverrideDialog({
 
             <div className="space-y-2">
               <label
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 htmlFor="override-details"
               >
                 Additional details (optional)

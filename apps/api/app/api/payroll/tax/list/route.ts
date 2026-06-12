@@ -14,15 +14,15 @@ import {
 } from "@/lib/manifest-response";
 
 interface TaxConfigRow {
+  created_at: Date;
+  deleted_at: Date | null;
   id: string;
-  tenant_id: string;
-  tax_type: string;
+  is_active: boolean;
   jurisdiction: string;
   state_code: string | null;
-  is_active: boolean;
-  created_at: Date;
+  tax_type: string;
+  tenant_id: string;
   updated_at: Date | null;
-  deleted_at: Date | null;
 }
 
 // Tax brackets for 2026 federal single filers (simplified)
@@ -39,10 +39,14 @@ const DEFAULT_FEDERAL_BRACKETS = [
 export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     // Get or create tenant tax config
     let configs = await database.$queryRaw<TaxConfigRow[]>`
@@ -81,13 +85,19 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
     const { configId, isActive, stateCode } = await request.json();
-    if (!configId) return manifestErrorResponse("configId required", 400);
+    if (!configId) {
+      return manifestErrorResponse("configId required", 400);
+    }
 
     const result = await database.$queryRaw<TaxConfigRow[]>`
       UPDATE tenant_payroll.tax_configurations

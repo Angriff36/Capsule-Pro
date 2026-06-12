@@ -17,17 +17,17 @@ export const runtime = "nodejs";
 // ── Pattern-Based Event Parsing Logic ─────────────────────────────────────
 
 interface ParsedEventData {
-  title: string;
-  eventType: string;
-  eventDate: number | null;
-  guestCount: number;
-  venueName: string;
-  venueAddress: string;
-  notes: string;
-  tags: string;
   confidence: number;
+  eventDate: number | null;
+  eventType: string;
+  guestCount: number;
   missingFields: string[];
+  notes: string;
   suggestions: string[];
+  tags: string;
+  title: string;
+  venueAddress: string;
+  venueName: string;
 }
 
 const EVENT_TYPE_PATTERNS: Array<{
@@ -85,11 +85,15 @@ const MONTH_ABBREVIATIONS = [
 function parseMonth(text: string): number | null {
   const lower = text.toLowerCase();
   for (let i = 0; i < MONTH_NAMES.length; i++) {
-    if (lower.includes(MONTH_NAMES[i])) return i;
+    if (lower.includes(MONTH_NAMES[i])) {
+      return i;
+    }
   }
   for (let i = 0; i < MONTH_ABBREVIATIONS.length; i++) {
     const regex = new RegExp(`\\b${MONTH_ABBREVIATIONS[i]}\\.?\\b`, "i");
-    if (regex.test(lower)) return i;
+    if (regex.test(lower)) {
+      return i;
+    }
   }
   return null;
 }
@@ -100,21 +104,27 @@ function parseDayOfMonth(text: string): number | null {
   const monthDayMatch = text.match(monthDayPattern);
   if (monthDayMatch) {
     const day = Number.parseInt(monthDayMatch[1], 10);
-    if (day >= 1 && day <= 31) return day;
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
   }
 
   const onDayPattern = /\bon\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const onDayMatch = text.match(onDayPattern);
   if (onDayMatch) {
     const day = Number.parseInt(onDayMatch[1], 10);
-    if (day >= 1 && day <= 31) return day;
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
   }
 
   const standalonePattern = /(?<!\bfor\s+)(\d{1,2})(?:st|nd|rd|th)\b/i;
   const standaloneMatch = text.match(standalonePattern);
   if (standaloneMatch) {
     const day = Number.parseInt(standaloneMatch[1], 10);
-    if (day >= 1 && day <= 31) return day;
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
   }
 
   return null;
@@ -168,7 +178,9 @@ function parseRelativeDate(
     const result = new Date(referenceDate);
     const currentDay = result.getDay();
     let daysUntil = targetDay - currentDay;
-    if (daysUntil <= 0) daysUntil += 7;
+    if (daysUntil <= 0) {
+      daysUntil += 7;
+    }
     daysUntil += 7;
     result.setDate(result.getDate() + daysUntil);
     return { date: result, confidence: 0.9 };
@@ -182,7 +194,9 @@ function parseRelativeDate(
     const result = new Date(referenceDate);
     const currentDay = result.getDay();
     let daysUntil = targetDay - currentDay;
-    if (daysUntil <= 0) daysUntil += 7;
+    if (daysUntil <= 0) {
+      daysUntil += 7;
+    }
     result.setDate(result.getDate() + daysUntil);
     return { date: result, confidence: 0.9 };
   }
@@ -203,20 +217,28 @@ function parseAbsoluteDate(
   referenceDate: Date
 ): { date: Date; confidence: number } | null {
   const month = parseMonth(text);
-  if (month === null) return null;
+  if (month === null) {
+    return null;
+  }
 
   const day = parseDayOfMonth(text);
-  if (day === null) return null;
+  if (day === null) {
+    return null;
+  }
 
   let year = parseYear(text);
   if (year === null) {
     year = referenceDate.getFullYear();
     const candidateDate = new Date(year, month, day);
-    if (candidateDate < referenceDate) year++;
+    if (candidateDate < referenceDate) {
+      year++;
+    }
   }
 
   const date = new Date(year, month, day);
-  if (date.getMonth() !== month || date.getDate() !== day) return null;
+  if (date.getMonth() !== month || date.getDate() !== day) {
+    return null;
+  }
 
   return { date, confidence: 0.95 };
 }
@@ -255,7 +277,9 @@ function parseGuestCount(text: string): number | null {
     const match = text.match(pattern);
     if (match) {
       const count = Number.parseInt(match[1], 10);
-      if (count > 0 && count <= 100_000) return count;
+      if (count > 0 && count <= 100_000) {
+        return count;
+      }
     }
   }
 
@@ -298,7 +322,9 @@ function parseVenue(text: string): { name: string; address: string } {
     const filteredWords: string[] = [];
     for (const word of words) {
       const lowerWord = word.toLowerCase();
-      if (stopWords.includes(lowerWord) || /^\d/.test(word)) break;
+      if (stopWords.includes(lowerWord) || /^\d/.test(word)) {
+        break;
+      }
       filteredWords.push(word);
     }
     venueName = filteredWords.join(" ");
@@ -312,7 +338,9 @@ function parseVenue(text: string): { name: string; address: string } {
   );
   if (venueColonMatch) {
     const venueName = venueColonMatch[1].trim();
-    if (venueName.length > 2) return { name: venueName, address: "" };
+    if (venueName.length > 2) {
+      return { name: venueName, address: "" };
+    }
   }
 
   const venueTypes = [
@@ -345,7 +373,9 @@ function inferEventType(text: string): {
   confidence: number;
 } {
   for (const { pattern, eventType } of EVENT_TYPE_PATTERNS) {
-    if (pattern.test(text)) return { eventType, confidence: 0.9 };
+    if (pattern.test(text)) {
+      return { eventType, confidence: 0.9 };
+    }
   }
 
   if (
@@ -381,8 +411,12 @@ function generateTitle(
   if (eventType && eventType !== "general") {
     parts.push(eventType.charAt(0).toUpperCase() + eventType.slice(1));
   }
-  if (venueName) parts.push(`at ${venueName}`);
-  if (guestCount && guestCount > 0) parts.push(`(${guestCount} guests)`);
+  if (venueName) {
+    parts.push(`at ${venueName}`);
+  }
+  if (guestCount && guestCount > 0) {
+    parts.push(`(${guestCount} guests)`);
+  }
 
   const generatedTitle = parts.join(" ");
   return generatedTitle || cleaned || "New Event";
@@ -423,10 +457,18 @@ function parseNaturalLanguageEvent(
   );
 
   let confidence = 0.5;
-  if (guestCount > 0) confidence += 0.15;
-  if (eventDate) confidence += 0.2;
-  if (venue.name) confidence += 0.1;
-  if (typeResult.confidence > 0.7) confidence += 0.05;
+  if (guestCount > 0) {
+    confidence += 0.15;
+  }
+  if (eventDate) {
+    confidence += 0.2;
+  }
+  if (venue.name) {
+    confidence += 0.1;
+  }
+  if (typeResult.confidence > 0.7) {
+    confidence += 0.05;
+  }
   confidence = Math.min(confidence, 1);
 
   return {
@@ -437,7 +479,7 @@ function parseNaturalLanguageEvent(
     venueName: venue.name,
     venueAddress: venue.address,
     notes: "",
-    tags: typeResult.eventType !== "general" ? typeResult.eventType : "",
+    tags: typeResult.eventType === "general" ? "" : typeResult.eventType,
     confidence,
     missingFields,
     suggestions,

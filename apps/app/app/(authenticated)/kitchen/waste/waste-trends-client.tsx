@@ -49,7 +49,7 @@ export function WasteTrendsClient() {
 
   if (error || !data) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-destructive text-sm">
         {error ?? "Failed to load waste trends"}
       </div>
     );
@@ -57,7 +57,7 @@ export function WasteTrendsClient() {
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         {data.summary.totalEntries} entries in the last 30 days
       </div>
       <div className="space-y-2">
@@ -73,8 +73,8 @@ export function WasteTrendsClient() {
       </div>
       {data.reductionOpportunities.length > 0 && (
         <div className="rounded-md bg-muted p-4 text-sm">
-          <p className="font-medium mb-2">Reduction Opportunities:</p>
-          <ul className="space-y-1 list-disc list-inside">
+          <p className="mb-2 font-medium">Reduction Opportunities:</p>
+          <ul className="list-inside list-disc space-y-1">
             {data.reductionOpportunities.map((opp, index) => (
               <li key={index}>
                 {opp.description} - Save ${opp.potentialSavings.toFixed(2)}

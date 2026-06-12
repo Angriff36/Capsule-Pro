@@ -78,10 +78,7 @@ const ENTITY_FIELD_OVERRIDES: Record<string, Record<string, string | null>> = {
 };
 
 // Models that have no `createdAt` column at all (absent from schema).
-const ENTITY_NO_CREATED_AT = new Set([
-  "ForecastInput",
-  "InventoryForecast",
-]);
+const ENTITY_NO_CREATED_AT = new Set(["ForecastInput", "InventoryForecast"]);
 
 // ─────────────────────────────────────────────────────────────
 // Detail route drop (composite PK, no single `id` column)
@@ -96,16 +93,16 @@ const ENTITY_DETAIL_DROP = new Set(["TaskBundleItem"]);
 export interface EntityResolution {
   /** Prisma client delegate name (e.g. "event", "eventStaffAssignment") */
   accessor: string;
-  /** Whether the accessor exists on PrismaClient */
-  exists: boolean;
+  /** Correct field name for createdAt in this model's orderBy, or null if absent */
+  createdAtField: string | null;
   /** Whether this entity should be dropped (no backing table) */
   drop: boolean;
+  /** Whether the accessor exists on PrismaClient */
+  exists: boolean;
   /** Whether detail (by-id) route is supported */
   hasDetail: boolean;
   /** Correct field name for tenantId in this model's where clause */
   tenantIdField: string;
-  /** Correct field name for createdAt in this model's orderBy, or null if absent */
-  createdAtField: string | null;
 }
 
 /**
@@ -164,7 +161,7 @@ export function resolveEntityAccessor(entityName: string): EntityResolution {
 export function buildTenantWhere(
   entityName: string,
   tenantId: string,
-  extra?: Record<string, unknown>,
+  extra?: Record<string, unknown>
 ): Record<string, unknown> {
   const resolution = resolveEntityAccessor(entityName);
   const where: Record<string, unknown> = {
@@ -180,6 +177,8 @@ export function buildTenantWhere(
  */
 export function buildOrderBy(entityName: string): Record<string, string> {
   const resolution = resolveEntityAccessor(entityName);
-  if (!resolution.createdAtField) return {};
+  if (!resolution.createdAtField) {
+    return {};
+  }
   return { [resolution.createdAtField]: "desc" as const };
 }

@@ -55,7 +55,9 @@ vi.mock("@repo/observability/log", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
@@ -347,7 +349,14 @@ describe("Payroll Periods API", () => {
 
     it("should create a period through manifest runtime", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: true, result: { id: "period-new" }, events: [] }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "period-new" },
+            events: [],
+          }),
+          { status: 200 }
+        )
       );
 
       const request = new NextRequest(
@@ -382,7 +391,13 @@ describe("Payroll Periods API", () => {
 
     it("should return 403 on policy denial", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, message: "Access denied by policy AdminOnlyPolicy" }), { status: 403 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: "Access denied by policy AdminOnlyPolicy",
+          }),
+          { status: 403 }
+        )
       );
 
       const request = new NextRequest(
@@ -404,7 +419,13 @@ describe("Payroll Periods API", () => {
 
     it("should return 422 on guard failure", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, message: "Guard 0 failed: end_date must be after start_date" }), { status: 422 })
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: "Guard 0 failed: end_date must be after start_date",
+          }),
+          { status: 422 }
+        )
       );
 
       const request = new NextRequest(
@@ -429,7 +450,10 @@ describe("Payroll Periods API", () => {
 
     it("should return 400 when command fails without policy/guard", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
-        new Response(JSON.stringify({ success: false, message: "Invalid period data" }), { status: 400 })
+        new Response(
+          JSON.stringify({ success: false, message: "Invalid period data" }),
+          { status: 400 }
+        )
       );
 
       const request = new NextRequest(
@@ -449,7 +473,9 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

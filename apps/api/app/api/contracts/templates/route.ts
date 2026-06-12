@@ -16,13 +16,13 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface TemplateRow {
+  createdAt: string;
+  description: string | null;
   id: string;
+  lastModified: string;
   name: string;
   type: "event" | "vendor";
-  description: string | null;
   usageCount: number;
-  lastModified: string;
-  createdAt: string;
 }
 
 /**
@@ -48,7 +48,9 @@ async function deriveTemplates(tenantId: string): Promise<TemplateRow[]> {
   });
 
   for (const group of eventGroups) {
-    if (!group.documentType) continue;
+    if (!group.documentType) {
+      continue;
+    }
     templates.push({
       id: `event-${group.documentType}`,
       name: group.documentType

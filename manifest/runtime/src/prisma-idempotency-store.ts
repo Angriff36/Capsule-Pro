@@ -168,7 +168,7 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
       });
 
       if (!entry) {
-        return undefined;
+        return;
       }
 
       // Check if expired
@@ -186,7 +186,7 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
           .catch(() => {
             // Ignore delete errors (concurrent cleanup)
           });
-        return undefined;
+        return;
       }
 
       // entry.result is a Prisma Json value (JsonValue) that was originally
@@ -199,7 +199,7 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
         error
       );
       // On error, return undefined to allow the command to proceed
-      return undefined;
+      return;
     }
   }
 }

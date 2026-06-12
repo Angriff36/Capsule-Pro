@@ -7,52 +7,52 @@ import { apiFetch } from "@/app/lib/api";
 // Types
 export interface ForecastPoint {
   date: Date;
-  projectedStock: number;
-  usage: number;
   eventId?: string;
   eventName?: string;
+  projectedStock: number;
+  usage: number;
 }
 
 export interface DepletionForecast {
-  sku: string;
-  currentStock: number;
-  depletionDate: Date | null;
-  daysUntilDepletion: number | null;
   confidence: "high" | "medium" | "low";
+  currentStock: number;
+  daysUntilDepletion: number | null;
+  depletionDate: Date | null;
   forecast: ForecastPoint[];
+  sku: string;
 }
 
 export interface ReorderSuggestion {
-  sku: string;
   currentStock: number;
-  reorderPoint: number;
-  recommendedOrderQty: number;
-  leadTimeDays: number;
   justification: string;
+  leadTimeDays: number;
+  recommendedOrderQty: number;
+  reorderPoint: number;
+  sku: string;
   urgency: "critical" | "warning" | "info";
 }
 
 export interface ForecastAlert {
-  sku: string;
-  name: string;
-  currentStock: number;
-  depletionDate: Date;
-  daysUntilDepletion: number;
   confidence: "high" | "medium" | "low";
+  currentStock: number;
+  daysUntilDepletion: number;
+  depletionDate: Date;
+  name: string;
+  sku: string;
   urgency: "critical" | "warning" | "info";
 }
 
 export interface SavedForecast {
-  id: string;
-  tenantId: string;
-  sku: string;
+  confidence: number;
   date: Date;
   forecast: number;
-  lower_bound: number;
-  upper_bound: number;
-  confidence: number;
   horizon_days: number;
+  id: string;
   last_updated: Date;
+  lower_bound: number;
+  sku: string;
+  tenantId: string;
+  upper_bound: number;
 }
 
 // API Functions
@@ -302,11 +302,11 @@ export function getDepletionText(daysUntilDepletion: number | null): string {
 import { useCallback, useEffect, useState } from "react";
 
 interface UseForecastsOptions {
-  sku?: string;
+  autoFetch?: boolean;
   horizonDays?: number;
   leadTimeDays?: number;
   safetyStockDays?: number;
-  autoFetch?: boolean;
+  sku?: string;
 }
 
 export function useForecasts(options: UseForecastsOptions = {}) {

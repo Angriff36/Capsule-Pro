@@ -107,12 +107,12 @@ function getEventStatusLabel(isLive: boolean, isPast: boolean): string {
 }
 
 interface MobileStickyBarProps {
-  soldOut: boolean;
-  saveReady: boolean;
   isSaved: boolean;
   onRsvp: () => void;
-  onToggleSave: () => void;
   onShare: () => void;
+  onToggleSave: () => void;
+  saveReady: boolean;
+  soldOut: boolean;
 }
 
 function MobileStickyBar({
@@ -128,10 +128,10 @@ function MobileStickyBar({
       <button className="hidden" onClick={onRsvp} type="button">
         Open RSVP
       </button>
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-40 border-border border-t bg-muted/95 px-4 py-3 backdrop-blur sm:hidden">
         <div className="flex items-center gap-2">
           <button
-            className="flex-1 bg-success text-success-foreground hover:bg-success/90 inline-flex items-center justify-center rounded-sm text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            className="inline-flex flex-1 items-center justify-center rounded-sm bg-success font-medium text-sm text-success-foreground transition-colors hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             disabled={soldOut}
             onClick={onRsvp}
             type="button"
@@ -139,7 +139,7 @@ function MobileStickyBar({
             RSVP
           </button>
           <button
-            className="px-3 inline-flex items-center justify-center rounded-sm text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex items-center justify-center rounded-sm border border-input bg-background px-3 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={!saveReady}
             onClick={onToggleSave}
             type="button"
@@ -158,7 +158,7 @@ function MobileStickyBar({
             </svg>
           </button>
           <button
-            className="px-3 inline-flex items-center justify-center rounded-sm text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex items-center justify-center rounded-sm border border-input bg-background px-3 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={onShare}
             type="button"
           >
@@ -183,15 +183,15 @@ function MobileStickyBar({
 }
 
 interface QuickRsvpModalProps {
-  open: boolean;
-  eventTitle: string;
-  name: string;
   email: string;
+  eventTitle: string;
   loading: boolean;
-  onNameChange: (v: string) => void;
-  onEmailChange: (v: string) => void;
-  onSubmit: () => void;
+  name: string;
   onClose: () => void;
+  onEmailChange: (v: string) => void;
+  onNameChange: (v: string) => void;
+  onSubmit: () => void;
+  open: boolean;
 }
 
 function QuickRsvpModal({
@@ -207,22 +207,22 @@ function QuickRsvpModal({
 }: QuickRsvpModalProps) {
   return (
     <div className={`fixed inset-0 z-50 bg-black/80 ${open ? "" : "hidden"}`}>
-      <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-hairline bg-background p-6 duration-200 sm:rounded-lg">
+      <div className="fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-hairline bg-background p-6 duration-200 sm:rounded-lg">
         <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-          <h2 className="text-lg font-semibold leading-none tracking-tight">
+          <h2 className="font-semibold text-lg leading-none tracking-tight">
             Add RSVP
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Add a guest to the RSVP list for {eventTitle}.
           </p>
         </div>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="rsvp-name">
+            <label className="font-medium text-sm" htmlFor="rsvp-name">
               Guest name
             </label>
             <input
-              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               id="rsvp-name"
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="Full name"
@@ -230,11 +230,11 @@ function QuickRsvpModal({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="rsvp-email">
+            <label className="font-medium text-sm" htmlFor="rsvp-email">
               Guest email
             </label>
             <input
-              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               id="rsvp-email"
               onChange={(e) => onEmailChange(e.target.value)}
               placeholder="Optional email"
@@ -245,14 +245,14 @@ function QuickRsvpModal({
         </div>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <button
-            className="inline-flex items-center justify-center rounded-sm text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={onClose}
             type="button"
           >
             Cancel
           </button>
           <button
-            className="inline-flex items-center justify-center rounded-sm text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={loading}
             onClick={onSubmit}
             type="button"
@@ -261,7 +261,7 @@ function QuickRsvpModal({
           </button>
         </div>
         <button
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
           onClick={onClose}
           type="button"
         >
@@ -343,10 +343,10 @@ function computeTaskSummary(tasks: PrepTaskSummaryClient[]) {
 interface AggregatedIngredient {
   ingredientId: string;
   ingredientName: string;
-  quantity: number;
-  unitCode: string | null;
   isOptional: boolean;
+  quantity: number;
   sources: string[];
+  unitCode: string | null;
 }
 
 async function copyEventLink(eventId: string): Promise<void> {
@@ -507,16 +507,16 @@ function useEventSummary(eventId: string) {
 }
 
 interface GenerateBreakdownDeps {
+  cancelledRef: MutableRefObject<boolean>;
   eventId: string;
-  setIsGenerating: (v: boolean) => void;
-  setGenerationProgress: (v: string) => void;
-  setBreakdown: (v: TaskBreakdown) => void;
-  setShowBreakdownModal: (v: boolean) => void;
   onRefresh: () => void;
   progressIntervalRef: MutableRefObject<ReturnType<
     typeof globalThis.setInterval
   > | null>;
-  cancelledRef: MutableRefObject<boolean>;
+  setBreakdown: (v: TaskBreakdown) => void;
+  setGenerationProgress: (v: string) => void;
+  setIsGenerating: (v: boolean) => void;
+  setShowBreakdownModal: (v: boolean) => void;
 }
 
 async function runGenerateBreakdown(
@@ -743,30 +743,30 @@ function aggregateIngredients(
 }
 
 interface EventDetailsClientProps {
+  /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
+  allEventData: Awaited<
+    ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>
+  >;
+  battleBoardHref: string;
+  /** Server-rendered Command Board tab — passed from page.tsx to cross the server/client boundary */
+  board: import("react").ReactNode;
   budget: EventBudgetForDisplay | null;
   event: Omit<Event, "budget" | "ticketPrice"> & {
     budget: number | null;
     ticketPrice: number | null;
   };
-  /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
-  allEventData: Awaited<
-    ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>
-  >;
-  prepTasks: PrepTaskSummaryClient[];
-  tenantId?: string;
   eventDishes: EventDishSummary[];
-  recipeDetails: RecipeDetailSummary[];
+  hasBudget?: boolean;
+  hasContract?: boolean;
   inventoryCoverage: InventoryCoverageItem[];
+  prepLists?: PrepListSummary[];
+  prepTasks: PrepTaskSummaryClient[];
+  recipeDetails: RecipeDetailSummary[];
   relatedEvents: RelatedEventSummary[];
   relatedGuestCounts: Record<string, number>;
   rsvpCount: number;
-  hasContract?: boolean;
   staffCount?: number;
-  prepLists?: PrepListSummary[];
-  hasBudget?: boolean;
-  battleBoardHref: string;
-  /** Server-rendered Command Board tab — passed from page.tsx to cross the server/client boundary */
-  board: import("react").ReactNode;
+  tenantId?: string;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -1048,12 +1048,14 @@ export function EventDetailsClient({
     [initialPrepTasks]
   );
 
-  const sortedPrepTasks = useMemo(() => {
-    return [...initialPrepTasks].sort(
-      (a, b) =>
-        new Date(a.dueByDate).getTime() - new Date(b.dueByDate).getTime()
-    );
-  }, [initialPrepTasks]);
+  const sortedPrepTasks = useMemo(
+    () =>
+      [...initialPrepTasks].sort(
+        (a, b) =>
+          new Date(a.dueByDate).getTime() - new Date(b.dueByDate).getTime()
+      ),
+    [initialPrepTasks]
+  );
 
   const timeStatusLabel = getTimeStatusLabel(
     isLive,
@@ -1084,7 +1086,9 @@ export function EventDetailsClient({
     const suggestions = getTemplateMenuSuggestions(
       (event as { templateId?: string | null }).templateId ?? null
     );
-    if (!suggestions) return [];
+    if (!suggestions) {
+      return [];
+    }
 
     // Create a set of existing dish names for quick lookup
     const existingDishNames = new Set(
@@ -1100,7 +1104,9 @@ export function EventDetailsClient({
   // Get template name for display
   const templateName = useMemo(() => {
     const templateId = (event as { templateId?: string | null }).templateId;
-    if (!templateId) return null;
+    if (!templateId) {
+      return null;
+    }
     const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
     return template?.name ?? null;
   }, [(event as { templateId?: string | null }).templateId]);
@@ -1108,7 +1114,9 @@ export function EventDetailsClient({
   // Get template staffing defaults
   const templateStaffing = useMemo(() => {
     const templateId = (event as { templateId?: string | null }).templateId;
-    if (!templateId) return null;
+    if (!templateId) {
+      return null;
+    }
     const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
     return template?.defaultStaffing ?? null;
   }, [(event as { templateId?: string | null }).templateId]);
@@ -1352,7 +1360,9 @@ export function EventDetailsClient({
   }, []);
 
   const handleCreateVariant = useCallback(async () => {
-    if (!variantLinkId) return;
+    if (!variantLinkId) {
+      return;
+    }
     try {
       await createVariantMutation.mutateAsync({
         eventId: event.id,
@@ -1431,25 +1441,25 @@ export function EventDetailsClient({
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <GridBackground className="pointer-events-none absolute inset-0 opacity-15" />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pt-10 pb-28 sm:px-6 lg:px-8">
         <Separator />
         <EventDetailTabs
           battleBoardHref={battleBoardHref}
-          board={board}
           battleboard={
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />
+              <SwordsIcon className="mb-3 h-12 w-12 opacity-40" />
               <p className="text-sm">
                 Coordinate menu finalization with the team.
               </p>
               <a
-                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
                 href={battleBoardHref}
               >
                 Open Battle Board
               </a>
             </div>
           }
+          board={board}
           copilot={
             <AIInsightsPanel
               breakdown={breakdown}
@@ -1520,11 +1530,11 @@ export function EventDetailsClient({
           }
           followups={
             <div className="p-4">
-              <p className="text-muted-foreground mb-4">
+              <p className="mb-4 text-muted-foreground">
                 Manage automated follow-up tasks for this event.
               </p>
               <a
-                className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
                 href={`/events/${event.id}/follow-ups`}
               >
                 Open Follow-Ups Dashboard
@@ -1584,13 +1594,13 @@ export function EventDetailsClient({
               <AllergenSection eventId={event.id} />
               <div className="flex flex-wrap gap-2">
                 <a
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-sm hover:bg-accent"
                   href={`/events/${event.id}/run-sheet`}
                 >
                   <ClipboardList className="h-3.5 w-3.5" /> Run Sheet
                 </a>
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-sm hover:bg-accent disabled:opacity-50"
                   disabled={isGeneratingProposal}
                   onClick={handleGenerateProposal}
                   type="button"
@@ -1672,7 +1682,7 @@ export function EventDetailsClient({
                 Generate post-event reports and review performance.
               </p>
               <a
-                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
                 href={"/events/reports"}
               >
                 View Reports

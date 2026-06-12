@@ -8,39 +8,39 @@ export type ChecklistQuestionType =
   | "textarea";
 
 export interface ChecklistQuestionState {
-  id: string;
-  type: ChecklistQuestionType;
-  prompt: string;
-  description?: string;
-  required: boolean;
-  options?: string[];
   allowNotes?: boolean;
-  value: string | null;
-  notes?: string;
   autoFilled?: boolean;
   autoReason?: string;
+  description?: string;
+  id: string;
+  notes?: string;
+  options?: string[];
+  prompt: string;
+  required: boolean;
+  type: ChecklistQuestionType;
+  value: string | null;
 }
 
 export interface ChecklistSectionState {
   id: string;
-  title: string;
-  summary?: string;
   questions: ChecklistQuestionState[];
+  summary?: string;
+  title: string;
 }
 
 export interface EventChecklist {
-  version: string;
-  generatedAt: string;
-  updatedAt: string;
   completedAt?: string;
   completion: number;
+  generatedAt: string;
   sections: ChecklistSectionState[];
+  updatedAt: string;
+  version: string;
 }
 
 export interface AutoAnswer {
-  value: string | null;
-  notes?: string;
   autoReason?: string;
+  notes?: string;
+  value: string | null;
 }
 
 // Event type options for checklist

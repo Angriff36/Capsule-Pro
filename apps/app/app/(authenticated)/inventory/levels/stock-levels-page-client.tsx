@@ -271,8 +271,8 @@ export const StockLevelsPageClient = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Stock Levels</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="font-semibold text-2xl tracking-tight">Stock Levels</h1>
+        <p className="mt-2 text-muted-foreground">
           Monitor inventory quantities, par levels, and stock values across all
           locations.
         </p>
@@ -282,7 +282,7 @@ export const StockLevelsPageClient = () => {
 
       {/* Performance Overview */}
       <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
+        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -292,7 +292,7 @@ export const StockLevelsPageClient = () => {
               <BoxIcon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary.totalItems}</div>
+              <div className="font-bold text-2xl">{summary.totalItems}</div>
             </CardContent>
           </Card>
           <Card>
@@ -301,7 +301,7 @@ export const StockLevelsPageClient = () => {
               <DollarSignIcon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 {formatCurrency(summary.totalValue)}
               </div>
             </CardContent>
@@ -312,7 +312,7 @@ export const StockLevelsPageClient = () => {
               <AlertTriangleIcon className="size-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="font-bold text-2xl text-yellow-600">
                 {summary.belowParCount}
               </div>
             </CardContent>
@@ -323,7 +323,7 @@ export const StockLevelsPageClient = () => {
               <ActivityIcon className="size-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="font-bold text-2xl text-red-600">
                 {summary.outOfStockCount}
               </div>
             </CardContent>
@@ -345,7 +345,7 @@ export const StockLevelsPageClient = () => {
         <TabsContent className="space-y-6" value="stock">
           {/* Filters */}
           <section>
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+            <h2 className="mb-4 font-medium text-muted-foreground text-sm">
               Filters
             </h2>
             <div className="flex flex-wrap gap-4">
@@ -456,7 +456,7 @@ export const StockLevelsPageClient = () => {
                       <TableCell className="font-medium">
                         <div>
                           <div>{level.item.name}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {level.item.itemNumber}
                           </div>
                         </div>
@@ -502,7 +502,7 @@ export const StockLevelsPageClient = () => {
 
             {/* Pagination */}
             <div className="flex items-center justify-between px-2 py-4">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 Showing {stockLevels.length} of {totalCount} items
               </div>
               <div className="flex gap-2">
@@ -583,7 +583,7 @@ export const StockLevelsPageClient = () => {
 
             {/* Transaction Pagination */}
             <div className="flex items-center justify-between px-2 py-4">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 Page {transactionPage} of {transactionTotalPages}
               </div>
               <div className="flex gap-2">
@@ -627,7 +627,7 @@ export const StockLevelsPageClient = () => {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               Current quantity:{" "}
               {adjustmentItem
                 ? formatQuantity(adjustmentItem.quantityOnHand)

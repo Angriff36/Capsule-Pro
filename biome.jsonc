@@ -48,7 +48,20 @@
       "!!**/.react-email",
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
-      "!!**/*.snap"
+      "!!**/*.snap",
+      // Manifest-IR generated artifacts: drift gates require byte-parity with
+      // the producers — lint the producer, never the output (constitution §10).
+      "!!**/*.generated.*",
+      "!!manifest/ir",
+      "!!manifest/governance",
+      "!!manifest/capsule-conventions.json",
+      "!!manifest/runtime/commands.registry.json",
+      "!!manifest/runtime/routes.manifest.json",
+      "!!manifest-structure-audit.json",
+      "!!manifest-domain-drift-audit.json",
+      // Golden projection snapshots: exact-match against generator output —
+      // formatting them breaks the comparison.
+      "!!**/__snapshots__"
     ]
   },
   "extends": [

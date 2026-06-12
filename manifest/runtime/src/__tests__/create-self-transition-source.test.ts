@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const sourceRoot = resolve(__dirname, "../../../source");
+const sourceRoot = resolve(import.meta.dirname, "../../../source");
 
 type Block = {
   body: string;
@@ -18,10 +18,14 @@ function findMatchingBrace(source: string, openIndex: number): number {
   let depth = 0;
   for (let index = openIndex; index < source.length; index++) {
     const char = source[index];
-    if (char === "{") depth++;
+    if (char === "{") {
+      depth++;
+    }
     if (char === "}") {
       depth--;
-      if (depth === 0) return index;
+      if (depth === 0) {
+        return index;
+      }
     }
   }
   throw new Error(`Unclosed block at ${openIndex}`);
@@ -55,7 +59,9 @@ function entities(source: string): Block[] {
 
 function createCommand(entityBody: string): Block | undefined {
   const match = /^ {2}command\s+create\s*\(([^)]*)\)\s*\{/m.exec(entityBody);
-  if (!match) return undefined;
+  if (!match) {
+    return;
+  }
   const open = entityBody.indexOf("{", match.index);
   const close = findMatchingBrace(entityBody, open);
   return {
@@ -90,7 +96,9 @@ function propertyDefaults(entityBody: string): Map<string, string> {
 
 function createParams(entityBody: string): Set<string> {
   const match = /^ {2}command\s+create\s*\(([^)]*)\)\s*\{/m.exec(entityBody);
-  if (!match) return new Set();
+  if (!match) {
+    return new Set();
+  }
   return new Set(
     match[1]
       .split(",")
@@ -107,10 +115,14 @@ describe("Manifest create commands", () => {
       const source = readFileSync(file, "utf8");
       for (const entity of entities(source)) {
         const create = createCommand(entity.body);
-        if (!create) continue;
+        if (!create) {
+          continue;
+        }
 
         const transitions = transitionFromValues(entity.body);
-        if (transitions.size === 0) continue;
+        if (transitions.size === 0) {
+          continue;
+        }
 
         const defaults = propertyDefaults(entity.body);
         const params = createParams(entity.body);

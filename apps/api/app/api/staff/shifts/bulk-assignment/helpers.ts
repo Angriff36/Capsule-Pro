@@ -12,25 +12,25 @@ import {
 
 // Types
 export interface ShiftAssignmentInput {
-  shiftId: string;
   employeeId?: string | null;
   requiredSkills?: string[];
+  shiftId: string;
 }
 
 export interface AssignmentResult {
-  shiftId: string;
-  success: boolean;
-  message: string;
+  confidence?: "high" | "medium" | "low";
   employeeId?: string;
   employeeName?: string;
-  confidence?: "high" | "medium" | "low";
+  message: string;
+  shiftId: string;
   skipped: boolean;
+  success: boolean;
 }
 
 export interface BulkAssignmentRequest {
-  shifts: ShiftAssignmentInput[];
   dryRun?: boolean;
   onlyHighConfidence?: boolean;
+  shifts: ShiftAssignmentInput[];
 }
 
 /**

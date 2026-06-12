@@ -86,7 +86,11 @@ vi.mock("@/lib/manifest-response", async () => {
       NextResponse.json(
         typeof message === "string"
           ? { success: false, message }
-          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] },
+          : {
+              success: false,
+              error: message.error,
+              diagnostics: message.diagnostics ?? [],
+            },
         { status }
       ),
   };
@@ -240,10 +244,10 @@ function setupSuccessResult(
   events: Array<{ type: string; payload?: Record<string, unknown> }> = []
 ) {
   vi.mocked(runManifestCommand).mockResolvedValueOnce(
-    new Response(
-      JSON.stringify({ success: true, result: data, events }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    )
+    new Response(JSON.stringify({ success: true, result: data, events }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
   );
 }
 
@@ -258,7 +262,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
     vi.mocked(requireCurrentUser).mockResolvedValue(TEST_CURRENT_USER as never);
     vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
-        JSON.stringify({ success: true, result: { id: "test-id" }, events: [] }),
+        JSON.stringify({
+          success: true,
+          result: { id: "test-id" },
+          events: [],
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )
     );

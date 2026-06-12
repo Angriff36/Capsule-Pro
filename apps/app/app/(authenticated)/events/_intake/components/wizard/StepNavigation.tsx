@@ -1,15 +1,15 @@
 import { ArrowLeft, ArrowRight, Eye, Send } from "lucide-react";
 
 interface StepNavigationProps {
-  totalSteps: number;
+  canProceed: boolean;
   currentStep: number;
+  isSubmitting: boolean;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
-  isSubmitting: boolean;
-  canProceed: boolean;
   submitLabel?: string;
   submittingLabel?: string;
+  totalSteps: number;
 }
 
 export default function StepNavigation({
@@ -28,33 +28,29 @@ export default function StepNavigation({
   const SubmitIcon = submitLabel === "Submit Inquiry" ? Send : Eye;
 
   return (
-    <div className="flex items-center justify-between pt-8 border-t border-stone-100">
+    <div className="flex items-center justify-between border-stone-100 border-t pt-8">
       <button
-        className={`
-          flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all
-          ${
-            isFirstStep
-              ? "text-stone-300 cursor-not-allowed"
-              : "text-stone-600 hover:text-stone-800 hover:bg-stone-100"
-          }
+        className={`flex items-center gap-2 rounded-lg px-5 py-2.5 font-medium text-sm transition-all ${
+          isFirstStep
+            ? "cursor-not-allowed text-stone-300"
+            : "text-stone-600 hover:bg-stone-100 hover:text-stone-800"
+        }
         `}
         disabled={isFirstStep}
         onClick={onBack}
         type="button"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="h-4 w-4" />
         Back
       </button>
 
       {isLastStep ? (
         <button
-          className={`
-            flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium transition-all
-            ${
-              isSubmitting || !canProceed
-                ? "bg-stone-300 text-stone-500 cursor-not-allowed"
-                : "bg-stone-800 text-white hover:bg-stone-700 shadow-lg hover:shadow-xl active:scale-[0.98]"
-            }
+          className={`flex items-center gap-2 rounded-lg px-8 py-3 font-medium text-sm transition-all ${
+            isSubmitting || !canProceed
+              ? "cursor-not-allowed bg-stone-300 text-stone-500"
+              : "bg-stone-800 text-white shadow-lg hover:bg-stone-700 hover:shadow-xl active:scale-[0.98]"
+          }
           `}
           disabled={isSubmitting || !canProceed}
           onClick={onSubmit}
@@ -62,32 +58,30 @@ export default function StepNavigation({
         >
           {isSubmitting ? (
             <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               {submittingLabel}
             </>
           ) : (
             <>
               {submitLabel}
-              <SubmitIcon className="w-4 h-4" />
+              <SubmitIcon className="h-4 w-4" />
             </>
           )}
         </button>
       ) : (
         <button
-          className={`
-            flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium transition-all
-            ${
-              canProceed
-                ? "bg-stone-800 text-white hover:bg-stone-700 shadow-lg hover:shadow-xl active:scale-[0.98]"
-                : "bg-stone-300 text-stone-500 cursor-not-allowed"
-            }
+          className={`flex items-center gap-2 rounded-lg px-8 py-3 font-medium text-sm transition-all ${
+            canProceed
+              ? "bg-stone-800 text-white shadow-lg hover:bg-stone-700 hover:shadow-xl active:scale-[0.98]"
+              : "cursor-not-allowed bg-stone-300 text-stone-500"
+          }
           `}
           disabled={!canProceed}
           onClick={onNext}
           type="button"
         >
           Continue
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="h-4 w-4" />
         </button>
       )}
     </div>

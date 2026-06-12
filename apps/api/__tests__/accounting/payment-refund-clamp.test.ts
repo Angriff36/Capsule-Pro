@@ -219,8 +219,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         .mockResolvedValueOnce(makePayment());
 
       await POST(buildRequest({ amount: 250, reason: "duplicate charge" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       // body.amount=250 > paymentAmount=100, but the clamp kicks in so the
       // EFFECTIVE refund is 100 — i.e. a full refund. Command must be "refund",
@@ -238,8 +238,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         .mockResolvedValueOnce(makePayment());
 
       await POST(buildRequest({ amount: 30, reason: "partial dispute" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
         "partialRefund",
@@ -254,8 +254,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(404);
       expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
@@ -267,8 +267,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
@@ -278,8 +278,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
 
       const res = await POST(buildRequest({ amount: 50 }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
@@ -289,8 +289,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
 
       const res = await POST(buildRequest({ amount: 0, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
@@ -302,8 +302,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
@@ -351,8 +351,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       // boundary — both the local ledger AND the gateway must see $100, not
       // $1M (otherwise we'd ask Stripe to refund more than was charged).
       await POST(buildRequest({ amount: 1_000_000, reason: "abuse attempt" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0][0];
       expect(gatewayArgs.amount).toBe(100);
@@ -403,18 +403,15 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
       // Gateway must run BEFORE manifest mutation so a gateway failure
       // prevents any local ledger state change.
-      expect(callOrder).toEqual([
-        "gateway",
-        "manifest.runCommand",
-      ]);
+      expect(callOrder).toEqual(["gateway", "manifest.runCommand"]);
     });
 
     it("does not call gateway when payment is missing (404 short-circuit)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(404);
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
@@ -426,8 +423,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
@@ -501,8 +498,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         .mockResolvedValueOnce(makePayment());
 
       await POST(buildRequest({ amount: 250, reason: "customer typo" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
       expect(auditArgs.data.requestedAmount).toBe(250);
@@ -542,8 +539,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       );
 
       const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(502);
       expect(mocks.captureExceptionMock).toHaveBeenCalledTimes(1);
@@ -553,8 +550,8 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
       await POST(buildRequest({ amount: 50, reason: "test" }), {
-        params: Promise.resolve({ id: PAYMENT_ID }) },
-      );
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
       expect(mocks.paymentRefundAttemptCreateMock).not.toHaveBeenCalled();

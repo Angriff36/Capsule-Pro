@@ -31,8 +31,8 @@ import { TRIGGER_TYPE_GROUPS, TRIGGER_TYPE_LABELS } from "../constants";
 interface TemplateOption {
   id: string;
   name: string;
-  templateType: string;
   subject: string;
+  templateType: string;
 }
 
 export default function NewEmailWorkflowPage() {
@@ -109,17 +109,17 @@ export default function NewEmailWorkflowPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex max-w-2xl flex-col gap-6">
       <div className="flex items-center gap-4">
         <Button onClick={() => router.back()} size="sm" variant="ghost">
-          <ArrowLeftIcon className="h-4 w-4 mr-2" />
+          <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             New Email Workflow
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground">
             Configure an automated email trigger
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function NewEmailWorkflowPage() {
                 </SelectContent>
               </Select>
               {templates.length === 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No active email templates found.{" "}
                   <a
                     className="text-primary underline"
@@ -244,7 +244,7 @@ export default function NewEmailWorkflowPage() {
                 rows={4}
                 value={triggerConfig}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Additional conditions for when this trigger fires. Leave as{" "}
                 {`
 {}
@@ -266,7 +266,7 @@ export default function NewEmailWorkflowPage() {
             <div className="flex items-center gap-3 pt-4">
               <Button disabled={submitting} type="submit">
                 {submitting && (
-                  <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Create Workflow
               </Button>

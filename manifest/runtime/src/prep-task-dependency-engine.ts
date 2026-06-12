@@ -3,26 +3,26 @@
 // Calculates slack time, critical path, and dependency validation
 
 export interface PrepTaskNode {
-  id: string;
-  eventId: string;
-  name: string;
-  estimatedMinutes: number | null;
-  startByDate: Date | null;
   dueByDate: Date | null;
-  status: string;
+  estimatedMinutes: number | null;
+  eventId: string;
+  id: string;
+  name: string;
   predecessors: Set<string>;
+  startByDate: Date | null;
+  status: string;
   successors: Set<string>;
 }
 
 export interface PrepTaskDependency {
-  id: string;
-  eventId: string;
-  predecessorTaskId: string;
-  successorTaskId: string;
   dependencyType: DependencyType;
-  lagMinutes: number;
+  eventId: string;
+  id: string;
   isHardConstraint: boolean;
+  lagMinutes: number;
+  predecessorTaskId: string;
   status: string;
+  successorTaskId: string;
 }
 
 export type DependencyType =
@@ -32,31 +32,31 @@ export type DependencyType =
   | "start_to_finish";
 
 export interface ScheduleNode {
-  taskId: string;
-  earliestStart: number; // minutes from event start
-  earliestFinish: number;
-  latestStart: number;
-  latestFinish: number;
   duration: number;
-  slack: number;
+  earliestFinish: number;
+  earliestStart: number; // minutes from event start
   isCritical: boolean;
+  latestFinish: number;
+  latestStart: number;
+  slack: number;
+  taskId: string;
 }
 
 export interface CriticalPathResult {
-  eventId: string;
-  totalDuration: number;
-  criticalPath: string[]; // task IDs in order
   allNodes: Map<string, ScheduleNode>;
-  slackTime: Map<string, number>; // taskId -> slack minutes
+  criticalPath: string[]; // task IDs in order
+  eventId: string;
   flexibleConstraints: PrepTaskDependency[];
   hardConstraints: PrepTaskDependency[];
+  slackTime: Map<string, number>; // taskId -> slack minutes
+  totalDuration: number;
   warnings: string[];
 }
 
 export interface DependencyConflict {
-  type: "circular" | "impossible" | "constraint_violation";
   message: string;
   tasks: string[];
+  type: "circular" | "impossible" | "constraint_violation";
 }
 
 /**
@@ -96,7 +96,9 @@ export class PrepTaskDependencyEngine {
 
     // Add dependencies
     for (const dep of dependencies) {
-      if (dep.status !== "active") continue;
+      if (dep.status !== "active") {
+        continue;
+      }
       this.dependencies.set(dep.id, dep);
 
       // Build adjacency from dependencies
@@ -189,7 +191,9 @@ export class PrepTaskDependencyEngine {
     const depsArray = Array.from(this.dependencies.values());
     for (let i = 0; i < depsArray.length; i++) {
       const dep = depsArray[i];
-      if (dep.status !== "active") continue;
+      if (dep.status !== "active") {
+        continue;
+      }
       if (dep.isHardConstraint) {
         hardConstraints.push(dep);
       } else {
@@ -262,7 +266,9 @@ export class PrepTaskDependencyEngine {
       for (let i = 0; i < successors.length; i++) {
         const successorId = successors[i];
         const successorNode = nodes.get(successorId);
-        if (!successorNode) continue; // Not in this event
+        if (!successorNode) {
+          continue; // Not in this event
+        }
 
         const dep = this.findDependency(taskId, successorId);
         if (dep) {
@@ -338,7 +344,9 @@ export class PrepTaskDependencyEngine {
       for (let j = 0; j < predecessors.length; j++) {
         const predId = predecessors[j];
         const predNode = nodes.get(predId);
-        if (!predNode) continue;
+        if (!predNode) {
+          continue;
+        }
 
         const dep = this.findDependency(predId, taskId);
         if (dep) {
@@ -460,7 +468,9 @@ export class PrepTaskDependencyEngine {
     const result: string[] = [];
 
     const visit = (taskId: string) => {
-      if (visited.has(taskId)) return;
+      if (visited.has(taskId)) {
+        return;
+      }
       visited.add(taskId);
 
       const adjList = this.adjacencyList.get(taskId) ?? new Set();
@@ -532,7 +542,9 @@ export class PrepTaskDependencyEngine {
     eventId: string
   ): Map<string, { startTime: Date; endTime: Date }> | null {
     const result = this.calculateCriticalPath(eventId);
-    if (!result) return null;
+    if (!result) {
+      return null;
+    }
 
     const schedule = new Map<string, { startTime: Date; endTime: Date }>();
     const now = new Date();
@@ -557,9 +569,12 @@ export class PrepTaskDependencyEngine {
     const entries = Array.from(this.tasks.entries());
     for (let i = 0; i < entries.length; i++) {
       const [id, task] = entries[i];
-      if (task.eventId !== eventId) continue;
-      if (task.status === "completed" || task.status === "in_progress")
+      if (task.eventId !== eventId) {
         continue;
+      }
+      if (task.status === "completed" || task.status === "in_progress") {
+        continue;
+      }
 
       // Check if all predecessors are completed
       let allPredsComplete = true;
@@ -586,7 +601,9 @@ export class PrepTaskDependencyEngine {
    */
   getBlockingTasks(eventId: string): string[] {
     const result = this.calculateCriticalPath(eventId);
-    if (!result) return [];
+    if (!result) {
+      return [];
+    }
 
     const criticalPath = result.criticalPath;
     const blocking: string[] = [];
@@ -607,7 +624,9 @@ export class PrepTaskDependencyEngine {
    */
   getCriticalPathDescription(eventId: string): string | null {
     const result = this.calculateCriticalPath(eventId);
-    if (!result) return null;
+    if (!result) {
+      return null;
+    }
 
     const taskNames: string[] = [];
     const criticalPath = result.criticalPath;

@@ -67,11 +67,11 @@ const toDecimalNumberOrNull = (
 };
 
 interface IngredientInput {
+  isOptional: boolean;
   name: string;
+  preparationNotes: string | null;
   quantity: number;
   unit: string | null;
-  preparationNotes: string | null;
-  isOptional: boolean;
 }
 
 interface StepInput {
@@ -557,10 +557,25 @@ export const createDish = async (formData: FormData) => {
 };
 
 export interface RecipeForEdit {
-  id: string;
-  name: string;
   category: string | null;
   description: string | null;
+  id: string;
+  ingredients: {
+    id: string;
+    ingredientId: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    isOptional: boolean;
+    sortOrder: number;
+  }[];
+  name: string;
+  steps: {
+    id: string;
+    stepNumber: number;
+    instruction: string;
+    imageUrl: string | null;
+  }[];
   tags: string[];
   version: {
     id: string;
@@ -574,21 +589,6 @@ export interface RecipeForEdit {
     difficultyLevel: number | null;
     notes: string | null;
   };
-  ingredients: {
-    id: string;
-    ingredientId: string;
-    name: string;
-    quantity: number;
-    unit: string;
-    isOptional: boolean;
-    sortOrder: number;
-  }[];
-  steps: {
-    id: string;
-    stepNumber: number;
-    instruction: string;
-    imageUrl: string | null;
-  }[];
 }
 
 export const getRecipeForEdit = async (

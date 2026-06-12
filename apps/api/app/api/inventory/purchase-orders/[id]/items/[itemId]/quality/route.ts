@@ -18,7 +18,10 @@ interface RouteContext {
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id, itemId } = await context.params;
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "PurchaseOrderItem",
     command: "update",

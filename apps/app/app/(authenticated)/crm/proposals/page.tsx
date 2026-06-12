@@ -31,8 +31,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { serializeDecimals } from "@/app/lib/decimal";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { Proposal } from "@/app/lib/proposals";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ProposalsPageClient } from "./proposals-page-client";
 
 export const metadata: Metadata = {

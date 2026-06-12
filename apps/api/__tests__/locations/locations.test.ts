@@ -246,7 +246,9 @@ describe("Locations API", () => {
         isActive: true,
       });
 
-      vi.mocked(database.location.findMany).mockResolvedValue([location] as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([
+        location,
+      ] as never);
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -281,7 +283,9 @@ describe("Locations API", () => {
         timezone: null,
       });
 
-      vi.mocked(database.location.findMany).mockResolvedValue([location] as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([
+        location,
+      ] as never);
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -322,7 +326,9 @@ describe("Locations API", () => {
 
     it("should return 500 when database query throws a generic error", async () => {
       mockAuth();
-      vi.mocked(database.location.findMany).mockRejectedValue(new Error("unknown"));
+      vi.mocked(database.location.findMany).mockRejectedValue(
+        new Error("unknown")
+      );
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);

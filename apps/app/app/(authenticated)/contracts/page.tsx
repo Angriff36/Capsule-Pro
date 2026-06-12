@@ -131,7 +131,9 @@ export default async function ContractsPage() {
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
   const expiringCount = unified.filter((c) => {
-    if (!c.expiresAt) return false;
+    if (!c.expiresAt) {
+      return false;
+    }
     const exp = new Date(c.expiresAt);
     return (
       exp <= thirtyDaysFromNow &&
@@ -215,7 +217,7 @@ export default async function ContractsPage() {
             <MetricCell>
               <MetricLabel>Vendor compliance</MetricLabel>
               <MetricValue>
-                {avgCompliance !== null ? `${avgCompliance}%` : "—"}
+                {avgCompliance === null ? "—" : `${avgCompliance}%`}
               </MetricValue>
               <p className="text-sm text-white/70">Avg across vendors</p>
             </MetricCell>

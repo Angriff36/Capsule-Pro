@@ -1,7 +1,9 @@
 import { log as logtail } from "@logtail/next";
 
 function toContext(value: unknown): Record<string, any> | undefined {
-  if (value === undefined) return undefined;
+  if (value === undefined) {
+    return;
+  }
   if (value instanceof Error) {
     return {
       errorMessage: value.message,

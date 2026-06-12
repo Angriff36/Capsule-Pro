@@ -159,13 +159,13 @@ export const PUT = withRateLimit(
         command: "update",
         body: {
           id,
-          ...(name !== undefined ? { name } : {}),
-          ...(scopes !== undefined
-            ? { scopes: Array.isArray(scopes) ? scopes : [] }
-            : {}),
-          ...(expiresAt !== undefined
-            ? { expiresAt: expiresAt ? new Date(expiresAt as string) : null }
-            : {}),
+          ...(name === undefined ? {} : { name }),
+          ...(scopes === undefined
+            ? {}
+            : { scopes: Array.isArray(scopes) ? scopes : [] }),
+          ...(expiresAt === undefined
+            ? {}
+            : { expiresAt: expiresAt ? new Date(expiresAt as string) : null }),
           tenantId: currentUser.tenantId,
         },
         user: {

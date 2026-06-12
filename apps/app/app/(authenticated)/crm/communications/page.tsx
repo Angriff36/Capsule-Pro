@@ -16,14 +16,14 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface InteractionRow {
-  id: string;
   client_name: string | null;
+  description: string | null;
+  follow_up_completed: boolean;
+  follow_up_date: Date | null;
+  id: string;
+  interaction_date: Date;
   interaction_type: string;
   subject: string | null;
-  description: string | null;
-  interaction_date: Date;
-  follow_up_date: Date | null;
-  follow_up_completed: boolean;
 }
 
 const statusVariant: Record<string, "destructive" | "secondary" | "outline"> = {
@@ -124,25 +124,27 @@ const CrmCommunicationsPage = async () => {
     select: { id: true, company_name: true, first_name: true, last_name: true },
   });
   const clientsById = new Map(clients.map((client) => [client.id, client]));
-  const interactions: InteractionRow[] = interactionRecords.map((interaction) => {
-    const client = interaction.clientId
-      ? clientsById.get(interaction.clientId)
-      : undefined;
-    const clientName =
-      client?.company_name ||
-      [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
-      null;
-    return {
-      id: interaction.id,
-      client_name: clientName,
-      interaction_type: interaction.interactionType,
-      subject: interaction.subject,
-      description: interaction.description,
-      interaction_date: interaction.interactionDate,
-      follow_up_date: interaction.followUpDate,
-      follow_up_completed: interaction.followUpCompleted,
-    };
-  });
+  const interactions: InteractionRow[] = interactionRecords.map(
+    (interaction) => {
+      const client = interaction.clientId
+        ? clientsById.get(interaction.clientId)
+        : undefined;
+      const clientName =
+        client?.company_name ||
+        [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
+        null;
+      return {
+        id: interaction.id,
+        client_name: clientName,
+        interaction_type: interaction.interactionType,
+        subject: interaction.subject,
+        description: interaction.description,
+        interaction_date: interaction.interactionDate,
+        follow_up_date: interaction.followUpDate,
+        follow_up_completed: interaction.followUpCompleted,
+      };
+    }
+  );
 
   return (
     <PageCanvas>
@@ -162,7 +164,7 @@ const CrmCommunicationsPage = async () => {
         <Card tone="canvas">
           <CardContent className="space-y-4 pt-6">
             {interactions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No communications recorded yet
               </p>
             ) : (
@@ -183,8 +185,8 @@ const CrmCommunicationsPage = async () => {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold">{client}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-semibold text-sm">{client}</p>
+                        <p className="text-muted-foreground text-xs">
                           {channel}
                         </p>
                       </div>
@@ -192,10 +194,10 @@ const CrmCommunicationsPage = async () => {
                         {status}
                       </Badge>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 text-muted-foreground text-sm">
                       {summary}
                     </p>
-                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
                       {time}
                     </p>
                   </div>

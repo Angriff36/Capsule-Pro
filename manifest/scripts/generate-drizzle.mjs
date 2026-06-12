@@ -17,8 +17,8 @@
  * Output: manifest/generated/drizzle/schema.ts
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -35,8 +35,15 @@ const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 // Drizzle projection is exported at @angriff36/manifest/projections/drizzle.
 // On Windows, dynamic import requires a file:// URL.
 const generatorPath = join(
-  root, "node_modules", "@angriff36", "manifest",
-  "dist", "manifest", "projections", "drizzle", "generator.js"
+  root,
+  "node_modules",
+  "@angriff36",
+  "manifest",
+  "dist",
+  "manifest",
+  "projections",
+  "drizzle",
+  "generator.js"
 );
 const generatorUrl = import.meta.resolve(
   `file://${generatorPath.replace(/\\/g, "/")}`
@@ -70,7 +77,9 @@ for (const d of result.diagnostics || []) {
 }
 
 if (errors.length > 0) {
-  console.error(`\n[drizzle] ${errors.length} error(s) — some entities may have been skipped.`);
+  console.error(
+    `\n[drizzle] ${errors.length} error(s) — some entities may have been skipped.`
+  );
 }
 
 // ── Write output ──
@@ -84,12 +93,19 @@ const code = result.artifacts[0].code;
 writeFileSync(OUT_FILE, code);
 
 // ── Summary ──
-const tableCount = (code.match(/^export const \w+ = pgTable\("/gm) || []).length;
-const relationsCount = (code.match(/^export const \w+Relations = relations\(/gm) || []).length;
+const tableCount = (code.match(/^export const \w+ = pgTable\("/gm) || [])
+  .length;
+const relationsCount = (
+  code.match(/^export const \w+Relations = relations\(/gm) || []
+).length;
 const indexCount = (code.match(/^export const \w+ = index\(/gm) || []).length;
 const lineCount = code.split("\n").length;
 
-console.log(`\n[drizzle] Generated: ${tableCount} table defs, ${relationsCount} relation defs, ${indexCount} index defs`);
+console.log(
+  `\n[drizzle] Generated: ${tableCount} table defs, ${relationsCount} relation defs, ${indexCount} index defs`
+);
 console.log(`[drizzle] Total lines: ${lineCount}`);
-console.log(`[drizzle] Diagnostics: ${errors.length} errors, ${warnings.length} warnings, ${info.length} info (skipped entities)`);
+console.log(
+  `[drizzle] Diagnostics: ${errors.length} errors, ${warnings.length} warnings, ${info.length} info (skipped entities)`
+);
 console.log(`[drizzle] Output: ${OUT_FILE}`);

@@ -6,22 +6,22 @@ import { invariant } from "@/app/lib/invariant";
 const { logger, captureException } = Sentry;
 
 interface WasteTrendsSummary {
-  totalCost: number;
-  totalQuantity: number;
-  totalEntries: number;
   avgCostPerEntry: number;
+  endDate: string;
   period: string;
   startDate: string;
-  endDate: string;
+  totalCost: number;
+  totalEntries: number;
+  totalQuantity: number;
 }
 
 interface WasteTopReason {
+  cost: number;
+  count: number;
   reason: {
     id: number;
     name: string;
   };
-  count: number;
-  cost: number;
 }
 
 interface WasteReductionOpportunity {
@@ -30,30 +30,30 @@ interface WasteReductionOpportunity {
 }
 
 export interface WasteTrendsData {
+  reductionOpportunities: WasteReductionOpportunity[];
   summary: WasteTrendsSummary;
   topReasons: WasteTopReason[];
-  reductionOpportunities: WasteReductionOpportunity[];
 }
 
 interface WasteReportSummary {
+  avgCostPerEntry: number;
+  entryCount: number;
   totalCost: number;
   totalQuantity: number;
-  entryCount: number;
-  avgCostPerEntry: number;
 }
 
 interface WasteReportRow {
-  key: string;
-  label: string;
-  count: number;
-  totalCost: number;
   avgCostPerEntry: number;
   avgQuantityPerEntry: number;
+  count: number;
+  key: string;
+  label: string;
+  totalCost: number;
 }
 
 export interface WasteReportData {
-  summary: WasteReportSummary;
   data: WasteReportRow[];
+  summary: WasteReportSummary;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

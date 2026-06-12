@@ -13,30 +13,30 @@ type RouteParams = Promise<{
 }>;
 
 interface ClientSelect {
-  id: true;
-  company_name: true;
-  first_name: true;
-  last_name: true;
-  email: true;
-  phone: true;
   addressLine1: true;
   addressLine2: true;
   city: true;
-  stateProvince: true;
-  postalCode: true;
+  company_name: true;
   countryCode: true;
+  email: true;
+  first_name: true;
+  id: true;
+  last_name: true;
+  phone: true;
+  postalCode: true;
+  stateProvince: true;
 }
 
 interface LeadSelect {
-  id: true;
   companyName: true;
-  contactName: true;
   contactEmail: true;
+  contactName: true;
   contactPhone: true;
-  eventType: true;
-  eventDate: true;
   estimatedGuests: true;
   estimatedValue: true;
+  eventDate: true;
+  eventType: true;
+  id: true;
 }
 
 /**
@@ -123,48 +123,38 @@ function fetchUser(
 }
 
 interface ProposalClient {
-  id: string;
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  phone: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  stateProvince: string | null;
-  postalCode: string | null;
+  company_name: string | null;
   countryCode: string | null;
+  email: string | null;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
+  phone: string | null;
+  postalCode: string | null;
+  stateProvince: string | null;
 }
 
 interface ProposalLead {
-  id: string;
   companyName: string | null;
-  contactName: string | null;
   contactEmail: string | null;
+  contactName: string | null;
   contactPhone: string | null;
-  eventType: string | null;
-  eventDate: Date | null;
   estimatedGuests: number | null;
   estimatedValue: unknown;
+  eventDate: Date | null;
+  eventType: string | null;
+  id: string;
 }
 
 interface ProposalEvent {
-  id: string;
-  title: string;
-  eventNumber: string | number | null;
   eventDate: Date | null;
+  eventNumber: string | number | null;
   eventType: string | null;
   guestCount: number | null;
-  venue: {
-    name: string | null;
-    addressLine1: string | null;
-    addressLine2: string | null;
-    city: string | null;
-    stateProvince: string | null;
-    postalCode: string | null;
-    countryCode: string | null;
-  } | null;
+  id: string;
   location: {
     name: string | null;
     addressLine1: string | null;
@@ -174,15 +164,25 @@ interface ProposalEvent {
     postalCode: string | null;
     countryCode: string | null;
   } | null;
-  venueName: string | null;
-  venueAddress: string | null;
   status: string;
+  title: string;
+  venue: {
+    name: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    stateProvince: string | null;
+    postalCode: string | null;
+    countryCode: string | null;
+  } | null;
+  venueAddress: string | null;
+  venueName: string | null;
 }
 
 interface ProposalUser {
+  email: string | null;
   firstName: string | null;
   lastName: string | null;
-  email: string | null;
 }
 
 /**

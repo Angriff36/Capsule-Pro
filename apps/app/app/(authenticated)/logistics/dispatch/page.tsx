@@ -42,27 +42,27 @@ import { logisticsDispatchAssign } from "@/app/lib/manifest-client.generated";
 
 interface RouteStop {
   id: string;
-  stopNumber: number;
   name: string;
   status: string;
+  stopNumber: number;
 }
 
 interface DispatchRoute {
-  id: string;
-  routeNumber: string;
-  name: string;
-  status: string;
   dispatchStatus: string;
-  scheduledDate: string | null;
-  totalDistance: string | null;
-  totalDuration: number | null;
   driverId: string | null;
   driverName: string | null;
   driverPhone: string | null;
+  id: string;
+  name: string;
+  routeNumber: string;
+  scheduledDate: string | null;
+  status: string;
+  stopCount: number;
+  stops: RouteStop[];
+  totalDistance: string | null;
+  totalDuration: number | null;
   vehicleId: string | null;
   vehicleName: string | null;
-  stops: RouteStop[];
-  stopCount: number;
 }
 
 interface AvailableDriver {
@@ -73,8 +73,8 @@ interface AvailableDriver {
 }
 
 interface DispatchData {
-  routes: DispatchRoute[];
   availableDrivers: AvailableDriver[];
+  routes: DispatchRoute[];
   stats: {
     unassigned: number;
     assigned: number;
@@ -150,13 +150,18 @@ export default function DispatchPage() {
   };
 
   const handleAssign = async () => {
-    if (!selectedRoute) return;
+    if (!selectedRoute) {
+      return;
+    }
 
     setAssigning(true);
     try {
       await logisticsDispatchAssign({
         routeId: selectedRoute.id,
-        driverId: selectedDriverId === "__none__" ? undefined : selectedDriverId || undefined,
+        driverId:
+          selectedDriverId === "__none__"
+            ? undefined
+            : selectedDriverId || undefined,
       });
       await loadData();
       setShowAssignDialog(false);
@@ -168,7 +173,9 @@ export default function DispatchPage() {
   };
 
   const formatDuration = (minutes: number | null) => {
-    if (!minutes) return "--";
+    if (!minutes) {
+      return "--";
+    }
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -215,7 +222,7 @@ export default function DispatchPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Dispatch Board
           </h1>
           <p className="text-muted-foreground">
@@ -223,7 +230,7 @@ export default function DispatchPage() {
           </p>
         </div>
         <Button onClick={loadData} variant="outline">
-          <Navigation className="h-4 w-4 mr-2" />
+          <Navigation className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
@@ -240,11 +247,11 @@ export default function DispatchPage() {
         ).map(([key, label, Icon]) => (
           <Card key={key} tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{label}</CardTitle>
+              <CardTitle className="font-medium text-sm">{label}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="font-bold text-2xl">
                 {key === "inProgress"
                   ? data.stats.inProgress
                   : data.stats[key as keyof typeof data.stats]}
@@ -262,31 +269,33 @@ export default function DispatchPage() {
             (status) => {
               const config = DISPATCH_STATUS_CONFIG[status];
               const routes = groupedRoutes[status];
-              if (routes.length === 0) return null;
+              if (routes.length === 0) {
+                return null;
+              }
 
               return (
                 <div key={status}>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="mb-3 flex items-center gap-2">
                     <Badge className={config.color}>
-                      <config.icon className="h-3 w-3 mr-1" />
+                      <config.icon className="mr-1 h-3 w-3" />
                       {config.label}
                     </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {routes.length} route{routes.length !== 1 ? "s" : ""}
+                    <span className="text-muted-foreground text-sm">
+                      {routes.length} route{routes.length === 1 ? "" : "s"}
                     </span>
                   </div>
 
                   <div className="space-y-3">
                     {routes.map((route) => (
                       <Card
-                        className="hover:border-primary/40 transition-shadow"
+                        className="transition-shadow hover:border-primary/40"
                         key={route.id}
                         tone="canvas"
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                            <div className="min-w-0 flex-1">
+                              <div className="mb-1 flex items-center gap-2">
                                 <span className="font-semibold">
                                   {route.routeNumber}
                                 </span>
@@ -294,7 +303,7 @@ export default function DispatchPage() {
                                 <span className="truncate">{route.name}</span>
                               </div>
 
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                              <div className="mb-2 flex items-center gap-4 text-muted-foreground text-sm">
                                 {route.scheduledDate && (
                                   <span className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
@@ -306,7 +315,7 @@ export default function DispatchPage() {
                                 <span className="flex items-center gap-1">
                                   <Route className="h-3 w-3" />
                                   {route.stopCount} stop
-                                  {route.stopCount !== 1 ? "s" : ""}
+                                  {route.stopCount === 1 ? "" : "s"}
                                 </span>
                                 {route.totalDuration && (
                                   <span>
@@ -337,7 +346,7 @@ export default function DispatchPage() {
                                 <div className="mt-2 flex flex-wrap gap-1">
                                   {route.stops.slice(0, 3).map((stop) => (
                                     <span
-                                      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-muted"
+                                      className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
                                       key={stop.id}
                                     >
                                       <MapPin className="h-2.5 w-2.5" />
@@ -345,7 +354,7 @@ export default function DispatchPage() {
                                     </span>
                                   ))}
                                   {route.stopCount > 3 && (
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-muted-foreground text-xs">
                                       +{route.stopCount - 3} more
                                     </span>
                                   )}
@@ -373,7 +382,7 @@ export default function DispatchPage() {
           {data.routes.length === 0 && (
             <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
-                <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <Truck className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No routes scheduled for today.</p>
                 <p className="text-sm">
                   Create routes in the Routes section to dispatch them.
@@ -394,7 +403,7 @@ export default function DispatchPage() {
             </CardHeader>
             <CardContent className="p-0">
               {data.availableDrivers.length === 0 ? (
-                <div className="px-6 pb-4 text-sm text-muted-foreground">
+                <div className="px-6 pb-4 text-muted-foreground text-sm">
                   No drivers currently available
                 </div>
               ) : (
@@ -402,18 +411,18 @@ export default function DispatchPage() {
                   <div className="space-y-1 px-2 pb-2">
                     {data.availableDrivers.map((driver) => (
                       <div
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
+                        className="flex items-center gap-3 rounded-lg p-2 hover:bg-muted/50"
                         key={driver.id}
                       >
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-foreground dark:bg-muted/50">
                           <User className="h-4 w-4" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-medium text-sm">
                             {driver.name}
                           </div>
                           {driver.vehicle_name && (
-                            <div className="text-xs text-muted-foreground truncate">
+                            <div className="truncate text-muted-foreground text-xs">
                               {driver.vehicle_name}
                             </div>
                           )}
@@ -446,7 +455,7 @@ export default function DispatchPage() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Select Driver</label>
+              <label className="font-medium text-sm">Select Driver</label>
               <Select
                 onValueChange={setSelectedDriverId}
                 value={selectedDriverId}
@@ -467,7 +476,7 @@ export default function DispatchPage() {
             </div>
 
             {selectedDriverId === "__none__" && selectedRoute?.driverId && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 This will remove the current driver assignment.
               </p>
             )}
@@ -482,7 +491,7 @@ export default function DispatchPage() {
             </Button>
             <Button disabled={assigning} onClick={handleAssign}>
               {assigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {selectedDriverId !== "__none__" ? "Assign" : "Unassign"}
+              {selectedDriverId === "__none__" ? "Unassign" : "Assign"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -23,11 +23,11 @@ const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
 
 interface Finding {
   code: string;
-  severity: "error" | "warning" | "info";
-  message: string;
+  evidence?: string;
   file: string;
   line?: number;
-  evidence?: string;
+  message: string;
+  severity: "error" | "warning" | "info";
   suggestion?: string;
 }
 
@@ -119,9 +119,9 @@ function scanDirectory(
 }
 
 interface PatternConfig {
-  pattern: RegExp;
   code: string;
   message: string;
+  pattern: RegExp;
   severity: "error" | "warning" | "info";
   suggestion?: string;
 }

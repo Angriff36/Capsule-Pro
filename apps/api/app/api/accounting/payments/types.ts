@@ -54,56 +54,56 @@ export type CardNetwork =
  * Payment type from database
  */
 export interface Payment {
-  tenantId: string;
-  id: string;
   amount: number;
-  currency: string;
-  status: PaymentStatus;
-  methodType: PaymentMethodType;
-  invoiceId: string;
-  eventId: string;
-  clientId: string | null;
-  gatewayTransactionId: string | null;
-  gatewayPaymentMethodId: string | null;
-  processor: string | null;
-  processedAt: Date;
-  completedAt: Date | null;
-  refundedAt: Date | null;
   chargebackAt: Date | null;
-  fraudStatus: FraudStatus;
-  fraudScore: number | null;
+  clientId: string | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  currency: string;
+  deletedAt: Date | null;
+  description: string | null;
+  eventId: string;
   fraudReasons: string[];
+  fraudScore: number | null;
+  fraudStatus: FraudStatus;
+  gatewayPaymentMethodId: string | null;
+  gatewayTransactionId: string | null;
+  id: string;
+  invoiceId: string;
+  methodType: PaymentMethodType;
+  processedAt: Date;
+  processor: string | null;
+  refundedAt: Date | null;
   reviewedAt: Date | null;
   reviewedBy: string | null;
-  description: string | null;
-  createdAt: Date;
+  status: PaymentStatus;
+  tenantId: string;
   updatedAt: Date;
-  deletedAt: Date | null;
 }
 
 /**
  * Create payment request body
  */
 export interface CreatePaymentRequest {
-  invoiceId: string;
-  eventId: string;
   amount: number;
   currency?: string;
+  description?: string;
+  eventId: string;
+  invoiceId: string;
   methodType: PaymentMethodType;
   paymentMethodId?: string;
-  description?: string;
 }
 
 /**
  * Process payment request body
  */
 export interface ProcessPaymentRequest {
+  completedAt?: string; // ISO date string
   gatewayResponse: {
     code: string;
     message: string;
     transactionId: string;
   };
-  completedAt?: string; // ISO date string
 }
 
 /**
@@ -118,9 +118,9 @@ export interface RefundPaymentRequest {
  * Update fraud status request body
  */
 export interface UpdateFraudStatusRequest {
-  status: FraudStatus;
-  score: number;
   reasons: string[];
+  score: number;
+  status: FraudStatus;
 }
 
 /**
@@ -135,18 +135,18 @@ export interface FraudReviewRequest {
  * Payment list item with minimal data for listing
  */
 export interface PaymentListItem {
-  id: string;
   amount: number;
-  currency: string;
-  status: PaymentStatus;
-  methodType: PaymentMethodType;
-  invoiceId: string;
-  eventId: string;
   clientName: string | null;
-  eventName: string | null;
-  processedAt: Date;
   completedAt: Date | null;
+  currency: string;
+  eventId: string;
+  eventName: string | null;
   fraudStatus: FraudStatus;
+  id: string;
+  invoiceId: string;
+  methodType: PaymentMethodType;
+  processedAt: Date;
+  status: PaymentStatus;
 }
 
 /**
@@ -189,17 +189,17 @@ export type PaymentResponse = Payment & {
  * Payment filters
  */
 export interface PaymentFilters {
-  search?: string;
-  status?: PaymentStatus;
-  methodType?: PaymentMethodType;
-  fraudStatus?: FraudStatus;
-  invoiceId?: string;
-  eventId?: string;
+  amountFrom?: number;
+  amountTo?: number;
   clientId?: string;
   dateFrom?: string;
   dateTo?: string;
-  amountFrom?: number;
-  amountTo?: number;
+  eventId?: string;
+  fraudStatus?: FraudStatus;
+  invoiceId?: string;
+  methodType?: PaymentMethodType;
+  search?: string;
+  status?: PaymentStatus;
 }
 
 /**
@@ -217,8 +217,8 @@ export type PaymentSortOptions =
  * Sort parameters
  */
 export interface SortParams {
-  sortBy: PaymentSortOptions;
   direction: "asc" | "desc";
+  sortBy: PaymentSortOptions;
 }
 
 /**
@@ -226,36 +226,36 @@ export interface SortParams {
  */
 export interface PaymentListParams {
   filters?: PaymentFilters;
-  sort?: SortParams;
-  page?: number;
   limit?: number;
+  page?: number;
+  sort?: SortParams;
 }
 
 /**
  * Payment statistics
  */
 export interface PaymentStats {
-  total: number;
   byStatus: Record<PaymentStatus, number>;
-  totalAmount: number;
   collectedAmount: number;
+  fraudFlagged: number;
   pendingAmount: number;
   refundAmount: number;
-  fraudFlagged: number;
+  total: number;
+  totalAmount: number;
 }
 
 /**
  * Payment method details for storage
  */
 export interface PaymentMethodDetails {
-  type: PaymentMethodType;
-  cardLastFour?: string;
-  cardNetwork?: CardNetwork;
+  bankAccountLastFour?: string;
+  bankAccountType?: string;
   cardExpiryMonth?: number;
   cardExpiryYear?: number;
   cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  walletProvider?: string;
+  cardLastFour?: string;
+  cardNetwork?: CardNetwork;
+  type: PaymentMethodType;
   walletEmail?: string;
+  walletProvider?: string;
 }

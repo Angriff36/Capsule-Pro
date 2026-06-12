@@ -12,10 +12,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 /** Resolved identity for the current MCP session. */
 export interface McpIdentity {
-  userId: string;
-  tenantId: string;
-  roles: string[];
   mode: "service-account" | "user-delegated";
+  roles: string[];
+  tenantId: string;
+  userId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -39,12 +39,12 @@ export type TransportMode = "stdio" | "http";
 
 /** Context available to all plugins during registration. */
 export interface PluginContext {
-  /** The MCP server instance to register tools/resources on. */
-  server: McpServer;
   /** Resolved identity for the current session. */
   identity: McpIdentity;
   /** Server trust level. */
   mode: ServerMode;
+  /** The MCP server instance to register tools/resources on. */
+  server: McpServer;
 }
 
 /**
@@ -56,10 +56,10 @@ export interface PluginContext {
 export interface McpPlugin {
   /** Unique plugin name. */
   name: string;
-  /** Semantic version. */
-  version: string;
   /** Register tools/resources on the server. */
   register(ctx: PluginContext): void | Promise<void>;
+  /** Semantic version. */
+  version: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,6 +68,13 @@ export interface McpPlugin {
 
 /** Minimal IR entity shape for MCP tool responses. */
 export interface IrEntitySummary {
+  commands: string[];
+  computedProperties: string[];
+  constraints: Array<{
+    name: string;
+    severity: string;
+    message: string;
+  }>;
   name: string;
   properties: Array<{
     name: string;
@@ -75,32 +82,25 @@ export interface IrEntitySummary {
     required: boolean;
     nullable: boolean;
   }>;
-  computedProperties: string[];
-  commands: string[];
-  constraints: Array<{
-    name: string;
-    severity: string;
-    message: string;
-  }>;
 }
 
 /** Minimal IR command shape for MCP tool responses. */
 export interface IrCommandSummary {
-  name: string;
-  entity: string;
-  parameters: Array<{
-    name: string;
-    type: string;
-    required: boolean;
-  }>;
-  guards: Array<{
-    expression: string;
-    message: string;
-  }>;
   constraints: Array<{
     name: string;
     severity: string;
     message: string;
   }>;
   emits: string[];
+  entity: string;
+  guards: Array<{
+    expression: string;
+    message: string;
+  }>;
+  name: string;
+  parameters: Array<{
+    name: string;
+    type: string;
+    required: boolean;
+  }>;
 }

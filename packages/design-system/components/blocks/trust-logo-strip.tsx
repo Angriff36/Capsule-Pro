@@ -14,9 +14,9 @@ import type { ReactNode } from "react";
  * uses ("Trusted by"), in mono-label type.
  */
 export interface TrustLogo {
+  href?: string;
   name: string;
   node?: ReactNode;
-  href?: string;
 }
 
 type LinkComponent = (props: {
@@ -32,10 +32,10 @@ const DefaultLink: LinkComponent = ({ href, className, children }) => (
 );
 
 export interface TrustLogoStripProps {
-  eyebrow?: ReactNode;
-  logos: TrustLogo[];
-  linkComponent?: LinkComponent;
   className?: string;
+  eyebrow?: ReactNode;
+  linkComponent?: LinkComponent;
+  logos: TrustLogo[];
 }
 
 export function TrustLogoStrip({

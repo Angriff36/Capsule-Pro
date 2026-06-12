@@ -17,17 +17,8 @@ const OUT_DIR = "manifest/governance";
 
 const result = spawnSync(
   "pnpm",
-  [
-    "exec",
-    "manifest",
-    "emit",
-    "registries",
-    "--ir",
-    IR_PATH,
-    "--out",
-    OUT_DIR,
-  ],
-  { cwd: REPO_ROOT, stdio: "inherit", shell: true },
+  ["exec", "manifest", "emit", "registries", "--ir", IR_PATH, "--out", OUT_DIR],
+  { cwd: REPO_ROOT, stdio: "inherit", shell: true }
 );
 
 process.exit(result.status ?? 1);

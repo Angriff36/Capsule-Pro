@@ -11,11 +11,13 @@ let _missingLogged = false;
  * In development, we log once and return null so callers can fall back.
  */
 function getRedis(): Redis | null {
-  if (_redis) return _redis;
+  if (_redis) {
+    return _redis;
+  }
 
   const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } = keys();
 
-  if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
+  if (!(UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN)) {
     if (!_missingLogged) {
       _missingLogged = true;
       // eslint-disable-next-line no-console

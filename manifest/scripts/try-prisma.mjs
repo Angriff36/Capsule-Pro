@@ -16,9 +16,9 @@
  * and how far it is from the committed schema, so the per-entity migration (see
  * manifest/task_plan.md "Pilot") is concrete instead of guesswork.
  */
-import { readFileSync, existsSync } from "node:fs";
-import { pathToFileURL } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const repoRoot = resolve(process.cwd());
 const IR_PATH = resolve(repoRoot, "manifest/ir/kitchen.ir.json");
@@ -37,7 +37,9 @@ function fail(msg) {
   process.exit(1);
 }
 
-if (!existsSync(IR_PATH)) fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:compile' first.`);
+if (!existsSync(IR_PATH)) {
+  fail(`IR not found at ${IR_PATH}. Run 'pnpm manifest:compile' first.`);
+}
 if (!existsSync(PKG_PRISMA_INDEX)) {
   fail(
     `@angriff36/manifest Prisma projection not found at ${PKG_PRISMA_INDEX}. Is the package installed in manifest/runtime?`
@@ -49,19 +51,28 @@ const { PrismaProjection } = await import(pathToFileURL(PKG_PRISMA_INDEX).href);
 
 let result;
 try {
-  result = new PrismaProjection().generate(ir, { surface: "prisma.schema", options: {} });
+  result = new PrismaProjection().generate(ir, {
+    surface: "prisma.schema",
+    options: {},
+  });
 } catch (e) {
-  fail(`projection threw: ${e?.message}\n${(e?.stack || "").split("\n").slice(0, 6).join("\n")}`);
+  fail(
+    `projection threw: ${e?.message}\n${(e?.stack || "").split("\n").slice(0, 6).join("\n")}`
+  );
 }
 
 const artifacts = result.artifacts || [];
 const diagnostics = result.diagnostics || [];
 const schemaArtifact = artifacts.find(
-  (a) => (a.id || "").includes("prisma") || (a.pathHint || "").includes("schema")
+  (a) =>
+    (a.id || "").includes("prisma") || (a.pathHint || "").includes("schema")
 );
-const generated = (schemaArtifact && (schemaArtifact.code || schemaArtifact.content)) || "";
+const generated =
+  (schemaArtifact && (schemaArtifact.code || schemaArtifact.content)) || "";
 
-const emittedModels = (generated.match(/^model (\w+)/gm) || []).map((m) => m.slice(6));
+const emittedModels = (generated.match(/^model (\w+)/gm) || []).map((m) =>
+  m.slice(6)
+);
 const storeTarget = (name) => {
   const s = (ir.stores || []).find((x) => x.entity === name || x.name === name);
   return s ? s.target || s.kind || "?" : "<no-store>";
@@ -84,14 +95,26 @@ if (!entityArg) {
   const storeCount = (ir.stores || []).length;
   console.log("=== try-prisma summary ===");
   console.log(`IR entities: ${entityCount} | store entries: ${storeCount}`);
-  console.log(`store target distribution: ${JSON.stringify(dist)} (+${entityCount - storeCount} entities with no store entry)`);
-  console.log(`\nmodels the Prisma projection emits TODAY (${emittedModels.length}):`);
+  console.log(
+    `store target distribution: ${JSON.stringify(dist)} (+${entityCount - storeCount} entities with no store entry)`
+  );
+  console.log(
+    `\nmodels the Prisma projection emits TODAY (${emittedModels.length}):`
+  );
   console.log(`  ${emittedModels.join(", ")}`);
   const skipCodes = {};
-  for (const d of diagnostics) skipCodes[d.code] = (skipCodes[d.code] || 0) + 1;
-  console.log(`\ndiagnostics (${diagnostics.length}): ${JSON.stringify(skipCodes)}`);
-  console.log(`\nTip: 'pnpm manifest:try-prisma <Entity>' to inspect one entity.`);
-  console.log(`To make a memory entity emit a model, flip its source 'store X in memory' -> 'durable' and recompile.`);
+  for (const d of diagnostics) {
+    skipCodes[d.code] = (skipCodes[d.code] || 0) + 1;
+  }
+  console.log(
+    `\ndiagnostics (${diagnostics.length}): ${JSON.stringify(skipCodes)}`
+  );
+  console.log(
+    `\nTip: 'pnpm manifest:try-prisma <Entity>' to inspect one entity.`
+  );
+  console.log(
+    `To make a memory entity emit a model, flip its source 'store X in memory' -> 'durable' and recompile.`
+  );
   process.exit(0);
 }
 
@@ -102,25 +125,35 @@ if (!entity) {
     .map((e) => e.name)
     .filter((n) => n.toLowerCase().includes(entityArg.toLowerCase()))
     .slice(0, 10);
-  fail(`entity '${entityArg}' not found in IR.${near.length ? ` Did you mean: ${near.join(", ")}?` : ""}`);
+  fail(
+    `entity '${entityArg}' not found in IR.${near.length ? ` Did you mean: ${near.join(", ")}?` : ""}`
+  );
 }
 
 console.log(`=== try-prisma: ${entityArg} ===`);
 console.log(`store target: ${storeTarget(entityArg)}`);
-console.log(`IR: ${(entity.properties || []).length} properties, ${(entity.relationships || []).length} relationships`);
+console.log(
+  `IR: ${(entity.properties || []).length} properties, ${(entity.relationships || []).length} relationships`
+);
 
 const entityDiags = diagnostics.filter((d) => d.entity === entityArg);
 if (entityDiags.length) {
   console.log(`\ndiagnostics for ${entityArg}:`);
-  for (const d of entityDiags) console.log(`  [${d.severity}] ${d.code}: ${d.message}`);
+  for (const d of entityDiags) {
+    console.log(`  [${d.severity}] ${d.code}: ${d.message}`);
+  }
 }
 
 if (flags.has("--full")) {
-  console.log(`\nIR properties:`);
+  console.log("\nIR properties:");
   for (const p of entity.properties || []) {
-    console.log(`  ${p.name}: ${p.type?.name}${p.type?.nullable ? "?" : ""}${(p.modifiers || []).length ? ` [${p.modifiers.join(",")}]` : ""}`);
+    console.log(
+      `  ${p.name}: ${p.type?.name}${p.type?.nullable ? "?" : ""}${(p.modifiers || []).length ? ` [${p.modifiers.join(",")}]` : ""}`
+    );
   }
-  console.log(`relationships: ${JSON.stringify((entity.relationships || []).map((r) => `${r.kind || r.type}->${r.target || r.entity}`))}`);
+  console.log(
+    `relationships: ${JSON.stringify((entity.relationships || []).map((r) => `${r.kind || r.type}->${r.target || r.entity}`))}`
+  );
 }
 
 const genModel = extractModel(generated, entityArg);
@@ -132,13 +165,18 @@ console.log(
 
 if (existsSync(SCHEMA_PATH)) {
   const committed = extractModel(readFileSync(SCHEMA_PATH, "utf8"), entityArg);
-  console.log(`\n--- COMMITTED model ${entityArg} (packages/database/prisma/schema.prisma) ---`);
-  console.log(committed || `[no 'model ${entityArg}' in schema.prisma — name may differ (drift!) or table is hand-named differently]`);
+  console.log(
+    `\n--- COMMITTED model ${entityArg} (packages/database/prisma/schema.prisma) ---`
+  );
+  console.log(
+    committed ||
+      `[no 'model ${entityArg}' in schema.prisma — name may differ (drift!) or table is hand-named differently]`
+  );
   if (genModel && committed) {
     console.log(
-      `\nGap to close with PrismaProjectionOptions: compare the two blocks above. Typical deltas:` +
-        ` @@map (tableMappings), @map snake_case columns (columnMappings), @db.Decimal(p,s) (precision),` +
-        ` composite @@id / @@index (indexes), relation/FK fields (foreignKeys).`
+      "\nGap to close with PrismaProjectionOptions: compare the two blocks above. Typical deltas:" +
+        " @@map (tableMappings), @map snake_case columns (columnMappings), @db.Decimal(p,s) (precision)," +
+        " composite @@id / @@index (indexes), relation/FK fields (foreignKeys)."
     );
   }
 }

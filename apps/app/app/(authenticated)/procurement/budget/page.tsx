@@ -53,8 +53,8 @@ import {
   budgetCreate,
   budgetRefresh,
   budgetRemove,
-  listProcurementBudgets,
   getProcurementBudget,
+  listProcurementBudgets,
 } from "@/app/lib/manifest-client.generated";
 import {
   type Budget,
@@ -132,7 +132,9 @@ export default function BudgetPage() {
       await budgetRefresh({});
       await loadBudgets();
       // Also refresh detail if open
-      if (selectedBudget) loadDetail(selectedBudget);
+      if (selectedBudget) {
+        loadDetail(selectedBudget);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to refresh");
     } finally {
@@ -141,7 +143,9 @@ export default function BudgetPage() {
   };
 
   const handleCreate = async () => {
-    if (!(form.name.trim() && form.budgetAmount)) return;
+    if (!(form.name.trim() && form.budgetAmount)) {
+      return;
+    }
     setSaving(true);
     try {
       await budgetCreate({
@@ -164,7 +168,9 @@ export default function BudgetPage() {
       });
       loadBudgets();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create budget"
+      );
     } finally {
       setSaving(false);
     }
@@ -176,7 +182,9 @@ export default function BudgetPage() {
   };
 
   const confirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     try {
       await budgetRemove({ id: deleteTarget.id });
       if (selectedBudget === deleteTarget.id) {
@@ -185,7 +193,9 @@ export default function BudgetPage() {
       }
       loadBudgets();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete budget");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete budget"
+      );
     } finally {
       setDeleteTarget(null);
     }
@@ -199,9 +209,16 @@ export default function BudgetPage() {
       if (data) {
         const raw = data as unknown as Record<string, unknown>;
         setDetailData({
-          spend: (raw.spend ?? (raw.data as Record<string, unknown>)?.spend) as BudgetSpend,
-          alerts: ((raw.alerts ?? (raw.data as Record<string, unknown>)?.alerts) as BudgetAlert[]) || [],
-          monthlyBreakdown: ((raw.monthlyBreakdown ?? (raw.data as Record<string, unknown>)?.monthlyBreakdown) as MonthlyBreakdown[]) || [],
+          spend: (raw.spend ??
+            (raw.data as Record<string, unknown>)?.spend) as BudgetSpend,
+          alerts:
+            ((raw.alerts ??
+              (raw.data as Record<string, unknown>)
+                ?.alerts) as BudgetAlert[]) || [],
+          monthlyBreakdown:
+            ((raw.monthlyBreakdown ??
+              (raw.data as Record<string, unknown>)
+                ?.monthlyBreakdown) as MonthlyBreakdown[]) || [],
         });
       }
     } catch (error) {
@@ -212,7 +229,9 @@ export default function BudgetPage() {
   };
 
   const filtered = useMemo(() => {
-    if (!searchQuery) return budgets;
+    if (!searchQuery) {
+      return budgets;
+    }
     const q = searchQuery.toLowerCase();
     return budgets.filter(
       (b) =>
@@ -256,7 +275,7 @@ export default function BudgetPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Budget Tracking
           </h1>
           <p className="text-muted-foreground">
@@ -270,14 +289,14 @@ export default function BudgetPage() {
             variant="outline"
           >
             <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
             />
             Refresh Spend
           </Button>
           <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add Budget
               </Button>
             </DialogTrigger>
@@ -435,7 +454,7 @@ export default function BudgetPage() {
                     onClick={handleCreate}
                   >
                     {saving && (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Create Budget
                   </Button>
@@ -450,28 +469,28 @@ export default function BudgetPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Budget</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(totalBudget)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {budgets.length} active budget{budgets.length !== 1 ? "s" : ""}
+            <p className="text-muted-foreground text-xs">
+              {budgets.length} active budget{budgets.length === 1 ? "" : "s"}
             </p>
           </CardContent>
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Spent</CardTitle>
             <PieChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {formatCurrency(totalSpent)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalBudget > 0
                 ? `${Math.round((totalSpent / totalBudget) * 100)}% of total budget`
                 : "—"}
@@ -480,12 +499,12 @@ export default function BudgetPage() {
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+            <CardTitle className="font-medium text-sm">Remaining</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-600" : ""}`}
+              className={`font-bold text-2xl ${totalBudget - totalSpent < 0 ? "text-red-600" : ""}`}
             >
               {formatCurrency(totalBudget - totalSpent)}
             </div>
@@ -493,18 +512,18 @@ export default function BudgetPage() {
         </Card>
         <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alerts</CardTitle>
+            <CardTitle className="font-medium text-sm">Alerts</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {totalAlerts > 0 ? (
                 <span className="text-red-600">{totalAlerts}</span>
               ) : (
                 <span className="text-green-600">0</span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {overBudgetCount > 0
                 ? `${overBudgetCount} over budget`
                 : "All within limits"}
@@ -515,7 +534,7 @@ export default function BudgetPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-10"
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -533,7 +552,7 @@ export default function BudgetPage() {
           {filtered.length === 0 ? (
             <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
-                <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <DollarSign className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>
                   {budgets.length === 0
                     ? "No budgets yet. Create your first budget to start tracking spend."
@@ -551,13 +570,13 @@ export default function BudgetPage() {
 
               return (
                 <Card
-                  className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 border-primary" : "hover:border-primary/40"}`}
+                  className={`cursor-pointer transition-all ${isSelected ? "border-primary ring-2 ring-blue-500" : "hover:border-primary/40"}`}
                   key={budget.id}
                   onClick={() => loadDetail(budget.id)}
                   tone="canvas"
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="mb-2 flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">{budget.name}</span>
@@ -565,7 +584,7 @@ export default function BudgetPage() {
                             {budget.status}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                        <div className="mt-1 flex items-center gap-2 text-muted-foreground text-sm">
                           {budget.category && (
                             <Badge className="text-xs" variant="outline">
                               {budget.category}
@@ -576,12 +595,12 @@ export default function BudgetPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         {budget.unacknowledged_alert_count > 0 && (
-                          <span className="flex items-center justify-center h-5 w-5 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 font-medium text-red-700 text-xs">
                             {budget.unacknowledged_alert_count}
                           </span>
                         )}
                         <Button
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
+                          className="h-7 w-7 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                           onClick={(e) => handleDelete(budget, e)}
                           size="sm"
                           variant="ghost"
@@ -598,7 +617,7 @@ export default function BudgetPage() {
                         pct={pct}
                         warningPct={Number(budget.threshold_warning_pct)}
                       />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div className="mt-1 flex justify-between text-muted-foreground text-xs">
                         <span>{formatCurrency(spent)} spent</span>
                         <span>{formatCurrency(total)} budget</span>
                       </div>
@@ -612,11 +631,11 @@ export default function BudgetPage() {
 
         {/* Detail Panel */}
         {selectedBudget && selectedBudgetObj && (
-          <div className="md:col-span-2 space-y-4">
+          <div className="space-y-4 md:col-span-2">
             {detailLoading ? (
               <Card tone="canvas">
                 <CardContent className="py-12 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
                 </CardContent>
               </Card>
             ) : detailData ? (
@@ -627,7 +646,7 @@ export default function BudgetPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle>{selectedBudgetObj.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {selectedBudgetObj.category
                             ? `${selectedBudgetObj.category} · `
                             : ""}
@@ -660,45 +679,45 @@ export default function BudgetPage() {
                         selectedBudgetObj.threshold_warning_pct
                       )}
                     />
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">Budget</p>
-                        <p className="text-lg font-semibold">
+                        <p className="text-muted-foreground text-xs">Budget</p>
+                        <p className="font-semibold text-lg">
                           {formatCurrency(
                             Number(selectedBudgetObj.budget_amount)
                           )}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Spent</p>
+                        <p className="text-muted-foreground text-xs">Spent</p>
                         <p
-                          className={`text-lg font-semibold ${detailData.spend.utilizationPct >= 100 ? "text-red-600" : ""}`}
+                          className={`font-semibold text-lg ${detailData.spend.utilizationPct >= 100 ? "text-red-600" : ""}`}
                         >
                           {formatCurrency(detailData.spend.totalSpent)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           Committed
                         </p>
-                        <p className="text-lg font-semibold">
+                        <p className="font-semibold text-lg">
                           {formatCurrency(detailData.spend.committed)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           Remaining
                         </p>
                         <p
-                          className={`text-lg font-semibold ${detailData.spend.remaining < 0 ? "text-red-600" : ""}`}
+                          className={`font-semibold text-lg ${detailData.spend.remaining < 0 ? "text-red-600" : ""}`}
                         >
                           {formatCurrency(detailData.spend.remaining)}
                         </p>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="mt-2 text-muted-foreground text-xs">
                       Based on {detailData.spend.poCount} purchase order
-                      {detailData.spend.poCount !== 1 ? "s" : ""}
+                      {detailData.spend.poCount === 1 ? "" : "s"}
                       {selectedBudgetObj.category
                         ? ` in "${selectedBudgetObj.category}" category`
                         : ""}
@@ -736,31 +755,31 @@ export default function BudgetPage() {
                               className="flex items-center gap-3"
                               key={m.month}
                             >
-                              <span className="text-sm text-muted-foreground w-24 shrink-0">
+                              <span className="w-24 shrink-0 text-muted-foreground text-sm">
                                 {monthLabel}
                               </span>
-                              <div className="flex-1 h-6 bg-muted/50 rounded relative overflow-hidden">
+                              <div className="relative h-6 flex-1 overflow-hidden rounded bg-muted/50">
                                 <div
                                   className={`h-full rounded ${monthPct >= 15 ? "bg-blue-500" : "bg-blue-400"}`}
                                   style={{
                                     width: `${Math.min(monthPct * 5, 100)}%`,
                                   }}
                                 />
-                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium">
+                                <span className="absolute top-1/2 left-2 -translate-y-1/2 font-medium text-xs">
                                   {formatCurrency(Number(m.amount))}
                                 </span>
                               </div>
-                              <span className="text-xs text-muted-foreground w-20 text-right">
-                                {m.po_count} PO{m.po_count !== 1 ? "s" : ""}
+                              <span className="w-20 text-right text-muted-foreground text-xs">
+                                {m.po_count} PO{m.po_count === 1 ? "" : "s"}
                               </span>
                             </div>
                           );
                         })}
-                        <div className="flex items-center gap-3 pt-2 border-t">
-                          <span className="text-sm font-medium w-24 shrink-0">
+                        <div className="flex items-center gap-3 border-t pt-2">
+                          <span className="w-24 shrink-0 font-medium text-sm">
                             Total
                           </span>
-                          <div className="flex-1 h-6 bg-muted/50 rounded relative overflow-hidden">
+                          <div className="relative h-6 flex-1 overflow-hidden rounded bg-muted/50">
                             <div
                               className={`h-full rounded ${
                                 detailData.spend.utilizationPct >= 100
@@ -773,17 +792,17 @@ export default function BudgetPage() {
                                 width: `${Math.min(detailData.spend.utilizationPct, 100)}%`,
                               }}
                             />
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium">
+                            <span className="absolute top-1/2 left-2 -translate-y-1/2 font-medium text-xs">
                               {formatCurrency(detailData.spend.totalSpent)}
                             </span>
                           </div>
-                          <span className="text-xs font-medium w-20 text-right">
+                          <span className="w-20 text-right font-medium text-xs">
                             {Math.round(detailData.spend.utilizationPct)}%
                           </span>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground text-center py-6">
+                      <p className="py-6 text-center text-muted-foreground text-sm">
                         No spend data yet for this budget period.
                       </p>
                     )}
@@ -794,7 +813,7 @@ export default function BudgetPage() {
                 {detailData.alerts.length > 0 && (
                   <Card tone="canvas">
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-base">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         Alerts ({detailData.alerts.length})
                       </CardTitle>
@@ -802,23 +821,23 @@ export default function BudgetPage() {
                     <CardContent className="space-y-2">
                       {detailData.alerts.map((alert) => (
                         <div
-                          className={`flex items-start gap-3 p-3 rounded-lg ${
+                          className={`flex items-start gap-3 rounded-lg p-3 ${
                             alert.alert_type === "critical"
-                              ? "bg-red-50 border border-red-200"
-                              : "bg-amber-50 border border-amber-200"
+                              ? "border border-red-200 bg-red-50"
+                              : "border border-amber-200 bg-amber-50"
                           }`}
                           key={alert.id}
                         >
                           <AlertTriangle
-                            className={`h-4 w-4 mt-0.5 shrink-0 ${
+                            className={`mt-0.5 h-4 w-4 shrink-0 ${
                               alert.alert_type === "critical"
                                 ? "text-red-500"
                                 : "text-amber-500"
                             }`}
                           />
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="text-sm">{alert.message}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="mt-1 text-muted-foreground text-xs">
                               {poFormatDate(alert.created_at)} ·{" "}
                               {Number(alert.utilization_pct).toFixed(1)}%
                               utilized
@@ -833,10 +852,10 @@ export default function BudgetPage() {
                 {/* Description & Notes */}
                 {(selectedBudgetObj.description || selectedBudgetObj.notes) && (
                   <Card tone="canvas">
-                    <CardContent className="p-4 space-y-2">
+                    <CardContent className="space-y-2 p-4">
                       {selectedBudgetObj.description && (
                         <div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             Description
                           </p>
                           <p className="text-sm">
@@ -846,7 +865,7 @@ export default function BudgetPage() {
                       )}
                       {selectedBudgetObj.notes && (
                         <div>
-                          <p className="text-xs text-muted-foreground">Notes</p>
+                          <p className="text-muted-foreground text-xs">Notes</p>
                           <p className="text-sm">{selectedBudgetObj.notes}</p>
                         </div>
                       )}
@@ -862,7 +881,9 @@ export default function BudgetPage() {
       {/* Delete Confirmation */}
       <AlertDialog
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         open={!!deleteTarget}
       >

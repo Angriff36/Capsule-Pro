@@ -1,19 +1,19 @@
 export interface PDFConfig {
-  filename?: string;
   author?: string;
-  title?: string;
-  subject?: string;
-  keywords?: string[];
-  creator?: string;
-  producer?: string;
   creationDate?: Date;
+  creator?: string;
+  filename?: string;
+  keywords?: string[];
+  producer?: string;
+  subject?: string;
+  title?: string;
 }
 
 export interface PDFGenerationOptions {
-  size?: "A4" | "LETTER" | "LEGAL";
+  compression?: boolean;
   orientation?: "portrait" | "landscape";
   quality?: "low" | "medium" | "high";
-  compression?: boolean;
+  size?: "A4" | "LETTER" | "LEGAL";
 }
 
 export interface BattleBoardPDFData {
@@ -24,6 +24,22 @@ export interface BattleBoardPDFData {
     venue?: string;
     address?: string;
     clientName?: string;
+  };
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
+  };
+  staff: Array<{
+    id: string;
+    name: string;
+    role?: string;
+    assignments: number;
+  }>;
+  summary: {
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
   };
   tasks: Array<{
     id: string;
@@ -41,25 +57,47 @@ export interface BattleBoardPDFData {
     slackMinutes: number;
     notes?: string;
   }>;
-  summary: {
-    totalTasks: number;
-    completedTasks: number;
-    pendingTasks: number;
+}
+
+export interface ProposalPDFData {
+  branding?: {
+    logoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    fontFamily?: string;
   };
-  staff: Array<{
+  client?: {
+    name: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+  };
+  event?: {
+    name: string;
+    date: Date;
+    guestCount: number;
+    venue?: string;
+  };
+  lead?: {
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  lineItems: Array<{
     id: string;
     name: string;
-    role?: string;
-    assignments: number;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    category?: string;
   }>;
   metadata: {
     generatedAt: Date;
     generatedBy: string;
     version: string;
   };
-}
-
-export interface ProposalPDFData {
   proposal: {
     id: string;
     proposalNumber: string;
@@ -71,47 +109,15 @@ export interface ProposalPDFData {
     notes?: string;
     createdAt: Date;
   };
+}
+
+export interface ContractPDFData {
   client?: {
     name: string;
     email?: string;
     phone?: string;
     address?: string;
   };
-  lead?: {
-    name: string;
-    email?: string;
-    phone?: string;
-  };
-  event?: {
-    name: string;
-    date: Date;
-    guestCount: number;
-    venue?: string;
-  };
-  lineItems: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    category?: string;
-  }>;
-  branding?: {
-    logoUrl?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-    accentColor?: string;
-    fontFamily?: string;
-  };
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
-  };
-}
-
-export interface ContractPDFData {
   contract: {
     id: string;
     title: string;
@@ -126,11 +132,10 @@ export interface ContractPDFData {
     date: Date;
     venue?: string;
   };
-  client?: {
-    name: string;
-    email?: string;
-    phone?: string;
-    address?: string;
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
   };
   signatures: Array<{
     id: string;
@@ -139,14 +144,14 @@ export interface ContractPDFData {
     signedAt: Date;
   }>;
   terms?: string[];
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
-  };
 }
 
 export interface EventDetailPDFData {
+  dishes?: Array<{
+    name: string;
+    servings: number;
+    instructions: string | null;
+  }>;
   event: {
     id: string;
     name: string;
@@ -160,10 +165,21 @@ export interface EventDetailPDFData {
     notes: string | null;
     tags: string[];
   };
-  dishes?: Array<{
+  guests?: Array<{
     name: string;
-    servings: number;
-    instructions: string | null;
+    dietaryRestrictions: string | null;
+    mealChoice: string | null;
+    tableNumber: string | null;
+  }>;
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
+  };
+  staff?: Array<{
+    name: string;
+    role: string | null;
+    assignments: number;
   }>;
   tasks?: Array<{
     title: string;
@@ -174,45 +190,10 @@ export interface EventDetailPDFData {
     priority: string;
     notes: string | null;
   }>;
-  guests?: Array<{
-    name: string;
-    dietaryRestrictions: string | null;
-    mealChoice: string | null;
-    tableNumber: string | null;
-  }>;
-  staff?: Array<{
-    name: string;
-    role: string | null;
-    assignments: number;
-  }>;
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
-  };
 }
 
 export interface PackingListPDFData {
-  shipment: {
-    id: string;
-    shipmentNumber: string;
-    status: string;
-    scheduledDate: Date;
-    shippedDate?: Date;
-    estimatedDeliveryDate?: Date;
-    carrier?: string;
-    trackingNumber?: string;
-    shippingMethod?: string;
-    notes?: string;
-  };
   fromLocation?: {
-    name: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-  };
-  toLocation?: {
     name: string;
     address?: string;
     city?: string;
@@ -233,15 +214,34 @@ export interface PackingListPDFData {
     expirationDate?: Date;
     notes?: string;
   }>;
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
+  };
+  shipment: {
+    id: string;
+    shipmentNumber: string;
+    status: string;
+    scheduledDate: Date;
+    shippedDate?: Date;
+    estimatedDeliveryDate?: Date;
+    carrier?: string;
+    trackingNumber?: string;
+    shippingMethod?: string;
+    notes?: string;
+  };
   summary: {
     totalItems: number;
     totalValue: number;
     weightTotal?: number;
   };
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
+  toLocation?: {
+    name: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
   };
 }
 
@@ -251,6 +251,11 @@ export interface PrepListPDFData {
     title: string;
     eventDate: Date;
     guestCount: number;
+  };
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
   };
   prepList: {
     eventId: string;
@@ -286,11 +291,6 @@ export interface PrepListPDFData {
       }>;
     }>;
   };
-  metadata: {
-    generatedAt: Date;
-    generatedBy: string;
-    version: string;
-  };
 }
 
 export type PDFData =
@@ -302,6 +302,6 @@ export type PDFData =
   | PrepListPDFData;
 
 export interface PDFTemplateProps<T = PDFData> {
-  data: T;
   config?: PDFConfig;
+  data: T;
 }

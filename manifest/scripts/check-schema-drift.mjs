@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * check-schema-drift.mjs -- Phase 3 of the Manifest Automation initiative.
  *
@@ -40,9 +41,9 @@
  *   node manifest/scripts/check-schema-drift.mjs --self-test  # verify diff logic
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
 import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -87,7 +88,9 @@ export function diffText(committed, regenerated) {
   const max = Math.max(a.length, b.length);
   for (let i = 0; i < max; i++) {
     if (a[i] !== b[i]) {
-      if (firstDiffLine === null) firstDiffLine = i + 1; // 1-based
+      if (firstDiffLine === null) {
+        firstDiffLine = i + 1; // 1-based
+      }
       diffLineCount++;
     }
   }
@@ -126,12 +129,18 @@ function runSelfTest() {
   const appended = base + "model B {\n  id String @id\n}\n";
   r = diffText(base, appended);
   assert("append -> inSync=false", r.inSync === false);
-  assert("append -> regeneratedLines>committedLines", r.regeneratedLines > r.committedLines);
+  assert(
+    "append -> regeneratedLines>committedLines",
+    r.regeneratedLines > r.committedLines
+  );
 
   // 4. removed content (length shrinks) -> detected
   r = diffText(appended, base);
   assert("remove -> inSync=false", r.inSync === false);
-  assert("remove -> committedLines>regeneratedLines", r.committedLines > r.regeneratedLines);
+  assert(
+    "remove -> committedLines>regeneratedLines",
+    r.committedLines > r.regeneratedLines
+  );
 
   // 5. empty vs non-empty
   r = diffText("", base);
@@ -149,7 +158,9 @@ function runSelfTest() {
 // Drift-gate mode
 // ---------------------------------------------------------------------------
 function runGate() {
-  console.log("Schema drift gate -- regenerating IR-derived Prisma artifacts...\n");
+  console.log(
+    "Schema drift gate -- regenerating IR-derived Prisma artifacts...\n"
+  );
 
   // Snapshot the committed artifacts so we can restore them no matter what.
   const backups = ARTIFACTS.map((a) => ({
@@ -175,13 +186,15 @@ function runGate() {
       const regenerated = readFileSync(b.path, "utf8");
       const result = diffText(b.committed, regenerated);
       if (result.inSync) {
-        console.log(`  OK    ${b.label} (${result.committedLines} lines, in sync)`);
+        console.log(
+          `  OK    ${b.label} (${result.committedLines} lines, in sync)`
+        );
       } else {
         drift = true;
         console.log(
           `  DRIFT ${b.label} -- first diff at line ${result.firstDiffLine}; ` +
             `${result.diffLineCount} line(s) differ ` +
-            `(committed ${result.committedLines} -> regenerated ${result.regeneratedLines})`,
+            `(committed ${result.committedLines} -> regenerated ${result.regeneratedLines})`
         );
       }
     }
@@ -198,8 +211,12 @@ function runGate() {
 
   console.log("");
   if (drift) {
-    console.error("DRIFT DETECTED. The committed IR-derived schema artifacts are stale.");
-    console.error("Fix: run `pnpm manifest:schema:full` and commit the regenerated files:");
+    console.error(
+      "DRIFT DETECTED. The committed IR-derived schema artifacts are stale."
+    );
+    console.error(
+      "Fix: run `pnpm manifest:schema:full` and commit the regenerated files:"
+    );
     console.error("  - manifest/scripts/prisma-options.generated.json");
     console.error("  - manifest/ir/generated-schema.prisma");
     process.exit(1);

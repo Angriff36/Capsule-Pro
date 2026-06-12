@@ -60,7 +60,9 @@ vi.mock("@repo/email", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireTenantId: vi.fn().mockResolvedValue("00000000-0000-0000-0000-000000000001"),
+  requireTenantId: vi
+    .fn()
+    .mockResolvedValue("00000000-0000-0000-0000-000000000001"),
   resolveCurrentUser: mocks.resolveCurrentUserMock,
 }));
 
@@ -153,7 +155,10 @@ const params = Promise.resolve({ id: INVOICE_ID });
 
 function manifestSuccessResponse(data: unknown, status = 200) {
   return new Response(
-    JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }),
+    JSON.stringify({
+      success: true,
+      ...(typeof data === "object" && data !== null ? data : { data }),
+    }),
     { status, headers: { "content-type": "application/json" } }
   );
 }
@@ -274,7 +279,11 @@ describe("PATCH /api/accounting/invoices/[id] — action dispatcher", () => {
       );
 
       await PATCH(
-        makePatchRequest({ action: "apply-payment", amount: 300, paymentId: "pay-123" }),
+        makePatchRequest({
+          action: "apply-payment",
+          amount: 300,
+          paymentId: "pay-123",
+        }),
         { params }
       );
 
@@ -293,10 +302,9 @@ describe("PATCH /api/accounting/invoices/[id] — action dispatcher", () => {
         manifestSuccessResponse({ id: INVOICE_ID, status: "PARTIALLY_PAID" })
       );
 
-      await PATCH(
-        makePatchRequest({ action: "apply-payment", amount: 300 }),
-        { params }
-      );
+      await PATCH(makePatchRequest({ action: "apply-payment", amount: 300 }), {
+        params,
+      });
 
       expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({

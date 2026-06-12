@@ -13,26 +13,29 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface ConsolidatedReportFilters {
-  locationIds?: string[];
-  startDate?: string;
   endDate?: string;
+  locationIds?: string[];
   metrics?: string[];
+  startDate?: string;
 }
 
 interface LocationRef {
   id: string;
-  name: string;
   isPrimary: boolean;
+  name: string;
 }
 
 interface ConsolidatedMetrics {
-  locations: LocationRef[];
-  summary: { totalLocations: number; reportPeriod: { start: string; end: string } };
   inventory?: unknown;
-  transfers?: unknown;
+  locations: LocationRef[];
   recipes?: unknown;
-  waste?: unknown;
   staffing?: unknown;
+  summary: {
+    totalLocations: number;
+    reportPeriod: { start: string; end: string };
+  };
+  transfers?: unknown;
+  waste?: unknown;
 }
 
 /**
@@ -78,7 +81,10 @@ export async function GET(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -108,13 +114,11 @@ export async function GET(request: Request) {
     const startDate = filters.startDate
       ? new Date(filters.startDate)
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: 30 days ago
-    const endDate = filters.endDate
-      ? new Date(filters.endDate)
-      : new Date();
+    const endDate = filters.endDate ? new Date(filters.endDate) : new Date();
 
     // Build consolidated metrics
     const metrics: ConsolidatedMetrics = {
-      locations: locations,
+      locations,
       summary: {
         totalLocations: locations.length,
         reportPeriod: {
@@ -147,11 +151,13 @@ export async function GET(request: Request) {
 
     for (const location of locations) {
       // Get inventory stock for this location
-      const stockRecords = await database.$queryRaw<Array<{
-        total_items: bigint;
-        total_value: string;
-        low_stock_count: bigint;
-      }>>`
+      const stockRecords = await database.$queryRaw<
+        Array<{
+          total_items: bigint;
+          total_value: string;
+          low_stock_count: bigint;
+        }>
+      >`
         SELECT
           COUNT(DISTINCT ii.id)::bigint as total_items,
           COALESCE(SUM(ii.quantity_on_hand * ii.unit_cost), 0)::text as total_value,
@@ -264,10 +270,7 @@ export async function GET(request: Request) {
     metrics.waste = {
       byLocation: wasteByLocation,
       total: wasteByLocation.reduce((sum, l) => sum + l.totalWasteEntries, 0),
-      totalCost: wasteByLocation.reduce(
-        (sum, l) => sum + l.totalWasteCost,
-        0
-      ),
+      totalCost: wasteByLocation.reduce((sum, l) => sum + l.totalWasteCost, 0),
     };
 
     // Staffing metrics by location
@@ -321,7 +324,10 @@ export async function GET_LOCATIONS(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     // Get locations with key metrics for comparison

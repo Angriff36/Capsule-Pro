@@ -342,14 +342,14 @@ function main() {
     ? readFileSync(targetPkgPath, "utf-8")
     : "";
 
-  if (mergedJson !== currentJson) {
+  if (mergedJson === currentJson) {
+    unchanged++;
+  } else {
     console.log("  ~ package.json (merged)");
     if (!DRY_RUN) {
       writeFileSync(targetPkgPath, mergedJson);
     }
     updated++;
-  } else {
-    unchanged++;
   }
 
   // -----------------------------------------------------------------------

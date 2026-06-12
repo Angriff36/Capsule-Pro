@@ -17,38 +17,38 @@ export type SummarySection =
   | "insights";
 
 export interface SummaryItem {
-  title: string;
   description: string;
-  severity?: "info" | "success" | "warning" | "critical";
   metric?: string;
+  severity?: "info" | "success" | "warning" | "critical";
+  title: string;
 }
 
 export interface EventSummaryData {
-  highlights: SummaryItem[];
-  issues: SummaryItem[];
-  financialPerformance: SummaryItem[];
   clientFeedback: SummaryItem[];
+  financialPerformance: SummaryItem[];
+  highlights: SummaryItem[];
   insights: SummaryItem[];
+  issues: SummaryItem[];
   overallSummary: string;
 }
 
 export interface GeneratedEventSummary {
-  id: string;
-  eventId: string;
-  highlights: SummaryItem[];
-  issues: SummaryItem[];
-  financialPerformance: SummaryItem[];
   clientFeedback: SummaryItem[];
-  insights: SummaryItem[];
-  overallSummary: string;
+  eventId: string;
+  financialPerformance: SummaryItem[];
   generatedAt: Date;
   generationDurationMs: number;
+  highlights: SummaryItem[];
+  id: string;
+  insights: SummaryItem[];
+  issues: SummaryItem[];
+  overallSummary: string;
 }
 
 export interface GetEventSummaryResult {
+  error?: string;
   success: boolean;
   summary?: GeneratedEventSummary;
-  error?: string;
 }
 
 export async function getEventSummary(
@@ -357,9 +357,7 @@ Please provide a comprehensive executive summary following the system prompt gui
   });
 
   if (!createResult.ok) {
-    throw new Error(
-      `Failed to create EventSummary: ${createResult.message}`
-    );
+    throw new Error(`Failed to create EventSummary: ${createResult.message}`);
   }
 
   // generationDurationMs is not in the EventSummary.create command's mutations

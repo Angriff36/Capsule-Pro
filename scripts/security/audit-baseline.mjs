@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Baseline-and-block-new wrapper around `pnpm audit`.
  *
@@ -29,10 +30,10 @@
  *   --baseline <path> Override baseline path.
  */
 
-import fs from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,14 +43,24 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const args = process.argv.slice(2);
 const opts = {
   saveBaseline: false,
-  baselinePath: path.join(ROOT, "manifest", "governance", "baselines", "pnpm-audit.json"),
+  baselinePath: path.join(
+    ROOT,
+    "manifest",
+    "governance",
+    "baselines",
+    "pnpm-audit.json"
+  ),
 };
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
-  if (a === "--save-baseline") opts.saveBaseline = true;
-  else if (a === "--baseline") opts.baselinePath = path.resolve(args[++i]);
-  else if (a === "-h" || a === "--help") {
-    console.log("Usage: node scripts/security/audit-baseline.mjs [--save-baseline] [--baseline path]");
+  if (a === "--save-baseline") {
+    opts.saveBaseline = true;
+  } else if (a === "--baseline") {
+    opts.baselinePath = path.resolve(args[++i]);
+  } else if (a === "-h" || a === "--help") {
+    console.log(
+      "Usage: node scripts/security/audit-baseline.mjs [--save-baseline] [--baseline path]"
+    );
     process.exit(0);
   }
 }
@@ -73,9 +84,11 @@ const audit = spawnSync(
 );
 // pnpm audit exits non-zero when vulnerabilities are found at the level, which
 // is the entire point. We only care that stdout is parseable JSON.
-if (!audit.stdout || !audit.stdout.trim()) {
+if (!(audit.stdout && audit.stdout.trim())) {
   console.error("[security-baseline] pnpm audit produced no output. Aborting.");
-  if (audit.stderr) console.error(audit.stderr);
+  if (audit.stderr) {
+    console.error(audit.stderr);
+  }
   process.exit(2);
 }
 
@@ -83,7 +96,10 @@ let report;
 try {
   report = JSON.parse(audit.stdout);
 } catch (err) {
-  console.error("[security-baseline] Failed to parse pnpm audit JSON:", err.message);
+  console.error(
+    "[security-baseline] Failed to parse pnpm audit JSON:",
+    err.message
+  );
   process.exit(2);
 }
 
@@ -93,12 +109,19 @@ function buildAdvisorySet(rep) {
   const advisories = rep?.advisories ?? {};
   for (const key of Object.keys(advisories)) {
     const a = advisories[key];
-    if (!a) continue;
+    if (!a) {
+      continue;
+    }
     const sev = (a.severity || "").toLowerCase();
-    if (!TRACKED_SEVERITIES.has(sev)) continue;
-    const advisoryId = a.github_advisory_id || (a.id != null ? String(a.id) : null);
+    if (!TRACKED_SEVERITIES.has(sev)) {
+      continue;
+    }
+    const advisoryId =
+      a.github_advisory_id || (a.id == null ? null : String(a.id));
     const moduleName = a.module_name;
-    if (!advisoryId || !moduleName) continue;
+    if (!(advisoryId && moduleName)) {
+      continue;
+    }
     set.add(packKey(advisoryId, moduleName));
   }
   return set;
@@ -111,7 +134,9 @@ if (opts.saveBaseline) {
   const advisories = Array.from(currentSet)
     .map(unpackKey)
     .sort((a, b) => {
-      if (a.advisoryId !== b.advisoryId) return a.advisoryId.localeCompare(b.advisoryId);
+      if (a.advisoryId !== b.advisoryId) {
+        return a.advisoryId.localeCompare(b.advisoryId);
+      }
       return a.moduleName.localeCompare(b.moduleName);
     });
   const baseline = {
@@ -127,7 +152,10 @@ if (opts.saveBaseline) {
     advisories,
   };
   await fs.mkdir(path.dirname(opts.baselinePath), { recursive: true });
-  await fs.writeFile(opts.baselinePath, JSON.stringify(baseline, null, 2) + "\n");
+  await fs.writeFile(
+    opts.baselinePath,
+    JSON.stringify(baseline, null, 2) + "\n"
+  );
   console.log(
     `[security-baseline] Saved baseline with ${baseline.count} (advisoryId, moduleName) pair(s) to ${path.relative(ROOT, opts.baselinePath)}`
   );
@@ -150,11 +178,21 @@ const baselineSet = new Set(
 
 // 5. Diff.
 const newAdvisories = [];
-for (const k of currentSet) if (!baselineSet.has(k)) newAdvisories.push(unpackKey(k));
+for (const k of currentSet) {
+  if (!baselineSet.has(k)) {
+    newAdvisories.push(unpackKey(k));
+  }
+}
 const resolved = [];
-for (const k of baselineSet) if (!currentSet.has(k)) resolved.push(unpackKey(k));
+for (const k of baselineSet) {
+  if (!currentSet.has(k)) {
+    resolved.push(unpackKey(k));
+  }
+}
 newAdvisories.sort((a, b) =>
-  a.advisoryId === b.advisoryId ? a.moduleName.localeCompare(b.moduleName) : a.advisoryId.localeCompare(b.advisoryId)
+  a.advisoryId === b.advisoryId
+    ? a.moduleName.localeCompare(b.moduleName)
+    : a.advisoryId.localeCompare(b.advisoryId)
 );
 
 // 6. Output.
@@ -167,15 +205,23 @@ console.log(`  Resolved since base. : ${resolved.length}`);
 
 if (resolved.length > 0) {
   console.log("");
-  console.log("[security-baseline] Resolved (regenerate baseline with --save-baseline to drop):");
-  for (const v of resolved.slice(0, 20)) console.log(`  ${v.advisoryId}  [${v.moduleName}]`);
-  if (resolved.length > 20) console.log(`  ...and ${resolved.length - 20} more.`);
+  console.log(
+    "[security-baseline] Resolved (regenerate baseline with --save-baseline to drop):"
+  );
+  for (const v of resolved.slice(0, 20)) {
+    console.log(`  ${v.advisoryId}  [${v.moduleName}]`);
+  }
+  if (resolved.length > 20) {
+    console.log(`  ...and ${resolved.length - 20} more.`);
+  }
 }
 
 if (newAdvisories.length > 0) {
   console.log("");
   console.log("[security-baseline] ::error::NEW advisories not in baseline:");
-  for (const v of newAdvisories) console.log(`  ${v.advisoryId}  [${v.moduleName}]`);
+  for (const v of newAdvisories) {
+    console.log(`  ${v.advisoryId}  [${v.moduleName}]`);
+  }
   console.log("");
   console.log(
     "A dependency change introduced a moderate+ advisory not present in the " +

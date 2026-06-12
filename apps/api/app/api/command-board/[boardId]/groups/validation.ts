@@ -38,7 +38,7 @@ function validateBooleanField(
 ): boolean | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(typeof value === "boolean", `${field} must be a boolean`);
   return value as boolean;
@@ -54,7 +54,7 @@ function validateIntegerField(
 ): number | undefined {
   const value = data[field];
   if (value === undefined) {
-    return undefined;
+    return;
   }
   invariant(
     typeof value === "number" && Number.isInteger(value),
@@ -78,7 +78,7 @@ function validateStringArrayField(
   const value = data[field];
   if (value === undefined) {
     invariant(!required, `${field} is required`);
-    return undefined;
+    return;
   }
   invariant(Array.isArray(value), `${field} must be an array`);
   const arrValue = value as unknown[];

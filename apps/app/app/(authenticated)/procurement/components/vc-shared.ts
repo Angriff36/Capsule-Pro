@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 
 export interface VCStatusConfig {
-  label: string;
   color: string;
   icon: React.ComponentType<{ className?: string }>;
+  label: string;
 }
 
 export const VC_STATUS_CONFIG: Record<string, VCStatusConfig> = {

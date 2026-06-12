@@ -11,90 +11,90 @@ export type AssignmentStatus =
   | "overdue";
 
 export interface TrainingModule {
+  assignment_count?: number;
+  category: string | null;
+  completion_count?: number;
+  content_type: ContentType;
+  content_url: string | null;
+  created_at: Date;
+  created_by: string | null;
+  description: string | null;
+  duration_minutes: number | null;
   id: string;
+  is_active: boolean;
+  is_required: boolean;
   tenant_id: string;
   title: string;
-  description: string | null;
-  content_url: string | null;
-  content_type: ContentType;
-  duration_minutes: number | null;
-  category: string | null;
-  is_required: boolean;
-  is_active: boolean;
-  created_by: string | null;
-  created_at: Date;
   updated_at: Date;
-  assignment_count?: number;
-  completion_count?: number;
 }
 
 export interface CreateTrainingModuleInput {
-  title: string;
-  description?: string;
-  contentUrl?: string;
-  contentType?: ContentType;
-  durationMinutes?: number;
   category?: string;
+  contentType?: ContentType;
+  contentUrl?: string;
+  description?: string;
+  durationMinutes?: number;
   isRequired?: boolean;
+  title: string;
 }
 
 export interface UpdateTrainingModuleInput {
-  title?: string;
-  description?: string;
-  contentUrl?: string;
-  contentType?: ContentType;
-  durationMinutes?: number;
   category?: string;
-  isRequired?: boolean;
+  contentType?: ContentType;
+  contentUrl?: string;
+  description?: string;
+  durationMinutes?: number;
   isActive?: boolean;
+  isRequired?: boolean;
+  title?: string;
 }
 
 export interface TrainingAssignment {
-  id: string;
-  tenant_id: string;
-  module_id: string;
-  employee_id: string | null;
-  assigned_to_all: boolean;
-  assigned_by: string;
-  due_date: Date | null;
-  status: AssignmentStatus;
   assigned_at: Date;
-  created_at: Date;
-  updated_at: Date;
-  module?: TrainingModule;
-  employee_first_name?: string | null;
-  employee_last_name?: string | null;
-  employee_email?: string;
+  assigned_by: string;
+  assigned_to_all: boolean;
   completion?: TrainingCompletion;
+  created_at: Date;
+  due_date: Date | null;
+  employee_email?: string;
+  employee_first_name?: string | null;
+  employee_id: string | null;
+  employee_last_name?: string | null;
+  id: string;
+  module?: TrainingModule;
+  module_id: string;
+  status: AssignmentStatus;
+  tenant_id: string;
+  updated_at: Date;
 }
 
 export interface CreateTrainingAssignmentInput {
-  moduleId: string;
-  employeeId?: string;
   assignToAll?: boolean;
   dueDate?: string;
+  employeeId?: string;
+  moduleId: string;
 }
 
 export interface TrainingCompletion {
-  id: string;
-  tenant_id: string;
   assignment_id: string;
-  employee_id: string;
-  module_id: string;
-  started_at: Date | null;
   completed_at: Date | null;
-  score: number | null;
-  passed: boolean;
-  notes: string | null;
   created_at: Date;
+  employee_id: string;
+  id: string;
+  module_id: string;
+  notes: string | null;
+  passed: boolean;
+  score: number | null;
+  started_at: Date | null;
+  tenant_id: string;
   updated_at: Date;
 }
 
 export interface CompleteTrainingInput {
   assignmentId: string;
-  score?: number;
-  passed?: boolean;
   notes?: string;
+  passed?: boolean;
+  score?: number;
 }
 
 export interface StartTrainingInput {

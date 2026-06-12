@@ -30,11 +30,11 @@ import type {
 } from "@angriff36/manifest";
 
 interface RunCommandOptions {
-  entityName?: string;
-  instanceId?: string;
-  correlationId?: string;
   causationId?: string;
+  correlationId?: string;
+  entityName?: string;
   idempotencyKey?: string;
+  instanceId?: string;
 }
 
 type DispatchCommand = (
@@ -44,18 +44,18 @@ type DispatchCommand = (
 ) => Promise<CommandResult>;
 
 export interface PrepSeedDiagnostic {
-  stage: string;
-  reason: string;
-  prepListId?: string;
-  eventId?: string;
-  tenantId?: string;
   detail?: Record<string, unknown>;
+  eventId?: string;
+  prepListId?: string;
+  reason: string;
+  stage: string;
+  tenantId?: string;
 }
 
 export interface PrepListSeedMiddlewareOptions {
-  storeProvider: (entityName: string) => Store | undefined;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: PrepSeedDiagnostic) => void;
+  storeProvider: (entityName: string) => Store | undefined;
 }
 
 /** Marker the EventConfirmed reaction writes into the shell's notes. */
@@ -68,50 +68,50 @@ interface EventLike {
 }
 
 interface EventDishLike {
-  id?: unknown;
-  tenantId?: unknown;
-  eventId?: unknown;
-  dishId?: unknown;
-  quantityServings?: unknown;
   deletedAt?: unknown;
+  dishId?: unknown;
+  eventId?: unknown;
+  id?: unknown;
+  quantityServings?: unknown;
+  tenantId?: unknown;
 }
 
 interface DishLike {
+  deletedAt?: unknown;
   id?: unknown;
-  tenantId?: unknown;
   name?: unknown;
   recipeId?: unknown;
-  deletedAt?: unknown;
+  tenantId?: unknown;
 }
 
 interface RecipeVersionLike {
   id?: unknown;
-  tenantId?: unknown;
   recipeId?: unknown;
+  tenantId?: unknown;
   versionNumber?: unknown;
   yieldQuantity?: unknown;
 }
 
 interface RecipeIngredientLike {
-  id?: unknown;
-  tenantId?: unknown;
-  recipeVersionId?: unknown;
-  ingredientId?: unknown;
-  quantity?: unknown;
-  preparationNotes?: unknown;
-  isOptional?: unknown;
   deletedAt?: unknown;
+  id?: unknown;
+  ingredientId?: unknown;
+  isOptional?: unknown;
+  preparationNotes?: unknown;
+  quantity?: unknown;
+  recipeVersionId?: unknown;
+  tenantId?: unknown;
 }
 
 interface IngredientLike {
-  id?: unknown;
-  tenantId?: unknown;
-  name?: unknown;
-  category?: unknown;
   allergens?: unknown;
+  category?: unknown;
+  deletedAt?: unknown;
+  id?: unknown;
   inventoryItemId?: unknown;
   isActive?: unknown;
-  deletedAt?: unknown;
+  name?: unknown;
+  tenantId?: unknown;
 }
 
 interface InventoryItemLike {
@@ -121,18 +121,18 @@ interface InventoryItemLike {
 }
 
 interface SeedLine {
-  ingredientId: string;
-  ingredientName: string;
-  category: string;
   allergens: string;
-  unit: string;
   baseQuantity: number;
-  scaledQuantity: number;
-  isOptional: boolean;
-  preparationNotes: string;
+  category: string;
   dishId: string;
   dishName: string;
+  ingredientId: string;
+  ingredientName: string;
+  isOptional: boolean;
+  preparationNotes: string;
   recipeVersionId: string;
+  scaledQuantity: number;
+  unit: string;
 }
 
 const STATIONS: Record<string, string> = {
@@ -144,14 +144,22 @@ const STATIONS: Record<string, string> = {
 };
 
 /** Same keyword mapping as the kitchen UI's assignIngredientToStation. */
-function assignStation(category: string): { stationId: string; stationName: string } {
+function assignStation(category: string): {
+  stationId: string;
+  stationName: string;
+} {
   const lower = category.toLowerCase();
   const match = (keywords: string[]) => keywords.some((k) => lower.includes(k));
   let stationId = "prep-station";
-  if (match(["hot", "grill", "sauté", "saute"])) stationId = "hot-line";
-  else if (match(["cold", "salad", "dressing"])) stationId = "cold-prep";
-  else if (match(["bake", "pastry", "dessert"])) stationId = "bakery";
-  else if (match(["garnish", "herb", "decoration"])) stationId = "garnish";
+  if (match(["hot", "grill", "sauté", "saute"])) {
+    stationId = "hot-line";
+  } else if (match(["cold", "salad", "dressing"])) {
+    stationId = "cold-prep";
+  } else if (match(["bake", "pastry", "dessert"])) {
+    stationId = "bakery";
+  } else if (match(["garnish", "herb", "decoration"])) {
+    stationId = "garnish";
+  }
   return { stationId, stationName: STATIONS[stationId] };
 }
 
@@ -168,7 +176,11 @@ const defaultDiagnostic = (diag: PrepSeedDiagnostic): void => {
 export function createPrepListSeedMiddleware(
   options: PrepListSeedMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } = options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -197,12 +209,13 @@ export function createPrepListSeedMiddleware(
         const tenantId =
           asNonEmptyString(payload.result?.tenantId) ??
           asNonEmptyString(
-            (ctx.runtimeContext.user as { tenantId?: unknown } | undefined)?.tenantId
+            (ctx.runtimeContext.user as { tenantId?: unknown } | undefined)
+              ?.tenantId
           );
-        if (!prepListId || !eventId || !tenantId) {
+        if (!(prepListId && eventId && tenantId)) {
           onDiagnostic({
             stage: "resolve",
-            reason: `auto-seed shell missing ${!prepListId ? "prepListId" : !eventId ? "eventId" : "tenantId"}`,
+            reason: `auto-seed shell missing ${prepListId ? (eventId ? "tenantId" : "eventId") : "prepListId"}`,
             prepListId,
             eventId,
             tenantId,
@@ -238,8 +251,10 @@ export function createPrepListSeedMiddleware(
         // Idempotency: if the list already has items, seeding already ran.
         const existingItems = (await stores.prepListItem!.getAll()).filter(
           (row) =>
-            asNonEmptyString((row as { tenantId?: unknown }).tenantId) === tenantId &&
-            asNonEmptyString((row as { prepListId?: unknown }).prepListId) === prepListId
+            asNonEmptyString((row as { tenantId?: unknown }).tenantId) ===
+              tenantId &&
+            asNonEmptyString((row as { prepListId?: unknown }).prepListId) ===
+              prepListId
         );
         if (existingItems.length > 0) {
           onDiagnostic({
@@ -274,8 +289,9 @@ export function createPrepListSeedMiddleware(
 
         const commonOptions = {
           correlationId:
-            asNonEmptyString((ctx as { correlationId?: unknown }).correlationId) ??
-            prepListId,
+            asNonEmptyString(
+              (ctx as { correlationId?: unknown }).correlationId
+            ) ?? prepListId,
           causationId: "PrepListCreated",
         };
 
@@ -395,14 +411,14 @@ export function createPrepListSeedMiddleware(
 }
 
 interface DerivationStores {
+  dish: Store;
   event: Store;
   eventDish: Store;
-  dish: Store;
-  recipeVersion: Store;
-  recipeIngredient: Store;
   ingredient: Store;
   inventoryItem: Store;
   prepListItem: Store;
+  recipeIngredient: Store;
+  recipeVersion: Store;
 }
 
 async function deriveSeedLines(options: {
@@ -428,7 +444,9 @@ async function deriveSeedLines(options: {
 
   for (const eventDish of eventDishes) {
     const dishId = asNonEmptyString(eventDish.dishId);
-    if (!dishId) continue;
+    if (!dishId) {
+      continue;
+    }
     const dish = (await stores.dish.getById(dishId)) as DishLike | undefined;
     const recipeId = asNonEmptyString(dish?.recipeId);
     if (!dish || dish.deletedAt != null || !recipeId) {
@@ -451,7 +469,9 @@ async function deriveSeedLines(options: {
           asNonEmptyString(row.recipeId) === recipeId
       )
       .sort(
-        (a, b) => (asFiniteNumber(b.versionNumber) ?? 0) - (asFiniteNumber(a.versionNumber) ?? 0)
+        (a, b) =>
+          (asFiniteNumber(b.versionNumber) ?? 0) -
+          (asFiniteNumber(a.versionNumber) ?? 0)
       );
     const version = versions[0];
     const recipeVersionId = asNonEmptyString(version?.id);
@@ -467,8 +487,14 @@ async function deriveSeedLines(options: {
       continue;
     }
 
-    const yieldQuantity = Math.max(asFiniteNumber(version?.yieldQuantity) ?? 1, 1);
-    const servings = Math.max(asFiniteNumber(eventDish.quantityServings) ?? 1, 1);
+    const yieldQuantity = Math.max(
+      asFiniteNumber(version?.yieldQuantity) ?? 1,
+      1
+    );
+    const servings = Math.max(
+      asFiniteNumber(eventDish.quantityServings) ?? 1,
+      1
+    );
     const factor = servings / yieldQuantity;
     const dishName = asNonEmptyString(dish.name) ?? dishId;
 
@@ -484,11 +510,13 @@ async function deriveSeedLines(options: {
     for (const line of ingredientLines) {
       const ingredientEntityId = asNonEmptyString(line.ingredientId);
       const quantity = asFiniteNumber(line.quantity);
-      if (!ingredientEntityId || quantity === undefined || quantity <= 0) continue;
+      if (!ingredientEntityId || quantity === undefined || quantity <= 0) {
+        continue;
+      }
 
-      const ingredient = (await stores.ingredient.getById(ingredientEntityId)) as
-        | IngredientLike
-        | undefined;
+      const ingredient = (await stores.ingredient.getById(
+        ingredientEntityId
+      )) as IngredientLike | undefined;
       if (
         !ingredient ||
         ingredient.deletedAt != null ||
@@ -497,7 +525,8 @@ async function deriveSeedLines(options: {
       ) {
         onDiagnostic({
           stage: "derive",
-          reason: "ingredient line skipped: ingredient missing, deleted, or inactive",
+          reason:
+            "ingredient line skipped: ingredient missing, deleted, or inactive",
           prepListId,
           eventId,
           tenantId,
@@ -548,7 +577,9 @@ function asNonEmptyString(value: unknown): string | undefined {
 }
 
 function asFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 function round3(value: number): number {

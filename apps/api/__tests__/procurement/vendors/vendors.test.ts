@@ -147,12 +147,16 @@ vi.mock("@/lib/database", async () => {
 vi.mock("@/lib/pagination", () => ({
   clampLimit: (raw: string | null) => {
     const parsed = Number.parseInt(raw ?? "", 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) return 50;
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return 50;
+    }
     return Math.min(parsed, 200);
   },
   clampOffset: (raw: string | null) => {
     const parsed = Number.parseInt(raw ?? "", 10);
-    if (!Number.isFinite(parsed) || parsed < 0) return 0;
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return 0;
+    }
     return parsed;
   },
 }));
@@ -162,9 +166,9 @@ vi.mock("@repo/observability/log", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
-import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -283,21 +287,18 @@ function makeVendor(overrides: Record<string, unknown> = {}) {
 function dispatchSuccess(
   result: Record<string, unknown> = { id: VENDOR_ID }
 ): Response {
-  return new Response(
-    JSON.stringify({ success: true, result, events: [] }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ success: true, result, events: [] }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /** Simulate a failed runManifestCommand response */
-function dispatchFailure(
-  message: string,
-  status: number
-): Response {
-  return new Response(
-    JSON.stringify({ success: false, message }),
-    { status, headers: { "Content-Type": "application/json" } }
-  );
+function dispatchFailure(message: string, status: number): Response {
+  return new Response(JSON.stringify({ success: false, message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -627,7 +628,9 @@ describe("Procurement Vendors API", () => {
         })()
       );
       const res = await deleteVendor(
-        makeRequest("http://localhost/api/test", { body: { vendorId: VENDOR_ID } })
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
       );
       expect(res.status).toBe(401);
     });

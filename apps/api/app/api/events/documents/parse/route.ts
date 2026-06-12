@@ -15,13 +15,12 @@ import type {
   ProcessedDocument,
   StaffShift,
 } from "@repo/event-parser";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { parseError as parseErrorToMessage } from "@repo/observability/error";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
-import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Uses createManifestRuntime — requires Node.js runtime (not Edge)
@@ -56,9 +55,7 @@ async function execCommand(
     { entity, command, body, user, instanceId }
   );
   if (!result.ok) {
-    throw new Error(
-      `Manifest ${entity}.${command} failed: ${result.message}`
-    );
+    throw new Error(`Manifest ${entity}.${command} failed: ${result.message}`);
   }
   return result.result as Record<string, unknown>;
 }
@@ -77,22 +74,22 @@ type MissingField =
   | "menuItems";
 
 interface MenuImportSummary {
-  missingQuantities: string[];
-  linkedDishes: number;
   createdDishes: number;
   createdRecipes: number;
+  linkedDishes: number;
+  missingQuantities: string[];
   updatedLinks: number;
 }
 
 interface AggregatedMenuItem {
-  name: string;
-  category: string | null;
-  serviceLocation: string | null;
-  quantity: number;
-  quantitySource: "parsed" | "details" | "headcount" | "fallback";
   allergens: Set<string>;
+  category: string | null;
   dietaryTags: Set<string>;
   instructions: Set<string>;
+  name: string;
+  quantity: number;
+  quantitySource: "parsed" | "details" | "headcount" | "fallback";
+  serviceLocation: string | null;
 }
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
@@ -519,7 +516,14 @@ async function processMenuItemEntry(
     );
     summary.updatedLinks += 1;
   } else {
-    await createEventDishLink(tenantId, eventId, dishId, entry, serviceStyle, user);
+    await createEventDishLink(
+      tenantId,
+      eventId,
+      dishId,
+      entry,
+      serviceStyle,
+      user
+    );
     summary.linkedDishes += 1;
   }
 }
@@ -1194,17 +1198,17 @@ async function processDocumentsAndGenerateResponse(
  * Helper function to build and return the response
  */
 interface ParseDocumentsResponse {
+  battleBoard?: unknown;
+  battleBoardError?: string;
+  battleBoardId?: string;
+  checklist?: unknown;
+  checklistError?: string;
+  checklistId?: string;
   documents: ProcessedDocument[];
+  errors: string[];
+  imports: Array<{ importId: string; document: ProcessedDocument }>;
   mergedEvent?: ParsedEvent;
   mergedStaff?: StaffShift[];
-  imports: Array<{ importId: string; document: ProcessedDocument }>;
-  errors: string[];
-  battleBoard?: unknown;
-  battleBoardId?: string;
-  battleBoardError?: string;
-  checklist?: unknown;
-  checklistId?: string;
-  checklistError?: string;
 }
 
 function buildResponse(

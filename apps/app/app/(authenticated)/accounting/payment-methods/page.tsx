@@ -23,7 +23,9 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { PaymentMethodsClient } from "./payment-methods-client";
 
 function formatDate(value: Date | null) {
-  if (!value) return "\u2014";
+  if (!value) {
+    return "\u2014";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -38,7 +40,9 @@ function getClientLabel(
     last_name: string | null;
   } | null
 ) {
-  if (!client) return "No client";
+  if (!client) {
+    return "No client";
+  }
 
   const personName = [client.first_name, client.last_name]
     .filter(Boolean)
@@ -62,17 +66,25 @@ function getDisplayInfo(pm: {
   if (pm.type === "DIGITAL_WALLET") {
     return "Digital Wallet";
   }
-  if (pm.type === "CHECK") return "Check";
-  if (pm.type === "CASH") return "Cash";
+  if (pm.type === "CHECK") {
+    return "Check";
+  }
+  if (pm.type === "CASH") {
+    return "Cash";
+  }
   return pm.type;
 }
 
 export default async function PaymentMethodsPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [totalCount, activeCount, verifiedCount, flaggedCount, paymentMethods] =
     await Promise.all([

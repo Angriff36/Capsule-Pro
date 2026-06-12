@@ -19,8 +19,8 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
-  listPreventiveMaintenanceSchedules,
   listFacilityAssets,
+  listPreventiveMaintenanceSchedules,
 } from "@/app/lib/manifest-client.generated";
 import type { PreventiveMaintenanceSchedule } from "@/app/lib/manifest-types.generated";
 
@@ -31,7 +31,9 @@ interface UpcomingMaintenanceWidgetProps {
 export function UpcomingMaintenanceWidget({
   compact = false,
 }: UpcomingMaintenanceWidgetProps) {
-  const [schedules, setSchedules] = useState<PreventiveMaintenanceSchedule[]>([]);
+  const [schedules, setSchedules] = useState<PreventiveMaintenanceSchedule[]>(
+    []
+  );
   const [assets, setAssets] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -93,7 +95,7 @@ export function UpcomingMaintenanceWidget({
     return (
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 font-medium text-sm">
             <Calendar className="h-4 w-4" />
             Upcoming Maintenance
           </CardTitle>
@@ -109,13 +111,13 @@ export function UpcomingMaintenanceWidget({
     return (
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 font-medium text-sm">
             <Calendar className="h-4 w-4" />
             Upcoming Maintenance
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             No maintenance schedules configured.
           </p>
           <Button asChild className="mt-2" size="sm" variant="outline">
@@ -130,7 +132,7 @@ export function UpcomingMaintenanceWidget({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 font-medium text-sm">
             <Calendar className="h-4 w-4" />
             Upcoming Maintenance
           </CardTitle>
@@ -149,9 +151,9 @@ export function UpcomingMaintenanceWidget({
       <CardContent className="space-y-3">
         {/* Overdue Alert */}
         {overdueSchedules.length > 0 && (
-          <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-700">
+            <span className="font-medium text-red-700 text-sm">
               {overdueSchedules.length} overdue
             </span>
           </div>
@@ -159,7 +161,7 @@ export function UpcomingMaintenanceWidget({
 
         {/* Upcoming List */}
         {upcomingSchedules.length === 0 && overdueSchedules.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             No maintenance due in the next 7 days.
           </p>
         ) : (
@@ -171,21 +173,21 @@ export function UpcomingMaintenanceWidget({
 
               return (
                 <div
-                  className="flex items-center justify-between p-2 rounded-lg border bg-muted/20"
+                  className="flex items-center justify-between rounded-lg border bg-muted/20 p-2"
                   key={schedule.id}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                       <Wrench className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">
+                      <div className="truncate font-medium text-sm">
                         {schedule.title}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
                         <span
                           className={
-                            isDueToday ? "text-amber-600 font-medium" : ""
+                            isDueToday ? "font-medium text-amber-600" : ""
                           }
                         >
                           {isDueToday ? "Today" : format(dueDate, "MMM d")}
@@ -201,7 +203,8 @@ export function UpcomingMaintenanceWidget({
                   </div>
                   <Badge
                     className={
-                      (schedule.frequency && frequencyColors[schedule.frequency]) ||
+                      (schedule.frequency &&
+                        frequencyColors[schedule.frequency]) ||
                       "bg-muted/20 text-muted-foreground"
                     }
                   >
@@ -214,7 +217,7 @@ export function UpcomingMaintenanceWidget({
         )}
 
         {/* Summary */}
-        <div className="flex items-center gap-2 pt-2 border-t text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 border-t pt-2 text-muted-foreground text-xs">
           <span>{schedules.length} total schedules</span>
           {overdueSchedules.length > 0 && (
             <>

@@ -8,9 +8,9 @@ import { getTenantIdForOrg, requireCurrentUser } from "../../../lib/tenant";
 
 // Recipe options for inline dish creation
 export interface RecipeForDishCreation {
+  category: string | null;
   id: string;
   name: string;
-  category: string | null;
 }
 
 export async function getRecipesForDishCreation(): Promise<
@@ -46,9 +46,9 @@ export async function getRecipesForDishCreation(): Promise<
 }
 
 export interface InlineDishResult {
+  category: string | null;
   id: string;
   name: string;
-  category: string | null;
   recipe_name: string | null;
 }
 
@@ -118,7 +118,10 @@ export async function createDishAndAddToEvent(
     });
 
     if (!result.ok) {
-      return { success: false, error: result.message || "Failed to create dish" };
+      return {
+        success: false,
+        error: result.message || "Failed to create dish",
+      };
     }
 
     const createdId = (result.result as { id?: string } | null)?.id;
@@ -141,7 +144,10 @@ export async function createDishAndAddToEvent(
     });
 
     if (!eventDishResult.ok) {
-      return { success: false, error: eventDishResult.message || "Failed to add dish to event" };
+      return {
+        success: false,
+        error: eventDishResult.message || "Failed to add dish to event",
+      };
     }
 
     revalidatePath(`/events/${eventId}`);
@@ -364,7 +370,10 @@ export async function removeDishFromEvent(eventId: string, linkId: string) {
     });
 
     if (!result.ok) {
-      return { success: false, error: result.message || "Failed to remove dish" };
+      return {
+        success: false,
+        error: result.message || "Failed to remove dish",
+      };
     }
 
     revalidatePath(`/events/${eventId}`);

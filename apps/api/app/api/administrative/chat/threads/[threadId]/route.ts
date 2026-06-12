@@ -23,8 +23,8 @@ export function OPTIONS(request: Request) {
   });
 }
 
-const getEmployee = async (tenantId: string, authUserId: string) => {
-  return await database.user.findFirst({
+const getEmployee = async (tenantId: string, authUserId: string) =>
+  await database.user.findFirst({
     where: {
       tenantId,
       authUserId,
@@ -34,7 +34,6 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
       id: true,
     },
   });
-};
 
 /**
  * Ensures a participant exists for a team thread using Manifest commands.
@@ -45,7 +44,14 @@ const ensureTeamThreadParticipant = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
-  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
+  user: {
+    id: string;
+    tenantId: string;
+    role: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }) => {
   // Read: check if participant exists (read per constitution §10)
   const existing = await database.adminChatParticipant.findFirst({

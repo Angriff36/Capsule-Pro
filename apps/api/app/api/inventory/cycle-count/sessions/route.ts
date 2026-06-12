@@ -10,8 +10,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { resolveCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type CycleCountSessionType =
@@ -28,8 +27,8 @@ type CycleCountSessionStatus =
   | "cancelled";
 
 interface PaginationParams {
-  page: number;
   limit: number;
+  page: number;
 }
 
 function parsePaginationParams(
@@ -149,7 +148,10 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[CycleCountSession/POST] Delegating to manifest create command");
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
   return runManifestCommand({
     entity: "CycleCountSession",
     command: "create",

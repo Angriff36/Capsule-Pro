@@ -11,7 +11,7 @@ export function NewMenuFormClient() {
           <div className="grid gap-6">
             {/* Basic Info Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Menu Information</h2>
+              <h2 className="font-semibold text-lg">Menu Information</h2>
 
               <div className="grid gap-2">
                 <Label htmlFor="name">Menu Name *</Label>
@@ -47,7 +47,7 @@ export function NewMenuFormClient() {
 
             {/* Pricing Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Pricing</h2>
+              <h2 className="font-semibold text-lg">Pricing</h2>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
@@ -106,14 +106,14 @@ export function NewMenuFormClient() {
             {/* Submit Button */}
             <div className="flex justify-end gap-4">
               <button
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-4 py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground"
                 onClick={() => window.history.back()}
                 type="button"
               >
                 Cancel
               </button>
               <button
-                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex h-10 items-center justify-center rounded-sm bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                 disabled={isSubmitting}
                 type="submit"
               >

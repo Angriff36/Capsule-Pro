@@ -237,7 +237,14 @@ export async function POST(request: NextRequest) {
           if (result.status < 400) {
             const resultData = await result.json().catch(() => null);
             const id = (resultData as Record<string, unknown> | null)?.result
-              ? String(((resultData as Record<string, unknown>).result as Record<string, unknown>)?.id ?? crypto.randomUUID())
+              ? String(
+                  (
+                    (resultData as Record<string, unknown>).result as Record<
+                      string,
+                      unknown
+                    >
+                  )?.id ?? crypto.randomUUID()
+                )
               : crypto.randomUUID();
             createdEntries.push({
               id,
@@ -246,9 +253,12 @@ export async function POST(request: NextRequest) {
               clock_in: shift.shift_start,
             });
           } else {
-            log.error(`Manifest TimeEntry.addEntry failed for shift ${shift.shift_id}`, {
-              status: result.status,
-            });
+            log.error(
+              `Manifest TimeEntry.addEntry failed for shift ${shift.shift_id}`,
+              {
+                status: result.status,
+              }
+            );
           }
         } catch (err) {
           log.error(

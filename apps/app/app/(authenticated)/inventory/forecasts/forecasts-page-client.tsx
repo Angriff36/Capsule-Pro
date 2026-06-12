@@ -230,7 +230,7 @@ export const ForecastsPageClient = () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Depletion Estimates
         </h1>
         <p className="text-muted-foreground">
@@ -241,7 +241,7 @@ export const ForecastsPageClient = () => {
 
       {/* Performance Overview Section */}
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="font-medium text-muted-foreground text-sm">
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -454,19 +454,19 @@ export const ForecastsPageClient = () => {
                   {/* Summary Stats */}
                   <div className="mb-6 grid gap-4 md:grid-cols-3">
                     <div className="rounded-lg border p-4">
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Current Stock
                       </div>
-                      <div className="text-2xl font-bold">
+                      <div className="font-bold text-2xl">
                         {forecast.currentStock}
                       </div>
                     </div>
                     <div className="rounded-lg border p-4">
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Days Until Depletion
                       </div>
                       <div
-                        className={`text-2xl font-bold ${
+                        className={`font-bold text-2xl ${
                           forecast.daysUntilDepletion !== null &&
                           forecast.daysUntilDepletion <= 7
                             ? "text-destructive"
@@ -477,10 +477,10 @@ export const ForecastsPageClient = () => {
                       </div>
                     </div>
                     <div className="rounded-lg border p-4">
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Confidence Level
                       </div>
-                      <div className="text-2xl font-bold capitalize">
+                      <div className="font-bold text-2xl capitalize">
                         {forecast.confidence}
                       </div>
                     </div>
@@ -530,13 +530,13 @@ export const ForecastsPageClient = () => {
                             />
                             <XAxis
                               axisLine={false}
-                              className="text-xs fill-muted-foreground"
+                              className="fill-muted-foreground text-xs"
                               dataKey="date"
                               tickLine={false}
                             />
                             <YAxis
                               axisLine={false}
-                              className="text-xs fill-muted-foreground"
+                              className="fill-muted-foreground text-xs"
                               tickLine={false}
                             />
                             <ChartTooltipContent
@@ -562,9 +562,7 @@ export const ForecastsPageClient = () => {
                                 }
                                 return [value, name];
                               }}
-                              labelFormatter={(label) => {
-                                return `Date: ${label}`;
-                              }}
+                              labelFormatter={(label) => `Date: ${label}`}
                             />
                             <Area
                               dataKey="stock"
@@ -596,7 +594,7 @@ export const ForecastsPageClient = () => {
                       );
                     })()}
                     {forecast.depletionDate && (
-                      <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <div className="mt-2 flex items-center justify-center gap-2 text-muted-foreground text-sm">
                         <AlertTriangle className="size-4 text-destructive" />
                         <span>
                           Estimated depletion:{" "}
@@ -645,13 +643,13 @@ export const ForecastsPageClient = () => {
                               />
                               <XAxis
                                 axisLine={false}
-                                className="text-xs fill-muted-foreground"
+                                className="fill-muted-foreground text-xs"
                                 dataKey="date"
                                 tickLine={false}
                               />
                               <YAxis
                                 axisLine={false}
-                                className="text-xs fill-muted-foreground"
+                                className="fill-muted-foreground text-xs"
                                 tickLine={false}
                               />
                               <ChartTooltipContent
@@ -694,7 +692,7 @@ export const ForecastsPageClient = () => {
                           </ChartContainer>
                         );
                       })()}
-                      <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                      <div className="mt-2 flex items-center justify-center gap-4 text-muted-foreground text-xs">
                         <div className="flex items-center gap-1">
                           <div className="size-3 rounded-full bg-[hsl(var(--chart-3))]" />
                           <span>Regular usage</span>
@@ -743,11 +741,11 @@ export const ForecastsPageClient = () => {
                               </TableCell>
                               <TableCell>
                                 {point.eventName ? (
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-muted-foreground text-xs">
                                     {point.eventName}
                                   </span>
                                 ) : (
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-muted-foreground text-xs">
                                     -
                                   </span>
                                 )}
@@ -768,7 +766,7 @@ export const ForecastsPageClient = () => {
                           Stock Depletion Estimated
                         </div>
                       </div>
-                      <p className="mt-1 text-sm text-destructive/80">
+                      <p className="mt-1 text-destructive/80 text-sm">
                         This item is estimated to run out of stock on{" "}
                         {formatDate(forecast.depletionDate)} (
                         {forecast.daysUntilDepletion} days from now). Consider
@@ -798,7 +796,7 @@ export const ForecastsPageClient = () => {
                         </Badge>
                         <div className="flex-1">
                           <div className="font-semibold">{suggestion.sku}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {suggestion.justification}
                           </div>
                           <div className="mt-2 text-sm">
@@ -849,8 +847,8 @@ export const ForecastsPageClient = () => {
                 {alerts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <CheckCircle2 className="mb-4 size-12 text-green-500" />
-                    <h3 className="text-lg font-semibold">All Clear!</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg">All Clear!</h3>
+                    <p className="text-muted-foreground text-sm">
                       No items are forecasted to deplete within 14 days.
                     </p>
                   </div>
@@ -894,7 +892,7 @@ export const ForecastsPageClient = () => {
                                       {alert.confidence}
                                     </Badge>
                                   </div>
-                                  <div className="mt-1 text-sm text-muted-foreground">
+                                  <div className="mt-1 text-muted-foreground text-sm">
                                     Current: {alert.currentStock} units |
                                     Depletion: {formatDate(alert.depletionDate)}
                                   </div>
@@ -957,7 +955,7 @@ export const ForecastsPageClient = () => {
                                       {alert.confidence}
                                     </Badge>
                                   </div>
-                                  <div className="mt-1 text-sm text-muted-foreground">
+                                  <div className="mt-1 text-muted-foreground text-sm">
                                     Current: {alert.currentStock} units |
                                     Depletion: {formatDate(alert.depletionDate)}
                                   </div>
@@ -1006,8 +1004,8 @@ export const ForecastsPageClient = () => {
                 {allSuggestions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <CheckCircle2 className="mb-4 size-12 text-green-500" />
-                    <h3 className="text-lg font-semibold">All Clear!</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg">All Clear!</h3>
+                    <p className="text-muted-foreground text-sm">
                       No reorder alerts at this time. All inventory is above
                       reorder points.
                     </p>
@@ -1024,7 +1022,7 @@ export const ForecastsPageClient = () => {
                         </Badge>
                         <div className="flex-1">
                           <div className="font-semibold">{suggestion.sku}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {suggestion.justification}
                           </div>
                           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">

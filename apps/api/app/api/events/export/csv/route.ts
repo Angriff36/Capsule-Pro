@@ -180,8 +180,12 @@ export async function GET(request: Request) {
 
     if (startDate || endDate) {
       const eventDateFilter: Record<string, Date> = {};
-      if (startDate) eventDateFilter.gte = new Date(startDate);
-      if (endDate) eventDateFilter.lte = new Date(endDate);
+      if (startDate) {
+        eventDateFilter.gte = new Date(startDate);
+      }
+      if (endDate) {
+        eventDateFilter.lte = new Date(endDate);
+      }
       where.eventDate = eventDateFilter;
     }
 

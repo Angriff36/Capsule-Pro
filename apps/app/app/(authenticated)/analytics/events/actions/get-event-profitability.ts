@@ -7,48 +7,48 @@ import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface EventProfitabilityMetrics {
-  eventId: string;
-  eventTitle: string;
-  eventDate: Date;
-  guestCount: number;
-
-  budgetedRevenue: number;
-  budgetedFoodCost: number;
-  budgetedLaborCost: number;
-  budgetedOverhead: number;
-  budgetedTotalCost: number;
-  budgetedGrossMargin: number;
-  budgetedGrossMarginPct: number;
-
-  actualRevenue: number;
   actualFoodCost: number;
-  actualLaborCost: number;
-  actualOverhead: number;
-  actualTotalCost: number;
   actualGrossMargin: number;
   actualGrossMarginPct: number;
+  actualLaborCost: number;
+  actualOverhead: number;
 
-  revenueVariance: number;
+  actualRevenue: number;
+  actualTotalCost: number;
+  budgetedFoodCost: number;
+  budgetedGrossMargin: number;
+  budgetedGrossMarginPct: number;
+  budgetedLaborCost: number;
+  budgetedOverhead: number;
+
+  budgetedRevenue: number;
+  budgetedTotalCost: number;
+  eventDate: Date;
+  eventId: string;
+  eventTitle: string;
   foodCostVariance: number;
+  guestCount: number;
   laborCostVariance: number;
-  totalCostVariance: number;
-  marginVariancePct: number;
 
   marginTrend: Array<{
     date: Date;
     marginPct: number;
   }>;
+  marginVariancePct: number;
+
+  revenueVariance: number;
+  totalCostVariance: number;
 }
 
 export interface HistoricalProfitabilityData {
-  period: string;
-  totalEvents: number;
-  averageGrossMarginPct: number;
-  totalRevenue: number;
-  totalCost: number;
   averageFoodCostPct: number;
+  averageGrossMarginPct: number;
   averageLaborCostPct: number;
   averageOverheadPct: number;
+  period: string;
+  totalCost: number;
+  totalEvents: number;
+  totalRevenue: number;
 }
 
 export async function calculateEventProfitability(

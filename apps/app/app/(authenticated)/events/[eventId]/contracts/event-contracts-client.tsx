@@ -54,17 +54,17 @@ const statusColorMap: Record<string, string> = {
 };
 
 interface SerializedContract {
-  id: string;
-  title: string;
-  status: string;
-  contractNumber: string | null;
-  documentUrl: string | null;
-  documentType: string | null;
-  notes: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  updatedAt: string;
   client: { id: string; name: string } | null;
+  contractNumber: string | null;
+  createdAt: string;
+  documentType: string | null;
+  documentUrl: string | null;
+  expiresAt: string | null;
+  id: string;
+  notes: string | null;
+  status: string;
+  title: string;
+  updatedAt: string;
 }
 
 interface EventContractsClientProps {

@@ -47,34 +47,34 @@ export type SectionContext =
   | "general";
 
 export interface PromptSuggestion {
+  action?: () => void;
+  description: string;
+  href?: string;
+  icon?: LucideIcon;
   id: string;
   label: string;
-  description: string;
-  icon?: LucideIcon;
-  template?: Record<string, unknown>;
-  href?: string;
-  action?: () => void;
-  roles?: UserRole[];
   priority?: number;
+  roles?: UserRole[];
+  template?: Record<string, unknown>;
 }
 
 export interface UserActivityContext {
-  recentEvents?: number;
-  recentClients?: number;
-  recentTasks?: number;
-  hasImportedData?: boolean;
   completedOnboarding?: boolean;
   daysSinceLastActivity?: number;
+  hasImportedData?: boolean;
+  recentClients?: number;
+  recentEvents?: number;
+  recentTasks?: number;
 }
 
 export interface PromptSuggestionsProps {
-  section: SectionContext;
-  userRole?: UserRole;
   activityContext?: UserActivityContext;
-  suggestions?: PromptSuggestion[];
-  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
-  maxSuggestions?: number;
   className?: string;
+  maxSuggestions?: number;
+  onSuggestionClick?: (suggestion: PromptSuggestion) => void;
+  section: SectionContext;
+  suggestions?: PromptSuggestion[];
+  userRole?: UserRole;
   variant?: "default" | "compact";
 }
 
@@ -324,7 +324,9 @@ function filterByRole(
   suggestions: PromptSuggestion[],
   role?: UserRole
 ): PromptSuggestion[] {
-  if (!role) return suggestions;
+  if (!role) {
+    return suggestions;
+  }
   return suggestions.filter(
     (s) => !s.roles || s.roles.length === 0 || s.roles.includes(role)
   );
@@ -338,7 +340,9 @@ function prioritizeByActivity(
   suggestions: PromptSuggestion[],
   activity?: UserActivityContext
 ): PromptSuggestion[] {
-  if (!activity) return suggestions;
+  if (!activity) {
+    return suggestions;
+  }
 
   const scored = suggestions.map((s) => {
     let score = s.priority ?? 0;
@@ -425,12 +429,12 @@ export function PromptSuggestions({
             >
               {suggestion.href ? (
                 <a href={suggestion.href}>
-                  {Icon && <Icon className="size-3.5 mr-1.5" />}
+                  {Icon && <Icon className="mr-1.5 size-3.5" />}
                   {suggestion.label}
                 </a>
               ) : (
                 <>
-                  {Icon && <Icon className="size-3.5 mr-1.5" />}
+                  {Icon && <Icon className="mr-1.5 size-3.5" />}
                   {suggestion.label}
                 </>
               )}
@@ -443,7 +447,7 @@ export function PromptSuggestions({
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="text-sm font-medium text-muted-foreground mb-3">
+      <div className="mb-3 font-medium text-muted-foreground text-sm">
         Quick start suggestions
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -452,7 +456,7 @@ export function PromptSuggestions({
           return (
             <Button
               asChild={!!suggestion.href}
-              className="h-auto justify-start py-3 px-4 text-left"
+              className="h-auto justify-start px-4 py-3 text-left"
               key={suggestion.id}
               onClick={
                 suggestion.href
@@ -463,7 +467,7 @@ export function PromptSuggestions({
             >
               {suggestion.href ? (
                 <a
-                  className="flex items-start gap-3 w-full"
+                  className="flex w-full items-start gap-3"
                   href={suggestion.href}
                 >
                   {Icon && (
@@ -473,14 +477,14 @@ export function PromptSuggestions({
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="font-medium">{suggestion.label}</div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="truncate text-muted-foreground text-xs">
                       {suggestion.description}
                     </div>
                   </div>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground/50 ml-auto" />
+                  <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground/50" />
                 </a>
               ) : (
-                <div className="flex items-start gap-3 w-full">
+                <div className="flex w-full items-start gap-3">
                   {Icon && (
                     <div className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-muted">
                       <Icon className="size-4 text-muted-foreground" />
@@ -488,11 +492,11 @@ export function PromptSuggestions({
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="font-medium">{suggestion.label}</div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="truncate text-muted-foreground text-xs">
                       {suggestion.description}
                     </div>
                   </div>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground/50 ml-auto" />
+                  <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground/50" />
                 </div>
               )}
             </Button>

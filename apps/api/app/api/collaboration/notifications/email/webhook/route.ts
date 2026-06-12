@@ -28,7 +28,6 @@ type ResendEventType =
   | "email.clicked";
 
 interface ResendWebhookPayload {
-  type: ResendEventType;
   created_at: string;
   data: {
     email_id: string;
@@ -37,6 +36,7 @@ interface ResendWebhookPayload {
     subject: string;
     created_at: string;
   };
+  type: ResendEventType;
 }
 
 /**
@@ -70,20 +70,26 @@ function verifyResendSignature(
   const parts = signatureHeader.split(",");
   const timestampPart = parts.find((p) => p.startsWith("t="));
   const signaturePart = parts.find((p) => p.startsWith("v1="));
-  if (!(timestampPart && signaturePart)) return false;
+  if (!(timestampPart && signaturePart)) {
+    return false;
+  }
 
   const timestamp = timestampPart.slice(2);
   const signature = signaturePart.slice(3);
 
   // Reject stale signatures (>5 minutes old)
   const ageMs = Date.now() - Number(timestamp) * 1000;
-  if (Number.isNaN(ageMs) || ageMs > 5 * 60 * 1000) return false;
+  if (Number.isNaN(ageMs) || ageMs > 5 * 60 * 1000) {
+    return false;
+  }
 
   const hmac = createHmac("sha256", secret);
   hmac.update(`${timestamp}.${rawBody}`);
   const expected = hmac.digest("hex");
 
-  if (signature.length !== expected.length) return false;
+  if (signature.length !== expected.length) {
+    return false;
+  }
   return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 

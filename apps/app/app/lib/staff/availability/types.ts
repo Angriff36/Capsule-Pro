@@ -5,43 +5,45 @@
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface EmployeeAvailability {
-  id: string;
-  tenant_id: string;
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
+  created_at: Date;
   dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
   effectiveFrom: Date;
   effectiveUntil: Date | null;
-  created_at: Date;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
+  endTime: string;
+  id: string;
+  isAvailable: boolean;
+  startTime: string;
+  tenant_id: string;
   updated_at: Date;
 }
 
 export interface CreateAvailabilityInput {
-  employeeId: string;
   dayOfWeek: DayOfWeek;
-  startTime: string;
-  endTime: string;
-  isAvailable?: boolean;
   effectiveFrom?: string;
   effectiveUntil?: string | null;
+  employeeId: string;
+  endTime: string;
+  isAvailable?: boolean;
+  startTime: string;
 }
 
 export interface UpdateAvailabilityInput {
   dayOfWeek?: DayOfWeek;
-  startTime?: string;
-  endTime?: string;
-  isAvailable?: boolean;
   effectiveFrom?: string;
   effectiveUntil?: string | null;
+  endTime?: string;
+  isAvailable?: boolean;
+  startTime?: string;
 }
 
 export interface CreateBatchAvailabilityInput {
+  effectiveFrom?: string;
+  effectiveUntil?: string | null;
   employeeId: string;
   patterns: Array<{
     dayOfWeek: DayOfWeek;
@@ -49,17 +51,15 @@ export interface CreateBatchAvailabilityInput {
     endTime: string;
     isAvailable?: boolean;
   }>;
-  effectiveFrom?: string;
-  effectiveUntil?: string | null;
 }
 
 export interface AvailabilityFilters {
-  employeeId?: string;
   dayOfWeek?: DayOfWeek;
   effectiveDate?: string;
+  employeeId?: string;
   isActive?: boolean;
-  page?: number;
   limit?: number;
+  page?: number;
 }
 
 export interface AvailabilityListResponse {
@@ -73,22 +73,22 @@ export interface AvailabilityListResponse {
 }
 
 export interface EmployeeAvailabilityForDate {
-  employeeId: string;
-  employeeFirstName: string | null;
-  employeeLastName: string | null;
-  employeeEmail: string;
-  employeeRole: string;
-  isAvailable: boolean;
   dayOfWeek: number;
-  startTime: string;
+  employeeEmail: string;
+  employeeFirstName: string | null;
+  employeeId: string;
+  employeeLastName: string | null;
+  employeeRole: string;
   endTime: string;
+  isAvailable: boolean;
+  startTime: string;
 }
 
 export interface EmployeesAvailabilityQuery {
   employeeIds?: string[];
-  startDate: string;
   endDate: string;
   includeTimeOff?: boolean;
+  startDate: string;
 }
 
 export interface EmployeeAvailabilityWithTimeOff

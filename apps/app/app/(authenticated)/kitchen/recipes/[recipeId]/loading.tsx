@@ -15,9 +15,9 @@ export default function Loading() {
           <Button disabled size="icon" variant="outline">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="h-6 w-24 bg-muted rounded" />
+          <div className="h-6 w-24 rounded bg-muted" />
         </div>
-        <div className="h-9 w-20 bg-muted rounded" />
+        <div className="h-9 w-20 rounded bg-muted" />
       </div>
 
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
@@ -25,55 +25,55 @@ export default function Loading() {
         <div className="flex items-start justify-between">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-64 bg-muted rounded" />
-              <div className="h-6 w-16 bg-muted rounded" />
+              <div className="h-8 w-64 rounded bg-muted" />
+              <div className="h-6 w-16 rounded bg-muted" />
             </div>
-            <div className="h-5 w-32 bg-muted rounded" />
+            <div className="h-5 w-32 rounded bg-muted" />
           </div>
-          <div className="h-10 w-28 bg-muted rounded" />
+          <div className="h-10 w-28 rounded bg-muted" />
         </div>
 
         {/* Description skeleton */}
         <div className="space-y-2">
-          <div className="h-4 w-full bg-muted rounded" />
-          <div className="h-4 w-3/4 bg-muted rounded" />
+          <div className="h-4 w-full rounded bg-muted" />
+          <div className="h-4 w-3/4 rounded bg-muted" />
         </div>
 
         {/* Metadata Bar skeleton */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <div className="h-5 w-5 bg-muted rounded" />
+              <div className="h-5 w-5 rounded bg-muted" />
               <div className="space-y-2">
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-5 w-12 bg-muted rounded" />
+                <div className="h-3 w-16 rounded bg-muted" />
+                <div className="h-5 w-12 rounded bg-muted" />
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <div className="h-5 w-5 bg-muted rounded" />
+              <div className="h-5 w-5 rounded bg-muted" />
               <div className="space-y-2">
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-5 w-12 bg-muted rounded" />
+                <div className="h-3 w-16 rounded bg-muted" />
+                <div className="h-5 w-12 rounded bg-muted" />
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <div className="h-5 w-5 bg-muted rounded" />
+              <div className="h-5 w-5 rounded bg-muted" />
               <div className="space-y-2">
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-5 w-12 bg-muted rounded" />
+                <div className="h-3 w-16 rounded bg-muted" />
+                <div className="h-5 w-12 rounded bg-muted" />
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
-              <div className="h-5 w-5 bg-muted rounded" />
+              <div className="h-5 w-5 rounded bg-muted" />
               <div className="space-y-2">
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-5 w-12 bg-muted rounded" />
+                <div className="h-3 w-16 rounded bg-muted" />
+                <div className="h-5 w-12 rounded bg-muted" />
               </div>
             </CardContent>
           </Card>
@@ -84,20 +84,20 @@ export default function Loading() {
           <div className="space-y-4">
             {/* Tab list skeleton */}
             <div className="flex gap-2">
-              <div className="h-10 w-24 bg-muted rounded-full" />
-              <div className="h-10 w-28 bg-muted rounded-full" />
-              <div className="h-10 w-20 bg-muted rounded-full" />
-              <div className="h-10 w-20 bg-muted rounded-full" />
-              <div className="h-10 w-18 bg-muted rounded-full" />
+              <div className="h-10 w-24 rounded-full bg-muted" />
+              <div className="h-10 w-28 rounded-full bg-muted" />
+              <div className="h-10 w-20 rounded-full bg-muted" />
+              <div className="h-10 w-20 rounded-full bg-muted" />
+              <div className="h-10 w-18 rounded-full bg-muted" />
             </div>
 
             {/* Tab content skeleton */}
             <div className="space-y-4">
-              <div className="h-6 w-48 bg-muted rounded" />
+              <div className="h-6 w-48 rounded bg-muted" />
               <div className="space-y-3">
-                <div className="h-4 w-full bg-muted rounded" />
-                <div className="h-4 w-5/6 bg-muted rounded" />
-                <div className="h-4 w-4/6 bg-muted rounded" />
+                <div className="h-4 w-full rounded bg-muted" />
+                <div className="h-4 w-5/6 rounded bg-muted" />
+                <div className="h-4 w-4/6 rounded bg-muted" />
               </div>
             </div>
           </div>

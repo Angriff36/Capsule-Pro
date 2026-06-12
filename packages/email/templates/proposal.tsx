@@ -26,12 +26,12 @@ export interface ProposalBrandingProps {
 }
 
 export interface ProposalTemplateProps {
-  readonly recipientName: string;
+  readonly branding?: ProposalBrandingProps;
+  readonly message?: string;
   readonly proposalTitle: string;
   readonly proposalUrl: string;
-  readonly message?: string;
+  readonly recipientName: string;
   readonly totalAmount?: string;
-  readonly branding?: ProposalBrandingProps;
 }
 
 export const ProposalTemplate = ({
@@ -89,7 +89,7 @@ export const ProposalTemplate = ({
                 )}
                 <Section className="mt-8 mb-8 text-center">
                   <Button
-                    className="rounded-md px-6 py-3 text-base font-semibold text-white"
+                    className="rounded-md px-6 py-3 font-semibold text-base text-white"
                     href={proposalUrl}
                     style={{ backgroundColor: primaryColor }}
                   >

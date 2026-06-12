@@ -38,7 +38,6 @@ const { mockDatabase } = vi.hoisted(() => {
   };
 });
 
-
 // ── Standard infrastructure mocks ──
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
@@ -59,17 +58,19 @@ vi.mock("@/lib/manifest/issue-log", () => ({
   logManifestIssue: vi.fn(),
 }));
 vi.mock("@/lib/manifest-response", () => ({
-  manifestSuccessResponse: vi.fn((data, status = 200) =>
-    new Response(JSON.stringify({ success: true, ...data }), { status })
+  manifestSuccessResponse: vi.fn(
+    (data, status = 200) =>
+      new Response(JSON.stringify({ success: true, ...data }), { status })
   ),
-  manifestErrorResponse: vi.fn((data, status = 400) =>
-    new Response(
-      JSON.stringify({
-        success: false,
-        ...(typeof data === "string" ? { message: data } : data),
-      }),
-      { status }
-    )
+  manifestErrorResponse: vi.fn(
+    (data, status = 400) =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          ...(typeof data === "string" ? { message: data } : data),
+        }),
+        { status }
+      )
   ),
 }));
 vi.mock("@repo/database", () => ({
@@ -101,8 +102,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
@@ -328,7 +328,14 @@ describe("Notification Persistence (write → read alignment)", () => {
     };
 
     const mockRunManifestCommand = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ success: true, result: { id: "notif-003", isRead: true }, events: [] }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: "notif-003", isRead: true },
+          events: [],
+        }),
+        { status: 200 }
+      )
     );
 
     beforeEach(() => {

@@ -36,17 +36,17 @@ const VALID_ENTITY_TYPES = [
 ];
 
 interface CreateWebhookRequest {
-  name: string;
-  url: string;
-  secret?: string;
   apiKey?: string;
-  eventTypeFilters?: WebhookEventType[];
+  customHeaders?: Record<string, string>;
   entityFilters?: string[];
-  status?: WebhookStatus;
+  eventTypeFilters?: WebhookEventType[];
+  name: string;
   retryCount?: number;
   retryDelayMs?: number;
+  secret?: string;
+  status?: WebhookStatus;
   timeoutMs?: number;
-  customHeaders?: Record<string, string>;
+  url: string;
 }
 
 export async function GET(request: NextRequest) {

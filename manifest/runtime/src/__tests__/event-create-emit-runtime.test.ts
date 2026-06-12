@@ -43,7 +43,9 @@ class Mem implements Store {
   // biome-ignore lint/suspicious/noExplicitAny: structural rows.
   async update(id: string, data: any): Promise<any> {
     const existing = this.items.get(id);
-    if (!existing) return undefined as never;
+    if (!existing) {
+      return undefined as never;
+    }
     const row = { ...existing, ...data, id };
     this.items.set(id, row);
     return row as never;
@@ -72,7 +74,7 @@ describe("Event.create — governed write emits EventCreated", () => {
   it("the compiled IR declares Event.create with EventCreated emit", () => {
     const createCmd = ir.commands.find(
       (c: { entity: string; name: string }) =>
-        c.entity === "Event" && c.name === "create",
+        c.entity === "Event" && c.name === "create"
     );
     expect(createCmd).toBeDefined();
     const emits: string[] = createCmd.emits ?? createCmd.events ?? [];
@@ -87,7 +89,7 @@ describe("Event.create — governed write emits EventCreated", () => {
         tenantId: USER.tenantId,
         user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
       },
-      { storeProvider: provider, customBuiltins: createCustomBuiltins() },
+      { storeProvider: provider, customBuiltins: createCustomBuiltins() }
     );
 
     const result = await runManifestCommandCore(
@@ -116,13 +118,13 @@ describe("Event.create — governed write emits EventCreated", () => {
           templateId: "",
         },
         user: { ...USER },
-      },
+      }
     );
 
     expect(result.ok).toBe(true);
     const eventNames = (result.ok ? result.events : [])?.map(
       // biome-ignore lint/suspicious/noExplicitAny: structural event rows.
-      (e: any) => e?.name,
+      (e: any) => e?.name
     );
     expect(eventNames).toContain("EventCreated");
 

@@ -12,16 +12,16 @@ export type ExportFormat = "csv" | "pdf";
 export type ExportSection = "summary" | "menu" | "staff" | "guests" | "tasks";
 
 export interface EventExportOptions {
+  download?: boolean;
   format: ExportFormat;
   include: ExportSection[];
-  download?: boolean;
 }
 
 export interface EventExportResult {
-  filename: string;
-  dataUrl?: string;
   content?: string;
   contentType: string;
+  dataUrl?: string;
+  filename: string;
 }
 
 /**

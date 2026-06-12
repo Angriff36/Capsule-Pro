@@ -23,23 +23,23 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
 interface InventoryItemRow {
+  category: string | null;
   id: string;
   item_number: string;
   name: string;
-  category: string | null;
   quantity_on_hand: number;
-  unit_cost: number;
   reorder_level: number;
   tags: string[];
+  unit_cost: number;
 }
 
 interface InventoryAlertRow {
+  alert_type: string;
   id: string;
   item_id: string;
-  alert_type: string;
+  item_name: string;
   threshold_value: number;
   triggered_at: Date;
-  item_name: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -130,7 +130,7 @@ const KitchenInventoryPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Kitchen Inventory
           </h1>
           <p className="text-muted-foreground">
@@ -143,7 +143,7 @@ const KitchenInventoryPage = async () => {
 
         {/* Performance Overview Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Performance Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-4">
@@ -193,7 +193,7 @@ const KitchenInventoryPage = async () => {
         {/* Low Stock Alerts Section */}
         {lowStockAlerts.length > 0 && (
           <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
+            <h2 className="font-medium text-muted-foreground text-sm">
               Low Stock Alerts ({lowStockAlerts.length})
             </h2>
             <Card className="border-amber-900/20 bg-amber-900/10" tone="canvas">
@@ -214,7 +214,7 @@ const KitchenInventoryPage = async () => {
                     >
                       <div>
                         <div className="font-medium">{alert.item_name}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           Below {formatQuantity(alert.threshold_value)}
                         </div>
                       </div>
@@ -235,7 +235,7 @@ const KitchenInventoryPage = async () => {
 
         {/* Inventory Items Section */}
         <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Inventory Items ({inventoryItems.length})
           </h2>
           <Card tone="canvas">

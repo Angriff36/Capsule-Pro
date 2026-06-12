@@ -73,23 +73,33 @@ function getClientName(deal: {
   } | null;
   lead: { companyName: string | null; contactName: string | null } | null;
 }) {
-  if (deal.client?.company_name) return deal.client.company_name;
+  if (deal.client?.company_name) {
+    return deal.client.company_name;
+  }
   if (deal.client) {
     const fullName = [deal.client.first_name, deal.client.last_name]
       .filter((value): value is string => Boolean(value))
       .join(" ")
       .trim();
-    if (fullName) return fullName;
+    if (fullName) {
+      return fullName;
+    }
   }
 
-  if (deal.lead?.companyName) return deal.lead.companyName;
-  if (deal.lead?.contactName) return deal.lead.contactName;
+  if (deal.lead?.companyName) {
+    return deal.lead.companyName;
+  }
+  if (deal.lead?.contactName) {
+    return deal.lead.contactName;
+  }
 
   return "Unassigned client";
 }
 
 function formatDate(value: Date | null) {
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
   return dateFormatter.format(value);
 }
 
@@ -241,12 +251,12 @@ export default async function PipelinePage() {
               key={item.stage}
             >
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold capitalize">
+                <h2 className="font-semibold text-sm capitalize">
                   {item.stage}
                 </h2>
                 <Badge variant={stageTone(item.stage)}>{item.count}</Badge>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-muted-foreground text-xs">
                 {formatCurrency(item.totalValue)} in this stage
               </p>
             </section>
@@ -254,17 +264,17 @@ export default async function PipelinePage() {
         </div>
 
         <section className="overflow-hidden rounded-3xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex items-center justify-between border-border border-b px-6 py-4">
             <div>
-              <h2 className="text-lg font-semibold">Pipeline deals</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="font-semibold text-lg">Pipeline deals</h2>
+              <p className="text-muted-foreground text-sm">
                 Server-rendered list of proposals mapped into pipeline stages.
               </p>
             </div>
           </div>
 
           {deals.length === 0 ? (
-            <div className="px-6 py-10 text-sm text-muted-foreground">
+            <div className="px-6 py-10 text-muted-foreground text-sm">
               No proposals are available for this tenant yet.
             </div>
           ) : (
@@ -280,7 +290,7 @@ export default async function PipelinePage() {
                 title: (
                   <div>
                     <div>{deal.title}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {deal.proposalNumber} · {deal.clientName}
                     </div>
                   </div>

@@ -16,19 +16,31 @@
  */
 
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "..", "manifest", "ir", "kitchen.ir.json");
+const irPath = join(
+  here,
+  "..",
+  "..",
+  "..",
+  "..",
+  "manifest",
+  "ir",
+  "kitchen.ir.json"
+);
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
 const event = ir.entities.find((e: { name: string }) => e.name === "Event");
-const board = ir.entities.find((e: { name: string }) => e.name === "BattleBoard");
+const board = ir.entities.find(
+  (e: { name: string }) => e.name === "BattleBoard"
+);
 const createCmd = ir.commands.find(
-  (c: { entity: string; name: string }) => c.entity === "BattleBoard" && c.name === "create"
+  (c: { entity: string; name: string }) =>
+    c.entity === "BattleBoard" && c.name === "create"
 );
 
 // Event-owned context a board should inherit rather than ask for.
@@ -44,7 +56,8 @@ const PARENT_OWNED = [
 describe("BattleBoard create — does not require event-owned input", () => {
   it("links to Event via belongsTo (so context is resolvable from eventId)", () => {
     const rel = board.relationships.find(
-      (r: { kind: string; target: string }) => r.kind === "belongsTo" && r.target === "Event"
+      (r: { kind: string; target: string }) =>
+        r.kind === "belongsTo" && r.target === "Event"
     );
     expect(rel).toBeDefined();
     expect(rel.foreignKey.fields).toContain("eventId");
@@ -56,13 +69,17 @@ describe("BattleBoard create — does not require event-owned input", () => {
   });
 
   it("does NOT ask the caller for any event-owned field", () => {
-    const params = new Set(createCmd.parameters.map((p: { name: string }) => p.name));
+    const params = new Set(
+      createCmd.parameters.map((p: { name: string }) => p.name)
+    );
     const duplicated = PARENT_OWNED.filter((f) => params.has(f));
     expect(duplicated).toEqual([]);
   });
 
   it("declares the event-owned snapshot fields it inherits (so they can be stored)", () => {
-    const props = new Set(board.properties.map((p: { name: string }) => p.name));
+    const props = new Set(
+      board.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(props.has(f)).toBe(true);
     }
@@ -70,7 +87,9 @@ describe("BattleBoard create — does not require event-owned input", () => {
   });
 
   it("the inherited fields are genuinely Event-owned (the duplication it avoids)", () => {
-    const eventProps = new Set(event.properties.map((p: { name: string }) => p.name));
+    const eventProps = new Set(
+      event.properties.map((p: { name: string }) => p.name)
+    );
     for (const f of PARENT_OWNED) {
       expect(eventProps.has(f)).toBe(true);
     }

@@ -205,9 +205,7 @@ export function BoardClient({
     // board gets no second card (the server guard catches races; this keeps
     // the obvious case instant).
     const alreadyOnBoard =
-      board.committedStaff.some(
-        (s) => s.staffMemberId === pendingStaff.id
-      ) ||
+      board.committedStaff.some((s) => s.staffMemberId === pendingStaff.id) ||
       staffDrafts.some(
         (c) => c.envelope.draftAction.entityId === pendingStaff.id
       );

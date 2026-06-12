@@ -1,45 +1,45 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface UnitConversion {
   fromUnitId: number;
-  toUnitId: number;
   multiplier: number;
+  toUnitId: number;
 }
 
 export interface RecipeCostBreakdown {
-  totalCost: number;
-  costPerYield: number;
   costPerPortion?: number;
+  costPerYield: number;
   ingredients: IngredientCostBreakdown[];
+  totalCost: number;
 }
 
 export interface IngredientCostBreakdown {
+  adjustedQuantity: number;
+  cost: number;
+  hasInventoryItem: boolean;
   id: string;
   name: string;
   quantity: number;
   unit: string;
-  wasteFactor: number;
-  adjustedQuantity: number;
   unitCost: number;
-  cost: number;
-  hasInventoryItem: boolean;
+  wasteFactor: number;
 }
 
 export interface PortionScaleRequest {
+  currentYield: number;
   recipeVersionId: string;
   targetPortions: number;
-  currentYield: number;
 }
 
 export interface ScaledRecipeCost {
-  scaledTotalCost: number;
-  scaledCostPerYield: number;
-  scaleFactor: number;
   originalCost: number;
+  scaledCostPerYield: number;
+  scaledTotalCost: number;
+  scaleFactor: number;
 }
 
 const loadUnitConversions = async () => {
@@ -470,7 +470,11 @@ export const updateEventBudgetsForRecipe = async (
   const tenantId = await getTenantIdForOrg(orgId);
 
   const eventRecipeCosts = await database.$queryRaw<
-    { event_id: string; current_budget: Prisma.Decimal | null; total_recipe_cost: Prisma.Decimal | number | string }[]
+    {
+      event_id: string;
+      current_budget: Prisma.Decimal | null;
+      total_recipe_cost: Prisma.Decimal | number | string;
+    }[]
   >(
     Prisma.sql`
       WITH recipe_events AS (

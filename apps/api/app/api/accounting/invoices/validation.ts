@@ -30,35 +30,35 @@ export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 export type InvoiceType = (typeof INVOICE_TYPES)[number];
 
 export interface InvoiceFilters {
-  search?: string;
-  status?: InvoiceStatus;
-  invoiceType?: InvoiceType;
   clientId?: string;
-  eventId?: string;
   dateFrom?: string;
   dateTo?: string;
   dueFrom?: string;
   dueTo?: string;
-  overdue?: boolean;
+  eventId?: string;
+  invoiceType?: InvoiceType;
   isPaidInFull?: boolean;
+  overdue?: boolean;
+  search?: string;
+  status?: InvoiceStatus;
 }
 
 export interface CreateInvoiceRequest {
-  eventId: string;
   clientId: string;
-  invoiceType?: InvoiceType;
-  paymentTerms?: number;
+  depositPercentage?: number;
   dueDate?: string;
+  eventId: string;
+  internalNotes?: string;
+  invoiceType?: InvoiceType;
   lineItems?: Array<{
     description: string;
     quantity: number;
     unitPrice: number;
     taxRate: number;
   }>;
-  notes?: string;
-  internalNotes?: string;
-  depositPercentage?: number;
   metadata?: Record<string, unknown>;
+  notes?: string;
+  paymentTerms?: number;
 }
 
 export function parseInvoiceFilters(
@@ -359,26 +359,21 @@ export function getDaysUntilDue(dueDate: Date): number {
 
 // Type definitions for API responses
 export interface InvoiceResponse {
-  id: string;
-  tenantId: string;
-  invoiceNumber: string;
-  invoiceType: string;
-  status: string;
-  clientId: string;
-  eventId: string;
-  subtotal: Decimal;
-  taxAmount: Decimal;
-  discountAmount: Decimal;
-  total: Decimal;
-  amountPaid: Decimal;
   amountDue: Decimal;
-  paymentTerms: number;
-  dueDate: Date;
-  issuedAt: Date;
+  amountPaid: Decimal;
+  clientId: string;
+  createdAt: Date;
+  deletedAt: Date | null;
+  depositPaid: Decimal | null;
   depositPercentage: Decimal | null;
   depositRequired: Decimal | null;
-  depositPaid: Decimal | null;
-  notes: string | null;
+  discountAmount: Decimal;
+  dueDate: Date;
+  eventId: string;
+  id: string;
+  invoiceNumber: string;
+  invoiceType: string;
+  issuedAt: Date;
   lineItems: Array<{
     description: string;
     quantity: number;
@@ -386,13 +381,18 @@ export interface InvoiceResponse {
     taxRate: number;
   }> | null;
   metadata: Record<string, unknown>;
-  sentAt: Date | null;
-  viewedAt: Date | null;
+  notes: string | null;
   paidAt: Date | null;
-  voidedAt: Date | null;
-  createdAt: Date;
+  paymentTerms: number;
+  sentAt: Date | null;
+  status: string;
+  subtotal: Decimal;
+  taxAmount: Decimal;
+  tenantId: string;
+  total: Decimal;
   updatedAt: Date;
-  deletedAt: Date | null;
+  viewedAt: Date | null;
+  voidedAt: Date | null;
 }
 
 export interface InvoiceListResponse {

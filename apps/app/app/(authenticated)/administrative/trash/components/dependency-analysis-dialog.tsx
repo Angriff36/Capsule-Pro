@@ -28,21 +28,21 @@ import {
 import type { DependencyAnalysis } from "./trash-page-client";
 
 interface TrashItem {
-  id: string;
-  entity: string;
-  displayName: string;
   deletedAt: string;
+  displayName: string;
+  entity: string;
   hasDependents: boolean;
+  id: string;
   tenantId: string;
 }
 
 interface DependencyAnalysisDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  item: TrashItem | null;
   analysis: DependencyAnalysis | null;
+  item: TrashItem | null;
   loading: boolean;
+  onOpenChange: (open: boolean) => void;
   onRestore: (cascade: boolean) => void;
+  open: boolean;
 }
 
 export function DependencyAnalysisDialog({
@@ -53,10 +53,14 @@ export function DependencyAnalysisDialog({
   loading,
   onRestore,
 }: DependencyAnalysisDialogProps) {
-  if (!item) return null;
+  if (!item) {
+    return null;
+  }
 
   const getRecommendedActionBadge = () => {
-    if (!analysis) return null;
+    if (!analysis) {
+      return null;
+    }
 
     switch (analysis.summary.recommendedAction) {
       case "restore":
@@ -85,7 +89,7 @@ export function DependencyAnalysisDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col overflow-hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -113,7 +117,7 @@ export function DependencyAnalysisDialog({
             </div>
           </div>
         ) : analysis ? (
-          <div className="flex-1 overflow-y-auto -mx-6 px-6">
+          <div className="-mx-6 flex-1 overflow-y-auto px-6">
             <Tabs className="w-full" defaultValue="summary">
               <TabsList className="w-full justify-start">
                 <TabsTrigger value="summary">Summary</TabsTrigger>
@@ -125,38 +129,38 @@ export function DependencyAnalysisDialog({
                 )}
               </TabsList>
 
-              <TabsContent className="space-y-4 mt-4" value="summary">
+              <TabsContent className="mt-4 space-y-4" value="summary">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <div className="text-muted-foreground text-sm">
                       Total Dependents
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {analysis.summary.totalDependents}
                     </div>
                   </div>
-                  <div className="border rounded-lg p-4">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <div className="text-muted-foreground text-sm">
                       Deleted Dependents
                     </div>
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="font-bold text-2xl text-orange-600">
                       {analysis.summary.deletedDependents}
                     </div>
                   </div>
-                  <div className="border rounded-lg p-4">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <div className="text-muted-foreground text-sm">
                       Active Dependents
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="font-bold text-2xl text-blue-600">
                       {analysis.summary.activeDependents}
                     </div>
                   </div>
-                  <div className="border rounded-lg p-4">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <div className="text-muted-foreground text-sm">
                       Restore Status
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {analysis.summary.canRestore ? (
                         <span className="text-green-600">Allowed</span>
                       ) : (
@@ -169,14 +173,14 @@ export function DependencyAnalysisDialog({
                 {/* Warnings */}
                 {analysis.restorePlan?.warnings &&
                   analysis.restorePlan.warnings.length > 0 && (
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                       <div className="flex items-start gap-2">
-                        <AlertTriangleIcon className="size-5 text-orange-600 mt-0.5" />
+                        <AlertTriangleIcon className="mt-0.5 size-5 text-orange-600" />
                         <div>
                           <h4 className="font-medium text-orange-900">
                             Warning
                           </h4>
-                          <ul className="mt-2 space-y-1 text-sm text-orange-800">
+                          <ul className="mt-2 space-y-1 text-orange-800 text-sm">
                             {analysis.restorePlan.warnings.map((warning, i) => (
                               <li key={i}>• {warning}</li>
                             ))}
@@ -187,9 +191,9 @@ export function DependencyAnalysisDialog({
                   )}
 
                 {/* Recommendation */}
-                <div className="border rounded-lg p-4">
-                  <h4 className="font-medium mb-2">Recommendation</h4>
-                  <p className="text-sm text-muted-foreground">
+                <div className="rounded-lg border p-4">
+                  <h4 className="mb-2 font-medium">Recommendation</h4>
+                  <p className="text-muted-foreground text-sm">
                     {analysis.summary.recommendedAction === "restore" &&
                       "This entity can be safely restored. No active dependents that would cause issues."}
                     {analysis.summary.recommendedAction === "cascade_restore" &&
@@ -200,19 +204,19 @@ export function DependencyAnalysisDialog({
                 </div>
               </TabsContent>
 
-              <TabsContent className="space-y-2 mt-4" value="dependents">
+              <TabsContent className="mt-4 space-y-2" value="dependents">
                 {analysis.dependents.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="py-8 text-center text-muted-foreground">
                     No dependent entities found
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {analysis.dependents.map((dep) => (
                       <div
-                        className={`flex items-center justify-between border rounded-lg p-3 ${
+                        className={`flex items-center justify-between rounded-lg border p-3 ${
                           dep.node.isDeleted
-                            ? "bg-muted/50 border-hairline"
-                            : "bg-muted/20 border-hairline"
+                            ? "border-hairline bg-muted/50"
+                            : "border-hairline bg-muted/20"
                         }`}
                         key={dep.node.id}
                       >
@@ -222,7 +226,7 @@ export function DependencyAnalysisDialog({
                             <div className="font-medium">
                               {dep.node.displayName}
                             </div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground text-sm">
                               <span>{dep.node.entity}</span>
                               <span>via {dep.edge.description}</span>
                               <Badge className="text-xs" variant="outline">
@@ -244,21 +248,21 @@ export function DependencyAnalysisDialog({
               </TabsContent>
 
               {analysis.restorePlan && (
-                <TabsContent className="space-y-2 mt-4" value="plan">
-                  <div className="text-sm text-muted-foreground mb-4">
+                <TabsContent className="mt-4 space-y-2" value="plan">
+                  <div className="mb-4 text-muted-foreground text-sm">
                     The following steps will be executed during restore:
                   </div>
                   {analysis.restorePlan.steps.map((step, i) => (
                     <div
-                      className="flex items-start gap-3 border rounded-lg p-3"
+                      className="flex items-start gap-3 rounded-lg border p-3"
                       key={step.entityId}
                     >
-                      <div className="flex items-center justify-center size-6 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                      <div className="flex size-6 items-center justify-center rounded-full bg-primary font-medium text-primary-foreground text-xs">
                         {i + 1}
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">{step.displayName}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           {step.entityType} • {step.reason}
                         </div>
                       </div>
@@ -292,12 +296,12 @@ export function DependencyAnalysisDialog({
                 onClick={() => onRestore(false)}
                 variant="outline"
               >
-                <Undo2Icon className="size-4 mr-2" />
+                <Undo2Icon className="mr-2 size-4" />
                 Restore Only
               </Button>
               {analysis.summary.deletedDependents > 0 && (
                 <Button disabled={loading} onClick={() => onRestore(true)}>
-                  <Undo2Icon className="size-4 mr-2" />
+                  <Undo2Icon className="mr-2 size-4" />
                   Cascade Restore
                 </Button>
               )}

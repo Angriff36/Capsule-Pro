@@ -73,9 +73,11 @@ function enrichComputedDependencies(ir) {
 
   for (const entity of ir.entities ?? []) {
     const computedNames = new Set(
-      (entity.computedProperties ?? []).map((cp) => cp.name),
+      (entity.computedProperties ?? []).map((cp) => cp.name)
     );
-    if (computedNames.size === 0) continue;
+    if (computedNames.size === 0) {
+      continue;
+    }
 
     for (const cp of entity.computedProperties) {
       const selfRefs = collectSelfPropertyRefs(cp.expression);
@@ -101,10 +103,14 @@ function enrichComputedDependencies(ir) {
  */
 function collectSelfPropertyRefs(expr) {
   const refs = new Set();
-  if (!expr || typeof expr !== "object") return refs;
+  if (!expr || typeof expr !== "object") {
+    return refs;
+  }
 
   const walk = (node) => {
-    if (!node || typeof node !== "object") return;
+    if (!node || typeof node !== "object") {
+      return;
+    }
     // MemberAccess: { kind: "member", object: { kind: "identifier", name: "self" }, property: "foo" }
     if (
       node.kind === "member" &&
@@ -118,7 +124,9 @@ function collectSelfPropertyRefs(expr) {
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) {
         for (const item of value) {
-          if (item && typeof item === "object" && item.kind) walk(item);
+          if (item && typeof item === "object" && item.kind) {
+            walk(item);
+          }
         }
       } else if (value && typeof value === "object" && value.kind) {
         walk(value);
@@ -152,15 +160,13 @@ function discoverManifestFiles(dir) {
   const found = [];
   const walk = (currentDir) => {
     for (const entry of readdirSync(currentDir, { withFileTypes: true }).sort(
-      (a, b) => a.name.localeCompare(b.name),
+      (a, b) => a.name.localeCompare(b.name)
     )) {
       const fullPath = join(currentDir, entry.name);
       if (entry.isDirectory()) {
         walk(fullPath);
       } else if (entry.isFile() && entry.name.endsWith(".manifest")) {
-        found.push(
-          relative(MANIFESTS_DIR, fullPath).split("\\").join("/"),
-        );
+        found.push(relative(MANIFESTS_DIR, fullPath).split("\\").join("/"));
       }
     }
   };
@@ -197,7 +203,7 @@ async function compileMergedManifests() {
   const manifestFiles = discoverManifestFiles(MANIFESTS_DIR);
 
   console.log(
-    `[manifest/compile] Found ${manifestFiles.length} manifest(s) under ${MANIFESTS_DIR}`,
+    `[manifest/compile] Found ${manifestFiles.length} manifest(s) under ${MANIFESTS_DIR}`
   );
 
   // Compile each manifest to IR
@@ -237,9 +243,17 @@ async function compileMergedManifests() {
   // contentHash: hash of all source .manifest contents (sorted for determinism).
   // Computed BEFORE merge so it can drive a deterministic `compiledAt`.
   const sourceHashes = compiledEntries
-    .map((e) => crypto.createHash("sha256").update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8")).digest("hex"))
+    .map((e) =>
+      crypto
+        .createHash("sha256")
+        .update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8"))
+        .digest("hex")
+    )
     .sort();
-  const contentHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
+  const contentHash = crypto
+    .createHash("sha256")
+    .update(sourceHashes.join("\n"))
+    .digest("hex");
 
   // Idempotent provenance timestamp: if the committed IR was produced from the
   // SAME sources (identical contentHash), reuse its `compiledAt` so re-running
@@ -336,7 +350,9 @@ async function compileMergedManifests() {
     }))
     .sort((a, b) => {
       const entityCmp = a.entity.localeCompare(b.entity);
-      if (entityCmp !== 0) return entityCmp;
+      if (entityCmp !== 0) {
+        return entityCmp;
+      }
       return a.command.localeCompare(b.command);
     });
   writeFileSync(COMMANDS_FILE, JSON.stringify(commandsManifest, null, 2));
@@ -376,7 +392,7 @@ async function compileMergedManifests() {
   };
   writeFileSync(MODULE_GRAPH_FILE, JSON.stringify(moduleGraph, null, 2));
   console.log(
-    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`,
+    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`
   );
 
   console.log("[manifest/compile] Compilation complete!");

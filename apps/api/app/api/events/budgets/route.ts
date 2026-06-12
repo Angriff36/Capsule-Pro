@@ -5,12 +5,12 @@
  * POST   /api/events/budgets      - Create a new event budget
  */
 
-import { ZodError } from "zod";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { parseEventBudgetListFilters } from "./validation";
@@ -100,6 +100,14 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   const user = await resolveCurrentUser(request);
-  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
-  return runManifestCommand({ entity: "EventBudget", command: "create", body: { ...rawBody, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
+  const rawBody = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  return runManifestCommand({
+    entity: "EventBudget",
+    command: "create",
+    body: { ...rawBody, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

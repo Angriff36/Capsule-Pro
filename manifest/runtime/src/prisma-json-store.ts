@@ -14,25 +14,25 @@
 
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
-import { toJson } from "./utils/to-json";
 import type { EntityInstance } from "./prisma-store";
+import { toJson } from "./utils/to-json";
 
 /**
  * Configuration for PrismaJsonStore
  */
 interface PrismaJsonStoreConfig {
+  /** Entity type name (e.g., "PrepComment", "Container") */
+  entityType: string;
   /** Prisma client instance */
   prisma: PrismaClient;
   /** Tenant ID for multi-tenant isolation */
   tenantId: string;
-  /** Entity type name (e.g., "PrepComment", "Container") */
-  entityType: string;
 }
 
 /** Type for ManifestEntity database row */
 interface ManifestEntityRow {
-  id: string;
   data: unknown;
+  id: string;
   version: number;
 }
 
@@ -99,7 +99,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
       });
 
       if (!row) {
-        return undefined;
+        return;
       }
 
       return this.deserialize(row);
@@ -180,7 +180,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
         console.error(
           `[PrismaJsonStore] update("${id}") — entity not found for entityType="${this.entityType}", tenant="${this.tenantId}"`
         );
-        return undefined;
+        return;
       }
 
       // Shallow merge: new data overwrites existing fields
@@ -207,7 +207,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
         console.error(
           `[PrismaJsonStore] update("${id}") — optimistic concurrency conflict for entityType="${this.entityType}", tenant="${this.tenantId}", version=${existing.version}`
         );
-        return undefined;
+        return;
       }
 
       // Return the merged entity

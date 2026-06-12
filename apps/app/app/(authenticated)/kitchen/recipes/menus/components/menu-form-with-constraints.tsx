@@ -33,8 +33,8 @@ import {
 } from "../actions-manifest";
 
 interface SelectedDish {
-  dish: DishSummary;
   course: string | null;
+  dish: DishSummary;
 }
 
 const COURSE_OPTIONS = [
@@ -47,15 +47,15 @@ const COURSE_OPTIONS = [
 ];
 
 interface MenuFormWithConstraintsProps {
-  formMode: "create" | "update";
-  menuId?: string;
-  initialData?: MenuDetail;
   children: (props: {
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     isSubmitting: boolean;
     error: string | null;
     dishesSelector: React.ReactNode;
   }) => React.ReactNode;
+  formMode: "create" | "update";
+  initialData?: MenuDetail;
+  menuId?: string;
 }
 
 export function MenuFormWithConstraints({
@@ -225,8 +225,8 @@ export function MenuFormWithConstraints({
 
   const dishesSelector = (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Select Dishes</h2>
-      <p className="text-sm text-muted-foreground">
+      <h2 className="font-semibold text-lg">Select Dishes</h2>
+      <p className="text-muted-foreground text-sm">
         Choose dishes to include in this menu and assign them to courses
       </p>
 
@@ -236,14 +236,14 @@ export function MenuFormWithConstraints({
         value={searchQuery}
       />
 
-      <div className="border rounded-md">
+      <div className="rounded-md border">
         <div className="max-h-96 overflow-y-auto">
           {isLoadingDishes ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="p-4 text-center text-muted-foreground text-sm">
               Loading dishes...
             </div>
           ) : filteredDishes.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="p-4 text-center text-muted-foreground text-sm">
               {searchQuery
                 ? "No dishes found matching your search"
                 : "No dishes available"}
@@ -259,7 +259,7 @@ export function MenuFormWithConstraints({
                 );
 
                 return (
-                  <div className="p-4 space-y-2" key={dish.id}>
+                  <div className="space-y-2 p-4" key={dish.id}>
                     <div className="flex items-start gap-3">
                       <Checkbox
                         checked={isSelected}
@@ -269,18 +269,18 @@ export function MenuFormWithConstraints({
                       />
                       <div className="flex-1 space-y-1">
                         <label
-                          className="font-medium cursor-pointer flex-1"
+                          className="flex-1 cursor-pointer font-medium"
                           htmlFor={`dish-${dish.id}`}
                         >
                           {dish.name}
                         </label>
                         {dish.description && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {dish.description}
                           </div>
                         )}
                         {dish.category && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {dish.category}
                           </div>
                         )}
@@ -320,8 +320,8 @@ export function MenuFormWithConstraints({
       </div>
 
       {selectedDishes.length > 0 && (
-        <div className="text-sm text-muted-foreground">
-          {selectedDishes.length} dish{selectedDishes.length !== 1 ? "es" : ""}{" "}
+        <div className="text-muted-foreground text-sm">
+          {selectedDishes.length} dish{selectedDishes.length === 1 ? "" : "es"}{" "}
           selected
         </div>
       )}

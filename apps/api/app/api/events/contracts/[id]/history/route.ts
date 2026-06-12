@@ -21,22 +21,22 @@ interface ContractHistoryAPIContext {
 }
 
 interface HistoryEntry {
-  id: string;
   action: string;
+  createdAt: Date;
+  id: string;
+  newValues: Record<string, unknown> | null;
+  oldValues: Record<string, unknown> | null;
   performedBy: string | null;
   performerFirstName: string | null;
   performerLastName: string | null;
-  oldValues: Record<string, unknown> | null;
-  newValues: Record<string, unknown> | null;
-  createdAt: Date;
 }
 
 interface SignatureHistoryEntry {
   id: string;
-  type: "signature";
-  signerName: string;
-  signerEmail: string | null;
   signedAt: Date;
+  signerEmail: string | null;
+  signerName: string;
+  type: "signature";
 }
 
 type CombinedHistoryEntry =

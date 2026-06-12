@@ -12,7 +12,7 @@ export function InlineRecipeName({
 }) {
   return (
     <InlineTextInput
-      className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
+      className="truncate font-medium text-foreground text-sm transition-colors group-hover:text-[var(--brand-leafy-green)]"
       onSave={(v) => updateRecipeName(recipeId, v)}
       value={name}
     />
@@ -28,7 +28,7 @@ export function InlineDishName({
 }) {
   return (
     <InlineTextInput
-      className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
+      className="truncate font-medium text-foreground text-sm transition-colors group-hover:text-[var(--brand-leafy-green)]"
       onSave={(v) => updateDishName(dishId, v)}
       value={name}
     />

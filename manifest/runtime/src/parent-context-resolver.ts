@@ -42,9 +42,9 @@ const ALWAYS_EXCLUDED = new Set<string>([
 ]);
 
 export interface ResolveParentContextParams {
-  entity: string;
-  command: string;
   body: Record<string, unknown>;
+  command: string;
+  entity: string;
 }
 
 export interface ResolveParentContextResult {
@@ -57,10 +57,12 @@ function isMeaningful(value: unknown): boolean {
 }
 
 /** A scalar, non-list property type whose values are safe to copy verbatim. */
-function scalarTypeName(prop: { type?: { name?: string } } | undefined): string | undefined {
+function scalarTypeName(
+  prop: { type?: { name?: string } } | undefined
+): string | undefined {
   const name = prop?.type?.name;
   if (!name || name === "array" || name === "list") {
-    return undefined;
+    return;
   }
   return name;
 }
@@ -124,23 +126,41 @@ async function inheritFromParents(
 
     const fkSet = new Set(fkFields);
     for (const [name, childType] of childScalarTypes) {
-      if (ALWAYS_EXCLUDED.has(name)) continue;
-      if (childParamNames.has(name)) continue;
-      if (fkSet.has(name)) continue;
-      if (!parentScalarTypes.has(name)) continue;
-      if (parentScalarTypes.get(name) !== childType) continue;
-      if (respectExistingBody && isMeaningful(body[name])) continue;
+      if (ALWAYS_EXCLUDED.has(name)) {
+        continue;
+      }
+      if (childParamNames.has(name)) {
+        continue;
+      }
+      if (fkSet.has(name)) {
+        continue;
+      }
+      if (!parentScalarTypes.has(name)) {
+        continue;
+      }
+      if (parentScalarTypes.get(name) !== childType) {
+        continue;
+      }
+      if (respectExistingBody && isMeaningful(body[name])) {
+        continue;
+      }
 
       const parentValue = parent[name];
-      if (!isMeaningful(parentValue)) continue;
+      if (!isMeaningful(parentValue)) {
+        continue;
+      }
 
       // R2: GenericPrismaStore returns DateTime columns as JS Date objects verbatim.
       // The engine datetime contract requires epoch-ms numbers — never Date objects.
-      body[name] = parentValue instanceof Date ? parentValue.getTime() : parentValue;
+      body[name] =
+        parentValue instanceof Date ? parentValue.getTime() : parentValue;
       inheritedFields.push(name);
     }
 
-    if (inheritedFields.length > 0 && childScalarTypes.has("inheritedContext")) {
+    if (
+      inheritedFields.length > 0 &&
+      childScalarTypes.has("inheritedContext")
+    ) {
       body.inheritedContext = JSON.stringify({
         source: rel.target,
         fk: localFk,

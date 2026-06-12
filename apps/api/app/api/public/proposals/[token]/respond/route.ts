@@ -9,26 +9,28 @@
  */
 
 import { database } from "@repo/database";
+import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
-import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 
 type Params = Promise<{ token: string }>;
 
 interface RespondRequest {
   action: "accept" | "reject";
-  responderName: string;
-  responderEmail: string;
   notes?: string;
+  responderEmail: string;
+  responderName: string;
 }
 
 /**
  * Build a synthetic system-user context for public (unauthenticated) operations.
  * Uses the tenant's admin user to satisfy Manifest's RBAC requirements.
  */
-async function buildSystemUserContext(tenantId: string): Promise<ManifestUserContext> {
+async function buildSystemUserContext(
+  tenantId: string
+): Promise<ManifestUserContext> {
   const adminUser = await database.user.findFirst({
     where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
     select: { id: true, role: true },
@@ -130,8 +132,17 @@ export async function POST(request: Request, { params }: { params: Params }) {
     // Governed write: execute accept or reject via Manifest runtime
     const commandBody =
       action === "accept"
-        ? { id: proposal.id, tenantId: proposal.tenantId, userId: responderEmail }
-        : { id: proposal.id, tenantId: proposal.tenantId, reason: notes ?? "", userId: responderEmail };
+        ? {
+            id: proposal.id,
+            tenantId: proposal.tenantId,
+            userId: responderEmail,
+          }
+        : {
+            id: proposal.id,
+            tenantId: proposal.tenantId,
+            reason: notes ?? "",
+            userId: responderEmail,
+          };
 
     const result = await runManifestCommand({
       entity: "Proposal",
@@ -141,7 +152,10 @@ export async function POST(request: Request, { params }: { params: Params }) {
     });
 
     if (!result.ok) {
-      log.error("Failed to respond to proposal via Manifest:", await result.text());
+      log.error(
+        "Failed to respond to proposal via Manifest:",
+        await result.text()
+      );
       return NextResponse.json(
         { message: "Failed to respond to proposal" },
         { status: 500 }
@@ -171,7 +185,9 @@ export async function POST(request: Request, { params }: { params: Params }) {
           : "Proposal rejected successfully",
       proposal: {
         id: updatedProposal?.id ?? proposal.id,
-        status: updatedProposal?.status ?? (action === "accept" ? "accepted" : "rejected"),
+        status:
+          updatedProposal?.status ??
+          (action === "accept" ? "accepted" : "rejected"),
         acceptedAt: updatedProposal?.acceptedAt ?? null,
         rejectedAt: updatedProposal?.rejectedAt ?? null,
       },

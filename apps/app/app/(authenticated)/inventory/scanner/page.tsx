@@ -49,9 +49,9 @@ interface StockCountItem {
 
 interface ScanHistoryEntry {
   barcode: string;
-  timestamp: Date;
-  mode: ScanMode;
   found: boolean;
+  mode: ScanMode;
+  timestamp: Date;
 }
 
 export default function ScannerPage() {
@@ -276,7 +276,7 @@ export default function ScannerPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-semibold text-2xl tracking-tight">
           Barcode Scanner
         </h1>
         <p className="text-muted-foreground">
@@ -314,7 +314,7 @@ export default function ScannerPage() {
                   onScan={handleScan}
                 />
                 {cameraError && (
-                  <p className="mt-2 text-sm text-destructive text-center">
+                  <p className="mt-2 text-center text-destructive text-sm">
                     {cameraError}
                   </p>
                 )}
@@ -346,7 +346,7 @@ export default function ScannerPage() {
                         <p className="font-semibold text-lg">
                           {lookupResult.name}
                         </p>
-                        <p className="text-sm text-muted-foreground font-mono">
+                        <p className="font-mono text-muted-foreground text-sm">
                           {lookupResult.item_number}
                         </p>
                       </div>
@@ -396,7 +396,7 @@ export default function ScannerPage() {
                 {!(lookupLoading || lookupResult) && (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <ScanIcon className="mb-3 h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       No item result yet. Scan a barcode to look it up.
                     </p>
                   </div>
@@ -423,7 +423,7 @@ export default function ScannerPage() {
                   onScan={handleScan}
                 />
                 {cameraError && (
-                  <p className="mt-2 text-sm text-destructive text-center">
+                  <p className="mt-2 text-center text-destructive text-sm">
                     {cameraError}
                   </p>
                 )}
@@ -437,14 +437,14 @@ export default function ScannerPage() {
                 <CardDescription>
                   {stockCountItems.length === 0
                     ? "No items counted yet"
-                    : `${stockCountItems.length} item${stockCountItems.length !== 1 ? "s" : ""} · ${totalCountedItems} total units`}
+                    : `${stockCountItems.length} item${stockCountItems.length === 1 ? "" : "s"} · ${totalCountedItems} total units`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {stockCountItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <PackageIcon className="mb-3 h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Scan barcodes to add items to your count.
                     </p>
                   </div>
@@ -466,7 +466,7 @@ export default function ScannerPage() {
                                 {item.barcode}
                               </div>
                               {item.item && (
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-muted-foreground text-xs">
                                   {item.item.name}
                                 </div>
                               )}
@@ -534,7 +534,7 @@ export default function ScannerPage() {
                     <TableCell className="font-mono text-sm">
                       {entry.barcode}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {entry.timestamp.toLocaleTimeString()}
                     </TableCell>
                     <TableCell>

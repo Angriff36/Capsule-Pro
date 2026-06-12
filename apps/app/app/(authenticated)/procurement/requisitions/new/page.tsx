@@ -36,22 +36,22 @@ import { createPurchaseRequisition } from "../../actions";
 import { formatCurrency } from "../../components/req-shared";
 
 interface InventoryItem {
+  category: string;
   id: string;
   item_number: string;
   name: string;
-  category: string;
-  unit_of_measure: string;
   unit_cost: number;
+  unit_of_measure: string;
 }
 
 interface LineItem {
+  estimatedTotalCost: number;
+  estimatedUnitCost: number;
   itemId: string;
   itemName: string;
   itemNumber: string;
-  unitOfMeasure: string;
   quantityRequested: number;
-  estimatedUnitCost: number;
-  estimatedTotalCost: number;
+  unitOfMeasure: string;
 }
 
 export default function NewRequisitionPage() {
@@ -94,7 +94,9 @@ export default function NewRequisitionPage() {
   );
 
   const addLineItem = (item: InventoryItem) => {
-    if (lineItems.some((li) => li.itemId === item.id)) return;
+    if (lineItems.some((li) => li.itemId === item.id)) {
+      return;
+    }
     setLineItems((prev) => [
       ...prev,
       {
@@ -122,7 +124,9 @@ export default function NewRequisitionPage() {
   ) => {
     setLineItems((prev) =>
       prev.map((li) => {
-        if (li.itemId !== itemId) return li;
+        if (li.itemId !== itemId) {
+          return li;
+        }
         const num = Number.parseFloat(value) || 0;
         const updated = { ...li, [field]: num };
         updated.estimatedTotalCost =
@@ -139,7 +143,9 @@ export default function NewRequisitionPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (lineItems.length === 0) return;
+    if (lineItems.length === 0) {
+      return;
+    }
 
     setCreating(true);
     try {
@@ -187,7 +193,7 @@ export default function NewRequisitionPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold">New Purchase Requisition</h1>
+          <h1 className="font-semibold text-2xl">New Purchase Requisition</h1>
           <p className="text-muted-foreground">
             Create a new purchase request for approval.
           </p>
@@ -283,14 +289,14 @@ export default function NewRequisitionPage() {
                   type="button"
                   variant="outline"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Item
                 </Button>
               </CardHeader>
               <CardContent className="p-0">
                 {lineItems.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground">
-                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
                     <p>No items added yet.</p>
                     <p className="text-sm">
                       Click &quot;Add Item&quot; to search and add inventory
@@ -304,9 +310,9 @@ export default function NewRequisitionPage() {
                         className="flex items-center gap-4 p-4"
                         key={item.itemId}
                       >
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm">{item.itemName}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {item.itemNumber} &middot; {item.unitOfMeasure}
                           </p>
                         </div>
@@ -325,7 +331,7 @@ export default function NewRequisitionPage() {
                             type="number"
                             value={item.quantityRequested}
                           />
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-muted-foreground text-sm">
                             &times;
                           </span>
                           <Input
@@ -342,7 +348,7 @@ export default function NewRequisitionPage() {
                             type="number"
                             value={item.estimatedUnitCost}
                           />
-                          <span className="text-sm font-medium w-24 text-right">
+                          <span className="w-24 text-right font-medium text-sm">
                             {formatCurrency(item.estimatedTotalCost)}
                           </span>
                           <Button
@@ -410,7 +416,7 @@ export default function NewRequisitionPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 autoFocus
                 className="pl-10"
@@ -419,9 +425,9 @@ export default function NewRequisitionPage() {
                 value={itemSearch}
               />
             </div>
-            <div className="max-h-[400px] overflow-auto space-y-1">
+            <div className="max-h-[400px] space-y-1 overflow-auto">
               {filteredItems.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="py-8 text-center text-muted-foreground">
                   No items found.
                 </p>
               ) : (
@@ -431,7 +437,7 @@ export default function NewRequisitionPage() {
                   );
                   return (
                     <button
-                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                      className="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={alreadyAdded}
                       key={item.id}
                       onClick={() => addLineItem(item)}
@@ -439,17 +445,17 @@ export default function NewRequisitionPage() {
                     >
                       <div>
                         <p className="font-medium text-sm">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {item.item_number} &middot; {item.category} &middot;{" "}
                           {item.unit_of_measure}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">
+                        <p className="font-medium text-sm">
                           {formatCurrency(Number(item.unit_cost))}
                         </p>
                         {alreadyAdded && (
-                          <p className="text-xs text-muted-foreground">Added</p>
+                          <p className="text-muted-foreground text-xs">Added</p>
                         )}
                       </div>
                     </button>

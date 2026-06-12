@@ -56,10 +56,7 @@ import {
   UtensilsIcon,
 } from "lucide-react";
 import { useState } from "react";
-import {
-  getBudgetStatusLabel,
-  getVarianceColor,
-} from "../../../lib/budgets";
+import { getBudgetStatusLabel, getVarianceColor } from "../../../lib/budgets";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
 import { attachEventImport } from "../actions";
 import type { GeneratedEventSummary } from "../actions/event-summary";
@@ -75,36 +72,36 @@ import {
 import type { PrepTaskSummaryClient } from "./prep-task-contract";
 
 export interface EventBudgetForDisplay {
-  id: string;
-  tenantId: string;
+  created_at: Date;
+  deleted_at: Date | null;
   event_id: string | null;
-  version: number | null;
+  id: string;
+  notes: string | null;
   status: "draft" | "approved" | "locked" | null;
-  total_budget_amount: number | null;
+  tenantId: string;
   total_actual_amount: number | null;
+  total_budget_amount: number | null;
+  updated_at: Date;
   variance_amount: number | null;
   variance_percentage: number | null;
-  notes: string | null;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  version: number | null;
 }
 
 export interface EventDishRow {
-  link_id: string;
-  dish_id: string;
-  name: string;
   category: string | null;
-  recipe_name: string | null;
   course: string | null;
-  quantity_servings: number;
   dietary_tags: string[] | null;
+  dish_id: string;
+  link_id: string;
+  name: string;
+  quantity_servings: number;
+  recipe_name: string | null;
 }
 
 export interface AvailableDishOption {
+  category: string | null;
   id: string;
   name: string;
-  category: string | null;
   recipe_name: string | null;
 }
 
@@ -138,7 +135,7 @@ export function MissingFieldsBanner({
             <div className="font-semibold text-sm">
               Event needs more details
             </div>
-            <div className="text-xs text-amber-800">
+            <div className="text-amber-800 text-xs">
               Missing:{" "}
               {missingFields
                 .map((f) => MISSING_FIELD_LABELS[f] ?? f)
@@ -155,12 +152,12 @@ export function MissingFieldsBanner({
 }
 
 interface DishVariantDialogProps {
-  open: boolean;
+  onCreate: () => void;
   onOpenChange: (open: boolean) => void;
+  onVariantNameChange: (value: string) => void;
+  open: boolean;
   sourceName: string;
   variantName: string;
-  onVariantNameChange: (value: string) => void;
-  onCreate: () => void;
 }
 
 export function DishVariantDialog({
@@ -183,7 +180,7 @@ export function DishVariantDialog({
         </DialogHeader>
         <div className="space-y-3 py-4">
           <label
-            className="flex flex-col gap-2 text-sm font-medium"
+            className="flex flex-col gap-2 font-medium text-sm"
             htmlFor="variant-name"
           >
             Variant name
@@ -209,41 +206,41 @@ export function DishVariantDialog({
 }
 
 export interface RecipeForDishCreation {
+  category: string | null;
   id: string;
   name: string;
-  category: string | null;
 }
 
 interface TemplateSuggestion {
-  name: string;
   added: boolean;
+  name: string;
 }
 
 interface MenuDishesSectionProps {
-  eventDishes: EventDishRow[];
   availableDishes: AvailableDishOption[];
+  eventDishes: EventDishRow[];
+  isCreatingDish?: boolean;
   isLoading: boolean;
-  showAddDialog: boolean;
-  onShowAddDialogChange: (open: boolean) => void;
-  selectedDishId: string;
-  onSelectedDishIdChange: (id: string) => void;
-  selectedCourse: string;
-  onSelectedCourseChange: (course: string) => void;
   onAddDish: () => void;
-  onRemoveDish: (linkId: string) => void;
-  onOpenVariantDialog: (linkId: string, name: string) => void;
-  // Inline dish creation
-  recipes?: RecipeForDishCreation[];
+  onAddSuggestedDish?: (suggestionName: string) => void;
   onCreateDishInline?: (
     name: string,
     recipeId: string,
     category?: string,
     course?: string
   ) => Promise<void>;
-  isCreatingDish?: boolean;
+  onOpenVariantDialog: (linkId: string, name: string) => void;
+  onRemoveDish: (linkId: string) => void;
+  onSelectedCourseChange: (course: string) => void;
+  onSelectedDishIdChange: (id: string) => void;
+  onShowAddDialogChange: (open: boolean) => void;
+  // Inline dish creation
+  recipes?: RecipeForDishCreation[];
+  selectedCourse: string;
+  selectedDishId: string;
+  showAddDialog: boolean;
   // Template suggestions - pre-computed with added status
   templateSuggestions?: Array<{ name: string; added: boolean }>;
-  onAddSuggestedDish?: (suggestionName: string) => void;
 }
 
 export function MenuDishesSection({
@@ -294,7 +291,9 @@ export function MenuDishesSection({
   };
 
   const handleRemoveDish = () => {
-    if (!dishToRemove) return;
+    if (!dishToRemove) {
+      return;
+    }
     const linkId = dishToRemove;
     setRemoveDialogOpen(false);
     setDishToRemove(null);
@@ -316,7 +315,9 @@ export function MenuDishesSection({
   };
 
   const handleCreateDish = async () => {
-    if (!(onCreateDishInline && newDishName.trim() && newDishRecipeId)) return;
+    if (!(onCreateDishInline && newDishName.trim() && newDishRecipeId)) {
+      return;
+    }
     await onCreateDishInline(
       newDishName.trim(),
       newDishRecipeId,
@@ -360,7 +361,7 @@ export function MenuDishesSection({
             <TabsContent className="space-y-4 py-4" value="select">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="add-dish-select"
                 >
                   Dish
@@ -374,7 +375,7 @@ export function MenuDishesSection({
                   </SelectTrigger>
                   <SelectContent>
                     {availableDishes.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground">
+                      <div className="p-2 text-muted-foreground text-sm">
                         No dishes available. Use &quot;Create New&quot; tab.
                       </div>
                     ) : (
@@ -389,7 +390,7 @@ export function MenuDishesSection({
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="select-course">
+                <label className="font-medium text-sm" htmlFor="select-course">
                   Course (optional)
                 </label>
                 <Select
@@ -423,7 +424,7 @@ export function MenuDishesSection({
 
             <TabsContent className="space-y-4 py-4" value="create">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="new-dish-name">
+                <label className="font-medium text-sm" htmlFor="new-dish-name">
                   Dish Name <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -435,7 +436,7 @@ export function MenuDishesSection({
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="new-dish-recipe"
                 >
                   Recipe <span className="text-destructive">*</span>
@@ -460,7 +461,7 @@ export function MenuDishesSection({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="new-dish-category"
                   >
                     Category
@@ -474,7 +475,7 @@ export function MenuDishesSection({
                 </div>
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium"
+                    className="font-medium text-sm"
                     htmlFor="new-dish-course"
                   >
                     Course
@@ -519,7 +520,7 @@ export function MenuDishesSection({
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="add-dish-select"
                 >
                   Dish
@@ -533,7 +534,7 @@ export function MenuDishesSection({
                   </SelectTrigger>
                   <SelectContent>
                     {availableDishes.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground">
+                      <div className="p-2 text-muted-foreground text-sm">
                         No dishes available. Create dishes in Kitchen Recipes
                         first.
                       </div>
@@ -550,7 +551,7 @@ export function MenuDishesSection({
               </div>
               <div className="space-y-2">
                 <label
-                  className="text-sm font-medium"
+                  className="font-medium text-sm"
                   htmlFor="add-course-select"
                 >
                   Course (optional)
@@ -749,8 +750,8 @@ export function MenuDishesSection({
 
 interface BudgetSectionProps {
   budget: EventBudgetForDisplay | null;
-  onViewBudget: (id: string) => void;
   onCreateBudget: () => void;
+  onViewBudget: (id: string) => void;
 }
 
 export function BudgetSection({
@@ -840,11 +841,11 @@ export function BudgetSection({
 
 interface TaskBreakdownSectionProps {
   breakdown: TaskBreakdown | null;
-  isGenerating: boolean;
   generationProgress: string;
-  onOpenGenerateModal: () => void;
+  isGenerating: boolean;
   onCancelGeneration?: () => void;
   onExport: () => void;
+  onOpenGenerateModal: () => void;
   onRegenerate: () => void;
   onSave: () => void;
 }
@@ -906,10 +907,10 @@ export function TaskBreakdownSection({
 interface ExecutiveSummarySectionProps {
   eventId: string;
   eventTitle: string;
-  summary: GeneratedEventSummary | null | undefined;
   isLoading: boolean;
-  onGenerate: () => Promise<GeneratedEventSummary>;
   onDelete: () => Promise<void>;
+  onGenerate: () => Promise<GeneratedEventSummary>;
+  summary: GeneratedEventSummary | null | undefined;
 }
 
 export function ExecutiveSummarySection({
@@ -946,13 +947,13 @@ export function ExecutiveSummarySection({
 import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
 
 interface SuggestionsSectionProps {
-  showSuggestions: boolean;
-  onShowSuggestionsChange: (show: boolean) => void;
-  suggestions: SuggestedAction[];
   isLoading: boolean;
-  onRefresh: () => void;
-  onDismiss: (id: string) => void;
   onAction: (suggestion: SuggestedAction) => void;
+  onDismiss: (id: string) => void;
+  onRefresh: () => void;
+  onShowSuggestionsChange: (show: boolean) => void;
+  showSuggestions: boolean;
+  suggestions: SuggestedAction[];
 }
 
 export function SuggestionsSection({
@@ -1081,14 +1082,14 @@ import { ArrowUpRightIcon, ListChecksIcon } from "lucide-react";
 import Link from "next/link";
 
 export interface PrepListSummary {
+  batchMultiplier: number;
+  finalizedAt: Date | null;
+  generatedAt: Date;
   id: string;
+  isActive: boolean;
   name: string;
   status: string;
   totalItems: number;
-  batchMultiplier: number;
-  isActive: boolean;
-  generatedAt: Date;
-  finalizedAt: Date | null;
 }
 
 function getPrepListStatusVariant(
@@ -1111,7 +1112,9 @@ interface PrepListsSectionProps {
 }
 
 export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
-  if (prepLists.length === 0) return null;
+  if (prepLists.length === 0) {
+    return null;
+  }
 
   return (
     <Card className="border-border/70" tone="canvas">
@@ -1121,7 +1124,7 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
           Prep Lists
         </CardTitle>
         <p className="text-foreground/75 text-xs">
-          {prepLists.length} prep list{prepLists.length !== 1 ? "s" : ""} linked
+          {prepLists.length} prep list{prepLists.length === 1 ? "" : "s"} linked
           to this event
         </p>
       </CardHeader>
@@ -1136,7 +1139,7 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{list.name}</span>
                 <span className="text-foreground/70 text-xs">
-                  {list.totalItems} item{list.totalItems !== 1 ? "s" : ""} ·{" "}
+                  {list.totalItems} item{list.totalItems === 1 ? "" : "s"} ·{" "}
                   {list.batchMultiplier}x batch
                 </span>
               </div>
@@ -1163,8 +1166,8 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
 }
 
 interface PrepTasksSectionProps {
-  prepTasks: PrepTaskSummaryClient[];
   onOpenGenerateModal: () => void;
+  prepTasks: PrepTaskSummaryClient[];
 }
 
 export function PrepTasksSection({

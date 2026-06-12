@@ -22,28 +22,28 @@ import { Header } from "../../components/header";
 import { ContractsPageClient } from "./components/contracts-page-client";
 
 interface ContractWithRelations {
-  id: string;
-  tenantId: string;
-  eventId: string;
+  client?: {
+    id: string;
+    name: string;
+  } | null;
   clientId: string;
   contractNumber: string | null;
-  title: string;
-  status: string;
-  documentUrl: string | null;
-  documentType: string | null;
-  notes: string | null;
-  expiresAt: Date | null;
   createdAt: Date;
-  updatedAt: Date;
+  documentType: string | null;
+  documentUrl: string | null;
   event?: {
     id: string;
     title: string;
     eventDate: Date;
   } | null;
-  client?: {
-    id: string;
-    name: string;
-  } | null;
+  eventId: string;
+  expiresAt: Date | null;
+  id: string;
+  notes: string | null;
+  status: string;
+  tenantId: string;
+  title: string;
+  updatedAt: Date;
 }
 
 const ContractsPage = async () => {
@@ -167,7 +167,7 @@ const ContractsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Contracts</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Contracts</h1>
           <p className="text-muted-foreground">
             Manage event contracts, track signatures, and monitor expiration
             dates
@@ -190,7 +190,7 @@ const ContractsPage = async () => {
               <ul className="mt-3 space-y-2">
                 {expiringContracts.slice(0, 5).map((contract) => (
                   <li
-                    className="text-sm flex items-center justify-between gap-4"
+                    className="flex items-center justify-between gap-4 text-sm"
                     key={contract.id}
                   >
                     <span className="font-medium">{contract.title}</span>

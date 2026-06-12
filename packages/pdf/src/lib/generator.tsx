@@ -1,6 +1,11 @@
-import { Document, Page, renderToPdf, StyleSheet } from "./react-pdf-primitives";
 import type React from "react";
 import type { PDFConfig, PDFGenerationOptions } from "../types";
+import {
+  Document,
+  Page,
+  renderToPdf,
+  StyleSheet,
+} from "./react-pdf-primitives";
 
 // Default styles
 const defaultStyles = StyleSheet.create({

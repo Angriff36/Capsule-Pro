@@ -75,7 +75,9 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
   it("returns 403 for staff role and never queries the approval table", async () => {
     vi.mocked(requireApiManager).mockResolvedValue({
       ok: false,
-      response: new Response(JSON.stringify({ message: "Forbidden" }), { status: 403 }),
+      response: new Response(JSON.stringify({ message: "Forbidden" }), {
+        status: 403,
+      }),
     } as Awaited<ReturnType<typeof requireApiManager>>);
 
     const { PUT } = await import(
@@ -91,7 +93,9 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
   it("returns 401 when no session can be resolved", async () => {
     vi.mocked(requireApiManager).mockResolvedValue({
       ok: false,
-      response: new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 }),
+      response: new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      }),
     } as Awaited<ReturnType<typeof requireApiManager>>);
 
     const { PUT } = await import(

@@ -15,8 +15,8 @@
 
 import { database } from "@repo/database";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { invariant } from "@/app/lib/invariant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const PAYMENT_METHOD_STATUSES = [
   "ACTIVE",
@@ -51,17 +51,17 @@ export type CardNetwork = string;
 
 export interface PaymentMethodFilters {
   clientId?: string;
-  type?: string;
   isDefault?: boolean;
   search?: string;
+  type?: string;
 }
 
 export interface CreatePaymentMethodRequest {
-  clientId: string;
-  type: string;
   cardLastFour?: string;
   cardNetwork?: string;
+  clientId: string;
   isDefault?: boolean;
+  type: string;
 }
 
 export function parsePaymentMethodFilters(
@@ -275,17 +275,17 @@ export async function clearSiblingDefaults(
 
 // Type definitions for API responses
 export interface PaymentMethodResponse {
-  id: string;
-  tenantId: string;
-  clientId: string;
-  type: string;
   cardLastFour: string | null;
   cardNetwork: string | null;
-  isDefault: boolean;
+  clientId: string;
   createdAt: Date;
-  updatedAt: Date;
   deletedAt: Date | null;
   displayInfo: string;
+  id: string;
+  isDefault: boolean;
+  tenantId: string;
+  type: string;
+  updatedAt: Date;
 }
 
 export interface PaymentMethodListResponse {

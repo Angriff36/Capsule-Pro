@@ -158,7 +158,10 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     });
     // Default: runManifestCommand returns a 200 Response
     mocks.runManifestCommandMock.mockResolvedValue(
-      new Response(JSON.stringify({ result: { id: SCHEDULE_ID }, events: [] }), { status: 200 })
+      new Response(
+        JSON.stringify({ result: { id: SCHEDULE_ID }, events: [] }),
+        { status: 200 }
+      )
     );
     vi.spyOn(console, "error").mockImplementation(mocks.consoleErrorMock);
   });
@@ -266,7 +269,8 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       };
       mocks.scheduleFindFirstMock
         .mockResolvedValueOnce(scheduleInProgress) // initial lookup
-        .mockResolvedValueOnce({ // re-fetch after manifest ops
+        .mockResolvedValueOnce({
+          // re-fetch after manifest ops
           ...scheduleInProgress,
           recognizedAmount: 4500,
           remainingAmount: 5500,
@@ -286,7 +290,9 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       // The route calls manifestRuntime.runCommand multiple times:
       // 1. "create" on RevenueRecognitionLine
       // 2. "recognizeAmount" on RevenueRecognitionSchedule
-      expect(mocks.manifestRunCommandMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+      expect(
+        mocks.manifestRunCommandMock.mock.calls.length
+      ).toBeGreaterThanOrEqual(2);
 
       // First call: create the recognition line
       const createCall = mocks.manifestRunCommandMock.mock.calls[0];
@@ -296,7 +302,9 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       // Second call: update schedule amounts
       const updateCall = mocks.manifestRunCommandMock.mock.calls[1];
       expect(updateCall[0]).toBe("recognizeAmount");
-      expect(updateCall[2]).toMatchObject({ entityName: "RevenueRecognitionSchedule" });
+      expect(updateCall[2]).toMatchObject({
+        entityName: "RevenueRecognitionSchedule",
+      });
     });
 
     it("calls completeIfFullyRecognized when remaining <= 0.01", async () => {
@@ -324,7 +332,9 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(response.status).toBe(200);
       // Three calls: create line, recognizeAmount, completeIfFullyRecognized
-      expect(mocks.manifestRunCommandMock.mock.calls.length).toBeGreaterThanOrEqual(3);
+      expect(
+        mocks.manifestRunCommandMock.mock.calls.length
+      ).toBeGreaterThanOrEqual(3);
       const completeCall = mocks.manifestRunCommandMock.mock.calls[2];
       expect(completeCall[0]).toBe("completeIfFullyRecognized");
     });
@@ -370,7 +380,8 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
           recognizedAmount: 10_000,
           remainingAmount: 0,
         })
-        .mockResolvedValueOnce({ // re-fetch after manifest ops
+        .mockResolvedValueOnce({
+          // re-fetch after manifest ops
           ...baseSchedule,
           status: "IN_PROGRESS",
           recognizedAmount: 7500,

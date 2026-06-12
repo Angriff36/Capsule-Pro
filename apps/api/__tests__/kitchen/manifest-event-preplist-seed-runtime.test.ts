@@ -9,10 +9,7 @@ import { inMemoryStoreProvider } from "../test-helpers";
 const TEST_TENANT_ID = "tenant-test-001";
 
 async function buildRuntime() {
-  const manifestRoot = join(
-    import.meta.dirname,
-    "../../../../manifest/source"
-  );
+  const manifestRoot = join(import.meta.dirname, "../../../../manifest/source");
 
   const manifestFiles = [
     "events/event-rules.manifest",

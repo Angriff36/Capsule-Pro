@@ -25,27 +25,27 @@ import { createTimeOffRequest, getEmployees } from "../actions";
 import { timeOffTypes } from "../constants";
 
 interface TimeOffRequest {
-  id?: string;
   employeeId?: string;
-  startDate?: string;
   endDate?: string;
+  id?: string;
   reason?: string;
   requestType?: TimeOffType;
+  startDate?: string;
 }
 
 interface TimeOffFormProps {
-  request?: TimeOffRequest | null;
-  onSuccess?: () => void;
   onCancel?: () => void;
+  onSuccess?: () => void;
+  request?: TimeOffRequest | null;
 }
 
 interface Employee {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
   email: string;
-  role: string;
+  first_name: string | null;
+  id: string;
   is_active: boolean;
+  last_name: string | null;
+  role: string;
 }
 
 export function TimeOffForm({
@@ -346,7 +346,7 @@ export function TimeOffForm({
             </SelectContent>
           </Select>
           {errors.employeeId && (
-            <p className="text-sm text-destructive">{errors.employeeId}</p>
+            <p className="text-destructive text-sm">{errors.employeeId}</p>
           )}
         </div>
 
@@ -373,7 +373,7 @@ export function TimeOffForm({
             </SelectContent>
           </Select>
           {errors.requestType && (
-            <p className="text-sm text-destructive">{errors.requestType}</p>
+            <p className="text-destructive text-sm">{errors.requestType}</p>
           )}
         </div>
 
@@ -400,7 +400,7 @@ export function TimeOffForm({
             value={formData.startDate}
           />
           {errors.startDate && (
-            <p className="text-sm text-destructive">{errors.startDate}</p>
+            <p className="text-destructive text-sm">{errors.startDate}</p>
           )}
         </div>
 
@@ -427,14 +427,14 @@ export function TimeOffForm({
             value={formData.endDate}
           />
           {errors.endDate && (
-            <p className="text-sm text-destructive">{errors.endDate}</p>
+            <p className="text-destructive text-sm">{errors.endDate}</p>
           )}
         </div>
 
         {/* Duration Display */}
         <div className="flex flex-col gap-2">
           <Label>Duration</Label>
-          <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-md">
+          <div className="rounded-md bg-muted px-3 py-2 text-muted-foreground text-sm">
             {duration > 0
               ? `${duration} ${duration === 1 ? "business day" : "business days"}`
               : "Select dates to calculate"}
@@ -453,7 +453,7 @@ export function TimeOffForm({
             />
             <Label htmlFor="partialDay">Partial Day</Label>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Enable if you need to specify exact hours for the day
           </p>
         </div>
@@ -486,7 +486,7 @@ export function TimeOffForm({
               value={formData.endTime}
             />
             {errors.endTime && (
-              <p className="text-sm text-destructive">{errors.endTime}</p>
+              <p className="text-destructive text-sm">{errors.endTime}</p>
             )}
           </div>
         )}
@@ -508,7 +508,7 @@ export function TimeOffForm({
 
       {/* Conflict Detection Warnings */}
       {checkingConflicts && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Loader2Icon className="h-4 w-4 animate-spin" />
           Checking for conflicts...
         </div>
@@ -522,7 +522,7 @@ export function TimeOffForm({
               <h4 className="font-semibold text-foreground">
                 Potential Conflicts Detected
               </h4>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-muted-foreground text-sm">
                 {conflicts.hasShiftConflicts &&
                   "This employee has scheduled shifts during the requested period."}
                 {conflicts.hasTimeOffConflicts &&
@@ -530,7 +530,7 @@ export function TimeOffForm({
               </p>
 
               {conflicts.conflictingShifts && (
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 text-muted-foreground text-xs">
                   <strong>Conflicting Shifts:</strong>
                   {conflicts.conflictingShifts.map((shift) => (
                     <div key={shift.id}>
@@ -542,7 +542,7 @@ export function TimeOffForm({
               )}
 
               {conflicts.conflictingTimeOff && (
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 text-muted-foreground text-xs">
                   <strong>Conflicting Time-Off:</strong>
                   {conflicts.conflictingTimeOff.map((request) => (
                     <div key={request.id}>
@@ -562,7 +562,7 @@ export function TimeOffForm({
                   }
                 />
                 <Label
-                  className="text-sm text-foreground"
+                  className="text-foreground text-sm"
                   htmlFor="requestAnyway"
                 >
                   Request Anyway (supervisor approval required)
@@ -581,12 +581,12 @@ export function TimeOffForm({
             <h4 className="font-semibold text-foreground">
               Request Processing
             </h4>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground text-sm">
               Time-off requests require manager approval. You'll receive
               notifications via email when your request is reviewed.
             </p>
             {duration > 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="mt-2 text-muted-foreground text-sm">
                 <strong>Total request duration:</strong> {duration}{" "}
                 {duration === 1 ? "business day" : "business days"}
               </p>

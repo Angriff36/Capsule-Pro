@@ -138,11 +138,8 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
     });
   };
 
-  const toggleArrayItem = (array: string[], item: string): string[] => {
-    return array.includes(item)
-      ? array.filter((i) => i !== item)
-      : [...array, item];
-  };
+  const toggleArrayItem = (array: string[], item: string): string[] =>
+    array.includes(item) ? array.filter((i) => i !== item) : [...array, item];
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>

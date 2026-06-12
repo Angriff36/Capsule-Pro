@@ -52,12 +52,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   getVendor,
+  listVendorCatalogs,
   listVendorContacts,
   listVendorRatings,
-  listVendorCatalogs,
-  vendorUpdate,
   vendorAddContact,
   vendorRate,
+  vendorUpdate,
 } from "@/app/lib/manifest-client.generated";
 import { formatDate } from "../../components/po-shared";
 import {
@@ -122,24 +122,33 @@ export default function VendorDetailPage() {
   });
 
   useEffect(() => {
-    if (vendorId) loadVendor();
+    if (vendorId) {
+      loadVendor();
+    }
   }, [vendorId]);
 
   const loadVendor = async () => {
     setLoading(true);
     try {
-      const [vendorResult, contactsResult, ratingsResult, catalogResult] = await Promise.all([
-        getVendor(vendorId),
-        listVendorContacts(),
-        listVendorRatings(),
-        listVendorCatalogs(),
-      ]);
+      const [vendorResult, contactsResult, ratingsResult, catalogResult] =
+        await Promise.all([
+          getVendor(vendorId),
+          listVendorContacts(),
+          listVendorRatings(),
+          listVendorCatalogs(),
+        ]);
       const v = vendorResult as unknown as Vendor;
       const allContacts = contactsResult.data as unknown as VendorContact[];
       const allRatings = ratingsResult.data as unknown as VendorRating[];
-      const vendorContacts = allContacts.filter((c) => (c as unknown as Record<string, unknown>).vendorId === vendorId);
-      const vendorRatings = allRatings.filter((r) => (r as unknown as Record<string, unknown>).vendorId === vendorId);
-      const vendorCatalogItems = (catalogResult.data as unknown as Record<string, unknown>[]).filter((c) => c.vendorId === vendorId);
+      const vendorContacts = allContacts.filter(
+        (c) => (c as unknown as Record<string, unknown>).vendorId === vendorId
+      );
+      const vendorRatings = allRatings.filter(
+        (r) => (r as unknown as Record<string, unknown>).vendorId === vendorId
+      );
+      const vendorCatalogItems = (
+        catalogResult.data as unknown as Record<string, unknown>[]
+      ).filter((c) => c.vendorId === vendorId);
       setVendor(v);
       setContacts(vendorContacts);
       setRatings(vendorRatings);
@@ -175,14 +184,18 @@ export default function VendorDetailPage() {
       setEditing(false);
       loadVendor();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update vendor");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update vendor"
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const handleAddContact = async () => {
-    if (!contactForm.contactName.trim()) return;
+    if (!contactForm.contactName.trim()) {
+      return;
+    }
     try {
       await vendorAddContact({ id: vendorId, ...contactForm });
       setContactDialogOpen(false);
@@ -196,7 +209,9 @@ export default function VendorDetailPage() {
       });
       loadVendor();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add contact");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add contact"
+      );
     }
   };
 
@@ -207,7 +222,9 @@ export default function VendorDetailPage() {
       setRatingForm({ category: "overall", rating: 5, comment: "" });
       loadVendor();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add rating");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add rating"
+      );
     }
   };
 
@@ -219,7 +236,9 @@ export default function VendorDetailPage() {
     );
   }
 
-  if (!vendor) return null;
+  if (!vendor) {
+    return null;
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
@@ -233,12 +252,12 @@ export default function VendorDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">
+              <h1 className="font-semibold text-2xl tracking-tight">
                 {vendor.name}
               </h1>
               <Badge variant="secondary">{vendor.supplier_number}</Badge>
             </div>
-            <p className="text-muted-foreground flex items-center gap-4">
+            <p className="flex items-center gap-4 text-muted-foreground">
               <RatingStars rating={vendor.performance_rating} size="md" />
               <span>{formatPaymentTerms(vendor.payment_terms)}</span>
               <span>{catalogItemCount} catalog items</span>
@@ -258,8 +277,8 @@ export default function VendorDetailPage() {
               Cancel
             </Button>
             <Button disabled={saving} onClick={handleSave}>
-              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              <Save className="h-4 w-4 mr-2" />
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Save className="mr-2 h-4 w-4" />
               Save
             </Button>
           </div>
@@ -273,25 +292,25 @@ export default function VendorDetailPage() {
       <Tabs defaultValue="details">
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="details"
           >
             Details
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="contacts"
           >
             Contacts ({contacts.length})
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="ratings"
           >
             Ratings ({ratings.length})
           </TabsTrigger>
           <TabsTrigger
-            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            className="rounded-[12px] px-4 py-1.5 font-medium text-sm transition-colors data-[state=active]:bg-ink data-[state=active]:text-white"
             value="catalog"
           >
             Catalog ({catalogItemCount})
@@ -518,7 +537,7 @@ export default function VendorDetailPage() {
                     {vendor.tags && vendor.tags.length > 0 && (
                       <div className="flex items-center gap-2 text-sm">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex flex-wrap gap-1">
                           {vendor.tags.map((tag) => (
                             <Badge
                               className="text-xs"
@@ -532,7 +551,7 @@ export default function VendorDetailPage() {
                       </div>
                     )}
                     {vendor.notes && (
-                      <div className="text-sm mt-2 pt-2 border-t">
+                      <div className="mt-2 border-t pt-2 text-sm">
                         <span className="text-muted-foreground">Notes: </span>
                         <span>{vendor.notes}</span>
                       </div>
@@ -545,7 +564,7 @@ export default function VendorDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
                       <VendorAddress vendor={vendor} />
                     </div>
                   </CardContent>
@@ -557,14 +576,14 @@ export default function VendorDetailPage() {
 
         {/* Contacts Tab */}
         <TabsContent value="contacts">
-          <div className="flex justify-end mb-4">
+          <div className="mb-4 flex justify-end">
             <Dialog
               onOpenChange={setContactDialogOpen}
               open={contactDialogOpen}
             >
               <DialogTrigger asChild>
                 <Button>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Contact
                 </Button>
               </DialogTrigger>
@@ -682,7 +701,7 @@ export default function VendorDetailPage() {
           {contacts.length === 0 ? (
             <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <Users className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No contacts yet. Add a contact for this vendor.</p>
               </CardContent>
             </Card>
@@ -693,7 +712,7 @@ export default function VendorDetailPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <span className="font-semibold">
                             {contact.contact_name}
                           </span>
@@ -703,12 +722,12 @@ export default function VendorDetailPage() {
                             </Badge>
                           )}
                           {contact.contact_role && (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-muted-foreground text-sm">
                               {contact.contact_role}
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                        <div className="flex flex-col gap-1 text-muted-foreground text-sm">
                           {contact.contact_email && (
                             <span className="flex items-center gap-1">
                               <Mail className="h-3 w-3" />
@@ -723,7 +742,7 @@ export default function VendorDetailPage() {
                           )}
                         </div>
                         {contact.notes && (
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="mt-2 text-muted-foreground text-xs">
                             {contact.notes}
                           </p>
                         )}
@@ -738,11 +757,11 @@ export default function VendorDetailPage() {
 
         {/* Ratings Tab */}
         <TabsContent value="ratings">
-          <div className="flex justify-end mb-4">
+          <div className="mb-4 flex justify-end">
             <Dialog onOpenChange={setRatingDialogOpen} open={ratingDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
-                  <Star className="h-4 w-4 mr-2" />
+                  <Star className="mr-2 h-4 w-4" />
                   Add Rating
                 </Button>
               </DialogTrigger>
@@ -823,7 +842,7 @@ export default function VendorDetailPage() {
           {ratings.length === 0 ? (
             <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
-                <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <Star className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No ratings yet. Rate this vendor's performance.</p>
               </CardContent>
             </Card>
@@ -834,17 +853,17 @@ export default function VendorDetailPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <Badge variant="secondary">{rating.category}</Badge>
                           <RatingStars rating={rating.rating} />
                         </div>
                         {rating.comment && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="mt-1 text-muted-foreground text-sm">
                             {rating.comment}
                           </p>
                         )}
                       </div>
-                      <div className="text-right text-xs text-muted-foreground">
+                      <div className="text-right text-muted-foreground text-xs">
                         <div>{rating.rated_by_name || "Anonymous"}</div>
                         <div>{formatDate(rating.created_at)}</div>
                       </div>
@@ -860,12 +879,12 @@ export default function VendorDetailPage() {
         <TabsContent value="catalog">
           <Card tone="canvas">
             <CardContent className="py-12 text-center text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>
                 {catalogItemCount} catalog item
-                {catalogItemCount !== 1 ? "s" : ""} linked to this vendor.
+                {catalogItemCount === 1 ? "" : "s"} linked to this vendor.
               </p>
-              <p className="text-sm mt-1">
+              <p className="mt-1 text-sm">
                 Catalog management is available through the inventory module.
               </p>
             </CardContent>

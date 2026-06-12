@@ -28,7 +28,11 @@ describe("computeStaffImpact", () => {
   });
 
   it("treats missing rates as 0 and reports them", () => {
-    const r = computeStaffImpact({ drafts, rates: { u1: "28.50" }, busyIntervals: {} });
+    const r = computeStaffImpact({
+      drafts,
+      rates: { u1: "28.50" },
+      busyIntervals: {},
+    });
     expect(r.laborCost).toBe("199.50");
     expect(r.missingRateStaffIds).toEqual(["u2"]);
   });
@@ -38,8 +42,20 @@ describe("computeStaffImpact", () => {
       drafts,
       rates: {},
       busyIntervals: {
-        u1: [{ start: "2026-06-28T18:00:00.000Z", end: "2026-06-28T20:00:00.000Z", label: "Henderson wedding" }],
-        u2: [{ start: "2026-06-29T18:00:00.000Z", end: "2026-06-29T20:00:00.000Z", label: "next day" }],
+        u1: [
+          {
+            start: "2026-06-28T18:00:00.000Z",
+            end: "2026-06-28T20:00:00.000Z",
+            label: "Henderson wedding",
+          },
+        ],
+        u2: [
+          {
+            start: "2026-06-29T18:00:00.000Z",
+            end: "2026-06-29T20:00:00.000Z",
+            label: "next day",
+          },
+        ],
       },
     });
     expect(r.conflicts).toEqual([
@@ -51,7 +67,15 @@ describe("computeStaffImpact", () => {
     const r = computeStaffImpact({
       drafts: [drafts[0]],
       rates: {},
-      busyIntervals: { u1: [{ start: "2026-06-28T23:00:00.000Z", end: "2026-06-29T02:00:00.000Z", label: "late gig" }] },
+      busyIntervals: {
+        u1: [
+          {
+            start: "2026-06-28T23:00:00.000Z",
+            end: "2026-06-29T02:00:00.000Z",
+            label: "late gig",
+          },
+        ],
+      },
     });
     expect(r.conflicts).toEqual([]);
   });

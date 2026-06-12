@@ -14,58 +14,58 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // Types matching the API
 export interface ClientFilters {
-  search?: string;
-  tags?: string[];
   assignedTo?: string;
   clientType?: "company" | "individual";
+  search?: string;
   source?: string;
+  tags?: string[];
 }
 
 export interface CreateClientInput {
-  clientType?: "company" | "individual";
-  company_name?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
   addressLine1?: string;
   addressLine2?: string;
+  assignedTo?: string;
   city?: string;
-  stateProvince?: string;
-  postalCode?: string;
+  clientType?: "company" | "individual";
+  company_name?: string;
   countryCode?: string;
   defaultPaymentTerms?: number;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  notes?: string;
+  phone?: string;
+  postalCode?: string;
+  source?: string;
+  stateProvince?: string;
+  tags?: string[];
   taxExempt?: boolean;
   taxId?: string;
-  notes?: string;
-  tags?: string[];
-  source?: string;
-  assignedTo?: string;
+  website?: string;
 }
 
 export interface CreateClientContactInput {
-  first_name: string;
-  last_name: string;
-  title?: string;
   email?: string;
+  first_name: string;
+  isBillingContact?: boolean;
+  isPrimary?: boolean;
+  last_name: string;
+  notes?: string;
   phone?: string;
   phoneMobile?: string;
-  isPrimary?: boolean;
-  isBillingContact?: boolean;
-  notes?: string;
+  title?: string;
 }
 
 export interface CreateClientInteractionInput {
-  interactionType: string;
-  subject?: string;
   description?: string;
   followUpDate?: string;
+  interactionType: string;
+  subject?: string;
 }
 
 /**
@@ -278,7 +278,9 @@ export async function deleteTagGlobally(tag: string) {
     });
 
     if (!result.ok) {
-      throw new Error(result.message || `Failed to remove tag from client ${client.id}`);
+      throw new Error(
+        result.message || `Failed to remove tag from client ${client.id}`
+      );
     }
   }
 
@@ -348,9 +350,9 @@ export async function getClientById(id: string) {
 
   // Transform Decimal to match component's expected type
   const totalRevenue =
-    revenueResult._sum.totalAmount !== null
-      ? { total: revenueResult._sum.totalAmount.toString() }
-      : null;
+    revenueResult._sum.totalAmount === null
+      ? null
+      : { total: revenueResult._sum.totalAmount.toString() };
 
   return {
     ...client,
@@ -411,63 +413,79 @@ export async function updateClient(
   // Client.update requires all params (full replace semantics).
   // Merge existing values with provided input to build the full body.
   const body = {
-    companyName: input.company_name !== undefined
-      ? (input.company_name?.trim() || "")
-      : (existingClient.company_name || ""),
-    firstName: input.first_name !== undefined
-      ? (input.first_name?.trim() || "")
-      : (existingClient.first_name || ""),
-    lastName: input.last_name !== undefined
-      ? (input.last_name?.trim() || "")
-      : (existingClient.last_name || ""),
-    email: input.email !== undefined
-      ? (input.email?.trim() || "")
-      : (existingClient.email || ""),
-    phone: input.phone !== undefined
-      ? (input.phone?.trim() || "")
-      : (existingClient.phone || ""),
-    website: input.website !== undefined
-      ? (input.website?.trim() || "")
-      : (existingClient.website || ""),
-    addressLine1: input.addressLine1 !== undefined
-      ? (input.addressLine1?.trim() || "")
-      : (existingClient.addressLine1 || ""),
-    addressLine2: input.addressLine2 !== undefined
-      ? (input.addressLine2?.trim() || "")
-      : (existingClient.addressLine2 || ""),
-    city: input.city !== undefined
-      ? (input.city?.trim() || "")
-      : (existingClient.city || ""),
-    stateProvince: input.stateProvince !== undefined
-      ? (input.stateProvince?.trim() || "")
-      : (existingClient.stateProvince || ""),
-    postalCode: input.postalCode !== undefined
-      ? (input.postalCode?.trim() || "")
-      : (existingClient.postalCode || ""),
-    countryCode: input.countryCode !== undefined
-      ? (input.countryCode?.trim() || "")
-      : (existingClient.countryCode || ""),
-    defaultPaymentTerms: input.defaultPaymentTerms !== undefined
-      ? input.defaultPaymentTerms
-      : (existingClient.defaultPaymentTerms ?? 30),
-    taxExempt: input.taxExempt !== undefined
-      ? input.taxExempt
-      : (existingClient.taxExempt ?? false),
-    taxId: input.taxId !== undefined
-      ? (input.taxId?.trim() || "")
-      : (existingClient.taxId || ""),
-    notes: input.notes !== undefined
-      ? (input.notes?.trim() || "")
-      : (existingClient.notes || ""),
-    tags: input.tags !== undefined
-      ? input.tags
-      : (existingClient.tags || []),
-    source: input.source !== undefined
-      ? (input.source?.trim() || "")
-      : (existingClient.source || ""),
-    assignedTo: input.assignedTo !== undefined
-      ? (input.assignedTo || "")
-      : (existingClient.assignedTo || ""),
+    companyName:
+      input.company_name === undefined
+        ? existingClient.company_name || ""
+        : input.company_name?.trim() || "",
+    firstName:
+      input.first_name === undefined
+        ? existingClient.first_name || ""
+        : input.first_name?.trim() || "",
+    lastName:
+      input.last_name === undefined
+        ? existingClient.last_name || ""
+        : input.last_name?.trim() || "",
+    email:
+      input.email === undefined
+        ? existingClient.email || ""
+        : input.email?.trim() || "",
+    phone:
+      input.phone === undefined
+        ? existingClient.phone || ""
+        : input.phone?.trim() || "",
+    website:
+      input.website === undefined
+        ? existingClient.website || ""
+        : input.website?.trim() || "",
+    addressLine1:
+      input.addressLine1 === undefined
+        ? existingClient.addressLine1 || ""
+        : input.addressLine1?.trim() || "",
+    addressLine2:
+      input.addressLine2 === undefined
+        ? existingClient.addressLine2 || ""
+        : input.addressLine2?.trim() || "",
+    city:
+      input.city === undefined
+        ? existingClient.city || ""
+        : input.city?.trim() || "",
+    stateProvince:
+      input.stateProvince === undefined
+        ? existingClient.stateProvince || ""
+        : input.stateProvince?.trim() || "",
+    postalCode:
+      input.postalCode === undefined
+        ? existingClient.postalCode || ""
+        : input.postalCode?.trim() || "",
+    countryCode:
+      input.countryCode === undefined
+        ? existingClient.countryCode || ""
+        : input.countryCode?.trim() || "",
+    defaultPaymentTerms:
+      input.defaultPaymentTerms === undefined
+        ? (existingClient.defaultPaymentTerms ?? 30)
+        : input.defaultPaymentTerms,
+    taxExempt:
+      input.taxExempt === undefined
+        ? (existingClient.taxExempt ?? false)
+        : input.taxExempt,
+    taxId:
+      input.taxId === undefined
+        ? existingClient.taxId || ""
+        : input.taxId?.trim() || "",
+    notes:
+      input.notes === undefined
+        ? existingClient.notes || ""
+        : input.notes?.trim() || "",
+    tags: input.tags === undefined ? existingClient.tags || [] : input.tags,
+    source:
+      input.source === undefined
+        ? existingClient.source || ""
+        : input.source?.trim() || "",
+    assignedTo:
+      input.assignedTo === undefined
+        ? existingClient.assignedTo || ""
+        : input.assignedTo || "",
   };
 
   const result = await runManifestCommand({
@@ -656,30 +674,38 @@ export async function updateClientContact(
 
   if (hasOtherChanges) {
     const body = {
-      firstName: input.first_name !== undefined
-        ? input.first_name.trim()
-        : (existing.first_name || ""),
-      lastName: input.last_name !== undefined
-        ? input.last_name.trim()
-        : (existing.last_name || ""),
-      title: input.title !== undefined
-        ? (input.title?.trim() || "")
-        : (existing.title || ""),
-      email: input.email !== undefined
-        ? (input.email?.trim() || "")
-        : (existing.email || ""),
-      phone: input.phone !== undefined
-        ? (input.phone?.trim() || "")
-        : (existing.phone || ""),
-      phoneMobile: input.phoneMobile !== undefined
-        ? (input.phoneMobile?.trim() || "")
-        : (existing.phoneMobile || ""),
-      isBillingContact: input.isBillingContact !== undefined
-        ? input.isBillingContact
-        : (existing.isBillingContact ?? false),
-      notes: input.notes !== undefined
-        ? (input.notes?.trim() || "")
-        : (existing.notes || ""),
+      firstName:
+        input.first_name === undefined
+          ? existing.first_name || ""
+          : input.first_name.trim(),
+      lastName:
+        input.last_name === undefined
+          ? existing.last_name || ""
+          : input.last_name.trim(),
+      title:
+        input.title === undefined
+          ? existing.title || ""
+          : input.title?.trim() || "",
+      email:
+        input.email === undefined
+          ? existing.email || ""
+          : input.email?.trim() || "",
+      phone:
+        input.phone === undefined
+          ? existing.phone || ""
+          : input.phone?.trim() || "",
+      phoneMobile:
+        input.phoneMobile === undefined
+          ? existing.phoneMobile || ""
+          : input.phoneMobile?.trim() || "",
+      isBillingContact:
+        input.isBillingContact === undefined
+          ? (existing.isBillingContact ?? false)
+          : input.isBillingContact,
+      notes:
+        input.notes === undefined
+          ? existing.notes || ""
+          : input.notes?.trim() || "",
     };
 
     const result = await runManifestCommand({
@@ -866,11 +892,11 @@ export async function createClientInteraction(
 }
 
 export interface UpdateClientInteractionInput {
+  description?: string;
+  followUpCompleted?: boolean;
+  followUpDate?: string;
   interactionType?: string;
   subject?: string;
-  description?: string;
-  followUpDate?: string;
-  followUpCompleted?: boolean;
 }
 
 /**
@@ -931,23 +957,25 @@ export async function updateClientInteraction(
     // Merge existing values with provided input.
     const body = {
       interactionType:
-        input.interactionType !== undefined
-          ? input.interactionType.trim()
-          : existingInteraction.interactionType || "",
+        input.interactionType === undefined
+          ? existingInteraction.interactionType || ""
+          : input.interactionType.trim(),
       subject:
-        input.subject !== undefined
-          ? (input.subject?.trim() || "")
-          : (existingInteraction.subject || ""),
+        input.subject === undefined
+          ? existingInteraction.subject || ""
+          : input.subject?.trim() || "",
       description:
-        input.description !== undefined
-          ? (input.description?.trim() || "")
-          : (existingInteraction.description || ""),
+        input.description === undefined
+          ? existingInteraction.description || ""
+          : input.description?.trim() || "",
       followUpDate:
-        input.followUpDate !== undefined
-          ? (input.followUpDate ? new Date(input.followUpDate).getTime() : null)
-          : (existingInteraction.followUpDate
+        input.followUpDate === undefined
+          ? existingInteraction.followUpDate
             ? new Date(existingInteraction.followUpDate).getTime()
-            : null),
+            : null
+          : input.followUpDate
+            ? new Date(input.followUpDate).getTime()
+            : null,
       correlationId: "",
     };
 
@@ -1086,27 +1114,27 @@ export async function getClientEventHistory(
 // ---------------------------------------------------------------------------
 
 export interface CreateClientPreferenceInput {
-  preferenceType: string;
+  notes?: string;
   preferenceKey: string;
+  preferenceType: string;
   preferenceValue:
     | string
     | number
     | boolean
     | Record<string, unknown>
     | unknown[];
-  notes?: string;
 }
 
 export interface UpdateClientPreferenceInput {
-  preferenceType?: string;
+  notes?: string;
   preferenceKey?: string;
+  preferenceType?: string;
   preferenceValue?:
     | string
     | number
     | boolean
     | Record<string, unknown>
     | unknown[];
-  notes?: string;
 }
 
 /**
@@ -1184,13 +1212,13 @@ export async function updateClientPreference(
   // Build body merging existing values with provided input.
   const body = {
     preferenceValue:
-      input.preferenceValue !== undefined
-        ? (input.preferenceValue as string)
-        : existing.preferenceValue,
+      input.preferenceValue === undefined
+        ? existing.preferenceValue
+        : (input.preferenceValue as string),
     notes:
-      input.notes !== undefined
-        ? (input.notes?.trim() || "")
-        : (existing.notes || ""),
+      input.notes === undefined
+        ? existing.notes || ""
+        : input.notes?.trim() || "",
   };
 
   const result = await runManifestCommand({

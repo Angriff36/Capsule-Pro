@@ -4,22 +4,22 @@ import { cn } from "@repo/design-system/lib/utils";
 import { memo } from "react";
 
 export interface EntityViewer {
+  color: string;
   connectionId: number;
   name: string;
-  color: string;
 }
 
 interface EntityPresenceIndicatorProps {
-  /** Users currently viewing this entity */
-  viewers: EntityViewer[];
-  /** Maximum number of avatars to show before collapsing to +N */
-  maxVisible?: number;
-  /** Size of the avatar circles in pixels */
-  size?: "sm" | "md" | "lg";
-  /** Position of the indicator */
-  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** CSS className for customization */
   className?: string;
+  /** Maximum number of avatars to show before collapsing to +N */
+  maxVisible?: number;
+  /** Position of the indicator */
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  /** Size of the avatar circles in pixels */
+  size?: "sm" | "md" | "lg";
+  /** Users currently viewing this entity */
+  viewers: EntityViewer[];
 }
 
 const sizeClasses = {

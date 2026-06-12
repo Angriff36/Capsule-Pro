@@ -17,26 +17,26 @@ import {
 } from "../../../../lib/inventory";
 
 interface SerializedItem {
+  category: string;
+  createdAt: string;
+  description: string | null;
+  fsa_allergen_info: boolean | null;
+  fsa_status: string | null;
+  fsa_temp_logged: boolean | null;
+  fsa_traceable: boolean | null;
   id: string;
   item_number: string;
   name: string;
-  description: string | null;
-  category: string;
-  unitOfMeasure: string;
-  unit_cost: number;
-  quantity_on_hand: number;
   par_level: number;
+  quantity_on_hand: number;
   reorder_level: number;
-  supplierId: string | null;
-  tags: string[];
-  fsa_status: string | null;
-  fsa_temp_logged: boolean | null;
-  fsa_allergen_info: boolean | null;
-  fsa_traceable: boolean | null;
-  total_value: number;
   stock_status: string;
   supplier: { id: string; name: string } | null;
-  createdAt: string;
+  supplierId: string | null;
+  tags: string[];
+  total_value: number;
+  unit_cost: number;
+  unitOfMeasure: string;
   updatedAt: string;
 }
 
@@ -124,7 +124,7 @@ const ItemDetailClient = ({ item }: ItemDetailClientProps) => {
             <span className="text-muted-foreground">Reorder Level</span>
             <span className="font-medium">{item.reorder_level.toFixed(3)}</span>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Stock Status</span>
             <Badge
               className={getStockStatusColor(
@@ -167,7 +167,7 @@ const ItemDetailClient = ({ item }: ItemDetailClientProps) => {
           <CardDescription>Food safety compliance status</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">FSA Status</span>
             <Badge
               className={getFSAStatusColor(
@@ -219,7 +219,7 @@ const ItemDetailClient = ({ item }: ItemDetailClientProps) => {
         <CardContent className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Item Number</span>
-            <span className="font-mono font-medium">{item.item_number}</span>
+            <span className="font-medium font-mono">{item.item_number}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Item ID</span>
@@ -239,5 +239,5 @@ const ItemDetailClient = ({ item }: ItemDetailClientProps) => {
   );
 };
 
-export { ItemDetailClient };
 export type { SerializedItem as ItemDetailData };
+export { ItemDetailClient };

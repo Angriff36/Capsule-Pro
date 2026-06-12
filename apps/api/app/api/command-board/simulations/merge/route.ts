@@ -23,25 +23,25 @@ export interface MergeOptions {
 
 /** Conflict detected during merge check */
 export interface MergeConflict {
+  details?: Record<string, unknown>;
+  entityId: string;
+  message: string;
   type:
     | "projection_modified"
     | "projection_removed"
     | "group_modified"
     | "annotation_conflict";
-  entityId: string;
-  message: string;
-  details?: Record<string, unknown>;
 }
 
 /** Result of conflict detection */
 export interface ConflictCheckResult {
-  hasConflicts: boolean;
   conflicts: MergeConflict[];
+  hasConflicts: boolean;
 }
 
 /** Result of merge operation */
 export interface MergeResult {
-  success: boolean;
+  error?: string;
   mergedChanges?: {
     projectionsAdded: number;
     projectionsRemoved: number;
@@ -51,7 +51,7 @@ export interface MergeResult {
     annotationsAdded: number;
     annotationsRemoved: number;
   };
-  error?: string;
+  success: boolean;
 }
 
 /**

@@ -17,17 +17,21 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { eventTimelineItemCreateItem, eventTimelineItemCompleteItem, eventTimelineItemDeleteItem } from "@/app/lib/manifest-client.generated";
+import {
+  eventTimelineItemCompleteItem,
+  eventTimelineItemCreateItem,
+  eventTimelineItemDeleteItem,
+} from "@/app/lib/manifest-client.generated";
 
 interface TimelineItem {
-  id: string;
-  timelineTime: string; // HH:MM
-  description: string;
-  responsibleRole: string | null;
-  isCompleted: boolean;
   completedAt: string | null;
+  description: string;
+  id: string;
+  isCompleted: boolean;
   notes: string | null;
+  responsibleRole: string | null;
   sortOrder: number;
+  timelineTime: string; // HH:MM
 }
 
 interface EventTimelineClientProps {
@@ -36,10 +40,10 @@ interface EventTimelineClientProps {
 }
 
 interface DraftItem {
-  timelineTime: string;
   description: string;
-  responsibleRole: string;
   notes: string;
+  responsibleRole: string;
+  timelineTime: string;
 }
 
 const EMPTY_DRAFT: DraftItem = {
@@ -83,7 +87,9 @@ export function EventTimelineClient({
       });
 
       if (result) {
-        setItems((current) => mergeAndSort([...current, result as unknown as TimelineItem]));
+        setItems((current) =>
+          mergeAndSort([...current, result as unknown as TimelineItem])
+        );
       }
       setDraft(EMPTY_DRAFT);
       refresh();
@@ -126,7 +132,9 @@ export function EventTimelineClient({
   };
 
   const handleDelete = async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete) {
+      return;
+    }
     const itemId = itemToDelete;
     setError(null);
     const previous = items;
@@ -310,9 +318,12 @@ export function EventTimelineClient({
 
 function mergeAndSort(items: TimelineItem[]): TimelineItem[] {
   return [...items].sort((a, b) => {
-    if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-    if (a.timelineTime !== b.timelineTime)
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder;
+    }
+    if (a.timelineTime !== b.timelineTime) {
       return a.timelineTime.localeCompare(b.timelineTime);
+    }
     return a.id.localeCompare(b.id);
   });
 }

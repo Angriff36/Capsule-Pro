@@ -44,8 +44,6 @@ type Risk = "low" | "medium" | "high";
 type Confidence = "low" | "medium" | "high";
 
 interface AnalyticsResult {
-  periodStart: string;
-  periodEnd: string;
   metrics: {
     totalHours: number;
     totalCost: number;
@@ -69,6 +67,8 @@ interface AnalyticsResult {
       gap: number;
     }>;
   };
+  periodEnd: string;
+  periodStart: string;
   trends: {
     costTrend: Trend;
     productivityTrend: Trend;
@@ -77,7 +77,7 @@ interface AnalyticsResult {
 }
 
 interface OptimizationResult {
-  scheduleId: string;
+  appliedStrategies: string[];
   optimizedAssignments: Array<{
     shiftId: string;
     recommendedEmployeeId: string;
@@ -87,6 +87,7 @@ interface OptimizationResult {
     estimatedCost: number;
     riskFactors: string[];
   }>;
+  scheduleId: string;
   summary: {
     totalShifts: number;
     assignedShifts: number;
@@ -97,11 +98,11 @@ interface OptimizationResult {
     seniorityBalance: number;
   };
   warnings: string[];
-  appliedStrategies: string[];
 }
 
 interface PredictionResult {
   employeeId: string;
+  overallPerformanceScore: number;
   predictions: {
     productivity: {
       predictedScore: number;
@@ -127,7 +128,6 @@ interface PredictionResult {
       trainingRecommendations: string[];
     } | null;
   };
-  overallPerformanceScore: number;
   recommendations: string[];
 }
 
@@ -173,7 +173,9 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
     setAnalyticsLoading(true);
     try {
       const params = new URLSearchParams({ days: String(days) });
-      if (locationId) params.set("locationId", locationId);
+      if (locationId) {
+        params.set("locationId", locationId);
+      }
       const res = await fetch(`/api/staff/workforce-analytics?${params}`);
       const json = await res.json();
       if (!(res.ok && json.success)) {
@@ -309,7 +311,7 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   {analytics.metrics.turnoverRisk.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       No elevated turnover risks detected.
                     </p>
                   ) : (
@@ -351,7 +353,7 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   {analytics.metrics.topPerformers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       No performance data for the selected period.
                     </p>
                   ) : (
@@ -382,7 +384,7 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
               </CardHeader>
               <CardContent>
                 {analytics.metrics.skillGaps.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No skill gaps detected for this period.
                   </p>
                 ) : (
@@ -689,7 +691,7 @@ function ScheduleOptimizer() {
             </CardHeader>
             <CardContent>
               {result.optimizedAssignments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No assignments generated.
                 </p>
               ) : (

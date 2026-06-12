@@ -1,13 +1,5 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   CommandBand,
   CommandBandHeader,
@@ -17,6 +9,14 @@ import {
   OperationalColumn,
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -120,278 +120,297 @@ export default function NewVenuePage() {
         <CommandBandHeader>
           <MonoLabel tone="dark">Operations / CRM / Venues</MonoLabel>
           <DisplayHeading size="md">New Venue</DisplayHeading>
-          <CommandBandLede>
-            Add a new venue to your portfolio.
-          </CommandBandLede>
+          <CommandBandLede>Add a new venue to your portfolio.</CommandBandLede>
         </CommandBandHeader>
       </CommandBand>
 
       <OperationalColumn>
-      <div className="flex items-center gap-4">
-        <Button asChild size="icon" variant="ghost">
-          <Link href="/crm/venues">
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
+        <div className="flex items-center gap-4">
+          <Button asChild size="icon" variant="ghost">
+            <Link href="/crm/venues">
+              <ArrowLeftIcon className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
 
-      <form onSubmit={handleSubmit}>
-        <Card tone="canvas">
-          <CardHeader>
-            <CardTitle>Venue Details</CardTitle>
-            <CardDescription>
-              Enter the basic information about this venue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="e.g., Harbor Loft"
-                  required
-                  value={formData.name}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venueType">Venue Type</Label>
-                <Select
-                  onValueChange={(value: VenueType) =>
-                    setFormData({ ...formData, venueType: value })
-                  }
-                  value={formData.venueType}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VENUE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Capacity (guests)</Label>
-                <Input
-                  id="capacity"
-                  onChange={(e) =>
-                    setFormData({ ...formData, capacity: e.target.value })
-                  }
-                  placeholder="e.g., 200"
-                  type="number"
-                  value={formData.capacity}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
-                <Input
-                  id="tags"
-                  onChange={(e) =>
-                    setFormData({ ...formData, tags: e.target.value })
-                  }
-                  placeholder="e.g., Rooftop, A/V ready (comma-separated)"
-                  value={formData.tags}
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Address</h3>
+        <form onSubmit={handleSubmit}>
+          <Card tone="canvas">
+            <CardHeader>
+              <CardTitle>Venue Details</CardTitle>
+              <CardDescription>
+                Enter the basic information about this venue.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Basic Info */}
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="addressLine1">Address Line 1</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name *</Label>
                   <Input
-                    id="addressLine1"
+                    id="name"
                     onChange={(e) =>
-                      setFormData({ ...formData, addressLine1: e.target.value })
+                      setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="Street address"
-                    value={formData.addressLine1}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="addressLine2">Address Line 2</Label>
-                  <Input
-                    id="addressLine2"
-                    onChange={(e) =>
-                      setFormData({ ...formData, addressLine2: e.target.value })
-                    }
-                    placeholder="Apartment, suite, etc."
-                    value={formData.addressLine2}
+                    placeholder="e.g., Harbor Loft"
+                    required
+                    value={formData.name}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
+                  <Label htmlFor="venueType">Venue Type</Label>
+                  <Select
+                    onValueChange={(value: VenueType) =>
+                      setFormData({ ...formData, venueType: value })
                     }
-                    value={formData.city}
+                    value={formData.venueType}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VENUE_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity (guests)</Label>
+                  <Input
+                    id="capacity"
+                    onChange={(e) =>
+                      setFormData({ ...formData, capacity: e.target.value })
+                    }
+                    placeholder="e.g., 200"
+                    type="number"
+                    value={formData.capacity}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="stateProvince">State/Province</Label>
+                  <Label htmlFor="tags">Tags</Label>
                   <Input
-                    id="stateProvince"
+                    id="tags"
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        stateProvince: e.target.value,
-                      })
+                      setFormData({ ...formData, tags: e.target.value })
                     }
-                    value={formData.stateProvince}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code</Label>
-                  <Input
-                    id="postalCode"
-                    onChange={(e) =>
-                      setFormData({ ...formData, postalCode: e.target.value })
-                    }
-                    value={formData.postalCode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="countryCode">Country Code</Label>
-                  <Input
-                    id="countryCode"
-                    maxLength={2}
-                    onChange={(e) =>
-                      setFormData({ ...formData, countryCode: e.target.value })
-                    }
-                    placeholder="e.g., US"
-                    value={formData.countryCode}
+                    placeholder="e.g., Rooftop, A/V ready (comma-separated)"
+                    value={formData.tags}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Contact */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Contact Information</h3>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="contactName">Contact Name</Label>
-                  <Input
-                    id="contactName"
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactName: e.target.value })
-                    }
-                    value={formData.contactName}
-                  />
-                </div>
+              {/* Address */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Address</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="addressLine1">Address Line 1</Label>
+                    <Input
+                      id="addressLine1"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          addressLine1: e.target.value,
+                        })
+                      }
+                      placeholder="Street address"
+                      value={formData.addressLine1}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="contactPhone">Phone</Label>
-                  <Input
-                    id="contactPhone"
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactPhone: e.target.value })
-                    }
-                    type="tel"
-                    value={formData.contactPhone}
-                  />
-                </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="addressLine2">Address Line 2</Label>
+                    <Input
+                      id="addressLine2"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          addressLine2: e.target.value,
+                        })
+                      }
+                      placeholder="Apartment, suite, etc."
+                      value={formData.addressLine2}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="contactEmail">Email</Label>
-                  <Input
-                    id="contactEmail"
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactEmail: e.target.value })
-                    }
-                    type="email"
-                    value={formData.contactEmail}
-                  />
-                </div>
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      value={formData.city}
+                    />
+                  </div>
 
-            {/* Notes */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Additional Information</h3>
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accessNotes">Access Notes</Label>
-                  <Textarea
-                    id="accessNotes"
-                    onChange={(e) =>
-                      setFormData({ ...formData, accessNotes: e.target.value })
-                    }
-                    placeholder="Loading dock info, parking instructions, etc."
-                    rows={3}
-                    value={formData.accessNotes}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="stateProvince">State/Province</Label>
+                    <Input
+                      id="stateProvince"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          stateProvince: e.target.value,
+                        })
+                      }
+                      value={formData.stateProvince}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="cateringNotes">Catering Notes</Label>
-                  <Textarea
-                    id="cateringNotes"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        cateringNotes: e.target.value,
-                      })
-                    }
-                    placeholder="Kitchen access, equipment available, restrictions, etc."
-                    rows={3}
-                    value={formData.cateringNotes}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal Code</Label>
+                    <Input
+                      id="postalCode"
+                      onChange={(e) =>
+                        setFormData({ ...formData, postalCode: e.target.value })
+                      }
+                      value={formData.postalCode}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="layoutImageUrl">Floor Plan URL</Label>
-                  <Input
-                    id="layoutImageUrl"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        layoutImageUrl: e.target.value,
-                      })
-                    }
-                    placeholder="https://..."
-                    type="url"
-                    value={formData.layoutImageUrl}
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="countryCode">Country Code</Label>
+                    <Input
+                      id="countryCode"
+                      maxLength={2}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          countryCode: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., US"
+                      value={formData.countryCode}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-4">
-              <Button asChild type="button" variant="outline">
-                <Link href="/crm/venues">Cancel</Link>
-              </Button>
-              <Button disabled={loading} type="submit">
-                {loading && (
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Venue
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </form>
+              {/* Contact */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Contact Information</h3>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="contactName">Contact Name</Label>
+                    <Input
+                      id="contactName"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactName: e.target.value,
+                        })
+                      }
+                      value={formData.contactName}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactPhone">Phone</Label>
+                    <Input
+                      id="contactPhone"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactPhone: e.target.value,
+                        })
+                      }
+                      type="tel"
+                      value={formData.contactPhone}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactEmail">Email</Label>
+                    <Input
+                      id="contactEmail"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactEmail: e.target.value,
+                        })
+                      }
+                      type="email"
+                      value={formData.contactEmail}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Additional Information</h3>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="accessNotes">Access Notes</Label>
+                    <Textarea
+                      id="accessNotes"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          accessNotes: e.target.value,
+                        })
+                      }
+                      placeholder="Loading dock info, parking instructions, etc."
+                      rows={3}
+                      value={formData.accessNotes}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cateringNotes">Catering Notes</Label>
+                    <Textarea
+                      id="cateringNotes"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          cateringNotes: e.target.value,
+                        })
+                      }
+                      placeholder="Kitchen access, equipment available, restrictions, etc."
+                      rows={3}
+                      value={formData.cateringNotes}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="layoutImageUrl">Floor Plan URL</Label>
+                    <Input
+                      id="layoutImageUrl"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          layoutImageUrl: e.target.value,
+                        })
+                      }
+                      placeholder="https://..."
+                      type="url"
+                      value={formData.layoutImageUrl}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-4">
+                <Button asChild type="button" variant="outline">
+                  <Link href="/crm/venues">Cancel</Link>
+                </Button>
+                <Button disabled={loading} type="submit">
+                  {loading && (
+                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create Venue
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
       </OperationalColumn>
     </PageCanvas>
   );

@@ -80,7 +80,7 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
             <div className="flex items-center justify-center">
               <div className="flex max-w-sm flex-col items-center gap-4 rounded-md border p-8 text-center">
                 <Check className="h-8 w-8 text-primary" />
-                <p className="text-lg font-medium">
+                <p className="font-medium text-lg">
                   Thank you for reaching out! We&apos;ll get back to you soon.
                 </p>
                 <Button
@@ -151,7 +151,7 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
               <div className="grid w-full max-w-sm items-center gap-1">
                 <Label htmlFor="contact-message">Message</Label>
                 <textarea
-                  className="border-input bg-background flex min-h-[120px] w-full max-w-sm rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-[120px] w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   id="contact-message"
                   onChange={(e) => setMessage(e.target.value)}
                   required

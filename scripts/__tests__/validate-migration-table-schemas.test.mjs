@@ -12,13 +12,13 @@
 // be runnable directly from the repo root without depending on a workspace
 // vitest entry. node --test is built in and zero-config.
 
-import { strict as assert } from "node:assert";
+import { strict as assert } from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  parseModels,
   extractCreatedTables,
   extractDroppedTables,
+  parseModels,
   validateModelsAgainstMigrations,
 } from "../validate-migration-table-schemas.mjs";
 

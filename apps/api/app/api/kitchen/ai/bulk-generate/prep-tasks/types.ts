@@ -14,40 +14,35 @@ export interface BulkGenerateRequest {
 }
 
 export interface GeneratedPrepTask {
-  name: string;
   dishId: string | null;
-  recipeVersionId: string | null;
-  taskType: string;
-  quantityTotal: number;
-  quantityUnitId: number | null;
-  servingsTotal: number | null;
-  startByDate: Date;
   dueByDate: Date;
   dueByTime: Date | null;
-  isEventFinish: boolean;
-  priority: number;
   estimatedMinutes: number | null;
+  isEventFinish: boolean;
+  name: string;
   notes: string | null;
+  priority: number;
+  quantityTotal: number;
+  quantityUnitId: number | null;
+  recipeVersionId: string | null;
+  servingsTotal: number | null;
+  startByDate: Date;
   station: string | null;
+  taskType: string;
 }
 
 export interface BulkGenerateResponse {
   batchId: string;
-  status: "processing" | "completed" | "partial" | "failed";
-  generatedCount: number;
-  totalExpected: number;
-  tasks: GeneratedPrepTask[];
   errors: string[];
-  warnings: string[];
+  generatedCount: number;
+  status: "processing" | "completed" | "partial" | "failed";
   summary: string;
+  tasks: GeneratedPrepTask[];
+  totalExpected: number;
+  warnings: string[];
 }
 
 export interface GenerationContext {
-  eventId: string;
-  eventName: string;
-  eventDate: Date;
-  guestCount: number;
-  venue: string | null;
   dishes: Array<{
     id: string;
     name: string;
@@ -56,6 +51,9 @@ export interface GenerationContext {
     allergens: string[];
     dietaryTags: string[];
   }>;
+  eventDate: Date;
+  eventId: string;
+  eventName: string;
   existingPrepTasks: Array<{
     id: string;
     name: string;
@@ -63,6 +61,8 @@ export interface GenerationContext {
     status: string;
     dueByDate: Date;
   }>;
+  guestCount: number;
+  venue: string | null;
 }
 
 export interface AIGeneratedTasks {

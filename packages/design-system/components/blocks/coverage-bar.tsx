@@ -20,12 +20,12 @@ import { cn } from "../../lib/utils";
  * @param label - Accessible label for the bar (aria-label)
  */
 export interface CoverageBarProps {
-  pct: number;
-  height?: "sm" | "md" | "lg";
-  thresholdWarning?: number;
-  thresholdGood?: number;
   className?: string;
+  height?: "sm" | "md" | "lg";
   label?: string;
+  pct: number;
+  thresholdGood?: number;
+  thresholdWarning?: number;
 }
 
 const heightClasses = {
@@ -39,8 +39,12 @@ export function getCoverageZone(
   thresholdWarning: number,
   thresholdGood: number
 ): "good" | "warning" | "critical" {
-  if (pct >= thresholdGood) return "good";
-  if (pct >= thresholdWarning) return "warning";
+  if (pct >= thresholdGood) {
+    return "good";
+  }
+  if (pct >= thresholdWarning) {
+    return "warning";
+  }
   return "critical";
 }
 

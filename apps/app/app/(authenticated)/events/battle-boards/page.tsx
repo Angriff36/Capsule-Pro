@@ -109,7 +109,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Battle Boards
           </h1>
           <p className="text-muted-foreground">
@@ -128,7 +128,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
 
         {/* Performance Overview Section */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
+          <h2 className="font-medium text-muted-foreground text-sm">
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
@@ -166,7 +166,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
                 <CardDescription>Total Staff</CardDescription>
                 <CardTitle className="text-2xl">{totalStaff}</CardTitle>
               </CardHeader>
-              <CardContent className="text-muted-foreground text-sm flex items-center gap-1">
+              <CardContent className="flex items-center gap-1 text-muted-foreground text-sm">
                 <Users className="size-3.5" />
                 Assigned across boards
               </CardContent>
@@ -177,7 +177,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
         {/* Battle Boards List Section */}
         {boards.length === 0 ? (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
+            <h2 className="font-medium text-muted-foreground text-sm">
               Battle Boards
             </h2>
             <Empty>
@@ -203,7 +203,7 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
           </section>
         ) : (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
+            <h2 className="font-medium text-muted-foreground text-sm">
               Battle Boards ({boards.length})
             </h2>
             <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">

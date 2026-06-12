@@ -22,7 +22,7 @@ interface PricingSummaryTableProps {
 function PricingSummaryTable({ rows }: PricingSummaryTableProps) {
   if (!rows.length) {
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         No pricing summary data.
       </div>
     );

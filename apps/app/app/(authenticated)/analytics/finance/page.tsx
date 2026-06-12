@@ -1,4 +1,19 @@
 import { auth } from "@repo/auth/server";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -15,21 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import {
-  CommandBand,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MonoLabel,
-  OperationalColumn,
-  PageBody,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -210,7 +210,7 @@ const AnalyticsFinancePage = async () => {
                   <div className="text-muted-foreground text-sm">
                     Planned budget
                   </div>
-                  <div className="mt-2 text-2xl font-bold">
+                  <div className="mt-2 font-bold text-2xl">
                     {currencyFormatter.format(budgetedTotal)}
                   </div>
                 </div>
@@ -218,14 +218,14 @@ const AnalyticsFinancePage = async () => {
                   <div className="text-muted-foreground text-sm">
                     Actual spend
                   </div>
-                  <div className="mt-2 text-2xl font-bold">
+                  <div className="mt-2 font-bold text-2xl">
                     {currencyFormatter.format(actualBudgetTotal)}
                   </div>
                 </div>
                 <div className="rounded-lg border p-4">
                   <div className="text-muted-foreground text-sm">Variance</div>
                   <div
-                    className={`mt-2 text-2xl font-bold ${
+                    className={`mt-2 font-bold text-2xl ${
                       budgetVarianceTotal > 0
                         ? "text-amber-600"
                         : budgetVarianceTotal < 0
@@ -281,15 +281,15 @@ const AnalyticsFinancePage = async () => {
 
           <section className="space-y-4">
             <SectionHeader
-              title="Upcoming and open invoices"
               actions={
                 <Link
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  className="font-medium text-primary text-sm underline-offset-4 hover:underline"
                   href="/accounting"
                 >
                   Open accounting
                 </Link>
               }
+              title="Upcoming and open invoices"
             />
 
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
@@ -364,15 +364,15 @@ const AnalyticsFinancePage = async () => {
 
           <section className="space-y-4">
             <SectionHeader
-              title="Recent payment activity"
               actions={
                 <Link
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  className="font-medium text-primary text-sm underline-offset-4 hover:underline"
                   href="/accounting/payments"
                 >
                   Open payments dashboard
                 </Link>
               }
+              title="Recent payment activity"
             />
 
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">

@@ -16,10 +16,10 @@ import type { ReactNode } from "react";
  * `next/image` should pass an already-optimised element via `media`.
  */
 export interface HeroPhotoCardProps {
-  media: ReactNode;
   caption?: ReactNode;
-  overlay?: ReactNode;
   className?: string;
+  media: ReactNode;
+  overlay?: ReactNode;
 }
 
 export function HeroPhotoCard({
