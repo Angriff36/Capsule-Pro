@@ -154,6 +154,7 @@
     "dev:web:infisical:manifest-log": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev-web-infisical-manifest-log.ps1",
     "build:infisical": "turbo run build:infisical",
     "knip": "knip --config knip.ts",
+    "manifest:audit-reaction-payloads": "node manifest/scripts/check-reaction-payloads.mjs --strict",
     "manifest:audit-schema-drift": "node manifest/scripts/audit-schema-drift.mjs",
     "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict",
     "manifest:audit-route-drift": "node manifest/scripts/audit-route-drift.mjs",
@@ -169,7 +170,7 @@
     "check:scripts": "node tools/audit-package-scripts.mjs",
     "check:manifest:structure": "node tools/manifest-structure-audit.mjs",
     "check:manifest:domain": "node tools/manifest-domain-drift-audit.mjs",
-    "manifest:audit": "pnpm manifest:audit-schema-drift && pnpm manifest:audit-route-drift && pnpm manifest:audit-parent-context",
+    "manifest:audit": "pnpm manifest:audit-schema-drift && pnpm manifest:audit-route-drift && pnpm manifest:audit-parent-context && pnpm manifest:audit-reaction-payloads",
     "manifest:audit:strict": "pnpm manifest:audit-schema-drift:strict && pnpm manifest:audit-route-drift:strict && pnpm manifest:audit-parent-context:strict && pnpm manifest:audit-direct-writes:baseline"
   },
   "type": "module"
