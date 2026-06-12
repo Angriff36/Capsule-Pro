@@ -1585,3 +1585,32 @@ optional-userId fix matters for the agent-loop PRE-validation only — both are 
 
 Search: PERMISSION_DENIED 401 403 conflated, Clerk session token 60s expiry, authCookie stale agent
 loop, getToken Bearer per call, Menu BattleBoard permission denied AI chat, menuId cascade missing
+
+---
+
+## 43. Master-vs-master schema parity gate + script consolidation (2026-06-12)
+
+**The gap (per the §41/§42 incident class):** no CI check compared the two hand-authored masters
+(compiled IR ↔ live schema.prisma). audit-schema-drift checked only required-Prisma-column create
+coverage; manifest:ci's schema:check compares generated artifacts against their own committed copies.
+
+**Fix:** `audit-schema-drift.mjs` now runs a second IR→Prisma parity pass over every IR entity with
+model metadata: **phantom_property** (IR prop with no column → silent persistence no-op; caught
+RecipeVersion.status AND e.g. VendorContact name/email/phone vs contactName/... — real dropped-field
+bugs) and **column_type_mismatch** (coarse type groups: temporal/integer/decimal/string/boolean/json;
+the old table folded datetime+int+money→"number", which is why shiftStart Int-vs-datetime was
+invisible). First run: **614 violations across 164 entities (444 phantom, 89 type)** — captured in
+`manifest/governance/schema-drift-baseline.json` (audit-direct-writes pattern: strict fails only on
+NEW violations; entries may only be REMOVED). `--update-baseline` regenerates. New CI job
+`manifest-schema-parity` in manifest-ci.yml runs `manifest:audit-schema-drift:strict`. Allowlist
+gains `phantomProperties`/`typeExceptions` sections. The baseline IS the latent-bug burn-down list.
+
+**Script consolidation:** removed 48 unreferenced 1:1 upstream-CLI passthroughs (`pnpm exec manifest
+<cmd>` works directly) — versions:*, config:*, governance:*, fmt/watch/migrate/diagram/harness/mock/
+etc. Kept: mcp, validate, validate-ai, doctor, registries (CI/docs-referenced) + all repo-owned node
+scripts. New umbrellas: `manifest:audit` (all 4 audits, report) and `manifest:audit:strict`
+(+direct-writes baseline); `manifest:ci` now appends `manifest:audit:strict` so the local gate
+matches CI. Verified: umbrella exit 0, negative test (removed baseline entry → exit 1).
+
+Search: schema parity gate, phantom_property, column_type_mismatch, schema-drift-baseline, 614
+violations, manifest script consolidation, audit umbrella, two masters IR vs schema.prisma

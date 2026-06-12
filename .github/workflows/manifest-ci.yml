@@ -493,6 +493,41 @@ jobs:
       - name: Run route drift audit (strict)
         run: pnpm manifest:audit-route-drift:strict
 
+  manifest-schema-parity:
+    name: IR <-> Prisma Schema Parity Gate
+    if: github.actor != 'dependabot[bot]'
+    # BLOCKING — the two hand-authored masters (compiled IR and the live
+    # packages/database/prisma/schema.prisma) are compared field-by-field:
+    # required-column create coverage, phantom IR properties (silent
+    # persistence no-ops), and column type mismatches (datetime vs Int class).
+    # Fails ONLY on violations not in manifest/governance/
+    # schema-drift-baseline.json — the committed 2026-06-12 debt inventory.
+    # Fix new drift instead of adding baseline entries.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      - name: Run schema parity audit (strict, baseline-gated)
+        run: pnpm manifest:audit-schema-drift:strict
+
   manifest-parent-context:
     name: Parent-Context Inheritance Gate
     if: github.actor != 'dependabot[bot]'
