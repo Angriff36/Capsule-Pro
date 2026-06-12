@@ -14,7 +14,7 @@ entity Ingredient {
   property densityGPerMl: decimal = 0
   property shelfLifeDays: int = 0
   property storageInstructions: string = ""
-  property allergens: string = ""
+  property allergens: array<string> = []
   property isActive: boolean = true
   property inventoryItemId: string = ""
   // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
@@ -28,7 +28,7 @@ entity Ingredient {
   property deletedAt: datetime
 
   computed isExpirable: boolean = self.shelfLifeDays > 0
-  computed hasAllergens: boolean = self.allergens != ""
+  computed hasAllergens: boolean = length(self.allergens) > 0
   computed isDeactivated: boolean = self.isActive == false
   computed hasLot: boolean = self.currentLotNumber != ""
   computed isLotExpired: boolean = self.currentLotExpiresAt != null
@@ -61,7 +61,7 @@ entity Ingredient {
   }
 
   default policy IngredientDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Ingredient management"
-  command create(name: string, category: string, defaultUnitId: number, densityGPerMl: number, shelfLifeDays: number, storageInstructions: string, allergens: string) {
+  command create(name: string, category: string, defaultUnitId: number, densityGPerMl: number, shelfLifeDays: number, storageInstructions: string, allergens: array<string>) {
     guard name != null and name != "" "Ingredient name is required"
     guard defaultUnitId != null and defaultUnitId > 0 "Default unit ID is required"
 
@@ -118,7 +118,7 @@ entity Ingredient {
     emit IngredientReactivated
   }
 
-  command updateAllergens(allergens: string, userId: string) {
+  command updateAllergens(allergens: array<string>, userId: string) {
     guard self.isActive "Cannot update allergens on a deactivated ingredient"
 
     mutate allergens = allergens
@@ -210,7 +210,7 @@ event IngredientCreated: "kitchen.ingredient.created" {
   tenantId: string
   name: string
   category: string
-  allergens: string
+  allergens: array<string>
   shelfLifeDays: number
   createdAt: datetime
 }
@@ -241,7 +241,7 @@ event IngredientReactivated: "kitchen.ingredient.reactivated" {
 event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   ingredientId: string
   name: string
-  allergens: string
+  allergens: array<string>
   userId: string
   updatedAt: datetime
 }

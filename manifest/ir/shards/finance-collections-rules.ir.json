@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7b82e7c0380140e80ac4d427bdbf0a9a2bc8fde7367dd28fbcb5eab280b74c29",
-    "irHash": "e526085421b1536a33cc87a64ba68db01ed3e452cf7023e72a7a538a642c9d01",
+    "contentHash": "bd3f0e982d0855137efb1ffb6e9e8cf6a4d67af040e0cee1ad12add949537841",
+    "irHash": "b6fa861677f2e376c895e4cea047076ee5dab159ae6bff688dc4657688249739",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.753Z"
+    "compiledAt": "2026-06-12T14:47:34.134Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -343,18 +343,6 @@
         },
         {
           "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "internalNotes",
           "type": {
             "name": "string",
             "nullable": false
@@ -752,7 +740,7 @@
           ]
         },
         {
-          "name": "caseId",
+          "name": "collectionCaseId",
           "type": {
             "name": "string",
             "nullable": false
@@ -808,54 +796,6 @@
           ]
         },
         {
-          "name": "contactedBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "contactName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "contactMethod",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "subject",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
           "name": "description",
           "type": {
             "name": "string",
@@ -904,30 +844,6 @@
           "type": {
             "name": "datetime",
             "nullable": false
-          },
-          "modifiers": []
-        },
-        {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "metadata",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "{}"
           },
           "modifiers": []
         },
@@ -1090,7 +1006,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "caseId"
+              "collectionCaseId"
             ],
             "references": [
               "tenantId",
@@ -1242,7 +1158,7 @@
           ]
         },
         {
-          "name": "caseId",
+          "name": "collectionCaseId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1284,7 +1200,7 @@
           ]
         },
         {
-          "name": "installmentCount",
+          "name": "installments",
           "type": {
             "name": "int",
             "nullable": false
@@ -1334,48 +1250,6 @@
           "modifiers": [
             "required"
           ]
-        },
-        {
-          "name": "endDate",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "frequency",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "nextPaymentDate",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": []
-        },
-        {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
         },
         {
           "name": "metadata",
@@ -1508,7 +1382,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "installmentCount"
+                "property": "installments"
               }
             ]
           },
@@ -1537,7 +1411,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "installmentCount"
+                "property": "installments"
               },
               "right": {
                 "kind": "member",
@@ -1596,7 +1470,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "caseId"
+              "collectionCaseId"
             ],
             "references": [
               "tenantId",
@@ -1674,7 +1548,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "installmentCount"
+              "property": "installments"
             },
             "right": {
               "kind": "literal",
@@ -1708,7 +1582,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "installmentCount"
+              "property": "installments"
             }
           },
           "severity": "block",
@@ -5103,7 +4977,7 @@
         },
         {
           "kind": "mutate",
-          "target": "installmentCount",
+          "target": "installments",
           "expression": {
             "kind": "identifier",
             "name": "newInstallmentCount"

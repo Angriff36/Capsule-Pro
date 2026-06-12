@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a1e71c5d3f7003fda3d7ca7505f3afbf88c1abb2294ccb58ca60c81f79fbf290",
-    "irHash": "c95e9d2f035d3c8b59350702de0866ecbc5a303cb2e2fef54d80fd93ea09861b",
+    "contentHash": "e96b6da9b6cce066cf6b66567bc61aaa98df527b1b3871834b5f936951aa7184",
+    "irHash": "e9d840dd207066ec171a3c4c468c458f9b38a35ee36c667479eed1fda14869ae",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.869Z"
+    "compiledAt": "2026-06-12T14:47:34.234Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -52,7 +52,17 @@
           ]
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "submittedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -227,16 +237,6 @@
           "foreignKey": {
             "fields": [
               "payrollRunId"
-            ]
-          }
-        },
-        {
-          "name": "payrollPeriod",
-          "kind": "belongsTo",
-          "target": "PayrollPeriod",
-          "foreignKey": {
-            "fields": [
-              "payrollPeriodId"
             ]
           }
         }
@@ -707,35 +707,7 @@
           ]
         },
         {
-          "name": "periodStart",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": []
-        },
-        {
-          "name": "periodEnd",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": []
-        },
-        {
           "name": "periodId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "eventId",
           "type": {
             "name": "string",
             "nullable": false
@@ -995,16 +967,6 @@
               "periodId"
             ]
           }
-        },
-        {
-          "name": "event",
-          "kind": "belongsTo",
-          "target": "Event",
-          "foreignKey": {
-            "fields": [
-              "eventId"
-            ]
-          }
         }
       ],
       "commands": [
@@ -1254,7 +1216,7 @@
           "modifiers": []
         },
         {
-          "name": "issuedAt",
+          "name": "issuedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1651,7 +1613,7 @@
           "modifiers": []
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1671,7 +1633,7 @@
           "modifiers": []
         },
         {
-          "name": "completedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1941,7 +1903,7 @@
           ]
         },
         {
-          "name": "reviewPeriod",
+          "name": "reviewType",
           "type": {
             "name": "string",
             "nullable": false
@@ -1953,7 +1915,15 @@
           "modifiers": []
         },
         {
-          "name": "overallRating",
+          "name": "scheduledDate",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "rating",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -1977,7 +1947,7 @@
           "modifiers": []
         },
         {
-          "name": "submittedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1985,7 +1955,7 @@
           "modifiers": []
         },
         {
-          "name": "signedOffAt",
+          "name": "employeeAcknowledgedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -2185,7 +2155,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "overallRating"
+                "property": "rating"
               },
               "right": {
                 "kind": "literal",
@@ -2204,7 +2174,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "overallRating"
+                "property": "rating"
               },
               "right": {
                 "kind": "literal",
@@ -2281,7 +2251,17 @@
           ]
         },
         {
-          "name": "trainingModuleId",
+          "name": "assignmentId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "moduleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2407,7 +2387,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "trainingModuleId"
+              "moduleId"
             ],
             "references": [
               "tenantId",
@@ -2534,6 +2514,18 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "taskType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "OTHER"
           },
           "modifiers": []
         },
@@ -2696,7 +2688,7 @@
           ]
         },
         {
-          "name": "onboardingTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2710,18 +2702,6 @@
           "type": {
             "name": "datetime",
             "nullable": false
-          },
-          "modifiers": []
-        },
-        {
-          "name": "status",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "pending"
           },
           "modifiers": []
         },
@@ -2746,62 +2726,7 @@
           ]
         }
       ],
-      "computedProperties": [
-        {
-          "name": "isPending",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "pending"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isComplete",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "completed"
-              }
-            }
-          },
-          "dependencies": []
-        }
-      ],
+      "computedProperties": [],
       "relationships": [
         {
           "name": "onboardingTask",
@@ -2810,7 +2735,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "onboardingTaskId"
+              "taskId"
             ],
             "references": [
               "tenantId",
@@ -2833,46 +2758,7 @@
         "create",
         "complete"
       ],
-      "constraints": [
-        {
-          "name": "validStatus",
-          "code": "validStatus",
-          "expression": {
-            "kind": "binary",
-            "operator": "in",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "array",
-              "elements": [
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "pending"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "completed"
-                  }
-                }
-              ]
-            }
-          },
-          "severity": "block",
-          "message": "Invalid onboarding completion status",
-          "overrideable": false
-        }
-      ],
+      "constraints": [],
       "policies": [],
       "defaultPolicies": [
         "OnboardingCompletionDefaultAccess"
@@ -2881,16 +2767,7 @@
         "tenantId",
         "id"
       ],
-      "timestamps": true,
-      "transitions": [
-        {
-          "property": "status",
-          "from": "pending",
-          "to": [
-            "completed"
-          ]
-        }
-      ]
+      "timestamps": true
     },
     {
       "name": "OpenShift",
@@ -3232,6 +3109,18 @@
           "modifiers": []
         },
         {
+          "name": "routeNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
           "name": "driverId",
           "type": {
             "name": "string",
@@ -3244,7 +3133,7 @@
           "modifiers": []
         },
         {
-          "name": "routeDate",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3264,19 +3153,7 @@
           "modifiers": []
         },
         {
-          "name": "totalStops",
-          "type": {
-            "name": "int",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "distanceMiles",
+          "name": "totalDistance",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -3500,7 +3377,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "distanceMiles"
+              "property": "totalDistance"
             },
             "right": {
               "kind": "literal",
@@ -3566,7 +3443,7 @@
           ]
         },
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -3576,7 +3453,7 @@
           ]
         },
         {
-          "name": "eventId",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -3588,19 +3465,7 @@
           "modifiers": []
         },
         {
-          "name": "address",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": {
             "name": "int",
             "nullable": false
@@ -3612,7 +3477,7 @@
           "modifiers": []
         },
         {
-          "name": "scheduledAt",
+          "name": "plannedArrival",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3632,7 +3497,7 @@
           "modifiers": []
         },
         {
-          "name": "arrivedAt",
+          "name": "actualArrival",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3751,21 +3616,11 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "deliveryRouteId"
+              "routeId"
             ],
             "references": [
               "tenantId",
               "id"
-            ]
-          }
-        },
-        {
-          "name": "event",
-          "kind": "belongsTo",
-          "target": "Event",
-          "foreignKey": {
-            "fields": [
-              "eventId"
             ]
           }
         }
@@ -3823,8 +3678,8 @@
           "overrideable": false
         },
         {
-          "name": "requireAddress",
-          "code": "requireAddress",
+          "name": "requireName",
+          "code": "requireName",
           "expression": {
             "kind": "binary",
             "operator": "!=",
@@ -3834,7 +3689,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "address"
+              "property": "name"
             },
             "right": {
               "kind": "literal",
@@ -3845,12 +3700,12 @@
             }
           },
           "severity": "block",
-          "message": "Address is required",
+          "message": "Stop name is required",
           "overrideable": false
         },
         {
-          "name": "sequencePositive",
-          "code": "sequencePositive",
+          "name": "stopNumberPositive",
+          "code": "stopNumberPositive",
           "expression": {
             "kind": "binary",
             "operator": ">=",
@@ -3860,7 +3715,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "sequence"
+              "property": "stopNumber"
             },
             "right": {
               "kind": "literal",
@@ -3871,7 +3726,7 @@
             }
           },
           "severity": "block",
-          "message": "Sequence must be non-negative",
+          "message": "Stop number must be non-negative",
           "overrideable": false
         }
       ],
@@ -3935,7 +3790,7 @@
           ]
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": {
             "name": "money",
             "nullable": false
@@ -3947,7 +3802,19 @@
           "modifiers": []
         },
         {
-          "name": "reason",
+          "name": "effectiveAmount",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "refundReason",
           "type": {
             "name": "string",
             "nullable": false
@@ -3959,22 +3826,14 @@
           "modifiers": []
         },
         {
-          "name": "status",
+          "name": "success",
           "type": {
-            "name": "string",
+            "name": "boolean",
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": "pending"
-          },
-          "modifiers": []
-        },
-        {
-          "name": "attemptedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
+            "kind": "boolean",
+            "value": false
           },
           "modifiers": []
         },
@@ -3984,49 +3843,10 @@
             "name": "datetime",
             "nullable": false
           },
-          "modifiers": [
-            "readonly"
-          ]
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "readonly"
-          ]
+          "modifiers": []
         }
       ],
       "computedProperties": [
-        {
-          "name": "isPending",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "pending"
-              }
-            }
-          },
-          "dependencies": []
-        },
         {
           "name": "isSucceeded",
           "type": {
@@ -4042,40 +3862,13 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "success"
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "string",
-                "value": "succeeded"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isFailed",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "failed"
+                "kind": "boolean",
+                "value": true
               }
             }
           },
@@ -4101,53 +3894,8 @@
       ],
       "constraints": [
         {
-          "name": "validStatus",
-          "code": "validStatus",
-          "expression": {
-            "kind": "binary",
-            "operator": "in",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "array",
-              "elements": [
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "pending"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "succeeded"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "failed"
-                  }
-                }
-              ]
-            }
-          },
-          "severity": "block",
-          "message": "Invalid refund attempt status",
-          "overrideable": false
-        },
-        {
-          "name": "amountPositive",
-          "code": "amountPositive",
+          "name": "requestedAmountPositive",
+          "code": "requestedAmountPositive",
           "expression": {
             "kind": "binary",
             "operator": ">",
@@ -4157,7 +3905,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "amount"
+              "property": "requestedAmount"
             },
             "right": {
               "kind": "literal",
@@ -4179,17 +3927,6 @@
       "key": [
         "tenantId",
         "id"
-      ],
-      "timestamps": true,
-      "transitions": [
-        {
-          "property": "status",
-          "from": "pending",
-          "to": [
-            "succeeded",
-            "failed"
-          ]
-        }
       ]
     },
     {
@@ -4364,18 +4101,6 @@
           "modifiers": []
         },
         {
-          "name": "isActive",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "boolean",
-            "value": true
-          },
-          "modifiers": []
-        },
-        {
           "name": "createdAt",
           "type": {
             "name": "datetime",
@@ -4460,43 +4185,20 @@
           },
           "expression": {
             "kind": "binary",
-            "operator": "and",
+            "operator": "==",
             "left": {
-              "kind": "binary",
-              "operator": "==",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "isActive"
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
               },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "boolean",
-                  "value": true
-                }
-              }
+              "property": "status"
             },
             "right": {
-              "kind": "binary",
-              "operator": "==",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "status"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "active"
-                }
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
               }
             }
           },
@@ -4699,7 +4401,7 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
           "type": {
             "name": "string",
             "nullable": false
@@ -4745,7 +4447,7 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
           "type": {
             "name": "string",
             "nullable": false
@@ -4799,7 +4501,7 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
           "type": {
             "name": "string",
             "nullable": false
@@ -4861,7 +4563,7 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5024,14 +4726,6 @@
         },
         {
           "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "eventId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5445,7 +5139,7 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5491,7 +5185,7 @@
           "required": true
         },
         {
-          "name": "completedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5575,7 +5269,7 @@
           "required": true
         },
         {
-          "name": "reviewPeriod",
+          "name": "reviewType",
           "type": {
             "name": "string",
             "nullable": false
@@ -5621,7 +5315,7 @@
           "required": true
         },
         {
-          "name": "overallRating",
+          "name": "rating",
           "type": {
             "name": "number",
             "nullable": false
@@ -5629,7 +5323,7 @@
           "required": true
         },
         {
-          "name": "submittedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5667,7 +5361,7 @@
           "required": true
         },
         {
-          "name": "signedOffAt",
+          "name": "employeeAcknowledgedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5743,7 +5437,7 @@
           "required": true
         },
         {
-          "name": "trainingModuleId",
+          "name": "moduleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5919,7 +5613,7 @@
           "required": true
         },
         {
-          "name": "onboardingTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5965,7 +5659,7 @@
           "required": true
         },
         {
-          "name": "onboardingTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6165,7 +5859,7 @@
           "required": true
         },
         {
-          "name": "routeDate",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -6301,7 +5995,7 @@
           "required": true
         },
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6309,7 +6003,7 @@
           "required": true
         },
         {
-          "name": "address",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -6317,7 +6011,7 @@
           "required": true
         },
         {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": {
             "name": "number",
             "nullable": false
@@ -6355,7 +6049,7 @@
           "required": true
         },
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6363,7 +6057,7 @@
           "required": true
         },
         {
-          "name": "arrivedAt",
+          "name": "actualArrival",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -6393,7 +6087,7 @@
           "required": true
         },
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6431,7 +6125,7 @@
           "required": true
         },
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6439,7 +6133,7 @@
           "required": true
         },
         {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": {
             "name": "number",
             "nullable": false
@@ -6485,7 +6179,7 @@
           "required": true
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": {
             "name": "money",
             "nullable": false
@@ -6493,7 +6187,7 @@
           "required": true
         },
         {
-          "name": "reason",
+          "name": "refundReason",
           "type": {
             "name": "string",
             "nullable": false
@@ -6501,7 +6195,7 @@
           "required": true
         },
         {
-          "name": "attemptedAt",
+          "name": "createdAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -6539,7 +6233,7 @@
           "required": true
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": {
             "name": "money",
             "nullable": false
@@ -6585,7 +6279,7 @@
           "required": true
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": {
             "name": "money",
             "nullable": false
@@ -6809,7 +6503,15 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "submittedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -6867,7 +6569,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "payrollPeriodId"
+              "name": "payrollRunId"
             },
             "right": {
               "kind": "literal",
@@ -6881,7 +6583,40 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "payrollPeriodId"
+              "name": "payrollRunId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "submittedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "submittedBy"
             },
             "right": {
               "kind": "literal",
@@ -6914,7 +6649,17 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Payroll period ID is required"
+              "value": "Payroll run ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Submitter ID is required"
             }
           }
         },
@@ -6928,10 +6673,18 @@
         },
         {
           "kind": "mutate",
-          "target": "payrollPeriodId",
+          "target": "payrollRunId",
           "expression": {
             "kind": "identifier",
-            "name": "payrollPeriodId"
+            "name": "payrollRunId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "submittedBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "submittedBy"
           }
         },
         {
@@ -7985,23 +7738,7 @@
       "entity": "TipPool",
       "parameters": [
         {
-          "name": "periodStart",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "periodEnd",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "eventId",
+          "name": "periodId",
           "type": {
             "name": "string",
             "nullable": false
@@ -8020,27 +7757,13 @@
       "guards": [
         {
           "kind": "binary",
-          "operator": "!=",
-          "left": {
-            "kind": "identifier",
-            "name": "periodStart"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "null"
-            }
-          }
-        },
-        {
-          "kind": "binary",
           "operator": "and",
           "left": {
             "kind": "binary",
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "periodEnd"
+              "name": "periodId"
             },
             "right": {
               "kind": "literal",
@@ -8051,14 +7774,17 @@
           },
           "right": {
             "kind": "binary",
-            "operator": ">",
+            "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "periodEnd"
+              "name": "periodId"
             },
             "right": {
-              "kind": "identifier",
-              "name": "periodStart"
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
             }
           }
         },
@@ -8089,17 +7815,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Period start is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Period end must be after period start"
+              "value": "Payroll period ID is required"
             }
           }
         },
@@ -8115,26 +7831,10 @@
         },
         {
           "kind": "mutate",
-          "target": "periodStart",
+          "target": "periodId",
           "expression": {
             "kind": "identifier",
-            "name": "periodStart"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "periodEnd",
-          "expression": {
-            "kind": "identifier",
-            "name": "periodEnd"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "eventId",
-          "expression": {
-            "kind": "identifier",
-            "name": "eventId"
+            "name": "periodId"
           }
         },
         {
@@ -9019,7 +8719,7 @@
         },
         {
           "kind": "mutate",
-          "target": "issuedAt",
+          "target": "issuedDate",
           "expression": {
             "kind": "call",
             "callee": {
@@ -9403,7 +9103,7 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -9483,7 +9183,7 @@
           "operator": "!=",
           "left": {
             "kind": "identifier",
-            "name": "dueAt"
+            "name": "dueDate"
           },
           "right": {
             "kind": "literal",
@@ -9546,10 +9246,10 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "dueDate",
           "expression": {
             "kind": "identifier",
-            "name": "dueAt"
+            "name": "dueDate"
           }
         }
       ],
@@ -9610,7 +9310,7 @@
         },
         {
           "kind": "mutate",
-          "target": "completedAt",
+          "target": "completedDate",
           "expression": {
             "kind": "call",
             "callee": {
@@ -9702,9 +9402,17 @@
           "required": true
         },
         {
-          "name": "reviewPeriod",
+          "name": "reviewType",
           "type": {
             "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "scheduledDate",
+          "type": {
+            "name": "datetime",
             "nullable": false
           },
           "required": true
@@ -9785,7 +9493,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "reviewPeriod"
+              "name": "reviewType"
             },
             "right": {
               "kind": "literal",
@@ -9799,7 +9507,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "reviewPeriod"
+              "name": "reviewType"
             },
             "right": {
               "kind": "literal",
@@ -9807,6 +9515,20 @@
                 "kind": "string",
                 "value": ""
               }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "scheduledDate"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
             }
           }
         }
@@ -9842,7 +9564,17 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Review period is required"
+              "value": "Review type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Scheduled date is required"
             }
           }
         },
@@ -9864,15 +9596,23 @@
         },
         {
           "kind": "mutate",
-          "target": "reviewPeriod",
+          "target": "reviewType",
           "expression": {
             "kind": "identifier",
-            "name": "reviewPeriod"
+            "name": "reviewType"
           }
         },
         {
           "kind": "mutate",
-          "target": "overallRating",
+          "target": "scheduledDate",
+          "expression": {
+            "kind": "identifier",
+            "name": "scheduledDate"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "rating",
           "expression": {
             "kind": "literal",
             "value": {
@@ -9891,7 +9631,7 @@
       "entity": "PerformanceReview",
       "parameters": [
         {
-          "name": "overallRating",
+          "name": "rating",
           "type": {
             "name": "number",
             "nullable": false
@@ -9927,7 +9667,7 @@
             "operator": ">=",
             "left": {
               "kind": "identifier",
-              "name": "overallRating"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9942,7 +9682,7 @@
             "operator": "<=",
             "left": {
               "kind": "identifier",
-              "name": "overallRating"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9981,10 +9721,10 @@
         },
         {
           "kind": "mutate",
-          "target": "overallRating",
+          "target": "rating",
           "expression": {
             "kind": "identifier",
-            "name": "overallRating"
+            "name": "rating"
           }
         },
         {
@@ -10000,7 +9740,7 @@
         },
         {
           "kind": "mutate",
-          "target": "submittedAt",
+          "target": "completedDate",
           "expression": {
             "kind": "call",
             "callee": {
@@ -10068,7 +9808,7 @@
         },
         {
           "kind": "mutate",
-          "target": "signedOffAt",
+          "target": "employeeAcknowledgedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -10152,7 +9892,15 @@
           "required": true
         },
         {
-          "name": "trainingModuleId",
+          "name": "assignmentId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "moduleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -10226,7 +9974,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "trainingModuleId"
+              "name": "assignmentId"
             },
             "right": {
               "kind": "literal",
@@ -10240,7 +9988,40 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "trainingModuleId"
+              "name": "assignmentId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "moduleId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "moduleId"
             },
             "right": {
               "kind": "literal",
@@ -10307,6 +10088,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Assignment ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Training module ID is required"
             }
           }
@@ -10331,10 +10122,18 @@
         },
         {
           "kind": "mutate",
-          "target": "trainingModuleId",
+          "target": "assignmentId",
           "expression": {
             "kind": "identifier",
-            "name": "trainingModuleId"
+            "name": "assignmentId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "moduleId",
+          "expression": {
+            "kind": "identifier",
+            "name": "moduleId"
           }
         },
         {
@@ -10654,7 +10453,7 @@
           "required": true
         },
         {
-          "name": "onboardingTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -10704,7 +10503,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "onboardingTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -10718,7 +10517,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "onboardingTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -10765,10 +10564,22 @@
         },
         {
           "kind": "mutate",
-          "target": "onboardingTaskId",
+          "target": "taskId",
           "expression": {
             "kind": "identifier",
-            "name": "onboardingTaskId"
+            "name": "taskId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "completedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
           }
         }
       ],
@@ -10780,53 +10591,12 @@
       "name": "complete",
       "entity": "OnboardingCompletion",
       "parameters": [],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "pending"
-            }
-          }
-        }
-      ],
+      "guards": [],
       "constraints": [],
       "policies": [
         "OnboardingCompletionDefaultAccess"
       ],
       "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Only pending completions can be completed"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "completed"
-            }
-          }
-        },
         {
           "kind": "mutate",
           "target": "completedAt",
@@ -11271,6 +11041,14 @@
           "required": true
         },
         {
+          "name": "routeNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
           "name": "driverId",
           "type": {
             "name": "string",
@@ -11279,7 +11057,7 @@
           "required": true
         },
         {
-          "name": "routeDate",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -11287,15 +11065,7 @@
           "required": true
         },
         {
-          "name": "totalStops",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "distanceMiles",
+          "name": "totalDistance",
           "type": {
             "name": "number",
             "nullable": false
@@ -11339,10 +11109,43 @@
         },
         {
           "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "routeNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "routeNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
           "operator": "!=",
           "left": {
             "kind": "identifier",
-            "name": "routeDate"
+            "name": "scheduledDate"
           },
           "right": {
             "kind": "literal",
@@ -11373,7 +11176,17 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Route date is required"
+              "value": "Route number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Scheduled date is required"
             }
           }
         },
@@ -11387,6 +11200,14 @@
         },
         {
           "kind": "mutate",
+          "target": "routeNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "routeNumber"
+          }
+        },
+        {
+          "kind": "mutate",
           "target": "driverId",
           "expression": {
             "kind": "identifier",
@@ -11395,26 +11216,18 @@
         },
         {
           "kind": "mutate",
-          "target": "routeDate",
+          "target": "scheduledDate",
           "expression": {
             "kind": "identifier",
-            "name": "routeDate"
+            "name": "scheduledDate"
           }
         },
         {
           "kind": "mutate",
-          "target": "totalStops",
+          "target": "totalDistance",
           "expression": {
             "kind": "identifier",
-            "name": "totalStops"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "distanceMiles",
-          "expression": {
-            "kind": "identifier",
-            "name": "distanceMiles"
+            "name": "totalDistance"
           }
         }
       ],
@@ -11678,7 +11491,7 @@
       "entity": "RouteStop",
       "parameters": [
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -11686,7 +11499,7 @@
           "required": true
         },
         {
-          "name": "eventId",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -11694,15 +11507,7 @@
           "required": true
         },
         {
-          "name": "address",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": {
             "name": "number",
             "nullable": false
@@ -11710,7 +11515,7 @@
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "plannedArrival",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -11727,7 +11532,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "deliveryRouteId"
+              "name": "routeId"
             },
             "right": {
               "kind": "literal",
@@ -11741,7 +11546,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "deliveryRouteId"
+              "name": "routeId"
             },
             "right": {
               "kind": "literal",
@@ -11760,7 +11565,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "address"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
@@ -11774,7 +11579,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "address"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
@@ -11790,7 +11595,7 @@
           "operator": "!=",
           "left": {
             "kind": "identifier",
-            "name": "scheduledAt"
+            "name": "plannedArrival"
           },
           "right": {
             "kind": "literal",
@@ -11821,7 +11626,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Address is required"
+              "value": "Stop name is required"
             }
           }
         },
@@ -11837,42 +11642,34 @@
         },
         {
           "kind": "mutate",
-          "target": "deliveryRouteId",
+          "target": "routeId",
           "expression": {
             "kind": "identifier",
-            "name": "deliveryRouteId"
+            "name": "routeId"
           }
         },
         {
           "kind": "mutate",
-          "target": "eventId",
+          "target": "name",
           "expression": {
             "kind": "identifier",
-            "name": "eventId"
+            "name": "name"
           }
         },
         {
           "kind": "mutate",
-          "target": "address",
+          "target": "stopNumber",
           "expression": {
             "kind": "identifier",
-            "name": "address"
+            "name": "stopNumber"
           }
         },
         {
           "kind": "mutate",
-          "target": "sequence",
+          "target": "plannedArrival",
           "expression": {
             "kind": "identifier",
-            "name": "sequence"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "scheduledAt",
-          "expression": {
-            "kind": "identifier",
-            "name": "scheduledAt"
+            "name": "plannedArrival"
           }
         }
       ],
@@ -11933,7 +11730,7 @@
         },
         {
           "kind": "mutate",
-          "target": "arrivedAt",
+          "target": "actualArrival",
           "expression": {
             "kind": "call",
             "callee": {
@@ -12009,7 +11806,7 @@
       "entity": "RouteStop",
       "parameters": [
         {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": {
             "name": "number",
             "nullable": false
@@ -12042,7 +11839,7 @@
           "operator": ">=",
           "left": {
             "kind": "identifier",
-            "name": "sequence"
+            "name": "stopNumber"
           },
           "right": {
             "kind": "literal",
@@ -12074,16 +11871,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Sequence must be non-negative"
+              "value": "Stop number must be non-negative"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "sequence",
+          "target": "stopNumber",
           "expression": {
             "kind": "identifier",
-            "name": "sequence"
+            "name": "stopNumber"
           }
         }
       ],
@@ -12104,7 +11901,7 @@
           "required": true
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": {
             "name": "money",
             "nullable": false
@@ -12112,7 +11909,7 @@
           "required": true
         },
         {
-          "name": "reason",
+          "name": "refundReason",
           "type": {
             "name": "string",
             "nullable": false
@@ -12159,7 +11956,7 @@
           "operator": ">",
           "left": {
             "kind": "identifier",
-            "name": "amount"
+            "name": "requestedAmount"
           },
           "right": {
             "kind": "literal",
@@ -12177,7 +11974,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "reason"
+              "name": "refundReason"
             },
             "right": {
               "kind": "literal",
@@ -12191,7 +11988,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "reason"
+              "name": "refundReason"
             },
             "right": {
               "kind": "literal",
@@ -12234,7 +12031,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Reason is required"
+              "value": "Refund reason is required"
             }
           }
         },
@@ -12248,30 +12045,18 @@
         },
         {
           "kind": "mutate",
-          "target": "amount",
+          "target": "requestedAmount",
           "expression": {
             "kind": "identifier",
-            "name": "amount"
+            "name": "requestedAmount"
           }
         },
         {
           "kind": "mutate",
-          "target": "reason",
+          "target": "refundReason",
           "expression": {
             "kind": "identifier",
-            "name": "reason"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "attemptedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
+            "name": "refundReason"
           }
         }
       ],
@@ -12283,50 +12068,20 @@
       "name": "markSucceeded",
       "entity": "PaymentRefundAttempt",
       "parameters": [],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "pending"
-            }
-          }
-        }
-      ],
+      "guards": [],
       "constraints": [],
       "policies": [
         "PaymentRefundAttemptDefaultAccess"
       ],
       "actions": [
         {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Only pending refund attempts can be marked succeeded"
-            }
-          }
-        },
-        {
           "kind": "mutate",
-          "target": "status",
+          "target": "success",
           "expression": {
             "kind": "literal",
             "value": {
-              "kind": "string",
-              "value": "succeeded"
+              "kind": "boolean",
+              "value": true
             }
           }
         }
@@ -12339,50 +12094,20 @@
       "name": "markFailed",
       "entity": "PaymentRefundAttempt",
       "parameters": [],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "pending"
-            }
-          }
-        }
-      ],
+      "guards": [],
       "constraints": [],
       "policies": [
         "PaymentRefundAttemptDefaultAccess"
       ],
       "actions": [
         {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Only pending refund attempts can be marked failed"
-            }
-          }
-        },
-        {
           "kind": "mutate",
-          "target": "status",
+          "target": "success",
           "expression": {
             "kind": "literal",
             "value": {
-              "kind": "string",
-              "value": "failed"
+              "kind": "boolean",
+              "value": false
             }
           }
         }
@@ -12714,17 +12439,6 @@
               ]
             }
           }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
         }
       ],
       "emits": [
@@ -12802,12 +12516,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         },
         {
           "kind": "binary",
@@ -13019,12 +12744,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         },
         {
           "kind": "binary",
@@ -13097,12 +12833,23 @@
       "parameters": [],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -13117,17 +12864,6 @@
             "value": {
               "kind": "string",
               "value": "Schedule is already inactive"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": false
             }
           }
         },

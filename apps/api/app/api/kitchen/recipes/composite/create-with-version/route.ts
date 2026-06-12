@@ -334,7 +334,12 @@ export async function POST(request: NextRequest) {
               durationMinutes: step.durationMinutes || 0,
               temperatureValue: step.temperatureValue || 0,
               temperatureUnit: step.temperatureUnit || "",
-              equipmentNeeded: step.equipmentNeeded || "",
+              equipmentNeeded: step.equipmentNeeded
+                ? step.equipmentNeeded
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : [],
               tips: step.tips || "",
               videoUrl: step.videoUrl || "",
               imageUrl: step.imageUrl || "",

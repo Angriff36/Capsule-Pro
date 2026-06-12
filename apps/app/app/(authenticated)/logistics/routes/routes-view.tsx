@@ -157,7 +157,7 @@ export function RoutesView() {
     try {
       const route = await logisticsRouteCreate({
         name: createForm.name,
-        scheduledStart: createForm.scheduledDate
+        scheduledDate: createForm.scheduledDate
           ? new Date(createForm.scheduledDate).toISOString()
           : undefined,
       });
@@ -242,7 +242,7 @@ export function RoutesView() {
       const route = await logisticsRouteUpdate({
         id: editingRoute.id,
         name: editForm.name,
-        scheduledStart: editForm.scheduledDate
+        scheduledDate: editForm.scheduledDate
           ? new Date(editForm.scheduledDate).toISOString()
           : undefined,
       });

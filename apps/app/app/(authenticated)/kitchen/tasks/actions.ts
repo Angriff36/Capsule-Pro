@@ -380,7 +380,7 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
  *
  * Two governed commands:
  * 1. KitchenTask.claim(userId) — sets status=in_progress, assignedTo
- * 2. KitchenTaskClaim.claim(kitchenTaskId, employeeId, claimedAt) — creates claim record
+ * 2. KitchenTaskClaim.claim(taskId, employeeId, claimedAt) — creates claim record
  */
 export const claimTask = async (
   taskId: string,
@@ -410,7 +410,7 @@ export const claimTask = async (
     entity: "KitchenTaskClaim",
     command: "claim",
     body: {
-      kitchenTaskId: taskId,
+      taskId,
       employeeId,
       claimedAt: new Date(),
     },
@@ -553,10 +553,10 @@ export const getMyActiveClaims = async (
  * Add a progress entry for a task.
  *
  * Uses KitchenTaskProgress.create. Maps:
- * - taskId → kitchenTaskId
- * - progressType → status
+ * - progressType → progressType
+ * - newStatus ?? progressType → newStatus
  * - quantityCompleted → progressPct
- * - notes → note
+ * - notes → notes
  */
 export const addTaskProgress = async (
   taskId: string,
@@ -580,11 +580,12 @@ export const addTaskProgress = async (
     entity: "KitchenTaskProgress",
     command: "create",
     body: {
-      kitchenTaskId: taskId,
+      taskId,
       employeeId,
-      status: options?.newStatus ?? progressType,
+      progressType,
+      newStatus: options?.newStatus ?? progressType,
       progressPct: options?.quantityCompleted ?? 0,
-      note: options?.notes ?? "",
+      notes: options?.notes ?? "",
       recordedAt: new Date(),
     },
     user: { id: user.id, tenantId, role: user.role },

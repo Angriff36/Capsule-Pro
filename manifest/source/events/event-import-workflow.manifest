@@ -17,7 +17,7 @@ entity EventImportWorkflow {
   property stepResults: string = "{}"
   property errors: string = "[]"
   property warnings: string = "[]"
-  property confidence: decimal = 0
+  property confidence: int = 0
   property startedAt: datetime
   property completedAt: datetime
   timestamps
@@ -69,7 +69,7 @@ entity EventImportWorkflow {
     emit EventImportWorkflowParsingStarted
   }
 
-  command completeParsing(extractedData: string, confidence: decimal) {
+  command completeParsing(extractedData: string, confidence: int) {
     guard self.status == "parsing"
     guard confidence >= 0 and confidence <= 100
 
@@ -252,7 +252,7 @@ event EventImportWorkflowParsingStarted: "event.import.workflow.parsing.started"
 event EventImportWorkflowParsingCompleted: "event.import.workflow.parsing.completed" {
   workflowId: string
   tenantId: string
-  confidence: number
+  confidence: int
   currentStep: number
 }
 

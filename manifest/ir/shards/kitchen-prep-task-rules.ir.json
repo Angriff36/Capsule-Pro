@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "9dac17d294ed3190294b2c3f3fd320968bc5eb9e87348f17db073ab919fb4e24",
-    "irHash": "30496e9d8842dc8e74350fe64e95dfba42eabf8964e3f3f3aa35cb53160f4750",
+    "contentHash": "2a0eecfe00d9f611f880df9b5b122423b6cfc8b94349c35b773644f1fa430da4",
+    "irHash": "6e40eeccc2beb0b06cff5211676727d29facd6ea9af950bd4ccb722ad54f856d",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.813Z"
+    "compiledAt": "2026-06-12T14:47:34.185Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -136,7 +136,7 @@
         {
           "name": "quantityTotal",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -148,7 +148,7 @@
         {
           "name": "quantityCompleted",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -160,12 +160,12 @@
         {
           "name": "quantityUnitId",
           "type": {
-            "name": "string",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "number",
+            "value": 0
           },
           "modifiers": []
         },
@@ -255,18 +255,6 @@
         },
         {
           "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "ingredients",
           "type": {
             "name": "string",
             "nullable": false
@@ -1028,7 +1016,7 @@
         {
           "name": "quantityCompleted",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1196,7 +1184,7 @@
         {
           "name": "quantityCompleted",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2148,7 +2136,7 @@
         {
           "name": "quantityCompleted",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2831,7 +2819,7 @@
         {
           "name": "quantityTotal",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2839,7 +2827,7 @@
         {
           "name": "quantityCompleted",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -3163,7 +3151,7 @@
         {
           "name": "quantityTotal",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -3171,7 +3159,7 @@
         {
           "name": "quantityUnitId",
           "type": {
-            "name": "string",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -3202,14 +3190,6 @@
         },
         {
           "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "ingredients",
           "type": {
             "name": "string",
             "nullable": false
@@ -3440,14 +3420,6 @@
           "expression": {
             "kind": "identifier",
             "name": "notes"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "ingredients",
-          "expression": {
-            "kind": "identifier",
-            "name": "ingredients"
           }
         }
       ],

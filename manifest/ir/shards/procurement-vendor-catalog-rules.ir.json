@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "5d0843c005185426a28a784fc161c38a8a84f161dd71afe0b25d87bae18b0419",
-    "irHash": "df9273294dbe75595b738f62752c49cd2dcea568d84ab9ffa8b48bab87f419ba",
+    "contentHash": "6718becb84ed721db81131a555d2dae1a9bc663ac0fb80d8fed61c64cbfa921f",
+    "irHash": "78eb8cc9b14904d388336d11de5df192f7ada5f47b23fc593dd3174b998a59bd",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.853Z"
+    "compiledAt": "2026-06-12T14:47:34.221Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -184,7 +184,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -196,7 +196,7 @@
         {
           "name": "orderMultiple",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -1218,7 +1218,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1226,7 +1226,7 @@
         {
           "name": "orderMultiple",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1717,7 +1717,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1725,7 +1725,7 @@
         {
           "name": "orderMultiple",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true

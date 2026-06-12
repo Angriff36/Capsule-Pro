@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
             name: name || `${prepList.eventTitle} - Prep List`,
             batchMultiplier: prepList.batchMultiplier ?? 1,
             dietaryRestrictions: Array.isArray(prepList.dietaryRestrictions)
-              ? prepList.dietaryRestrictions.join(",")
-              : (prepList.dietaryRestrictions ?? ""),
+              ? prepList.dietaryRestrictions
+              : [],
             totalItems: prepList.totalIngredients ?? 0,
             totalEstimatedTime,
             notes: "",
@@ -131,13 +131,13 @@ export async function POST(request: NextRequest) {
                 isOptional: ingredient.isOptional ?? false,
                 preparationNotes: ingredient.preparationNotes || "",
                 allergens: Array.isArray(ingredient.allergens)
-                  ? ingredient.allergens.join(",")
-                  : (ingredient.allergens ?? ""),
+                  ? ingredient.allergens
+                  : [],
                 dietarySubstitutions: Array.isArray(
                   ingredient.dietarySubstitutions
                 )
-                  ? ingredient.dietarySubstitutions.join(",")
-                  : (ingredient.dietarySubstitutions ?? ""),
+                  ? ingredient.dietarySubstitutions
+                  : [],
                 dishId: "",
                 dishName: "",
                 recipeVersionId: "",

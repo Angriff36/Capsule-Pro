@@ -101,10 +101,10 @@ entity CommandBoardCard {
   property content: string = ""
   property cardType: string = "task"
   indexed property status: string = "pending"
-  property positionX: decimal = 0
-  property positionY: decimal = 0
-  property width: decimal = 200
-  property height: decimal = 150
+  property positionX: int = 0
+  property positionY: int = 0
+  property width: int = 200
+  property height: int = 150
   property zIndex: int = 0
   property color: string = ""
   property metadata: string = "{}"
@@ -221,10 +221,10 @@ entity CommandBoardGroup {
   searchable property name: string = ""
   property color: string = ""
   property collapsed: boolean = false
-  property positionX: decimal = 0
-  property positionY: decimal = 0
-  property width: decimal = 300
-  property height: decimal = 200
+  property positionX: int = 0
+  property positionY: int = 0
+  property width: int = 300
+  property height: int = 200
   property zIndex: int = 0
   timestamps
   property deletedAt: datetime
@@ -342,7 +342,7 @@ entity CommandBoardLayout {
   property required userId: string
   searchable property name: string = ""
   property viewport: string = "{}"
-  property visibleCards: string = ""
+  property visibleCards: array<string> = []
   property gridSize: int = 40
   property showGrid: boolean = true
   property snapToGrid: boolean = true
@@ -358,7 +358,7 @@ entity CommandBoardLayout {
   relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard userId != null and userId != "" "User ID is required"
     guard name != null and name != "" "Layout name is required"
@@ -375,7 +375,7 @@ entity CommandBoardLayout {
     emit CommandBoardLayoutCreated
   }
 
-  command update(newName: string, newViewport: string, newVisibleCards: string, newGridSize: number, newShowGrid: boolean, newSnapToGrid: boolean) {
+  command update(newName: string, newViewport: string, newVisibleCards: array<string>, newGridSize: number, newShowGrid: boolean, newSnapToGrid: boolean) {
     guard newName != null and newName != "" "Layout name is required"
 
     mutate name = newName

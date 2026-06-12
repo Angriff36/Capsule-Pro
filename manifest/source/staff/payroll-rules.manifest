@@ -146,7 +146,7 @@ entity PayrollApprovalHistory {
   property performedBy: string = ""
   property performedAt: datetime = now()
   property reason: string = ""
-  timestamps
+  property createdAt: datetime = now()
 
   relationship belongsTo payrollRun: PayrollRun with payrollRunId
 

@@ -9,7 +9,7 @@ entity Invoice {
 
   // Invoice details
   unique property required invoiceNumber: string = ""
-  property required type: string = "FINAL_PAYMENT"
+  property required invoiceType: string = "FINAL_PAYMENT"
   indexed property required status: string = "DRAFT"
   property required clientId: string = ""
   property required eventId: string = ""
@@ -41,11 +41,6 @@ entity Invoice {
   // Reminders
   property reminderCount: int = 0
   property lastReminderAt: datetime
-
-  // External references
-  property quickBooksId: string = ""
-  property goodshuffleId: string = ""
-  property externalSyncStatus: string = ""
 
   // Metadata
   searchable property notes: string = ""

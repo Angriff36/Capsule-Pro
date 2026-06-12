@@ -9,10 +9,10 @@ entity PrepList {
   property required eventId: string
   searchable property required name: string
   property batchMultiplier: decimal = 1
-  property dietaryRestrictions: string = ""
+  property dietaryRestrictions: array<string> = []
   indexed property status: string = "draft"
   property totalItems: int = 0
-  property totalEstimatedTime: decimal = 0
+  property totalEstimatedTime: int = 0
   searchable property notes: string = ""
   property generatedAt: datetime
   property finalizedAt: datetime
@@ -72,7 +72,7 @@ entity PrepList {
   transition status from "completed" to ["draft", "cancelled"]
 
   default policy PrepListDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
-  command update(newName: string, newDietaryRestrictions: string, newNotes: string) {
+  command update(newName: string, newDietaryRestrictions: array<string>, newNotes: string) {
     guard self.status == "draft" "Can only update draft prep lists"
 
     guard newName != null and newName != "" "Prep list name is required"
@@ -151,7 +151,7 @@ entity PrepList {
     emit PrepListCancelled
   }
 
-  command create(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, totalItems: number, totalEstimatedTime: number, notes: string) {
+  command create(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: array<string>, totalItems: number, totalEstimatedTime: number, notes: string) {
     guard name != null and name != "" "Prep list name is required"
     guard eventId != null and eventId != "" "Event ID is required"
     guard batchMultiplier > 0 "Batch multiplier must be positive"
@@ -169,7 +169,7 @@ entity PrepList {
     emit PrepListCreated
   }
 
-  command createFromSeed(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, notes: string, menuGroupsJson: string, totalInstructionLines: number, validInstructionLines: number) {
+  command createFromSeed(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: array<string>, notes: string, menuGroupsJson: string, totalInstructionLines: number, validInstructionLines: number) {
     guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
     guard eventId != null and eventId != "" "Event ID is required"
     guard name != null and name != "" "Prep list name is required"
@@ -217,14 +217,14 @@ entity PrepListItem {
   property required ingredientId: string
   property required ingredientName: string
   property category: string = ""
-  property baseQuantity: int = 0
+  property baseQuantity: decimal = 0
   property baseUnit: string = ""
-  property scaledQuantity: int = 0
+  property scaledQuantity: decimal = 0
   property scaledUnit: string = ""
   property isOptional: boolean = false
   property preparationNotes: string = ""
-  property allergens: string = ""
-  property dietarySubstitutions: string = ""
+  property allergens: array<string> = []
+  property dietarySubstitutions: array<string> = []
   property dishId: string = ""
   property dishName: string = ""
   property recipeVersionId: string = ""
@@ -234,8 +234,8 @@ entity PrepListItem {
   property completedBy: string = ""
 
   timestamps
-  computed hasAllergens: boolean = self.allergens != null and self.allergens != ""
-  computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and self.dietarySubstitutions != ""
+  computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0
+  computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and length(self.dietarySubstitutions) > 0
   computed isRequired: boolean = self.isOptional == false
 
   relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
@@ -307,7 +307,7 @@ entity PrepListItem {
     emit PrepListItemStationChanged
   }
 
-  command updatePrepNotes(newNotes: string, newDietarySubstitutions: string) {
+  command updatePrepNotes(newNotes: string, newDietarySubstitutions: array<string>) {
     mutate preparationNotes = newNotes
     mutate dietarySubstitutions = newDietarySubstitutions
 
@@ -335,7 +335,7 @@ entity PrepListItem {
     emit PrepListItemUncompleted
   }
 
-  command create(prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: string, dietarySubstitutions: string, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
+  command create(prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: array<string>, dietarySubstitutions: array<string>, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
     guard prepListId != null and prepListId != "" "Prep list ID is required"
     guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
     guard ingredientName != null and ingredientName != "" "Ingredient name is required"

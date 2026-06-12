@@ -14,7 +14,8 @@ entity Notification {
   property isRead: boolean = false
   property readAt: datetime
   property correlationId: string = ""
-  timestamps
+  // No `timestamps` keyword: tenant_admin.notifications has created_at but no updated_at column (read-state tracked via isRead/readAt)
+  property createdAt: datetime = now()
 
   computed isUnread: boolean = self.isRead == false
   computed hasAction: boolean = self.actionUrl != null and self.actionUrl != ""

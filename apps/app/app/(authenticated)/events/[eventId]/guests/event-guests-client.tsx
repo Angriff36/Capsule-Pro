@@ -425,7 +425,7 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail ?? undefined, guestPhone: editForm.guestPhone ?? undefined, tableAssignment: editForm.tableAssignment ?? undefined, mealPreference: editForm.mealPreference ?? undefined, notes: editForm.notes ?? undefined, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions.join(",") : undefined });
+        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail ?? undefined, guestPhone: editForm.guestPhone ?? undefined, tableAssignment: editForm.tableAssignment ?? undefined, mealPreference: editForm.mealPreference ?? undefined, notes: editForm.notes ?? undefined, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions : undefined });
         toast.success("Guest updated");
         setEditingId(null);
         setEditForm({});

@@ -19,14 +19,13 @@ entity Client {
   property stateProvince: string = ""
   property postalCode: string = ""
   property countryCode: string = ""
-  property defaultPaymentTerms: decimal = 30
+  property defaultPaymentTerms: int = 30
   property required taxExempt: boolean = false
   private encrypted property taxId: string = ""
   searchable searchable property notes: string = ""
   property required tags: array<string>
   property source: string = ""
   property assignedTo: string = ""
-  property isActive: boolean = true
   timestamps
   property deletedAt: datetime
 
@@ -53,7 +52,7 @@ entity Client {
   }
 
   default policy ClientDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
-  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: decimal, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: int, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
     guard clientType != null and clientType != "" "Client type is required"
 
     // Guards (command params) — not block constraints on `self`, which still
@@ -81,12 +80,11 @@ entity Client {
     mutate tags = tags
     mutate source = source
     mutate assignedTo = assignedTo
-    mutate isActive = true
 
     emit ClientCreated
   }
 
-  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: decimal, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: int, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
     guard self.deletedAt == null "Cannot update an archived client"
 
     mutate companyName = companyName
@@ -132,7 +130,6 @@ entity Client {
     guard self.deletedAt != null "Client is not archived"
 
     mutate deletedAt = null
-    mutate isActive = true
 
     emit ClientReactivated
   }

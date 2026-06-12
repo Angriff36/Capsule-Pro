@@ -10,7 +10,6 @@ entity Shipment {
   indexed property required tenantId: string
   unique property required shipmentNumber: string
   indexed property status: string = "draft"
-  property purchaseOrderId: string = ""
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
@@ -42,7 +41,6 @@ entity Shipment {
   computed hasTracking: boolean = self.trackingNumber != ""
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
-  relationship belongsTo purchaseOrder: PurchaseOrder fields [tenantId, purchaseOrderId] references [tenantId, id]
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
@@ -91,7 +89,7 @@ entity Shipment {
       messageTemplate: "Cannot schedule shipment with no items"
       details: {
         shipmentId: self.id
-        purchaseOrderId: self.purchaseOrderId
+        shipmentNumber: self.shipmentNumber
       }
     }
 
@@ -173,9 +171,9 @@ entity ShipmentItem {
   indexed property required tenantId: string
   property required shipmentId: string
   property required itemId: string
-  property quantityShipped: int = 0
-  property quantityReceived: int = 0
-  property quantityDamaged: int = 0
+  property quantityShipped: decimal = 0
+  property quantityReceived: decimal = 0
+  property quantityDamaged: decimal = 0
   property unitId: int = 0
   property unitCost: money = 0
   property totalCost: money = 0
@@ -314,7 +312,6 @@ event ShipmentCancelled: "purchasing.shipment.cancelled" {
 event ShipmentScheduled: "purchasing.shipment.scheduled" {
   shipmentId: string
   tenantId: string
-  purchaseOrderId: string
   userId: string
   scheduledAt: datetime
 }
@@ -322,7 +319,6 @@ event ShipmentScheduled: "purchasing.shipment.scheduled" {
 event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
   shipmentId: string
   tenantId: string
-  purchaseOrderId: string
   userId: string
   startedAt: datetime
 }
@@ -330,7 +326,6 @@ event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
 event ShipmentShipped: "purchasing.shipment.shipped" {
   shipmentId: string
   tenantId: string
-  purchaseOrderId: string
   trackingNumber: string
   userId: string
   shippedAt: datetime

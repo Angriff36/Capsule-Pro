@@ -104,19 +104,17 @@ export async function POST(request: NextRequest) {
       body: {
         name: data.name,
         equipmentId: data.equipmentId,
-        metric: data.sensorType, // route uses sensorType as metric
         sensorType: data.sensorType,
         condition: data.condition,
         threshold: data.threshold ?? 0,
         thresholdMin: data.thresholdMin ?? 0,
         thresholdMax: data.thresholdMax ?? 0,
-        comparison: data.condition, // route uses condition as comparison operator
         severity: data.severity,
         durationMs: data.durationMs,
         alertAction: data.alertAction,
         isActive: data.isActive,
-        notifyRoles: data.notifyRoles?.join(",") ?? "",
-        notifyChannels: data.notifyChannels?.join(",") ?? "",
+        notifyRoles: data.notifyRoles ?? [],
+        notifyChannels: data.notifyChannels ?? [],
         description: data.description ?? "",
       },
       user: { id: userId, tenantId, role: "" },

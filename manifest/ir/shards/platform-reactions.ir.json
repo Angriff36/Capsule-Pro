@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8be07796fa77a89a945de9e074bf8e8570895b03bd66097128d5c0cdae36df0e",
-    "irHash": "9e2efa867d5d674064e6a08174f057b36f4e0d520760c3366f491d80f8264a4f",
+    "contentHash": "c28b0cb189b737b84ea44e2f7a226b8de2112c582da87c7e74dfa311f906e826",
+    "irHash": "8bb0e675200b735e66586234eb96f089ef53069e3d5d5882cb6b59b2c5c6ed58",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.841Z"
+    "compiledAt": "2026-06-12T14:47:34.211Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -265,16 +265,12 @@
         {
           "name": "maintenanceDate",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
             },
-            "property": "completedDate"
+            "args": []
           }
         },
         {
@@ -306,7 +302,7 @@
               "kind": "identifier",
               "name": "payload"
             },
-            "property": "actualCost"
+            "property": "totalCost"
           }
         },
         {
@@ -825,11 +821,8 @@
         {
           "name": "tags",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": ""
-            }
+            "kind": "array",
+            "elements": []
           }
         }
       ]

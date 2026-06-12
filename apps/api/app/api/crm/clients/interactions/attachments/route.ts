@@ -117,11 +117,11 @@ export async function POST(request: Request) {
         entity: "InteractionAttachment",
         command: "create",
         body: {
-          clientInteractionId: interactionId,
+          interactionId,
           fileName: file.name,
           fileUrl: result.url,
           fileType: file.type,
-          fileSizeBytes: file.size,
+          fileSize: file.size,
           uploadedBy: userId,
         },
         user: { id: userId, tenantId, role: "" },

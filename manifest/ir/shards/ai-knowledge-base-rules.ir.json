@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "164b247bcbae94f62f7f59da4aae274addb2f48d3490b16dd989ee345114a761",
-    "irHash": "32b85a2142a828b0bcbc609f2c8015a7e54c44f134df9dcbc2a22285d8e8cdc3",
+    "contentHash": "6352770b2ea1128fb00c11574d2f496aeafbd69f3c2b64f1a4b697d078f3bba5",
+    "irHash": "b55c4be17b9aae5c04716e36491f28859c2860cb893c36fe255f8893f8b380f6",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.644Z"
+    "compiledAt": "2026-06-12T14:47:34.062Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -78,12 +78,16 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -615,7 +619,11 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -835,7 +843,11 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

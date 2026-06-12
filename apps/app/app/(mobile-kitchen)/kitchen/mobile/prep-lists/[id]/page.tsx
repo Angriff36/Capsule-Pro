@@ -309,7 +309,7 @@ export default function MobilePrepListDetailPage() {
           await prepListItemUpdatePrepNotes({
             id: item.itemId,
             newNotes: item.notes,
-            newDietarySubstitutions: "",
+            newDietarySubstitutions: [],
           });
         } catch {
           failedItems.push(item);
@@ -367,7 +367,7 @@ export default function MobilePrepListDetailPage() {
       await prepListItemUpdatePrepNotes({
         id: selectedItem.id,
         newNotes: noteText.trim(),
-        newDietarySubstitutions: "",
+        newDietarySubstitutions: [],
       });
     } catch (err) {
       captureException(err);

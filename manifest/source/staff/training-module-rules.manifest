@@ -354,10 +354,10 @@ entity TrainingAssignment {
   property required moduleId: string
   property moduleCode: string = ""
   property moduleTitle: string = ""
-  property required staffMemberId: string
+  property employeeId: string = ""
   property staffRole: string = "staff"
   indexed property status: string = "assigned"
-  property dueAt: datetime
+  property dueDate: datetime
   property dueDateReviewNeeded: boolean = false
   property firstShiftAt: datetime
   property startedAt: datetime
@@ -375,7 +375,7 @@ entity TrainingAssignment {
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
-  relationship belongsTo staffMember: StaffMember with staffMemberId
+  relationship belongsTo employee: User with employeeId
   relationship belongsTo lastAttempt: TrainingAttempt with lastAttemptId
 
   timestamps
@@ -408,12 +408,12 @@ entity TrainingAssignment {
     mutate moduleId = moduleId
     mutate moduleCode = moduleCode
     mutate moduleTitle = moduleTitle
-    mutate staffMemberId = staffMemberId
+    mutate employeeId = staffMemberId
     mutate staffRole = staffRole
     mutate passThresholdPercent = passThresholdPercent
     mutate maxAttempts = maxAttempts
     mutate firstShiftAt = firstShiftAt
-    mutate dueAt = dueAt
+    mutate dueDate = dueAt
     mutate dueDateReviewNeeded = dueDateReviewNeeded
     mutate attemptCount = 0
     mutate managerReviewRequired = false
@@ -424,7 +424,7 @@ entity TrainingAssignment {
   command start(assignmentId: string, moduleId: string, staffMemberId: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "overdue"]
 
     mutate status = "in_progress"
@@ -436,7 +436,7 @@ entity TrainingAssignment {
   command submitPassingAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress", "overdue", "manager_review"]
     guard scorePercent >= self.passThresholdPercent
     guard scorePercent <= 100
@@ -457,7 +457,7 @@ entity TrainingAssignment {
   command submitFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress", "overdue"]
     guard scorePercent < self.passThresholdPercent
     guard scorePercent >= 0
@@ -476,7 +476,7 @@ entity TrainingAssignment {
   command submitFinalFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress", "overdue"]
     guard scorePercent < self.passThresholdPercent
     guard scorePercent >= 0
@@ -496,12 +496,12 @@ entity TrainingAssignment {
   command applyFirstShiftDueDate(assignmentId: string, moduleId: string, staffMemberId: string, firstShiftAt: datetime, dueAt: datetime) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress", "overdue"]
     guard dueAt != null
 
     mutate firstShiftAt = firstShiftAt
-    mutate dueAt = dueAt
+    mutate dueDate = dueAt
     mutate dueDateReviewNeeded = false
 
     emit TrainingAssignmentDueDateSet
@@ -510,10 +510,10 @@ entity TrainingAssignment {
   command markOverdue(assignmentId: string, moduleId: string, staffMemberId: string, referenceTime: datetime) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress"]
-    guard self.dueAt != null
-    guard self.dueAt < referenceTime
+    guard self.dueDate != null
+    guard self.dueDate < referenceTime
 
     mutate status = "overdue"
     mutate reminderSentAt = now()
@@ -525,7 +525,7 @@ entity TrainingAssignment {
   command waive(assignmentId: string, moduleId: string, staffMemberId: string, reason: string, approvedBy: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
-    guard staffMemberId == self.staffMemberId
+    guard staffMemberId == self.employeeId
     guard self.status in ["assigned", "in_progress", "overdue", "manager_review"]
     guard reason != ""
     guard approvedBy != ""

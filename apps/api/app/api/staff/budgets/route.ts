@@ -57,10 +57,9 @@ export async function POST(request: NextRequest) {
       locationId: rawBody.locationId || "",
       periodStart: rawBody.periodStart || "",
       periodEnd: rawBody.periodEnd || "",
-      budgetAmount: rawBody.budgetAmount ?? rawBody.amount ?? 0,
+      budgetTarget: rawBody.budgetTarget ?? rawBody.budgetAmount ?? rawBody.amount ?? 0,
       budgetType: rawBody.budgetType || rawBody.type || "weekly",
-      notes: rawBody.notes || "",
-      createdBy: user.id,
+      description: rawBody.description ?? rawBody.notes ?? "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

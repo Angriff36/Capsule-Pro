@@ -114,7 +114,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         status: (data.status as string) || "pending",
         priority: (data.priority as number) || 5,
         quantityTotal: data.quantityTotal as number,
-        quantityUnitId: (data.quantityUnitId as number) ?? null,
+        quantityUnitId: (data.quantityUnitId as number) || null,
         quantityCompleted: (data.quantityCompleted as number) || 0,
         servingsTotal: data.servingsTotal as number | null,
         startByDate: data.startByDate
@@ -264,7 +264,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       status: this.mapStatus(task.status),
       priority: task.priority,
       quantityTotal: Number(task.quantityTotal),
-      quantityUnitId: task.quantityUnitId ?? "",
+      quantityUnitId: task.quantityUnitId ?? 0,
       quantityCompleted: Number(task.quantityCompleted),
       servingsTotal: task.servingsTotal ?? 0,
       startByDate: task.startByDate ? task.startByDate.getTime() : 0,

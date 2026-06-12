@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "deee8a978143289e7efbd4ab2a37f2a4fbe1844fdb5116ea2c13c3b26eb4ae2c",
-    "irHash": "dfacf793922b26635b7d9e64d06bea421e84a0d39b1c507fcbf1b3f8e2ff7662",
+    "contentHash": "9e8e1ace7debe96c74012dc4a4883a31d5d08639c1632a6a0f0bfaffcb11cb3c",
+    "irHash": "32b5087456406383c73971f8f1611f5780a4dbccccd8cbc5431502bfb1e03245",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.678Z"
+    "compiledAt": "2026-06-12T14:47:34.080Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -72,7 +72,7 @@
           ]
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": {
             "name": "string",
             "nullable": false
@@ -84,7 +84,7 @@
           "modifiers": []
         },
         {
-          "name": "createdBy",
+          "name": "createdById",
           "type": {
             "name": "string",
             "nullable": false
@@ -625,7 +625,7 @@
           "required": true
         },
         {
-          "name": "createdBy",
+          "name": "createdById",
           "type": {
             "name": "string",
             "nullable": false
@@ -671,7 +671,7 @@
           "required": true
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": {
             "name": "string",
             "nullable": false
@@ -895,7 +895,7 @@
           "required": true
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": {
             "name": "string",
             "nullable": false
@@ -903,7 +903,7 @@
           "required": true
         },
         {
-          "name": "createdBy",
+          "name": "createdById",
           "type": {
             "name": "string",
             "nullable": false
@@ -1022,18 +1022,18 @@
         },
         {
           "kind": "mutate",
-          "target": "changeDescription",
+          "target": "changeSummary",
           "expression": {
             "kind": "identifier",
-            "name": "changeDescription"
+            "name": "changeSummary"
           }
         },
         {
           "kind": "mutate",
-          "target": "createdBy",
+          "target": "createdById",
           "expression": {
             "kind": "identifier",
-            "name": "createdBy"
+            "name": "createdById"
           }
         },
         {
@@ -1065,7 +1065,7 @@
           "required": true
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": {
             "name": "string",
             "nullable": false
@@ -1162,10 +1162,10 @@
         },
         {
           "kind": "mutate",
-          "target": "changeDescription",
+          "target": "changeSummary",
           "expression": {
             "kind": "identifier",
-            "name": "changeDescription"
+            "name": "changeSummary"
           }
         }
       ],

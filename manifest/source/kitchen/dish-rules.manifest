@@ -18,8 +18,8 @@ entity Dish {
   property minPrepLeadDays: int = 0
   property maxPrepLeadDays: int = 0
   property portionSizeDescription: string = ""
-  property dietaryTags: string = ""
-  property allergens: string = ""
+  property dietaryTags: array<string> = []
+  property allergens: array<string> = []
   property pricePerPerson: money = 0
   property costPerPerson: money = 0
   property isActive: boolean = true
@@ -88,7 +88,7 @@ entity Dish {
   }
 
   default policy DishDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen dish management"
-  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: string, allergens: string, pricePerPerson: money, costPerPerson: money) {
+  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>, pricePerPerson: money, costPerPerson: money) {
     guard name != null and name != "" "Dish name is required"
     guard recipeId != null and recipeId != "" "Recipe ID is required"
     guard pricePerPerson >= 0 "Price per person cannot be negative"
@@ -116,7 +116,7 @@ entity Dish {
     emit DishCreated
   }
 
-  command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: string, allergens: string) {
+  command update(name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, portionSizeDescription: string, dietaryTags: array<string>, allergens: array<string>) {
     guard name != null and name != "" "Dish name is required"
     guard self.isActive "Cannot update a deactivated dish"
 

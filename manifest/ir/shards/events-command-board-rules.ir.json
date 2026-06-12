@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "49f2aebf9f969a56d26db9306e65a5035901cf6520ff6a1a5eed933cc7011483",
-    "irHash": "fb37ea1c197b6599c08da4a17e192c8cc0dd7bbc88935feaf820d130054803de",
+    "contentHash": "0bacd0b7b103fb095f6290856283daf61fd3a53e0e25a7f1f412bd23bd638237",
+    "irHash": "00e342479e8b8edb23002828e7c94a7bba25278ee8dcf93dd65a38998f9db841",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.718Z"
+    "compiledAt": "2026-06-12T14:47:34.105Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -476,7 +476,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -488,7 +488,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -500,7 +500,7 @@
         {
           "name": "width",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -512,7 +512,7 @@
         {
           "name": "height",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1132,7 +1132,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1144,7 +1144,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1156,7 +1156,7 @@
         {
           "name": "width",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1168,7 +1168,7 @@
         {
           "name": "height",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1937,12 +1937,16 @@
         {
           "name": "visibleCards",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -5557,7 +5561,11 @@
         {
           "name": "visibleCards",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -5815,7 +5823,11 @@
         {
           "name": "newVisibleCards",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2f754db2b271e3ae0838e484a10fd2e113206cea3af84168eef4a1c0476dbea2",
-    "irHash": "fce39e7c3c681b7534a4d7c91824c91216b8750b2230d17e0572b4c2375d0a96",
+    "contentHash": "628824e510644c2681631dbfd401bb9104313183fc9b0c534be6046555670892",
+    "irHash": "eb33ba9a45e15e9f13acb3f31cfd68adc47a32e04f2def8340426af2ce3e679c",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.811Z"
+    "compiledAt": "2026-06-12T14:47:34.183Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -224,7 +224,7 @@
         {
           "name": "generatedCount",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1061,7 +1061,7 @@
         {
           "name": "generatedCount",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -1107,7 +1107,7 @@
         {
           "name": "generatedCount",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -1917,7 +1917,7 @@
         {
           "name": "generatedCount",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true

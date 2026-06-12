@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
       body: {
         tenantId: user.tenantId,
         invoiceNumber,
-        type: body.invoiceType || "FINAL_PAYMENT",
+        invoiceType: body.invoiceType || "FINAL_PAYMENT",
         status: "DRAFT",
         clientId,
         eventId: body.eventId,

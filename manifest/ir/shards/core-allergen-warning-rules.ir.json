@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "aa00855a80a47ba98c8fcbb8b9af9b5e6b7add50ab9dc865540889811a0732fe",
-    "irHash": "253ecc51f9fba83eb4e2e78e17e9080d8dc6ce54c3176d83dfb261d987af0e81",
+    "contentHash": "75ca6dea1a432437aaaeb02498e6dd0bec2cfbb53d9e1e2fd5784565583ed723",
+    "irHash": "f4428e4565fbf4f5eb0dcde0fb6004e7278796bb12b024f33b0d268f22ec37e9",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.659Z"
+    "compiledAt": "2026-06-12T14:47:34.069Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -80,24 +80,32 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
         {
           "name": "affectedGuests",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -494,20 +502,29 @@
           "code": "requireAllergens",
           "expression": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": ">",
             "left": {
-              "kind": "member",
-              "object": {
+              "kind": "call",
+              "callee": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "length"
               },
-              "property": "allergens"
+              "args": [
+                {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "allergens"
+                }
+              ]
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "string",
-                "value": ""
+                "kind": "number",
+                "value": 0
               }
             }
           },
@@ -680,7 +697,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -688,7 +709,11 @@
         {
           "name": "affectedGuests",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -888,7 +913,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -998,7 +1027,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1006,7 +1039,11 @@
         {
           "name": "affectedGuests",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1114,16 +1151,25 @@
           },
           "right": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": ">",
             "left": {
-              "kind": "identifier",
-              "name": "allergens"
+              "kind": "call",
+              "callee": {
+                "kind": "identifier",
+                "name": "length"
+              },
+              "args": [
+                {
+                  "kind": "identifier",
+                  "name": "allergens"
+                }
+              ]
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "string",
-                "value": ""
+                "kind": "number",
+                "value": 0
               }
             }
           }

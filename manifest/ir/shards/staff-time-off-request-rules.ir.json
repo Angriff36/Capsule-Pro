@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7affdad48f131ee95e589ee76638204c9746f7eab46df4d1c5626823972a68ab",
-    "irHash": "63d49cebeddbc460389becf9d36b6f3c73e4bbd0756cee91df02d5e4421d55e2",
+    "contentHash": "7d235fd3400d9560342e679bcbacafa2ab3940b8ef3d803a194dd4f899cd3651",
+    "irHash": "9f6619c66032b55289b004af5d368615440ae92b6aa3436c68dfaa9b65326c81",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.879Z"
+    "compiledAt": "2026-06-12T14:47:34.241Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -114,7 +114,7 @@
           "modifiers": []
         },
         {
-          "name": "processedBy",
+          "name": "reviewedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -126,7 +126,7 @@
           "modifiers": []
         },
         {
-          "name": "processedAt",
+          "name": "reviewedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1382,7 +1382,7 @@
         },
         {
           "kind": "mutate",
-          "target": "processedBy",
+          "target": "reviewedBy",
           "expression": {
             "kind": "identifier",
             "name": "processedBy"
@@ -1390,7 +1390,7 @@
         },
         {
           "kind": "mutate",
-          "target": "processedAt",
+          "target": "reviewedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -1589,7 +1589,7 @@
         },
         {
           "kind": "mutate",
-          "target": "processedBy",
+          "target": "reviewedBy",
           "expression": {
             "kind": "identifier",
             "name": "processedBy"
@@ -1597,7 +1597,7 @@
         },
         {
           "kind": "mutate",
-          "target": "processedAt",
+          "target": "reviewedAt",
           "expression": {
             "kind": "call",
             "callee": {

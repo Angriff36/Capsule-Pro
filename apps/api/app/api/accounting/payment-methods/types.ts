@@ -61,7 +61,6 @@ export interface PaymentMethod {
   verifiedAt: Date | null;
   verificationMethod: string | null;
   nickname: string | null;
-  metadata: unknown;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date | null;
@@ -84,7 +83,6 @@ export interface CreatePaymentMethodRequest {
   walletProvider?: string;
   walletEmail?: string;
   nickname?: string;
-  metadata?: Record<string, unknown>;
   isDefault?: boolean;
 }
 

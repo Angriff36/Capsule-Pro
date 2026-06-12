@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2365898377c0be5c36f5ceb1d2398f0de7739479c596c3a7654d57182a8b6ae4",
-    "irHash": "65dccab407b413443fff413d92fbb424c031e927b2d700a84059c08162647780",
+    "contentHash": "fa013f0790f0f1deedbf0dbaf3b875e5bb96ebd29af761a8c750105179dbd969",
+    "irHash": "53a33aec003c7d568c863ea3d7031c0f8a6fa369bd7943378e1f193a04b14d5d",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.815Z"
+    "compiledAt": "2026-06-12T14:47:34.187Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -374,12 +374,16 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": [
             "required"
@@ -388,7 +392,7 @@
         {
           "name": "yieldQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -490,30 +494,6 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "ingredientCount",
-          "type": {
-            "name": "int",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "stepCount",
-          "type": {
-            "name": "int",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
           },
           "modifiers": []
         },
@@ -1149,7 +1129,7 @@
         {
           "name": "quantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "modifiers": [
@@ -1426,7 +1406,7 @@
         {
           "name": "durationMinutes",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1462,12 +1442,16 @@
         {
           "name": "equipmentNeeded",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -1877,7 +1861,7 @@
         {
           "name": "yieldQuantity",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2201,7 +2185,7 @@
         {
           "name": "quantity",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -3007,7 +2991,7 @@
         {
           "name": "yieldQty",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -3325,25 +3309,6 @@
               "value": "draft"
             }
           }
-        },
-        {
-          "kind": "binary",
-          "operator": ">",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "ingredientCount"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
         }
       ],
       "constraints": [],
@@ -3358,16 +3323,6 @@
             "value": {
               "kind": "string",
               "value": "Only a draft version can be published"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Cannot publish a version with no ingredients"
             }
           }
         },
@@ -3957,7 +3912,7 @@
         {
           "name": "newQuantity",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -4266,7 +4221,7 @@
         {
           "name": "quantity",
           "type": {
-            "name": "number",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -4575,7 +4530,7 @@
         {
           "name": "durationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -4599,7 +4554,11 @@
         {
           "name": "equipmentNeeded",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -4847,7 +4806,7 @@
         {
           "name": "newDurationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true

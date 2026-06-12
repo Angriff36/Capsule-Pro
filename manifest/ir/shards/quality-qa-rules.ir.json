@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "263a061ce74484c5b8fca85df6a82aa49928925b3892b259634fd73da86d02e4",
-    "irHash": "f20f74b237ab6633c57fdb3460fe753ae727b986aa092acd7171b592ad51a381",
+    "contentHash": "8039f47ab041cf0871a2ee2071184fbeb9872d829e3ea5f663ef9ac7f931c3c5",
+    "irHash": "5d8c97e9e8e83bc8453722f1bce2a6b02613ab3df5c04df2dc1af52d9afb3edb",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.858Z"
+    "compiledAt": "2026-06-12T14:47:34.225Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -474,14 +474,16 @@
           ]
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
         },
         {
           "name": "description",
@@ -506,7 +508,7 @@
           "modifiers": []
         },
         {
-          "name": "priority",
+          "name": "severity",
           "type": {
             "name": "string",
             "nullable": false
@@ -754,7 +756,7 @@
           "target": "QACheck",
           "foreignKey": {
             "fields": [
-              "checkId"
+              "relatedCheckId"
             ]
           }
         }
@@ -779,7 +781,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "priority"
+              "property": "severity"
             },
             "right": {
               "kind": "array",
@@ -816,7 +818,7 @@
             }
           },
           "severity": "block",
-          "message": "Invalid priority",
+          "message": "Invalid severity",
           "overrideable": false
         },
         {
@@ -940,7 +942,7 @@
           ]
         },
         {
-          "name": "location",
+          "name": "logType",
           "type": {
             "name": "string",
             "nullable": false
@@ -972,7 +974,7 @@
           "modifiers": []
         },
         {
-          "name": "equipment",
+          "name": "equipmentId",
           "type": {
             "name": "string",
             "nullable": false
@@ -984,7 +986,7 @@
           "modifiers": []
         },
         {
-          "name": "recordedBy",
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -1177,15 +1179,15 @@
             }
           },
           "severity": "warn",
-          "messageTemplate": "Temperature {temp}{unit} at {location} is outside safe range",
+          "messageTemplate": "Temperature {temp}{unit} at {logType} is outside safe range",
           "detailsMapping": {
-            "location": {
+            "logType": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "location"
+              "property": "logType"
             },
             "temp": {
               "kind": "member",
@@ -1472,7 +1474,7 @@
           "required": true
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1488,7 +1490,7 @@
           "required": true
         },
         {
-          "name": "priority",
+          "name": "severity",
           "type": {
             "name": "string",
             "nullable": false
@@ -1534,7 +1536,7 @@
           "required": true
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1580,7 +1582,7 @@
           "required": true
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1626,7 +1628,7 @@
           "required": true
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1672,7 +1674,7 @@
           "required": true
         },
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1718,7 +1720,7 @@
           "required": true
         },
         {
-          "name": "location",
+          "name": "logType",
           "type": {
             "name": "string",
             "nullable": false
@@ -1742,7 +1744,7 @@
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -2569,12 +2571,12 @@
       "entity": "QACorrectiveAction",
       "parameters": [
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": {
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "description",
@@ -2593,7 +2595,7 @@
           "required": true
         },
         {
-          "name": "priority",
+          "name": "severity",
           "type": {
             "name": "string",
             "nullable": false
@@ -2610,39 +2612,6 @@
         }
       ],
       "guards": [
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "checkId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "checkId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
         {
           "kind": "binary",
           "operator": "and",
@@ -2681,7 +2650,7 @@
           "operator": "in",
           "left": {
             "kind": "identifier",
-            "name": "priority"
+            "name": "severity"
           },
           "right": {
             "kind": "array",
@@ -2729,16 +2698,6 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Check ID is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
               "value": "Description is required"
             }
           }
@@ -2749,16 +2708,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Invalid priority"
+              "value": "Invalid severity"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "checkId",
+          "target": "relatedCheckId",
           "expression": {
             "kind": "identifier",
-            "name": "checkId"
+            "name": "relatedCheckId"
           }
         },
         {
@@ -2779,10 +2738,10 @@
         },
         {
           "kind": "mutate",
-          "target": "priority",
+          "target": "severity",
           "expression": {
             "kind": "identifier",
-            "name": "priority"
+            "name": "severity"
           }
         },
         {
@@ -3405,7 +3364,7 @@
       "entity": "QATemperatureLog",
       "parameters": [
         {
-          "name": "location",
+          "name": "logType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3429,7 +3388,7 @@
           "required": true
         },
         {
-          "name": "equipment",
+          "name": "equipmentId",
           "type": {
             "name": "string",
             "nullable": false
@@ -3437,7 +3396,7 @@
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -3462,7 +3421,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "location"
+              "name": "logType"
             },
             "right": {
               "kind": "literal",
@@ -3476,7 +3435,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "location"
+              "name": "logType"
             },
             "right": {
               "kind": "literal",
@@ -3485,6 +3444,61 @@
                 "value": ""
               }
             }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "logType"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "cooler"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "freezer"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "hot_hold"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "cooking"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "receiving"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "cooling"
+                }
+              }
+            ]
           }
         },
         {
@@ -3513,7 +3527,17 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Location is required"
+              "value": "Log type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid log type"
             }
           }
         },
@@ -3529,10 +3553,10 @@
         },
         {
           "kind": "mutate",
-          "target": "location",
+          "target": "logType",
           "expression": {
             "kind": "identifier",
-            "name": "location"
+            "name": "logType"
           }
         },
         {
@@ -3553,18 +3577,18 @@
         },
         {
           "kind": "mutate",
-          "target": "equipment",
+          "target": "equipmentId",
           "expression": {
             "kind": "identifier",
-            "name": "equipment"
+            "name": "equipmentId"
           }
         },
         {
           "kind": "mutate",
-          "target": "recordedBy",
+          "target": "loggedBy",
           "expression": {
             "kind": "identifier",
-            "name": "recordedBy"
+            "name": "loggedBy"
           }
         },
         {

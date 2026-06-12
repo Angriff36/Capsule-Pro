@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "434a58912dbb0e422e7cbca38f56f006f4060fdabda79cf90d792a7cb8d1e231",
-    "irHash": "8332326ecf3e1cb24d493983deba5a163b6dcfddaa8f8de6f27fb2492e88b115",
+    "contentHash": "e20317e784b08eccc5e6d2e611a941a376dfac5623842a6d2ffe5e2d7bbd8593",
+    "irHash": "f2c7d2691ac3865619b84fbaa10aac5bc5a8834fb6704d384131a8b9bfdec305",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.833Z"
+    "compiledAt": "2026-06-12T14:47:34.203Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -142,7 +142,7 @@
           "modifiers": []
         },
         {
-          "name": "completedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -920,7 +920,7 @@
           "required": true
         },
         {
-          "name": "completedAt",
+          "name": "completedDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1743,7 +1743,7 @@
         },
         {
           "kind": "mutate",
-          "target": "completedAt",
+          "target": "completedDate",
           "expression": {
             "kind": "call",
             "callee": {

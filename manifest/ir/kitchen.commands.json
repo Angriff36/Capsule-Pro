@@ -46,18 +46,8 @@
   },
   {
     "entity": "AdminChatThread",
-    "command": "archive",
-    "commandId": "AdminChatThread.archive"
-  },
-  {
-    "entity": "AdminChatThread",
     "command": "create",
     "commandId": "AdminChatThread.create"
-  },
-  {
-    "entity": "AdminChatThread",
-    "command": "reopen",
-    "commandId": "AdminChatThread.reopen"
   },
   {
     "entity": "AdminTask",

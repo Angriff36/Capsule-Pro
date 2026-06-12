@@ -17,8 +17,8 @@ entity WorkOrder {
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime
   property assignedTo: string = ""
-  // completedAt: nullable — only set when work finishes
-  property completedAt: datetime
+  // completedDate: nullable — only set when work finishes
+  property completedDate: datetime
   timestamps
 
   computed isCompleted: boolean = self.status == "completed"
@@ -99,7 +99,7 @@ entity WorkOrder {
     guard self.status == "in_progress" "Work order must be in progress to complete"
 
     mutate status = "completed"
-    mutate completedAt = now()
+    mutate completedDate = now()
 
     emit WorkOrderCompleted
   }
@@ -167,7 +167,7 @@ event WorkOrderStarted: "kitchen.workorder.started" {
 event WorkOrderCompleted: "kitchen.workorder.completed" {
   workOrderId: string
   userId: string
-  completedAt: datetime
+  completedDate: datetime
 }
 
 event WorkOrderCancelled: "kitchen.workorder.cancelled" {

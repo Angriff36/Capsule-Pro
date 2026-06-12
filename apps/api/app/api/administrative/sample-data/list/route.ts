@@ -24,6 +24,9 @@ const sampleDatas = await database.sampleData.findMany({
     where: {
         tenantId
       },
+    orderBy: {
+      id: "desc",
+    },
   });
 
     return manifestSuccessResponse({ sampleDatas });

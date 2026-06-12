@@ -30,6 +30,7 @@
 
 import type { PrismaClient } from "@repo/database/standalone";
 import {
+  asNullableDate,
   asNullableString,
   asString,
   type EntityInstance,
@@ -163,6 +164,10 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
         patch.shippedBy = asNullableString(data.shippedBy);
       if (data.receivedBy !== undefined)
         patch.receivedBy = asNullableString(data.receivedBy);
+      if (data.shippedAt !== undefined)
+        patch.shippedAt = asNullableDate(data.shippedAt);
+      if (data.receivedAt !== undefined)
+        patch.receivedAt = asNullableDate(data.receivedAt);
       if (data.notes !== undefined)
         patch.notes = asNullableString(data.notes);
 
@@ -210,10 +215,10 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
       approvedBy: (row.approvedBy as string) ?? "",
       shippedBy: (row.shippedBy as string) ?? "",
       receivedBy: (row.receivedBy as string) ?? "",
-      shipDate: row.shippedAt
+      shippedAt: row.shippedAt
         ? new Date(row.shippedAt as string | Date).getTime()
         : 0,
-      receiveDate: row.receivedAt
+      receivedAt: row.receivedAt
         ? new Date(row.receivedAt as string | Date).getTime()
         : 0,
       notes: (row.notes as string) ?? "",

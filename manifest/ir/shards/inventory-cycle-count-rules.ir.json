@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "bf4520e06f8d1083dfcea2e57dec37c118ce68f59412d842f3e6cad46febc6c7",
-    "irHash": "9ff5206b27a25d3bf64c38a91295abd02dfdb6cd9d4ab374576132a99cf43f98",
+    "contentHash": "d5f40c92091fe67c671f3ca9e35a342e673f0a7500752eb40381cc5be8a1b528",
+    "irHash": "86476394a5dcbf05d03dd8c14c2fad6d1f4637078c3efe1ef6f8189b0c10fb15",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.772Z"
+    "compiledAt": "2026-06-12T14:47:34.149Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -653,7 +653,7 @@
         {
           "name": "expectedQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -665,7 +665,7 @@
         {
           "name": "countedQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -1134,7 +1134,7 @@
         {
           "name": "expectedQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -1146,7 +1146,7 @@
         {
           "name": "countedQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {

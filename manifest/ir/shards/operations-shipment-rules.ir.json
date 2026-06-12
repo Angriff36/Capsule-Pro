@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "135e37b7b9c1aa945ca71556f1e7ae26891d73ee109ef33c530208fc71059401",
-    "irHash": "a69de9a7c2e5eeaf8adba179781671e2107265395674091c8e110c780652ac86",
+    "contentHash": "854d50983f93e8a4b357d7c89088fd318dc4e10d4b52c04993c24f066b4a4dda",
+    "irHash": "f310e99590b4ed0f8f3dff489fcc62a529587924a5e94a3b8d2f78b109573e0b",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.831Z"
+    "compiledAt": "2026-06-12T14:47:34.202Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -60,18 +60,6 @@
           "defaultValue": {
             "kind": "string",
             "value": "draft"
-          },
-          "modifiers": []
-        },
-        {
-          "name": "purchaseOrderId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
           },
           "modifiers": []
         },
@@ -524,21 +512,6 @@
           }
         },
         {
-          "name": "purchaseOrder",
-          "kind": "belongsTo",
-          "target": "PurchaseOrder",
-          "foreignKey": {
-            "fields": [
-              "tenantId",
-              "purchaseOrderId"
-            ],
-            "references": [
-              "tenantId",
-              "id"
-            ]
-          }
-        },
-        {
           "name": "supplier",
           "kind": "belongsTo",
           "target": "InventorySupplier",
@@ -743,7 +716,7 @@
         {
           "name": "quantityShipped",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -755,7 +728,7 @@
         {
           "name": "quantityReceived",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -767,7 +740,7 @@
         {
           "name": "quantityDamaged",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -1324,14 +1297,6 @@
           "required": true
         },
         {
-          "name": "purchaseOrderId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "userId",
           "type": {
             "name": "string",
@@ -1370,14 +1335,6 @@
           "required": true
         },
         {
-          "name": "purchaseOrderId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "userId",
           "type": {
             "name": "string",
@@ -1409,14 +1366,6 @@
         },
         {
           "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "purchaseOrderId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2512,13 +2461,13 @@
               },
               "property": "id"
             },
-            "purchaseOrderId": {
+            "shipmentNumber": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "purchaseOrderId"
+              "property": "shipmentNumber"
             }
           },
           "overrideable": false

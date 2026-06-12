@@ -121,43 +121,43 @@ entity InteractionAttachment {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property clientInteractionId: string = ""
+  property interactionId: string = ""
   property fileName: string = ""
   property fileUrl: string = ""
   property fileType: string = ""
-  property fileSizeBytes: int = 0
+  property fileSize: int = 0
   property uploadedBy: string = ""
   timestamps
   property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
 
-  constraint requireInteractionId: self.clientInteractionId != null and self.clientInteractionId != "" "Client interaction ID is required"
+  constraint requireInteractionId: self.interactionId != null and self.interactionId != "" "Client interaction ID is required"
   constraint requireFileName: self.fileName != null and self.fileName != "" "File name is required"
   constraint requireFileUrl: self.fileUrl != null and self.fileUrl != "" "File URL is required"
-  constraint positiveFileSize: self.fileSizeBytes >= 0 "File size must be non-negative"
+  constraint positiveFileSize: self.fileSize >= 0 "File size must be non-negative"
 
-  constraint warnLargeFile:warn self.fileSizeBytes > 10485760 {
-    messageTemplate: "Attachment '{fileName}' exceeds 10 MB ({fileSizeBytes} bytes)"
+  constraint warnLargeFile:warn self.fileSize > 10485760 {
+    messageTemplate: "Attachment '{fileName}' exceeds 10 MB ({fileSize} bytes)"
     details: {
       fileName: self.fileName
-      fileSizeBytes: self.fileSizeBytes
+      fileSize: self.fileSize
       fileType: self.fileType
     }
   }
 
   default policy InteractionAttachmentDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(clientInteractionId: string, fileName: string, fileUrl: string, fileType: string, fileSizeBytes: int, uploadedBy: string) {
-    guard clientInteractionId != null and clientInteractionId != "" "Client interaction ID is required"
+  command create(interactionId: string, fileName: string, fileUrl: string, fileType: string, fileSize: int, uploadedBy: string) {
+    guard interactionId != null and interactionId != "" "Client interaction ID is required"
     guard fileName != null and fileName != "" "File name is required"
     guard fileUrl != null and fileUrl != "" "File URL is required"
-    guard fileSizeBytes >= 0 "File size must be non-negative"
+    guard fileSize >= 0 "File size must be non-negative"
 
-    mutate clientInteractionId = clientInteractionId
+    mutate interactionId = interactionId
     mutate fileName = fileName
     mutate fileUrl = fileUrl
     mutate fileType = fileType
-    mutate fileSizeBytes = fileSizeBytes
+    mutate fileSize = fileSize
     mutate uploadedBy = uploadedBy
 
     emit InteractionAttachmentCreated
@@ -171,7 +171,7 @@ entity InteractionAttachment {
     emit InteractionAttachmentRemoved
   }
 
-  relationship belongsTo interaction: ClientInteraction fields [tenantId, clientInteractionId] references [tenantId, id]
+  relationship belongsTo interaction: ClientInteraction fields [tenantId, interactionId] references [tenantId, id]
 
   store InteractionAttachment in durable
 }
@@ -442,20 +442,10 @@ entity AdminChatThread {
   property threadType: string = "direct"
   unique property slug: string = ""
   property directKey: string = ""
-  indexed property status: string = "open"
   property createdBy: string = ""
   property lastMessageAt: datetime
   timestamps
   property deletedAt: datetime
-
-  computed isOpen: boolean = self.status == "open"
-  computed isArchived: boolean = self.status == "archived"
-
-  constraint validStatus: self.status in ["open", "archived"] "Thread status must be open or archived"
-
-  // State transitions
-  transition status from "open" to ["archived"]
-  transition status from "archived" to ["open"]
 
   default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
   command create(threadType: string, slug: string, directKey: string, createdBy: string) {
@@ -468,22 +458,6 @@ entity AdminChatThread {
     mutate createdBy = createdBy
 
     emit AdminChatThreadCreated
-  }
-
-  command archive(userId: string) {
-    guard self.status == "open" "Thread is already archived"
-
-    mutate status = "archived"
-
-    emit AdminChatThreadArchived
-  }
-
-  command reopen(userId: string) {
-    guard self.status == "archived" "Thread is already open"
-
-    mutate status = "open"
-
-    emit AdminChatThreadReopened
   }
 
   store AdminChatThread in durable
@@ -595,10 +569,10 @@ event ProposalTemplateSoftDeleted: "crm.proposal_template.soft_deleted" {
 event InteractionAttachmentCreated: "crm.interaction_attachment.created" {
   attachmentId: string
   tenantId: string
-  clientInteractionId: string
+  interactionId: string
   fileName: string
   fileType: string
-  fileSizeBytes: number
+  fileSize: number
   uploadedBy: string
   createdAt: datetime
 }
@@ -606,7 +580,7 @@ event InteractionAttachmentCreated: "crm.interaction_attachment.created" {
 event InteractionAttachmentRemoved: "crm.interaction_attachment.removed" {
   attachmentId: string
   tenantId: string
-  clientInteractionId: string
+  interactionId: string
   fileName: string
   userId: string
   removedAt: datetime
@@ -727,22 +701,6 @@ event AdminChatThreadCreated: "admin.chat_thread.created" {
   subject: string
   createdBy: string
   createdAt: datetime
-}
-
-event AdminChatThreadArchived: "admin.chat_thread.archived" {
-  threadId: string
-  tenantId: string
-  subject: string
-  userId: string
-  archivedAt: datetime
-}
-
-event AdminChatThreadReopened: "admin.chat_thread.reopened" {
-  threadId: string
-  tenantId: string
-  subject: string
-  userId: string
-  reopenedAt: datetime
 }
 
 event AdminChatMessageSent: "admin.chat_message.sent" {

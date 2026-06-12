@@ -11,7 +11,7 @@ entity KitchenTask {
   property required summary: string
   indexed property required status: string = "pending"
   property priority: int = 5
-  property complexity: decimal = 5
+  property complexity: int = 5
   property tags: string = ""
   property assignedTo: string = ""
   property dueDate: datetime

@@ -66,8 +66,6 @@ export interface Payment {
   gatewayTransactionId: string | null;
   gatewayPaymentMethodId: string | null;
   processor: string | null;
-  processorResponseCode: string | null;
-  processorResponseMessage: string | null;
   processedAt: Date;
   completedAt: Date | null;
   refundedAt: Date | null;
@@ -78,8 +76,6 @@ export interface Payment {
   reviewedAt: Date | null;
   reviewedBy: string | null;
   description: string | null;
-  externalReference: string | null;
-  metadata: unknown;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -96,7 +92,6 @@ export interface CreatePaymentRequest {
   methodType: PaymentMethodType;
   paymentMethodId?: string;
   description?: string;
-  metadata?: Record<string, unknown>;
 }
 
 /**

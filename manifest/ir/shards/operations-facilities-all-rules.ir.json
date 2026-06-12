@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "276c6a83412e10fd19b06d907479478f4c7011de14d63b1c91bf9d80ba36b458",
-    "irHash": "9920a27e605d3d75d9707fb5968d9adcbc08d07dba4f6aa3f3a62fae66fa5f09",
+    "contentHash": "f0b6d1b082e38b707606a662f549970e92f47e4f0c3962b5d3b602dcddc3e9f4",
+    "irHash": "d9d8961a31915cfc76a01c42c35127d78b93de56710fc8bc713863518c6396f3",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.825Z"
+    "compiledAt": "2026-06-12T14:47:34.196Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -497,7 +497,7 @@
         {
           "name": "squareFeet",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -788,18 +788,6 @@
           "modifiers": []
         },
         {
-          "name": "assetClass",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "fixed"
-          },
-          "modifiers": []
-        },
-        {
           "name": "status",
           "type": {
             "name": "string",
@@ -820,7 +808,7 @@
           "modifiers": []
         },
         {
-          "name": "purchasePrice",
+          "name": "purchaseCost",
           "type": {
             "name": "money",
             "nullable": false
@@ -833,18 +821,6 @@
         },
         {
           "name": "currentValue",
-          "type": {
-            "name": "decimal",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "depreciationRate",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -4687,7 +4663,7 @@
           "required": true
         },
         {
-          "name": "purchasePrice",
+          "name": "purchaseCost",
           "type": {
             "name": "money",
             "nullable": false
@@ -4827,10 +4803,10 @@
         },
         {
           "kind": "mutate",
-          "target": "purchasePrice",
+          "target": "purchaseCost",
           "expression": {
             "kind": "identifier",
-            "name": "purchasePrice"
+            "name": "purchaseCost"
           }
         },
         {
@@ -4838,7 +4814,7 @@
           "target": "currentValue",
           "expression": {
             "kind": "identifier",
-            "name": "purchasePrice"
+            "name": "purchaseCost"
           }
         },
         {

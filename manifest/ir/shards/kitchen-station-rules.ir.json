@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "b97bfb48dfbde4c95dbdfb5cef802c2856d8cbc14d1921fd3ae65968ffa28448",
-    "irHash": "3d4516d2e468cd468cb62da59aba7396d5299d415ba820036984773ac97a52a6",
+    "contentHash": "d1e631ee1ebb2cb3cb39ccc48e6d18b63750c21f50510ae23a694afdbfc839d6",
+    "irHash": "95eeb617798d5b5e8e3c7e03bacf624d9e91f81533d5f115e2e4c0460187cafa",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.818Z"
+    "compiledAt": "2026-06-12T14:47:34.190Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -90,12 +90,16 @@
         {
           "name": "equipmentList",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -872,7 +876,11 @@
         {
           "name": "equipmentList",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1036,7 +1044,11 @@
         {
           "name": "equipmentList",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -2073,7 +2085,11 @@
         {
           "name": "equipmentList",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

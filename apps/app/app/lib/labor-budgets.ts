@@ -156,9 +156,9 @@ export async function createBudget(
     locationId: input.locationId,
     periodStart: input.periodStart,
     periodEnd: input.periodEnd,
-    budgetAmount: input.budgetTarget,
+    budgetTarget: input.budgetTarget,
     budgetType: input.budgetType,
-    notes: input.description,
+    description: input.description,
   });
   if (!result) throw new Error("Failed to create budget");
   return result;
@@ -173,7 +173,7 @@ export async function updateBudget(
 ): Promise<GeneratedLaborBudget> {
   const result = await laborBudgetUpdate({
     id,
-    notes: updates.description,
+    description: updates.description,
   });
   if (!result) throw new Error("Failed to update budget");
   return result;

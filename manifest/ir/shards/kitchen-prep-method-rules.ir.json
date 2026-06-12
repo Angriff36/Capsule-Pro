@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "812e70fe98bbfd74b51078e29a037f50797e7d03ecbd36b090d1dbc1d4f40b6d",
-    "irHash": "c291681258912b8d6967310e6bacc4644caf950ff813a4a76f5b30b0b03201e0",
+    "contentHash": "c6c583b147ffa7a51230257c43a43e054e40afd984aedd73a7a4df153ca352d6",
+    "irHash": "740dfbabe9d8e70f1021aea000b87d52f3f0952bd45c7aa692a1272bd4abf17b",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.809Z"
+    "compiledAt": "2026-06-12T14:47:34.182Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -78,7 +78,7 @@
         {
           "name": "estimatedDurationMinutes",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -90,12 +90,16 @@
         {
           "name": "requiresCertification",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -176,24 +180,35 @@
           },
           "expression": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": ">",
             "left": {
-              "kind": "member",
-              "object": {
+              "kind": "call",
+              "callee": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "count"
               },
-              "property": "requiresCertification"
+              "args": [
+                {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "requiresCertification"
+                }
+              ]
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "string",
-                "value": ""
+                "kind": "number",
+                "value": 0
               }
             }
           },
-          "dependencies": []
+          "dependencies": [
+            "count"
+          ]
         },
         {
           "name": "isDeactivated",
@@ -405,7 +420,7 @@
         {
           "name": "estimatedDurationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -413,7 +428,11 @@
         {
           "name": "requiresCertification",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -459,7 +478,7 @@
         {
           "name": "estimatedDurationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -467,7 +486,11 @@
         {
           "name": "requiresCertification",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -607,7 +630,7 @@
         {
           "name": "estimatedDurationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -615,7 +638,11 @@
         {
           "name": "requiresCertification",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -783,7 +810,7 @@
         {
           "name": "estimatedDurationMinutes",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -791,7 +818,11 @@
         {
           "name": "requiresCertification",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

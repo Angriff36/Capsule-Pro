@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "3e2074dac3c16bb759d5f2ac7a6795a670e4ac12b7d07dd8c18102ac916cec7d",
-    "irHash": "2871e7755d267f3e3c0478d96df8e9ccc626fd3f2d2ae025971b511057c4dcea",
+    "contentHash": "d1cb84b81a0f92fa23e3d064e349f1b10655d9333f68b1777678ac7953432fce",
+    "irHash": "db53279c5b6e58fc351da1b6184ad0bd5e01154ded2155c357fcb59410627fb6",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.711Z"
+    "compiledAt": "2026-06-12T14:47:34.099Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -184,24 +184,16 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "dishCount",
-          "type": {
-            "name": "int",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -1032,14 +1024,6 @@
           "required": true
         },
         {
-          "name": "dishCount",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "userId",
           "type": {
             "name": "string",
@@ -1336,7 +1320,11 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1496,54 +1484,17 @@
               "value": "draft"
             }
           }
-        }
-      ],
-      "constraints": [
+        },
         {
-          "name": "blockNoDishes",
-          "code": "blockNoDishes",
-          "expression": {
-            "kind": "binary",
-            "operator": ">",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "dishCount"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
           },
-          "severity": "block",
-          "messageTemplate": "Cannot open battle board '{boardName}' with no dishes",
-          "detailsMapping": {
-            "boardName": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "boardName"
-            },
-            "boardId": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "id"
-            }
-          },
-          "overrideable": false
+          "property": "hasData"
         }
       ],
+      "constraints": [],
       "policies": [
         "BattleBoardDefaultAccess"
       ],
@@ -1555,6 +1506,16 @@
             "value": {
               "kind": "string",
               "value": "Can only open draft battle boards"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot open battle board with no dishes"
             }
           }
         },

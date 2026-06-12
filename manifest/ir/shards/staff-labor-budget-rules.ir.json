@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f7fc3cad43ac9890d09f3719675bf3563171418792cbad80adbc6e3652281aeb",
-    "irHash": "2c4d215e2b6fcdb343a360283ae0496005300091760e5d947ec79dc51130fc8b",
+    "contentHash": "6aca600a79a2a5afa8bfe63efd16038458b7ca530b279bcba358534f6fd9bc9e",
+    "irHash": "650d32cb0d9f3e02cfa49d4e420e3844f3c36701ba514ded2ae2c9e080b39db5",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.862Z"
+    "compiledAt": "2026-06-12T14:47:34.228Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -78,7 +78,7 @@
           "modifiers": []
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": {
             "name": "money",
             "nullable": false
@@ -90,7 +90,7 @@
           "modifiers": []
         },
         {
-          "name": "actualAmount",
+          "name": "actualSpend",
           "type": {
             "name": "money",
             "nullable": false
@@ -126,19 +126,7 @@
           "modifiers": []
         },
         {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "createdBy",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -267,7 +255,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "actualAmount"
+              "property": "actualSpend"
             },
             "right": {
               "kind": "member",
@@ -275,7 +263,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "budgetAmount"
+              "property": "budgetTarget"
             }
           },
           "dependencies": []
@@ -295,7 +283,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "actualAmount"
+              "property": "actualSpend"
             },
             "right": {
               "kind": "member",
@@ -303,7 +291,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "budgetAmount"
+              "property": "budgetTarget"
             }
           },
           "dependencies": []
@@ -392,7 +380,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "budgetAmount"
+              "property": "budgetTarget"
             },
             "right": {
               "kind": "literal",
@@ -428,21 +416,21 @@
               },
               "property": "locationId"
             },
-            "budgetAmount": {
+            "budgetTarget": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "budgetAmount"
+              "property": "budgetTarget"
             },
-            "actualAmount": {
+            "actualSpend": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "actualAmount"
+              "property": "actualSpend"
             },
             "varianceAmount": {
               "kind": "member",
@@ -530,19 +518,7 @@
           "modifiers": []
         },
         {
-          "name": "thresholdPct",
-          "type": {
-            "name": "decimal",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "actualPct",
+          "name": "utilization",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -807,7 +783,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": {
             "name": "money",
             "nullable": false
@@ -905,15 +881,7 @@
           "required": true
         },
         {
-          "name": "thresholdPct",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "actualPct",
+          "name": "utilization",
           "type": {
             "name": "number",
             "nullable": false
@@ -1011,7 +979,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": {
             "name": "money",
             "nullable": false
@@ -1057,7 +1025,7 @@
           "required": true
         },
         {
-          "name": "actualAmount",
+          "name": "actualSpend",
           "type": {
             "name": "money",
             "nullable": false
@@ -1135,7 +1103,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": {
             "name": "money",
             "nullable": false
@@ -1151,15 +1119,7 @@
           "required": true
         },
         {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "createdBy",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -1173,7 +1133,7 @@
           "operator": ">",
           "left": {
             "kind": "identifier",
-            "name": "budgetAmount"
+            "name": "budgetTarget"
           },
           "right": {
             "kind": "literal",
@@ -1225,10 +1185,10 @@
         },
         {
           "kind": "mutate",
-          "target": "budgetAmount",
+          "target": "budgetTarget",
           "expression": {
             "kind": "identifier",
-            "name": "budgetAmount"
+            "name": "budgetTarget"
           }
         },
         {
@@ -1241,18 +1201,10 @@
         },
         {
           "kind": "mutate",
-          "target": "notes",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "notes"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "createdBy",
-          "expression": {
-            "kind": "identifier",
-            "name": "createdBy"
+            "name": "description"
           }
         }
       ],
@@ -1289,7 +1241,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": {
             "name": "money",
             "nullable": false
@@ -1305,7 +1257,7 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -1374,10 +1326,10 @@
         },
         {
           "kind": "mutate",
-          "target": "budgetAmount",
+          "target": "budgetTarget",
           "expression": {
             "kind": "identifier",
-            "name": "budgetAmount"
+            "name": "budgetTarget"
           }
         },
         {
@@ -1390,10 +1342,10 @@
         },
         {
           "kind": "mutate",
-          "target": "notes",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "notes"
+            "name": "description"
           }
         }
       ],
@@ -1499,7 +1451,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "budgetAmount"
+              "property": "budgetTarget"
             },
             "right": {
               "kind": "literal",
@@ -1607,7 +1559,7 @@
       "entity": "LaborBudget",
       "parameters": [
         {
-          "name": "actualAmount",
+          "name": "actualSpend",
           "type": {
             "name": "money",
             "nullable": false
@@ -1658,7 +1610,7 @@
           "operator": ">=",
           "left": {
             "kind": "identifier",
-            "name": "actualAmount"
+            "name": "actualSpend"
           },
           "right": {
             "kind": "literal",
@@ -1706,10 +1658,10 @@
         },
         {
           "kind": "mutate",
-          "target": "actualAmount",
+          "target": "actualSpend",
           "expression": {
             "kind": "identifier",
-            "name": "actualAmount"
+            "name": "actualSpend"
           }
         }
       ],
@@ -1907,15 +1859,7 @@
           "required": true
         },
         {
-          "name": "thresholdPct",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "actualPct",
+          "name": "utilization",
           "type": {
             "name": "number",
             "nullable": false
@@ -2093,18 +2037,10 @@
         },
         {
           "kind": "mutate",
-          "target": "thresholdPct",
+          "target": "utilization",
           "expression": {
             "kind": "identifier",
-            "name": "thresholdPct"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "actualPct",
-          "expression": {
-            "kind": "identifier",
-            "name": "actualPct"
+            "name": "utilization"
           }
         },
         {

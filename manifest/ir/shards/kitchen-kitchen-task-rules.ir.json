@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "b41b407eae46c0c0930f93d1184ece4ee5d8fbe40ee5e86cb3e28b7f2c2fb74d",
-    "irHash": "b3c8446cf5e8f91641406605aef83d33b1c3a15a8fc1a91937e05f14703ba868",
+    "contentHash": "9d874d92b5ddb3c6b7393dd63d64ab4ff5bed65df46506c098d408b154498bd9",
+    "irHash": "628bc2fe10cf6c860d30a123bb9e072fa092a983179dd589440b5237fdc8f0b6",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.798Z"
+    "compiledAt": "2026-06-12T14:47:34.173Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -90,7 +90,7 @@
         {
           "name": "complexity",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {

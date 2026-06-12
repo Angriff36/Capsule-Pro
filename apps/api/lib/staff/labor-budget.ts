@@ -259,10 +259,9 @@ export async function createLaborBudget(input: LaborBudgetInput) {
         locationId: locationId || "",
         periodStart: periodStart ? periodStart.toISOString() : "",
         periodEnd: periodEnd ? periodEnd.toISOString() : "",
-        budgetAmount: budgetTarget,
+        budgetTarget,
         budgetType,
-        notes: description || "",
-        createdBy: "",
+        description: description || "",
       },
     }
   );
@@ -323,9 +322,9 @@ export async function updateLaborBudget(
         locationId: updates.locationId ?? "",
         periodStart: updates.periodStart ? updates.periodStart.toISOString() : "",
         periodEnd: updates.periodEnd ? updates.periodEnd.toISOString() : "",
-        budgetAmount: updates.budgetTarget ?? 0,
+        budgetTarget: updates.budgetTarget ?? 0,
         budgetType: updates.budgetType ?? "",
-        notes: updates.description ?? "",
+        description: updates.description ?? "",
       },
     }
   );
@@ -692,8 +691,7 @@ export async function createBudgetAlert(input: BudgetAlertInput) {
       body: {
         budgetId: input.budgetId,
         alertType: input.alertType,
-        thresholdPct: input.utilization,
-        actualPct: input.utilization,
+        utilization: input.utilization,
         message: input.message,
       },
     }

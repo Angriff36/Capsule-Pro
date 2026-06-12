@@ -137,12 +137,11 @@ export async function POST(request: Request) {
             taskType: task.taskType || "prep",
             priority: task.priority || 5,
             quantityTotal: task.quantityTotal || 1,
-            quantityUnitId: "",
+            quantityUnitId: 0,
             servingsTotal: task.quantityTotal || 1,
             startByDate: new Date(task.startByDate).getTime(),
             dueByDate: new Date(task.dueByDate).getTime(),
             notes: task.notes ?? "",
-            ingredients: "",
           },
           user: { id: user.id, tenantId, role: user.role },
         }

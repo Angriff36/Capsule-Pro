@@ -12,12 +12,12 @@ entity InventoryItem {
   property required category: string
   property unitOfMeasure: string = "each"
   property unitCost: money = 0
-  property quantityOnHand: int = 0
+  property quantityOnHand: decimal = 0
   property quantityReserved: int = 0
   property parLevel: decimal = 0
   property reorder_level: decimal = 0
   property supplierId: string = ""
-  property tags: string = ""
+  property tags: array<string> = []
   property fsa_status: string = "unknown"
   property fsa_temp_logged: boolean = false
   property fsa_allergen_info: boolean = false
@@ -226,7 +226,7 @@ entity InventoryItem {
     emit InventoryReservationReleased
   }
 
-  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: money, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
+  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: money, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: array<string>, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
     guard item_number != null and item_number != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
     guard category != null and category != "" "Category is required"
@@ -254,7 +254,7 @@ entity InventoryItem {
     emit InventoryItemCreated
   }
 
-  command update(name: string, description: string, category: string, unitOfMeasure: string, unitCost: money, quantityOnHand: decimal, parLevel: decimal, reorder_level: decimal, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: string, fsa_allergen_info: string, fsa_traceable: string) {
+  command update(name: string, description: string, category: string, unitOfMeasure: string, unitCost: money, quantityOnHand: decimal, parLevel: decimal, reorder_level: decimal, supplierId: string, tags: array<string>, fsa_status: string, fsa_temp_logged: string, fsa_allergen_info: string, fsa_traceable: string) {
     guard self.deletedAt == null "Cannot update a deleted inventory item"
 
     mutate name = name

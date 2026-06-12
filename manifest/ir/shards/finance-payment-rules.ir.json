@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c6aaeb7fb1d105ae9ef5582c81b7e9f516a7de3683f0556f2defbc9be7c7de6d",
-    "irHash": "a581ba2a59a380bbc43b88e7df283ccb63a7b3d7ffbbf02486a9d4d904d94620",
+    "contentHash": "77144708c7af74eab11bcf1f49e1c3ce6176c61c8aa06c612485cc1818396f88",
+    "irHash": "abffffb9ae88c6dcd21635792b20e2bfe699d27ea484fcd82f114767bcaa97d9",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.759Z"
+    "compiledAt": "2026-06-12T14:47:34.139Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -176,30 +176,6 @@
           "modifiers": []
         },
         {
-          "name": "processorResponseCode",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "processorResponseMessage",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
           "name": "processedAt",
           "type": {
             "name": "datetime",
@@ -284,30 +260,6 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "externalReference",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "metadata",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "{}"
           },
           "modifiers": []
         },

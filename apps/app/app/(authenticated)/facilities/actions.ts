@@ -148,8 +148,8 @@ export async function createFacilityAsset(input: CreateFacilityAssetInput) {
   // it is NOT sent in the body. DateTime fields (purchaseDate, warrantyExpiry)
   // are passed as ISO strings — GenericPrismaStore coerces for @db.Date columns.
   // Empty optionals sent as "" — GenericPrismaStore coerces "" → NULL for
-  // nullable columns. purchasePrice maps to the Manifest command param; note the
-  // Prisma column is `purchaseCost` (IR drift — purchasePrice not in Prisma).
+  // nullable columns. purchaseCost matches both the Manifest command param and
+  // the Prisma column (the purchasePrice IR drift was reconciled).
   const user = await requireCurrentUser();
 
   const result = await runManifestCommand({
@@ -161,7 +161,7 @@ export async function createFacilityAsset(input: CreateFacilityAssetInput) {
       name: input.name.trim(),
       assetType: input.assetType || "other",
       purchaseDate: input.purchaseDate || "",
-      purchasePrice: input.purchaseCost ?? 0,
+      purchaseCost: input.purchaseCost ?? 0,
       serialNumber: input.serialNumber?.trim() || "",
       manufacturer: input.manufacturer?.trim() || "",
       model: input.model?.trim() || "",
@@ -222,7 +222,7 @@ export async function createWorkOrder(input: CreateWorkOrderInput) {
     command: "create",
     body: {
       title: input.title.trim(),
-      type: input.workOrderType || "corrective",
+      workOrderType: input.workOrderType || "corrective",
       priority: input.priority || "medium",
       description: input.description?.trim() || "",
       areaId: input.areaId || "",

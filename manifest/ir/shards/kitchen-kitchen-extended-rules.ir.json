@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "3be30321738fdfa3ea4aaed2ded7745b030243d0f22f6feae3d9ee48fc695c2d",
-    "irHash": "84bcfaaf63a873db02b9a4ecdf1347973fb5721e83ce57c47fc64416bf4314eb",
+    "contentHash": "bb35dfa850a18ff03925a81cbb81c5624845afd8f02dd30094ec1f9dd132b803",
+    "irHash": "00a0e2a7ac0946af6b2c8a7aebc617132d37020c9ef917085f65a12d22f10e32",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.793Z"
+    "compiledAt": "2026-06-12T14:47:34.169Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -52,7 +52,7 @@
           ]
         },
         {
-          "name": "equipmentId",
+          "name": "probeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -62,17 +62,19 @@
           ]
         },
         {
-          "name": "location",
+          "name": "locationId",
           "type": {
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
         },
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -82,7 +84,7 @@
           ]
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -104,7 +106,7 @@
           "modifiers": []
         },
         {
-          "name": "lastCalibratedAt",
+          "name": "lastCalibration",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -170,7 +172,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "lastCalibratedAt"
+                "property": "lastCalibration"
               },
               "right": {
                 "kind": "literal",
@@ -197,7 +199,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "maxThreshold"
+              "property": "maxTemp"
             },
             "right": {
               "kind": "member",
@@ -205,29 +207,13 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "minThreshold"
+              "property": "minTemp"
             }
           },
           "dependencies": []
         }
       ],
-      "relationships": [
-        {
-          "name": "equipment",
-          "kind": "belongsTo",
-          "target": "Equipment",
-          "foreignKey": {
-            "fields": [
-              "tenantId",
-              "equipmentId"
-            ],
-            "references": [
-              "tenantId",
-              "id"
-            ]
-          }
-        }
-      ],
+      "relationships": [],
       "commands": [
         "create",
         "calibrate",
@@ -247,7 +233,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "minThreshold"
+              "property": "minTemp"
             },
             "right": {
               "kind": "member",
@@ -255,11 +241,11 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "maxThreshold"
+              "property": "maxTemp"
             }
           },
           "severity": "block",
-          "message": "minThreshold must be less than maxThreshold",
+          "message": "minTemp must be less than maxTemp",
           "overrideable": false
         },
         {
@@ -286,32 +272,6 @@
           },
           "severity": "block",
           "message": "Probe name is required",
-          "overrideable": false
-        },
-        {
-          "name": "requireLocation",
-          "code": "requireLocation",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "location"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Probe location is required",
           "overrideable": false
         }
       ],
@@ -359,7 +319,27 @@
           ]
         },
         {
-          "name": "recordedBy",
+          "name": "logNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "logType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -379,7 +359,7 @@
           ]
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -491,7 +471,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "recordedBy"
+              "property": "loggedBy"
             },
             "right": {
               "kind": "literal",
@@ -546,13 +526,13 @@
               },
               "property": "temperature"
             },
-            "recordedBy": {
+            "loggedBy": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "recordedBy"
+              "property": "loggedBy"
             }
           },
           "overrideable": false
@@ -612,7 +592,7 @@
           ]
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -637,19 +617,7 @@
             "name": "datetime",
             "nullable": false
           },
-          "modifiers": [
-            "readonly"
-          ]
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "readonly"
-          ]
+          "modifiers": []
         }
       ],
       "computedProperties": [],
@@ -752,8 +720,7 @@
       "key": [
         "tenantId",
         "id"
-      ],
-      "timestamps": true
+      ]
     },
     {
       "name": "IotAlertRule",
@@ -790,16 +757,6 @@
         },
         {
           "name": "equipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "metric",
           "type": {
             "name": "string",
             "nullable": false
@@ -863,16 +820,6 @@
           "modifiers": []
         },
         {
-          "name": "comparison",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
           "name": "severity",
           "type": {
             "name": "string",
@@ -921,24 +868,32 @@
         {
           "name": "notifyRoles",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
         {
           "name": "notifyChannels",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -1026,34 +981,8 @@
           "overrideable": false
         },
         {
-          "name": "requireMetric",
-          "code": "requireMetric",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "metric"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Metric is required",
-          "overrideable": false
-        },
-        {
-          "name": "requireComparison",
-          "code": "requireComparison",
+          "name": "validCondition",
+          "code": "validCondition",
           "expression": {
             "kind": "binary",
             "operator": "in",
@@ -1063,7 +992,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "comparison"
+              "property": "condition"
             },
             "right": {
               "kind": "array",
@@ -1072,42 +1001,28 @@
                   "kind": "literal",
                   "value": {
                     "kind": "string",
-                    "value": "gt"
+                    "value": "above"
                   }
                 },
                 {
                   "kind": "literal",
                   "value": {
                     "kind": "string",
-                    "value": "lt"
+                    "value": "below"
                   }
                 },
                 {
                   "kind": "literal",
                   "value": {
                     "kind": "string",
-                    "value": "gte"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "lte"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "eq"
+                    "value": "outside_range"
                   }
                 }
               ]
             }
           },
           "severity": "block",
-          "message": "Invalid comparison operator",
+          "message": "Invalid condition",
           "overrideable": false
         },
         {
@@ -1647,6 +1562,26 @@
           ]
         },
         {
+          "name": "actionNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
           "name": "sourceType",
           "type": {
             "name": "string",
@@ -1703,7 +1638,7 @@
           ]
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -2005,6 +1940,26 @@
           ]
         },
         {
+          "name": "checkNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
           "name": "checkType",
           "type": {
             "name": "string",
@@ -2015,7 +1970,7 @@
           ]
         },
         {
-          "name": "performedBy",
+          "name": "completedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -2039,7 +1994,7 @@
           ]
         },
         {
-          "name": "performedAt",
+          "name": "completedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -2259,7 +2214,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "performedBy"
+              "property": "completedBy"
             },
             "right": {
               "kind": "literal",
@@ -2332,7 +2287,17 @@
           ]
         },
         {
-          "name": "qualityCheckId",
+          "name": "checkId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "itemName",
           "type": {
             "name": "string",
             "nullable": false
@@ -2417,7 +2382,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "qualityCheckId"
+              "checkId"
             ],
             "references": [
               "tenantId",
@@ -2443,7 +2408,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "qualityCheckId"
+              "property": "checkId"
             },
             "right": {
               "kind": "literal",
@@ -2544,7 +2509,7 @@
           ]
         },
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2692,7 +2657,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "kitchenTaskId"
+              "taskId"
             ],
             "references": [
               "tenantId",
@@ -2771,7 +2736,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "kitchenTaskId"
+              "property": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -2855,7 +2820,7 @@
           ]
         },
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2875,7 +2840,17 @@
           ]
         },
         {
-          "name": "status",
+          "name": "progressType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "newStatus",
           "type": {
             "name": "string",
             "nullable": false
@@ -2895,7 +2870,7 @@
           ]
         },
         {
-          "name": "note",
+          "name": "notes",
           "type": {
             "name": "string",
             "nullable": false
@@ -2922,19 +2897,7 @@
             "name": "datetime",
             "nullable": false
           },
-          "modifiers": [
-            "readonly"
-          ]
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "readonly"
-          ]
+          "modifiers": []
         }
       ],
       "computedProperties": [],
@@ -2946,7 +2909,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "kitchenTaskId"
+              "taskId"
             ],
             "references": [
               "tenantId",
@@ -2986,7 +2949,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "kitchenTaskId"
+              "property": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -3083,8 +3046,7 @@
       "key": [
         "tenantId",
         "id"
-      ],
-      "timestamps": true
+      ]
     },
     {
       "name": "TaskBundle",
@@ -4336,15 +4298,7 @@
           "required": true
         },
         {
-          "name": "equipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "location",
+          "name": "locationId",
           "type": {
             "name": "string",
             "nullable": false
@@ -4404,7 +4358,7 @@
           "required": true
         },
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -4412,7 +4366,7 @@
           "required": true
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -4496,7 +4450,7 @@
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -4520,7 +4474,7 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4574,7 +4528,7 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4612,14 +4566,6 @@
           "required": true
         },
         {
-          "name": "metric",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "severity",
           "type": {
             "name": "string",
@@ -4643,14 +4589,6 @@
       "payload": [
         {
           "name": "ruleId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "metric",
           "type": {
             "name": "string",
             "nullable": false
@@ -5016,7 +4954,7 @@
           "required": true
         },
         {
-          "name": "performedBy",
+          "name": "completedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -5160,7 +5098,7 @@
           "required": true
         },
         {
-          "name": "qualityCheckId",
+          "name": "checkId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5198,7 +5136,7 @@
           "required": true
         },
         {
-          "name": "qualityCheckId",
+          "name": "checkId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5252,7 +5190,7 @@
           "required": true
         },
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5290,7 +5228,7 @@
           "required": true
         },
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5352,7 +5290,7 @@
           "required": true
         },
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5368,7 +5306,7 @@
           "required": true
         },
         {
-          "name": "status",
+          "name": "newStatus",
           "type": {
             "name": "string",
             "nullable": false
@@ -5972,7 +5910,7 @@
           "required": true
         },
         {
-          "name": "equipmentId",
+          "name": "probeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5980,15 +5918,15 @@
           "required": true
         },
         {
-          "name": "location",
+          "name": "locationId",
           "type": {
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -5996,7 +5934,7 @@
           "required": true
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -6046,7 +5984,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "equipmentId"
+              "name": "probeId"
             },
             "right": {
               "kind": "literal",
@@ -6060,40 +5998,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "equipmentId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "location"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "location"
+              "name": "probeId"
             },
             "right": {
               "kind": "literal",
@@ -6109,11 +6014,11 @@
           "operator": "<",
           "left": {
             "kind": "identifier",
-            "name": "minThreshold"
+            "name": "minTemp"
           },
           "right": {
             "kind": "identifier",
-            "name": "maxThreshold"
+            "name": "maxTemp"
           }
         }
       ],
@@ -6138,7 +6043,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Equipment ID is required"
+              "value": "Probe hardware ID is required"
             }
           }
         },
@@ -6148,17 +6053,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Location is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "minThreshold must be less than maxThreshold"
+              "value": "minTemp must be less than maxTemp"
             }
           }
         },
@@ -6172,34 +6067,34 @@
         },
         {
           "kind": "mutate",
-          "target": "equipmentId",
+          "target": "probeId",
           "expression": {
             "kind": "identifier",
-            "name": "equipmentId"
+            "name": "probeId"
           }
         },
         {
           "kind": "mutate",
-          "target": "location",
+          "target": "locationId",
           "expression": {
             "kind": "identifier",
-            "name": "location"
+            "name": "locationId"
           }
         },
         {
           "kind": "mutate",
-          "target": "minThreshold",
+          "target": "minTemp",
           "expression": {
             "kind": "identifier",
-            "name": "minThreshold"
+            "name": "minTemp"
           }
         },
         {
           "kind": "mutate",
-          "target": "maxThreshold",
+          "target": "maxTemp",
           "expression": {
             "kind": "identifier",
-            "name": "maxThreshold"
+            "name": "maxTemp"
           }
         },
         {
@@ -6301,7 +6196,7 @@
         },
         {
           "kind": "mutate",
-          "target": "lastCalibratedAt",
+          "target": "lastCalibration",
           "expression": {
             "kind": "call",
             "callee": {
@@ -6321,7 +6216,7 @@
       "entity": "TemperatureProbe",
       "parameters": [
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -6329,7 +6224,7 @@
           "required": true
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": {
             "name": "number",
             "nullable": false
@@ -6351,11 +6246,11 @@
           "operator": "<",
           "left": {
             "kind": "identifier",
-            "name": "minThreshold"
+            "name": "minTemp"
           },
           "right": {
             "kind": "identifier",
-            "name": "maxThreshold"
+            "name": "maxTemp"
           }
         }
       ],
@@ -6380,24 +6275,24 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "minThreshold must be less than maxThreshold"
+              "value": "minTemp must be less than maxTemp"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "minThreshold",
+          "target": "minTemp",
           "expression": {
             "kind": "identifier",
-            "name": "minThreshold"
+            "name": "minTemp"
           }
         },
         {
           "kind": "mutate",
-          "target": "maxThreshold",
+          "target": "maxTemp",
           "expression": {
             "kind": "identifier",
-            "name": "maxThreshold"
+            "name": "maxTemp"
           }
         }
       ],
@@ -6480,7 +6375,23 @@
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "logNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "logType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "loggedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -6496,7 +6407,7 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -6562,7 +6473,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "recordedBy"
+              "name": "logNumber"
             },
             "right": {
               "kind": "literal",
@@ -6576,7 +6487,73 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "recordedBy"
+              "name": "logNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "logType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "logType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "loggedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "loggedBy"
             },
             "right": {
               "kind": "literal",
@@ -6609,6 +6586,26 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Log number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Log type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Recorder employee ID is required"
             }
           }
@@ -6623,10 +6620,26 @@
         },
         {
           "kind": "mutate",
-          "target": "recordedBy",
+          "target": "logNumber",
           "expression": {
             "kind": "identifier",
-            "name": "recordedBy"
+            "name": "logNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "logType",
+          "expression": {
+            "kind": "identifier",
+            "name": "logType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "loggedBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "loggedBy"
           }
         },
         {
@@ -6639,10 +6652,10 @@
         },
         {
           "kind": "mutate",
-          "target": "recordedAt",
+          "target": "loggedAt",
           "expression": {
             "kind": "identifier",
-            "name": "recordedAt"
+            "name": "loggedAt"
           }
         },
         {
@@ -6687,12 +6700,12 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": {
             "name": "datetime",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "withinRange",
@@ -6771,10 +6784,10 @@
         },
         {
           "kind": "mutate",
-          "target": "recordedAt",
+          "target": "loggedAt",
           "expression": {
             "kind": "identifier",
-            "name": "recordedAt"
+            "name": "loggedAt"
           }
         },
         {
@@ -6804,14 +6817,6 @@
         },
         {
           "name": "equipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "metric",
           "type": {
             "name": "string",
             "nullable": false
@@ -6859,14 +6864,6 @@
           "required": true
         },
         {
-          "name": "comparison",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "severity",
           "type": {
             "name": "string",
@@ -6901,7 +6898,11 @@
         {
           "name": "notifyRoles",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -6909,7 +6910,11 @@
         {
           "name": "notifyChannels",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -6955,87 +6960,6 @@
                 "value": ""
               }
             }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "metric"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "metric"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "in",
-          "left": {
-            "kind": "identifier",
-            "name": "comparison"
-          },
-          "right": {
-            "kind": "array",
-            "elements": [
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "gt"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "lt"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "gte"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "lte"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "eq"
-                }
-              }
-            ]
           }
         },
         {
@@ -7094,26 +7018,6 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Metric is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Invalid comparison operator"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
               "value": "Invalid severity level"
             }
           }
@@ -7132,14 +7036,6 @@
           "expression": {
             "kind": "identifier",
             "name": "equipmentId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "metric",
-          "expression": {
-            "kind": "identifier",
-            "name": "metric"
           }
         },
         {
@@ -7180,14 +7076,6 @@
           "expression": {
             "kind": "identifier",
             "name": "thresholdMax"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "comparison",
-          "expression": {
-            "kind": "identifier",
-            "name": "comparison"
           }
         },
         {
@@ -7256,25 +7144,9 @@
       "entity": "IotAlertRule",
       "parameters": [
         {
-          "name": "metric",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "threshold",
           "type": {
             "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "comparison",
-          "type": {
-            "name": "string",
             "nullable": false
           },
           "required": true
@@ -7296,87 +7168,6 @@
             "name": "self"
           },
           "property": "isActive"
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "metric"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "metric"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "in",
-          "left": {
-            "kind": "identifier",
-            "name": "comparison"
-          },
-          "right": {
-            "kind": "array",
-            "elements": [
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "gt"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "lt"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "gte"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "lte"
-                }
-              },
-              {
-                "kind": "literal",
-                "value": {
-                  "kind": "string",
-                  "value": "eq"
-                }
-              }
-            ]
-          }
         },
         {
           "kind": "binary",
@@ -7434,36 +7225,8 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Metric is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Invalid comparison operator"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
               "value": "Invalid severity level"
             }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "metric",
-          "expression": {
-            "kind": "identifier",
-            "name": "metric"
           }
         },
         {
@@ -7472,14 +7235,6 @@
           "expression": {
             "kind": "identifier",
             "name": "threshold"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "comparison",
-          "expression": {
-            "kind": "identifier",
-            "name": "comparison"
           }
         },
         {
@@ -8113,6 +7868,22 @@
       "entity": "CorrectiveAction",
       "parameters": [
         {
+          "name": "actionNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
           "name": "sourceType",
           "type": {
             "name": "string",
@@ -8137,7 +7908,7 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -8146,6 +7917,72 @@
         }
       ],
       "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "actionNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "actionNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
         {
           "kind": "binary",
           "operator": "and",
@@ -8257,6 +8094,26 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Action number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Title is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Source type is required"
             }
           }
@@ -8279,6 +8136,22 @@
               "kind": "string",
               "value": "Description is required"
             }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "actionNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "actionNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "title",
+          "expression": {
+            "kind": "identifier",
+            "name": "title"
           }
         },
         {
@@ -8307,10 +8180,10 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "dueDate",
           "expression": {
             "kind": "identifier",
-            "name": "dueAt"
+            "name": "dueDate"
           }
         }
       ],
@@ -8641,6 +8514,22 @@
       "entity": "QualityCheck",
       "parameters": [
         {
+          "name": "checkNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
           "name": "checkType",
           "type": {
             "name": "string",
@@ -8649,7 +8538,7 @@
           "required": true
         },
         {
-          "name": "performedBy",
+          "name": "completedBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -8674,6 +8563,72 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
+              "name": "checkNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "checkNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
               "name": "checkType"
             },
             "right": {
@@ -8707,7 +8662,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "performedBy"
+              "name": "completedBy"
             },
             "right": {
               "kind": "literal",
@@ -8721,7 +8676,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "performedBy"
+              "name": "completedBy"
             },
             "right": {
               "kind": "literal",
@@ -8744,6 +8699,26 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Check number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Title is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Check type is required"
             }
           }
@@ -8760,6 +8735,22 @@
         },
         {
           "kind": "mutate",
+          "target": "checkNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "checkNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "title",
+          "expression": {
+            "kind": "identifier",
+            "name": "title"
+          }
+        },
+        {
+          "kind": "mutate",
           "target": "checkType",
           "expression": {
             "kind": "identifier",
@@ -8768,10 +8759,10 @@
         },
         {
           "kind": "mutate",
-          "target": "performedBy",
+          "target": "completedBy",
           "expression": {
             "kind": "identifier",
-            "name": "performedBy"
+            "name": "completedBy"
           }
         },
         {
@@ -8857,7 +8848,7 @@
         },
         {
           "kind": "mutate",
-          "target": "performedAt",
+          "target": "completedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -8993,7 +8984,7 @@
         },
         {
           "kind": "mutate",
-          "target": "performedAt",
+          "target": "completedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -9157,7 +9148,15 @@
       "entity": "QualityCheckItem",
       "parameters": [
         {
-          "name": "qualityCheckId",
+          "name": "checkId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
           "type": {
             "name": "string",
             "nullable": false
@@ -9190,7 +9189,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "qualityCheckId"
+              "name": "checkId"
             },
             "right": {
               "kind": "literal",
@@ -9204,7 +9203,40 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "qualityCheckId"
+              "name": "checkId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemName"
             },
             "right": {
               "kind": "literal",
@@ -9285,6 +9317,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Item name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Criterion description is required"
             }
           }
@@ -9301,10 +9343,18 @@
         },
         {
           "kind": "mutate",
-          "target": "qualityCheckId",
+          "target": "checkId",
           "expression": {
             "kind": "identifier",
-            "name": "qualityCheckId"
+            "name": "checkId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "itemName",
+          "expression": {
+            "kind": "identifier",
+            "name": "itemName"
           }
         },
         {
@@ -9444,7 +9494,7 @@
       "entity": "KitchenTaskClaim",
       "parameters": [
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -9477,7 +9527,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "kitchenTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -9491,7 +9541,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "kitchenTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -9563,10 +9613,10 @@
         },
         {
           "kind": "mutate",
-          "target": "kitchenTaskId",
+          "target": "taskId",
           "expression": {
             "kind": "identifier",
-            "name": "kitchenTaskId"
+            "name": "taskId"
           }
         },
         {
@@ -9742,7 +9792,7 @@
       "entity": "KitchenTaskProgress",
       "parameters": [
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": {
             "name": "string",
             "nullable": false
@@ -9758,7 +9808,15 @@
           "required": true
         },
         {
-          "name": "status",
+          "name": "progressType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newStatus",
           "type": {
             "name": "string",
             "nullable": false
@@ -9774,7 +9832,7 @@
           "required": true
         },
         {
-          "name": "note",
+          "name": "notes",
           "type": {
             "name": "string",
             "nullable": false
@@ -9799,7 +9857,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "kitchenTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -9813,7 +9871,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "kitchenTaskId"
+              "name": "taskId"
             },
             "right": {
               "kind": "literal",
@@ -9865,7 +9923,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "status"
+              "name": "progressType"
             },
             "right": {
               "kind": "literal",
@@ -9879,7 +9937,40 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "status"
+              "name": "progressType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newStatus"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newStatus"
             },
             "right": {
               "kind": "literal",
@@ -9956,6 +10047,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Progress type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Status is required"
             }
           }
@@ -9972,10 +10073,10 @@
         },
         {
           "kind": "mutate",
-          "target": "kitchenTaskId",
+          "target": "taskId",
           "expression": {
             "kind": "identifier",
-            "name": "kitchenTaskId"
+            "name": "taskId"
           }
         },
         {
@@ -9988,10 +10089,18 @@
         },
         {
           "kind": "mutate",
-          "target": "status",
+          "target": "progressType",
           "expression": {
             "kind": "identifier",
-            "name": "status"
+            "name": "progressType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "newStatus",
+          "expression": {
+            "kind": "identifier",
+            "name": "newStatus"
           }
         },
         {
@@ -10004,10 +10113,10 @@
         },
         {
           "kind": "mutate",
-          "target": "note",
+          "target": "notes",
           "expression": {
             "kind": "identifier",
-            "name": "note"
+            "name": "notes"
           }
         },
         {

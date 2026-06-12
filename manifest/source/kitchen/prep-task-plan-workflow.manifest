@@ -22,7 +22,7 @@ entity PrepTaskPlanWorkflow {
   property constraintOutcomes: string = "[]"
   property errors: string = "[]"
   property warnings: string = "[]"
-  property generatedCount: decimal = 0
+  property generatedCount: int = 0
   property approvedCount: int = 0
   property instantiatedCount: int = 0
   property reviewedBy: string = ""
@@ -88,7 +88,7 @@ entity PrepTaskPlanWorkflow {
     emit PrepTaskPlanWorkflowGeneratingStarted
   }
 
-  command completeGeneration(generatedTasks: string, generatedCount: number, constraintOutcomes: string) {
+  command completeGeneration(generatedTasks: string, generatedCount: int, constraintOutcomes: string) {
     guard self.status == "generating"
 
     mutate generatedTasks = generatedTasks
@@ -295,7 +295,7 @@ event PrepTaskPlanWorkflowGeneratingStarted: "prep.task.plan.workflow.generating
 event PrepTaskPlanWorkflowGenerationCompleted: "prep.task.plan.workflow.generating.completed" {
   workflowId: string
   tenantId: string
-  generatedCount: number
+  generatedCount: int
   currentStep: number
 }
 
@@ -303,7 +303,7 @@ event PrepTaskPlanWorkflowReviewingStarted: "prep.task.plan.workflow.reviewing.s
   workflowId: string
   tenantId: string
   reviewedBy: string
-  generatedCount: number
+  generatedCount: int
 }
 
 event PrepTaskPlanWorkflowReviewingCompleted: "prep.task.plan.workflow.reviewing.completed" {

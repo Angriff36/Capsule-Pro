@@ -103,10 +103,11 @@ entity QACorrectiveAction {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required checkId: string
+  // relatedCheckId: nullable Uuid column (related_check_id) — standalone actions have no check; "" maps to null
+  property relatedCheckId: string = ""
   searchable property required description: string
   property assignedTo: string = ""
-  property priority: string = "medium"
+  property severity: string = "medium"
   indexed property status: string = "open"
   property resolutionNotes: string = ""
   property escalatedTo: string = ""
@@ -127,19 +128,18 @@ entity QACorrectiveAction {
   transition status from "in_progress" to ["resolved", "escalated"]
   transition status from "escalated" to ["in_progress", "resolved"]
 
-  constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
+  constraint validPriority: self.severity in ["low", "medium", "high", "critical"] "Invalid severity"
   constraint validStatus: self.status in ["open", "in_progress", "resolved", "escalated", "dismissed"] "Invalid action status"
 
   default policy QACorrectiveActionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
-  command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: datetime) {
-    guard checkId != null and checkId != "" "Check ID is required"
+  command create(optional relatedCheckId: string, description: string, assignedTo: string, severity: string, dueDate: datetime) {
     guard description != null and description != "" "Description is required"
-    guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
+    guard severity in ["low", "medium", "high", "critical"] "Invalid severity"
 
-    mutate checkId = checkId
+    mutate relatedCheckId = relatedCheckId
     mutate description = description
     mutate assignedTo = assignedTo
-    mutate priority = priority
+    mutate severity = severity
     mutate dueDate = dueDate
 
     emit CorrectiveActionCreated
@@ -156,7 +156,7 @@ entity QACorrectiveAction {
     emit CorrectiveActionAssigned
   }
 
-  // Escalate to a supervisor when the assignee cannot resolve within the priority window.
+  // Escalate to a supervisor when the assignee cannot resolve within the severity window.
   command escalate(escalatedTo: string, escalationReason: string) {
     guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be escalated"
     guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
@@ -192,7 +192,7 @@ entity QACorrectiveAction {
     emit CorrectiveActionDismissed
   }
 
-  relationship belongsTo check: QACheck with checkId
+  relationship belongsTo check: QACheck with relatedCheckId
 
   store QACorrectiveAction in durable
 }
@@ -201,11 +201,14 @@ entity QATemperatureLog {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required location: string
+  // logType: where/in what context the temperature was taken (enumerated per column comment)
+  property required logType: string
   property required temperature: decimal
   property unit: string = "fahrenheit"
-  property equipment: string = ""
-  property recordedBy: string = ""
+  // equipmentId: nullable Uuid column (equipment_id) — "" maps to null
+  property equipmentId: string = ""
+  // loggedBy: nullable Uuid column (logged_by) — "" maps to null
+  property loggedBy: string = ""
   searchable property notes: string = ""
   // Bug fix: lifecycle datetime must be nullable
   property loggedAt: datetime
@@ -214,24 +217,25 @@ entity QATemperatureLog {
   computed isInSafeRange: boolean = self.unit == "fahrenheit" ? (self.temperature >= 0 and self.temperature <= 40) : (self.temperature >= -18 and self.temperature <= 4)
 
   constraint warnUnsafeTemperature:warn !self.isInSafeRange {
-    messageTemplate: "Temperature {temp}{unit} at {location} is outside safe range"
+    messageTemplate: "Temperature {temp}{unit} at {logType} is outside safe range"
     details: {
-      location: self.location
+      logType: self.logType
       temp: self.temperature
       unit: self.unit
     }
   }
 
   default policy QATemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
-  command log(location: string, temperature: number, unit: string, equipment: string, recordedBy: string, notes: string) {
-    guard location != null and location != "" "Location is required"
+  command log(logType: string, temperature: number, unit: string, equipmentId: string, loggedBy: string, notes: string) {
+    guard logType != null and logType != "" "Log type is required"
+    guard logType in ["cooler", "freezer", "hot_hold", "cooking", "receiving", "cooling"] "Invalid log type"
     guard temperature != null "Temperature is required"
 
-    mutate location = location
+    mutate logType = logType
     mutate temperature = temperature
     mutate unit = unit
-    mutate equipment = equipment
-    mutate recordedBy = recordedBy
+    mutate equipmentId = equipmentId
+    mutate loggedBy = loggedBy
     mutate notes = notes
     mutate loggedAt = now()
 
@@ -284,9 +288,9 @@ event QACheckReinspected: "kitchen.qa.check.reinspected" {
 
 event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
   actionId: string
-  checkId: string
+  relatedCheckId: string
   description: string
-  priority: string
+  severity: string
   assignedTo: string
   createdAt: datetime
 }
@@ -294,7 +298,7 @@ event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
 event CorrectiveActionAssigned: "kitchen.qa.corrective.assigned" {
   actionId: string
   tenantId: string
-  checkId: string
+  relatedCheckId: string
   assignedTo: string
   assignedAt: datetime
 }
@@ -302,7 +306,7 @@ event CorrectiveActionAssigned: "kitchen.qa.corrective.assigned" {
 event CorrectiveActionEscalated: "kitchen.qa.corrective.escalated" {
   actionId: string
   tenantId: string
-  checkId: string
+  relatedCheckId: string
   escalatedTo: string
   escalationReason: string
   escalatedAt: datetime
@@ -310,7 +314,7 @@ event CorrectiveActionEscalated: "kitchen.qa.corrective.escalated" {
 
 event CorrectiveActionResolved: "kitchen.qa.corrective.resolved" {
   actionId: string
-  checkId: string
+  relatedCheckId: string
   resolutionNotes: string
   resolvedAt: datetime
 }
@@ -318,7 +322,7 @@ event CorrectiveActionResolved: "kitchen.qa.corrective.resolved" {
 event CorrectiveActionDismissed: "kitchen.qa.corrective.dismissed" {
   actionId: string
   tenantId: string
-  checkId: string
+  relatedCheckId: string
   reason: string
   dismissedAt: datetime
 }
@@ -326,9 +330,9 @@ event CorrectiveActionDismissed: "kitchen.qa.corrective.dismissed" {
 event TemperatureLogged: "kitchen.temperature.logged" {
   logId: string
   tenantId: string
-  location: string
+  logType: string
   temperature: number
   unit: string
-  recordedBy: string
+  loggedBy: string
   loggedAt: datetime
 }

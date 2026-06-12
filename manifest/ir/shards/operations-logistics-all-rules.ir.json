@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "3d5752b945e88b449ac769216b82def1a277cedd848665837eed593fc212f7ae",
-    "irHash": "9e18910f02a88d7e981958c9b904a191d6aff2946c2457701a75d7832b7dbfa0",
+    "contentHash": "73612941b902b9231c873ebbca7ea5c42734936cb7fa4874ee1bfbf51ff5b7e7",
+    "irHash": "f315760e076ba42b63876faa508b7d574a6b6c73245c37f4a2c594000f587755",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.828Z"
+    "compiledAt": "2026-06-12T14:47:34.199Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1010,31 +1010,7 @@
           "modifiers": []
         },
         {
-          "name": "startLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "endLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "distance",
+          "name": "totalDistance",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -1046,9 +1022,9 @@
           "modifiers": []
         },
         {
-          "name": "estimatedDuration",
+          "name": "totalDuration",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1058,7 +1034,7 @@
           "modifiers": []
         },
         {
-          "name": "scheduledStart",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1066,7 +1042,7 @@
           "modifiers": []
         },
         {
-          "name": "scheduledEnd",
+          "name": "endTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1074,7 +1050,7 @@
           "modifiers": []
         },
         {
-          "name": "actualStart",
+          "name": "actualStartTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1082,22 +1058,10 @@
           "modifiers": []
         },
         {
-          "name": "actualEnd",
+          "name": "actualEndTime",
           "type": {
             "name": "datetime",
             "nullable": false
-          },
-          "modifiers": []
-        },
-        {
-          "name": "stops",
-          "type": {
-            "name": "decimal",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
           },
           "modifiers": []
         },
@@ -1126,7 +1090,7 @@
           "modifiers": []
         },
         {
-          "name": "notes",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -1185,44 +1149,6 @@
             }
           },
           "dependencies": []
-        },
-        {
-          "name": "completionPercent",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "percent"
-            },
-            "args": [
-              {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "completedStops"
-              },
-              {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "stops"
-              }
-            ]
-          },
-          "dependencies": [
-            "percent"
-          ],
-          "cache": {
-            "strategy": "request"
-          }
         },
         {
           "name": "isDelayed",
@@ -2311,7 +2237,7 @@
           "required": true
         },
         {
-          "name": "scheduledStart",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4416,23 +4342,7 @@
           "required": true
         },
         {
-          "name": "startLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "endLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "scheduledStart",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4440,7 +4350,7 @@
           "required": true
         },
         {
-          "name": "scheduledEnd",
+          "name": "endTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4448,7 +4358,7 @@
           "required": true
         },
         {
-          "name": "distance",
+          "name": "totalDistance",
           "type": {
             "name": "number",
             "nullable": false
@@ -4456,7 +4366,7 @@
           "required": true
         },
         {
-          "name": "estimatedDuration",
+          "name": "totalDuration",
           "type": {
             "name": "number",
             "nullable": false
@@ -4464,15 +4374,7 @@
           "required": true
         },
         {
-          "name": "stops",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "notes",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -4556,66 +4458,42 @@
         },
         {
           "kind": "mutate",
-          "target": "startLocation",
+          "target": "scheduledDate",
           "expression": {
             "kind": "identifier",
-            "name": "startLocation"
+            "name": "scheduledDate"
           }
         },
         {
           "kind": "mutate",
-          "target": "endLocation",
+          "target": "endTime",
           "expression": {
             "kind": "identifier",
-            "name": "endLocation"
+            "name": "endTime"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledStart",
+          "target": "totalDistance",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledStart"
+            "name": "totalDistance"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledEnd",
+          "target": "totalDuration",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledEnd"
+            "name": "totalDuration"
           }
         },
         {
           "kind": "mutate",
-          "target": "distance",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "distance"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "estimatedDuration",
-          "expression": {
-            "kind": "identifier",
-            "name": "estimatedDuration"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "stops",
-          "expression": {
-            "kind": "identifier",
-            "name": "stops"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "notes",
-          "expression": {
-            "kind": "identifier",
-            "name": "notes"
+            "name": "description"
           }
         },
         {
@@ -4730,23 +4608,7 @@
           "required": true
         },
         {
-          "name": "startLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "endLocation",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "scheduledStart",
+          "name": "scheduledDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4754,7 +4616,7 @@
           "required": true
         },
         {
-          "name": "scheduledEnd",
+          "name": "endTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4762,7 +4624,7 @@
           "required": true
         },
         {
-          "name": "distance",
+          "name": "totalDistance",
           "type": {
             "name": "number",
             "nullable": false
@@ -4770,7 +4632,7 @@
           "required": true
         },
         {
-          "name": "estimatedDuration",
+          "name": "totalDuration",
           "type": {
             "name": "number",
             "nullable": false
@@ -4778,15 +4640,7 @@
           "required": true
         },
         {
-          "name": "stops",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "notes",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -4899,66 +4753,42 @@
         },
         {
           "kind": "mutate",
-          "target": "startLocation",
+          "target": "scheduledDate",
           "expression": {
             "kind": "identifier",
-            "name": "startLocation"
+            "name": "scheduledDate"
           }
         },
         {
           "kind": "mutate",
-          "target": "endLocation",
+          "target": "endTime",
           "expression": {
             "kind": "identifier",
-            "name": "endLocation"
+            "name": "endTime"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledStart",
+          "target": "totalDistance",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledStart"
+            "name": "totalDistance"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledEnd",
+          "target": "totalDuration",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledEnd"
+            "name": "totalDuration"
           }
         },
         {
           "kind": "mutate",
-          "target": "distance",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "distance"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "estimatedDuration",
-          "expression": {
-            "kind": "identifier",
-            "name": "estimatedDuration"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "stops",
-          "expression": {
-            "kind": "identifier",
-            "name": "stops"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "notes",
-          "expression": {
-            "kind": "identifier",
-            "name": "notes"
+            "name": "description"
           }
         }
       ],
@@ -5019,7 +4849,7 @@
         },
         {
           "kind": "mutate",
-          "target": "actualStart",
+          "target": "actualStartTime",
           "expression": {
             "kind": "call",
             "callee": {
@@ -5280,7 +5110,7 @@
         },
         {
           "kind": "mutate",
-          "target": "actualEnd",
+          "target": "actualEndTime",
           "expression": {
             "kind": "call",
             "callee": {

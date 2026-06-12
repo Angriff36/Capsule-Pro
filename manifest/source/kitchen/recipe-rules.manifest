@@ -86,8 +86,8 @@ entity RecipeVersion {
   property category: string = ""
   property cuisineType: string = ""
   searchable property description: string = ""
-  property required tags: string = ""
-  property yieldQuantity: int = 1
+  property required tags: string[] = []
+  property yieldQuantity: decimal = 1
   property yieldUnitId: int = 1
   property yieldDescription: string = ""
   property prepTimeMinutes: int = 0
@@ -96,8 +96,6 @@ entity RecipeVersion {
   property difficultyLevel: int = 1
   property instructions: string = ""
   searchable property notes: string = ""
-  property ingredientCount: int = 0
-  property stepCount: int = 0
   property totalCost: money = 0
   property costPerYield: money = 0
   // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
@@ -148,7 +146,7 @@ entity RecipeVersion {
   }
 
   default policy RecipeVersionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
-  command create(yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
+  command create(yieldQty: decimal, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
     guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
     guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
     guard difficulty == null or (difficulty >= 1 and difficulty <= 5) "Difficulty must be between 1 (easy) and 5 (expert)"
@@ -166,10 +164,11 @@ entity RecipeVersion {
   }
 
   // Publish a version so it becomes the live recipe available for catering orders.
-  // Requires at least one ingredient to be present.
+  // Ingredient presence is validated at the publish call site (count the hasMany
+  // ingredients relationship) — the old ingredientCount property was a phantom
+  // (no column, never mutated) so its guard always read 0 and blocked publishing.
   command markPublished(publishedBy: string) {
     guard self.status == "draft" "Only a draft version can be published"
-    guard self.ingredientCount > 0 "Cannot publish a version with no ingredients"
 
     mutate status = "published"
     mutate publishedAt = now()
@@ -247,7 +246,7 @@ entity RecipeIngredient {
   indexed property required tenantId: string
   property required recipeVersionId: string
   property required ingredientId: string
-  property required quantity: int
+  property required quantity: decimal
   property required unitId: int
   property required sortOrder: int
   property preparationNotes: string = ""
@@ -264,7 +263,7 @@ entity RecipeIngredient {
   constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
 
   default policy RecipeIngredientDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
-  command updateQuantity(newQuantity: number, newUnit: number) {
+  command updateQuantity(newQuantity: decimal, newUnit: number) {
     guard newQuantity != null and newQuantity > 0 "Quantity must be positive"
 
     constraint warnQuantityIncrease:warn newQuantity > self.quantity * 1.5 {
@@ -298,7 +297,7 @@ entity RecipeIngredient {
     emit RecipeIngredientWasteFactorUpdated
   }
 
-  command create(recipeVersionId: string, ingredientId: string, quantity: number, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
+  command create(recipeVersionId: string, ingredientId: string, quantity: decimal, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
     guard quantity > 0 "Quantity must be positive"
@@ -331,10 +330,10 @@ entity RecipeStep {
   property required recipeVersionId: string
   property required stepNumber: int
   property required instruction: string
-  property durationMinutes: decimal = 0
+  property durationMinutes: int = 0
   property temperatureValue: decimal = 0
   property temperatureUnit: string = ""
-  property equipmentNeeded: string = ""
+  property equipmentNeeded: string[] = []
   property tips: string = ""
   property videoUrl: string = ""
   property imageUrl: string = ""
@@ -347,7 +346,7 @@ entity RecipeStep {
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
 
   default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
-  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: number, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string, tips: string, videoUrl: string, imageUrl: string) {
+  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard stepNumber > 0 "Step number must be positive"
     guard instruction != null and instruction != "" "Instruction is required"
@@ -366,7 +365,7 @@ entity RecipeStep {
     emit RecipeStepCreated
   }
 
-  command updateInstruction(newInstruction: string, newDurationMinutes: number, newTips: string) {
+  command updateInstruction(newInstruction: string, newDurationMinutes: int, newTips: string) {
     guard newInstruction != null and newInstruction != "" "Instruction is required"
 
     mutate instruction = newInstruction
@@ -426,7 +425,7 @@ event RecipeVersionCreated: "kitchen.recipe.version.created" {
   recipeId: string
   tenantId: string
   versionNumber: number
-  yieldQuantity: number
+  yieldQuantity: decimal
   createdAt: datetime
 }
 
@@ -480,7 +479,7 @@ event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
   recipeVersionId: string
   ingredientId: string
   tenantId: string
-  quantity: number
+  quantity: decimal
   createdAt: datetime
 }
 

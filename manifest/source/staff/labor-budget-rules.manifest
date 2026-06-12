@@ -9,12 +9,11 @@ entity LaborBudget {
   property locationId: string = ""
   property periodStart: string = ""
   property periodEnd: string = ""
-  property budgetAmount: money = 0
-  property actualAmount: money = 0
+  property budgetTarget: money = 0
+  property actualSpend: money = 0
   property budgetType: string = "weekly"
   indexed property status: string = "draft"
-  searchable property notes: string = ""
-  property createdBy: string = ""
+  searchable property description: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
   timestamps
@@ -22,13 +21,13 @@ entity LaborBudget {
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isApproved: boolean = self.status == "approved"
-  computed isOverBudget: boolean = self.actualAmount > self.budgetAmount
-  computed varianceAmount: money = self.actualAmount - self.budgetAmount
+  computed isOverBudget: boolean = self.actualSpend > self.budgetTarget
+  computed varianceAmount: money = self.actualSpend - self.budgetTarget
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
-  constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
+  constraint positiveBudget: self.budgetTarget > 0 "Budget amount must be positive"
 
   // State transitions
   transition status from "draft" to ["approved"]
@@ -38,36 +37,35 @@ entity LaborBudget {
     messageTemplate: "Labor budget for location {locationId} is over by {varianceAmount}"
     details: {
       locationId: self.locationId
-      budgetAmount: self.budgetAmount
-      actualAmount: self.actualAmount
+      budgetTarget: self.budgetTarget
+      actualSpend: self.actualSpend
       varianceAmount: self.varianceAmount
     }
   }
 
   default policy LaborBudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
-  command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: money, budgetType: string, notes: string, createdBy: string) {
-    guard budgetAmount > 0 "Budget amount must be positive"
+  command create(locationId: string, periodStart: string, periodEnd: string, budgetTarget: money, budgetType: string, description: string) {
+    guard budgetTarget > 0 "Budget amount must be positive"
 
     mutate locationId = locationId
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
-    mutate budgetAmount = budgetAmount
+    mutate budgetTarget = budgetTarget
     mutate budgetType = budgetType
-    mutate notes = notes
-    mutate createdBy = createdBy
+    mutate description = description
 
     emit LaborBudgetCreated
   }
 
-  command update(locationId: string, periodStart: string, periodEnd: string, budgetAmount: money, budgetType: string, notes: string) {
+  command update(locationId: string, periodStart: string, periodEnd: string, budgetTarget: money, budgetType: string, description: string) {
     guard self.deletedAt == null "Cannot update a deleted budget"
 
     mutate locationId = locationId
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
-    mutate budgetAmount = budgetAmount
+    mutate budgetTarget = budgetTarget
     mutate budgetType = budgetType
-    mutate notes = notes
+    mutate description = description
 
     emit LaborBudgetUpdated
   }
@@ -77,7 +75,7 @@ entity LaborBudget {
     guard self.deletedAt == null "Cannot approve a deleted budget"
     guard approvedBy != null and approvedBy != "" "Approver ID is required"
 
-    constraint blockApproveZero:block self.budgetAmount > 0 {
+    constraint blockApproveZero:block self.budgetTarget > 0 {
       messageTemplate: "Cannot approve labor budget with zero amount"
       details: {
         locationId: self.locationId
@@ -92,12 +90,12 @@ entity LaborBudget {
     emit LaborBudgetApproved
   }
 
-  command recordActual(actualAmount: money) {
+  command recordActual(actualSpend: money) {
     guard self.status == "approved" "Can only record actuals on approved budgets"
     guard self.deletedAt == null "Cannot update a deleted budget"
-    guard actualAmount >= 0 "Actual amount must be non-negative"
+    guard actualSpend >= 0 "Actual amount must be non-negative"
 
-    mutate actualAmount = actualAmount
+    mutate actualSpend = actualSpend
 
     emit LaborBudgetActualRecorded
   }
@@ -129,8 +127,7 @@ entity BudgetAlert {
   indexed property required tenantId: string
   property budgetId: string = ""
   property alertType: string = ""
-  property thresholdPct: decimal = 0
-  property actualPct: decimal = 0
+  property utilization: decimal = 0
   property message: string = ""
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
@@ -144,15 +141,14 @@ entity BudgetAlert {
   constraint validAlertType: self.alertType in ["threshold_warning", "threshold_exceeded", "overage", "critical"] "Invalid alert type"
 
   default policy BudgetAlertDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
-  command create(budgetId: string, alertType: string, thresholdPct: number, actualPct: number, message: string) {
+  command create(budgetId: string, alertType: string, utilization: number, message: string) {
     guard budgetId != null and budgetId != "" "Budget ID is required"
     guard alertType != null and alertType != "" "Alert type is required"
     guard alertType in ["threshold_warning", "threshold_exceeded", "overage", "critical"] "Invalid alert type"
 
     mutate budgetId = budgetId
     mutate alertType = alertType
-    mutate thresholdPct = thresholdPct
-    mutate actualPct = actualPct
+    mutate utilization = utilization
     mutate message = message
     mutate isAcknowledged = false
     mutate resolved = false
@@ -189,7 +185,7 @@ policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Manager
 event LaborBudgetCreated: "staff.labor-budget.created" {
   budgetId: string
   tenantId: string
-  budgetAmount: money
+  budgetTarget: money
   createdAt: datetime
 }
 
@@ -208,8 +204,7 @@ event BudgetAlertCreated: "staff.budget-alert.created" {
   tenantId: string
   budgetId: string
   alertType: string
-  thresholdPct: number
-  actualPct: number
+  utilization: number
   createdAt: datetime
 }
 
@@ -228,7 +223,7 @@ event LaborBudgetApproved: "staff.labor-budget.approved" {
   budgetId: string
   tenantId: string
   locationId: string
-  budgetAmount: money
+  budgetTarget: money
   approvedBy: string
   approvedAt: datetime
 }
@@ -236,7 +231,7 @@ event LaborBudgetApproved: "staff.labor-budget.approved" {
 event LaborBudgetActualRecorded: "staff.labor-budget.actual_recorded" {
   budgetId: string
   tenantId: string
-  actualAmount: money
+  actualSpend: money
   recordedAt: datetime
 }
 

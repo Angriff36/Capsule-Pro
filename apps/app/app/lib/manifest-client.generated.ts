@@ -3103,14 +3103,6 @@ export async function adminChatThreadCreate(input: AdminChatThreadCreateInput = 
   const r = await executeCommand<AdminChatThread>("AdminChatThread", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminChatThreadArchive(input: AdminChatThreadArchiveInput = {}): Promise<AdminChatThread | undefined> {
-  const r = await executeCommand<AdminChatThread>("AdminChatThread", "archive", input as Record<string, unknown>);
-  return r.result;
-}
-export async function adminChatThreadReopen(input: AdminChatThreadReopenInput = {}): Promise<AdminChatThread | undefined> {
-  const r = await executeCommand<AdminChatThread>("AdminChatThread", "reopen", input as Record<string, unknown>);
-  return r.result;
-}
 export async function adminChatMessageCreate(input: AdminChatMessageCreateInput = {}): Promise<AdminChatMessage | undefined> {
   const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "create", input as Record<string, unknown>);
   return r.result;
@@ -6874,7 +6866,7 @@ export interface KnowledgeBaseEntryCreateInput {
   title?: string;
   category?: string;
   content?: string;
-  tags?: string;
+  tags?: string[];
   authorId?: string;
 }
 
@@ -6887,7 +6879,7 @@ export interface KnowledgeBaseEntryUpdateInput {
   title?: string;
   category?: string;
   content?: string;
-  tags?: string;
+  tags?: string[];
 }
 
 export interface KnowledgeBaseEntryPublishEntryInput {
@@ -6985,8 +6977,8 @@ export interface AllergenWarningCreateInput {
   eventId?: string;
   dishId?: string;
   warningType?: string;
-  allergens?: string;
-  affectedGuests?: string;
+  allergens?: string[];
+  affectedGuests?: string[];
   severity?: string;
   notes?: string;
 }
@@ -7171,11 +7163,11 @@ export interface ProposalTemplateSoftDeleteInput {
 }
 
 export interface InteractionAttachmentCreateInput {
-  clientInteractionId?: string;
+  interactionId?: string;
   fileName?: string;
   fileUrl?: string;
   fileType?: string;
-  fileSizeBytes?: number;
+  fileSize?: number;
   uploadedBy?: string;
 }
 
@@ -7276,16 +7268,6 @@ export interface AdminChatThreadCreateInput {
   createdBy?: string;
 }
 
-export interface AdminChatThreadArchiveInput {
-  id?: string;
-  userId?: string;
-}
-
-export interface AdminChatThreadReopenInput {
-  id?: string;
-  userId?: string;
-}
-
 export interface AdminChatMessageCreateInput {
   threadId?: string;
   authorId?: string;
@@ -7301,14 +7283,14 @@ export interface AdminChatMessageRemoveInput {
 export interface DocumentVersionCreateInput {
   documentId?: string;
   content?: string;
-  changeDescription?: string;
-  createdBy?: string;
+  changeSummary?: string;
+  createdById?: string;
 }
 
 export interface DocumentVersionUpdateContentInput {
   id?: string;
   content?: string;
-  changeDescription?: string;
+  changeSummary?: string;
 }
 
 export interface DocumentVersionApproveInput {
@@ -7820,7 +7802,7 @@ export interface BattleBoardCreateInput {
   description?: string;
   isTemplate?: boolean;
   notes?: string;
-  tags?: string;
+  tags?: string[];
 }
 
 export interface BattleBoardOpenInput {
@@ -8065,7 +8047,7 @@ export interface CommandBoardLayoutCreateInput {
   userId?: string;
   name?: string;
   viewport?: string;
-  visibleCards?: string;
+  visibleCards?: string[];
   gridSize?: number;
   showGrid?: boolean;
   snapToGrid?: boolean;
@@ -8075,7 +8057,7 @@ export interface CommandBoardLayoutUpdateInput {
   id?: string;
   newName?: string;
   newViewport?: string;
-  newVisibleCards?: string;
+  newVisibleCards?: string[];
   newGridSize?: number;
   newShowGrid?: boolean;
   newSnapToGrid?: boolean;
@@ -8359,8 +8341,8 @@ export interface EventGuestCreateInput {
   guestEmail?: string;
   guestPhone?: string;
   isPrimaryContact?: boolean;
-  dietaryRestrictions?: string;
-  allergenRestrictions?: string;
+  dietaryRestrictions?: string[];
+  allergenRestrictions?: string[];
   notes?: string;
   specialMealRequired?: boolean;
   specialMealNotes?: string;
@@ -8374,8 +8356,8 @@ export interface EventGuestUpdateInput {
   guestEmail?: string;
   guestPhone?: string;
   isPrimaryContact?: boolean;
-  dietaryRestrictions?: string;
-  allergenRestrictions?: string;
+  dietaryRestrictions?: string[];
+  allergenRestrictions?: string[];
   notes?: string;
   specialMealRequired?: boolean;
   specialMealNotes?: string;
@@ -8790,8 +8772,8 @@ export interface VenueSoftDeleteInput {
 
 export interface EventTimelineCreateInput {
   eventId?: string;
-  title?: string;
-  scheduledAt?: string;
+  description?: string;
+  timelineTime?: string;
   durationMinutes?: number;
   notes?: string;
   sortOrder?: number;
@@ -8799,8 +8781,8 @@ export interface EventTimelineCreateInput {
 
 export interface EventTimelineUpdateInput {
   id?: string;
-  title?: string;
-  scheduledAt?: string;
+  description?: string;
+  timelineTime?: string;
   durationMinutes?: number;
   notes?: string;
 }
@@ -8818,8 +8800,10 @@ export interface EventTimelineRemoveInput {
 export interface TimelineTaskCreateInput {
   eventId?: string;
   title?: string;
-  dueAt?: string;
-  assignedTo?: string;
+  category?: string;
+  startTime?: string;
+  endTime?: string;
+  assigneeId?: string;
   sortOrder?: number;
 }
 
@@ -8859,8 +8843,9 @@ export interface TimelineTaskRemoveInput {
 }
 
 export interface EventImportCreateInput {
-  source?: string;
+  fileType?: string;
   fileName?: string;
+  mimeType?: string;
   totalRows?: number;
 }
 
@@ -8877,7 +8862,7 @@ export interface EventImportCompleteInput {
 
 export interface EventImportFailInput {
   id?: string;
-  errorMessage?: string;
+  parseErrors?: string[];
 }
 
 export interface EventImportRetryInput {
@@ -8887,8 +8872,9 @@ export interface EventImportRetryInput {
 
 export interface EventFollowupCreateInput {
   eventId?: string;
-  type?: string;
-  dueAt?: string;
+  taskType?: string;
+  description?: string;
+  dueDate?: string;
   assignedTo?: string;
   notes?: string;
 }
@@ -8939,7 +8925,7 @@ export interface BoardProjectionRemoveInput {
 
 export interface BoardAnnotationCreateInput {
   boardId?: string;
-  text?: string;
+  label?: string;
   positionX?: number;
   positionY?: number;
   color?: string;
@@ -8947,7 +8933,7 @@ export interface BoardAnnotationCreateInput {
 
 export interface BoardAnnotationUpdateInput {
   id?: string;
-  text?: string;
+  label?: string;
   positionX?: number;
   positionY?: number;
   color?: string;
@@ -9797,10 +9783,10 @@ export interface StorageLocationDeactivateInput {
 }
 
 export interface InventoryStockCreateInput {
-  inventoryItemId?: string;
+  itemId?: string;
   storageLocationId?: string;
   quantityOnHand?: number;
-  unitId?: string;
+  unitId?: number;
 }
 
 export interface InventoryStockAdjustInput {
@@ -9816,10 +9802,11 @@ export interface InventoryStockRecountInput {
 }
 
 export interface InventoryAlertCreateInput {
-  inventoryItemId?: string;
+  itemId?: string;
   alertType?: string;
   severity?: string;
-  message?: string;
+  thresholdValue?: number;
+  notes?: string;
 }
 
 export interface InventoryAlertEscalateInput {
@@ -9890,20 +9877,20 @@ export interface ReorderSuggestionAutoAcceptInput {
 }
 
 export interface VendorContactCreateInput {
-  inventorySupplierId?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
+  supplierId?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactRole?: string;
   isPrimary?: boolean;
 }
 
 export interface VendorContactUpdateInput {
   id?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactRole?: string;
   isPrimary?: boolean;
 }
 
@@ -9913,23 +9900,23 @@ export interface VendorContactRemoveInput {
 }
 
 export interface VendorRatingCreateInput {
-  inventorySupplierId?: string;
+  supplierId?: string;
   category?: string;
-  score?: number;
+  rating?: number;
   comment?: string;
   ratedBy?: string;
 }
 
 export interface VendorRatingUpdateInput {
   id?: string;
-  score?: number;
+  rating?: number;
   comment?: string;
 }
 
 export interface InventoryTransferItemAddItemInput {
   id?: string;
-  inventoryTransferId?: string;
-  inventoryItemId?: string;
+  transferId?: string;
+  itemId?: string;
   quantity?: number;
   unitId?: string;
 }
@@ -9946,6 +9933,7 @@ export interface InventoryTransferItemRemoveItemInput {
 
 export interface ProcurementBudgetCreateInput {
   name?: string;
+  fiscalYear?: number;
   periodStart?: string;
   periodEnd?: string;
   budgetAmount?: number;
@@ -9969,8 +9957,9 @@ export interface ProcurementBudgetCloseInput {
 }
 
 export interface ProcurementBudgetAlertCreateInput {
-  procurementBudgetId?: string;
-  thresholdPct?: number;
+  budgetId?: string;
+  utilizationPct?: number;
+  alertType?: string;
   message?: string;
 }
 
@@ -9982,7 +9971,9 @@ export interface ProcurementBudgetAlertAcknowledgeInput {
 export interface AuditScheduleCreateInput {
   name?: string;
   frequency?: string;
+  time?: string;
   nextRunAt?: string;
+  createdBy?: string;
 }
 
 export interface AuditScheduleUpdateInput {
@@ -10060,7 +10051,7 @@ export interface InventoryItemCreateInput {
   parLevel?: number;
   reorder_level?: number;
   supplierId?: string;
-  tags?: string;
+  tags?: string[];
   fsa_status?: string;
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
@@ -10078,7 +10069,7 @@ export interface InventoryItemUpdateInput {
   parLevel?: number;
   reorder_level?: number;
   supplierId?: string;
-  tags?: string;
+  tags?: string[];
   fsa_status?: string;
   fsa_temp_logged?: string;
   fsa_allergen_info?: string;
@@ -10097,7 +10088,7 @@ export interface InventorySupplierCreateInput {
   phone?: string;
   paymentTerms?: string;
   notes?: string;
-  tags?: string;
+  tags?: string[];
 }
 
 export interface InventorySupplierUpdateInput {
@@ -10108,7 +10099,7 @@ export interface InventorySupplierUpdateInput {
   phone?: string;
   paymentTerms?: string;
   notes?: string;
-  tags?: string;
+  tags?: string[];
 }
 
 export interface InventorySupplierDeactivateInput {
@@ -10216,8 +10207,8 @@ export interface DishCreateInput {
   minPrepLeadDays?: number;
   maxPrepLeadDays?: number;
   portionSizeDescription?: string;
-  dietaryTags?: string;
-  allergens?: string;
+  dietaryTags?: string[];
+  allergens?: string[];
   pricePerPerson?: number;
   costPerPerson?: number;
 }
@@ -10231,8 +10222,8 @@ export interface DishUpdateInput {
   defaultContainerId?: string;
   presentationImageUrl?: string;
   portionSizeDescription?: string;
-  dietaryTags?: string;
-  allergens?: string;
+  dietaryTags?: string[];
+  allergens?: string[];
 }
 
 export interface DishActivateInput {
@@ -10288,7 +10279,7 @@ export interface IngredientCreateInput {
   densityGPerMl?: number;
   shelfLifeDays?: number;
   storageInstructions?: string;
-  allergens?: string;
+  allergens?: string[];
 }
 
 export interface IngredientUpdateInput {
@@ -10313,7 +10304,7 @@ export interface IngredientReactivateInput {
 
 export interface IngredientUpdateAllergensInput {
   id?: string;
-  allergens?: string;
+  allergens?: string[];
   userId?: string;
 }
 
@@ -10357,10 +10348,10 @@ export interface IngredientClearRecallInput {
 
 export interface TemperatureProbeCreateInput {
   name?: string;
-  equipmentId?: string;
-  location?: string;
-  minThreshold?: number;
-  maxThreshold?: number;
+  probeId?: string;
+  locationId?: string;
+  minTemp?: number;
+  maxTemp?: number;
 }
 
 export interface TemperatureProbeCalibrateInput {
@@ -10370,8 +10361,8 @@ export interface TemperatureProbeCalibrateInput {
 
 export interface TemperatureProbeUpdateThresholdsInput {
   id?: string;
-  minThreshold?: number;
-  maxThreshold?: number;
+  minTemp?: number;
+  maxTemp?: number;
 }
 
 export interface TemperatureProbeDeactivateInput {
@@ -10382,9 +10373,11 @@ export interface TemperatureProbeDeactivateInput {
 
 export interface TemperatureLogCreateInput {
   equipmentId?: string;
-  recordedBy?: string;
+  logNumber?: string;
+  logType?: string;
+  loggedBy?: string;
   temperature?: number;
-  recordedAt?: string;
+  loggedAt?: string;
   withinRange?: boolean;
   notes?: string;
 }
@@ -10392,34 +10385,30 @@ export interface TemperatureLogCreateInput {
 export interface TemperatureReadingCreateInput {
   probeId?: string;
   temperature?: number;
-  recordedAt?: string;
+  loggedAt?: string;
   withinRange?: boolean;
 }
 
 export interface IotAlertRuleCreateInput {
   name?: string;
   equipmentId?: string;
-  metric?: string;
   sensorType?: string;
   condition?: string;
   threshold?: number;
   thresholdMin?: number;
   thresholdMax?: number;
-  comparison?: string;
   severity?: string;
   durationMs?: number;
   alertAction?: string;
   isActive?: boolean;
-  notifyRoles?: string;
-  notifyChannels?: string;
+  notifyRoles?: string[];
+  notifyChannels?: string[];
   description?: string;
 }
 
 export interface IotAlertRuleUpdateInput {
   id?: string;
-  metric?: string;
   threshold?: number;
-  comparison?: string;
   severity?: string;
 }
 
@@ -10453,10 +10442,12 @@ export interface IoTAlertMarkResolvedInput {
 }
 
 export interface CorrectiveActionCreateInput {
+  actionNumber?: string;
+  title?: string;
   sourceType?: string;
   sourceId?: string;
   description?: string;
-  dueAt?: string;
+  dueDate?: string;
 }
 
 export interface CorrectiveActionAssignInput {
@@ -10477,8 +10468,10 @@ export interface CorrectiveActionCloseInput {
 }
 
 export interface QualityCheckCreateInput {
+  checkNumber?: string;
+  title?: string;
   checkType?: string;
-  performedBy?: string;
+  completedBy?: string;
   notes?: string;
 }
 
@@ -10501,7 +10494,8 @@ export interface QualityCheckReinspectInput {
 }
 
 export interface QualityCheckItemCreateInput {
-  qualityCheckId?: string;
+  checkId?: string;
+  itemName?: string;
   criterion?: string;
   sortOrder?: number;
 }
@@ -10515,7 +10509,7 @@ export interface QualityCheckItemRecordResultInput {
 
 export interface KitchenTaskClaimClaimInput {
   id?: string;
-  kitchenTaskId?: string;
+  taskId?: string;
   employeeId?: string;
   claimedAt?: string;
 }
@@ -10527,11 +10521,12 @@ export interface KitchenTaskClaimReleaseInput {
 }
 
 export interface KitchenTaskProgressCreateInput {
-  kitchenTaskId?: string;
+  taskId?: string;
   employeeId?: string;
-  status?: string;
+  progressType?: string;
+  newStatus?: string;
   progressPct?: number;
-  note?: string;
+  notes?: string;
   recordedAt?: string;
 }
 
@@ -10808,7 +10803,7 @@ export interface PrepCommentSoftDeleteInput {
 export interface PrepListUpdateInput {
   id?: string;
   newName?: string;
-  newDietaryRestrictions?: string;
+  newDietaryRestrictions?: string[];
   newNotes?: string;
 }
 
@@ -10842,7 +10837,7 @@ export interface PrepListCreateInput {
   eventId?: string;
   name?: string;
   batchMultiplier?: number;
-  dietaryRestrictions?: string;
+  dietaryRestrictions?: string[];
   totalItems?: number;
   totalEstimatedTime?: number;
   notes?: string;
@@ -10853,7 +10848,7 @@ export interface PrepListCreateFromSeedInput {
   eventId?: string;
   name?: string;
   batchMultiplier?: number;
-  dietaryRestrictions?: string;
+  dietaryRestrictions?: string[];
   notes?: string;
   menuGroupsJson?: string;
   totalInstructionLines?: number;
@@ -10882,7 +10877,7 @@ export interface PrepListItemUpdateStationInput {
 export interface PrepListItemUpdatePrepNotesInput {
   id?: string;
   newNotes?: string;
-  newDietarySubstitutions?: string;
+  newDietarySubstitutions?: string[];
 }
 
 export interface PrepListItemMarkCompletedInput {
@@ -10907,8 +10902,8 @@ export interface PrepListItemCreateInput {
   scaledUnit?: string;
   isOptional?: boolean;
   preparationNotes?: string;
-  allergens?: string;
-  dietarySubstitutions?: string;
+  allergens?: string[];
+  dietarySubstitutions?: string[];
   dishId?: string;
   dishName?: string;
   recipeVersionId?: string;
@@ -10920,7 +10915,7 @@ export interface PrepMethodCreateInput {
   category?: string;
   description?: string;
   estimatedDurationMinutes?: number;
-  requiresCertification?: string;
+  requiresCertification?: string[];
 }
 
 export interface PrepMethodUpdateInput {
@@ -10929,7 +10924,7 @@ export interface PrepMethodUpdateInput {
   category?: string;
   description?: string;
   estimatedDurationMinutes?: number;
-  requiresCertification?: string;
+  requiresCertification?: string[];
 }
 
 export interface PrepMethodDeactivateInput {
@@ -11083,12 +11078,11 @@ export interface PrepTaskCreateInput {
   taskType?: string;
   priority?: number;
   quantityTotal?: number;
-  quantityUnitId?: string;
+  quantityUnitId?: number;
   servingsTotal?: number;
   startByDate?: string;
   dueByDate?: string;
   notes?: string;
-  ingredients?: string;
 }
 
 export interface PrepTaskUpdateStatusInput {
@@ -11216,7 +11210,7 @@ export interface RecipeStepCreateInput {
   durationMinutes?: number;
   temperatureValue?: number;
   temperatureUnit?: string;
-  equipmentNeeded?: string;
+  equipmentNeeded?: string[];
   tips?: string;
   videoUrl?: string;
   imageUrl?: string;
@@ -11239,7 +11233,7 @@ export interface StationCreateInput {
   name?: string;
   stationType?: string;
   capacitySimultaneousTasks?: number;
-  equipmentList?: string;
+  equipmentList?: string[];
   notes?: string;
 }
 
@@ -11274,7 +11268,7 @@ export interface StationActivateInput {
 
 export interface StationUpdateEquipmentInput {
   id?: string;
-  equipmentList?: string;
+  equipmentList?: string[];
   userId?: string;
 }
 
@@ -11360,7 +11354,7 @@ export interface MaintenanceWorkOrderStartWorkInput {
 
 export interface MaintenanceWorkOrderCompleteWorkInput {
   id?: string;
-  actualCost?: number;
+  totalCost?: number;
   partsUsed?: string;
   notes?: string;
   userId?: string;
@@ -11375,7 +11369,7 @@ export interface MaintenanceWorkOrderUpdateStatusInput {
 
 export interface MaintenanceWorkOrderCreateInput {
   title?: string;
-  type?: string;
+  workOrderType?: string;
   priority?: string;
   description?: string;
   areaId?: string;
@@ -11467,7 +11461,7 @@ export interface FacilityAssetCreateInput {
   name?: string;
   assetType?: string;
   purchaseDate?: string;
-  purchasePrice?: number;
+  purchaseCost?: number;
   serialNumber?: string;
   manufacturer?: string;
   model?: string;
@@ -11675,14 +11669,11 @@ export interface LogisticsRouteCreateInput {
   name?: string;
   vehicleId?: string;
   driverId?: string;
-  startLocation?: string;
-  endLocation?: string;
-  scheduledStart?: string;
-  scheduledEnd?: string;
-  distance?: number;
-  estimatedDuration?: number;
-  stops?: number;
-  notes?: string;
+  scheduledDate?: string;
+  endTime?: string;
+  totalDistance?: number;
+  totalDuration?: number;
+  description?: string;
 }
 
 export interface LogisticsRouteRemoveInput {
@@ -11694,14 +11685,11 @@ export interface LogisticsRouteUpdateInput {
   name?: string;
   vehicleId?: string;
   driverId?: string;
-  startLocation?: string;
-  endLocation?: string;
-  scheduledStart?: string;
-  scheduledEnd?: string;
-  distance?: number;
-  estimatedDuration?: number;
-  stops?: number;
-  notes?: string;
+  scheduledDate?: string;
+  endTime?: string;
+  totalDistance?: number;
+  totalDuration?: number;
+  description?: string;
 }
 
 export interface LogisticsRouteStartInput {
@@ -12560,10 +12548,10 @@ export interface QACheckReinspectInput {
 }
 
 export interface QACorrectiveActionCreateInput {
-  checkId?: string;
+  relatedCheckId?: string;
   description?: string;
   assignedTo?: string;
-  priority?: string;
+  severity?: string;
   dueDate?: string;
 }
 
@@ -12590,11 +12578,11 @@ export interface QACorrectiveActionDismissInput {
 
 export interface QATemperatureLogLogInput {
   id?: string;
-  location?: string;
+  logType?: string;
   temperature?: number;
   unit?: string;
-  equipment?: string;
-  recordedBy?: string;
+  equipmentId?: string;
+  loggedBy?: string;
   notes?: string;
 }
 
@@ -12639,10 +12627,9 @@ export interface LaborBudgetCreateInput {
   locationId?: string;
   periodStart?: string;
   periodEnd?: string;
-  budgetAmount?: number;
+  budgetTarget?: number;
   budgetType?: string;
-  notes?: string;
-  createdBy?: string;
+  description?: string;
 }
 
 export interface LaborBudgetUpdateInput {
@@ -12650,9 +12637,9 @@ export interface LaborBudgetUpdateInput {
   locationId?: string;
   periodStart?: string;
   periodEnd?: string;
-  budgetAmount?: number;
+  budgetTarget?: number;
   budgetType?: string;
-  notes?: string;
+  description?: string;
 }
 
 export interface LaborBudgetApproveInput {
@@ -12662,7 +12649,7 @@ export interface LaborBudgetApproveInput {
 
 export interface LaborBudgetRecordActualInput {
   id?: string;
-  actualAmount?: number;
+  actualSpend?: number;
 }
 
 export interface LaborBudgetCloseInput {
@@ -12676,8 +12663,7 @@ export interface LaborBudgetSoftDeleteInput {
 export interface BudgetAlertCreateInput {
   budgetId?: string;
   alertType?: string;
-  thresholdPct?: number;
-  actualPct?: number;
+  utilization?: number;
   message?: string;
 }
 
@@ -12848,7 +12834,8 @@ export interface ScheduleShiftRemoveInput {
 
 export interface TimecardApprovalCreateInput {
   employeeId?: string;
-  payrollPeriodId?: string;
+  payrollRunId?: string;
+  submittedBy?: string;
   notes?: string;
 }
 
@@ -12895,9 +12882,7 @@ export interface PayrollLineItemUpdateInput {
 }
 
 export interface TipPoolCreateInput {
-  periodStart?: string;
-  periodEnd?: string;
-  eventId?: string;
+  periodId?: string;
   totalTips?: number;
 }
 
@@ -12949,7 +12934,7 @@ export interface DisciplinaryActionCloseInput {
 export interface ActionMilestoneCreateInput {
   disciplinaryActionId?: string;
   title?: string;
-  dueAt?: string;
+  dueDate?: string;
 }
 
 export interface ActionMilestoneCompleteInput {
@@ -12963,12 +12948,13 @@ export interface ActionMilestoneMissInput {
 export interface PerformanceReviewCreateInput {
   employeeId?: string;
   reviewerId?: string;
-  reviewPeriod?: string;
+  reviewType?: string;
+  scheduledDate?: string;
 }
 
 export interface PerformanceReviewSubmitInput {
   id?: string;
-  overallRating?: number;
+  rating?: number;
 }
 
 export interface PerformanceReviewSignOffInput {
@@ -12981,7 +12967,8 @@ export interface PerformanceReviewAcknowledgeInput {
 
 export interface TrainingCompletionCreateInput {
   employeeId?: string;
-  trainingModuleId?: string;
+  assignmentId?: string;
+  moduleId?: string;
   completedAt?: string;
   score?: number;
   passed?: boolean;
@@ -13008,7 +12995,7 @@ export interface OnboardingTaskRemoveInput {
 
 export interface OnboardingCompletionCreateInput {
   employeeId?: string;
-  onboardingTaskId?: string;
+  taskId?: string;
 }
 
 export interface OnboardingCompletionCompleteInput {
@@ -13033,10 +13020,10 @@ export interface OpenShiftCancelInput {
 
 export interface DeliveryRouteCreateInput {
   name?: string;
+  routeNumber?: string;
   driverId?: string;
-  routeDate?: string;
-  totalStops?: number;
-  distanceMiles?: number;
+  scheduledDate?: string;
+  totalDistance?: number;
 }
 
 export interface DeliveryRouteStartInput {
@@ -13053,11 +13040,10 @@ export interface DeliveryRouteAssignDriverInput {
 }
 
 export interface RouteStopCreateInput {
-  deliveryRouteId?: string;
-  eventId?: string;
-  address?: string;
-  sequence?: number;
-  scheduledAt?: string;
+  routeId?: string;
+  name?: string;
+  stopNumber?: number;
+  plannedArrival?: string;
 }
 
 export interface RouteStopMarkArrivedInput {
@@ -13070,13 +13056,13 @@ export interface RouteStopCompleteInput {
 
 export interface RouteStopReorderInput {
   id?: string;
-  sequence?: number;
+  stopNumber?: number;
 }
 
 export interface PaymentRefundAttemptCreateInput {
   paymentId?: string;
-  amount?: number;
-  reason?: string;
+  requestedAmount?: number;
+  refundReason?: string;
 }
 
 export interface PaymentRefundAttemptMarkSucceededInput {

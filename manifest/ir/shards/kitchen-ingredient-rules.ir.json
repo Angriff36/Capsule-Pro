@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8e5c0f90b8f080b3c06403407867c01876c5fd270d8af52ea8bd86e59f9baf48",
-    "irHash": "eda99e1bd5b1ba357737956161360a216402e0d454a4fc8ac27f895e208cb7a8",
+    "contentHash": "aa90984705a3d3c60b46097d360dc4a74b4c0f705f494d662f71f67bbb079e42",
+    "irHash": "94cbfb07788c45c41a951e07d98eaa4b149b4a3794d6e048f255ad91ca55e4f4",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.790Z"
+    "compiledAt": "2026-06-12T14:47:34.166Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -114,12 +114,16 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -272,24 +276,35 @@
           },
           "expression": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": ">",
             "left": {
-              "kind": "member",
-              "object": {
+              "kind": "call",
+              "callee": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "length"
               },
-              "property": "allergens"
+              "args": [
+                {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "allergens"
+                }
+              ]
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "string",
-                "value": ""
+                "kind": "number",
+                "value": 0
               }
             }
           },
-          "dependencies": []
+          "dependencies": [
+            "length"
+          ]
         },
         {
           "name": "isDeactivated",
@@ -726,7 +741,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -902,7 +921,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1306,7 +1329,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1846,7 +1873,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

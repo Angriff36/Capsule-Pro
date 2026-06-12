@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "4d178b7bc6b7cca8adb99631df1b2f4bd85d8ba4e84bca528294b475dede324c",
-    "irHash": "618160f2eaffa34c9a96ab8fa8f8c04bfecf1aad768f859d4ad4c40163dd4b83",
+    "contentHash": "40321550db77740d3b7d65614b25525929956a316d8deac3996f77c271ee8cd9",
+    "irHash": "038fc681915215962640d233238f3891e5859cda5616fc2740bcf4f5600c8249",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.670Z"
+    "compiledAt": "2026-06-12T14:47:34.077Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -394,7 +394,7 @@
           ]
         },
         {
-          "name": "clientInteractionId",
+          "name": "interactionId",
           "type": {
             "name": "string",
             "nullable": false
@@ -442,7 +442,7 @@
           "modifiers": []
         },
         {
-          "name": "fileSizeBytes",
+          "name": "fileSize",
           "type": {
             "name": "int",
             "nullable": false
@@ -530,7 +530,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "clientInteractionId"
+              "interactionId"
             ],
             "references": [
               "tenantId",
@@ -559,7 +559,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "clientInteractionId"
+                "property": "interactionId"
               },
               "right": {
                 "kind": "literal",
@@ -577,7 +577,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "clientInteractionId"
+                "property": "interactionId"
               },
               "right": {
                 "kind": "literal",
@@ -700,7 +700,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "fileSizeBytes"
+              "property": "fileSize"
             },
             "right": {
               "kind": "literal",
@@ -726,7 +726,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "fileSizeBytes"
+              "property": "fileSize"
             },
             "right": {
               "kind": "literal",
@@ -737,7 +737,7 @@
             }
           },
           "severity": "warn",
-          "messageTemplate": "Attachment '{fileName}' exceeds 10 MB ({fileSizeBytes} bytes)",
+          "messageTemplate": "Attachment '{fileName}' exceeds 10 MB ({fileSize} bytes)",
           "detailsMapping": {
             "fileName": {
               "kind": "member",
@@ -747,13 +747,13 @@
               },
               "property": "fileName"
             },
-            "fileSizeBytes": {
+            "fileSize": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "fileSizeBytes"
+              "property": "fileSize"
             },
             "fileType": {
               "kind": "member",
@@ -2080,18 +2080,6 @@
           "modifiers": []
         },
         {
-          "name": "status",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "open"
-          },
-          "modifiers": []
-        },
-        {
           "name": "createdBy",
           "type": {
             "name": "string",
@@ -2140,108 +2128,12 @@
           ]
         }
       ],
-      "computedProperties": [
-        {
-          "name": "isOpen",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "open"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isArchived",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "archived"
-              }
-            }
-          },
-          "dependencies": []
-        }
-      ],
+      "computedProperties": [],
       "relationships": [],
       "commands": [
-        "create",
-        "archive",
-        "reopen"
+        "create"
       ],
-      "constraints": [
-        {
-          "name": "validStatus",
-          "code": "validStatus",
-          "expression": {
-            "kind": "binary",
-            "operator": "in",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "array",
-              "elements": [
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "open"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "archived"
-                  }
-                }
-              ]
-            }
-          },
-          "severity": "block",
-          "message": "Thread status must be open or archived",
-          "overrideable": false
-        }
-      ],
+      "constraints": [],
       "policies": [],
       "defaultPolicies": [
         "AdminChatThreadDefaultAccess"
@@ -2250,23 +2142,7 @@
         "tenantId",
         "id"
       ],
-      "timestamps": true,
-      "transitions": [
-        {
-          "property": "status",
-          "from": "open",
-          "to": [
-            "archived"
-          ]
-        },
-        {
-          "property": "status",
-          "from": "archived",
-          "to": [
-            "open"
-          ]
-        }
-      ]
+      "timestamps": true
     },
     {
       "name": "AdminChatMessage",
@@ -2839,7 +2715,7 @@
           "required": true
         },
         {
-          "name": "clientInteractionId",
+          "name": "interactionId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2863,7 +2739,7 @@
           "required": true
         },
         {
-          "name": "fileSizeBytes",
+          "name": "fileSize",
           "type": {
             "name": "number",
             "nullable": false
@@ -2909,7 +2785,7 @@
           "required": true
         },
         {
-          "name": "clientInteractionId",
+          "name": "interactionId",
           "type": {
             "name": "string",
             "nullable": false
@@ -3618,98 +3494,6 @@
         },
         {
           "name": "createdAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "AdminChatThreadArchived",
-      "channel": "admin.chat_thread.archived",
-      "payload": [
-        {
-          "name": "threadId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "subject",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "archivedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "AdminChatThreadReopened",
-      "channel": "admin.chat_thread.reopened",
-      "payload": [
-        {
-          "name": "threadId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "subject",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "reopenedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -4637,7 +4421,7 @@
       "entity": "InteractionAttachment",
       "parameters": [
         {
-          "name": "clientInteractionId",
+          "name": "interactionId",
           "type": {
             "name": "string",
             "nullable": false
@@ -4669,7 +4453,7 @@
           "required": true
         },
         {
-          "name": "fileSizeBytes",
+          "name": "fileSize",
           "type": {
             "name": "int",
             "nullable": false
@@ -4694,7 +4478,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "clientInteractionId"
+              "name": "interactionId"
             },
             "right": {
               "kind": "literal",
@@ -4708,7 +4492,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "clientInteractionId"
+              "name": "interactionId"
             },
             "right": {
               "kind": "literal",
@@ -4790,7 +4574,7 @@
           "operator": ">=",
           "left": {
             "kind": "identifier",
-            "name": "fileSizeBytes"
+            "name": "fileSize"
           },
           "right": {
             "kind": "literal",
@@ -4848,10 +4632,10 @@
         },
         {
           "kind": "mutate",
-          "target": "clientInteractionId",
+          "target": "interactionId",
           "expression": {
             "kind": "identifier",
-            "name": "clientInteractionId"
+            "name": "interactionId"
           }
         },
         {
@@ -4880,10 +4664,10 @@
         },
         {
           "kind": "mutate",
-          "target": "fileSizeBytes",
+          "target": "fileSize",
           "expression": {
             "kind": "identifier",
-            "name": "fileSizeBytes"
+            "name": "fileSize"
           }
         },
         {
@@ -6940,136 +6724,6 @@
       ],
       "emits": [
         "AdminChatThreadCreated"
-      ]
-    },
-    {
-      "name": "archive",
-      "entity": "AdminChatThread",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "open"
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "policies": [
-        "AdminChatThreadDefaultAccess"
-      ],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Thread is already archived"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "archived"
-            }
-          }
-        }
-      ],
-      "emits": [
-        "AdminChatThreadArchived"
-      ]
-    },
-    {
-      "name": "reopen",
-      "entity": "AdminChatThread",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "archived"
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "policies": [
-        "AdminChatThreadDefaultAccess"
-      ],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Thread is already open"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "open"
-            }
-          }
-        }
-      ],
-      "emits": [
-        "AdminChatThreadReopened"
       ]
     },
     {

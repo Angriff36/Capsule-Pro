@@ -156,12 +156,11 @@ describe("Manifest Runtime - Event + PrepSeed -> PrepTasks flow", () => {
             taskType: "prep",
             priority: 3,
             quantityTotal: 1,
-            quantityUnitId: "task",
+            quantityUnitId: 0,
             servingsTotal: 0,
             startByDate: 1_772_006_400_000,
             dueByDate: 1_772_010_000_000,
             notes: `Group: ${group.name}`,
-            ingredients: "",
           },
           { entityName: "PrepTask", instanceId: taskId }
         );

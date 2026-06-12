@@ -75,36 +75,36 @@ entity InventoryStock {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required inventoryItemId: string
+  property required itemId: string
   property required storageLocationId: string
   property required quantityOnHand: decimal = 0
-  property required unitId: string
+  property required unitId: int
   property lastCountedAt: datetime
   timestamps
 
   computed isZeroStock: boolean = self.quantityOnHand <= 0
 
-  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
   relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
 
   constraint nonNegativeQty: self.quantityOnHand >= 0 "Quantity on hand cannot be negative"
 
   constraint warnZeroStock:warn self.quantityOnHand == 0 {
-    messageTemplate: "Stock for item '{inventoryItemId}' at location '{storageLocationId}' is zero"
+    messageTemplate: "Stock for item '{itemId}' at location '{storageLocationId}' is zero"
     details: {
-      inventoryItemId: self.inventoryItemId
+      itemId: self.itemId
       storageLocationId: self.storageLocationId
     }
   }
 
   default policy InventoryStockDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(inventoryItemId: string, storageLocationId: string, quantityOnHand: decimal, unitId: string) {
-    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+  command create(itemId: string, storageLocationId: string, quantityOnHand: decimal, unitId: int) {
+    guard itemId != null and itemId != "" "Inventory item ID is required"
     guard storageLocationId != null and storageLocationId != "" "Storage location ID is required"
     guard quantityOnHand >= 0 "Initial quantity cannot be negative"
-    guard unitId != null and unitId != "" "Unit ID is required"
+    guard unitId != null "Unit ID is required"
 
-    mutate inventoryItemId = inventoryItemId
+    mutate itemId = itemId
     mutate storageLocationId = storageLocationId
     mutate quantityOnHand = quantityOnHand
     mutate unitId = unitId
@@ -119,7 +119,7 @@ entity InventoryStock {
     constraint blockNegativeResult:block (self.quantityOnHand + delta) >= 0 {
       messageTemplate: "Adjustment would result in negative stock ({result})"
       details: {
-        inventoryItemId: self.inventoryItemId
+        itemId: self.itemId
         currentQty: self.quantityOnHand
         delta: delta
         result: self.quantityOnHand + delta
@@ -136,9 +136,9 @@ entity InventoryStock {
     guard countedBy != null and countedBy != "" "Counter ID is required"
 
     constraint warnLargeVariance:warn (newQuantity - self.quantityOnHand) > (self.quantityOnHand * 0.2) or (self.quantityOnHand - newQuantity) > (self.quantityOnHand * 0.2) and self.quantityOnHand > 0 {
-      messageTemplate: "Recount shows variance of more than 20% for item '{inventoryItemId}'"
+      messageTemplate: "Recount shows variance of more than 20% for item '{itemId}'"
       details: {
-        inventoryItemId: self.inventoryItemId
+        itemId: self.itemId
         previousQty: self.quantityOnHand
         newQty: newQuantity
         delta: newQuantity - self.quantityOnHand
@@ -162,10 +162,11 @@ entity InventoryAlert {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required inventoryItemId: string
+  property required itemId: string
   property required alertType: string
   property required severity: string
-  property required message: string
+  property required thresholdValue: decimal
+  property required notes: string
   indexed property required status: string = "active"
   property triggeredAt: datetime
   property acknowledgedAt: datetime
@@ -178,7 +179,7 @@ entity InventoryAlert {
   computed isAcknowledged: boolean = self.status == "acknowledged"
   computed isResolved: boolean = self.status == "resolved"
 
-  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
   constraint validStatus: self.status in ["active", "acknowledged", "resolved"] "Invalid alert status"
   constraint validSeverity: self.severity in ["low", "medium", "high", "critical"] "Invalid alert severity"
@@ -189,16 +190,18 @@ entity InventoryAlert {
   transition status from "acknowledged" to ["resolved"]
 
   default policy InventoryAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(inventoryItemId: string, alertType: string, severity: string, message: string) {
-    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+  command create(itemId: string, alertType: string, severity: string, thresholdValue: decimal, notes: string) {
+    guard itemId != null and itemId != "" "Inventory item ID is required"
     guard alertType != null and alertType != "" "Alert type is required"
     guard severity != null and severity != "" "Severity is required"
-    guard message != null and message != "" "Alert message is required"
+    guard thresholdValue != null "Threshold value is required"
+    guard notes != null and notes != "" "Alert message is required"
 
-    mutate inventoryItemId = inventoryItemId
+    mutate itemId = itemId
     mutate alertType = alertType
     mutate severity = severity
-    mutate message = message
+    mutate thresholdValue = thresholdValue
+    mutate notes = notes
     mutate triggeredAt = now()
 
     emit InventoryAlertTriggered
@@ -449,42 +452,42 @@ entity VendorContact {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required inventorySupplierId: string
-  searchable property required name: string
-  encrypted property email: string = ""
-  encrypted property phone: string = ""
-  property role: string = ""
+  property required supplierId: string
+  searchable property required contactName: string
+  encrypted property contactEmail: string = ""
+  encrypted property contactPhone: string = ""
+  property contactRole: string = ""
   property isPrimary: boolean = false
   timestamps
   property deletedAt: datetime
 
-  constraint requireName: self.name != "" "Contact name is required"
-  constraint requireSupplier: self.inventorySupplierId != "" "Supplier ID is required"
+  constraint requireName: self.contactName != "" "Contact name is required"
+  constraint requireSupplier: self.supplierId != "" "Supplier ID is required"
 
-  relationship belongsTo supplier: InventorySupplier fields [tenantId, inventorySupplierId] references [tenantId, id]
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
   default policy VendorContactDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(inventorySupplierId: string, name: string, email: string, phone: string, role: string, isPrimary: boolean) {
-    guard inventorySupplierId != null and inventorySupplierId != "" "Supplier ID is required"
-    guard name != null and name != "" "Contact name is required"
+  command create(supplierId: string, contactName: string, contactEmail: string, contactPhone: string, contactRole: string, isPrimary: boolean) {
+    guard supplierId != null and supplierId != "" "Supplier ID is required"
+    guard contactName != null and contactName != "" "Contact name is required"
 
-    mutate inventorySupplierId = inventorySupplierId
-    mutate name = name
-    mutate email = email
-    mutate phone = phone
-    mutate role = role
+    mutate supplierId = supplierId
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate contactRole = contactRole
     mutate isPrimary = isPrimary
 
     emit VendorContactCreated
   }
 
-  command update(name: string, email: string, phone: string, role: string, isPrimary: boolean) {
-    guard name != null and name != "" "Contact name is required"
+  command update(contactName: string, contactEmail: string, contactPhone: string, contactRole: string, isPrimary: boolean) {
+    guard contactName != null and contactName != "" "Contact name is required"
 
-    mutate name = name
-    mutate email = email
-    mutate phone = phone
-    mutate role = role
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate contactRole = contactRole
     mutate isPrimary = isPrimary
 
     emit VendorContactUpdated
@@ -509,40 +512,40 @@ entity VendorRating {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required inventorySupplierId: string
+  property required supplierId: string
   property required category: string
-  property required score: decimal = 0
+  property required rating: int = 0
   property comment: string = ""
   property ratedAt: datetime
   property ratedBy: string = ""
   timestamps
 
-  computed isHighScore: boolean = self.score >= 4
-  computed isLowScore: boolean = self.score < 2
+  computed isHighScore: boolean = self.rating >= 4
+  computed isLowScore: boolean = self.rating < 2
 
-  constraint scoreRange: self.score >= 0 and self.score <= 5 "Score must be between 0 and 5"
+  constraint scoreRange: self.rating >= 0 and self.rating <= 5 "Score must be between 0 and 5"
   constraint requireCategory: self.category != "" "Rating category is required"
 
-  relationship belongsTo supplier: InventorySupplier fields [tenantId, inventorySupplierId] references [tenantId, id]
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
   constraint warnLowScore:warn self.isLowScore {
-    messageTemplate: "Low vendor rating ({score}/5) for category '{category}' — consider reviewing supplier"
+    messageTemplate: "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier"
     details: {
-      inventorySupplierId: self.inventorySupplierId
+      supplierId: self.supplierId
       category: self.category
-      score: self.score
+      rating: self.rating
     }
   }
 
   default policy VendorRatingDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(inventorySupplierId: string, category: string, score: decimal, comment: string, ratedBy: string) {
-    guard inventorySupplierId != null and inventorySupplierId != "" "Supplier ID is required"
+  command create(supplierId: string, category: string, rating: int, comment: string, ratedBy: string) {
+    guard supplierId != null and supplierId != "" "Supplier ID is required"
     guard category != null and category != "" "Rating category is required"
-    guard score >= 0 and score <= 5 "Score must be between 0 and 5"
+    guard rating >= 0 and rating <= 5 "Score must be between 0 and 5"
 
-    mutate inventorySupplierId = inventorySupplierId
+    mutate supplierId = supplierId
     mutate category = category
-    mutate score = score
+    mutate rating = rating
     mutate comment = comment
     mutate ratedBy = ratedBy
     mutate ratedAt = now()
@@ -550,10 +553,10 @@ entity VendorRating {
     emit VendorRatingCreated
   }
 
-  command update(score: decimal, comment: string) {
-    guard score >= 0 and score <= 5 "Score must be between 0 and 5"
+  command update(rating: int, comment: string) {
+    guard rating >= 0 and rating <= 5 "Score must be between 0 and 5"
 
-    mutate score = score
+    mutate rating = rating
     mutate comment = comment
     mutate ratedAt = now()
 
@@ -571,8 +574,8 @@ entity InventoryTransferItem {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required inventoryTransferId: string
-  property required inventoryItemId: string
+  property required transferId: string
+  property required itemId: string
   property required quantity: decimal = 0
   property required unitId: string
   timestamps
@@ -580,21 +583,21 @@ entity InventoryTransferItem {
   computed isZeroQuantity: boolean = self.quantity <= 0
 
   constraint positiveQuantity: self.quantity > 0 "Transfer quantity must be positive"
-  constraint requireTransfer: self.inventoryTransferId != "" "Transfer ID is required"
-  constraint requireItem: self.inventoryItemId != "" "Inventory item ID is required"
+  constraint requireTransfer: self.transferId != "" "Transfer ID is required"
+  constraint requireItem: self.itemId != "" "Inventory item ID is required"
 
-  relationship belongsTo transfer: InventoryTransfer fields [tenantId, inventoryTransferId] references [tenantId, id]
-  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+  relationship belongsTo transfer: InventoryTransfer fields [tenantId, transferId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
   default policy InventoryTransferItemDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command addItem(inventoryTransferId: string, inventoryItemId: string, quantity: decimal, unitId: string) {
-    guard inventoryTransferId != null and inventoryTransferId != "" "Transfer ID is required"
-    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+  command addItem(transferId: string, itemId: string, quantity: decimal, unitId: string) {
+    guard transferId != null and transferId != "" "Transfer ID is required"
+    guard itemId != null and itemId != "" "Inventory item ID is required"
     guard quantity != null and quantity > 0 "Quantity must be positive"
     guard unitId != null and unitId != "" "Unit ID is required"
 
-    mutate inventoryTransferId = inventoryTransferId
-    mutate inventoryItemId = inventoryItemId
+    mutate transferId = transferId
+    mutate itemId = itemId
     mutate quantity = quantity
     mutate unitId = unitId
 
@@ -628,6 +631,7 @@ entity ProcurementBudget {
   property required id: string
   indexed property required tenantId: string
   searchable property required name: string
+  property required fiscalYear: int
   property required periodStart: datetime
   property required periodEnd: datetime
   property required budgetAmount: money = 0
@@ -659,14 +663,16 @@ entity ProcurementBudget {
   }
 
   default policy ProcurementBudgetDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(name: string, periodStart: datetime, periodEnd: datetime, budgetAmount: money) {
+  command create(name: string, fiscalYear: int, periodStart: datetime, periodEnd: datetime, budgetAmount: money) {
     guard flag("procurement.budget_management") "Procurement budget management is not enabled"
     guard name != null and name != "" "Budget name is required"
+    guard fiscalYear != null "Fiscal year is required"
     guard periodStart != null "Period start date is required"
     guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
     guard budgetAmount != null and budgetAmount > 0 "Budget amount must be positive"
 
     mutate name = name
+    mutate fiscalYear = fiscalYear
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
     mutate budgetAmount = budgetAmount
@@ -724,8 +730,9 @@ entity ProcurementBudgetAlert {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required procurementBudgetId: string
-  property required thresholdPct: decimal = 0
+  property required budgetId: string
+  property required utilizationPct: decimal = 0
+  property required alertType: string
   property required message: string
   property triggeredAt: datetime
   property acknowledgedAt: datetime
@@ -733,20 +740,22 @@ entity ProcurementBudgetAlert {
   property isAcknowledged: boolean = false
   timestamps
 
-  computed isCritical: boolean = self.thresholdPct >= 100
+  computed isCritical: boolean = self.utilizationPct >= 100
 
-  relationship belongsTo budget: ProcurementBudget fields [tenantId, procurementBudgetId] references [tenantId, id]
+  relationship belongsTo budget: ProcurementBudget fields [tenantId, budgetId] references [tenantId, id]
 
-  constraint validThreshold: self.thresholdPct > 0 and self.thresholdPct <= 150 "Threshold percentage must be between 0 and 150"
+  constraint validThreshold: self.utilizationPct > 0 "Utilization percentage must be positive"
 
   default policy ProcurementBudgetAlertDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(procurementBudgetId: string, thresholdPct: decimal, message: string) {
-    guard procurementBudgetId != null and procurementBudgetId != "" "Budget ID is required"
-    guard thresholdPct != null and thresholdPct > 0 "Threshold percentage must be positive"
+  command create(budgetId: string, utilizationPct: decimal, alertType: string, message: string) {
+    guard budgetId != null and budgetId != "" "Budget ID is required"
+    guard utilizationPct != null and utilizationPct > 0 "Utilization percentage must be positive"
+    guard alertType != null and alertType != "" "Alert type is required"
     guard message != null and message != "" "Alert message is required"
 
-    mutate procurementBudgetId = procurementBudgetId
-    mutate thresholdPct = thresholdPct
+    mutate budgetId = budgetId
+    mutate utilizationPct = utilizationPct
+    mutate alertType = alertType
     mutate message = message
     mutate triggeredAt = now()
     mutate isAcknowledged = false
@@ -779,6 +788,8 @@ entity AuditSchedule {
   indexed property required tenantId: string
   searchable property required name: string
   property required frequency: string
+  property required time: string
+  property required createdBy: string
   property nextRunAt: datetime
   property lastRunAt: datetime
   property isActive: boolean = true
@@ -798,14 +809,18 @@ entity AuditSchedule {
   }
 
   default policy AuditScheduleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(name: string, frequency: string, nextRunAt: datetime) {
+  command create(name: string, frequency: string, time: string, nextRunAt: datetime, createdBy: string) {
     guard name != null and name != "" "Audit schedule name is required"
     guard frequency != null and frequency != "" "Frequency is required"
+    guard time != null and time != "" "Audit time is required"
     guard nextRunAt != null "Next run date is required"
+    guard createdBy != null and createdBy != "" "Creator is required"
 
     mutate name = name
     mutate frequency = frequency
+    mutate time = time
     mutate nextRunAt = nextRunAt
+    mutate createdBy = createdBy
     mutate isActive = true
 
     emit AuditScheduleCreated
@@ -902,7 +917,7 @@ event InventoryStockCreated: "inventory.stock.created" {
   inventoryItemId: string
   storageLocationId: string
   quantityOnHand: number
-  unitId: string
+  unitId: number
   createdAt: datetime
 }
 

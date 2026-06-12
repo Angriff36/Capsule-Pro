@@ -72,10 +72,13 @@ on ContractSigned run Event.confirm
 on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
   resolve payload.result.equipmentId
   params {
-    maintenanceDate: payload.result.completedDate
+    // completeWork mutates completedAt = now(); payload.result is the last
+    // mutate's scalar value (not the instance), so derive the date honestly
+    // via now() — the reaction fires in the same runtime turn.
+    maintenanceDate: now()
     maintenanceType: "corrective"
     performedBy: payload.userId
-    cost: payload.actualCost
+    cost: payload.totalCost
     notes: "Auto-recorded from work order completion"
   }
 
@@ -162,7 +165,7 @@ on EventCreated run BattleBoard.create
     description: ""
     isTemplate: false
     notes: ""
-    tags: ""
+    tags: []
   }
 
 // ---------------------------------------------------------------------------

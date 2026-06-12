@@ -189,7 +189,7 @@ export default function AssetsPage() {
       manufacturer: asset.manufacturer || "",
       model: asset.model || "",
       purchaseDate: asset.purchaseDate?.slice(0, 10) || "",
-      purchaseCost: asset.purchasePrice?.toString() || "",
+      purchaseCost: asset.purchaseCost?.toString() || "",
       warrantyExpiry: asset.warrantyExpiry?.slice(0, 10) || "",
       areaId: asset.areaId || "",
       status: asset.status ?? "active",
@@ -260,7 +260,7 @@ export default function AssetsPage() {
 
   const totalValue = assets
     .filter((a) => a.status === "active")
-    .reduce((sum, a) => sum + (a.purchasePrice || 0), 0);
+    .reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
 
   const warrantyExpiring = assets.filter(
     (a) =>
@@ -402,9 +402,9 @@ export default function AssetsPage() {
                             </span>
                           )}
                           {asset.areaId && <span>📍 {asset.areaId}</span>}
-                          {asset.purchasePrice != null && (
+                          {asset.purchaseCost != null && (
                             <span>
-                              {formatCurrencyWithDash(asset.purchasePrice)}
+                              {formatCurrencyWithDash(asset.purchaseCost)}
                             </span>
                           )}
                         </div>

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8969be453d64efd327ddb9d4e8a275d5be62ebdd0d6a408aa82c909284e94033",
-    "irHash": "20dda997d9610c6cf0981a1a357b3d5393eb7295906f81d3cb6c6c8d0c463073",
+    "contentHash": "8f70db4b7686d3bf5b7c30ec3c5c6211f3bda3edcc1275c446429baf4c15620c",
+    "irHash": "fc856dd1c2e0641d6cea29d93156728f01428a513d8a2b4aa44e75769ad085d7",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.775Z"
+    "compiledAt": "2026-06-12T14:47:34.153Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -329,7 +329,7 @@
           ]
         },
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -365,7 +365,7 @@
         {
           "name": "unitId",
           "type": {
-            "name": "string",
+            "name": "int",
             "nullable": false
           },
           "modifiers": [
@@ -438,7 +438,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventoryItemId"
+              "itemId"
             ],
             "references": [
               "tenantId",
@@ -517,15 +517,15 @@
             }
           },
           "severity": "warn",
-          "messageTemplate": "Stock for item '{inventoryItemId}' at location '{storageLocationId}' is zero",
+          "messageTemplate": "Stock for item '{itemId}' at location '{storageLocationId}' is zero",
           "detailsMapping": {
-            "inventoryItemId": {
+            "itemId": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventoryItemId"
+              "property": "itemId"
             },
             "storageLocationId": {
               "kind": "member",
@@ -573,7 +573,7 @@
           ]
         },
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -603,7 +603,17 @@
           ]
         },
         {
-          "name": "message",
+          "name": "thresholdValue",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "notes",
           "type": {
             "name": "string",
             "nullable": false
@@ -786,7 +796,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventoryItemId"
+              "itemId"
             ],
             "references": [
               "tenantId",
@@ -1868,7 +1878,7 @@
           ]
         },
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1878,7 +1888,7 @@
           ]
         },
         {
-          "name": "name",
+          "name": "contactName",
           "type": {
             "name": "string",
             "nullable": false
@@ -1888,7 +1898,7 @@
           ]
         },
         {
-          "name": "email",
+          "name": "contactEmail",
           "type": {
             "name": "string",
             "nullable": false
@@ -1900,7 +1910,7 @@
           "modifiers": []
         },
         {
-          "name": "phone",
+          "name": "contactPhone",
           "type": {
             "name": "string",
             "nullable": false
@@ -1912,7 +1922,7 @@
           "modifiers": []
         },
         {
-          "name": "role",
+          "name": "contactRole",
           "type": {
             "name": "string",
             "nullable": false
@@ -1973,7 +1983,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventorySupplierId"
+              "supplierId"
             ],
             "references": [
               "tenantId",
@@ -2000,7 +2010,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "name"
+              "property": "contactName"
             },
             "right": {
               "kind": "literal",
@@ -2026,7 +2036,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventorySupplierId"
+              "property": "supplierId"
             },
             "right": {
               "kind": "literal",
@@ -2075,7 +2085,7 @@
           ]
         },
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2095,9 +2105,9 @@
           ]
         },
         {
-          "name": "score",
+          "name": "rating",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -2177,7 +2187,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "score"
+              "property": "rating"
             },
             "right": {
               "kind": "literal",
@@ -2204,7 +2214,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "score"
+              "property": "rating"
             },
             "right": {
               "kind": "literal",
@@ -2225,7 +2235,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventorySupplierId"
+              "supplierId"
             ],
             "references": [
               "tenantId",
@@ -2254,7 +2264,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "score"
+                "property": "rating"
               },
               "right": {
                 "kind": "literal",
@@ -2273,7 +2283,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "score"
+                "property": "rating"
               },
               "right": {
                 "kind": "literal",
@@ -2326,15 +2336,15 @@
             "property": "isLowScore"
           },
           "severity": "warn",
-          "messageTemplate": "Low vendor rating ({score}/5) for category '{category}' — consider reviewing supplier",
+          "messageTemplate": "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier",
           "detailsMapping": {
-            "inventorySupplierId": {
+            "supplierId": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventorySupplierId"
+              "property": "supplierId"
             },
             "category": {
               "kind": "member",
@@ -2344,13 +2354,13 @@
               },
               "property": "category"
             },
-            "score": {
+            "rating": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "score"
+              "property": "rating"
             }
           },
           "overrideable": false
@@ -2390,7 +2400,7 @@
           ]
         },
         {
-          "name": "inventoryTransferId",
+          "name": "transferId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2400,7 +2410,7 @@
           ]
         },
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -2491,7 +2501,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventoryTransferId"
+              "transferId"
             ],
             "references": [
               "tenantId",
@@ -2506,7 +2516,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "inventoryItemId"
+              "itemId"
             ],
             "references": [
               "tenantId",
@@ -2559,7 +2569,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventoryTransferId"
+              "property": "transferId"
             },
             "right": {
               "kind": "literal",
@@ -2585,7 +2595,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventoryItemId"
+              "property": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -2637,6 +2647,16 @@
           "name": "name",
           "type": {
             "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "fiscalYear",
+          "type": {
+            "name": "int",
             "nullable": false
           },
           "modifiers": [
@@ -3077,7 +3097,7 @@
           ]
         },
         {
-          "name": "procurementBudgetId",
+          "name": "budgetId",
           "type": {
             "name": "string",
             "nullable": false
@@ -3087,7 +3107,7 @@
           ]
         },
         {
-          "name": "thresholdPct",
+          "name": "utilizationPct",
           "type": {
             "name": "decimal",
             "nullable": false
@@ -3095,6 +3115,16 @@
           "defaultValue": {
             "kind": "number",
             "value": 0
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "alertType",
+          "type": {
+            "name": "string",
+            "nullable": false
           },
           "modifiers": [
             "required"
@@ -3187,7 +3217,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "thresholdPct"
+              "property": "utilizationPct"
             },
             "right": {
               "kind": "literal",
@@ -3208,7 +3238,7 @@
           "foreignKey": {
             "fields": [
               "tenantId",
-              "procurementBudgetId"
+              "budgetId"
             ],
             "references": [
               "tenantId",
@@ -3227,48 +3257,25 @@
           "code": "validThreshold",
           "expression": {
             "kind": "binary",
-            "operator": "and",
+            "operator": ">",
             "left": {
-              "kind": "binary",
-              "operator": ">",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "thresholdPct"
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
               },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 0
-                }
-              }
+              "property": "utilizationPct"
             },
             "right": {
-              "kind": "binary",
-              "operator": "<=",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "thresholdPct"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 150
-                }
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
               }
             }
           },
           "severity": "block",
-          "message": "Threshold percentage must be between 0 and 150",
+          "message": "Utilization percentage must be positive",
           "overrideable": false
         }
       ],
@@ -3317,6 +3324,26 @@
         },
         {
           "name": "frequency",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "time",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "createdBy",
           "type": {
             "name": "string",
             "nullable": false
@@ -3783,7 +3810,7 @@
         {
           "name": "unitId",
           "type": {
-            "name": "string",
+            "name": "number",
             "nullable": false
           },
           "required": true
@@ -5833,7 +5860,7 @@
       "entity": "InventoryStock",
       "parameters": [
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5859,7 +5886,7 @@
         {
           "name": "unitId",
           "type": {
-            "name": "string",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -5874,7 +5901,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -5888,7 +5915,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -5949,34 +5976,15 @@
         },
         {
           "kind": "binary",
-          "operator": "and",
+          "operator": "!=",
           "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "unitId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
+            "kind": "identifier",
+            "name": "unitId"
           },
           "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "unitId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
+            "kind": "literal",
+            "value": {
+              "kind": "null"
             }
           }
         }
@@ -6028,10 +6036,10 @@
         },
         {
           "kind": "mutate",
-          "target": "inventoryItemId",
+          "target": "itemId",
           "expression": {
             "kind": "identifier",
-            "name": "inventoryItemId"
+            "name": "itemId"
           }
         },
         {
@@ -6165,13 +6173,13 @@
           "severity": "block",
           "messageTemplate": "Adjustment would result in negative stock ({result})",
           "detailsMapping": {
-            "inventoryItemId": {
+            "itemId": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventoryItemId"
+              "property": "itemId"
             },
             "currentQty": {
               "kind": "member",
@@ -6425,15 +6433,15 @@
             }
           },
           "severity": "warn",
-          "messageTemplate": "Recount shows variance of more than 20% for item '{inventoryItemId}'",
+          "messageTemplate": "Recount shows variance of more than 20% for item '{itemId}'",
           "detailsMapping": {
-            "inventoryItemId": {
+            "itemId": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "inventoryItemId"
+              "property": "itemId"
             },
             "previousQty": {
               "kind": "member",
@@ -6521,7 +6529,7 @@
       "entity": "InventoryAlert",
       "parameters": [
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -6545,7 +6553,15 @@
           "required": true
         },
         {
-          "name": "message",
+          "name": "thresholdValue",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
           "type": {
             "name": "string",
             "nullable": false
@@ -6562,7 +6578,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -6576,7 +6592,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -6655,13 +6671,27 @@
         },
         {
           "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "thresholdValue"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
           "operator": "and",
           "left": {
             "kind": "binary",
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "message"
+              "name": "notes"
             },
             "right": {
               "kind": "literal",
@@ -6675,7 +6705,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "message"
+              "name": "notes"
             },
             "right": {
               "kind": "literal",
@@ -6728,16 +6758,26 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Threshold value is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Alert message is required"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "inventoryItemId",
+          "target": "itemId",
           "expression": {
             "kind": "identifier",
-            "name": "inventoryItemId"
+            "name": "itemId"
           }
         },
         {
@@ -6758,10 +6798,18 @@
         },
         {
           "kind": "mutate",
-          "target": "message",
+          "target": "thresholdValue",
           "expression": {
             "kind": "identifier",
-            "name": "message"
+            "name": "thresholdValue"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
           }
         },
         {
@@ -8554,7 +8602,7 @@
       "entity": "VendorContact",
       "parameters": [
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": {
             "name": "string",
             "nullable": false
@@ -8562,7 +8610,7 @@
           "required": true
         },
         {
-          "name": "name",
+          "name": "contactName",
           "type": {
             "name": "string",
             "nullable": false
@@ -8570,7 +8618,7 @@
           "required": true
         },
         {
-          "name": "email",
+          "name": "contactEmail",
           "type": {
             "name": "string",
             "nullable": false
@@ -8578,7 +8626,7 @@
           "required": true
         },
         {
-          "name": "phone",
+          "name": "contactPhone",
           "type": {
             "name": "string",
             "nullable": false
@@ -8586,7 +8634,7 @@
           "required": true
         },
         {
-          "name": "role",
+          "name": "contactRole",
           "type": {
             "name": "string",
             "nullable": false
@@ -8611,7 +8659,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventorySupplierId"
+              "name": "supplierId"
             },
             "right": {
               "kind": "literal",
@@ -8625,7 +8673,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventorySupplierId"
+              "name": "supplierId"
             },
             "right": {
               "kind": "literal",
@@ -8644,7 +8692,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "name"
+              "name": "contactName"
             },
             "right": {
               "kind": "literal",
@@ -8658,7 +8706,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "name"
+              "name": "contactName"
             },
             "right": {
               "kind": "literal",
@@ -8697,42 +8745,42 @@
         },
         {
           "kind": "mutate",
-          "target": "inventorySupplierId",
+          "target": "supplierId",
           "expression": {
             "kind": "identifier",
-            "name": "inventorySupplierId"
+            "name": "supplierId"
           }
         },
         {
           "kind": "mutate",
-          "target": "name",
+          "target": "contactName",
           "expression": {
             "kind": "identifier",
-            "name": "name"
+            "name": "contactName"
           }
         },
         {
           "kind": "mutate",
-          "target": "email",
+          "target": "contactEmail",
           "expression": {
             "kind": "identifier",
-            "name": "email"
+            "name": "contactEmail"
           }
         },
         {
           "kind": "mutate",
-          "target": "phone",
+          "target": "contactPhone",
           "expression": {
             "kind": "identifier",
-            "name": "phone"
+            "name": "contactPhone"
           }
         },
         {
           "kind": "mutate",
-          "target": "role",
+          "target": "contactRole",
           "expression": {
             "kind": "identifier",
-            "name": "role"
+            "name": "contactRole"
           }
         },
         {
@@ -8753,7 +8801,7 @@
       "entity": "VendorContact",
       "parameters": [
         {
-          "name": "name",
+          "name": "contactName",
           "type": {
             "name": "string",
             "nullable": false
@@ -8761,7 +8809,7 @@
           "required": true
         },
         {
-          "name": "email",
+          "name": "contactEmail",
           "type": {
             "name": "string",
             "nullable": false
@@ -8769,7 +8817,7 @@
           "required": true
         },
         {
-          "name": "phone",
+          "name": "contactPhone",
           "type": {
             "name": "string",
             "nullable": false
@@ -8777,7 +8825,7 @@
           "required": true
         },
         {
-          "name": "role",
+          "name": "contactRole",
           "type": {
             "name": "string",
             "nullable": false
@@ -8802,7 +8850,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "name"
+              "name": "contactName"
             },
             "right": {
               "kind": "literal",
@@ -8816,7 +8864,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "name"
+              "name": "contactName"
             },
             "right": {
               "kind": "literal",
@@ -8845,34 +8893,34 @@
         },
         {
           "kind": "mutate",
-          "target": "name",
+          "target": "contactName",
           "expression": {
             "kind": "identifier",
-            "name": "name"
+            "name": "contactName"
           }
         },
         {
           "kind": "mutate",
-          "target": "email",
+          "target": "contactEmail",
           "expression": {
             "kind": "identifier",
-            "name": "email"
+            "name": "contactEmail"
           }
         },
         {
           "kind": "mutate",
-          "target": "phone",
+          "target": "contactPhone",
           "expression": {
             "kind": "identifier",
-            "name": "phone"
+            "name": "contactPhone"
           }
         },
         {
           "kind": "mutate",
-          "target": "role",
+          "target": "contactRole",
           "expression": {
             "kind": "identifier",
-            "name": "role"
+            "name": "contactRole"
           }
         },
         {
@@ -8973,7 +9021,7 @@
       "entity": "VendorRating",
       "parameters": [
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": {
             "name": "string",
             "nullable": false
@@ -8989,9 +9037,9 @@
           "required": true
         },
         {
-          "name": "score",
+          "name": "rating",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -9022,7 +9070,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventorySupplierId"
+              "name": "supplierId"
             },
             "right": {
               "kind": "literal",
@@ -9036,7 +9084,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventorySupplierId"
+              "name": "supplierId"
             },
             "right": {
               "kind": "literal",
@@ -9088,7 +9136,7 @@
             "operator": ">=",
             "left": {
               "kind": "identifier",
-              "name": "score"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9103,7 +9151,7 @@
             "operator": "<=",
             "left": {
               "kind": "identifier",
-              "name": "score"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9152,10 +9200,10 @@
         },
         {
           "kind": "mutate",
-          "target": "inventorySupplierId",
+          "target": "supplierId",
           "expression": {
             "kind": "identifier",
-            "name": "inventorySupplierId"
+            "name": "supplierId"
           }
         },
         {
@@ -9168,10 +9216,10 @@
         },
         {
           "kind": "mutate",
-          "target": "score",
+          "target": "rating",
           "expression": {
             "kind": "identifier",
-            "name": "score"
+            "name": "rating"
           }
         },
         {
@@ -9212,9 +9260,9 @@
       "entity": "VendorRating",
       "parameters": [
         {
-          "name": "score",
+          "name": "rating",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -9237,7 +9285,7 @@
             "operator": ">=",
             "left": {
               "kind": "identifier",
-              "name": "score"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9252,7 +9300,7 @@
             "operator": "<=",
             "left": {
               "kind": "identifier",
-              "name": "score"
+              "name": "rating"
             },
             "right": {
               "kind": "literal",
@@ -9281,10 +9329,10 @@
         },
         {
           "kind": "mutate",
-          "target": "score",
+          "target": "rating",
           "expression": {
             "kind": "identifier",
-            "name": "score"
+            "name": "rating"
           }
         },
         {
@@ -9317,7 +9365,7 @@
       "entity": "InventoryTransferItem",
       "parameters": [
         {
-          "name": "inventoryTransferId",
+          "name": "transferId",
           "type": {
             "name": "string",
             "nullable": false
@@ -9325,7 +9373,7 @@
           "required": true
         },
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": {
             "name": "string",
             "nullable": false
@@ -9358,7 +9406,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryTransferId"
+              "name": "transferId"
             },
             "right": {
               "kind": "literal",
@@ -9372,7 +9420,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryTransferId"
+              "name": "transferId"
             },
             "right": {
               "kind": "literal",
@@ -9391,7 +9439,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -9405,7 +9453,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "inventoryItemId"
+              "name": "itemId"
             },
             "right": {
               "kind": "literal",
@@ -9530,18 +9578,18 @@
         },
         {
           "kind": "mutate",
-          "target": "inventoryTransferId",
+          "target": "transferId",
           "expression": {
             "kind": "identifier",
-            "name": "inventoryTransferId"
+            "name": "transferId"
           }
         },
         {
           "kind": "mutate",
-          "target": "inventoryItemId",
+          "target": "itemId",
           "expression": {
             "kind": "identifier",
-            "name": "inventoryItemId"
+            "name": "itemId"
           }
         },
         {
@@ -9722,6 +9770,14 @@
           "required": true
         },
         {
+          "name": "fiscalYear",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
           "name": "periodStart",
           "type": {
             "name": "datetime",
@@ -9793,6 +9849,20 @@
                 "kind": "string",
                 "value": ""
               }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "fiscalYear"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
             }
           }
         },
@@ -9905,6 +9975,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Fiscal year is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Period start date is required"
             }
           }
@@ -9935,6 +10015,14 @@
           "expression": {
             "kind": "identifier",
             "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "fiscalYear",
+          "expression": {
+            "kind": "identifier",
+            "name": "fiscalYear"
           }
         },
         {
@@ -10425,7 +10513,7 @@
       "entity": "ProcurementBudgetAlert",
       "parameters": [
         {
-          "name": "procurementBudgetId",
+          "name": "budgetId",
           "type": {
             "name": "string",
             "nullable": false
@@ -10433,9 +10521,17 @@
           "required": true
         },
         {
-          "name": "thresholdPct",
+          "name": "utilizationPct",
           "type": {
             "name": "decimal",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "alertType",
+          "type": {
+            "name": "string",
             "nullable": false
           },
           "required": true
@@ -10458,7 +10554,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "procurementBudgetId"
+              "name": "budgetId"
             },
             "right": {
               "kind": "literal",
@@ -10472,7 +10568,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "procurementBudgetId"
+              "name": "budgetId"
             },
             "right": {
               "kind": "literal",
@@ -10491,7 +10587,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "thresholdPct"
+              "name": "utilizationPct"
             },
             "right": {
               "kind": "literal",
@@ -10505,13 +10601,46 @@
             "operator": ">",
             "left": {
               "kind": "identifier",
-              "name": "thresholdPct"
+              "name": "utilizationPct"
             },
             "right": {
               "kind": "literal",
               "value": {
                 "kind": "number",
                 "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "alertType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "alertType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
               }
             }
           }
@@ -10571,7 +10700,17 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Threshold percentage must be positive"
+              "value": "Utilization percentage must be positive"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Alert type is required"
             }
           }
         },
@@ -10587,18 +10726,26 @@
         },
         {
           "kind": "mutate",
-          "target": "procurementBudgetId",
+          "target": "budgetId",
           "expression": {
             "kind": "identifier",
-            "name": "procurementBudgetId"
+            "name": "budgetId"
           }
         },
         {
           "kind": "mutate",
-          "target": "thresholdPct",
+          "target": "utilizationPct",
           "expression": {
             "kind": "identifier",
-            "name": "thresholdPct"
+            "name": "utilizationPct"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "alertType",
+          "expression": {
+            "kind": "identifier",
+            "name": "alertType"
           }
         },
         {
@@ -10779,9 +10926,25 @@
           "required": true
         },
         {
+          "name": "time",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
           "name": "nextRunAt",
           "type": {
             "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
             "nullable": false
           },
           "required": true
@@ -10856,6 +11019,39 @@
         },
         {
           "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "time"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "time"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
           "operator": "!=",
           "left": {
             "kind": "identifier",
@@ -10865,6 +11061,39 @@
             "kind": "literal",
             "value": {
               "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "createdBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "createdBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
             }
           }
         }
@@ -10900,7 +11129,27 @@
             "kind": "literal",
             "value": {
               "kind": "string",
+              "value": "Audit time is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
               "value": "Next run date is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Creator is required"
             }
           }
         },
@@ -10922,10 +11171,26 @@
         },
         {
           "kind": "mutate",
+          "target": "time",
+          "expression": {
+            "kind": "identifier",
+            "name": "time"
+          }
+        },
+        {
+          "kind": "mutate",
           "target": "nextRunAt",
           "expression": {
             "kind": "identifier",
             "name": "nextRunAt"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "createdBy"
           }
         },
         {

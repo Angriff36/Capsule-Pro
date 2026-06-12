@@ -163,9 +163,9 @@ entity EventTimeline {
   property required id: string
   indexed property required tenantId: string
   property required eventId: string
-  searchable property required title: string = ""
+  searchable property required description: string = ""
   // Bug fix: lifecycle datetime — no default
-  property scheduledAt: datetime
+  property timelineTime: datetime
   property durationMinutes: int = 0
   searchable property notes: string = ""
   property sortOrder: int = 0
@@ -175,29 +175,29 @@ entity EventTimeline {
   computed isShortEntry: boolean = self.durationMinutes > 0 and self.durationMinutes < 15
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
-  constraint requireTitle: self.title != "" "Timeline entry title is required"
+  constraint requireDescription: self.description != "" "Timeline entry description is required"
   constraint positiveDuration: self.durationMinutes >= 0 "Duration cannot be negative"
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   default policy EventTimelineDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, title: string, scheduledAt: datetime, durationMinutes: int, notes: string, sortOrder: int) {
+  command create(eventId: string, description: string, timelineTime: datetime, durationMinutes: int, notes: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
-    guard title != null and title != "" "Title is required"
+    guard description != null and description != "" "Description is required"
     guard durationMinutes >= 0 "Duration cannot be negative"
     mutate eventId = eventId
-    mutate title = title
-    mutate scheduledAt = scheduledAt
+    mutate description = description
+    mutate timelineTime = timelineTime
     mutate durationMinutes = durationMinutes
     mutate notes = notes
     mutate sortOrder = sortOrder
     emit EventTimelineCreated
   }
-  command update(title: string, scheduledAt: datetime, durationMinutes: int, notes: string) {
-    guard title != null and title != "" "Title is required"
+  command update(description: string, timelineTime: datetime, durationMinutes: int, notes: string) {
+    guard description != null and description != "" "Description is required"
     guard durationMinutes >= 0 "Duration cannot be negative"
-    mutate title = title
-    mutate scheduledAt = scheduledAt
+    mutate description = description
+    mutate timelineTime = timelineTime
     mutate durationMinutes = durationMinutes
     mutate notes = notes
     emit EventTimelineUpdated
@@ -220,15 +220,15 @@ event EventTimelineCreated: "events.timeline.created" {
   timelineId: string
   tenantId: string
   eventId: string
-  title: string
-  scheduledAt: datetime
+  description: string
+  timelineTime: datetime
   createdAt: datetime
 }
 event EventTimelineUpdated: "events.timeline.updated" {
   timelineId: string
   tenantId: string
   eventId: string
-  title: string
+  description: string
   updatedAt: datetime
 }
 event EventTimelineReordered: "events.timeline.reordered" {
@@ -242,7 +242,7 @@ event EventTimelineRemoved: "events.timeline.removed" {
   timelineId: string
   tenantId: string
   eventId: string
-  title: string
+  description: string
   removedAt: datetime
 }
 
@@ -252,10 +252,12 @@ entity TimelineTask {
   indexed property required tenantId: string
   property required eventId: string
   searchable property required title: string = ""
+  property required category: string = ""
   // Bug fix: lifecycle datetime — no default
-  property dueAt: datetime
+  property startTime: datetime
+  property endTime: datetime
   indexed property status: string = "pending"
-  property assignedTo: string = ""
+  property assigneeId: string = ""
   searchable property notes: string = ""
   property sortOrder: int = 0
   property completedAt: datetime
@@ -279,13 +281,15 @@ entity TimelineTask {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   default policy TimelineTaskDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, title: string, dueAt: datetime, assignedTo: string, sortOrder: int) {
+  command create(eventId: string, title: string, category: string, startTime: datetime, endTime: datetime, assigneeId: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Task title is required"
     mutate eventId = eventId
     mutate title = title
-    mutate dueAt = dueAt
-    mutate assignedTo = assignedTo
+    mutate category = category
+    mutate startTime = startTime
+    mutate endTime = endTime
+    mutate assigneeId = assigneeId
     mutate sortOrder = sortOrder
     emit TimelineTaskCreated
   }
@@ -321,7 +325,7 @@ entity TimelineTask {
   command reassign(newAssignedTo: string) {
     guard self.status != "done" "Cannot reassign a completed task"
     guard newAssignedTo != null and newAssignedTo != "" "Assignee is required"
-    mutate assignedTo = newAssignedTo
+    mutate assigneeId = newAssignedTo
     emit TimelineTaskReassigned
   }
   command remove(userId: string) {
@@ -339,7 +343,7 @@ event TimelineTaskCreated: "events.timeline_task.created" {
   tenantId: string
   eventId: string
   title: string
-  assignedTo: string
+  assigneeId: string
   createdAt: datetime
 }
 event TimelineTaskStarted: "events.timeline_task.started" {
@@ -398,69 +402,71 @@ entity EventImport {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required source: string = ""
+  property required fileType: string = ""
   property required fileName: string = ""
-  indexed property status: string = "pending"
+  property required mimeType: string = ""
+  indexed property parseStatus: string = "pending"
   property totalRows: int = 0
   property importedRows: int = 0
   property skippedRows: int = 0
-  property errorMessage: string = ""
+  property parseErrors: array<string> = []
   timestamps
-  property completedAt: datetime
+  property parsedAt: datetime
   property deletedAt: datetime
 
-  computed isPending: boolean = self.status == "pending"
-  computed isProcessing: boolean = self.status == "processing"
-  computed isCompleted: boolean = self.status == "completed"
-  computed isFailed: boolean = self.status == "failed"
+  computed isPending: boolean = self.parseStatus == "pending"
+  computed isProcessing: boolean = self.parseStatus == "parsing"
+  computed isCompleted: boolean = self.parseStatus == "parsed"
+  computed isFailed: boolean = self.parseStatus == "failed"
 
-  transition status from "pending" to ["processing"]
-  transition status from "processing" to ["completed", "failed"]
-  transition status from "failed" to ["pending"]
+  transition parseStatus from "pending" to ["parsing"]
+  transition parseStatus from "parsing" to ["parsed", "failed"]
+  transition parseStatus from "failed" to ["pending"]
 
-  constraint requireSource: self.source != "" "Import source is required"
+  constraint requireFileType: self.fileType != "" "Import file type is required"
   constraint requireFileName: self.fileName != "" "File name is required"
-  constraint validStatus: self.status in ["pending", "processing", "completed", "failed"] "Status must be pending, processing, completed, or failed"
+  constraint validStatus: self.parseStatus in ["pending", "parsing", "parsed", "failed"] "Status must be pending, parsing, parsed, or failed"
   constraint nonNegativeRows: self.totalRows >= 0 "Total rows cannot be negative"
   constraint nonNegativeImportedRows: self.importedRows >= 0 "Imported rows cannot be negative"
 
   default policy EventImportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(source: string, fileName: string, totalRows: int) {
-    guard source != null and source != "" "Import source is required"
+  command create(fileType: string, fileName: string, mimeType: string, totalRows: int) {
+    guard fileType != null and fileType != "" "Import file type is required"
     guard fileName != null and fileName != "" "File name is required"
     guard totalRows >= 0 "Total rows cannot be negative"
-    mutate source = source
+    mutate fileType = fileType
     mutate fileName = fileName
+    mutate mimeType = mimeType
     mutate totalRows = totalRows
     mutate importedRows = 0
     mutate skippedRows = 0
-    mutate errorMessage = ""
+    mutate parseErrors = []
     emit EventImportCreated
   }
   command startProcessing(userId: string) {
-    guard self.status == "pending" "Can only start processing pending imports"
-    mutate status = "processing"
+    guard self.parseStatus == "pending" "Can only start processing pending imports"
+    mutate parseStatus = "parsing"
     emit EventImportProcessingStarted
   }
   command complete(importedRows: int, skippedRows: int) {
-    guard self.status == "processing" "Can only complete an import that is processing"
+    guard self.parseStatus == "parsing" "Can only complete an import that is parsing"
     guard importedRows >= 0 "Imported rows cannot be negative"
-    mutate status = "completed"
+    mutate parseStatus = "parsed"
     mutate importedRows = importedRows
     mutate skippedRows = skippedRows
-    mutate completedAt = now()
+    mutate parsedAt = now()
     emit EventImportCompleted
   }
-  command fail(errorMessage: string) {
-    guard self.status == "processing" "Can only fail an import that is processing"
-    mutate status = "failed"
-    mutate errorMessage = errorMessage
+  command fail(parseErrors: array<string>) {
+    guard self.parseStatus == "parsing" "Can only fail an import that is parsing"
+    mutate parseStatus = "failed"
+    mutate parseErrors = parseErrors
     emit EventImportFailed
   }
   command retry(userId: string) {
-    guard self.status == "failed" "Can only retry a failed import"
-    mutate status = "pending"
-    mutate errorMessage = ""
+    guard self.parseStatus == "failed" "Can only retry a failed import"
+    mutate parseStatus = "pending"
+    mutate parseErrors = []
     mutate importedRows = 0
     mutate skippedRows = 0
     emit EventImportRetried
@@ -473,7 +479,7 @@ policy EventImportManagement execute: user.role in ["manager", "admin"] "Manager
 event EventImportCreated: "events.import.created" {
   importId: string
   tenantId: string
-  source: string
+  fileType: string
   fileName: string
   totalRows: number
   createdAt: datetime
@@ -481,29 +487,29 @@ event EventImportCreated: "events.import.created" {
 event EventImportProcessingStarted: "events.import.processing_started" {
   importId: string
   tenantId: string
-  source: string
+  fileType: string
   startedAt: datetime
 }
 event EventImportCompleted: "events.import.completed" {
   importId: string
   tenantId: string
-  source: string
+  fileType: string
   totalRows: number
   importedRows: number
   skippedRows: number
-  completedAt: datetime
+  parsedAt: datetime
 }
 event EventImportFailed: "events.import.failed" {
   importId: string
   tenantId: string
-  source: string
-  errorMessage: string
+  fileType: string
+  parseErrors: array<string>
   failedAt: datetime
 }
 event EventImportRetried: "events.import.retried" {
   importId: string
   tenantId: string
-  source: string
+  fileType: string
   userId: string
   retriedAt: datetime
 }
@@ -513,9 +519,10 @@ entity EventFollowup {
   property required id: string
   indexed property required tenantId: string
   property required eventId: string
-  property required type: string = ""
+  property required taskType: string = ""
+  property required description: string = ""
   // Bug fix: lifecycle datetime — no default
-  property dueAt: datetime
+  property dueDate: datetime
   indexed property status: string = "pending"
   property assignedTo: string = ""
   searchable property notes: string = ""
@@ -528,7 +535,7 @@ entity EventFollowup {
   computed isCancelled: boolean = self.status == "cancelled"
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
-  constraint requireType: self.type != "" "Followup type is required"
+  constraint requireType: self.taskType != "" "Followup type is required"
   constraint validStatus: self.status in ["pending", "done", "cancelled"] "Status must be pending, done, or cancelled"
 
   // State transitions
@@ -537,12 +544,13 @@ entity EventFollowup {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   default policy EventFollowupDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, type: string, dueAt: datetime, assignedTo: string, notes: string) {
+  command create(eventId: string, taskType: string, description: string, dueDate: datetime, assignedTo: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
-    guard type != null and type != "" "Followup type is required"
+    guard taskType != null and taskType != "" "Followup type is required"
     mutate eventId = eventId
-    mutate type = type
-    mutate dueAt = dueAt
+    mutate taskType = taskType
+    mutate description = description
+    mutate dueDate = dueDate
     mutate assignedTo = assignedTo
     mutate notes = notes
     emit EventFollowupCreated
@@ -557,7 +565,7 @@ entity EventFollowup {
   command reschedule(newDueAt: datetime, reason: string) {
     guard self.status == "pending" "Can only reschedule a pending followup"
     guard newDueAt != null "New due date is required"
-    mutate dueAt = newDueAt
+    mutate dueDate = newDueAt
     mutate notes = reason
     emit EventFollowupRescheduled
   }
@@ -576,7 +584,7 @@ event EventFollowupCreated: "events.followup.created" {
   followupId: string
   tenantId: string
   eventId: string
-  type: string
+  taskType: string
   assignedTo: string
   createdAt: datetime
 }
@@ -584,7 +592,7 @@ event EventFollowupCompleted: "events.followup.completed" {
   followupId: string
   tenantId: string
   eventId: string
-  type: string
+  taskType: string
   userId: string
   completedAt: datetime
 }
@@ -600,7 +608,7 @@ event EventFollowupCancelled: "events.followup.cancelled" {
   followupId: string
   tenantId: string
   eventId: string
-  type: string
+  taskType: string
   reason: string
   cancelledAt: datetime
 }
@@ -612,10 +620,10 @@ entity BoardProjection {
   property required boardId: string
   property required entityType: string = ""
   property required entityId: string = ""
-  property positionX: decimal = 0
-  property positionY: decimal = 0
-  property width: decimal = 200
-  property height: decimal = 150
+  property positionX: int = 0
+  property positionY: int = 0
+  property width: int = 280
+  property height: int = 180
   timestamps
   property deletedAt: datetime
 
@@ -626,7 +634,7 @@ entity BoardProjection {
   constraint positiveHeight: self.height > 0 "Height must be positive"
 
   default policy BoardProjectionDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(boardId: string, entityType: string, entityId: string, positionX: decimal, positionY: decimal, width: decimal, height: decimal) {
+  command create(boardId: string, entityType: string, entityId: string, positionX: int, positionY: int, width: int, height: int) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"
@@ -641,12 +649,12 @@ entity BoardProjection {
     mutate height = height
     emit BoardProjectionCreated
   }
-  command move(positionX: decimal, positionY: decimal) {
+  command move(positionX: int, positionY: int) {
     mutate positionX = positionX
     mutate positionY = positionY
     emit BoardProjectionMoved
   }
-  command resize(width: decimal, height: decimal) {
+  command resize(width: int, height: int) {
     guard width > 0 "Width must be positive"
     guard height > 0 "Height must be positive"
     mutate width = width
@@ -703,9 +711,9 @@ entity BoardAnnotation {
   property required id: string
   indexed property required tenantId: string
   property required boardId: string
-  property text: string = ""
-  property positionX: decimal = 0
-  property positionY: decimal = 0
+  property label: string = ""
+  property positionX: int = 0
+  property positionY: int = 0
   property color: string = ""
   timestamps
   property deletedAt: datetime
@@ -713,17 +721,17 @@ entity BoardAnnotation {
   constraint requireBoard: self.boardId != "" "Board ID is required"
 
   default policy BoardAnnotationDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(boardId: string, text: string, positionX: decimal, positionY: decimal, color: string) {
+  command create(boardId: string, label: string, positionX: int, positionY: int, color: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     mutate boardId = boardId
-    mutate text = text
+    mutate label = label
     mutate positionX = positionX
     mutate positionY = positionY
     mutate color = color
     emit BoardAnnotationCreated
   }
-  command update(text: string, positionX: decimal, positionY: decimal, color: string) {
-    mutate text = text
+  command update(label: string, positionX: int, positionY: int, color: string) {
+    mutate label = label
     mutate positionX = positionX
     mutate positionY = positionY
     mutate color = color
@@ -744,14 +752,14 @@ event BoardAnnotationCreated: "board.annotation.created" {
   annotationId: string
   tenantId: string
   boardId: string
-  text: string
+  label: string
   createdAt: datetime
 }
 event BoardAnnotationUpdated: "board.annotation.updated" {
   annotationId: string
   tenantId: string
   boardId: string
-  text: string
+  label: string
   updatedAt: datetime
 }
 event BoardAnnotationRemoved: "board.annotation.removed" {

@@ -13,7 +13,7 @@ entity InventorySupplier {
   encrypted property phone: string = ""
   property paymentTerms: string = "NET_30"
   searchable property notes: string = ""
-  property tags: string = ""
+  property tags: array<string> = []
   property isActive: boolean = true
   property openPOCount: int = 0
   property approvedAt: datetime
@@ -40,7 +40,7 @@ entity InventorySupplier {
   constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"
 
   default policy InventorySupplierDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(name: string, supplierNumber: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: string) {
+  command create(name: string, supplierNumber: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: array<string>) {
     guard name != null and name != "" "Supplier name is required"
 
     constraint warnNoContact:warn (contactPerson == null or contactPerson == "") and (email == null or email == "") {
@@ -64,7 +64,7 @@ entity InventorySupplier {
     emit InventorySupplierCreated
   }
 
-  command update(name: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: string) {
+  command update(name: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: array<string>) {
     guard name != null and name != "" "Supplier name is required"
 
     mutate name = name

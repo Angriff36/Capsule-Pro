@@ -69,9 +69,6 @@ export interface Invoice {
   overdueSince: Date | null;
   reminderCount: number;
   lastReminderAt: Date | null;
-  quickBooksId: string | null;
-  goodshuffleId: string | null;
-  externalSyncStatus: string | null;
   notes: string | null;
   internalNotes: string | null;
   lineItems: unknown;

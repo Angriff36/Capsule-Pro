@@ -73,7 +73,8 @@ entity PerformancePrediction {
   property predictionScore: decimal = 0 // 0-100
   property confidence: string = "medium" // "low", "medium", "high"
   property factors: string = "" // JSON string of factors
-  timestamps
+  // No `timestamps` keyword: public.PerformancePrediction is write-once (createdAt + expiresAt only, no updatedAt column)
+  property createdAt: datetime = now()
   property expiresAt: datetime = now()
 
   computed isExpired: boolean = self.expiresAt < now() cache request

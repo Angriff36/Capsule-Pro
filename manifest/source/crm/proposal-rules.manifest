@@ -264,7 +264,7 @@ entity ProposalLineItem {
   property itemType: string = ""
   property category: string = ""
   searchable property description: string = ""
-  property quantity: int = 0
+  property quantity: decimal = 0
   property unitOfMeasure: string = ""
   property unitPrice: money = 0
   property total: money = 0

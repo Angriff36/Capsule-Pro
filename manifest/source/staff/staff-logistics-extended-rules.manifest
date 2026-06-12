@@ -12,7 +12,8 @@ entity TimecardApproval {
   property required id: string
   indexed property required tenantId: string
   property required employeeId: string
-  property required payrollPeriodId: string
+  property required payrollRunId: string
+  property required submittedBy: string
   indexed property status: string = "pending"
   property approvedBy: string = ""
   property approvedAt: datetime
@@ -28,12 +29,14 @@ entity TimecardApproval {
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid timecard approval status"
 
   default policy TimecardApprovalDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, payrollPeriodId: string, notes: string) {
+  command create(employeeId: string, payrollRunId: string, submittedBy: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard payrollPeriodId != null and payrollPeriodId != "" "Payroll period ID is required"
+    guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
+    guard submittedBy != null and submittedBy != "" "Submitter ID is required"
 
     mutate employeeId = employeeId
-    mutate payrollPeriodId = payrollPeriodId
+    mutate payrollRunId = payrollRunId
+    mutate submittedBy = submittedBy
     mutate notes = notes
 
     emit TimecardApprovalCreated
@@ -78,7 +81,6 @@ entity TimecardApproval {
 
   relationship belongsTo employee: User with employeeId
   relationship belongsTo payrollRun: PayrollRun with payrollRunId
-  relationship belongsTo payrollPeriod: PayrollPeriod with payrollPeriodId
 
   store TimecardApproval in durable
 }
@@ -157,10 +159,7 @@ entity TipPool {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property periodStart: datetime
-  property periodEnd: datetime
   property periodId: string = ""
-  property eventId: string = ""
   property totalTips: money = 0
   indexed property status: string = "open"
   // Allocation
@@ -186,17 +185,13 @@ entity TipPool {
   constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
 
   relationship belongsTo period: PayrollPeriod with periodId
-  relationship belongsTo event: Event with eventId
 
   default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(periodStart: datetime, periodEnd: datetime, eventId: string, totalTips: money) {
-    guard periodStart != null "Period start is required"
-    guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
+  command create(periodId: string, totalTips: money) {
+    guard periodId != null and periodId != "" "Payroll period ID is required"
     guard totalTips >= 0 "Total tips cannot be negative"
 
-    mutate periodStart = periodStart
-    mutate periodEnd = periodEnd
-    mutate eventId = eventId
+    mutate periodId = periodId
     mutate totalTips = totalTips
     mutate distributedAmount = 0
 
@@ -265,7 +260,7 @@ entity DisciplinaryAction {
   property escalatedTo: string = ""
   property escalationReason: string = ""
   property escalatedAt: datetime
-  property issuedAt: datetime
+  property issuedDate: datetime = now()
   timestamps
 
   computed isOpen: boolean = self.status == "open"
@@ -297,7 +292,7 @@ entity DisciplinaryAction {
     mutate reason = reason
     mutate severity = severity
     mutate issuedBy = issuedBy
-    mutate issuedAt = now()
+    mutate issuedDate = now()
 
     emit DisciplinaryActionCreated
   }
@@ -341,9 +336,9 @@ entity ActionMilestone {
   indexed property required tenantId: string
   property required disciplinaryActionId: string
   searchable property title: string = ""
-  property dueAt: datetime
+  property dueDate: datetime
   indexed property status: string = "pending"
-  property completedAt: datetime
+  property completedDate: datetime
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -359,14 +354,14 @@ entity ActionMilestone {
   relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
 
   default policy ActionMilestoneDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
+  command create(disciplinaryActionId: string, title: string, dueDate: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
-    guard dueAt != null "Due date is required"
+    guard dueDate != null "Due date is required"
 
     mutate disciplinaryActionId = disciplinaryActionId
     mutate title = title
-    mutate dueAt = dueAt
+    mutate dueDate = dueDate
 
     emit ActionMilestoneCreated
   }
@@ -375,7 +370,7 @@ entity ActionMilestone {
     guard self.status == "pending" "Only pending milestones can be completed"
 
     mutate status = "met"
-    mutate completedAt = now()
+    mutate completedDate = now()
 
     emit ActionMilestoneMet
   }
@@ -397,11 +392,12 @@ entity PerformanceReview {
   indexed property required tenantId: string
   property required employeeId: string
   property required reviewerId: string
-  property reviewPeriod: string = ""
-  property overallRating: decimal = 0
+  property reviewType: string = ""
+  property scheduledDate: datetime
+  property rating: decimal = 0
   indexed property status: string = "draft"
-  property submittedAt: datetime
-  property signedOffAt: datetime
+  property completedDate: datetime
+  property employeeAcknowledgedAt: datetime
   timestamps
 
   computed isDraft: boolean = self.status == "draft"
@@ -412,32 +408,34 @@ entity PerformanceReview {
   transition status from "submitted" to ["acknowledged", "draft"]
 
   constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
-  constraint validRating: self.overallRating >= 0 and self.overallRating <= 5 "Rating must be between 0 and 5"
+  constraint validRating: self.rating >= 0 and self.rating <= 5 "Rating must be between 0 and 5"
 
   relationship belongsTo employee: User with employeeId
   relationship belongsTo reviewer: User with reviewerId
 
   default policy PerformanceReviewDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, reviewerId: string, reviewPeriod: string) {
+  command create(employeeId: string, reviewerId: string, reviewType: string, scheduledDate: datetime) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reviewerId != null and reviewerId != "" "Reviewer ID is required"
-    guard reviewPeriod != null and reviewPeriod != "" "Review period is required"
+    guard reviewType != null and reviewType != "" "Review type is required"
+    guard scheduledDate != null "Scheduled date is required"
 
     mutate employeeId = employeeId
     mutate reviewerId = reviewerId
-    mutate reviewPeriod = reviewPeriod
-    mutate overallRating = 0
+    mutate reviewType = reviewType
+    mutate scheduledDate = scheduledDate
+    mutate rating = 0
 
     emit PerformanceReviewCreated
   }
 
-  command submit(overallRating: number) {
+  command submit(rating: number) {
     guard self.status == "draft" "Only draft reviews can be submitted"
-    guard overallRating >= 0 and overallRating <= 5 "Rating must be between 0 and 5"
+    guard rating >= 0 and rating <= 5 "Rating must be between 0 and 5"
 
-    mutate overallRating = overallRating
+    mutate rating = rating
     mutate status = "submitted"
-    mutate submittedAt = now()
+    mutate completedDate = now()
 
     emit PerformanceReviewSubmitted
   }
@@ -447,7 +445,7 @@ entity PerformanceReview {
     guard self.status == "submitted" "Only submitted reviews can be signed off"
 
     mutate status = "acknowledged"
-    mutate signedOffAt = now()
+    mutate employeeAcknowledgedAt = now()
 
     emit PerformanceReviewSignedOff
   }
@@ -468,7 +466,8 @@ entity TrainingCompletion {
   property required id: string
   indexed property required tenantId: string
   property required employeeId: string
-  property required trainingModuleId: string
+  property required assignmentId: string
+  property required moduleId: string
   property completedAt: datetime
   property score: decimal = 0
   property passed: boolean = false
@@ -477,19 +476,21 @@ entity TrainingCompletion {
   computed hasPassed: boolean = self.passed == true
   computed hasScore: boolean = self.score > 0
 
-  relationship belongsTo trainingModule: TrainingModule fields [tenantId, trainingModuleId] references [tenantId, id]
+  relationship belongsTo trainingModule: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId
 
   constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
 
   default policy TrainingCompletionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, trainingModuleId: string, completedAt: datetime, score: number, passed: boolean) {
+  command create(employeeId: string, assignmentId: string, moduleId: string, completedAt: datetime, score: number, passed: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard trainingModuleId != null and trainingModuleId != "" "Training module ID is required"
+    guard assignmentId != null and assignmentId != "" "Assignment ID is required"
+    guard moduleId != null and moduleId != "" "Training module ID is required"
     guard score >= 0 and score <= 100 "Score must be between 0 and 100"
 
     mutate employeeId = employeeId
-    mutate trainingModuleId = trainingModuleId
+    mutate assignmentId = assignmentId
+    mutate moduleId = moduleId
     mutate completedAt = completedAt
     mutate score = score
     mutate passed = passed
@@ -506,6 +507,7 @@ entity OnboardingTask {
   indexed property required tenantId: string
   searchable property title: string = ""
   searchable property description: string = ""
+  property taskType: string = "OTHER"
   property sortOrder: int = 0
   property isRequired: boolean = true
   timestamps
@@ -552,37 +554,26 @@ entity OnboardingCompletion {
   property required id: string
   indexed property required tenantId: string
   property required employeeId: string
-  property required onboardingTaskId: string
-  property completedAt: datetime
-  indexed property status: string = "pending"
+  property required taskId: string
+  property completedAt: datetime = now()
   timestamps
 
-  computed isPending: boolean = self.status == "pending"
-  computed isComplete: boolean = self.status == "completed"
-
-  relationship belongsTo onboardingTask: OnboardingTask fields [tenantId, onboardingTaskId] references [tenantId, id]
+  relationship belongsTo onboardingTask: OnboardingTask fields [tenantId, taskId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId
 
-  constraint validStatus: self.status in ["pending", "completed"] "Invalid onboarding completion status"
-
-  // State transitions
-  transition status from "pending" to ["completed"]
-
   default policy OnboardingCompletionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(employeeId: string, onboardingTaskId: string) {
+  command create(employeeId: string, taskId: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard onboardingTaskId != null and onboardingTaskId != "" "Onboarding task ID is required"
+    guard taskId != null and taskId != "" "Onboarding task ID is required"
 
     mutate employeeId = employeeId
-    mutate onboardingTaskId = onboardingTaskId
+    mutate taskId = taskId
+    mutate completedAt = now()
 
     emit OnboardingCompletionCreated
   }
 
   command complete() {
-    guard self.status == "pending" "Only pending completions can be completed"
-
-    mutate status = "completed"
     mutate completedAt = now()
 
     emit OnboardingCompletionCompleted
@@ -659,11 +650,12 @@ entity DeliveryRoute {
   property required id: string
   indexed property required tenantId: string
   searchable property name: string = ""
+  property routeNumber: string = ""
   property driverId: string = ""
-  property routeDate: datetime
+  property scheduledDate: datetime
   indexed property status: string = "planned"
-  property totalStops: int = 0
-  property distanceMiles: decimal = 0
+  // totalDistance is stored in km (delivery_routes.total_distance)
+  property totalDistance: decimal = 0
   timestamps
 
   computed isPlanned: boolean = self.status == "planned"
@@ -672,7 +664,7 @@ entity DeliveryRoute {
 
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid delivery route status"
   constraint requireName: self.name != "" "Route name is required"
-  constraint distancePositive: self.distanceMiles >= 0 "Distance cannot be negative"
+  constraint distancePositive: self.totalDistance >= 0 "Distance cannot be negative"
 
   // State transitions
   transition status from "planned" to ["in_progress", "cancelled"]
@@ -681,15 +673,16 @@ entity DeliveryRoute {
   relationship belongsTo driver: Driver with driverId
 
   default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
+  command create(name: string, routeNumber: string, driverId: string, scheduledDate: datetime, totalDistance: number) {
     guard name != null and name != "" "Route name is required"
-    guard routeDate != null "Route date is required"
+    guard routeNumber != null and routeNumber != "" "Route number is required"
+    guard scheduledDate != null "Scheduled date is required"
 
     mutate name = name
+    mutate routeNumber = routeNumber
     mutate driverId = driverId
-    mutate routeDate = routeDate
-    mutate totalStops = totalStops
-    mutate distanceMiles = distanceMiles
+    mutate scheduledDate = scheduledDate
+    mutate totalDistance = totalDistance
 
     emit DeliveryRouteCreated
   }
@@ -727,13 +720,12 @@ entity RouteStop {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required deliveryRouteId: string
-  property eventId: string = ""
-  property address: string = ""
-  property sequence: int = 0
-  property scheduledAt: datetime
+  property required routeId: string
+  property name: string = ""
+  property stopNumber: int = 0
+  property plannedArrival: datetime
   indexed property status: string = "pending"
-  property arrivedAt: datetime
+  property actualArrival: datetime
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -741,27 +733,25 @@ entity RouteStop {
   computed isComplete: boolean = self.status == "completed"
 
   constraint validStatus: self.status in ["pending", "arrived", "completed"] "Invalid route stop status"
-  constraint requireAddress: self.address != "" "Address is required"
-  constraint sequencePositive: self.sequence >= 0 "Sequence must be non-negative"
+  constraint requireName: self.name != "" "Stop name is required"
+  constraint stopNumberPositive: self.stopNumber >= 0 "Stop number must be non-negative"
 
   // State transitions
   transition status from "pending" to ["arrived"]
   transition status from "arrived" to ["completed"]
 
-  relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, deliveryRouteId] references [tenantId, id]
-  relationship belongsTo event: Event with eventId
+  relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, routeId] references [tenantId, id]
 
   default policy RouteStopDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
-    guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"
-    guard address != null and address != "" "Address is required"
-    guard scheduledAt != null "Scheduled arrival time is required"
+  command create(routeId: string, name: string, stopNumber: number, plannedArrival: datetime) {
+    guard routeId != null and routeId != "" "Delivery route ID is required"
+    guard name != null and name != "" "Stop name is required"
+    guard plannedArrival != null "Scheduled arrival time is required"
 
-    mutate deliveryRouteId = deliveryRouteId
-    mutate eventId = eventId
-    mutate address = address
-    mutate sequence = sequence
-    mutate scheduledAt = scheduledAt
+    mutate routeId = routeId
+    mutate name = name
+    mutate stopNumber = stopNumber
+    mutate plannedArrival = plannedArrival
 
     emit RouteStopCreated
   }
@@ -770,7 +760,7 @@ entity RouteStop {
     guard self.status == "pending" "Only pending stops can be marked arrived"
 
     mutate status = "arrived"
-    mutate arrivedAt = now()
+    mutate actualArrival = now()
 
     emit RouteStopArrived
   }
@@ -783,11 +773,12 @@ entity RouteStop {
     emit RouteStopCompleted
   }
 
-  command reorder(sequence: number) {
+  // stopNumber is DB-unique per route ([routeId, stopNumber]) — reorder callers must swap atomically.
+  command reorder(stopNumber: number) {
     guard self.status == "pending" "Only pending stops can be reordered"
-    guard sequence >= 0 "Sequence must be non-negative"
+    guard stopNumber >= 0 "Stop number must be non-negative"
 
-    mutate sequence = sequence
+    mutate stopNumber = stopNumber
 
     emit RouteStopReordered
   }
@@ -800,50 +791,39 @@ entity PaymentRefundAttempt {
   property required id: string
   indexed property required tenantId: string
   property required paymentId: string
-  property amount: money = 0
-  property reason: string = ""
-  indexed property status: string = "pending"
-  property attemptedAt: datetime
-  timestamps
+  property requestedAmount: money = 0
+  property effectiveAmount: money = 0
+  property refundReason: string = ""
+  property success: boolean = false
+  property createdAt: datetime = now()
 
-  computed isPending: boolean = self.status == "pending"
-  computed isSucceeded: boolean = self.status == "succeeded"
-  computed isFailed: boolean = self.status == "failed"
+  computed isSucceeded: boolean = self.success == true
 
-  constraint validStatus: self.status in ["pending", "succeeded", "failed"] "Invalid refund attempt status"
-  constraint amountPositive: self.amount > 0 "Refund amount must be positive"
-
-  // State transitions
-  transition status from "pending" to ["succeeded", "failed"]
+  constraint requestedAmountPositive: self.requestedAmount > 0 "Refund amount must be positive"
 
   relationship belongsTo payment: Payment with paymentId
 
   default policy PaymentRefundAttemptDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(paymentId: string, amount: money, reason: string) {
+  command create(paymentId: string, requestedAmount: money, refundReason: string) {
     guard paymentId != null and paymentId != "" "Payment ID is required"
-    guard amount > 0 "Refund amount must be positive"
-    guard reason != null and reason != "" "Reason is required"
+    guard requestedAmount > 0 "Refund amount must be positive"
+    guard refundReason != null and refundReason != "" "Refund reason is required"
 
     mutate paymentId = paymentId
-    mutate amount = amount
-    mutate reason = reason
-    mutate attemptedAt = now()
+    mutate requestedAmount = requestedAmount
+    mutate refundReason = refundReason
 
     emit PaymentRefundAttemptCreated
   }
 
   command markSucceeded() {
-    guard self.status == "pending" "Only pending refund attempts can be marked succeeded"
-
-    mutate status = "succeeded"
+    mutate success = true
 
     emit PaymentRefundAttemptSucceeded
   }
 
   command markFailed() {
-    guard self.status == "pending" "Only pending refund attempts can be marked failed"
-
-    mutate status = "failed"
+    mutate success = false
 
     emit PaymentRefundAttemptFailed
   }
@@ -868,11 +848,10 @@ entity PreventiveMaintenanceSchedule {
   property estimatedHours: decimal = 0
   property estimatedCost: money = 0
   indexed property status: string = "active"
-  property isActive: boolean = true
   timestamps
 
   computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt cache request
-  computed isActiveSchedule: boolean = self.isActive == true and self.status == "active"
+  computed isActiveSchedule: boolean = self.status == "active"
 
   constraint requireTitle: self.title != "" "Schedule title is required"
   constraint requireFrequency: self.frequency != "" "Frequency is required"
@@ -897,13 +876,12 @@ entity PreventiveMaintenanceSchedule {
     mutate estimatedHours = estimatedHours
     mutate estimatedCost = estimatedCost
     mutate scheduleNumber = "PM-" + substring(id, 0, 8)
-    mutate isActive = true
 
     emit MaintenanceScheduleCreated
   }
 
   command update(title: string, description: string, frequency: string, intervalDays: int, nextDueAt: datetime, assignedTo: string, estimatedHours: decimal, estimatedCost: money) {
-    guard self.isActive "Cannot update an inactive maintenance schedule"
+    guard self.status == "active" "Cannot update an inactive maintenance schedule"
     guard title != null and title != "" "Schedule title is required"
     guard frequency != null and frequency != "" "Frequency is required"
     guard nextDueAt != null "Next due date is required"
@@ -921,7 +899,7 @@ entity PreventiveMaintenanceSchedule {
   }
 
   command complete(nextDueAt: datetime) {
-    guard self.isActive "Cannot complete an inactive maintenance schedule"
+    guard self.status == "active" "Cannot complete an inactive maintenance schedule"
     guard nextDueAt != null "Next due date is required for recurrence"
 
     mutate nextDueAt = nextDueAt
@@ -931,9 +909,8 @@ entity PreventiveMaintenanceSchedule {
   }
 
   command deactivate() {
-    guard self.isActive "Schedule is already inactive"
+    guard self.status == "active" "Schedule is already inactive"
 
-    mutate isActive = false
     mutate status = "archived"
 
     emit MaintenanceScheduleDeactivated
@@ -963,7 +940,7 @@ event TimecardApprovalCreated: "hr.timecard.approval.created" {
   approvalId: string
   tenantId: string
   employeeId: string
-  payrollPeriodId: string
+  payrollRunId: string
   createdAt: datetime
 }
 
@@ -971,7 +948,7 @@ event TimecardApproved: "hr.timecard.approved" {
   approvalId: string
   tenantId: string
   employeeId: string
-  payrollPeriodId: string
+  payrollRunId: string
   approvedBy: string
   approvedAt: datetime
 }
@@ -980,7 +957,7 @@ event TimecardRejected: "hr.timecard.rejected" {
   approvalId: string
   tenantId: string
   employeeId: string
-  payrollPeriodId: string
+  payrollRunId: string
   rejectedBy: string
   notes: string
   rejectedAt: datetime
@@ -990,7 +967,7 @@ event TimecardBulkApproved: "hr.timecard.bulk-approved" {
   approvalId: string
   tenantId: string
   employeeId: string
-  payrollPeriodId: string
+  payrollRunId: string
   approvedBy: string
   approvedAt: datetime
 }
@@ -1018,7 +995,6 @@ event PayrollLineItemUpdated: "payroll.lineitem.updated" {
 event TipPoolCreated: "hr.tippool.created" {
   tipPoolId: string
   tenantId: string
-  eventId: string
   totalTips: money
   createdAt: datetime
 }
@@ -1090,7 +1066,7 @@ event ActionMilestoneCreated: "hr.milestone.created" {
   tenantId: string
   disciplinaryActionId: string
   title: string
-  dueAt: datetime
+  dueDate: datetime
   createdAt: datetime
 }
 
@@ -1098,7 +1074,7 @@ event ActionMilestoneMet: "hr.milestone.met" {
   milestoneId: string
   tenantId: string
   disciplinaryActionId: string
-  completedAt: datetime
+  completedDate: datetime
 }
 
 event ActionMilestoneMissed: "hr.milestone.missed" {
@@ -1113,7 +1089,7 @@ event PerformanceReviewCreated: "hr.review.created" {
   tenantId: string
   employeeId: string
   reviewerId: string
-  reviewPeriod: string
+  reviewType: string
   createdAt: datetime
 }
 
@@ -1121,15 +1097,15 @@ event PerformanceReviewSubmitted: "hr.review.submitted" {
   reviewId: string
   tenantId: string
   employeeId: string
-  overallRating: number
-  submittedAt: datetime
+  rating: number
+  completedDate: datetime
 }
 
 event PerformanceReviewSignedOff: "hr.review.signed-off" {
   reviewId: string
   tenantId: string
   employeeId: string
-  signedOffAt: datetime
+  employeeAcknowledgedAt: datetime
 }
 
 event PerformanceReviewAcknowledged: "hr.review.acknowledged" {
@@ -1143,7 +1119,7 @@ event TrainingCompletionRecorded: "hr.training.completion.recorded" {
   completionId: string
   tenantId: string
   employeeId: string
-  trainingModuleId: string
+  moduleId: string
   score: number
   passed: boolean
   completedAt: datetime
@@ -1174,7 +1150,7 @@ event OnboardingCompletionCreated: "hr.onboarding.completion.created" {
   completionId: string
   tenantId: string
   employeeId: string
-  onboardingTaskId: string
+  taskId: string
   createdAt: datetime
 }
 
@@ -1182,7 +1158,7 @@ event OnboardingCompletionCompleted: "hr.onboarding.completion.completed" {
   completionId: string
   tenantId: string
   employeeId: string
-  onboardingTaskId: string
+  taskId: string
   completedAt: datetime
 }
 
@@ -1216,7 +1192,7 @@ event DeliveryRouteCreated: "logistics.deliveryroute.created" {
   tenantId: string
   name: string
   driverId: string
-  routeDate: datetime
+  scheduledDate: datetime
   createdAt: datetime
 }
 
@@ -1242,31 +1218,31 @@ event DeliveryRouteDriverAssigned: "logistics.deliveryroute.driver.assigned" {
 event RouteStopCreated: "logistics.routestop.created" {
   stopId: string
   tenantId: string
-  deliveryRouteId: string
-  address: string
-  sequence: number
+  routeId: string
+  name: string
+  stopNumber: number
   createdAt: datetime
 }
 
 event RouteStopArrived: "logistics.routestop.arrived" {
   stopId: string
   tenantId: string
-  deliveryRouteId: string
-  arrivedAt: datetime
+  routeId: string
+  actualArrival: datetime
 }
 
 event RouteStopCompleted: "logistics.routestop.completed" {
   stopId: string
   tenantId: string
-  deliveryRouteId: string
+  routeId: string
   completedAt: datetime
 }
 
 event RouteStopReordered: "logistics.routestop.reordered" {
   stopId: string
   tenantId: string
-  deliveryRouteId: string
-  sequence: number
+  routeId: string
+  stopNumber: number
   updatedAt: datetime
 }
 
@@ -1274,16 +1250,16 @@ event PaymentRefundAttemptCreated: "payments.refund.attempt.created" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: money
-  reason: string
-  attemptedAt: datetime
+  requestedAmount: money
+  refundReason: string
+  createdAt: datetime
 }
 
 event PaymentRefundAttemptSucceeded: "payments.refund.attempt.succeeded" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: money
+  requestedAmount: money
   succeededAt: datetime
 }
 
@@ -1291,7 +1267,7 @@ event PaymentRefundAttemptFailed: "payments.refund.attempt.failed" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: money
+  requestedAmount: money
   failedAt: datetime
 }
 

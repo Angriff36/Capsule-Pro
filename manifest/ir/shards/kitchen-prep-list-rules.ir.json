@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "76254d2b183cba2d1c7fc46d074b8a9a8ea686dfbba3c48e8d7a78098950a31f",
-    "irHash": "4be1ad858ed9502e1b1b12062bf94e6c4f10415e6f774fd3c79e545be94888ef",
+    "contentHash": "6ebb4c6951c38ef089756b804c6d7e10794e3d66e95246ac8c0de44ed0965111",
+    "irHash": "b05bdfd0ad47814a39de7d565d981924e6b7fc550ba33b3e8f40b6a1cca9faa9",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.806Z"
+    "compiledAt": "2026-06-12T14:47:34.179Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -76,12 +76,16 @@
         {
           "name": "dietaryRestrictions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -112,7 +116,7 @@
         {
           "name": "totalEstimatedTime",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -905,7 +909,7 @@
         {
           "name": "baseQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -929,7 +933,7 @@
         {
           "name": "scaledQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -977,24 +981,32 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
         {
           "name": "dietarySubstitutions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -1129,25 +1141,36 @@
             },
             "right": {
               "kind": "binary",
-              "operator": "!=",
+              "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "length"
                 },
-                "property": "allergens"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "allergens"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
                 "value": {
-                  "kind": "string",
-                  "value": ""
+                  "kind": "number",
+                  "value": 0
                 }
               }
             }
           },
-          "dependencies": []
+          "dependencies": [
+            "length"
+          ]
         },
         {
           "name": "hasDietarySubstitutions",
@@ -1178,25 +1201,36 @@
             },
             "right": {
               "kind": "binary",
-              "operator": "!=",
+              "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "length"
                 },
-                "property": "dietarySubstitutions"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "dietarySubstitutions"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
                 "value": {
-                  "kind": "string",
-                  "value": ""
+                  "kind": "number",
+                  "value": 0
                 }
               }
             }
           },
-          "dependencies": []
+          "dependencies": [
+            "length"
+          ]
         },
         {
           "name": "isRequired",
@@ -2638,7 +2672,11 @@
         {
           "name": "newDietaryRestrictions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -3313,7 +3351,11 @@
         {
           "name": "dietaryRestrictions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -3576,7 +3618,11 @@
         {
           "name": "dietaryRestrictions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -4573,7 +4619,11 @@
         {
           "name": "newDietarySubstitutions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -4914,7 +4964,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -4922,7 +4976,11 @@
         {
           "name": "dietarySubstitutions",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

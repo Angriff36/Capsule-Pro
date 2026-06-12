@@ -13,9 +13,9 @@ entity BulkOrderRule {
   indexed property required tenantId: string
   property required catalogEntryId: string
   property ruleName: string = ""
-  property required minimumQuantity: int = 1
+  property required minimumQuantity: decimal = 1
   property required ruleType: string = "discount"
-  property thresholdQuantity: int = 0
+  property thresholdQuantity: decimal = 0
   property action: string = "discount"
   property discountPercent: decimal = 0
   property freeItemQuantity: int = 0
@@ -50,7 +50,7 @@ entity BulkOrderRule {
   }
 
   default policy BulkOrderRuleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Bulk order management"
-  command create(catalogEntryId: string, ruleName: string, minimumQuantity: int, ruleType: string, action: string, thresholdQuantity: int, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime) {
+  command create(catalogEntryId: string, ruleName: string, minimumQuantity: decimal, ruleType: string, action: string, thresholdQuantity: decimal, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime) {
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
     guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
@@ -74,7 +74,7 @@ entity BulkOrderRule {
     emit BulkOrderRuleCreated
   }
 
-  command update(catalogEntryId: string, ruleName: string, minimumQuantity: int, ruleType: string, action: string, thresholdQuantity: int, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime, isActive: boolean) {
+  command update(catalogEntryId: string, ruleName: string, minimumQuantity: decimal, ruleType: string, action: string, thresholdQuantity: decimal, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted rule"
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
@@ -163,7 +163,7 @@ event BulkOrderRuleCreated: "inventory.bulk-order-rule.created" {
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  minimumQuantity: int
+  minimumQuantity: decimal
   ruleType: string
   action: string
   createdAt: datetime
@@ -174,7 +174,7 @@ event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  minimumQuantity: int
+  minimumQuantity: decimal
   ruleType: string
   action: string
   updatedAt: datetime

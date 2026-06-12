@@ -13,8 +13,8 @@ entity PricingTier {
   indexed property required tenantId: string
   property required catalogEntryId: string
   property tierName: string = ""
-  property required minQuantity: int = 1
-  property maxQuantity: int = 0
+  property required minQuantity: decimal = 1
+  property maxQuantity: decimal = 0
   property required unitCost: money = 0
   property discountPercent: decimal = 0
   // effectiveFrom/effectiveTo are optional bounds; null = unbounded on that side.
@@ -44,7 +44,7 @@ entity PricingTier {
   }
 
   default policy PricingTierDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Pricing tier management"
-  command create(catalogEntryId: string, tierName: string, minQuantity: int, maxQuantity: int, unitCost: money, discountPercent: decimal, effectiveFrom: datetime, effectiveTo: datetime) {
+  command create(catalogEntryId: string, tierName: string, minQuantity: decimal, maxQuantity: decimal, unitCost: money, discountPercent: decimal, effectiveFrom: datetime, effectiveTo: datetime) {
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
     guard unitCost >= 0 "Unit cost must be non-negative"
@@ -63,7 +63,7 @@ entity PricingTier {
     emit PricingTierCreated
   }
 
-  command update(catalogEntryId: string, tierName: string, minQuantity: int, maxQuantity: int, unitCost: money, discountPercent: decimal, effectiveFrom: datetime, effectiveTo: datetime, isActive: boolean) {
+  command update(catalogEntryId: string, tierName: string, minQuantity: decimal, maxQuantity: decimal, unitCost: money, discountPercent: decimal, effectiveFrom: datetime, effectiveTo: datetime, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted pricing tier"
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
@@ -137,8 +137,8 @@ event PricingTierCreated: "inventory.pricing-tier.created" {
   tenantId: string
   catalogEntryId: string
   tierName: string
-  minQuantity: int
-  maxQuantity: int
+  minQuantity: decimal
+  maxQuantity: decimal
   unitCost: money
   discountPercent: decimal
   createdAt: datetime
@@ -149,8 +149,8 @@ event PricingTierUpdated: "inventory.pricing-tier.updated" {
   tenantId: string
   catalogEntryId: string
   tierName: string
-  minQuantity: int
-  maxQuantity: int
+  minQuantity: decimal
+  maxQuantity: decimal
   unitCost: money
   discountPercent: decimal
   updatedAt: datetime

@@ -9,7 +9,7 @@ entity KnowledgeBaseEntry {
   searchable property required title: string
   property category: string = "general"
   property content: string = ""
-  property tags: string = ""
+  property tags: array<string> = []
   indexed property status: string = "draft"
   property authorId: string = ""
   property publishedAt: datetime
@@ -29,7 +29,7 @@ entity KnowledgeBaseEntry {
   relationship belongsTo author: User with authorId
 
   default policy KnowledgeBaseEntryDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Knowledge base"
-  command create(title: string, category: string, content: string, tags: string, authorId: string) {
+  command create(title: string, category: string, content: string, tags: array<string>, authorId: string) {
     guard title != null and title != "" "Title is required"
     guard authorId != null and authorId != "" "Author ID is required"
 
@@ -49,7 +49,7 @@ entity KnowledgeBaseEntry {
     emit KnowledgeBaseEntryDeleted
   }
 
-  command update(title: string, category: string, content: string, tags: string) {
+  command update(title: string, category: string, content: string, tags: array<string>) {
     guard title != null and title != "" "Title is required"
 
     mutate title = title

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "13b30f0bcec562a0b023243ba672eb3c002d9e709ddce90fd5762f58da73c2c9",
-    "irHash": "ab8d3b123142e234b75208ce6bc31732564d0f3f1f1df8cf43e306ffca8346e7",
+    "contentHash": "62d3874ef4d88df165bc5e286c68edd2749c1960edfee96ff962e80fb850eae6",
+    "irHash": "8cb40b6cf3050573da0a09b96bd865767b123b53222e53a2ee354af0f549858f",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.864Z"
+    "compiledAt": "2026-06-12T14:47:34.230Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -801,19 +801,7 @@
             "name": "datetime",
             "nullable": false
           },
-          "modifiers": [
-            "readonly"
-          ]
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "readonly"
-          ]
+          "modifiers": []
         }
       ],
       "computedProperties": [],
@@ -840,8 +828,7 @@
       "key": [
         "tenantId",
         "id"
-      ],
-      "timestamps": true
+      ]
     },
     {
       "name": "PayrollRun",

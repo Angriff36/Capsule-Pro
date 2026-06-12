@@ -11,36 +11,32 @@ entity TemperatureProbe {
   property required id: string
   indexed property required tenantId: string
   searchable property required name: string
-  property required equipmentId: string
-  property required location: string
-  property required minThreshold: decimal
-  property required maxThreshold: decimal
+  property required probeId: string
+  property locationId: string = ""
+  property required minTemp: decimal
+  property required maxTemp: decimal
   property isActive: boolean = true
-  property lastCalibratedAt: datetime
+  property lastCalibration: datetime
   timestamps
 
   // A probe that has never been calibrated needs attention before it can be trusted.
-  computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt == null
-  computed rangeSpan: decimal = self.maxThreshold - self.minThreshold
+  computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibration == null
+  computed rangeSpan: decimal = self.maxTemp - self.minTemp
 
-  relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
-
-  constraint thresholdOrder: self.minThreshold < self.maxThreshold "minThreshold must be less than maxThreshold"
+  constraint thresholdOrder: self.minTemp < self.maxTemp "minTemp must be less than maxTemp"
   constraint requireName: self.name != "" "Probe name is required"
-  constraint requireLocation: self.location != "" "Probe location is required"
 
   default policy TemperatureProbeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(name: string, equipmentId: string, location: string, minThreshold: number, maxThreshold: number) {
+  command create(name: string, probeId: string, optional locationId: string, minTemp: number, maxTemp: number) {
     guard name != null and name != "" "Probe name is required"
-    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
-    guard location != null and location != "" "Location is required"
-    guard minThreshold < maxThreshold "minThreshold must be less than maxThreshold"
+    guard probeId != null and probeId != "" "Probe hardware ID is required"
+    guard minTemp < maxTemp "minTemp must be less than maxTemp"
 
     mutate name = name
-    mutate equipmentId = equipmentId
-    mutate location = location
-    mutate minThreshold = minThreshold
-    mutate maxThreshold = maxThreshold
+    mutate probeId = probeId
+    mutate locationId = locationId
+    mutate minTemp = minTemp
+    mutate maxTemp = maxTemp
     mutate isActive = true
 
     emit TemperatureProbeCreated
@@ -50,17 +46,17 @@ entity TemperatureProbe {
     guard self.isActive "Cannot calibrate an inactive probe"
     guard calibratedBy != null and calibratedBy != "" "Calibrator ID is required"
 
-    mutate lastCalibratedAt = now()
+    mutate lastCalibration = now()
 
     emit TemperatureProbeCalibrated
   }
 
-  command updateThresholds(minThreshold: number, maxThreshold: number) {
+  command updateThresholds(minTemp: number, maxTemp: number) {
     guard self.isActive "Cannot update thresholds on an inactive probe"
-    guard minThreshold < maxThreshold "minThreshold must be less than maxThreshold"
+    guard minTemp < maxTemp "minTemp must be less than maxTemp"
 
-    mutate minThreshold = minThreshold
-    mutate maxThreshold = maxThreshold
+    mutate minTemp = minTemp
+    mutate maxTemp = maxTemp
 
     emit TemperatureProbeThresholdsUpdated
   }
@@ -84,15 +80,17 @@ entity TemperatureLog {
   property required id: string
   indexed property required tenantId: string
   property required equipmentId: string
-  property required recordedBy: string
+  property required logNumber: string
+  property required logType: string
+  property required loggedBy: string
   property required temperature: decimal
-  property required recordedAt: datetime
+  property required loggedAt: datetime
   property required withinRange: boolean
   searchable property notes: string = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
-  constraint requireRecordedBy: self.recordedBy != "" "Recorder employee ID is required"
+  constraint requireRecordedBy: self.loggedBy != "" "Recorder employee ID is required"
 
   relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
 
@@ -101,19 +99,23 @@ entity TemperatureLog {
     details: {
       equipmentId: self.equipmentId
       temperature: self.temperature
-      recordedBy: self.recordedBy
+      loggedBy: self.loggedBy
     }
   }
 
   default policy TemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(equipmentId: string, recordedBy: string, temperature: number, recordedAt: datetime, withinRange: boolean, notes: string) {
+  command create(equipmentId: string, logNumber: string, logType: string, loggedBy: string, temperature: number, loggedAt: datetime, withinRange: boolean, notes: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
-    guard recordedBy != null and recordedBy != "" "Recorder employee ID is required"
+    guard logNumber != null and logNumber != "" "Log number is required"
+    guard logType != null and logType != "" "Log type is required"
+    guard loggedBy != null and loggedBy != "" "Recorder employee ID is required"
 
     mutate equipmentId = equipmentId
-    mutate recordedBy = recordedBy
+    mutate logNumber = logNumber
+    mutate logType = logType
+    mutate loggedBy = loggedBy
     mutate temperature = temperature
-    mutate recordedAt = recordedAt
+    mutate loggedAt = loggedAt
     mutate withinRange = withinRange
     mutate notes = notes
 
@@ -132,9 +134,9 @@ entity TemperatureReading {
   indexed property required tenantId: string
   property required probeId: string
   property required temperature: decimal
-  property required recordedAt: datetime
+  property required loggedAt: datetime = now()
   property required withinRange: boolean
-  timestamps
+  property createdAt: datetime = now()
 
   constraint requireProbe: self.probeId != "" "Probe ID is required"
 
@@ -149,12 +151,12 @@ entity TemperatureReading {
   }
 
   default policy TemperatureReadingDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(probeId: string, temperature: number, recordedAt: datetime, withinRange: boolean) {
+  command create(probeId: string, temperature: number, optional loggedAt: datetime, withinRange: boolean) {
     guard probeId != null and probeId != "" "Probe ID is required"
 
     mutate probeId = probeId
     mutate temperature = temperature
-    mutate recordedAt = recordedAt
+    mutate loggedAt = loggedAt
     mutate withinRange = withinRange
 
     emit TemperatureReadingCreated
@@ -172,19 +174,17 @@ entity IotAlertRule {
   indexed property required tenantId: string
   searchable property required name: string
   property required equipmentId: string
-  property required metric: string
   property required sensorType: string
   property required condition: string
   property required threshold: decimal
   property thresholdMin: decimal = 0
   property thresholdMax: decimal = 0
-  property required comparison: string
   property required severity: string
   property durationMs: int = 0
   property alertAction: string = "notification"
   property isActive: boolean = true
-  property notifyRoles: string = ""
-  property notifyChannels: string = ""
+  property notifyRoles: array<string> = []
+  property notifyChannels: array<string> = []
   searchable property description: string = ""
   timestamps
 
@@ -192,26 +192,21 @@ entity IotAlertRule {
 
   relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
 
-  constraint requireMetric: self.metric != "" "Metric is required"
-  constraint requireComparison: self.comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
+  constraint validCondition: self.condition in ["above", "below", "outside_range"] "Invalid condition"
   constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
 
   default policy IotAlertRuleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(name: string, equipmentId: string, metric: string, sensorType: string, condition: string, threshold: decimal, thresholdMin: decimal, thresholdMax: decimal, comparison: string, severity: string, durationMs: int, alertAction: string, isActive: boolean, notifyRoles: string, notifyChannels: string, description: string) {
+  command create(name: string, equipmentId: string, sensorType: string, condition: string, threshold: decimal, thresholdMin: decimal, thresholdMax: decimal, severity: string, durationMs: int, alertAction: string, isActive: boolean, notifyRoles: array<string>, notifyChannels: array<string>, description: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
-    guard metric != null and metric != "" "Metric is required"
-    guard comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
 
     mutate name = name
     mutate equipmentId = equipmentId
-    mutate metric = metric
     mutate sensorType = sensorType
     mutate condition = condition
     mutate threshold = threshold
     mutate thresholdMin = thresholdMin
     mutate thresholdMax = thresholdMax
-    mutate comparison = comparison
     mutate severity = severity
     mutate durationMs = durationMs
     mutate alertAction = alertAction
@@ -223,15 +218,11 @@ entity IotAlertRule {
     emit IotAlertRuleCreated
   }
 
-  command update(metric: string, threshold: number, comparison: string, severity: string) {
+  command update(threshold: number, severity: string) {
     guard self.isActive "Cannot update an inactive alert rule"
-    guard metric != null and metric != "" "Metric is required"
-    guard comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
 
-    mutate metric = metric
     mutate threshold = threshold
-    mutate comparison = comparison
     mutate severity = severity
 
     emit IotAlertRuleUpdated
@@ -335,12 +326,14 @@ entity CorrectiveAction {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
+  property required actionNumber: string
+  property required title: string
   property required sourceType: string
   property required sourceId: string
   searchable property required description: string
   property assignedTo: string = ""
   indexed property required status: string = "open"
-  property dueAt: datetime
+  property dueDate: datetime
   property resolvedAt: datetime
   timestamps
 
@@ -357,15 +350,19 @@ entity CorrectiveAction {
   constraint requireDescription: self.description != "" "Description is required"
 
   default policy CorrectiveActionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(sourceType: string, sourceId: string, description: string, dueAt: datetime) {
+  command create(actionNumber: string, title: string, sourceType: string, sourceId: string, description: string, dueDate: datetime) {
+    guard actionNumber != null and actionNumber != "" "Action number is required"
+    guard title != null and title != "" "Title is required"
     guard sourceType != null and sourceType != "" "Source type is required"
     guard sourceId != null and sourceId != "" "Source ID is required"
     guard description != null and description != "" "Description is required"
 
+    mutate actionNumber = actionNumber
+    mutate title = title
     mutate sourceType = sourceType
     mutate sourceId = sourceId
     mutate description = description
-    mutate dueAt = dueAt
+    mutate dueDate = dueDate
 
     emit CorrectiveActionCreated
   }
@@ -407,10 +404,12 @@ entity QualityCheck {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
+  property required checkNumber: string
+  property required title: string
   property required checkType: string
-  property required performedBy: string
+  property required completedBy: string
   indexed property required status: string = "pending"
-  property performedAt: datetime = now()
+  property completedAt: datetime
   searchable property notes: string = ""
   timestamps
 
@@ -426,15 +425,19 @@ entity QualityCheck {
 
   constraint validStatus: self.status in ["pending", "passed", "failed"] "Invalid quality check status"
   constraint requireCheckType: self.checkType != "" "Check type is required"
-  constraint requirePerformedBy: self.performedBy != "" "Performer employee ID is required"
+  constraint requirePerformedBy: self.completedBy != "" "Performer employee ID is required"
 
   default policy QualityCheckDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(checkType: string, performedBy: string, notes: string) {
+  command create(checkNumber: string, title: string, checkType: string, completedBy: string, notes: string) {
+    guard checkNumber != null and checkNumber != "" "Check number is required"
+    guard title != null and title != "" "Title is required"
     guard checkType != null and checkType != "" "Check type is required"
-    guard performedBy != null and performedBy != "" "Performer employee ID is required"
+    guard completedBy != null and completedBy != "" "Performer employee ID is required"
 
+    mutate checkNumber = checkNumber
+    mutate title = title
     mutate checkType = checkType
-    mutate performedBy = performedBy
+    mutate completedBy = completedBy
     mutate notes = notes
 
     emit QualityCheckCreated
@@ -444,7 +447,7 @@ entity QualityCheck {
     guard self.status == "pending" "Quality check must be pending to pass"
 
     mutate status = "passed"
-    mutate performedAt = now()
+    mutate completedAt = now()
     mutate notes = notes
 
     emit QualityCheckPassed
@@ -455,7 +458,7 @@ entity QualityCheck {
     guard notes != null and notes != "" "Failure notes are required"
 
     mutate status = "failed"
-    mutate performedAt = now()
+    mutate completedAt = now()
     mutate notes = notes
 
     emit QualityCheckFailed
@@ -481,27 +484,30 @@ entity QualityCheckItem {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required qualityCheckId: string
+  property required checkId: string
+  property required itemName: string
   property required criterion: string
   property passed: boolean = false
   searchable property notes: string = ""
   property sortOrder: int = 0
   timestamps
 
-  constraint requireQualityCheckId: self.qualityCheckId != "" "Quality check ID is required"
+  constraint requireQualityCheckId: self.checkId != "" "Quality check ID is required"
 
-  relationship belongsTo qualityCheck: QualityCheck fields [tenantId, qualityCheckId] references [tenantId, id]
+  relationship belongsTo qualityCheck: QualityCheck fields [tenantId, checkId] references [tenantId, id]
 
   constraint requireCriterion: self.criterion != "" "Criterion description is required"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
 
   default policy QualityCheckItemDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(qualityCheckId: string, criterion: string, sortOrder: number) {
-    guard qualityCheckId != null and qualityCheckId != "" "Quality check ID is required"
+  command create(checkId: string, itemName: string, criterion: string, sortOrder: number) {
+    guard checkId != null and checkId != "" "Quality check ID is required"
+    guard itemName != null and itemName != "" "Item name is required"
     guard criterion != null and criterion != "" "Criterion description is required"
     guard sortOrder >= 0 "Sort order cannot be negative"
 
-    mutate qualityCheckId = qualityCheckId
+    mutate checkId = checkId
+    mutate itemName = itemName
     mutate criterion = criterion
     mutate passed = false
     mutate sortOrder = sortOrder
@@ -528,7 +534,7 @@ entity KitchenTaskClaim {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required kitchenTaskId: string
+  property required taskId: string
   property required employeeId: string
   property required claimedAt: datetime
   indexed property required status: string = "active"
@@ -542,18 +548,18 @@ entity KitchenTaskClaim {
   transition status from "active" to ["released"]
 
   constraint validStatus: self.status in ["active", "released"] "Invalid claim status"
-  constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
+  constraint requireKitchenTaskId: self.taskId != "" "Kitchen task ID is required"
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
 
-  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, taskId] references [tenantId, id]
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
   default policy KitchenTaskClaimDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command claim(kitchenTaskId: string, employeeId: string, claimedAt: datetime) {
-    guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
+  command claim(taskId: string, employeeId: string, claimedAt: datetime) {
+    guard taskId != null and taskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
-    mutate kitchenTaskId = kitchenTaskId
+    mutate taskId = taskId
     mutate employeeId = employeeId
     mutate claimedAt = claimedAt
     mutate status = "active"
@@ -582,33 +588,36 @@ entity KitchenTaskProgress {
   key [tenantId, id]
   property required id: string
   indexed property required tenantId: string
-  property required kitchenTaskId: string
+  property required taskId: string
   property required employeeId: string
-  indexed property required status: string
+  property required progressType: string
+  indexed property required newStatus: string
   property required progressPct: decimal
-  property note: string = ""
+  property notes: string = ""
   property required recordedAt: datetime
-  timestamps
+  property createdAt: datetime = now()
 
-  constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
+  constraint requireKitchenTaskId: self.taskId != "" "Kitchen task ID is required"
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
   constraint validProgressPct: self.progressPct >= 0 and self.progressPct <= 100 "Progress percentage must be between 0 and 100"
 
-  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, taskId] references [tenantId, id]
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
   default policy KitchenTaskProgressDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: datetime) {
-    guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
+  command create(taskId: string, employeeId: string, progressType: string, newStatus: string, progressPct: number, notes: string, recordedAt: datetime) {
+    guard taskId != null and taskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard status != null and status != "" "Status is required"
+    guard progressType != null and progressType != "" "Progress type is required"
+    guard newStatus != null and newStatus != "" "Status is required"
     guard progressPct >= 0 and progressPct <= 100 "Progress percentage must be between 0 and 100"
 
-    mutate kitchenTaskId = kitchenTaskId
+    mutate taskId = taskId
     mutate employeeId = employeeId
-    mutate status = status
+    mutate progressType = progressType
+    mutate newStatus = newStatus
     mutate progressPct = progressPct
-    mutate note = note
+    mutate notes = notes
     mutate recordedAt = recordedAt
 
     emit KitchenTaskProgressRecorded
@@ -901,8 +910,7 @@ event TemperatureProbeCreated: "kitchen.temperatureprobe.created" {
   probeId: string
   tenantId: string
   name: string
-  equipmentId: string
-  location: string
+  locationId: string
   createdAt: datetime
 }
 
@@ -914,8 +922,8 @@ event TemperatureProbeCalibrated: "kitchen.temperatureprobe.calibrated" {
 
 event TemperatureProbeThresholdsUpdated: "kitchen.temperatureprobe.thresholds.updated" {
   probeId: string
-  minThreshold: number
-  maxThreshold: number
+  minTemp: number
+  maxTemp: number
   updatedAt: datetime
 }
 
@@ -930,10 +938,10 @@ event TemperatureLogCreated: "kitchen.temperaturelog.created" {
   logId: string
   tenantId: string
   equipmentId: string
-  recordedBy: string
+  loggedBy: string
   temperature: number
   withinRange: boolean
-  recordedAt: datetime
+  loggedAt: datetime
 }
 
 event TemperatureReadingCreated: "kitchen.temperaturereading.created" {
@@ -942,21 +950,19 @@ event TemperatureReadingCreated: "kitchen.temperaturereading.created" {
   probeId: string
   temperature: number
   withinRange: boolean
-  recordedAt: datetime
+  loggedAt: datetime
 }
 
 event IotAlertRuleCreated: "kitchen.iotalertrule.created" {
   ruleId: string
   tenantId: string
   equipmentId: string
-  metric: string
   severity: string
   createdAt: datetime
 }
 
 event IotAlertRuleUpdated: "kitchen.iotalertrule.updated" {
   ruleId: string
-  metric: string
   threshold: number
   severity: string
   updatedAt: datetime
@@ -1022,7 +1028,7 @@ event QualityCheckCreated: "kitchen.qualitycheck.created" {
   checkId: string
   tenantId: string
   checkType: string
-  performedBy: string
+  completedBy: string
   createdAt: datetime
 }
 
@@ -1049,14 +1055,14 @@ event QualityCheckReinspected: "kitchen.qualitycheck.reinspected" {
 event QualityCheckItemCreated: "kitchen.qualitycheckitem.created" {
   itemId: string
   tenantId: string
-  qualityCheckId: string
+  checkId: string
   criterion: string
   createdAt: datetime
 }
 
 event QualityCheckItemResultRecorded: "kitchen.qualitycheckitem.result.recorded" {
   itemId: string
-  qualityCheckId: string
+  checkId: string
   passed: boolean
   recordedBy: string
   recordedAt: datetime
@@ -1065,14 +1071,14 @@ event QualityCheckItemResultRecorded: "kitchen.qualitycheckitem.result.recorded"
 event KitchenTaskClaimCreated: "kitchen.kitchentaskclaim.created" {
   claimId: string
   tenantId: string
-  kitchenTaskId: string
+  taskId: string
   employeeId: string
   claimedAt: datetime
 }
 
 event KitchenTaskClaimReleased: "kitchen.kitchentaskclaim.released" {
   claimId: string
-  kitchenTaskId: string
+  taskId: string
   employeeId: string
   releasedBy: string
   reason: string
@@ -1082,9 +1088,9 @@ event KitchenTaskClaimReleased: "kitchen.kitchentaskclaim.released" {
 event KitchenTaskProgressRecorded: "kitchen.kitchentaskprogress.created" {
   progressId: string
   tenantId: string
-  kitchenTaskId: string
+  taskId: string
   employeeId: string
-  status: string
+  newStatus: string
   progressPct: number
   recordedAt: datetime
 }

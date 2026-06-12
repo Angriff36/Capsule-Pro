@@ -113,6 +113,14 @@ export async function autoGeneratePrepListForEvent(
   const tenantId = user.tenantId;
 
   const prepListId = randomUUID();
+  // PrepList.dietaryRestrictions is array<string> in the manifest; the input
+  // interface still accepts a comma-joined string for caller convenience.
+  const dietaryRestrictions = input.dietaryRestrictions
+    ? input.dietaryRestrictions
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
   const shell = await runManifestCommand({
     entity: "PrepList",
     command: "create",
@@ -121,7 +129,7 @@ export async function autoGeneratePrepListForEvent(
       eventId: input.eventId,
       name: input.name,
       batchMultiplier: input.batchMultiplier ?? 1,
-      dietaryRestrictions: input.dietaryRestrictions ?? "",
+      dietaryRestrictions,
       totalItems: input.validInstructionLines,
       totalEstimatedTime: 0,
       notes: input.notes ?? "",
@@ -142,7 +150,7 @@ export async function autoGeneratePrepListForEvent(
           eventId: input.eventId,
           name: input.name,
           batchMultiplier: input.batchMultiplier ?? 1,
-          dietaryRestrictions: input.dietaryRestrictions ?? "",
+          dietaryRestrictions,
           notes: input.notes ?? "",
           menuGroupsJson: input.menuGroupsJson,
           totalInstructionLines: input.totalInstructionLines,

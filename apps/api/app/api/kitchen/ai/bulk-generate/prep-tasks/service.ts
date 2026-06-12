@@ -427,12 +427,11 @@ export async function saveGeneratedTasks(
               taskType: task.taskType || "prep",
               priority: task.priority,
               quantityTotal: task.quantityTotal || 0,
-              quantityUnitId: task.quantityUnitId || "",
+              quantityUnitId: task.quantityUnitId ?? 0,
               servingsTotal: task.servingsTotal || 0,
               startByDate: task.startByDate?.getTime() || 0,
               dueByDate: task.dueByDate?.getTime() || 0,
               notes: task.notes || "",
-              ingredients: "", // AI-generated tasks don't have ingredients
             },
             { entityName: "PrepTask" }
           );

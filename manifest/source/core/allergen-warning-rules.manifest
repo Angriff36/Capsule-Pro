@@ -13,8 +13,8 @@ entity AllergenWarning {
   property eventId: string = ""
   property dishId: string = ""
   property warningType: string = ""
-  property allergens: string = ""
-  property affectedGuests: string = ""
+  property allergens: array<string> = []
+  property affectedGuests: array<string> = []
   property severity: string = "warning"
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
@@ -41,16 +41,16 @@ entity AllergenWarning {
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireWarningType: self.warningType != "" "Warning type is required"
-  constraint requireAllergens: self.allergens != "" "Allergens list is required"
+  constraint requireAllergens: length(self.allergens) > 0 "Allergens list is required"
   constraint validSeverity: self.severity in ["info", "warning", "critical"] "Severity must be info, warning, or critical"
   constraint cannotAcknowledgeTwice:warn self.isAcknowledged == true "Warning already acknowledged"
   constraint cannotResolveTwice:warn self.resolved == true "Warning already resolved"
 
   default policy AllergenWarningDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Allergen warning management"
-  command create(eventId: string, dishId: string, warningType: string, allergens: string, affectedGuests: string, severity: string, notes: string) {
+  command create(eventId: string, dishId: string, warningType: string, allergens: array<string>, affectedGuests: array<string>, severity: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard warningType != null and warningType != "" "Warning type is required"
-    guard allergens != null and allergens != "" "Allergens list is required"
+    guard allergens != null and length(allergens) > 0 "Allergens list is required"
     guard severity in ["info", "warning", "critical"] "Severity must be info, warning, or critical"
 
     mutate eventId = eventId
@@ -136,8 +136,8 @@ event AllergenWarningCreated: "kitchen.allergen-warning.created" {
   eventId: string
   dishId: string
   warningType: string
-  allergens: string
-  affectedGuests: string
+  allergens: array<string>
+  affectedGuests: array<string>
   severity: string
   notes: string
   createdAt: datetime
@@ -171,7 +171,7 @@ event AllergenWarningEscalated: "kitchen.allergen-warning.escalated" {
   allergenWarningId: string
   tenantId: string
   eventId: string
-  allergens: string
+  allergens: array<string>
   escalatedTo: string
   reason: string
   escalatedAt: datetime

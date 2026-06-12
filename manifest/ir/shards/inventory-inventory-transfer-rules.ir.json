@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "4a595fb2ee082c58e292c69cd81175f7859ea14f0513b1e585e69de4001c48f8",
-    "irHash": "b2f869322e584a7001427667cf9d36da661aba3c3d84eed2ba18b80dd88d15c0",
+    "contentHash": "73fb8d8a6217f4b0b878744fc39c770663c95b6bb61f0487a3619774c44d0c79",
+    "irHash": "60c897e725ee220c435f6ca1aa9008204e91c96953a7a97434df421e812d2157",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.786Z"
+    "compiledAt": "2026-06-12T14:47:34.162Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -126,7 +126,7 @@
           "modifiers": []
         },
         {
-          "name": "shipDate",
+          "name": "shippedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -134,7 +134,7 @@
           "modifiers": []
         },
         {
-          "name": "receiveDate",
+          "name": "receivedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1025,7 +1025,7 @@
         },
         {
           "kind": "mutate",
-          "target": "shipDate",
+          "target": "shippedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -1110,7 +1110,7 @@
         },
         {
           "kind": "mutate",
-          "target": "receiveDate",
+          "target": "receivedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -1339,7 +1339,7 @@
         },
         {
           "kind": "mutate",
-          "target": "receiveDate",
+          "target": "receivedAt",
           "expression": {
             "kind": "call",
             "callee": {

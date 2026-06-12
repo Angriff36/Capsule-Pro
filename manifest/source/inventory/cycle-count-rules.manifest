@@ -169,8 +169,8 @@ entity CycleCountRecord {
   property required itemNumber: string
   property required itemName: string
   property required storageLocationId: string
-  property expectedQuantity: int = 0
-  property countedQuantity: int = 0
+  property expectedQuantity: decimal = 0
+  property countedQuantity: decimal = 0
   property variance: decimal = 0
   property variancePct: decimal = 0
   property countDate: datetime
@@ -277,8 +277,8 @@ entity VarianceReport {
   property required itemId: string
   property required itemNumber: string
   property required itemName: string
-  property expectedQuantity: int = 0
-  property countedQuantity: int = 0
+  property expectedQuantity: decimal = 0
+  property countedQuantity: decimal = 0
   property variance: decimal = 0
   property variancePct: decimal = 0
   property accuracyScore: decimal = 0

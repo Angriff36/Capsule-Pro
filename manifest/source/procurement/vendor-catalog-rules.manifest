@@ -18,8 +18,8 @@ entity VendorCatalog {
   property leadTimeDays: int = 0
   property leadTimeMinDays: int = 0
   property leadTimeMaxDays: int = 0
-  property minimumOrderQuantity: int = 0
-  property orderMultiple: int = 0
+  property minimumOrderQuantity: decimal = 0
+  property orderMultiple: decimal = 0
   property required isActive: boolean = true
   property effectiveFrom: datetime
   property effectiveTo: datetime
@@ -40,7 +40,7 @@ entity VendorCatalog {
   constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
 
   default policy VendorCatalogDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor catalog"
-  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: int, orderMultiple: int, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string) {
+  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: decimal, orderMultiple: decimal, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string) {
     guard itemNumber != null and itemNumber != "" "Item number is required"
     guard itemName != null and itemName != "" "Item name is required"
     guard unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
@@ -69,7 +69,7 @@ entity VendorCatalog {
     emit VendorCatalogCreated
   }
 
-  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: int, orderMultiple: int, isActive: boolean, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string, lastCostUpdate: datetime) {
+  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: int, leadTimeMinDays: int, leadTimeMaxDays: int, minimumOrderQuantity: decimal, orderMultiple: decimal, isActive: boolean, effectiveFrom: datetime, effectiveTo: datetime, supplierSku: string, notes: string, tags: string, lastCostUpdate: datetime) {
     guard self.deletedAt == null "Cannot update a deleted catalog entry"
 
     mutate supplierId = supplierId

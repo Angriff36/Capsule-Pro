@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "73c84a5fad67d983ec133493bf2611bbf59ecc827a623fbaefdf7e84f163908a",
-    "irHash": "87d201c2345a74b81142c17ea887b94f55f888b8c96181ebcb46525f699f9404",
+    "contentHash": "878773fbb6b598f4748c7dfbf30969ecbd72c83d4fac7d0b2f0ad398f2e758cf",
+    "irHash": "391ed5a050d11bd11f8a3c599d56c5d9f100021528182ea6cbe89476f7b7fac9",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.821Z"
+    "compiledAt": "2026-06-12T14:47:34.192Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -172,7 +172,7 @@
         {
           "name": "usageHours",
           "type": {
-            "name": "int",
+            "name": "float",
             "nullable": false
           },
           "defaultValue": {
@@ -184,7 +184,7 @@
         {
           "name": "maxUsageHours",
           "type": {
-            "name": "int",
+            "name": "float",
             "nullable": false
           },
           "defaultValue": {
@@ -1320,18 +1320,6 @@
           "modifiers": []
         },
         {
-          "name": "equipmentName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
           "name": "title",
           "type": {
             "name": "string",
@@ -1342,7 +1330,7 @@
           ]
         },
         {
-          "name": "type",
+          "name": "workOrderType",
           "type": {
             "name": "string",
             "nullable": false
@@ -1428,7 +1416,7 @@
           "modifiers": []
         },
         {
-          "name": "completedDate",
+          "name": "completedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1448,7 +1436,7 @@
           "modifiers": []
         },
         {
-          "name": "actualCost",
+          "name": "totalCost",
           "type": {
             "name": "money",
             "nullable": false
@@ -1461,18 +1449,6 @@
         },
         {
           "name": "partsUsed",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "vendorId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1699,16 +1675,6 @@
               "equipmentId"
             ]
           }
-        },
-        {
-          "name": "vendor",
-          "kind": "belongsTo",
-          "target": "Vendor",
-          "foreignKey": {
-            "fields": [
-              "vendorId"
-            ]
-          }
         }
       ],
       "commands": [
@@ -1731,7 +1697,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "type"
+              "property": "workOrderType"
             },
             "right": {
               "kind": "array",
@@ -1938,7 +1904,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "equipmentName"
+              "property": "equipmentId"
             },
             "days": {
               "kind": "call",
@@ -2425,14 +2391,6 @@
           "required": true
         },
         {
-          "name": "equipmentName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "title",
           "type": {
             "name": "string",
@@ -2441,7 +2399,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "workOrderType",
           "type": {
             "name": "string",
             "nullable": false
@@ -2480,14 +2438,6 @@
         },
         {
           "name": "equipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "equipmentName",
           "type": {
             "name": "string",
             "nullable": false
@@ -2587,15 +2537,7 @@
           "required": true
         },
         {
-          "name": "equipmentName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "actualCost",
+          "name": "totalCost",
           "type": {
             "name": "money",
             "nullable": false
@@ -2634,14 +2576,6 @@
       "payload": [
         {
           "name": "workOrderId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "equipmentName",
           "type": {
             "name": "string",
             "nullable": false
@@ -3620,7 +3554,7 @@
         {
           "name": "maxUsageHours",
           "type": {
-            "name": "int",
+            "name": "float",
             "nullable": false
           },
           "required": true
@@ -4421,7 +4355,7 @@
       "entity": "MaintenanceWorkOrder",
       "parameters": [
         {
-          "name": "actualCost",
+          "name": "totalCost",
           "type": {
             "name": "money",
             "nullable": false
@@ -4502,10 +4436,10 @@
         },
         {
           "kind": "mutate",
-          "target": "actualCost",
+          "target": "totalCost",
           "expression": {
             "kind": "identifier",
-            "name": "actualCost"
+            "name": "totalCost"
           }
         },
         {
@@ -4518,7 +4452,7 @@
         },
         {
           "kind": "mutate",
-          "target": "completedDate",
+          "target": "completedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -4694,7 +4628,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "equipmentName"
+              "property": "equipmentId"
             },
             "status": {
               "kind": "member",
@@ -4762,7 +4696,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "workOrderType",
           "type": {
             "name": "string",
             "nullable": false
@@ -4873,7 +4807,7 @@
           "operator": "in",
           "left": {
             "kind": "identifier",
-            "name": "type"
+            "name": "workOrderType"
           },
           "right": {
             "kind": "array",
@@ -5107,10 +5041,10 @@
         },
         {
           "kind": "mutate",
-          "target": "type",
+          "target": "workOrderType",
           "expression": {
             "kind": "identifier",
-            "name": "type"
+            "name": "workOrderType"
           }
         },
         {
@@ -5243,7 +5177,7 @@
         },
         {
           "kind": "mutate",
-          "target": "actualCost",
+          "target": "totalCost",
           "expression": {
             "kind": "literal",
             "value": {
@@ -5254,7 +5188,7 @@
         },
         {
           "kind": "mutate",
-          "target": "completedDate",
+          "target": "completedAt",
           "expression": {
             "kind": "literal",
             "value": {

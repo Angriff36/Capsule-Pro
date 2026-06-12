@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "043ef04d17d5973316addfc088818f4db15e96e4618a85379e47c567e2be58be",
-    "irHash": "7c23205d82b8f529087943b810a44ed7c9e88785d84f2089468350cf9bbbda82",
+    "contentHash": "df7a2aa6d7afbc8bf4188a4c2291ad47a29c2fd17e1990a3772dd08f667e7c90",
+    "irHash": "0d4d4008e19909045d1356aa1a2e196efca2ea2862291965dcf207eed19789a7",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.760Z"
+    "compiledAt": "2026-06-12T14:47:34.140Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -66,7 +66,7 @@
         {
           "name": "minQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -80,7 +80,7 @@
         {
           "name": "maxQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -652,7 +652,7 @@
         {
           "name": "minQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -660,7 +660,7 @@
         {
           "name": "maxQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -730,7 +730,7 @@
         {
           "name": "minQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -738,7 +738,7 @@
         {
           "name": "maxQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -948,7 +948,7 @@
         {
           "name": "minQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -956,7 +956,7 @@
         {
           "name": "maxQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1241,7 +1241,7 @@
         {
           "name": "minQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -1249,7 +1249,7 @@
         {
           "name": "maxQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true

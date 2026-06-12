@@ -10,11 +10,11 @@ entity EventReport {
   searchable property required name: string
   property version: string = "2025-01-01"
   indexed property status: string = "draft"
-  property completion: decimal = 0
+  property completion: int = 0
   property checklistData: string = "{}"
   property parsedEventData: string = ""
   property reportConfig: string = ""
-  property autoFillScore: decimal = 0
+  property autoFillScore: int = 0
   property reviewNotes: string = ""
   property reviewedBy: string = ""
   // Bug fix: lifecycle datetimes — no default
@@ -127,7 +127,7 @@ entity EventReport {
     emit EventReportCompleted
   }
 
-  command updateProgress(completion: decimal, checklistData: string) {
+  command updateProgress(completion: int, checklistData: string) {
     guard self.status == "draft" or self.status == "in_progress" "Can only update progress on draft or in-progress reports"
     guard completion >= 0 and completion <= 100 "Completion must be between 0 and 100"
 
@@ -160,7 +160,7 @@ event EventReportSubmitted: "events.report.submitted" {
   tenantId: string
   eventId: string
   name: string
-  completion: number
+  completion: int
   submittedAt: datetime
 }
 
@@ -196,6 +196,6 @@ event EventReportProgressUpdated: "events.report.progress_updated" {
   reportId: string
   tenantId: string
   eventId: string
-  completion: number
+  completion: int
   updatedAt: datetime
 }

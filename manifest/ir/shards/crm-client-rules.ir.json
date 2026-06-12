@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f2a02096e743637ad003fce877facc7354619dcc43432c3adbdb5f630d832265",
-    "irHash": "061a4a962649a8f34f10ea2380c3f87c0d62e40c62b8780b401054fbfcde8254",
+    "contentHash": "d75d2b9f9363c0cdc096631625c9e7c4190f11b2f13eada580352692125c5c3a",
+    "irHash": "30bfafef48d1c5515bd21eb21804b7f1a01cb1bc2ae560c1c58e557e542d9861",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.696Z"
+    "compiledAt": "2026-06-12T14:47:34.089Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -202,7 +202,7 @@
         {
           "name": "defaultPaymentTerms",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -284,18 +284,6 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "isActive",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "boolean",
-            "value": true
           },
           "modifiers": []
         },
@@ -2221,7 +2209,7 @@
         {
           "name": "defaultPaymentTerms",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -2612,17 +2600,6 @@
             "kind": "identifier",
             "name": "assignedTo"
           }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
         }
       ],
       "emits": [
@@ -2732,7 +2709,7 @@
         {
           "name": "defaultPaymentTerms",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -3155,17 +3132,6 @@
             "kind": "literal",
             "value": {
               "kind": "null"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
             }
           }
         }

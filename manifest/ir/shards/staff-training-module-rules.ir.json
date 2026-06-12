@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "dad78ccee9cd35960ccf53e5668248c6c5d565f13b73bf05331afeaadd59c180",
-    "irHash": "41f0c0a18962d4a595574193ecbf9fea5bb6b0e4cb8c0446f06b37083e9a4ee7",
+    "contentHash": "5f96d6dfff1572b3065efb117be278f80047256b83ccc388a92fdbefed0ae4c0",
+    "irHash": "f0f7d17adfe122738762a2a4ecd1c1ceba7c729d786f95953b8e3e76ecd4458f",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.881Z"
+    "compiledAt": "2026-06-12T14:47:34.244Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1233,14 +1233,16 @@
           "modifiers": []
         },
         {
-          "name": "staffMemberId",
+          "name": "employeeId",
           "type": {
             "name": "string",
             "nullable": false
           },
-          "modifiers": [
-            "required"
-          ]
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
         },
         {
           "name": "staffRole",
@@ -1267,7 +1269,7 @@
           "modifiers": []
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1641,12 +1643,12 @@
           "target": "TrainingAttempt"
         },
         {
-          "name": "staffMember",
+          "name": "employee",
           "kind": "belongsTo",
-          "target": "StaffMember",
+          "target": "User",
           "foreignKey": {
             "fields": [
-              "staffMemberId"
+              "employeeId"
             ]
           }
         },
@@ -4906,7 +4908,7 @@
         },
         {
           "kind": "mutate",
-          "target": "staffMemberId",
+          "target": "employeeId",
           "expression": {
             "kind": "identifier",
             "name": "staffMemberId"
@@ -4946,7 +4948,7 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "dueDate",
           "expression": {
             "kind": "identifier",
             "name": "dueAt"
@@ -5062,7 +5064,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -5229,7 +5231,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -5513,7 +5515,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -5788,7 +5790,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -6056,7 +6058,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -6127,7 +6129,7 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "dueDate",
           "expression": {
             "kind": "identifier",
             "name": "dueAt"
@@ -6232,7 +6234,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {
@@ -6275,7 +6277,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "dueAt"
+            "property": "dueDate"
           },
           "right": {
             "kind": "literal",
@@ -6293,7 +6295,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "dueAt"
+            "property": "dueDate"
           },
           "right": {
             "kind": "identifier",
@@ -6426,7 +6428,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "staffMemberId"
+            "property": "employeeId"
           }
         },
         {

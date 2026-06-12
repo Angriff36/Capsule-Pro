@@ -9,8 +9,8 @@ entity DocumentVersion {
   property required documentId: string
   unique property required versionNumber: int
   property required content: string
-  property changeDescription: string = ""
-  property createdBy: string = ""
+  property changeSummary: string = ""
+  property createdById: string = ""
   indexed property status: string = "draft"
   property approvedBy: string = ""
   property publishedBy: string = ""
@@ -40,25 +40,25 @@ entity DocumentVersion {
   relationship belongsTo document: Document with documentId
 
   default policy DocumentVersionDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Document versioning"
-  command create(documentId: string, content: string, changeDescription: string, createdBy: string) {
+  command create(documentId: string, content: string, changeSummary: string, createdById: string) {
     guard documentId != null and documentId != "" "Document ID is required"
     guard content != null and content != "" "Content is required"
 
     mutate documentId = documentId
     mutate content = content
-    mutate changeDescription = changeDescription
-    mutate createdBy = createdBy
+    mutate changeSummary = changeSummary
+    mutate createdById = createdById
     mutate versionNumber = 1
 
     emit DocumentVersionCreated
   }
 
-  command updateContent(content: string, changeDescription: string) {
+  command updateContent(content: string, changeSummary: string) {
     guard self.status == "draft" "Can only edit draft versions"
     guard content != null and content != "" "Content is required"
 
     mutate content = content
-    mutate changeDescription = changeDescription
+    mutate changeSummary = changeSummary
 
     emit DocumentVersionContentUpdated
   }
@@ -115,7 +115,7 @@ event DocumentVersionCreated: "document.version.created" {
   documentId: string
   tenantId: string
   versionNumber: number
-  createdBy: string
+  createdById: string
   createdAt: datetime
 }
 
@@ -123,7 +123,7 @@ event DocumentVersionContentUpdated: "document.version.content_updated" {
   versionId: string
   documentId: string
   tenantId: string
-  changeDescription: string
+  changeSummary: string
   updatedAt: datetime
 }
 

@@ -120,7 +120,7 @@ entity FacilityArea {
   property areaType: string = "other"
   property floor: string = ""
   searchable property description: string = ""
-  property squareFeet: decimal = 0
+  property squareFeet: int = 0
   indexed property status: string = "active"
   timestamps
 
@@ -196,13 +196,11 @@ entity FacilityAsset {
   property areaId: string = ""
   searchable property required name: string
   property assetType: string = "other"
-  property assetClass: string = "fixed"
   indexed property status: string = "operational"
   // purchaseDate: nullable lifecycle timestamp — no = now() default
   property purchaseDate: datetime
-  property purchasePrice: money = 0
+  property purchaseCost: money = 0
   property currentValue: decimal = 0
-  property depreciationRate: decimal = 0
   property serialNumber: string = ""
   property manufacturer: string = ""
   property model: string = ""
@@ -235,7 +233,7 @@ entity FacilityAsset {
   }
 
   default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
+  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchaseCost: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -243,8 +241,8 @@ entity FacilityAsset {
     mutate name = name
     mutate assetType = assetType
     mutate purchaseDate = purchaseDate
-    mutate purchasePrice = purchasePrice
-    mutate currentValue = purchasePrice
+    mutate purchaseCost = purchaseCost
+    mutate currentValue = purchaseCost
     mutate serialNumber = serialNumber
     mutate manufacturer = manufacturer
     mutate model = model

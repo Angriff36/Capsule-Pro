@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "202a031c0602189fdafbb554a60537863c44f029143e64abc950990401ffa52c",
-    "irHash": "de780af656e3bb116a50a85f0f93f39d0b855483f1db976b2011a2a2f5c9094e",
+    "contentHash": "937b6deaa28407187068d0df579b2f1a5fcd537fe86fda46a7fde2460769da9a",
+    "irHash": "4bf3543212845c33822ec990ce7ea8665411a61a16d81b8ac429b9eaf851ab38",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.838Z"
+    "compiledAt": "2026-06-12T14:47:34.207Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -137,19 +137,7 @@
             "name": "datetime",
             "nullable": false
           },
-          "modifiers": [
-            "readonly"
-          ]
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "modifiers": [
-            "readonly"
-          ]
+          "modifiers": []
         }
       ],
       "computedProperties": [
@@ -450,8 +438,7 @@
       "key": [
         "tenantId",
         "id"
-      ],
-      "timestamps": true
+      ]
     }
   ],
   "enums": [],

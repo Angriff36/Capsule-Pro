@@ -35,7 +35,7 @@ entity SampleData {
   
   computed hasSampleData: boolean = self.isSeeded == true
 
-  timestamps
+  // No `timestamps` keyword: public.SampleData has neither createdAt nor updatedAt — lifecycle tracked by seededAt/clearedAt
   // ─────────────────────────────────────────────────────────────────────────
   // SEED COMMAND
   // Creates sample data for new organizations to explore the platform

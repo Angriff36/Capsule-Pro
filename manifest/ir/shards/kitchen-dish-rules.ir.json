@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c853930ef7b34c5c9ac77b59103d52e9bf0137c44d407ccc1473f32f36c43352",
-    "irHash": "c27926ac084d9ade9e56c26b0be44e5ac75eca0de353ed218f38e132b2b8f719",
+    "contentHash": "071496859df63c7e8f7b83f2278222c291f6d04ec8ef4a6067d60717d16b875c",
+    "irHash": "1ed9c0e20bca117b57f6b98a0e2f487492d9085f46851c4218451ac5e56e8b26",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.788Z"
+    "compiledAt": "2026-06-12T14:47:34.164Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -160,24 +160,32 @@
         {
           "name": "dietaryTags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -1853,7 +1861,11 @@
         {
           "name": "dietaryTags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -1861,7 +1873,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -2264,7 +2280,11 @@
         {
           "name": "dietaryTags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -2272,7 +2292,11 @@
         {
           "name": "allergens",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

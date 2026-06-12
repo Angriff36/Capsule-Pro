@@ -12,8 +12,8 @@ entity EventGuest {
   property guestEmail: string = ""
   property guestPhone: string = ""
   property isPrimaryContact: boolean = false
-  property dietaryRestrictions: string = ""
-  property allergenRestrictions: string = ""
+  property dietaryRestrictions: array<string> = []
+  property allergenRestrictions: array<string> = []
   searchable property notes: string = ""
   property declineReason: string = ""
   property specialMealRequired: boolean = false
@@ -21,15 +21,15 @@ entity EventGuest {
   property tableAssignment: string = ""
   property mealPreference: string = ""
   property rsvpStatus: string = "pending"
-  property rsvpAt: datetime
+  property rsvpRespondedAt: datetime
   property checkedInAt: datetime
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 
-  computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
-  computed hasAllergenRestrictions: boolean = self.allergenRestrictions != ""
+  computed hasDietaryRestrictions: boolean = length(self.dietaryRestrictions) > 0
+  computed hasAllergenRestrictions: boolean = length(self.allergenRestrictions) > 0
   computed needsSpecialMeal: boolean = self.specialMealRequired == true
   computed isDeleted: boolean = self.deletedAt != null
   computed hasTableAssignment: boolean = self.tableAssignment != ""
@@ -46,7 +46,7 @@ entity EventGuest {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   default policy EventGuestDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
+  command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: array<string>, allergenRestrictions: array<string>, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"
 
@@ -66,7 +66,7 @@ entity EventGuest {
     emit EventGuestCreated
   }
 
-  command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
+  command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: array<string>, allergenRestrictions: array<string>, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard guestName != null and guestName != "" "Guest name is required"
     guard self.deletedAt == null "Cannot update a deleted guest"
 
@@ -90,7 +90,7 @@ entity EventGuest {
     guard self.rsvpStatus != "declined" "Guest has already declined; re-invite before confirming"
 
     mutate rsvpStatus = "confirmed"
-    mutate rsvpAt = now()
+    mutate rsvpRespondedAt = now()
 
     emit EventGuestRsvpConfirmed
   }
@@ -100,7 +100,7 @@ entity EventGuest {
     guard self.checkedInAt == null "Cannot decline after the guest has checked in"
 
     mutate rsvpStatus = "declined"
-    mutate rsvpAt = now()
+    mutate rsvpRespondedAt = now()
     mutate declineReason = reason
 
     emit EventGuestRsvpDeclined
@@ -146,8 +146,8 @@ event EventGuestCreated: "kitchen.event-guest.created" {
   guestEmail: string
   guestPhone: string
   isPrimaryContact: boolean
-  dietaryRestrictions: string
-  allergenRestrictions: string
+  dietaryRestrictions: array<string>
+  allergenRestrictions: array<string>
   specialMealRequired: boolean
   mealPreference: string
   createdAt: datetime
@@ -158,8 +158,8 @@ event EventGuestUpdated: "kitchen.event-guest.updated" {
   guestName: string
   guestEmail: string
   isPrimaryContact: boolean
-  dietaryRestrictions: string
-  allergenRestrictions: string
+  dietaryRestrictions: array<string>
+  allergenRestrictions: array<string>
   specialMealRequired: boolean
   mealPreference: string
   tableAssignment: string
@@ -171,7 +171,7 @@ event EventGuestRsvpConfirmed: "kitchen.event-guest.rsvp-confirmed" {
   tenantId: string
   eventId: string
   guestName: string
-  rsvpAt: datetime
+  rsvpRespondedAt: datetime
 }
 
 event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
@@ -180,7 +180,7 @@ event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
   eventId: string
   guestName: string
   reason: string
-  rsvpAt: datetime
+  rsvpRespondedAt: datetime
 }
 
 event EventGuestCheckedIn: "kitchen.event-guest.checked-in" {

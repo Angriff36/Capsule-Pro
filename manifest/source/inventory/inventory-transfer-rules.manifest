@@ -13,8 +13,8 @@ entity InventoryTransfer {
   property approvedBy: string = ""
   property shippedBy: string = ""
   property receivedBy: string = ""
-  property shipDate: datetime
-  property receiveDate: datetime
+  property shippedAt: datetime
+  property receivedAt: datetime
   property discrepancyNotes: string = ""
   property hasDiscrepancy: boolean = false
   searchable property notes: string = ""
@@ -82,7 +82,7 @@ entity InventoryTransfer {
     guard self.status == "approved" "Transfer must be approved before shipping"
 
     mutate shippedBy = shippedBy
-    mutate shipDate = now()
+    mutate shippedAt = now()
     mutate status = "in_transit"
 
     emit TransferShipped
@@ -92,7 +92,7 @@ entity InventoryTransfer {
     guard self.status == "in_transit" "Transfer must be in transit before receiving"
 
     mutate receivedBy = receivedBy
-    mutate receiveDate = now()
+    mutate receivedAt = now()
     mutate status = "received"
 
     emit TransferReceived
@@ -115,7 +115,7 @@ entity InventoryTransfer {
     guard receivedBy != null and receivedBy != "" "Receiving user is required"
 
     mutate receivedBy = receivedBy
-    mutate receiveDate = now()
+    mutate receivedAt = now()
     mutate notes = notes
 
     emit TransferPartiallyReceived

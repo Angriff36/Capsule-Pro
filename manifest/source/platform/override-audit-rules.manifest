@@ -15,7 +15,8 @@ entity OverrideAudit {
   property overrideReason: string = ""
   property authorizedBy: string = ""
   property authorizedAt: datetime
-  timestamps
+  // No `timestamps` keyword: tenant_kitchen.override_audit is append-only (createdAt + authorizedAt only, no updated_at column)
+  property createdAt: datetime = now()
 
   computed isAuthorized: boolean = self.authorizedBy != ""
   computed isPendingAuthorization: boolean = self.authorizedBy == ""

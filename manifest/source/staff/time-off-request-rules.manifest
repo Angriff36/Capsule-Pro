@@ -14,9 +14,9 @@ entity TimeOffRequest {
   property reason: string = ""
   property requestType: string = ""
   indexed property status: string = "PENDING"
-  property processedBy: string = ""
-  // Bug fix: processedAt is a lifecycle timestamp — must be nullable
-  property processedAt: datetime
+  property reviewedBy: string = ""
+  // Bug fix: reviewedAt is a lifecycle timestamp — must be nullable
+  property reviewedAt: datetime
   property rejectionReason: string = ""
   // Accrual balance at time of request for manager visibility
   property balanceSnapshot: decimal = 0
@@ -76,8 +76,8 @@ entity TimeOffRequest {
     guard processedBy != null and processedBy != "" "Processor ID is required"
 
     mutate status = "APPROVED"
-    mutate processedBy = processedBy
-    mutate processedAt = now()
+    mutate reviewedBy = processedBy
+    mutate reviewedAt = now()
 
     emit TimeOffRequestApproved
   }
@@ -89,8 +89,8 @@ entity TimeOffRequest {
     guard rejectionReason != null and rejectionReason != "" "Rejection reason is required"
 
     mutate status = "REJECTED"
-    mutate processedBy = processedBy
-    mutate processedAt = now()
+    mutate reviewedBy = processedBy
+    mutate reviewedAt = now()
     mutate rejectionReason = rejectionReason
 
     emit TimeOffRequestRejected

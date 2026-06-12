@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a3b2d43c535f70032d56b1fb3ca9d9f6389fb0e6d486b3b3946ba65b347d1317",
-    "irHash": "14c0cf260f5d40514e63616061f87ef9e8f89008600f2489504d87f8f71e92c5",
+    "contentHash": "914672235964ee5902e5184a26ef8d43455a14dff2ac482456fed09282f1a25b",
+    "irHash": "e8975a2c449585a44921ea84eeb5970ca896941b58e413ea1ccded920401dc25",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.781Z"
+    "compiledAt": "2026-06-12T14:47:34.158Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -110,7 +110,7 @@
         {
           "name": "quantityOnHand",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -170,12 +170,16 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
@@ -2777,7 +2781,11 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -3327,7 +3335,11 @@
         {
           "name": "tags",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true

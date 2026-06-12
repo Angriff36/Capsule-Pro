@@ -22,8 +22,6 @@ entity Payment {
   readonly property gatewayTransactionId: string = ""
   property gatewayPaymentMethodId: string = ""
   property processor: string = ""
-  property processorResponseCode: string = ""
-  property processorResponseMessage: string = ""
 
   // Timestamps
   property processedAt: datetime
@@ -39,8 +37,6 @@ entity Payment {
 
   // Metadata
   searchable property description: string = ""
-  property externalReference: string = ""
-  property metadata: string = "{}"
 
   // Computed properties
   versionProperty version: number

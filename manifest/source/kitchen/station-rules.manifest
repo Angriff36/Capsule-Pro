@@ -17,7 +17,7 @@ entity Station {
   searchable property required name: string
   property required stationType: string = "prep-station"
   property capacitySimultaneousTasks: int = 1
-  property equipmentList: string = ""
+  property equipmentList: array<string> = []
   property isActive: boolean = true
   // Maintenance mode: station is temporarily taken offline for cleaning/repair
   // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
@@ -48,7 +48,7 @@ entity Station {
   }
 
   default policy StationDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Station management"
-  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
+  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: array<string>, notes: string) {
     guard name != null and name != "" "Station name is required"
     guard locationId != null and locationId != "" "Location ID is required"
     guard capacitySimultaneousTasks > 0 "Capacity must be positive"
@@ -156,7 +156,7 @@ entity Station {
     emit StationActivated
   }
 
-  command updateEquipment(equipmentList: string, userId: string) {
+  command updateEquipment(equipmentList: array<string>, userId: string) {
     guard equipmentList != null "Equipment list cannot be null"
 
     mutate equipmentList = equipmentList
@@ -259,7 +259,7 @@ event StationActivated: "kitchen.station.activated" {
 event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
   stationId: string
   stationName: string
-  equipmentList: string
+  equipmentList: array<string>
   userId: string
   updatedAt: datetime
 }

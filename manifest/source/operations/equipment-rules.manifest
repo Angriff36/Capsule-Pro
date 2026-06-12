@@ -18,8 +18,8 @@ entity Equipment {
   property lastMaintenanceDate: datetime
   property nextMaintenanceDate: datetime
   property maintenanceIntervalDays: int = 90
-  property usageHours: int = 0
-  property maxUsageHours: int = 1000
+  property usageHours: float = 0
+  property maxUsageHours: float = 1000
   property condition: string = "good"
   searchable property notes: string = ""
   property isActive: boolean = true
@@ -150,7 +150,7 @@ entity Equipment {
     emit EquipmentUsageRecorded
   }
 
-  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: datetime, maintenanceIntervalDays: int, maxUsageHours: int, notes: string) {
+  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: datetime, maintenanceIntervalDays: int, maxUsageHours: float, notes: string) {
     guard name != null and name != "" "Equipment name is required"
     guard locationId != null and locationId != "" "Location ID is required"
     guard type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
@@ -211,27 +211,25 @@ entity MaintenanceWorkOrder {
   property workOrderNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""
-  property equipmentName: string = ""
   searchable property required title: string
-  property required type: string = "corrective"
+  property required workOrderType: string = "corrective"
   property required priority: string = "medium"
   indexed property required status: string = "open"
   searchable property description: string = ""
   property reportedBy: string = ""
   property assignedTo: string = ""
   property scheduledDate: datetime
-  property completedDate: datetime
+  property completedAt: datetime
   property estimatedCost: money = 0
-  property actualCost: money = 0
+  property totalCost: money = 0
   property partsUsed: string = ""
-  property vendorId: string = ""
   searchable property notes: string = ""
   timestamps
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate cache request
   computed daysUntilDue: number = self.scheduledDate != null ? daysBetween(now(), self.scheduledDate) : -1 cache request
 
-  constraint validWorkOrderType: self.type in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
+  constraint validWorkOrderType: self.workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
 
@@ -239,7 +237,7 @@ entity MaintenanceWorkOrder {
     messageTemplate: "Work order '{title}' for {equipment} is overdue by {days} day(s)"
     details: {
       title: self.title
-      equipment: self.equipmentName
+      equipment: self.equipmentId
       days: abs(self.daysUntilDue)
       scheduledDate: self.scheduledDate
     }
@@ -266,13 +264,13 @@ entity MaintenanceWorkOrder {
     emit MaintenanceWorkOrderStarted
   }
 
-  command completeWork(actualCost: money, partsUsed: string, notes: string, userId: string) {
+  command completeWork(totalCost: money, partsUsed: string, notes: string, userId: string) {
     guard self.status == "in_progress" "Work order must be in progress to complete"
 
     mutate status = "completed"
-    mutate actualCost = actualCost
+    mutate totalCost = totalCost
     mutate partsUsed = partsUsed
-    mutate completedDate = now()
+    mutate completedAt = now()
 
     emit MaintenanceWorkOrderCompleted
   }
@@ -285,7 +283,7 @@ entity MaintenanceWorkOrder {
       messageTemplate: "Cancelling work order '{title}' - ensure equipment is properly addressed"
       details: {
         title: self.title
-        equipment: self.equipmentName
+        equipment: self.equipmentId
         status: self.status
         reason: reason
       }
@@ -296,9 +294,9 @@ entity MaintenanceWorkOrder {
     emit MaintenanceWorkOrderStatusUpdated
   }
 
-  command create(title: string, type: string, priority: string, description: string, areaId: string, equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
+  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
-    guard type in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
+    guard workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
     guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
 
     constraint warnCriticalWithoutSchedule:warn priority == "critical" and (scheduledDate == null or scheduledDate > now() + 86400000) {
@@ -311,7 +309,7 @@ entity MaintenanceWorkOrder {
     }
 
     mutate title = title
-    mutate type = type
+    mutate workOrderType = workOrderType
     mutate priority = priority
     mutate description = description
     mutate areaId = areaId
@@ -323,15 +321,14 @@ entity MaintenanceWorkOrder {
     mutate workOrderNumber = "WO-" + substring(id, 0, 8)
     mutate status = "open"
     mutate estimatedCost = 0
-    mutate actualCost = 0
-    mutate completedDate = null
+    mutate totalCost = 0
+    mutate completedAt = null
 
     emit MaintenanceWorkOrderCreated
   }
 
   relationship belongsTo area: FacilityArea with areaId
   relationship belongsTo equipment: Equipment with equipmentId
-  relationship belongsTo vendor: Vendor with vendorId
 
   store MaintenanceWorkOrder in durable
 }
@@ -410,9 +407,8 @@ event EquipmentRetired: "equipment.retired" {
 event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
   workOrderId: string
   equipmentId: string
-  equipmentName: string
   title: string
-  type: string
+  workOrderType: string
   priority: string
   createdAt: datetime
 }
@@ -420,7 +416,6 @@ event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
 event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
   workOrderId: string
   equipmentId: string
-  equipmentName: string
   assignedTo: string
   scheduledDate: datetime
   estimatedCost: money
@@ -437,8 +432,7 @@ event MaintenanceWorkOrderStarted: "maintenance.workorder.started" {
 event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
   workOrderId: string
   equipmentId: string
-  equipmentName: string
-  actualCost: money
+  totalCost: money
   partsUsed: string
   completedBy: string
   completedAt: datetime
@@ -446,7 +440,6 @@ event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
 
 event MaintenanceWorkOrderStatusUpdated: "maintenance.workorder.status.updated" {
   workOrderId: string
-  equipmentName: string
   oldStatus: string
   newStatus: string
   reason: string

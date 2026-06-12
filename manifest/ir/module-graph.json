@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-12T12:29:27.926Z",
-  "contentHash": "68b86599f64f4759544289295009c3e1ffae89fd14a4633e8d96b3385684024c",
+  "compiledAt": "2026-06-12T14:47:34.285Z",
+  "contentHash": "52d1f010dd6e4c802ce67ffcb8682239b6b16198bcd3205a0e2e74385a464fca",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -70,8 +70,8 @@
       "path": "core/crm-admin-extended-rules.manifest",
       "domain": "core",
       "entities": 7,
-      "commands": 25,
-      "events": 25
+      "commands": 23,
+      "events": 23
     },
     {
       "path": "core/document-version-rules.manifest",
@@ -665,7 +665,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 202,
-    "commands": 1001,
-    "events": 982
+    "commands": 999,
+    "events": 980
   }
 }

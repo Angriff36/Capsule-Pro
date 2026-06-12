@@ -10,14 +10,14 @@ entity PrepMethod {
   searchable property required name: string
   property category: string = ""
   searchable property description: string = ""
-  property estimatedDurationMinutes: decimal = 0
-  property requiresCertification: string = ""
+  property estimatedDurationMinutes: int = 0
+  property requiresCertification: string[] = []
   property isActive: boolean = true
   timestamps
   property deletedAt: datetime
 
   computed hasDuration: boolean = self.estimatedDurationMinutes > 0
-  computed hasCertification: boolean = self.requiresCertification != ""
+  computed hasCertification: boolean = count(self.requiresCertification) > 0
   computed isDeactivated: boolean = self.isActive == false
 
   relationship hasMany videos: MethodVideo
@@ -34,7 +34,7 @@ entity PrepMethod {
   }
 
   default policy PrepMethodDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep method management"
-  command create(name: string, category: string, description: string, estimatedDurationMinutes: number, requiresCertification: string) {
+  command create(name: string, category: string, description: string, estimatedDurationMinutes: int, requiresCertification: string[]) {
     guard name != null and name != "" "Prep method name is required"
     guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
 
@@ -48,7 +48,7 @@ entity PrepMethod {
     emit PrepMethodCreated
   }
 
-  command update(name: string, category: string, description: string, estimatedDurationMinutes: number, requiresCertification: string) {
+  command update(name: string, category: string, description: string, estimatedDurationMinutes: int, requiresCertification: string[]) {
     guard name != null and name != "" "Prep method name is required"
     guard self.isActive "Cannot update a deactivated prep method"
     guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
@@ -99,8 +99,8 @@ event PrepMethodCreated: "kitchen.prepmethod.created" {
   tenantId: string
   name: string
   category: string
-  estimatedDurationMinutes: number
-  requiresCertification: string
+  estimatedDurationMinutes: int
+  requiresCertification: string[]
   createdAt: datetime
 }
 
@@ -108,8 +108,8 @@ event PrepMethodUpdated: "kitchen.prepmethod.updated" {
   prepMethodId: string
   name: string
   category: string
-  estimatedDurationMinutes: number
-  requiresCertification: string
+  estimatedDurationMinutes: int
+  requiresCertification: string[]
   updatedAt: datetime
 }
 

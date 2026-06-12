@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a67593b73b076508c6ea08b73fa8636c76505d4fe62c83b474348f6d1afce754",
-    "irHash": "fe0757c504013a377a318d9987a8a4d3ce0cad89d8a8cd6f5f3741962416045b",
+    "contentHash": "8e62ab9240fd48c5ff9334f10117877759b14711f9368b854b0fa2b7db55f822",
+    "irHash": "bec8d4fe2619f64d99169b34ab9d1b48767454c3358f8fe6d7ef5f12d11ab90c",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.747Z"
+    "compiledAt": "2026-06-12T14:47:34.129Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -414,7 +414,7 @@
           ]
         },
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -428,7 +428,7 @@
           ]
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -603,8 +603,8 @@
           "overrideable": false
         },
         {
-          "name": "requireTitle",
-          "code": "requireTitle",
+          "name": "requireDescription",
+          "code": "requireDescription",
           "expression": {
             "kind": "binary",
             "operator": "!=",
@@ -614,7 +614,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "title"
+              "property": "description"
             },
             "right": {
               "kind": "literal",
@@ -625,7 +625,7 @@
             }
           },
           "severity": "block",
-          "message": "Timeline entry title is required",
+          "message": "Timeline entry description is required",
           "overrideable": false
         },
         {
@@ -713,7 +713,29 @@
           ]
         },
         {
-          "name": "dueAt",
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "startTime",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "endTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -733,7 +755,7 @@
           "modifiers": []
         },
         {
-          "name": "assignedTo",
+          "name": "assigneeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -1106,7 +1128,7 @@
           ]
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -1134,7 +1156,21 @@
           ]
         },
         {
-          "name": "status",
+          "name": "mimeType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "parseStatus",
           "type": {
             "name": "string",
             "nullable": false
@@ -1182,19 +1218,23 @@
           "modifiers": []
         },
         {
-          "name": "errorMessage",
+          "name": "parseErrors",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "kind": "array",
+            "elements": []
           },
           "modifiers": []
         },
         {
-          "name": "completedAt",
+          "name": "parsedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1246,7 +1286,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "parseStatus"
             },
             "right": {
               "kind": "literal",
@@ -1273,13 +1313,13 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "parseStatus"
             },
             "right": {
               "kind": "literal",
               "value": {
                 "kind": "string",
-                "value": "processing"
+                "value": "parsing"
               }
             }
           },
@@ -1300,13 +1340,13 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "parseStatus"
             },
             "right": {
               "kind": "literal",
               "value": {
                 "kind": "string",
-                "value": "completed"
+                "value": "parsed"
               }
             }
           },
@@ -1327,7 +1367,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "parseStatus"
             },
             "right": {
               "kind": "literal",
@@ -1350,8 +1390,8 @@
       ],
       "constraints": [
         {
-          "name": "requireSource",
-          "code": "requireSource",
+          "name": "requireFileType",
+          "code": "requireFileType",
           "expression": {
             "kind": "binary",
             "operator": "!=",
@@ -1361,7 +1401,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "source"
+              "property": "fileType"
             },
             "right": {
               "kind": "literal",
@@ -1372,7 +1412,7 @@
             }
           },
           "severity": "block",
-          "message": "Import source is required",
+          "message": "Import file type is required",
           "overrideable": false
         },
         {
@@ -1413,7 +1453,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "status"
+              "property": "parseStatus"
             },
             "right": {
               "kind": "array",
@@ -1429,14 +1469,14 @@
                   "kind": "literal",
                   "value": {
                     "kind": "string",
-                    "value": "processing"
+                    "value": "parsing"
                   }
                 },
                 {
                   "kind": "literal",
                   "value": {
                     "kind": "string",
-                    "value": "completed"
+                    "value": "parsed"
                   }
                 },
                 {
@@ -1450,7 +1490,7 @@
             }
           },
           "severity": "block",
-          "message": "Status must be pending, processing, completed, or failed",
+          "message": "Status must be pending, parsing, parsed, or failed",
           "overrideable": false
         },
         {
@@ -1517,22 +1557,22 @@
       "timestamps": true,
       "transitions": [
         {
-          "property": "status",
+          "property": "parseStatus",
           "from": "pending",
           "to": [
-            "processing"
+            "parsing"
           ]
         },
         {
-          "property": "status",
-          "from": "processing",
+          "property": "parseStatus",
+          "from": "parsing",
           "to": [
-            "completed",
+            "parsed",
             "failed"
           ]
         },
         {
-          "property": "status",
+          "property": "parseStatus",
           "from": "failed",
           "to": [
             "pending"
@@ -1574,7 +1614,7 @@
           ]
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": {
             "name": "string",
             "nullable": false
@@ -1588,7 +1628,21 @@
           ]
         },
         {
-          "name": "dueAt",
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1813,7 +1867,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "type"
+              "property": "taskType"
             },
             "right": {
               "kind": "literal",
@@ -1957,7 +2011,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1969,7 +2023,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1981,24 +2035,24 @@
         {
           "name": "width",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
             "kind": "number",
-            "value": 200
+            "value": 280
           },
           "modifiers": []
         },
         {
           "name": "height",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
             "kind": "number",
-            "value": 150
+            "value": 180
           },
           "modifiers": []
         },
@@ -2231,7 +2285,7 @@
           ]
         },
         {
-          "name": "text",
+          "name": "label",
           "type": {
             "name": "string",
             "nullable": false
@@ -2245,7 +2299,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -2257,7 +2311,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -2848,7 +2902,7 @@
           "required": true
         },
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -2856,7 +2910,7 @@
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -2902,7 +2956,7 @@
           "required": true
         },
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -2994,7 +3048,7 @@
           "required": true
         },
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -3048,7 +3102,7 @@
           "required": true
         },
         {
-          "name": "assignedTo",
+          "name": "assigneeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -3424,7 +3478,7 @@
           "required": true
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3478,7 +3532,7 @@
           "required": true
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3516,7 +3570,7 @@
           "required": true
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3548,7 +3602,7 @@
           "required": true
         },
         {
-          "name": "completedAt",
+          "name": "parsedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3578,7 +3632,7 @@
           "required": true
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3586,9 +3640,13 @@
           "required": true
         },
         {
-          "name": "errorMessage",
+          "name": "parseErrors",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -3624,7 +3682,7 @@
           "required": true
         },
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3678,7 +3736,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3732,7 +3790,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": {
             "name": "string",
             "nullable": false
@@ -3840,7 +3898,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": {
             "name": "string",
             "nullable": false
@@ -4110,7 +4168,7 @@
           "required": true
         },
         {
-          "name": "text",
+          "name": "label",
           "type": {
             "name": "string",
             "nullable": false
@@ -4156,7 +4214,7 @@
           "required": true
         },
         {
-          "name": "text",
+          "name": "label",
           "type": {
             "name": "string",
             "nullable": false
@@ -5343,7 +5401,7 @@
           "required": true
         },
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -5351,7 +5409,7 @@
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5425,7 +5483,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "title"
+              "name": "description"
             },
             "right": {
               "kind": "literal",
@@ -5439,7 +5497,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "title"
+              "name": "description"
             },
             "right": {
               "kind": "literal",
@@ -5487,7 +5545,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Title is required"
+              "value": "Description is required"
             }
           }
         },
@@ -5511,18 +5569,18 @@
         },
         {
           "kind": "mutate",
-          "target": "title",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "title"
+            "name": "description"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledAt",
+          "target": "timelineTime",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledAt"
+            "name": "timelineTime"
           }
         },
         {
@@ -5559,7 +5617,7 @@
       "entity": "EventTimeline",
       "parameters": [
         {
-          "name": "title",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -5567,7 +5625,7 @@
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5600,7 +5658,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "title"
+              "name": "description"
             },
             "right": {
               "kind": "literal",
@@ -5614,7 +5672,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "title"
+              "name": "description"
             },
             "right": {
               "kind": "literal",
@@ -5652,7 +5710,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Title is required"
+              "value": "Description is required"
             }
           }
         },
@@ -5668,18 +5726,18 @@
         },
         {
           "kind": "mutate",
-          "target": "title",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "title"
+            "name": "description"
           }
         },
         {
           "kind": "mutate",
-          "target": "scheduledAt",
+          "target": "timelineTime",
           "expression": {
             "kind": "identifier",
-            "name": "scheduledAt"
+            "name": "timelineTime"
           }
         },
         {
@@ -5818,7 +5876,15 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "startTime",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5826,7 +5892,15 @@
           "required": true
         },
         {
-          "name": "assignedTo",
+          "name": "endTime",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "assigneeId",
           "type": {
             "name": "string",
             "nullable": false
@@ -5953,18 +6027,34 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "category",
           "expression": {
             "kind": "identifier",
-            "name": "dueAt"
+            "name": "category"
           }
         },
         {
           "kind": "mutate",
-          "target": "assignedTo",
+          "target": "startTime",
           "expression": {
             "kind": "identifier",
-            "name": "assignedTo"
+            "name": "startTime"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "endTime",
+          "expression": {
+            "kind": "identifier",
+            "name": "endTime"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "assigneeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "assigneeId"
           }
         },
         {
@@ -6484,7 +6574,7 @@
         },
         {
           "kind": "mutate",
-          "target": "assignedTo",
+          "target": "assigneeId",
           "expression": {
             "kind": "identifier",
             "name": "newAssignedTo"
@@ -6566,7 +6656,7 @@
       "entity": "EventImport",
       "parameters": [
         {
-          "name": "source",
+          "name": "fileType",
           "type": {
             "name": "string",
             "nullable": false
@@ -6575,6 +6665,14 @@
         },
         {
           "name": "fileName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "mimeType",
           "type": {
             "name": "string",
             "nullable": false
@@ -6599,7 +6697,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "source"
+              "name": "fileType"
             },
             "right": {
               "kind": "literal",
@@ -6613,7 +6711,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "source"
+              "name": "fileType"
             },
             "right": {
               "kind": "literal",
@@ -6684,7 +6782,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Import source is required"
+              "value": "Import file type is required"
             }
           }
         },
@@ -6710,10 +6808,10 @@
         },
         {
           "kind": "mutate",
-          "target": "source",
+          "target": "fileType",
           "expression": {
             "kind": "identifier",
-            "name": "source"
+            "name": "fileType"
           }
         },
         {
@@ -6722,6 +6820,14 @@
           "expression": {
             "kind": "identifier",
             "name": "fileName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "mimeType",
+          "expression": {
+            "kind": "identifier",
+            "name": "mimeType"
           }
         },
         {
@@ -6756,13 +6862,10 @@
         },
         {
           "kind": "mutate",
-          "target": "errorMessage",
+          "target": "parseErrors",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": ""
-            }
+            "kind": "array",
+            "elements": []
           }
         }
       ],
@@ -6793,7 +6896,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "status"
+            "property": "parseStatus"
           },
           "right": {
             "kind": "literal",
@@ -6821,12 +6924,12 @@
         },
         {
           "kind": "mutate",
-          "target": "status",
+          "target": "parseStatus",
           "expression": {
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "processing"
+              "value": "parsing"
             }
           }
         }
@@ -6866,13 +6969,13 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "status"
+            "property": "parseStatus"
           },
           "right": {
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "processing"
+              "value": "parsing"
             }
           }
         },
@@ -6903,7 +7006,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Can only complete an import that is processing"
+              "value": "Can only complete an import that is parsing"
             }
           }
         },
@@ -6919,12 +7022,12 @@
         },
         {
           "kind": "mutate",
-          "target": "status",
+          "target": "parseStatus",
           "expression": {
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "completed"
+              "value": "parsed"
             }
           }
         },
@@ -6946,7 +7049,7 @@
         },
         {
           "kind": "mutate",
-          "target": "completedAt",
+          "target": "parsedAt",
           "expression": {
             "kind": "call",
             "callee": {
@@ -6966,9 +7069,13 @@
       "entity": "EventImport",
       "parameters": [
         {
-          "name": "errorMessage",
+          "name": "parseErrors",
           "type": {
-            "name": "string",
+            "name": "array",
+            "generic": {
+              "name": "string",
+              "nullable": false
+            },
             "nullable": false
           },
           "required": true
@@ -6984,13 +7091,13 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "status"
+            "property": "parseStatus"
           },
           "right": {
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "processing"
+              "value": "parsing"
             }
           }
         }
@@ -7006,13 +7113,13 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Can only fail an import that is processing"
+              "value": "Can only fail an import that is parsing"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "status",
+          "target": "parseStatus",
           "expression": {
             "kind": "literal",
             "value": {
@@ -7023,10 +7130,10 @@
         },
         {
           "kind": "mutate",
-          "target": "errorMessage",
+          "target": "parseErrors",
           "expression": {
             "kind": "identifier",
-            "name": "errorMessage"
+            "name": "parseErrors"
           }
         }
       ],
@@ -7057,7 +7164,7 @@
               "kind": "identifier",
               "name": "self"
             },
-            "property": "status"
+            "property": "parseStatus"
           },
           "right": {
             "kind": "literal",
@@ -7085,7 +7192,7 @@
         },
         {
           "kind": "mutate",
-          "target": "status",
+          "target": "parseStatus",
           "expression": {
             "kind": "literal",
             "value": {
@@ -7096,13 +7203,10 @@
         },
         {
           "kind": "mutate",
-          "target": "errorMessage",
+          "target": "parseErrors",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": ""
-            }
+            "kind": "array",
+            "elements": []
           }
         },
         {
@@ -7145,7 +7249,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": {
             "name": "string",
             "nullable": false
@@ -7153,7 +7257,15 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "dueDate",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -7219,7 +7331,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "type"
+              "name": "taskType"
             },
             "right": {
               "kind": "literal",
@@ -7233,7 +7345,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "type"
+              "name": "taskType"
             },
             "right": {
               "kind": "literal",
@@ -7280,18 +7392,26 @@
         },
         {
           "kind": "mutate",
-          "target": "type",
+          "target": "taskType",
           "expression": {
             "kind": "identifier",
-            "name": "type"
+            "name": "taskType"
           }
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "dueAt"
+            "name": "description"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "dueDate",
+          "expression": {
+            "kind": "identifier",
+            "name": "dueDate"
           }
         },
         {
@@ -7491,7 +7611,7 @@
         },
         {
           "kind": "mutate",
-          "target": "dueAt",
+          "target": "dueDate",
           "expression": {
             "kind": "identifier",
             "name": "newDueAt"
@@ -7614,7 +7734,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7622,7 +7742,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7630,7 +7750,7 @@
         {
           "name": "width",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7638,7 +7758,7 @@
         {
           "name": "height",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7898,7 +8018,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7906,7 +8026,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7946,7 +8066,7 @@
         {
           "name": "width",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -7954,7 +8074,7 @@
         {
           "name": "height",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -8087,7 +8207,7 @@
           "required": true
         },
         {
-          "name": "text",
+          "name": "label",
           "type": {
             "name": "string",
             "nullable": false
@@ -8097,7 +8217,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -8105,7 +8225,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -8179,10 +8299,10 @@
         },
         {
           "kind": "mutate",
-          "target": "text",
+          "target": "label",
           "expression": {
             "kind": "identifier",
-            "name": "text"
+            "name": "label"
           }
         },
         {
@@ -8219,7 +8339,7 @@
       "entity": "BoardAnnotation",
       "parameters": [
         {
-          "name": "text",
+          "name": "label",
           "type": {
             "name": "string",
             "nullable": false
@@ -8229,7 +8349,7 @@
         {
           "name": "positionX",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -8237,7 +8357,7 @@
         {
           "name": "positionY",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -8259,10 +8379,10 @@
       "actions": [
         {
           "kind": "mutate",
-          "target": "text",
+          "target": "label",
           "expression": {
             "kind": "identifier",
-            "name": "text"
+            "name": "label"
           }
         },
         {

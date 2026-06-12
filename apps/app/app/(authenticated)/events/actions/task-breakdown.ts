@@ -613,12 +613,11 @@ export async function saveTaskBreakdown(
         // Previous direct-write used 8 for critical — outside valid range.
         priority: task.isCritical ? 1 : 5,
         quantityTotal: breakdown.guestCount,
-        quantityUnitId: "",
+        quantityUnitId: 0,
         servingsTotal: breakdown.guestCount,
         startByDate: startByDate.getTime(),
         dueByDate: dueByDate.getTime(),
         notes: task.description ?? "",
-        ingredients: "",
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });

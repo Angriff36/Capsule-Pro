@@ -14,9 +14,9 @@ entity PrepTask {
   property stationId: string = ""
   property claimedBy: string = ""
   property claimedAt: datetime
-  property quantityTotal: int = 0
-  property quantityCompleted: int = 0
-  property quantityUnitId: string = ""
+  property quantityTotal: decimal = 0
+  property quantityCompleted: decimal = 0
+  property quantityUnitId: int = 0
   property servingsTotal: int = 0
   property startByDate: datetime = now()
   property dueByDate: datetime
@@ -26,7 +26,6 @@ entity PrepTask {
   property estimatedMinutes: int = 0
   property dueByTime: datetime
   searchable property notes: string = ""
-  property ingredients: string = ""
   timestamps
 
   computed isClaimed: boolean = self.claimedBy != ""
@@ -117,7 +116,7 @@ entity PrepTask {
     emit PrepTaskStarted
   }
 
-  command complete(quantityCompleted: number, userId: string, completedAt: datetime) {
+  command complete(quantityCompleted: decimal, userId: string, completedAt: datetime) {
     guard quantityCompleted != null and quantityCompleted >= 0 "Completed quantity must be non-negative"
     guard self.status == "in_progress" "Can only complete in-progress tasks"
     guard self.claimedBy == userId or userId == "" "Only claimer can complete task"
@@ -171,7 +170,7 @@ entity PrepTask {
     emit PrepTaskReassigned
   }
 
-  command updateQuantity(quantityTotal: number, quantityCompleted: number) {
+  command updateQuantity(quantityTotal: decimal, quantityCompleted: decimal) {
     guard quantityTotal != null and quantityTotal >= 0
     guard quantityCompleted != null and quantityCompleted >= 0
     guard quantityCompleted <= quantityTotal
@@ -206,7 +205,7 @@ entity PrepTask {
     emit PrepTaskCanceled
   }
 
-  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: datetime, dueByDate: datetime, notes: string, ingredients: string) {
+  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: decimal, quantityUnitId: int, servingsTotal: number, startByDate: datetime, dueByDate: datetime, notes: string) {
     guard name != null and name != "" "Task name is required"
     guard eventId != null and eventId != "" "Event ID is required"
     // prepListId is optional — AI-generated tasks may not have a prep list yet
@@ -223,7 +222,6 @@ entity PrepTask {
     mutate startByDate = startByDate
     mutate dueByDate = dueByDate
     mutate notes = notes
-    mutate ingredients = ingredients
 
     emit PrepTaskCreated
   }
@@ -289,7 +287,7 @@ event PrepTaskStarted: "kitchen.preptask.started" {
 event PrepTaskCompleted: "kitchen.preptask.completed" {
   taskId: string
   userId: string
-  quantityCompleted: number
+  quantityCompleted: decimal
   completedAt: datetime
 }
 
@@ -319,7 +317,7 @@ event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
   taskId: string
   oldQuantityTotal: number
   newQuantityTotal: number
-  quantityCompleted: number
+  quantityCompleted: decimal
   updatedAt: datetime
 }
 

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "177348d3bd6c7a34f9d7fa3b9fc4091d3c5c6d75b8d5ad552c6fdcd9bd31bd8e",
-    "irHash": "a9b9e1ed46837ad7b588f6b05364885a0d1c929b77227ccfafb6972ae303847a",
+    "contentHash": "449941786305cb1043ef5f2d5a32de78597de7a53eba62f95b001059cd8f63e1",
+    "irHash": "e48b7f652a50cff12f431220356d5a4ce66ec3d843b7aad50fe27f70c9fdad21",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.738Z"
+    "compiledAt": "2026-06-12T14:47:34.121Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -88,7 +88,7 @@
         {
           "name": "completion",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -136,7 +136,7 @@
         {
           "name": "autoFillScore",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -953,7 +953,7 @@
         {
           "name": "completion",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -1169,7 +1169,7 @@
         {
           "name": "completion",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -2114,7 +2114,7 @@
         {
           "name": "completion",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "required": true

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7cbeb5a1f83a4217c78156afe8c2d77be5fd7c3bfbbf5f1b6ac62a5a49ad1300",
-    "irHash": "516d809801759ec263e9e986c7146e483895a2ed83e2c4f53d2a68c09bbabb4c",
+    "contentHash": "bcb11bef7d35c1f57eadd634d50245697b1a1b375d8b92d572a6c778f494a875",
+    "irHash": "c197764210ff86700c8af53d8c3bda7bebf27052fd923a021de1252943703a53",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.855Z"
+    "compiledAt": "2026-06-12T14:47:34.222Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -176,7 +176,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "defaultValue": {
@@ -200,12 +200,8 @@
         {
           "name": "spendToPeriod",
           "type": {
-            "name": "decimal",
+            "name": "datetime",
             "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
           },
           "modifiers": []
         },
@@ -300,7 +296,7 @@
         {
           "name": "complianceScore",
           "type": {
-            "name": "decimal",
+            "name": "int",
             "nullable": false
           },
           "defaultValue": {
@@ -1574,7 +1570,7 @@
         {
           "name": "complianceScore",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true
@@ -1756,7 +1752,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2130,7 +2126,7 @@
         {
           "name": "minimumOrderQuantity",
           "type": {
-            "name": "int",
+            "name": "decimal",
             "nullable": false
           },
           "required": true
@@ -2996,7 +2992,7 @@
         {
           "name": "complianceScore",
           "type": {
-            "name": "number",
+            "name": "int",
             "nullable": false
           },
           "required": true

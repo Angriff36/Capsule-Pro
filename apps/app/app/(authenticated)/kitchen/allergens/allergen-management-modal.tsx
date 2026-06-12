@@ -138,8 +138,8 @@ export function AllergenManagementModal({
 
       await dishUpdate({
         id,
-        allergens: JSON.stringify(selectedAllergens),
-        dietaryTags: JSON.stringify(selectedDietaryTags),
+        allergens: selectedAllergens,
+        dietaryTags: selectedDietaryTags,
       });
 
       toast.success(`Allergen information updated for dish: ${name}`);

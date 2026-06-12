@@ -6449,32 +6449,6 @@ export function useAdminChatThreadCreateMutation(
   });
 }
 
-export function useAdminChatThreadArchiveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AdminChatThread>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AdminChatThread>("AdminChatThread", "archive", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatThread.all });
-    },
-    ...options,
-  });
-}
-
-export function useAdminChatThreadReopenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AdminChatThread>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AdminChatThread>("AdminChatThread", "reopen", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatThread.all });
-    },
-    ...options,
-  });
-}
-
 export function useAdminChatMessageCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<AdminChatMessage>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -18584,6 +18558,6 @@ export function useSelOnboardingTrainingQuestion10DefinitionCreateMutation(
 // Entities: 202
 // List hooks: 171 (skipped 31: KnowledgeBaseEntry, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, VersionedEntity, Dish, KitchenTaskProgress, MenuDish, Facility, LogisticsDispatch, ApiKey, RolePolicy, WasteEntry, PayrollApprovalHistory, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition)
 // Detail hooks: 188 (skipped 14: TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition)
-// Command mutation hooks: 1001
-// Total exports: 1360
+// Command mutation hooks: 999
+// Total exports: 1358
 // Skipped list hooks (no list fn in client): KnowledgeBaseEntry, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, VersionedEntity, Dish, KitchenTaskProgress, MenuDish, Facility, LogisticsDispatch, ApiKey, RolePolicy, WasteEntry, PayrollApprovalHistory, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition

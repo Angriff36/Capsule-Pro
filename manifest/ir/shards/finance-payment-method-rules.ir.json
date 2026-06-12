@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f8931fcef5a50120e77a0d3ce395f18dcde84a63f0b55c365f5f934b4478f163",
-    "irHash": "3830f1cd9f35bc13ab5b70d8d685ca353649844dfb9f4e60d441b6f53da9990f",
+    "contentHash": "44699a4b99542b5d8cdd110403f60cc7e743b37bcece47af2a7187acc8cb4dbe",
+    "irHash": "caa9f339aa62ea071f91dd8325b70e269ab5676a744cb8af795026c920a27f6e",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T12:29:27.758Z"
+    "compiledAt": "2026-06-12T14:47:34.138Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -270,18 +270,6 @@
           "defaultValue": {
             "kind": "string",
             "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "metadata",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "{}"
           },
           "modifiers": []
         },

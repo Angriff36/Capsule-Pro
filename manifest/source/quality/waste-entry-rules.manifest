@@ -8,7 +8,7 @@ entity WasteEntry {
   indexed property required tenantId: string
   property inventoryItemId: string = ""
   property reasonId: int = 0
-  property quantity: int = 0
+  property quantity: decimal = 0
   property unitId: int = 0
   property locationId: string = ""
   property eventId: string = ""

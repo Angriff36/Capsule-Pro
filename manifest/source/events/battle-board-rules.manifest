@@ -18,9 +18,8 @@ entity BattleBoard {
   property isTemplate: boolean = false
   searchable property description: string = ""
   searchable property notes: string = ""
-  property tags: string = ""
+  property tags: array<string> = []
   timestamps
-  property dishCount: int = 0
   property deletedAt: datetime
 
   // Parent-context snapshot (inherited from the linked Event at create time).
@@ -61,7 +60,7 @@ entity BattleBoard {
   transition status from "voting" to ["finalized"]
 
   default policy BattleBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Battle board"
-  command create(boardName: string, boardType: string, eventId: string, description: string, isTemplate: boolean, notes: string, tags: string) {
+  command create(boardName: string, boardType: string, eventId: string, description: string, isTemplate: boolean, notes: string, tags: array<string>) {
     guard boardName != null and boardName != "" "Board name is required"
 
     mutate boardName = boardName
@@ -78,14 +77,7 @@ entity BattleBoard {
 
   command open(userId: string) {
     guard self.status == "draft" "Can only open draft battle boards"
-
-    constraint blockNoDishes:block self.dishCount > 0 {
-      messageTemplate: "Cannot open battle board '{boardName}' with no dishes"
-      details: {
-        boardName: self.boardName
-        boardId: self.id
-      }
-    }
+    guard self.hasData "Cannot open battle board with no dishes"
 
     mutate status = "open"
 
@@ -220,7 +212,6 @@ event BattleBoardOpened: "kitchen.battleboard.opened" {
   boardId: string
   tenantId: string
   boardName: string
-  dishCount: number
   userId: string
   openedAt: datetime
 }

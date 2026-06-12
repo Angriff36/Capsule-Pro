@@ -113,7 +113,6 @@ export default function KnowledgeBaseClient() {
               .split(",")
               .map((t) => t.trim())
               .filter(Boolean)
-              .join(",")
           : undefined,
       });
       if (createForm.status === "published") {

@@ -382,11 +382,11 @@ model KnowledgeBaseEntry {
   title String
   category String? @map("category") @default("general")
   content String? @db.Text @default("")
-  tags String? @default("")
+  tags String[] @default([])
   status String? @default("draft")
   authorId String? @map("author_id") @db.Uuid @default("")
   publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
-  viewCount Int?
+  viewCount Int? @map("view_count")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -460,7 +460,7 @@ model AlertsConfig {
   channel String? @default("")
   destination String? @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
   @@map("alerts_config")
   @@id([tenantId, id])
@@ -478,8 +478,8 @@ model AllergenWarning {
   eventId String? @map("event_id") @db.Uuid @default("")
   dishId String? @map("dish_id") @db.Uuid @default("")
   warningType String? @map("warning_type") @default("")
-  allergens String? @default("")
-  affectedGuests String? @map("affected_guests") @default("")
+  allergens String[] @default([])
+  affectedGuests String[] @map("affected_guests") @default([])
   severity String? @default("warning")
   isAcknowledged Boolean? @map("is_acknowledged") @default(false)
   acknowledgedBy String? @map("acknowledged_by") @db.Uuid @default("")
@@ -487,8 +487,8 @@ model AllergenWarning {
   overrideReason String? @map("override_reason") @default("")
   resolved Boolean? @default(false)
   resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
-  escalatedAt DateTime?
-  escalatedTo String? @default("")
+  escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
+  escalatedTo String? @map("escalated_to") @default("")
   notes String? @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -631,15 +631,15 @@ model ProposalTemplate {
 model InteractionAttachment {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  clientInteractionId String? @default("")
+  interactionId String? @map("interaction_id") @db.Uuid @default("")
   fileName String? @map("file_name") @default("")
   fileUrl String? @map("file_url") @default("")
   fileType String? @map("file_type") @default("")
-  fileSizeBytes Int?
-  uploadedBy String? @default("")
+  fileSize Int? @map("file_size")
+  uploadedBy String? @map("uploaded_by") @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
 
   @@map("interaction_attachments")
@@ -683,7 +683,7 @@ model Report {
   reportType String? @map("report_type") @default("")
   queryConfig String? @default("{}")
   displayConfig String? @default("{}")
-  isShared Boolean? @default(false)
+  isShared Boolean? @map("is_shared") @default(false)
   createdBy String? @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -729,7 +729,6 @@ model AdminChatThread {
   threadType String? @map("thread_type") @default("direct")
   slug String? @default("")
   directKey String? @map("direct_key") @default("")
-  status String? @default("open")
   createdBy String? @map("created_by") @db.Uuid @default("")
   lastMessageAt DateTime? @map("last_message_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -780,15 +779,15 @@ model DocumentVersion {
   documentId String @map("document_id") @db.Uuid
   versionNumber Int @map("version_number")
   content String @db.Text
-  changeDescription String? @default("")
-  createdBy String? @default("")
+  changeSummary String? @map("change_summary") @db.Text @default("")
+  createdById String? @map("created_by_id") @db.Uuid @default("")
   status String? @default("draft")
-  approvedBy String? @default("")
-  publishedBy String? @default("")
-  supersededBy String? @default("")
-  approvedAt DateTime?
-  publishedAt DateTime?
-  supersededAt DateTime?
+  approvedBy String? @map("approved_by") @default("")
+  publishedBy String? @map("published_by") @default("")
+  supersededBy String? @map("superseded_by") @db.Uuid @default("")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  supersededAt DateTime? @map("superseded_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -870,10 +869,10 @@ model EmployeeAvailability {
   isAvailable Boolean? @map("is_available") @default(true)
   effectiveFrom DateTime? @map("effective_from") @db.Date @default(dbgenerated("CURRENT_DATE"))
   effectiveUntil DateTime? @map("effective_until") @db.Date
-  isSuspended Boolean? @default(false)
-  suspendReason String? @default("")
-  suspendedAt DateTime?
-  reinstatedAt DateTime?
+  isSuspended Boolean? @map("is_suspended") @default(false)
+  suspendReason String? @map("suspend_reason") @default("")
+  suspendedAt DateTime? @map("suspended_at") @db.Timestamptz(6)
+  reinstatedAt DateTime? @map("reinstated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -928,8 +927,8 @@ model ClientInteraction {
   followUpCompleted Boolean? @map("follow_up_completed") @default(false)
   status String? @default("open")
   priority String? @default("normal")
-  escalatedAt DateTime?
-  escalatedTo String? @default("")
+  escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
+  escalatedTo String? @map("escalated_to") @default("")
   correlationId String? @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -964,14 +963,13 @@ model Client {
   stateProvince String? @map("state_province") @default("")
   postalCode String? @map("postal_code") @default("")
   countryCode String? @map("country_code") @db.Char(2) @default("")
-  defaultPaymentTerms Decimal? @map("default_payment_terms") @db.Decimal(12, 2) @default(30)
+  defaultPaymentTerms Int? @map("default_payment_terms") @db.SmallInt @default(30)
   taxExempt Boolean @map("tax_exempt") @default(false)
   taxId String? @map("tax_id") @default("")
   notes String? @default("")
   tags String[]
   source String? @default("")
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
-  isActive Boolean? @default(true)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1129,7 +1127,7 @@ model Proposal {
   rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(6)
   notes String? @default("")
   termsAndConditions String? @map("terms_and_conditions") @default("")
-  lineItemCount Int?
+  lineItemCount Int? @map("line_item_count")
   publicToken String? @map("public_token") @db.Uuid @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -1197,8 +1195,7 @@ model BattleBoard {
   isTemplate Boolean? @default(false)
   description String? @default("")
   notes String? @default("")
-  tags String? @default("")
-  dishCount Int?
+  tags String[] @default([])
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   eventDate DateTime? @map("event_date") @db.Timestamptz(6)
   clientId String? @map("client_id") @default("")
@@ -1304,10 +1301,10 @@ model CommandBoardCard {
   content String? @default("")
   cardType String? @map("card_type") @default("task")
   status String? @default("pending")
-  positionX Decimal? @map("position_x") @db.Decimal(12, 2)
-  positionY Decimal? @map("position_y") @db.Decimal(12, 2)
-  width Decimal? @db.Decimal(12, 2) @default(200)
-  height Decimal? @db.Decimal(12, 2) @default(150)
+  positionX Int? @map("position_x")
+  positionY Int? @map("position_y")
+  width Int? @default(200)
+  height Int? @default(150)
   zIndex Int? @map("z_index") @default(0)
   color String? @default("")
   metadata String? @default("{}")
@@ -1341,10 +1338,10 @@ model CommandBoardGroup {
   name String? @default("")
   color String? @default("")
   collapsed Boolean? @default(false)
-  positionX Decimal? @map("position_x") @db.Decimal(12, 2)
-  positionY Decimal? @map("position_y") @db.Decimal(12, 2)
-  width Decimal? @db.Decimal(12, 2) @default(300)
-  height Decimal? @db.Decimal(12, 2) @default(200)
+  positionX Int? @map("position_x")
+  positionY Int? @map("position_y")
+  width Int? @default(300)
+  height Int? @default(200)
   zIndex Int? @map("z_index") @default(0)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -1401,7 +1398,7 @@ model CommandBoardLayout {
   userId String @map("user_id") @db.Uuid
   name String? @default("")
   viewport String? @default("{}")
-  visibleCards String? @default("")
+  visibleCards String[] @default([])
   gridSize Int? @map("grid_size") @default(40)
   showGrid Boolean? @map("show_grid") @default(true)
   snapToGrid Boolean? @map("snap_to_grid") @default(true)
@@ -1566,10 +1563,10 @@ model EventContract {
   documentType String? @map("document_type") @default("")
   notes String? @default("")
   expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
-  sentAt DateTime?
-  viewedAt DateTime?
-  signedAt DateTime?
-  canceledBy String? @default("")
+  sentAt DateTime? @map("sent_at") @db.Timestamptz(6)
+  viewedAt DateTime? @map("viewed_at") @db.Timestamptz(6)
+  signedAt DateTime? @map("signed_at") @db.Timestamptz(6)
+  canceledBy String? @map("canceled_by") @db.Uuid @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1599,12 +1596,12 @@ model ContractSignature {
   signatureData String? @map("signature_data") @default("")
   signerName String? @map("signer_name") @default("")
   signerEmail String? @map("signer_email") @default("")
-  signerRole String? @default("")
+  signerRole String? @map("signer_role") @default("")
   ipAddress String? @map("ip_address") @default("")
-  verifiedAt DateTime?
-  invalidatedAt DateTime?
-  invalidationReason String? @default("")
-  isValid Boolean? @default(true)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
+  invalidatedAt DateTime? @map("invalidated_at") @db.Timestamptz(6)
+  invalidationReason String? @map("invalidation_reason") @default("")
+  isValid Boolean? @map("is_valid") @default(true)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1654,17 +1651,17 @@ model EventGuest {
   guestEmail String? @map("guest_email") @default("")
   guestPhone String? @map("guest_phone") @default("")
   isPrimaryContact Boolean? @map("is_primary_contact") @default(false)
-  dietaryRestrictions String? @map("dietary_restrictions") @default("")
-  allergenRestrictions String? @map("allergen_restrictions") @default("")
+  dietaryRestrictions String[] @map("dietary_restrictions") @default([])
+  allergenRestrictions String[] @map("allergen_restrictions") @default([])
   notes String? @default("")
-  declineReason String? @default("")
+  declineReason String? @map("decline_reason") @default("")
   specialMealRequired Boolean? @map("special_meal_required") @default(false)
   specialMealNotes String? @map("special_meal_notes") @default("")
   tableAssignment String? @map("table_assignment") @default("")
   mealPreference String? @map("meal_preference") @default("")
   rsvpStatus String? @map("rsvp_status") @default("pending")
-  rsvpAt DateTime?
-  checkedInAt DateTime?
+  rsvpRespondedAt DateTime? @map("rsvp_responded_at") @db.Timestamptz(6)
+  checkedInAt DateTime? @map("checked_in_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1695,7 +1692,7 @@ model EventImportWorkflow {
   stepResults String? @default("{}")
   errors String? @default("[]")
   warnings String? @default("[]")
-  confidence Decimal? @db.Decimal(12, 2)
+  confidence Int?
   startedAt DateTime?
   completedAt DateTime?
   createdAt DateTime? @default(now())
@@ -1718,18 +1715,18 @@ model EventReport {
   name String
   version String? @default("2025-01-01")
   status String? @default("draft")
-  completion Decimal? @db.Decimal(12, 2)
+  completion Int?
   checklistData String? @map("checklist_data") @default("{}")
   parsedEventData String? @map("parsed_event_data") @default("")
   reportConfig String? @map("report_config") @default("")
-  autoFillScore Decimal? @map("auto_fill_score") @db.Decimal(12, 2)
+  autoFillScore Int? @map("auto_fill_score")
   reviewNotes String? @map("review_notes") @default("")
   reviewedBy String? @map("reviewed_by") @db.Uuid @default("")
   reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz(6)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
-  rejectedAt DateTime?
-  rejectedBy String? @default("")
-  rejectionReason String? @default("")
+  rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(6)
+  rejectedBy String? @map("rejected_by") @db.Uuid @default("")
+  rejectionReason String? @map("rejection_reason") @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1937,9 +1934,9 @@ model EventTimeline {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   eventId String @map("event_id") @db.Uuid
-  title String @default("")
-  scheduledAt DateTime?
-  durationMinutes Int?
+  description String @default("")
+  timelineTime String? @map("timeline_time")
+  durationMinutes Int? @map("duration_minutes")
   notes String? @default("")
   sortOrder Int? @map("sort_order") @db.SmallInt
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -1963,12 +1960,14 @@ model TimelineTask {
   tenantId String @map("tenant_id") @db.Uuid
   eventId String @map("event_id") @db.Uuid
   title String @default("")
-  dueAt DateTime?
+  category String @default("")
+  startTime DateTime? @map("start_time") @db.Timestamptz(6)
+  endTime DateTime? @map("end_time") @db.Timestamptz(6)
   status String? @default("not_started")
-  assignedTo String? @default("")
+  assigneeId String? @map("assignee_id") @db.Uuid @default("")
   notes String? @default("")
-  sortOrder Int?
-  completedAt DateTime?
+  sortOrder Int? @map("sort_order")
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -1977,7 +1976,9 @@ model TimelineTask {
   @@map("timeline_tasks")
   @@id([tenantId, id])
   @@index([eventId])
+  @@index([assigneeId])
   @@index([status])
+  @@index([startTime])
   @@schema("tenant_events")
 }
 
@@ -1989,14 +1990,15 @@ model TimelineTask {
 model EventImport {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  source String @default("")
+  fileType String @map("file_type") @default("pdf")
   fileName String @map("file_name") @default("")
-  status String? @default("pending")
-  totalRows Int?
-  importedRows Int?
-  skippedRows Int? @default(0)
-  errorMessage String? @default("")
-  completedAt DateTime?
+  mimeType String @map("mime_type") @default("")
+  parseStatus String? @map("parse_status") @default("pending")
+  totalRows Int? @map("total_rows")
+  importedRows Int? @map("imported_rows")
+  skippedRows Int? @map("skipped_rows") @default(0)
+  parseErrors String[] @map("parse_errors") @default([])
+  parsedAt DateTime? @map("parsed_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -2015,8 +2017,9 @@ model EventFollowup {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   eventId String
-  type String @default("")
-  dueAt DateTime?
+  taskType String @default("")
+  description String @default("")
+  dueDate DateTime?
   status String? @default("pending")
   assignedTo String? @default("")
   notes String? @default("")
@@ -2044,10 +2047,10 @@ model BoardProjection {
   boardId String @map("board_id") @db.Uuid
   entityType String @map("entity_type") @default("")
   entityId String @map("entity_id") @db.Uuid @default("")
-  positionX Decimal? @map("position_x") @db.Decimal(12, 2)
-  positionY Decimal? @map("position_y") @db.Decimal(12, 2)
-  width Decimal? @db.Decimal(12, 2) @default(280)
-  height Decimal? @db.Decimal(12, 2) @default(180)
+  positionX Int? @map("position_x")
+  positionY Int? @map("position_y")
+  width Int? @default(280)
+  height Int? @default(180)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -2072,9 +2075,9 @@ model BoardAnnotation {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   boardId String @map("board_id") @db.Uuid
-  text String? @default("")
-  positionX Decimal? @db.Decimal(12, 2)
-  positionY Decimal? @db.Decimal(12, 2)
+  label String? @default("")
+  positionX Int? @map("position_x")
+  positionY Int? @map("position_y")
   color String? @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -2099,8 +2102,8 @@ model Note {
   content String? @default("")
   color String? @default("")
   tags String[] @default([])
-  entityType String? @default("")
-  entityId String? @default("")
+  entityType String? @map("entity_type") @default("")
+  entityId String? @map("entity_id") @db.Uuid @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -2159,22 +2162,21 @@ model CollectionCase {
   daysOverdue Int @map("days_overdue")
   agingBucket String? @map("aging_bucket") @default("")
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
-  assignedAt DateTime?
+  assignedAt DateTime? @map("assigned_at") @db.Timestamptz(6)
   hasPaymentPlan Boolean? @map("has_payment_plan") @default(false)
-  paymentPlanId String? @default("")
-  nextPaymentDue DateTime?
+  paymentPlanId String? @map("payment_plan_id") @db.Uuid @default("")
+  nextPaymentDue DateTime? @map("next_payment_due") @db.Timestamptz(6)
   isDisputed Boolean? @map("is_disputed") @default(false)
-  disputeReason String? @default("")
-  disputeResolvedAt DateTime?
+  disputeReason String? @map("dispute_reason") @db.Text @default("")
+  disputeResolvedAt DateTime? @map("dispute_resolved_at") @db.Timestamptz(6)
   isEscalatedToLegal Boolean? @map("is_escalated_to_legal") @default(false)
-  legalCaseNumber String? @default("")
-  legalFirm String? @default("")
+  legalCaseNumber String? @map("legal_case_number") @default("")
+  legalFirm String? @map("legal_firm") @default("")
   notes String? @db.Text @default("")
-  internalNotes String? @default("")
-  lastActivityAt DateTime?
+  lastActivityAt DateTime? @map("last_activity_at") @db.Timestamptz(6)
   metadata String? @default("{}")
-  resolvedAt DateTime?
-  closedAt DateTime?
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
+  closedAt DateTime? @map("closed_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2200,30 +2202,25 @@ model CollectionCase {
 model CollectionAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  caseId String @default("")
+  collectionCaseId String @map("collection_case_id") @db.Uuid @default("")
   actionType String @map("action_type") @default("")
   direction String @default("")
   status String @default("PENDING")
-  contactedBy String? @default("")
-  contactName String? @default("")
-  contactMethod String? @default("")
-  subject String? @default("")
   description String? @db.Text @default("")
   outcome String? @db.Text @default("")
-  nextActionDate DateTime?
-  promiseAmount Decimal? @db.Decimal(12, 2)
-  promiseDate DateTime?
-  notes String? @default("")
-  metadata String? @default("{}")
-  scheduledFor DateTime
-  completedAt DateTime?
+  nextActionDate DateTime? @map("next_action_date") @db.Timestamptz(6)
+  promiseAmount Decimal? @map("promise_amount") @db.Decimal(12, 2)
+  promiseDate DateTime? @map("promise_date") @db.Timestamptz(6)
+  scheduledFor DateTime @map("scheduled_for") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
 
   @@map("collection_actions")
   @@id([tenantId, id])
   @@index([tenantId])
+  @@index([tenantId, collectionCaseId])
   @@index([id])
   @@schema("tenant_accounting")
 
@@ -2238,20 +2235,16 @@ model CollectionAction {
 model CollectionPaymentPlan {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  caseId String @default("")
+  collectionCaseId String @map("collection_case_id") @db.Uuid @default("")
   totalAmount Decimal @map("total_amount") @db.Decimal(12, 2)
-  installmentAmount Decimal @db.Decimal(12, 2)
-  installmentCount Int @default(1)
-  completedInstallments Int @default(0)
+  installmentAmount Decimal @map("installment_amount") @db.Decimal(12, 2)
+  installments Int @default(1)
+  completedInstallments Int @map("completed_installments") @default(0)
   status String @default("ACTIVE")
   startDate DateTime @map("start_date") @db.Timestamptz(6)
-  endDate DateTime
-  frequency String? @default("")
-  nextPaymentDate DateTime?
-  notes String? @default("")
   metadata String? @default("{}")
-  completedAt DateTime?
-  defaultedAt DateTime?
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  defaultedAt DateTime? @map("defaulted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2259,6 +2252,7 @@ model CollectionPaymentPlan {
   @@map("collection_payment_plans")
   @@id([tenantId, id])
   @@index([tenantId])
+  @@index([tenantId, collectionCaseId])
   @@index([id])
   @@schema("tenant_accounting")
 
@@ -2274,7 +2268,7 @@ model Invoice {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   invoiceNumber String @map("invoice_number") @default("")
-  type String @default("FINAL_PAYMENT")
+  invoiceType String @map("invoice_type") @default("FINAL_PAYMENT")
   status String @default("DRAFT")
   clientId String @map("client_id") @db.Uuid @default("")
   eventId String @map("event_id") @db.Uuid @default("")
@@ -2293,12 +2287,9 @@ model Invoice {
   issuedAt DateTime @map("issued_at") @db.Timestamptz(6)
   sentAt DateTime? @map("sent_at") @db.Timestamptz(6)
   viewedAt DateTime? @map("viewed_at") @db.Timestamptz(6)
-  overdueSince DateTime?
-  reminderCount Int?
-  lastReminderAt DateTime?
-  quickBooksId String? @default("")
-  goodshuffleId String? @default("")
-  externalSyncStatus String? @default("")
+  overdueSince DateTime? @map("overdue_since") @db.Timestamptz(6)
+  reminderCount Int? @map("reminder_count")
+  lastReminderAt DateTime? @map("last_reminder_at") @db.Timestamptz(6)
   notes String? @db.Text @default("")
   internalNotes String? @map("internal_notes") @db.Text @default("")
   lineItems String? @map("line_items") @default("[]")
@@ -2329,26 +2320,25 @@ model PaymentMethod {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   clientId String @map("client_id") @db.Uuid @default("")
-  externalMethodId String? @default("")
+  externalMethodId String? @map("external_method_id") @default("")
   type String @map("type") @default("CREDIT_CARD")
   cardLastFour String? @map("card_last_four") @db.Char(4) @default("")
   cardNetwork String? @map("card_network") @default("")
-  cardExpiryMonth Int?
-  cardExpiryYear Int?
-  cardHolderName String? @default("")
-  bankAccountLastFour String? @default("")
-  bankAccountType String? @default("")
-  bankRoutingNumber String? @default("")
-  walletProvider String? @default("")
-  walletEmail String? @default("")
+  cardExpiryMonth Int? @map("card_expiry_month")
+  cardExpiryYear Int? @map("card_expiry_year")
+  cardHolderName String? @map("card_holder_name") @default("")
+  bankAccountLastFour String? @map("bank_account_last_four") @default("")
+  bankAccountType String? @map("bank_account_type") @default("")
+  bankRoutingNumber String? @map("bank_routing_number") @default("")
+  walletProvider String? @map("wallet_provider") @default("")
+  walletEmail String? @map("wallet_email") @default("")
   status String @db.Text @default("ACTIVE")
   isDefault Boolean @map("is_default") @default(false)
-  fraudFlagged Boolean? @default(false)
-  verifiedAt DateTime?
-  verificationMethod String? @default("")
+  fraudFlagged Boolean? @map("fraud_flagged") @default(false)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
+  verificationMethod String? @map("verification_method") @default("")
   nickname String? @default("")
-  metadata String? @default("{}")
-  expiresAt DateTime?
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2382,19 +2372,15 @@ model Payment {
   gatewayTransactionId String? @map("gateway_transaction_id") @default("")
   gatewayPaymentMethodId String? @map("gateway_payment_method_id") @default("")
   processor String? @default("")
-  processorResponseCode String? @default("")
-  processorResponseMessage String? @default("")
   processedAt DateTime? @map("processed_at") @db.Timestamptz(6)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   refundedAt DateTime? @map("refunded_at") @db.Timestamptz(6)
-  chargebackAt DateTime?
-  fraudStatus String? @default("NOT_CHECKED")
-  fraudScore Float?
-  reviewedAt DateTime?
-  reviewedBy String? @default("")
+  chargebackAt DateTime? @map("chargeback_at") @db.Timestamptz(6)
+  fraudStatus String? @map("fraud_status") @default("NOT_CHECKED")
+  fraudScore Float? @map("fraud_score")
+  reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy String? @map("reviewed_by") @default("")
   description String? @default("")
-  externalReference String? @default("")
-  metadata String? @default("{}")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -2745,9 +2731,9 @@ model VarianceReport {
   adjustmentType String? @map("adjustment_type") @default("")
   adjustmentAmount Decimal? @map("adjustment_amount") @db.Decimal(12, 3)
   adjustmentDate DateTime? @map("adjustment_date") @db.Timestamptz(6)
-  rejectedAt DateTime?
-  rejectedBy String? @default("")
-  rejectionReason String? @default("")
+  rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(6)
+  rejectedBy String? @map("rejected_by") @default("")
+  rejectionReason String? @map("rejection_reason") @default("")
   notes String? @default("")
   rootCause String? @map("root_cause") @default("")
   resolutionNotes String? @map("resolution_notes") @default("")
@@ -2794,10 +2780,10 @@ model StorageLocation {
 model InventoryStock {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  inventoryItemId String
+  itemId String @map("item_id") @db.Uuid
   storageLocationId String @map("storage_location_id") @db.Uuid
   quantityOnHand Decimal @db.Decimal(12, 2)
-  unitId String
+  unitId Int
   lastCountedAt DateTime?
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -2805,8 +2791,10 @@ model InventoryStock {
 
   @@map("inventory_stock")
   @@id([tenantId, id])
+  @@index([tenantId, itemId, storageLocationId])
   @@schema("tenant_inventory")
 
+  @@unique([tenantId, itemId, storageLocationId])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -2817,16 +2805,17 @@ model InventoryStock {
 model InventoryAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  inventoryItemId String
+  itemId String @map("item_id") @db.Uuid
   alertType String @map("alert_type")
   severity String
-  message String
+  thresholdValue Decimal @db.Decimal(12, 2)
+  notes String
   status String @default("active")
   triggeredAt DateTime?
-  acknowledgedAt DateTime?
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
   resolvedAt DateTime?
-  acknowledgedBy String? @default("")
-  resolvedBy String? @default("")
+  acknowledgedBy String? @map("acknowledged_by") @default("")
+  resolvedBy String? @map("resolved_by") @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -2911,11 +2900,11 @@ model ReorderSuggestion {
 model VendorContact {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  inventorySupplierId String
-  name String
-  email String? @default("")
-  phone String? @default("")
-  role String? @default("")
+  supplierId String @map("supplier_id") @db.Uuid
+  contactName String @map("contact_name")
+  contactEmail String? @map("contact_email") @default("")
+  contactPhone String? @map("contact_phone") @default("")
+  contactRole String? @map("contact_role") @default("")
   isPrimary Boolean? @map("is_primary") @default(false)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -2935,11 +2924,11 @@ model VendorContact {
 model VendorRating {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  inventorySupplierId String
+  supplierId String @map("supplier_id") @db.Uuid
   category String @default("overall")
-  score Decimal @db.Decimal(12, 2)
+  rating Int @db.SmallInt
   comment String? @default("")
-  ratedAt DateTime?
+  ratedAt DateTime? @map("rated_at") @db.Timestamptz(6)
   ratedBy String? @map("rated_by") @db.Uuid @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -2958,16 +2947,18 @@ model VendorRating {
 model InventoryTransferItem {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  inventoryTransferId String
-  inventoryItemId String
+  transferId String @map("transfer_id") @db.Uuid
+  itemId String @map("item_id") @db.Uuid
   quantity Decimal @db.Decimal(12, 3)
-  unitId String
+  unitId String @map("unit_id")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
 
   @@map("inventory_transfer_items")
   @@id([tenantId, id])
+  @@index([tenantId, transferId])
+  @@index([tenantId, itemId])
   @@schema("tenant_inventory")
 }
 
@@ -2980,6 +2971,7 @@ model ProcurementBudget {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   name String
+  fiscalYear Int @map("fiscal_year")
   periodStart DateTime @map("period_start") @db.Date
   periodEnd DateTime @map("period_end") @db.Date
   budgetAmount Decimal @map("budget_amount") @db.Decimal(12, 2)
@@ -3001,10 +2993,11 @@ model ProcurementBudget {
 model ProcurementBudgetAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  procurementBudgetId String
-  thresholdPct Decimal @db.Decimal(12, 2)
+  budgetId String @map("budget_id") @db.Uuid
+  utilizationPct Decimal @map("utilization_pct") @db.Decimal(5, 2)
+  alertType String @map("alert_type")
   message String
-  triggeredAt DateTime?
+  triggeredAt DateTime? @map("triggered_at") @db.Timestamptz(6)
   acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
   acknowledgedBy String? @map("acknowledged_by") @db.Uuid @default("")
   isAcknowledged Boolean? @map("is_acknowledged") @default(false)
@@ -3027,8 +3020,10 @@ model AuditSchedule {
   tenantId String @map("tenant_id") @db.Uuid
   name String
   frequency String
-  nextRunAt DateTime?
-  lastRunAt DateTime?
+  time String
+  createdBy String @map("created_by") @db.Uuid
+  nextRunAt DateTime? @map("next_run_at") @db.Timestamptz(6)
+  lastRunAt DateTime? @map("last_run_at") @db.Timestamptz(6)
   isActive Boolean? @map("is_active") @default(true)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3055,11 +3050,11 @@ model InventoryItem {
   unitOfMeasure String? @map("unit_of_measure") @default("each")
   unitCost Decimal? @map("unit_cost") @db.Decimal(10, 2) @default(0.00)
   quantityOnHand Decimal? @map("quantity_on_hand") @db.Decimal(12, 3) @default(0.000)
-  quantityReserved Int?
+  quantityReserved Int? @map("quantity_reserved")
   parLevel Decimal? @map("par_level") @db.Decimal(12, 3) @default(0.000)
   reorder_level Decimal? @db.Decimal(12, 3) @default(0.000)
   supplierId String? @map("supplier_id") @db.Uuid @default("")
-  tags String? @default("")
+  tags String[] @default([])
   fsa_status String? @default("unknown")
   fsa_temp_logged Boolean? @default(false)
   fsa_allergen_info Boolean? @default(false)
@@ -3093,16 +3088,16 @@ model InventorySupplier {
   phone String? @default("")
   paymentTerms String? @default("NET_30")
   notes String? @default("")
-  tags String? @default("")
-  isActive Boolean? @default(true)
-  openPOCount Int?
-  approvedAt DateTime?
-  approvedBy String? @default("")
-  suspendedAt DateTime?
-  suspendedReason String? @default("")
-  blacklistedAt DateTime?
-  blacklistedReason String? @default("")
-  qualificationStatus String? @default("pending")
+  tags String[] @default([])
+  isActive Boolean? @map("is_active") @default(true)
+  openPOCount Int? @map("open_po_count")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  approvedBy String? @map("approved_by") @default("")
+  suspendedAt DateTime? @map("suspended_at") @db.Timestamptz(6)
+  suspendedReason String? @map("suspended_reason") @default("")
+  blacklistedAt DateTime? @map("blacklisted_at") @db.Timestamptz(6)
+  blacklistedReason String? @map("blacklisted_reason") @default("")
+  qualificationStatus String? @map("qualification_status") @default("pending")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3140,12 +3135,11 @@ model InventoryTransaction {
   employeeId String? @default("")
   storageLocationId String? @default("")
   transactionDate DateTime?
-  reversedAt DateTime?
-  reversedBy String? @default("")
-  reverseOfTransactionId String? @default("")
-  isReversed Boolean? @default(false)
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  reversedAt DateTime? @map("reversed_at") @db.Timestamptz(6)
+  reversedBy String? @map("reversed_by") @default("")
+  reverseOfTransactionId String? @map("reverse_of_transaction_id") @db.Uuid @default("")
+  isReversed Boolean? @map("is_reversed") @default(false)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("inventory_transactions")
@@ -3168,10 +3162,10 @@ model InventoryTransfer {
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   shippedBy String? @map("shipped_by") @db.Uuid @default("")
   receivedBy String? @map("received_by") @db.Uuid @default("")
-  shipDate DateTime?
-  receiveDate DateTime?
-  discrepancyNotes String? @default("")
-  hasDiscrepancy Boolean? @default(false)
+  shippedAt DateTime? @map("shipped_at") @db.Timestamptz(6)
+  receivedAt DateTime? @map("received_at") @db.Timestamptz(6)
+  discrepancyNotes String? @map("discrepancy_notes") @default("")
+  hasDiscrepancy Boolean? @map("has_discrepancy") @default(false)
   notes String? @db.Text @default("")
   itemsData String? @default("[]")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -3207,18 +3201,18 @@ model Dish {
   minPrepLeadDays Int? @map("min_prep_lead_days") @db.SmallInt
   maxPrepLeadDays Int? @map("max_prep_lead_days") @db.SmallInt
   portionSizeDescription String? @map("portion_size_description") @default("")
-  dietaryTags String? @map("dietary_tags") @default("")
-  allergens String? @default("")
+  dietaryTags String[] @map("dietary_tags") @default([])
+  allergens String[] @default([])
   pricePerPerson Decimal? @map("price_per_person") @db.Decimal(10, 2)
   costPerPerson Decimal? @map("cost_per_person") @db.Decimal(10, 2) @default(0)
   isActive Boolean? @map("is_active") @default(true)
-  isSeasonal Boolean? @default(false)
-  seasonLabel String? @default("")
-  seasonStartMonth Int?
-  seasonEndMonth Int? @default(0)
-  isEightySix Boolean? @default(false)
-  eightySixReason String? @default("")
-  eightySixAt DateTime?
+  isSeasonal Boolean? @map("is_seasonal") @default(false)
+  seasonLabel String? @map("season_label") @default("")
+  seasonStartMonth Int? @map("season_start_month") @db.SmallInt
+  seasonEndMonth Int? @map("season_end_month") @db.SmallInt @default(0)
+  isEightySix Boolean? @map("is_eighty_six") @default(false)
+  eightySixReason String? @map("eighty_six_reason") @default("")
+  eightySixAt DateTime? @map("eighty_six_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3244,15 +3238,15 @@ model Ingredient {
   densityGPerMl Decimal? @map("density_g_per_ml") @db.Decimal(10, 4)
   shelfLifeDays Int? @map("shelf_life_days") @db.SmallInt @default(0)
   storageInstructions String? @map("storage_instructions") @default("")
-  allergens String? @default("")
+  allergens String[] @default([])
   isActive Boolean? @map("is_active") @default(true)
-  inventoryItemId String? @default("")
-  currentLotNumber String? @default("")
-  currentLotReceivedAt DateTime?
-  currentLotExpiresAt DateTime?
-  isRecalled Boolean? @default(false)
-  recallReason String? @default("")
-  recalledAt DateTime?
+  inventoryItemId String? @map("inventory_item_id") @db.Uuid @default("")
+  currentLotNumber String? @map("current_lot_number") @default("")
+  currentLotReceivedAt DateTime? @map("current_lot_received_at") @db.Timestamptz(6)
+  currentLotExpiresAt DateTime? @map("current_lot_expires_at") @db.Timestamptz(6)
+  isRecalled Boolean? @map("is_recalled") @default(false)
+  recallReason String? @map("recall_reason") @default("")
+  recalledAt DateTime? @map("recalled_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3272,20 +3266,22 @@ model TemperatureProbe {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   name String
-  equipmentId String
-  location String
-  minThreshold Decimal @db.Decimal(12, 2)
-  maxThreshold Decimal @db.Decimal(12, 2)
+  probeId String @map("probe_id")
+  locationId String? @map("location_id") @db.Uuid @default("")
+  minTemp Decimal @map("min_temp") @db.Decimal(6, 2) @default(-40)
+  maxTemp Decimal @map("max_temp") @db.Decimal(6, 2) @default(300)
   isActive Boolean? @default(true)
-  lastCalibratedAt DateTime?
+  lastCalibration DateTime? @map("last_calibration") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-
   @@map("temperature_probes")
   @@id([tenantId, id])
+  @@index([tenantId, locationId])
+  @@index([tenantId, probeId])
   @@schema("tenant_kitchen")
 
+  @@unique([tenantId, probeId])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3297,9 +3293,11 @@ model TemperatureLog {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   equipmentId String @map("equipment_id") @db.Uuid
-  recordedBy String
+  logNumber String @map("log_number")
+  logType String @map("log_type")
+  loggedBy String @map("logged_by") @db.Uuid
   temperature Decimal @db.Decimal(6, 2)
-  recordedAt DateTime
+  loggedAt DateTime @map("logged_at") @db.Timestamptz(6)
   withinRange Boolean
   notes String? @db.Text @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -3308,8 +3306,12 @@ model TemperatureLog {
 
   @@map("temperature_logs")
   @@id([tenantId, id])
+  @@index([tenantId, logType])
+  @@index([tenantId, loggedAt])
+  @@index([tenantId, logNumber])
   @@schema("tenant_kitchen")
 
+  @@unique([tenantId, logNumber])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3322,15 +3324,15 @@ model TemperatureReading {
   tenantId String @map("tenant_id") @db.Uuid
   probeId String @map("probe_id") @db.Uuid
   temperature Decimal @db.Decimal(6, 2)
-  recordedAt DateTime
-  withinRange Boolean
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  loggedAt DateTime @map("logged_at") @db.Timestamptz(6)
+  withinRange Boolean @map("within_range")
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("temperature_readings")
   @@id([tenantId, id])
   @@index([tenantId, probeId])
+  @@index([tenantId, loggedAt])
   @@schema("tenant_kitchen")
 }
 
@@ -3344,19 +3346,17 @@ model IotAlertRule {
   tenantId String @map("tenant_id") @db.Uuid
   name String
   equipmentId String @map("equipment_id") @db.Uuid
-  metric String
   sensorType String @map("sensor_type")
   condition String
   threshold Decimal @db.Decimal(12, 2)
   thresholdMin Decimal? @map("threshold_min") @db.Decimal(12, 2)
   thresholdMax Decimal? @map("threshold_max") @db.Decimal(12, 2)
-  comparison String
   severity String @default("warning")
   durationMs Int? @map("duration_ms")
   alertAction String? @map("alert_action") @default("notification")
   isActive Boolean? @map("is_active") @default(true)
-  notifyRoles String? @map("notify_roles") @default("")
-  notifyChannels String? @map("notify_channels") @default("")
+  notifyRoles String[] @map("notify_roles") @default([])
+  notifyChannels String[] @map("notify_channels") @default([])
   description String? @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3381,10 +3381,10 @@ model IoTAlert {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   probeId String @map("probe_id") @db.Uuid
-  ruleId String? @default("")
+  ruleId String? @map("rule_id") @db.Uuid @default("")
   severity String @default("medium")
   message String @db.Text
-  value Decimal @db.Decimal(12, 2)
+  value Decimal @db.Decimal(6, 2)
   status String @default("active")
   triggeredAt DateTime @map("triggered_at") @db.Timestamptz(6)
   alertNumber String? @map("alert_number") @default("")
@@ -3417,12 +3417,14 @@ model IoTAlert {
 model CorrectiveAction {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  actionNumber String @map("action_number")
+  title String
   sourceType String
   sourceId String
   description String @db.Text
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
   status String @default("open")
-  dueAt DateTime?
+  dueDate DateTime? @map("due_date") @db.Timestamptz(6)
   resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3430,8 +3432,10 @@ model CorrectiveAction {
   @@map("corrective_actions")
   @@id([tenantId, id])
   @@index([tenantId, status])
+  @@index([tenantId, actionNumber])
   @@schema("tenant_kitchen")
 
+  @@unique([tenantId, actionNumber])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3442,10 +3446,12 @@ model CorrectiveAction {
 model QualityCheck {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
+  checkNumber String @map("check_number")
+  title String
   checkType String @map("check_type")
-  performedBy String
+  completedBy String @map("completed_by") @db.Uuid
   status String @default("pending")
-  performedAt DateTime?
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   notes String? @db.Text @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3455,8 +3461,10 @@ model QualityCheck {
   @@id([tenantId, id])
   @@index([tenantId, status])
   @@index([tenantId, checkType])
+  @@index([tenantId, checkNumber])
   @@schema("tenant_kitchen")
 
+  @@unique([tenantId, checkNumber])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3467,7 +3475,8 @@ model QualityCheck {
 model QualityCheckItem {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  qualityCheckId String
+  checkId String @map("check_id") @db.Uuid
+  itemName String @map("item_name")
   criterion String @db.Text
   passed Boolean? @default(false)
   notes String? @db.Text @default("")
@@ -3478,6 +3487,7 @@ model QualityCheckItem {
 
   @@map("quality_check_items")
   @@id([tenantId, id])
+  @@index([tenantId, checkId])
   @@schema("tenant_kitchen")
 }
 
@@ -3489,7 +3499,7 @@ model QualityCheckItem {
 model KitchenTaskClaim {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  kitchenTaskId String
+  taskId String @map("task_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
   claimedAt DateTime @map("claimed_at") @db.Timestamptz(6)
   status String @default("active")
@@ -3501,6 +3511,7 @@ model KitchenTaskClaim {
 
   @@map("task_claims")
   @@id([tenantId, id])
+  @@index([taskId])
   @@index([employeeId])
   @@schema("tenant_kitchen")
 }
@@ -3513,19 +3524,20 @@ model KitchenTaskClaim {
 model KitchenTaskProgress {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  kitchenTaskId String
+  taskId String @map("task_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
-  status String
-  progressPct Decimal @db.Decimal(12, 2)
-  note String? @default("")
-  recordedAt DateTime
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  progressType String @map("progress_type")
+  newStatus String @map("new_status")
+  progressPct Decimal @map("progress_pct") @db.Decimal(5, 2)
+  notes String? @default("")
+  recordedAt DateTime @map("recorded_at") @db.Timestamptz(6)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("task_progress")
   @@id([tenantId, id])
   @@index([employeeId])
+  @@index([taskId])
   @@schema("tenant_kitchen")
 }
 
@@ -3638,7 +3650,7 @@ model KitchenTask {
   summary String
   status String @default("pending")
   priority Int? @db.SmallInt @default(5)
-  complexity Decimal? @db.Decimal(12, 2) @default(5)
+  complexity Int? @db.SmallInt @default(5)
   tags String? @default("")
   assignedTo String? @default("")
   dueDate DateTime? @map("due_date") @db.Timestamptz(6)
@@ -3668,12 +3680,12 @@ model Menu {
   pricePerPerson Decimal? @map("price_per_person") @db.Decimal(10, 2)
   minGuests Int? @map("min_guests") @db.SmallInt @default(0)
   maxGuests Int? @map("max_guests") @db.SmallInt @default(0)
-  isSeasonal Boolean? @default(false)
-  seasonLabel String? @default("")
-  seasonYear Int?
+  isSeasonal Boolean? @map("is_seasonal") @default(false)
+  seasonLabel String? @map("season_label") @default("")
+  seasonYear Int? @map("season_year")
   status String? @default("draft")
-  publishedAt DateTime?
-  archivedAt DateTime?
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3696,7 +3708,7 @@ model MenuDish {
   course String? @default("")
   sortOrder Int? @map("sort_order") @db.SmallInt
   isOptional Boolean? @map("is_optional") @default(false)
-  priceOverride Decimal? @db.Decimal(12, 2)
+  priceOverride Decimal? @map("price_override") @db.Decimal(10, 2)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -3749,14 +3761,14 @@ model PrepList {
   eventId String @map("event_id") @db.Uuid
   name String
   batchMultiplier Decimal? @map("batch_multiplier") @db.Decimal(10, 2) @default(1)
-  dietaryRestrictions String? @map("dietary_restrictions") @default("")
+  dietaryRestrictions String[] @map("dietary_restrictions") @default([])
   status String? @default("draft")
   totalItems Int? @map("total_items")
-  totalEstimatedTime Decimal? @map("total_estimated_time") @db.Decimal(12, 2)
+  totalEstimatedTime Int? @map("total_estimated_time")
   notes String? @default("")
   generatedAt DateTime? @map("generated_at") @db.Timestamptz(6)
   finalizedAt DateTime? @map("finalized_at") @db.Timestamptz(6)
-  isActive Boolean? @default(true)
+  isActive Boolean? @map("is_active") @default(true)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3789,8 +3801,8 @@ model PrepListItem {
   scaledUnit String? @map("scaled_unit") @default("")
   isOptional Boolean? @map("is_optional") @default(false)
   preparationNotes String? @map("preparation_notes") @default("")
-  allergens String? @default("")
-  dietarySubstitutions String? @map("dietary_substitutions") @default("")
+  allergens String[] @default([])
+  dietarySubstitutions String[] @map("dietary_substitutions") @default([])
   dishId String? @map("dish_id") @db.Uuid @default("")
   dishName String? @map("dish_name") @default("")
   recipeVersionId String? @map("recipe_version_id") @db.Uuid @default("")
@@ -3822,8 +3834,8 @@ model PrepMethod {
   name String
   category String? @default("")
   description String? @default("")
-  estimatedDurationMinutes Decimal? @map("estimated_duration_minutes") @db.Decimal(12, 2)
-  requiresCertification String? @map("requires_certification") @default("")
+  estimatedDurationMinutes Int? @map("estimated_duration_minutes")
+  requiresCertification String[] @map("requires_certification") @default([])
   isActive Boolean? @map("is_active") @default(true)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -3858,7 +3870,7 @@ model PrepTaskPlanWorkflow {
   constraintOutcomes String? @map("constraint_outcomes") @db.Text @default("[]")
   errors String? @map("errors") @db.Text @default("[]")
   warnings String? @map("warnings") @db.Text @default("[]")
-  generatedCount Decimal? @map("generated_count") @db.Decimal(12, 2)
+  generatedCount Int? @map("generated_count")
   approvedCount Int? @map("approved_count")
   instantiatedCount Int? @map("instantiated_count") @default(0)
   reviewedBy String? @map("reviewed_by") @default("")
@@ -3891,16 +3903,16 @@ model PrepTask {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   eventId String @map("event_id") @db.Uuid
-  prepListId String? @default("")
+  prepListId String? @map("prep_list_id") @db.Uuid @default("")
   name String
   taskType String @map("task_type") @default("prep")
   status String @default("pending")
-  stationId String? @default("")
+  stationId String? @map("station_id") @default("")
   claimedBy String? @default("")
   claimedAt DateTime?
   quantityTotal Decimal? @map("quantity_total") @db.Decimal(10, 2)
   quantityCompleted Decimal? @map("quantity_completed") @db.Decimal(10, 2)
-  quantityUnitId Int? @map("quantity_unit_id") @db.SmallInt
+  quantityUnitId Int? @map("quantity_unit_id") @db.SmallInt @default(0)
   servingsTotal Int? @map("servings_total") @default(0)
   startByDate DateTime? @map("start_by_date") @db.Date
   dueByDate DateTime? @map("due_by_date") @db.Date
@@ -3910,7 +3922,6 @@ model PrepTask {
   estimatedMinutes Int? @map("estimated_minutes")
   dueByTime String? @map("due_by_time")
   notes String? @default("")
-  ingredients String? @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -3960,7 +3971,7 @@ model RecipeVersion {
   category String? @default("")
   cuisineType String? @map("cuisine_type") @default("")
   description String? @default("")
-  tags String @default("")
+  tags String[] @default([])
   yieldQuantity Decimal? @map("yield_quantity") @db.Decimal(10, 2) @default(1)
   yieldUnitId Int? @map("yield_unit_id") @db.SmallInt @default(1)
   yieldDescription String? @map("yield_description") @default("")
@@ -3970,14 +3981,12 @@ model RecipeVersion {
   difficultyLevel Int? @map("difficulty_level") @db.SmallInt @default(1)
   instructions String? @db.Text @default("")
   notes String? @default("")
-  ingredientCount Int?
-  stepCount Int? @default(0)
-  totalCost Decimal? @map("total_cost") @db.Decimal(12, 2) @default(0)
+  totalCost Decimal? @map("total_cost") @db.Decimal(12, 2)
   costPerYield Decimal? @map("cost_per_yield") @db.Decimal(12, 2) @default(0)
   status String? @default("draft")
-  publishedAt DateTime?
-  approvedAt DateTime?
-  approvedBy String? @default("")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  approvedBy String? @map("approved_by") @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4030,10 +4039,10 @@ model RecipeStep {
   recipeVersionId String @map("recipe_version_id") @db.Uuid
   stepNumber Int @map("step_number") @db.SmallInt
   instruction String
-  durationMinutes Decimal? @map("duration_minutes") @db.Decimal(12, 2)
+  durationMinutes Int? @map("duration_minutes")
   temperatureValue Decimal? @map("temperature_value") @db.Decimal(5, 1)
   temperatureUnit String? @map("temperature_unit") @db.Char(1) @default("")
-  equipmentNeeded String? @map("equipment_needed") @default("")
+  equipmentNeeded String[] @map("equipment_needed") @default([])
   tips String? @default("")
   videoUrl String? @map("video_url") @default("")
   imageUrl String? @map("image_url") @default("")
@@ -4062,12 +4071,12 @@ model Station {
   name String
   stationType String @map("station_type") @default("prep-station")
   capacitySimultaneousTasks Int? @map("capacity_simultaneous_tasks") @default(1)
-  equipmentList String? @default("")
+  equipmentList String[] @default([])
   isActive Boolean? @map("is_active") @default(true)
-  inMaintenance Boolean? @default(false)
-  maintenanceReason String? @default("")
-  maintenanceStartAt DateTime?
-  currentTaskCount Int?
+  inMaintenance Boolean? @map("in_maintenance") @default(false)
+  maintenanceReason String? @map("maintenance_reason") @default("")
+  maintenanceStartAt DateTime? @map("maintenance_start_at") @db.Timestamptz(6)
+  currentTaskCount Int? @map("current_task_count")
   notes String? @db.Text @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -4102,8 +4111,8 @@ model Equipment {
   lastMaintenanceDate DateTime? @map("last_maintenance_date") @db.Date
   nextMaintenanceDate DateTime? @map("next_maintenance_date") @db.Date
   maintenanceIntervalDays Int? @map("maintenance_interval_days") @default(90)
-  usageHours Int? @map("usage_hours")
-  maxUsageHours Int? @map("max_usage_hours") @default(1000)
+  usageHours Float? @map("usage_hours")
+  maxUsageHours Float? @map("max_usage_hours") @default(1000)
   condition String? @default("good")
   notes String? @db.Text @default("")
   isActive Boolean? @map("is_active") @default(true)
@@ -4133,20 +4142,18 @@ model MaintenanceWorkOrder {
   workOrderNumber String? @map("work_order_number") @default("")
   areaId String? @map("area_id") @db.Uuid @default("")
   equipmentId String? @map("equipment_id") @db.Uuid @default("")
-  equipmentName String? @default("")
   title String
-  type String @default("corrective")
+  workOrderType String @default("corrective")
   priority String @default("medium")
   status String @default("open")
   description String? @db.Text @default("")
   reportedBy String? @map("reported_by") @db.Uuid @default("")
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
   scheduledDate DateTime? @map("scheduled_date") @db.Timestamptz(6)
-  completedDate DateTime?
-  estimatedCost Decimal? @db.Decimal(12, 2)
-  actualCost Decimal? @db.Decimal(12, 2)
-  partsUsed String? @default("")
-  vendorId String? @default("")
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  totalCost Decimal? @map("total_cost") @db.Decimal(10, 2)
+  partsUsed String? @map("parts_used") @default("")
   notes String? @db.Text @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -4211,7 +4218,7 @@ model FacilityArea {
   areaType String? @default("other")
   floor String? @map("floor") @default("")
   description String? @db.Text @default("")
-  squareFeet Decimal? @map("square_feet") @db.Decimal(12, 2)
+  squareFeet Int? @map("square_feet")
   status String? @default("active")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -4235,22 +4242,20 @@ model FacilityArea {
 model FacilityAsset {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  facilityId String? @default("")
+  facilityId String? @map("facility_id") @db.Uuid @default("")
   areaId String? @map("area_id") @db.Uuid @default("")
   name String
   assetType String? @map("asset_type") @default("other")
-  assetClass String? @default("fixed")
   status String? @default("active")
   purchaseDate DateTime? @map("purchase_date") @db.Date
-  purchasePrice Decimal? @db.Decimal(12, 2)
-  currentValue Decimal? @db.Decimal(12, 2)
-  depreciationRate Decimal? @db.Decimal(12, 2) @default(0)
+  purchaseCost Decimal? @map("purchase_cost") @db.Decimal(12, 2)
+  currentValue Decimal? @map("current_value") @db.Decimal(12, 2)
   serialNumber String? @map("serial_number") @default("")
   manufacturer String? @default("")
   model String? @default("")
   warrantyExpiry DateTime? @map("warranty_expiry") @db.Date
-  lastMaintenanceAt DateTime?
-  nextMaintenanceAt DateTime?
+  lastMaintenanceAt DateTime? @map("last_maintenance_at") @db.Timestamptz(6)
+  nextMaintenanceAt DateTime? @map("next_maintenance_at") @db.Timestamptz(6)
   notes String? @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -4389,18 +4394,15 @@ model LogisticsRoute {
   status String? @default("planned")
   vehicleId String? @default("")
   driverId String? @default("")
-  startLocation String? @default("")
-  endLocation String? @default("")
-  distance Decimal? @db.Decimal(12, 2)
-  estimatedDuration Decimal? @db.Decimal(12, 2)
-  scheduledStart DateTime?
-  scheduledEnd DateTime?
-  actualStart DateTime?
-  actualEnd DateTime?
-  stops Decimal? @db.Decimal(12, 2)
-  completedStops Int? @default(0)
+  totalDistance Decimal? @db.Decimal(12, 2)
+  totalDuration Int?
+  scheduledDate DateTime?
+  endTime DateTime?
+  actualStartTime DateTime?
+  actualEndTime DateTime?
+  completedStops Int?
   delayMinutes Int? @default(0)
-  notes String? @default("")
+  description String? @default("")
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -4445,7 +4447,6 @@ model Shipment {
   tenantId String @map("tenant_id") @db.Uuid
   shipmentNumber String @map("shipment_number")
   status String? @default("draft")
-  purchaseOrderId String? @default("")
   eventId String? @map("event_id") @db.Uuid @default("")
   supplierId String? @map("supplier_id") @db.Uuid @default("")
   locationId String? @map("location_id") @db.Uuid @default("")
@@ -4536,7 +4537,7 @@ model WorkOrder {
   description String? @db.Text @default("")
   scheduledDate DateTime? @map("scheduled_date") @db.Timestamptz(6)
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
-  completedAt DateTime?
+  completedDate DateTime? @map("completed_date") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4587,9 +4588,8 @@ model PerformancePrediction {
   predictionScore Decimal? @db.Decimal(12, 2)
   confidence String? @default("medium")
   factors String? @default("")
+  createdAt DateTime?
   expiresAt DateTime?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
 
 
   @@id([tenantId, id])
@@ -4644,8 +4644,7 @@ model Notification {
   isRead Boolean? @map("is_read") @default(false)
   readAt DateTime? @map("read_at") @db.Timestamptz(6)
   correlationId String? @default("")
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("notifications")
@@ -4669,8 +4668,7 @@ model OverrideAudit {
   overrideReason String? @map("override_reason") @db.Text @default("")
   authorizedBy String? @map("authorized_by") @db.Uuid @default("")
   authorizedAt DateTime? @map("authorized_at") @db.Timestamptz(6)
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
   @@map("override_audit")
   @@id([tenantId, id])
@@ -4753,8 +4751,6 @@ model SampleData {
   clientsCreated Int?
   usersCreated Int? @default(0)
   recipesCreated Int? @default(0)
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
 
   @@id([tenantId, id])
   @@schema("public")
@@ -4777,7 +4773,7 @@ model User {
   phone String? @default("")
   employmentType String? @map("employment_type") @default("full_time")
   hourlyRate Decimal? @map("hourly_rate") @db.Decimal(10, 2)
-  salaryAnnual Decimal? @map("salary_annual") @db.Decimal(12, 2)
+  salaryAnnual Decimal? @map("salary_annual") @db.Decimal(12, 2) @default(0)
   hireDate DateTime @map("hire_date") @db.Date @default(dbgenerated("CURRENT_DATE"))
   terminationDate DateTime? @map("termination_date") @db.Date
   isActive Boolean @map("is_active") @default(true)
@@ -4856,7 +4852,7 @@ model PurchaseRequisition {
   itemCategory String? @map("item_category") @default("")
   priority String @default("normal")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  itemCount Int?
+  itemCount Int? @map("item_count")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -4923,7 +4919,7 @@ model PurchaseOrder {
   receivedBy String? @map("received_by") @db.Uuid @default("")
   receivedAt DateTime? @map("received_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  itemCount Int?
+  itemCount Int? @map("item_count")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5031,7 +5027,7 @@ model VendorContract {
   deliveryTerms String? @map("delivery_terms") @default("")
   minimumOrderQuantity Decimal? @map("minimum_order_quantity") @db.Decimal(12, 2)
   annualSpendCommitment Decimal? @map("annual_spend_commitment") @db.Decimal(12, 2)
-  spendToPeriod Decimal? @map("spend_to_period") @db.Decimal(12, 2) @default(0)
+  spendToPeriod DateTime? @map("spend_to_period") @db.Date
   currencyCode String? @map("currency_code") @default("USD")
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
@@ -5040,7 +5036,7 @@ model VendorContract {
   terminationReason String? @map("termination_reason") @default("")
   contractUrl String? @map("contract_url") @default("")
   notes String? @default("")
-  complianceScore Decimal? @map("compliance_score") @db.Decimal(12, 2) @default(100)
+  complianceScore Int? @map("compliance_score") @db.SmallInt @default(100)
   lastComplianceReview DateTime? @map("last_compliance_review") @db.Timestamptz(6)
   slaBreachCount Int? @map("sla_breach_count")
   onTimeDeliveryRate Decimal? @map("on_time_delivery_rate") @db.Decimal(5, 2)
@@ -5129,10 +5125,10 @@ model QACheck {
 model QACorrectiveAction {
   id String
   tenantId String
-  checkId String
+  relatedCheckId String? @default("")
   description String
   assignedTo String? @default("")
-  priority String? @default("medium")
+  severity String? @default("medium")
   status String? @default("open")
   resolutionNotes String? @default("")
   escalatedTo String? @default("")
@@ -5156,11 +5152,11 @@ model QACorrectiveAction {
 model QATemperatureLog {
   id String
   tenantId String
-  location String
+  logType String
   temperature Decimal @db.Decimal(12, 2)
   unit String? @default("fahrenheit")
-  equipment String? @default("")
-  recordedBy String? @default("")
+  equipmentId String? @default("")
+  loggedBy String? @default("")
   notes String? @default("")
   loggedAt DateTime?
   createdAt DateTime? @default(now())
@@ -5186,8 +5182,8 @@ model WasteEntry {
   eventId String? @map("event_id") @db.Uuid @default("")
   loggedBy String? @map("logged_by") @db.Uuid @default("")
   loggedAt DateTime? @map("logged_at") @db.Timestamptz(6)
-  approvedBy String? @default("")
-  approvedAt DateTime?
+  approvedBy String? @map("approved_by") @db.Uuid @default("")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   status String? @default("logged")
   unitCost Decimal? @db.Decimal(10, 2)
   totalCost Decimal? @db.Decimal(10, 2)
@@ -5219,14 +5215,13 @@ model LaborBudget {
   locationId String? @map("location_id") @db.Uuid @default("")
   periodStart DateTime? @map("period_start") @db.Date
   periodEnd DateTime? @map("period_end") @db.Date
-  budgetAmount Decimal? @db.Decimal(12, 2)
-  actualAmount Decimal? @db.Decimal(12, 2)
+  budgetTarget Decimal? @map("budget_target") @db.Decimal(10, 2)
+  actualSpend Decimal? @map("actual_spend") @db.Decimal(10, 2)
   budgetType String? @map("budget_type") @default("weekly")
   status String? @default("active")
-  notes String? @default("")
-  createdBy String? @default("")
-  approvedBy String? @default("")
-  approvedAt DateTime?
+  description String? @default("")
+  approvedBy String? @map("approved_by") @db.Uuid @default("")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -5247,8 +5242,7 @@ model BudgetAlert {
   tenantId String @map("tenant_id") @db.Uuid
   budgetId String? @map("budget_id") @db.Uuid @default("")
   alertType String? @map("alert_type") @default("")
-  thresholdPct Decimal? @db.Decimal(12, 2)
-  actualPct Decimal? @db.Decimal(12, 2)
+  utilization Decimal? @db.Decimal(5, 2)
   message String? @default("")
   isAcknowledged Boolean? @map("is_acknowledged") @default(false)
   acknowledgedBy String? @map("acknowledged_by") @db.Uuid @default("")
@@ -5326,8 +5320,7 @@ model PayrollApprovalHistory {
   performedBy String? @map("performed_by") @db.Uuid @default("")
   performedAt DateTime? @map("performed_at") @db.Timestamptz(6)
   reason String? @default("")
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("payroll_approval_history")
@@ -5353,7 +5346,7 @@ model PayrollRun {
   totalNet Decimal? @map("total_net") @db.Decimal(12, 2) @default(0)
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
-  rejectedBy String? @default("")
+  rejectedBy String? @map("rejected_by") @db.Uuid @default("")
   paidAt DateTime? @map("paid_at") @db.Timestamptz(6)
   rejectReason String? @map("reject_reason") @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -5379,8 +5372,8 @@ model Schedule {
   status String? @default("draft")
   publishedAt DateTime?
   publishedBy String? @default("")
-  approvedBy String? @default("")
-  approvedAt DateTime?
+  approvedBy String? @map("approved_by") @db.Uuid @default("")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
   notes String? @default("")
   shiftCount Int?
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -5408,10 +5401,10 @@ model ScheduleShift {
   shiftEnd DateTime?
   roleDuringShift String? @default("")
   notes String? @default("")
-  swapOfferedTo String? @default("")
-  swapStatus String? @default("none")
-  swapOfferedAt DateTime?
-  swapAcceptedAt DateTime?
+  swapOfferedTo String? @map("swap_offered_to") @db.Uuid @default("")
+  swapStatus String? @map("swap_status") @default("none")
+  swapOfferedAt DateTime? @map("swap_offered_at") @db.Timestamptz(6)
+  swapAcceptedAt DateTime? @map("swap_accepted_at") @db.Timestamptz(6)
   inheritedContext String? @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
@@ -5432,7 +5425,8 @@ model TimecardApproval {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
-  payrollPeriodId String
+  payrollRunId String @map("payroll_run_id") @db.Uuid
+  submittedBy String @map("submitted_by") @db.Uuid
   status String? @default("pending")
   approvedBy String? @map("approved_by") @db.Uuid @default("")
   approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
@@ -5440,7 +5434,6 @@ model TimecardApproval {
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
-  payrollRunId String @map("payroll_run_id")
 
   @@map("timecard_approvals")
   @@id([tenantId, id])
@@ -5459,8 +5452,8 @@ model PayrollLineItem {
   employeeId String @map("employee_id") @db.Uuid
   grossPay Decimal? @map("gross_pay") @db.Decimal(10, 2)
   netPay Decimal? @map("net_pay") @db.Decimal(10, 2)
-  totalDeductions Decimal? @db.Decimal(12, 2) @default(0)
-  hoursWorked Decimal? @db.Decimal(12, 2) @default(0)
+  totalDeductions Decimal? @map("total_deductions") @db.Decimal(10, 2) @default(0)
+  hoursWorked Decimal? @map("hours_worked") @db.Decimal(6, 2) @default(0)
   hoursRegular Decimal? @map("hours_regular") @db.Decimal(6, 2) @default(0)
   hoursOvertime Decimal? @map("hours_overtime") @db.Decimal(6, 2) @default(0)
   rateRegular Decimal? @map("rate_regular") @db.Decimal(10, 2) @default(0)
@@ -5483,17 +5476,14 @@ model PayrollLineItem {
 model TipPool {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  periodStart DateTime?
-  periodEnd DateTime?
   periodId String? @map("period_id") @db.Uuid @default("")
-  eventId String? @default("")
   totalTips Decimal? @map("total_tips") @db.Decimal(10, 2)
   status String? @default("open")
   allocationRule String? @map("allocation_rule") @default("by_hours")
   fixedShares Json? @map("fixed_shares") @db.JsonB @default("{}")
-  distributedAmount Decimal? @db.Decimal(12, 2)
-  distributedAt DateTime?
-  distributedBy String? @default("")
+  distributedAmount Decimal? @map("distributed_amount") @db.Decimal(10, 2)
+  distributedAt DateTime? @map("distributed_at") @db.Timestamptz(6)
+  distributedBy String? @map("distributed_by") @db.Uuid @default("")
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5520,7 +5510,7 @@ model DisciplinaryAction {
   escalatedTo String? @default("")
   escalationReason String? @default("")
   escalatedAt DateTime?
-  issuedAt DateTime?
+  issuedDate DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -5540,9 +5530,9 @@ model ActionMilestone {
   tenantId String
   disciplinaryActionId String
   title String? @default("")
-  dueAt DateTime?
+  dueDate DateTime?
   status String? @default("pending")
-  completedAt DateTime?
+  completedDate DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -5562,11 +5552,12 @@ model PerformanceReview {
   tenantId String
   employeeId String
   reviewerId String
-  reviewPeriod String? @default("")
-  overallRating Decimal? @db.Decimal(12, 2)
+  reviewType String? @default("")
+  scheduledDate DateTime?
+  rating Decimal? @db.Decimal(3, 2)
   status String? @default("scheduled")
-  submittedAt DateTime?
-  signedOffAt DateTime?
+  completedDate DateTime?
+  employeeAcknowledgedAt DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -5587,7 +5578,8 @@ model TrainingCompletion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   employeeId String @map("employee_id") @db.Uuid
-  trainingModuleId String
+  assignmentId String @map("assignment_id") @db.Uuid
+  moduleId String @map("module_id") @db.Uuid
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   score Decimal? @db.Decimal(5, 2)
   passed Boolean? @default(false)
@@ -5597,8 +5589,10 @@ model TrainingCompletion {
 
   @@map("training_completions")
   @@id([tenantId, id])
+  @@index([tenantId, employeeId, moduleId])
   @@schema("tenant_staff")
 
+  @@unique([tenantId, employeeId, moduleId])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -5611,6 +5605,7 @@ model OnboardingTask {
   tenantId String
   title String? @default("")
   description String? @default("")
+  taskType String? @default("OTHER")
   sortOrder Int?
   isRequired Boolean? @default(true)
   deletedAt DateTime?
@@ -5631,17 +5626,18 @@ model OnboardingCompletion {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   employeeId String
-  onboardingTaskId String
+  taskId String
   completedAt DateTime?
-  status String? @default("pending")
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
 
   @@map("onboarding_completions")
   @@id([tenantId, id])
+  @@index([tenantId, employeeId, taskId])
   @@schema("tenant_staff")
 
+  @@unique([tenantId, employeeId, taskId])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -5675,11 +5671,11 @@ model DeliveryRoute {
   id String @map("id") @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   name String? @default("")
+  routeNumber String? @map("route_number") @default("")
   driverId String? @map("driver_id") @db.Uuid @default("")
-  routeDate DateTime?
+  scheduledDate DateTime? @map("scheduled_date") @db.Date
   status String? @default("draft")
-  totalStops Int?
-  distanceMiles Decimal? @db.Decimal(12, 2)
+  totalDistance Decimal? @map("total_distance") @db.Decimal(10, 2)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5687,8 +5683,11 @@ model DeliveryRoute {
   @@map("delivery_routes")
   @@id([tenantId, id])
   @@index([tenantId, status])
+  @@index([tenantId, scheduledDate])
+  @@index([tenantId, routeNumber])
   @@schema("tenant_logistics")
 
+  @@unique([tenantId, routeNumber])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -5699,21 +5698,23 @@ model DeliveryRoute {
 model RouteStop {
   id String @map("id") @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
-  deliveryRouteId String
-  eventId String? @default("")
-  address String? @default("")
-  sequence Int?
-  scheduledAt DateTime?
+  routeId String @map("route_id") @db.Uuid
+  name String? @default("")
+  stopNumber Int? @map("stop_number")
+  plannedArrival DateTime? @map("planned_arrival") @db.Timestamptz(6)
   status String? @default("pending")
-  arrivedAt DateTime?
+  actualArrival DateTime? @map("actual_arrival") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
 
   @@map("route_stops")
   @@id([tenantId, id])
+  @@index([routeId, status])
+  @@index([routeId, stopNumber])
   @@schema("tenant_logistics")
 
+  @@unique([routeId, stopNumber])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -5725,12 +5726,11 @@ model PaymentRefundAttempt {
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String @map("tenant_id") @db.Uuid
   paymentId String @map("payment_id") @db.Uuid
-  amount Decimal? @db.Decimal(12, 2)
-  reason String? @default("")
-  status String? @default("pending")
-  attemptedAt DateTime?
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @updatedAt
+  requestedAmount Decimal? @map("requested_amount") @db.Decimal(12, 2)
+  effectiveAmount Decimal? @map("effective_amount") @db.Decimal(12, 2)
+  refundReason String? @map("refund_reason") @default("")
+  success Boolean? @default(false)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
 
 
   @@map("payment_refund_attempts")
@@ -5764,7 +5764,6 @@ model PreventiveMaintenanceSchedule {
   estimatedHours Decimal? @map("estimated_hours") @db.Decimal(4, 1)
   estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
   status String? @default("active")
-  isActive Boolean? @default(true)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -5902,11 +5901,11 @@ model TimeOffRequest {
   reason String? @default("")
   requestType String? @map("request_type") @default("")
   status String? @default("PENDING")
-  processedBy String? @default("")
-  processedAt DateTime?
+  reviewedBy String? @map("reviewed_by") @db.Uuid @default("")
+  reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz(6)
   rejectionReason String? @map("rejection_reason") @default("")
-  balanceSnapshot Decimal? @db.Decimal(12, 2)
-  balanceUnit String? @default("")
+  balanceSnapshot Decimal? @map("balance_snapshot") @db.Decimal(6, 2)
+  balanceUnit String? @map("balance_unit") @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
@@ -5933,14 +5932,14 @@ model TrainingModule {
   durationMinutes Int? @map("duration_minutes") @db.SmallInt
   category String? @default("")
   isRequired Boolean? @map("is_required") @default(false)
-  passThresholdPercent Int? @default(80)
-  maxAttempts Int? @default(3)
-  requiredRole String? @default("staff")
+  passThresholdPercent Int? @map("pass_threshold_percent") @default(80)
+  maxAttempts Int? @map("max_attempts") @default(3)
+  requiredRole String? @map("required_role") @default("staff")
   isActive Boolean? @map("is_active") @default(true)
   status String? @default("draft")
   version Int? @default(1)
-  publishedAt DateTime?
-  archivedAt DateTime?
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(6)
   notes String? @default("")
   createdBy String? @map("created_by") @db.Uuid @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -5991,26 +5990,26 @@ model TrainingAssignment {
   tenantId String @map("tenant_id") @db.Uuid
   id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   moduleId String @map("module_id") @db.Uuid
-  moduleCode String? @default("")
-  moduleTitle String? @default("")
-  staffMemberId String
-  staffRole String? @default("staff")
+  moduleCode String? @map("module_code") @default("")
+  moduleTitle String? @map("module_title") @default("")
+  employeeId String? @map("employee_id") @db.Uuid @default("")
+  staffRole String? @map("staff_role") @default("staff")
   status String? @default("assigned")
-  dueAt DateTime?
-  dueDateReviewNeeded Boolean? @default(false)
-  firstShiftAt DateTime?
-  startedAt DateTime?
-  completedAt DateTime?
-  waivedAt DateTime?
-  waiverReason String? @default("")
-  waiverApprovedBy String? @default("")
-  attemptCount Int?
-  lastAttemptId String? @default("")
-  lastScorePercent Int?
-  passThresholdPercent Int? @default(80)
-  maxAttempts Int? @default(3)
-  managerReviewRequired Boolean? @default(false)
-  reminderSentAt DateTime?
+  dueDate DateTime? @map("due_date") @db.Timestamptz(6)
+  dueDateReviewNeeded Boolean? @map("due_date_review_needed") @default(false)
+  firstShiftAt DateTime? @map("first_shift_at") @db.Timestamptz(6)
+  startedAt DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  waivedAt DateTime? @map("waived_at") @db.Timestamptz(6)
+  waiverReason String? @map("waiver_reason") @default("")
+  waiverApprovedBy String? @map("waiver_approved_by") @default("")
+  attemptCount Int? @map("attempt_count")
+  lastAttemptId String? @map("last_attempt_id") @default("")
+  lastScorePercent Int? @map("last_score_percent")
+  passThresholdPercent Int? @map("pass_threshold_percent") @default(80)
+  maxAttempts Int? @map("max_attempts") @default(3)
+  managerReviewRequired Boolean? @map("manager_review_required") @default(false)
+  reminderSentAt DateTime? @map("reminder_sent_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
@@ -6162,6 +6161,9 @@ model EmployeeBankAccount {
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  verificationFailedAt      DateTime? @map("verification_failed_at") @db.Timestamptz(6)
+  verificationFailureReason String?   @map("verification_failure_reason")
 
   @@id([tenantId, id])
   @@index([tenantId, employeeId], map: "employee_bank_accounts_employee_idx")
