@@ -3,8 +3,8 @@
   "root": "C:\\Projects\\capsule-pro",
   "counts": {
     "FAIL": 0,
-    "WARN": 5,
-    "PASS": 155,
+    "WARN": 4,
+    "PASS": 156,
     "INFO": 15
   },
   "results": [
@@ -293,25 +293,25 @@
     {
       "level": "PASS",
       "id": "manifest-package-dep.normal",
-      "message": "root package.json uses @angriff36/manifest 2.2.0",
+      "message": "root package.json uses @angriff36/manifest 2.4.2",
       "details": []
     },
     {
       "level": "PASS",
       "id": "manifest-package-dep.normal",
-      "message": "apps/api/package.json uses @angriff36/manifest 2.2.0",
+      "message": "apps/api/package.json uses @angriff36/manifest 2.4.2",
       "details": []
     },
     {
       "level": "PASS",
       "id": "manifest-package-dep.normal",
-      "message": "manifest/runtime/package.json uses @angriff36/manifest 2.2.0",
+      "message": "manifest/runtime/package.json uses @angriff36/manifest 2.4.2",
       "details": []
     },
     {
       "level": "PASS",
       "id": "manifest-package-dep.normal",
-      "message": "packages/mcp-server/package.json uses @angriff36/manifest 2.2.0",
+      "message": "packages/mcp-server/package.json uses @angriff36/manifest 2.4.2",
       "details": []
     },
     {
@@ -753,12 +753,10 @@
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "runtime-package.broken-read-files",
-      "message": "1 files still use broken-read-* names; may be intentional migration debt, but they should not be mistaken for generated junk",
-      "details": [
-        "manifest/runtime/src/prisma-stores/broken-read-batch16-inventory-transfer.ts"
-      ]
+      "level": "PASS",
+      "id": "runtime-package.no-broken-read-files",
+      "message": "No broken-read-* runtime store files found",
+      "details": []
     },
     {
       "level": "INFO",
@@ -842,7 +840,7 @@
     {
       "level": "PASS",
       "id": "routes-manifest.dispatcher-paths",
-      "message": "routes.manifest.json contains 999 dispatcher command paths",
+      "message": "routes.manifest.json contains 1001 dispatcher command paths",
       "details": []
     },
     {
@@ -946,13 +944,13 @@
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "apps/api imports @angriff36/manifest and declares it in dependencies:2.2.0",
+      "message": "apps/api imports @angriff36/manifest and declares it in dependencies:2.4.2",
       "details": []
     },
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "packages/mcp-server imports @angriff36/manifest and declares it in dependencies:2.2.0",
+      "message": "packages/mcp-server imports @angriff36/manifest and declares it in dependencies:2.4.2",
       "details": []
     },
     {
@@ -964,7 +962,7 @@
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "manifest/runtime imports @angriff36/manifest and declares it in dependencies:2.2.0",
+      "message": "manifest/runtime imports @angriff36/manifest and declares it in dependencies:2.4.2",
       "details": []
     },
     {
@@ -983,6 +981,9 @@
         "apps/api/app/api/analytics/bottlenecks/route.ts: imports @repo/manifest-runtime/bottleneck-detector",
         "apps/api/app/api/analytics/bottlenecks/route.ts: imports @repo/manifest-runtime/bottleneck-detector",
         "apps/api/app/api/calendar/sync/trigger/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
+        "apps/api/app/api/command-board/[boardId]/commit/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
+        "apps/api/app/api/command-board/[boardId]/commit/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
+        "apps/api/app/api/command-board/[boardId]/commit/route.ts: imports @repo/manifest-runtime/manifest-runtime-factory",
         "apps/api/app/api/command-board/simulations/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/cron/contract-expiration-alerts/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/cron/email-reminders/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
@@ -1028,11 +1029,12 @@
         "apps/api/app/api/accounting/payment-methods/validation.ts:260: createManifestRuntime({",
         "apps/api/app/api/accounting/payments/[id]/route.ts:187: const manifestRuntime = await createManifestRuntime({",
         "apps/api/app/api/accounting/payments/[id]/route.ts:372: const manifestRuntime = await createManifestRuntime({",
-        "apps/api/app/api/accounting/payments/route.ts:239: const manifestRuntime = await createManifestRuntime({",
+        "apps/api/app/api/accounting/payments/route.ts:240: const manifestRuntime = await createManifestRuntime({",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:133: const manifestRuntime = await createManifestRuntime({",
         "apps/api/app/api/ai/bulk-tasks/confirm/route.ts:125: createManifestRuntime({",
         "apps/api/app/api/ai/bulk-tasks/confirm/route.ts:173: createManifestRuntime({",
         "apps/api/app/api/calendar/sync/trigger/route.ts:29: createManifestRuntime({",
+        "apps/api/app/api/command-board/[boardId]/commit/route.ts:44: }) => createManifestRuntime({ user, entityName, prismaOverride }),",
         "apps/api/app/api/command-board/simulations/route.ts:197: createManifestRuntime({",
         "apps/api/app/api/command-board/simulations/route.ts:317: createManifestRuntime({",
         "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts:102: const runtime = await createManifestRuntime({",
@@ -1057,11 +1059,11 @@
         "apps/api/app/api/kitchen/ai/bulk-generate/prep-tasks/service.ts:414: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/allergens/detect-conflicts/route.ts:242: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/allergens/update-dish/route.ts:108: const runtime = await createManifestRuntime({",
-        "apps/api/app/api/kitchen/import/route.ts:150: createManifestRuntime({",
-        "apps/api/app/api/kitchen/import/route.ts:188: createManifestRuntime({",
-        "apps/api/app/api/kitchen/import/route.ts:294: createManifestRuntime({",
-        "apps/api/app/api/kitchen/import/route.ts:399: createManifestRuntime({",
-        "apps/api/app/api/kitchen/import/route.ts:439: createManifestRuntime({",
+        "apps/api/app/api/kitchen/import/route.ts:151: createManifestRuntime({",
+        "apps/api/app/api/kitchen/import/route.ts:189: createManifestRuntime({",
+        "apps/api/app/api/kitchen/import/route.ts:296: createManifestRuntime({",
+        "apps/api/app/api/kitchen/import/route.ts:402: createManifestRuntime({",
+        "apps/api/app/api/kitchen/import/route.ts:442: createManifestRuntime({",
         "apps/api/app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts:44: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts:59: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts:73: const runtime = await createManifestRuntime({",
@@ -1083,10 +1085,10 @@
       "details": [
         "apps/api/app/api/accounting/payments/[id]/route.ts:191: const manifestResult = await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/payments/[id]/route.ts:376: const manifestResult = await manifestRuntime.runCommand(",
-        "apps/api/app/api/accounting/payments/route.ts:250: const createResult = await manifestRuntime.runCommand(",
-        "apps/api/app/api/accounting/payments/route.ts:308: const processResult = await manifestRuntime.runCommand(",
-        "apps/api/app/api/accounting/payments/route.ts:316: await manifestRuntime.runCommand(",
-        "apps/api/app/api/accounting/payments/route.ts:358: await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:251: const createResult = await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:309: const processResult = await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:317: await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:359: await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:139: const lineResult = await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:162: const scheduleResult = await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:182: await manifestRuntime.runCommand(",
@@ -1122,6 +1124,8 @@
         "apps/api/app/api/kitchen/tasks/sync-claims/route.ts:114: const result = await runtime.runCommand(",
         "apps/api/app/api/smsautomationrule/activate/route.ts:52: const result = await runtime.runCommand(",
         "apps/api/app/api/smsautomationrule/deactivate/route.ts:52: const result = await runtime.runCommand(",
+        "apps/api/lib/event-board/commit-event-board-drafts.ts:288: const flip = await deps.runCommand(tx, {",
+        "apps/api/lib/event-board/commit-event-board-drafts.ts:353: const assign = await deps.runCommand(tx, { ...domainCall, user });",
         "apps/api/lib/manifest-runtime.ts:80: * const result = await runtime.runCommand(\"claim\", { userId: \"user-123\" }, {"
       ]
     },
@@ -1194,7 +1198,7 @@
     {
       "level": "PASS",
       "id": "commands-registry.array",
-      "message": "commands.registry.json contains 999 command entries",
+      "message": "commands.registry.json contains 1001 command entries",
       "details": []
     },
     {
@@ -1206,7 +1210,7 @@
     {
       "level": "PASS",
       "id": "manifest-ir.present",
-      "message": "manifest/ir contains 1 IR JSON files",
+      "message": "manifest/ir contains 95 IR JSON files",
       "details": []
     }
   ]
