@@ -25,9 +25,64 @@ env:
   NPM_TOKEN: ${{ github.token }}
 
 jobs:
+  # Apply pending Prisma migrations BEFORE shipping code that depends on them.
+  # Prod fell 13 migrations behind because this step never existed (notes §49).
+  # The production DATABASE_URL lives in Vercel project env — pulled via the
+  # existing Vercel credentials, no extra GitHub secret required.
+  migrate-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      - name: Pull production env from Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Apply migrations (prisma migrate deploy)
+        run: |
+          ENV_FILE=".vercel/.env.production.local"
+          getvar() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
+          DATABASE_URL="$(getvar DATABASE_URL)"
+          DIRECT_URL="$(getvar DIRECT_URL)"
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::DATABASE_URL not found in pulled Vercel production env"
+            exit 1
+          fi
+          # prisma migrate needs a direct (non-pooled) connection; derive it
+          # from Neon's -pooler host when DIRECT_URL is not set explicitly.
+          if [ -z "$DIRECT_URL" ]; then
+            DIRECT_URL="${DATABASE_URL/-pooler./.}"
+          fi
+          export DATABASE_URL DIRECT_URL
+          pnpm db:deploy
+          pnpm migrate:status
+
   deploy-app:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    needs: migrate-database
     env:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
     steps:
@@ -68,6 +123,7 @@ jobs:
   deploy-api:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    needs: migrate-database
     env:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
     steps:

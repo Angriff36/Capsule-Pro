@@ -1793,3 +1793,34 @@ reaction gate strict OK.
 
 Search: inverted block constraint, block passes when true, warn fires when true, constraint
 polarity, 34 of 38, blockNoItems, blockAlreadyClockedIn, entity-level block anti-pattern
+
+---
+
+## 49. Production DB reconciled with rebaselined migration history (2026-06-12)
+
+Prod (ep-divine-math-ah5lmxku — 2,552 events, 46 employees) shared ZERO history with the
+post-2026-06-07 rebaselined migrations (`last common migration: null`; prod's recorded history
+ended 2026-06-03 with 3 rows that no longer exist locally). Reconciliation, all pre-verified
+read-only first (migrate status, migrate diff, exact row counts):
+- 253 legacy public.* tables on prod; only 3 non-empty (accounts=1, manifest_audit_records=103,
+  manifest_outbox_entries=81) and NONE are dropped by any migration (the drop_empty migration is
+  a comment-only placeholder) — legacy tables remain as harmless drift.
+- `resolve --applied`: 0_init (schema pre-exists), 20260608000146_n (leads.score/score_breakdown
+  already present with byte-identical spec via the old history), 20260608000147_manifest_runtime_tables
+  (ALL its objects pre-existed via runtime ensureManifestSchema bootstrap; its one unguarded
+  ADD CONSTRAINT collided → P3018 rolled back cleanly → verified objects → resolved applied).
+- `migrate deploy` applied the rest: version columns, schedule_shift inherited context,
+  crm/eventfollowup soft-delete, qa_checks, shift-times timestamptz (event_staff verified 0 rows
+  before the DROP+ADD). Final status: "Database schema is up to date!" The 3 pre-rebaseline
+  history rows remain on prod (harmless record — do not delete).
+- ROOT FIX: deploy.yml gained a `migrate-database` job (pulls prod env via Vercel CLI — no new
+  GitHub secret; prefers DIRECT_URL, derives direct host from Neon -pooler URL otherwise; runs
+  `pnpm db:deploy` + status) and deploy-app/deploy-api now `needs:` it.
+
+Gotcha: `prisma migrate diff --from-url` was REMOVED in Prisma 7 — use `--from-config-datasource`
+with DATABASE_URL/DIRECT_URL env (prisma.config.ts reads DIRECT_URL ?? DATABASE_URL). dotenvx
+injection does NOT override explicitly-set env vars, so `DATABASE_URL=<prod> pnpm exec prisma ...`
+targets prod even with .env present.
+
+Search: production migration, divine-math, rebaseline, resolve --applied, last common migration
+null, deploy.yml migrate step, P3018 constraint already exists, legacy public tables
