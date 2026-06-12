@@ -142,7 +142,10 @@ entity Event {
   command confirm(userId: string) {
     guard self.status == "draft" "Can only confirm draft events"
 
-    constraint blockNoGuestCount:block self.guestCount == 0 {
+    // Block constraints PASS when the expression is TRUE (engine semantics —
+    // same inverted-constraint bug class as v0.12.124's inventory fixes).
+    // "block when no guests" must therefore be expressed as "guestCount > 0".
+    constraint blockNoGuestCount:block self.guestCount > 0 {
       messageTemplate: "Cannot confirm event '{eventName}' with no guest count"
       details: {
         eventName: self.title

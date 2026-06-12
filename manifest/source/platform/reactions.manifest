@@ -164,3 +164,29 @@ on EventCreated run BattleBoard.create
     notes: ""
     tags: ""
   }
+
+// ---------------------------------------------------------------------------
+// Event confirmation -> prep list auto-seed (notes §47)
+// ---------------------------------------------------------------------------
+// Confirming an event creates its prep list shell declaratively. The prep-list
+// seed middleware (manifest/runtime/src/middleware/prep-list-seed-middleware.ts)
+// then derives menu->ingredient items from EventDish/Dish/RecipeVersion/
+// RecipeIngredient stores and imports them via governed createFromSeed +
+// PrepListItem.create dispatches — the [auto-seed marker in notes is its
+// trigger. eventId uses payload._subject.id because Event.confirm is a mutate
+// command: its payload.result is the LAST MUTATE'S VALUE, not the Event
+// instance (runtime-engine emit path), so payload.result.id would be
+// undefined. _subject.id is engine-stamped from the runCommand instanceId.
+// The name is a placeholder: the seed middleware re-titles the list from the
+// real Event.title via createFromSeed (confirm's payload cannot carry title).
+on EventConfirmed run PrepList.create
+  resolve null
+  params {
+    eventId: payload._subject.id
+    name: "Prep List (seeding from confirmed event)"
+    batchMultiplier: 1
+    dietaryRestrictions: ""
+    totalItems: 0
+    totalEstimatedTime: 0
+    notes: "[auto-seed:event-confirmed]"
+  }

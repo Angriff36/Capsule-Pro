@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "6db0605307221ee3a373069b53c893d4f0a9be5a87299071d32d85745b9a23ba",
-    "irHash": "0dfaae8abad86963b2fbbf85abe8c27b280c8140552477c2d2c284663a731f50",
-    "compilerVersion": "2.4.1",
+    "contentHash": "8be07796fa77a89a945de9e074bf8e8570895b03bd66097128d5c0cdae36df0e",
+    "irHash": "2dda8bbbfa227c8a7bad38db9a2415d3fa3e1356d6cee618233faa258ac321ff",
+    "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T07:22:57.912Z"
+    "compiledAt": "2026-06-12T12:11:25.566Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -829,6 +829,94 @@
             "value": {
               "kind": "string",
               "value": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "EventConfirmed",
+      "targetEntity": "PrepList",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "literal",
+        "value": {
+          "kind": "null"
+        }
+      },
+      "params": [
+        {
+          "name": "eventId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "_subject"
+            },
+            "property": "id"
+          }
+        },
+        {
+          "name": "name",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Prep List (seeding from confirmed event)"
+            }
+          }
+        },
+        {
+          "name": "batchMultiplier",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "name": "dietaryRestrictions",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "totalItems",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "name": "totalEstimatedTime",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "name": "notes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "[auto-seed:event-confirmed]"
             }
           }
         }

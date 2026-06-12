@@ -126,16 +126,21 @@ for (const reaction of ir.reactions ?? []) {
       const field = chain[1];
       for (const em of emitters) {
         const props = entityProps.get(em.entity) ?? new Set();
-        if (props.has(field)) continue;
         const key = `${label} :: payload.${chainStr} :: emitter=${em.entity}.${em.command}`;
         if (em.command === "create") {
+          // create's result is the created instance — property refs are valid.
+          if (props.has(field)) continue;
           errors.push({
             key,
             message: `${label}: payload.result.${field} — '${field}' is not a property of ${em.entity} (create result is the created instance); undefined at runtime`,
           });
         } else {
+          // Non-create commands: the engine's `result` is the LAST ACTION'S
+          // VALUE (a mutate returns the assigned scalar — runtime-engine
+          // `case 'mutate': ... return value`), NOT the instance. result.*
+          // member access is therefore almost certainly undefined.
           warnings.push(
-            `${label}: payload.result.${field} via ${em.entity}.${em.command} — '${field}' is not a declared ${em.entity} property and the last-action result shape is not statically known`
+            `${label}: payload.result.${field} via ${em.entity}.${em.command} — non-create commands return the last mutate's VALUE as result (not the instance); this is likely undefined at runtime. Use payload._subject.id for the instance id or an input param.`
           );
         }
       }

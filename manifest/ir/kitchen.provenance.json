@@ -1,7 +1,7 @@
 {
-  "contentHash": "dfc73902fe1800cedccb65b269376bb73f9ed84d44d2cf086bed6246c196726b",
-  "irHash": "664cdcfa23df5289449cc465db0769b6b249e308698d83897c3289dbf47e9358",
-  "compilerVersion": "2.4.1",
+  "contentHash": "31de9895454068172b28c9ca6dd041e5485172706197755ab09a49d2ddce83d8",
+  "irHash": "eb667625df70a7e53e2c183eb138079eaad7f41fd1170ff656d1b07f9fb6cae0",
+  "compilerVersion": "2.4.2",
   "schemaVersion": "1.0",
-  "compiledAt": "2026-06-12T07:22:57.987Z"
+  "compiledAt": "2026-06-12T12:11:25.653Z"
 }
