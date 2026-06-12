@@ -400,7 +400,7 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     # BLOCKING — proves the committed manifest/governance/{commands,entities}.json
     # match the registries that the CURRENT manifest sources would produce.
-    # If a manifest source under packages/manifest-adapters/manifests/ changes
+    # If a manifest source under manifest/source/ changes
     # but neither kitchen.ir.json nor the governance registries are regenerated
     # and committed, governance audits would run against stale data.
     #
@@ -413,8 +413,8 @@ jobs:
     #      from the fresh IR.
     #   3. `git diff` against the committed registries fails if either differs.
     #
-    # We do NOT diff packages/manifest-ir/ir/kitchen/ directly because
-    # scripts/manifest/compile.mjs stamps a fresh `compiledAt` ISO into the
+    # We do NOT diff manifest/ir/ directly because
+    # manifest/scripts/compile.mjs stamps a fresh `compiledAt` ISO into the
     # IR + provenance on every run, so a naive diff would always fire.
     # The downstream commands/entities registries are timestamp-free derivations
     # of the IR's substantive content, so they are the correct drift surface.

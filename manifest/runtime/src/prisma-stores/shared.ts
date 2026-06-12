@@ -3,7 +3,7 @@
  * BROKEN_PRISMA_READ batches (batch01–batch03).
  *
  * These stores mirror the AlertsConfigPrismaStore template in
- * `packages/manifest-adapters/src/prisma-store.ts` but live in their own
+ * `manifest/runtime/src/prisma-store.ts` but live in their own
  * files so the main store module stays manageable.
  */
 

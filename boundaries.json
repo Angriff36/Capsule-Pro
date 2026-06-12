@@ -4,10 +4,6 @@
     "implicitDependencies": [
       "@api/*",
       "@angriff36/manifest/*",
-      "@repo/manifest-adapters",
-      "@repo/manifest-adapters/api-response",
-      "@repo/manifest-adapters/prisma-store",
-      "@repo/manifest-adapters/route-helpers",
       "@repo/*",
       "@repo/*/*",
       "@storybook/react",
@@ -92,7 +88,6 @@
       "layer:package",
       "scope:integration"
     ],
-    "packages/manifest-adapters": ["layer:package", "scope:integration"],
     "packages/next-config": ["layer:package", "scope:config"],
     "packages/notifications": ["layer:package", "scope:platform"],
     "packages/observability": ["layer:package", "scope:platform"],

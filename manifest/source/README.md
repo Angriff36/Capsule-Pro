@@ -1,17 +1,21 @@
 # `manifest/source/` — Manifest text sources
 
-The `.manifest` source files currently live at
-**`packages/manifest-adapters/manifests/`** because they ship with the
-adapters package that consumes them at runtime.
+**This directory is the canonical home of the `.manifest` source files**
+(constitution §4a; see [`manifest/README.md`](../README.md) for the full
+artifact layout). Sources are organized by domain subdirectory (`ai/`,
+`core/`, `crm/`, `events/`, `finance/`, `integrations/`, `inventory/`,
+`kitchen/`, `operations/`, `platform/`, `procurement/`, `quality/`,
+`staff/`) and are read by `manifest/scripts/compile.mjs`.
 
-This directory is a layout marker. If/when the source files are relocated
-to top-level (e.g. so they can be consumed by multiple packages), the
-canonical home is `manifest/source/`.
+The legacy `packages/manifest-adapters/manifests/` location is retired
+(2026-06-03) and **non-authoritative**. Like the other `packages/manifest-*`
+paths, it is a forbidden resurrection path (constitution §4a/§19a) — do not
+recreate it or point new code, config, or docs at it.
 
 ```bash
 # Compile sources to IR:
 pnpm manifest:compile
 
 # List sources:
-ls packages/manifest-adapters/manifests/
+ls manifest/source/*/
 ```

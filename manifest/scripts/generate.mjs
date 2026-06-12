@@ -427,9 +427,9 @@ const stagingDir = resolve(
 );
 mkdirSync(stagingDir, { recursive: true });
 
-// Use the installed @angriff36/manifest CLI (pnpm exec manifest generate)
-// The local vendored CLI at packages/manifest-runtime/packages/cli has a broken
-// NextJsProjection import due to ESM/CJS interop issues with the workspace package.
+// Use the installed @angriff36/manifest CLI (pnpm exec manifest generate).
+// (Historical: a vendored CLI once lived under packages/manifest-runtime/ but had a
+// broken NextJsProjection import; that path was retired 2026-06-03 — constitution §4a.)
 
 // Run 1: Generate list routes (nextjs.route surface)
 const routeArgs = [

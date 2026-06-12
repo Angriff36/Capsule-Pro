@@ -426,7 +426,7 @@ describe("Test H — Route integrity (known issues)", () => {
   it("H5: exemptions registry does not reference deleted routes", () => {
     const exemptionsFile = join(
       PROJECT_ROOT,
-      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+      "manifest/governance/audit-routes-exemptions.json"
     );
     if (!existsSync(exemptionsFile)) {
       // Exemptions file may not exist in this version

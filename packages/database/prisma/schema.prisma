@@ -449,9 +449,9 @@ model PrepList {
 /// Workflow tracking entity for the prep-task plan pipeline:
 /// generate -> review -> approve -> instantiate tasks -> schedule windows.
 /// Mutations flow through manifest runtime commands via PrepTaskPlanWorkflowPrismaStore
-/// (registered in `packages/manifest-adapters/src/manifest-runtime-factory.ts`
+/// (registered in `manifest/runtime/src/manifest-runtime-factory.ts`
 /// `ENTITIES_WITH_SPECIFIC_STORES`). Field names align 1:1 with the manifest
-/// properties at `packages/manifest-adapters/manifests/prep-task-plan-workflow.manifest`
+/// properties at `manifest/source/kitchen/prep-task-plan-workflow.manifest`
 /// so the store layer needs no name translation. JSON arrays/objects are
 /// stored as TEXT (manifest contract — properties typed as `string`); the
 /// columns hold serialized payloads (e.g. `[]`, `{}`).

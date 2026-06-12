@@ -17,7 +17,6 @@
  *   - apps/app/app/lib/api.ts             (apiFetch wrapper / dev guard)
  *   - apps/app/next.config.ts             (Next.js rewrite proxy rules)
  *   - apps/app/app/api/**                 (server-side route handlers)
- *   - packages/manifest-ir/dist/**        (generated route manifest)
  *   - scripts/**                          (build/CI scripts)
  *   - *.test.ts, *.test.tsx, *.spec.ts    (test files)
  *   - apps/api/**                         (API server — not client code)
@@ -59,7 +58,6 @@ const ALLOWLIST = [
 const ALLOWED_DIR_PREFIXES = [
   "apps/app/app/api/", // Server-side route handlers in the app
   "apps/api/", // API server (not client code)
-  "packages/manifest-ir/", // Generated manifest artifacts
   "scripts/", // Build/CI scripts
   "node_modules/", // Dependencies
   ".next/", // Build output

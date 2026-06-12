@@ -1614,3 +1614,70 @@ matches CI. Verified: umbrella exit 0, negative test (removed baseline entry →
 
 Search: schema parity gate, phantom_property, column_type_mismatch, schema-drift-baseline, 614
 violations, manifest script consolidation, audit umbrella, two masters IR vs schema.prisma
+
+---
+
+## 44. Stale retired-path sweep: manifest/source README contradiction fixed (2026-06-12)
+
+A knowledge-graph pass flagged `manifest/source/README.md` still claiming `.manifest` sources
+live at the retired `packages/manifest-adapters/manifests/` ("layout marker" text predating the
+2026-06-03 relocation). `manifest/README.md` + constitution §4a are canonical: sources live at
+`manifest/source/<domain>/*.manifest`. README rewritten; retired `packages/manifest-*` paths
+restated as forbidden resurrection paths (§4a/§19a).
+
+Repo-wide sweep of `packages/manifest-{adapters,ir,runtime}` references, non-historical hits fixed:
+- `.github/workflows/manifest-ci.yml` registry-drift job comment → `manifest/source/`
+- `scripts/check-hardcoded-routes.mjs` dead `packages/manifest-ir/` allowlist entry removed (dir
+  never scanned; no behavior change)
+- `manifest/governance/schema-drift-allowlist.json` 2 rule strings → `manifest/runtime/src/prisma-store.ts`
+- `manifest/scripts/generate.mjs` vendored-CLI comment marked historical
+- `manifest/runtime/src/prisma-stores/shared.ts` template-path comment → current path
+- `boundaries.json` (policy mirror, no consumers found): `packages/manifest-adapters` workspace
+  entry + `@repo/manifest-adapters/*` implicitDependencies removed
+- `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` H5 exemptions check pointed at
+  the retired CLI path and silently no-op'd (existsSync guard) since the relocation → retargeted
+  to `manifest/governance/audit-routes-exemptions.json` (test can fail again). Re-arming it
+  immediately caught real registry rot: 17 exemption paths still used pre-standardization param
+  names (`[recipeId]`/`[shiftId]`/`[sessionId]`/… → routes now live under `[id]`) and 5 referenced
+  deleted routes (`staff/shifts/commands/{create,update}-validated`, `kitchen/menus/dishes/commands/create`,
+  `kitchen/recipes/versions/commands/create`, `analytics/custom-reports`). Registry healed 167→162
+  entries; determinism suite 15/15 green
+- `packages/database/prisma/schema.prisma` PrepTaskPlanWorkflow /// provenance comments → current
+  paths (comment-only; no client/migration impact)
+
+Left as-is (deliberate): historical docs (docs/audits, docs/implementation-history,
+docs/manifest/logs, constitution-v1, ci/DRAIN.md), `manifest-structure-audit.json` (guard output
+asserting absence), `manifest-repo-root-resolution.test.ts` (documents pre-relocation bug),
+`manifest/ir/candidate-schema.prisma` (generated artifact — fix at regen), mcp-server
+`path-resolution.test.ts` inline fixture strings (no file IO). REPORTED, not changed:
+`scripts/sync-manifest-runtime.mjs` is orphaned (no package.json/workflow references) and its
+TARGET would recreate forbidden `packages/manifest-runtime/` if run — candidate for deletion;
+7 generated list routes' headers cite the old generator path (producer cosmetic).
+
+Search: retired paths, manifest-adapters, manifest-ir, manifest-runtime, source README, layout
+marker, forbidden resurrection, audit-routes-exemptions, sync-manifest-runtime orphan
+
+---
+
+## 45. file:../Manifest override removed — back to registry distribution (2026-06-12)
+
+An AI session (commit a73572259, 2026-06-11, "manifest changes") silently pointed capsule-pro at
+the local Manifest checkout via pnpm overrides in BOTH root package.json AND pnpm-workspace.yaml
+(removing only one is a silent no-op — the workspace one also applies). This was never the
+user's workflow and broke deploys (Vercel has no ../Manifest). USER DIRECTIVE: never use file:
+overrides for @angriff36/manifest — the flow is fix in C:\Projects\Manifest → push → cut-release.yml
+workflow (gates build+typecheck+full suite, then tags/publishes to GitHub Packages) → bump the pin.
+
+Resolution: the local checkout held the GenericPrismaStore requiresTenantConnect + snake_case
+tenant_id/deleted_at fix (uncommitted src) plus a stale-committed CLI dist (rebuild of committed
+src, never committed after v2.4.1 publish — verified byte-identical on rebuild). Committed both
+upstream (d2f59e4 + 035fda9, with 2 new regression tests), released v2.4.2 via cut-release
+(first run raced my push and failed harmlessly pre-publish), removed both overrides, bumped
+2.4.1→2.4.2 in root/apps/api/manifest/runtime/packages/mcp-server, reinstalled. Lockfile clean
+(zero file: refs), CLI resolves 2.4.2 from registry, determinism suite 15/15, runtime typecheck
+green. Also fixed tools/manifest-structure-audit.mjs next16-params regex to accept the
+dispatcher's optional `params?:` form (was a false positive) — structure audit now 0 FAIL/156
+PASS, snapshot manifest-structure-audit.json refreshed to honest state.
+
+Search: file override, pnpm overrides, pnpm-workspace.yaml, cut-release, GitHub Packages, 2.4.2,
+requiresTenantConnect release, registry distribution, never link local Manifest
