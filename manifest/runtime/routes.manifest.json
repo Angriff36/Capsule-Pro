@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-12T07:23:15.955Z",
+  "generatedAt": "2026-06-12T14:38:20.626Z",
   "basePath": "/api",
   "routes": [
     {
@@ -6095,7 +6095,7 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": "string",
           "location": "body",
           "required": true
@@ -6246,26 +6246,6 @@
       "tenant": true
     },
     {
-      "id": "AdminChatThread.archive",
-      "path": "/api/manifest/AdminChatThread/commands/archive",
-      "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "AdminChatThread",
-        "command": "archive"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
       "id": "AdminChatThread.create",
       "path": "/api/manifest/AdminChatThread/commands/create",
       "method": "POST",
@@ -6299,26 +6279,6 @@
         "kind": "command",
         "entity": "AdminChatThread",
         "command": "create"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "AdminChatThread.reopen",
-      "path": "/api/manifest/AdminChatThread/commands/reopen",
-      "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "AdminChatThread",
-        "command": "reopen"
       },
       "auth": true,
       "tenant": true
@@ -7129,7 +7089,19 @@
           "required": true
         },
         {
+          "name": "time",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "nextRunAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -7850,7 +7822,7 @@
           "required": true
         },
         {
-          "name": "text",
+          "name": "label",
           "type": "string",
           "location": "body",
           "required": true
@@ -7908,7 +7880,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "text",
+          "name": "label",
           "type": "string",
           "location": "body",
           "required": true
@@ -8330,13 +8302,7 @@
           "required": true
         },
         {
-          "name": "thresholdPct",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "actualPct",
+          "name": "utilization",
           "type": "number",
           "location": "body",
           "required": true
@@ -11715,6 +11681,18 @@
       "method": "POST",
       "params": [
         {
+          "name": "actionNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "sourceType",
           "type": "string",
           "location": "body",
@@ -11733,7 +11711,7 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "dueDate",
           "type": "string",
           "location": "body",
           "required": true
@@ -12566,25 +12544,25 @@
           "required": true
         },
         {
+          "name": "routeNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "driverId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "routeDate",
+          "name": "scheduledDate",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "totalStops",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "distanceMiles",
+          "name": "totalDistance",
           "type": "number",
           "location": "body",
           "required": true
@@ -13235,13 +13213,13 @@
           "required": true
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "createdBy",
+          "name": "createdById",
           "type": "string",
           "location": "body",
           "required": true
@@ -13320,7 +13298,7 @@
           "required": true
         },
         {
-          "name": "changeDescription",
+          "name": "changeSummary",
           "type": "string",
           "location": "body",
           "required": true
@@ -15645,13 +15623,19 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "taskType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
           "type": "string",
           "location": "body",
           "required": true
@@ -15993,13 +15977,19 @@
       "method": "POST",
       "params": [
         {
-          "name": "source",
+          "name": "fileType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "fileName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "mimeType",
           "type": "string",
           "location": "body",
           "required": true
@@ -16025,7 +16015,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "errorMessage",
+          "name": "parseErrors",
           "type": "string",
           "location": "body",
           "required": true
@@ -17093,13 +17083,13 @@
           "required": true
         },
         {
-          "name": "title",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": "string",
           "location": "body",
           "required": true
@@ -17177,13 +17167,13 @@
       "method": "POST",
       "params": [
         {
-          "name": "title",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "timelineTime",
           "type": "string",
           "location": "body",
           "required": true
@@ -17958,7 +17948,7 @@
           "required": true
         },
         {
-          "name": "purchasePrice",
+          "name": "purchaseCost",
           "type": "string",
           "location": "body",
           "required": true
@@ -18878,7 +18868,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "clientInteractionId",
+          "name": "interactionId",
           "type": "string",
           "location": "body",
           "required": true
@@ -18902,7 +18892,7 @@
           "required": true
         },
         {
-          "name": "fileSizeBytes",
+          "name": "fileSize",
           "type": "string",
           "location": "body",
           "required": true
@@ -18968,7 +18958,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": "string",
           "location": "body",
           "required": true
@@ -18986,7 +18976,13 @@
           "required": true
         },
         {
-          "name": "message",
+          "name": "thresholdValue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -19588,7 +19584,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": "string",
           "location": "body",
           "required": true
@@ -20196,13 +20192,13 @@
       "method": "POST",
       "params": [
         {
-          "name": "inventoryTransferId",
+          "name": "transferId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "inventoryItemId",
+          "name": "itemId",
           "type": "string",
           "location": "body",
           "required": true
@@ -20658,12 +20654,6 @@
           "required": true
         },
         {
-          "name": "metric",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "sensorType",
           "type": "string",
           "location": "body",
@@ -20689,12 +20679,6 @@
         },
         {
           "name": "thresholdMax",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "comparison",
           "type": "string",
           "location": "body",
           "required": true
@@ -20782,20 +20766,8 @@
       "method": "POST",
       "params": [
         {
-          "name": "metric",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "threshold",
           "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "comparison",
-          "type": "string",
           "location": "body",
           "required": true
         },
@@ -21168,7 +21140,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": "string",
           "location": "body",
           "required": true
@@ -21226,7 +21198,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "kitchenTaskId",
+          "name": "taskId",
           "type": "string",
           "location": "body",
           "required": true
@@ -21238,7 +21210,13 @@
           "required": true
         },
         {
-          "name": "status",
+          "name": "progressType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newStatus",
           "type": "string",
           "location": "body",
           "required": true
@@ -21250,7 +21228,7 @@
           "required": true
         },
         {
-          "name": "note",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -21468,7 +21446,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": "string",
           "location": "body",
           "required": true
@@ -21480,13 +21458,7 @@
           "required": true
         },
         {
-          "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "createdBy",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -21506,7 +21478,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "actualAmount",
+          "name": "actualSpend",
           "type": "string",
           "location": "body",
           "required": true
@@ -21557,7 +21529,7 @@
           "required": true
         },
         {
-          "name": "budgetAmount",
+          "name": "budgetTarget",
           "type": "string",
           "location": "body",
           "required": true
@@ -21569,7 +21541,7 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -22053,49 +22025,31 @@
           "required": true
         },
         {
-          "name": "startLocation",
+          "name": "scheduledDate",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "endLocation",
+          "name": "endTime",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledStart",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "scheduledEnd",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "distance",
+          "name": "totalDistance",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "estimatedDuration",
+          "name": "totalDuration",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "stops",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -22198,49 +22152,31 @@
           "required": true
         },
         {
-          "name": "startLocation",
+          "name": "scheduledDate",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "endLocation",
+          "name": "endTime",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledStart",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "scheduledEnd",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "distance",
+          "name": "totalDistance",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "estimatedDuration",
+          "name": "totalDuration",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "stops",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -22292,7 +22228,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "actualCost",
+          "name": "totalCost",
           "type": "string",
           "location": "body",
           "required": true
@@ -22336,7 +22272,7 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "workOrderType",
           "type": "string",
           "location": "body",
           "required": true
@@ -23149,7 +23085,7 @@
           "required": true
         },
         {
-          "name": "onboardingTaskId",
+          "name": "taskId",
           "type": "string",
           "location": "body",
           "required": true
@@ -23897,13 +23833,13 @@
           "required": true
         },
         {
-          "name": "amount",
+          "name": "requestedAmount",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "reason",
+          "name": "refundReason",
           "type": "string",
           "location": "body",
           "required": true
@@ -24399,7 +24335,13 @@
           "required": true
         },
         {
-          "name": "reviewPeriod",
+          "name": "reviewType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scheduledDate",
           "type": "string",
           "location": "body",
           "required": true
@@ -24432,7 +24374,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "overallRating",
+          "name": "rating",
           "type": "number",
           "location": "body",
           "required": true
@@ -25162,7 +25104,7 @@
         },
         {
           "name": "estimatedDurationMinutes",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25252,7 +25194,7 @@
         },
         {
           "name": "estimatedDurationMinutes",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25330,7 +25272,7 @@
       "params": [
         {
           "name": "quantityCompleted",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25392,7 +25334,7 @@
         },
         {
           "name": "quantityTotal",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25422,12 +25364,6 @@
         },
         {
           "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "ingredients",
           "type": "string",
           "location": "body",
           "required": true
@@ -25644,13 +25580,13 @@
       "params": [
         {
           "name": "quantityTotal",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "quantityCompleted",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -25729,7 +25665,7 @@
         },
         {
           "name": "generatedCount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -26418,6 +26354,12 @@
           "required": true
         },
         {
+          "name": "fiscalYear",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "periodStart",
           "type": "string",
           "location": "body",
@@ -26522,13 +26464,19 @@
       "method": "POST",
       "params": [
         {
-          "name": "procurementBudgetId",
+          "name": "budgetId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "thresholdPct",
+          "name": "utilizationPct",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "alertType",
           "type": "string",
           "location": "body",
           "required": true
@@ -28167,10 +28115,10 @@
       "method": "POST",
       "params": [
         {
-          "name": "checkId",
+          "name": "relatedCheckId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "description",
@@ -28185,7 +28133,7 @@
           "required": true
         },
         {
-          "name": "priority",
+          "name": "severity",
           "type": "string",
           "location": "body",
           "required": true
@@ -28277,7 +28225,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "location",
+          "name": "logType",
           "type": "string",
           "location": "body",
           "required": true
@@ -28295,13 +28243,13 @@
           "required": true
         },
         {
-          "name": "equipment",
+          "name": "equipmentId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "loggedBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -28327,13 +28275,25 @@
       "method": "POST",
       "params": [
         {
+          "name": "checkNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "checkType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "performedBy",
+          "name": "completedBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -28437,7 +28397,13 @@
       "method": "POST",
       "params": [
         {
-          "name": "qualityCheckId",
+          "name": "checkId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemName",
           "type": "string",
           "location": "body",
           "required": true
@@ -28787,7 +28753,7 @@
         },
         {
           "name": "quantity",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28851,7 +28817,7 @@
       "params": [
         {
           "name": "newQuantity",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28915,7 +28881,7 @@
         },
         {
           "name": "durationMinutes",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28997,7 +28963,7 @@
         },
         {
           "name": "newDurationMinutes",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -29043,7 +29009,7 @@
       "params": [
         {
           "name": "yieldQty",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -30011,31 +29977,25 @@
       "method": "POST",
       "params": [
         {
-          "name": "deliveryRouteId",
+          "name": "routeId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "eventId",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "address",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledAt",
+          "name": "plannedArrival",
           "type": "string",
           "location": "body",
           "required": true
@@ -30068,7 +30028,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "sequence",
+          "name": "stopNumber",
           "type": "number",
           "location": "body",
           "required": true
@@ -32161,7 +32121,19 @@
           "required": true
         },
         {
-          "name": "recordedBy",
+          "name": "logNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "logType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "loggedBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -32173,7 +32145,7 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": "string",
           "location": "body",
           "required": true
@@ -32231,25 +32203,25 @@
           "required": true
         },
         {
-          "name": "equipmentId",
+          "name": "probeId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "location",
+          "name": "locationId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": "number",
           "location": "body",
           "required": true
@@ -32295,13 +32267,13 @@
       "method": "POST",
       "params": [
         {
-          "name": "minThreshold",
+          "name": "minTemp",
           "type": "number",
           "location": "body",
           "required": true
         },
         {
-          "name": "maxThreshold",
+          "name": "maxTemp",
           "type": "number",
           "location": "body",
           "required": true
@@ -32333,10 +32305,10 @@
           "required": true
         },
         {
-          "name": "recordedAt",
+          "name": "loggedAt",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "withinRange",
@@ -32411,7 +32383,13 @@
           "required": true
         },
         {
-          "name": "payrollPeriodId",
+          "name": "payrollRunId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "submittedBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -32757,13 +32735,25 @@
           "required": true
         },
         {
-          "name": "dueAt",
+          "name": "category",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "assignedTo",
+          "name": "startTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assigneeId",
           "type": "string",
           "location": "body",
           "required": true
@@ -33084,19 +33074,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "periodStart",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "periodEnd",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "eventId",
+          "name": "periodId",
           "type": "string",
           "location": "body",
           "required": true
@@ -33642,7 +33620,13 @@
           "required": true
         },
         {
-          "name": "trainingModuleId",
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
           "type": "string",
           "location": "body",
           "required": true
@@ -35395,31 +35379,31 @@
       "method": "POST",
       "params": [
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "name",
+          "name": "contactName",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "email",
+          "name": "contactEmail",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "phone",
+          "name": "contactPhone",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "role",
+          "name": "contactRole",
           "type": "string",
           "location": "body",
           "required": true
@@ -35465,25 +35449,25 @@
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "contactName",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "email",
+          "name": "contactEmail",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "phone",
+          "name": "contactPhone",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "role",
+          "name": "contactRole",
           "type": "string",
           "location": "body",
           "required": true
@@ -35852,7 +35836,7 @@
         },
         {
           "name": "complianceScore",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -35889,7 +35873,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "inventorySupplierId",
+          "name": "supplierId",
           "type": "string",
           "location": "body",
           "required": true
@@ -35901,7 +35885,7 @@
           "required": true
         },
         {
-          "name": "score",
+          "name": "rating",
           "type": "string",
           "location": "body",
           "required": true
@@ -35933,7 +35917,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "score",
+          "name": "rating",
           "type": "string",
           "location": "body",
           "required": true

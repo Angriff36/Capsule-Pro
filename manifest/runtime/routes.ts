@@ -2076,19 +2076,9 @@ export function adminChatParticipantUnarchivePath(): string {
   return "/api/manifest/adminchatparticipant/commands/unarchive";
 }
 
-/** POST /api/manifest/adminchatthread/commands/archive */
-export function adminChatThreadArchivePath(): string {
-  return "/api/manifest/adminchatthread/commands/archive";
-}
-
 /** POST /api/manifest/adminchatthread/commands/create */
 export function adminChatThreadCreatePath(): string {
   return "/api/manifest/adminchatthread/commands/create";
-}
-
-/** POST /api/manifest/adminchatthread/commands/reopen */
-export function adminChatThreadReopenPath(): string {
-  return "/api/manifest/adminchatthread/commands/reopen";
 }
 
 /** POST /api/manifest/admintask/commands/cancel */
@@ -7463,9 +7453,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AdminChatParticipant.clearHistory", path: "/api/manifest/adminchatparticipant/commands/clear-history", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminChatParticipant.create", path: "/api/manifest/adminchatparticipant/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminChatParticipant.unarchive", path: "/api/manifest/adminchatparticipant/commands/unarchive", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "AdminChatThread.archive", path: "/api/manifest/adminchatthread/commands/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminChatThread.create", path: "/api/manifest/adminchatthread/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "AdminChatThread.reopen", path: "/api/manifest/adminchatthread/commands/reopen", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.cancel", path: "/api/manifest/admintask/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.complete", path: "/api/manifest/admintask/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.create", path: "/api/manifest/admintask/commands/create", method: "POST", source: "command", auth: true, tenant: true },
