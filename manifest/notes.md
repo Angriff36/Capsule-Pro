@@ -1549,3 +1549,39 @@ command-board tests 113/113. Restart the API dev server to pick up the new metad
 Search: requiresTenantConnect other FK relation, Unknown argument clientId did you mean client,
 checked unchecked create input, optional command parameter keyword, Event.create missing required
 args, agent loop required false, flat keys 20 models flipped
+
+---
+
+## 42. AI chat "You do not have permission" = expired Clerk cookie, not policies (FIXED 2026-06-12)
+
+**Symptom:** command-board AI simulation runs failed mid-plan with "You do not have permission to
+perform this action" on Menu.create/BattleBoard.create while Event.create succeeded — and the
+failing entity CHANGED between runs (previous run: Menu.create succeeded, BattleBoard failed).
+
+**Dead ends ruled out (do not re-chase):** IR policy lists can't explain it — the acting user is
+role `admin` (in EVERY default policy list), and BattleBoardDefaultAccess is a superset of
+EventDefaultAccess, so pass(Event)∧fail(BattleBoard) is impossible for any single role. RBAC
+middleware doesn't gate Menu/BattleBoard (no COMMAND_PERMISSION_MAP entries), and its denials map
+to 400 command_failed anyway, not 403. The AI layer has zero own permission gating.
+
+**Root cause:** `tool-registry.ts` `httpStatusToErrorCode` maps **401 AND 403** to
+PERMISSION_DENIED ("You do not have permission…"). The chat route captured
+`request.headers.get("cookie")` ONCE and the agent loop reused it for every step; Clerk session
+JWTs expire ~60s after minting, so any step executed after a model-roundtrip-heavy minute 401'd at
+the apps/api dispatcher (`requireCurrentUser`). Whatever steps land after expiry fail — hence the
+run-to-run variance. The "Missing required args for MenuDish.create: menuId" trio was pure cascade:
+`createdEntityIds` chaining (agent-loop.ts `applyCreatedEntityIds`, Menu→menuId) only fills after a
+SUCCESSFUL Menu.create.
+
+**Fix:** route passes Clerk's `getToken` into the agent context; `buildAuthHeaders()` in
+tool-registry mints a FRESH session token per command call and sends `Authorization: Bearer <jwt>`
+(clerkMiddleware on apps/api accepts header session tokens; the `Bearer cp_` branch only intercepts
+API keys), keeping the stale cookie as fallback. Applied at both fetch sites (manifest command +
+conflicts/detect). 3 new tests in tool-registry-auth-headers.test.ts pin per-call minting +
+rejection fallback.
+
+Note: tool-registry already injects context.userId into command bodies (lines ~662), so the §41
+optional-userId fix matters for the agent-loop PRE-validation only — both are needed.
+
+Search: PERMISSION_DENIED 401 403 conflated, Clerk session token 60s expiry, authCookie stale agent
+loop, getToken Bearer per call, Menu BattleBoard permission denied AI chat, menuId cascade missing

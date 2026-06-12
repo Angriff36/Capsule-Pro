@@ -75,7 +75,7 @@ export async function POST(request: Request): Promise<Response> {
   let parsedMessages: UIMessage[] = [];
 
   try {
-    const { orgId, userId } = await auth();
+    const { orgId, userId, getToken } = await auth();
     if (!(orgId && userId)) {
       return new Response("Unauthorized", { status: 401 });
     }
@@ -113,6 +113,7 @@ export async function POST(request: Request): Promise<Response> {
         userId,
         boardId: body.boardId,
         authCookie: request.headers.get("cookie"),
+        getToken: () => getToken(),
         correlationId,
       },
     });

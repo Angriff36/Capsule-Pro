@@ -147,6 +147,8 @@ export interface RunManifestAgentParams {
     userId: string;
     boardId?: string;
     authCookie?: string | null;
+    /** Mints a fresh Clerk session token per call (see ManifestAgentContext). */
+    getToken?: (() => Promise<string | null>) | null;
     correlationId: string;
   };
 }

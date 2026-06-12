@@ -16,7 +16,27 @@ export interface ManifestAgentContext {
   userId: string;
   boardId?: string;
   authCookie?: string | null;
+  /**
+   * Mints a fresh Clerk session token. Clerk session JWTs expire ~60s after
+   * issue, so the cookie captured at request start goes stale mid-loop (model
+   * roundtrips routinely exceed that) and the API 401s — surfaced to users as
+   * a misleading "permission" error. Prefer this over authCookie per call.
+   */
+  getToken?: (() => Promise<string | null>) | null;
   correlationId: string;
+}
+
+/** Per-call auth headers: fresh Bearer token when available, cookie fallback. */
+async function buildAuthHeaders(
+  context: ManifestAgentContext
+): Promise<Record<string, string>> {
+  const token = context.getToken
+    ? await context.getToken().catch(() => null)
+    : null;
+  return {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(context.authCookie ? { Cookie: context.authCookie } : {}),
+  };
 }
 
 export interface AgentToolCall {
@@ -523,7 +543,7 @@ async function detectConflictsTool(
       "Content-Type": "application/json",
       "x-correlation-id": context.correlationId,
       ...(dpl ? { "x-deployment-id": dpl } : {}),
-      ...(context.authCookie ? { Cookie: context.authCookie } : {}),
+      ...(await buildAuthHeaders(context)),
     },
     cache: "no-store",
     body: JSON.stringify(payload),
@@ -675,7 +695,7 @@ async function executeManifestCommandRoute(
       "x-correlation-id": context.correlationId,
       "x-idempotency-key": idempotencyKey,
       ...(dpl ? { "x-deployment-id": dpl } : {}),
-      ...(context.authCookie ? { Cookie: context.authCookie } : {}),
+      ...(await buildAuthHeaders(context)),
     },
     cache: "no-store",
     body: JSON.stringify(bodyArgs),
