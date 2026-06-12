@@ -81,7 +81,7 @@ entity Event {
   // status != completed/archived/cancelled; `archive` guards status == completed.
 
   default policy EventDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string, templateId: string) {
+  command create(optional clientId: string, optional eventNumber: string, optional title: string, optional eventType: string, optional eventDate: datetime, optional guestCount: int, optional venueName: string, optional venueAddress: string, optional notes: string, optional tags: array<string>, optional status: string, optional budget: money, optional ticketPrice: money, optional ticketTier: string, optional eventFormat: string, optional accessibilityOptions: array<string>, optional featuredMediaUrl: string, optional templateId: string) {
     // All params are optional — AI and forms can provide any subset
     // Defaults are applied at the store layer (EventPrismaStore.create)
     mutate clientId = clientId

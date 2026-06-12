@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "962176a15622569ddb791455f703c5c6df652c568d269c2fa847e98dc048cc19",
-    "irHash": "51d680c9095357865e9571283958ecae1ca61434c83f3a9f75fdd405f76c6376",
+    "contentHash": "908f241d5522138bd9b4fd667c6fda4e9ef7f9652ac44e16706ebd5a0cdd0b29",
+    "irHash": "b82895d66b2737ba3e59c475438b83702dfdd4462f6fc115290ebee06cc2a82c",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T04:42:16.041Z"
+    "compiledAt": "2026-06-12T07:22:57.824Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -3019,7 +3019,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "eventNumber",
@@ -3027,7 +3027,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -3035,7 +3035,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "eventType",
@@ -3043,7 +3043,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "eventDate",
@@ -3051,7 +3051,7 @@
             "name": "datetime",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "guestCount",
@@ -3059,7 +3059,7 @@
             "name": "int",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "venueName",
@@ -3067,7 +3067,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "venueAddress",
@@ -3075,7 +3075,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
@@ -3083,7 +3083,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "tags",
@@ -3095,7 +3095,7 @@
             },
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "status",
@@ -3103,7 +3103,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "budget",
@@ -3111,7 +3111,7 @@
             "name": "money",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "ticketPrice",
@@ -3119,7 +3119,7 @@
             "name": "money",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "ticketTier",
@@ -3127,7 +3127,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "eventFormat",
@@ -3135,7 +3135,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "accessibilityOptions",
@@ -3147,7 +3147,7 @@
             },
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "featuredMediaUrl",
@@ -3155,7 +3155,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         },
         {
           "name": "templateId",
@@ -3163,7 +3163,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         }
       ],
       "guards": [],

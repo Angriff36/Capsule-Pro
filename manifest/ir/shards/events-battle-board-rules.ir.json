@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a72432553055c962092fcf52cb079b53df79a8484f9dcb35087bced9ab1a89c6",
-    "irHash": "88e79bd7ac2487df0f0183cae6bc91349bc6d5ecdbf1206f2a4767ad5abf1c40",
+    "contentHash": "254601ea79e86a9c662bda1a59caab5d37ee2500d135a6a484ce0e566c102e8c",
+    "irHash": "6ce4177f082fea49c564b96ce95322478cbe35739feb84701bd4ecf33d6e80ef",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T04:42:16.011Z"
+    "compiledAt": "2026-06-12T07:22:57.799Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1657,7 +1657,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         }
       ],
       "guards": [
@@ -1770,7 +1770,7 @@
             "name": "string",
             "nullable": false
           },
-          "required": true
+          "required": false
         }
       ],
       "guards": [

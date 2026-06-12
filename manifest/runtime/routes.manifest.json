@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-11T20:57:42.885Z",
+  "generatedAt": "2026-06-12T07:23:15.955Z",
   "basePath": "/api",
   "routes": [
     {
@@ -7551,7 +7551,7 @@
           "name": "userId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -7693,7 +7693,7 @@
           "name": "userId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -14750,109 +14750,109 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventNumber",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventType",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventDate",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "guestCount",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "venueName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "venueAddress",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "tags",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "budget",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "ticketPrice",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "ticketTier",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventFormat",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "accessibilityOptions",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "featuredMediaUrl",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "templateId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {

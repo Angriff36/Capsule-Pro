@@ -100,7 +100,7 @@ entity BattleBoard {
     emit BattleBoardVotingStarted
   }
 
-  command addDish(dishData: string, userId: string) {
+  command addDish(dishData: string, optional userId: string) {
     guard self.status != "finalized" "Cannot add dishes to finalized board"
     guard dishData != null and dishData != "" "Dish data is required"
 
@@ -109,7 +109,7 @@ entity BattleBoard {
     emit BattleBoardDishAdded
   }
 
-  command removeDish(dishId: string, userId: string) {
+  command removeDish(dishId: string, optional userId: string) {
     guard self.status != "finalized" "Cannot remove dishes from finalized board"
     guard self.status != "voting" "Cannot remove dishes during voting"
     guard dishId != null and dishId != "" "Dish ID is required"
