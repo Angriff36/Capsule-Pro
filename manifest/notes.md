@@ -1721,3 +1721,40 @@ bypassing the runtime — registered as the next migration).
 
 Search: reaction payload gate, check-reaction-payloads, payload result, silent no-op reaction,
 consolidated draft requisition, prep demand merge, never auto-submit, onDiagnostic, PREP-DRAFT
+
+---
+
+## 47. EventConfirmed → auto-seeded prep list: the full declarative chain (2026-06-12)
+
+The chain the app was built for now runs end-to-end from ONE governed command:
+`Event.confirm` → reaction `on EventConfirmed run PrepList.create` (reactions.manifest, +1 = 20
+reactions) → prep-list-seed-middleware derives menu→ingredient items (EventDish→Dish→latest
+RecipeVersion→RecipeIngredient→Ingredient stores; scaled = qty × servings/yield, aggregated per
+ingredient, app-parity station keywords) and imports them via governed PrepListItem.create +
+PrepList.createFromSeed (re-titles from Event.title; sets totalItems through the DSL seed
+contract) → finalize → §46 consolidated draft. Conformance: event-confirm-prep-seed-runtime.test.ts
+(full chain incl. $35 draft subtotal + no-menu shell w/ loud diagnostic). 20/20 api, 172/172 runtime.
+
+Hard-won engine facts (2.4.2, verified in dist):
+- **Mutate commands' `result` = the LAST MUTATE'S ASSIGNED VALUE, not the instance**
+  (`case 'mutate': … return value`). `payload.result.X` on a mutate-emitter is undefined →
+  the reaction uses `payload._subject.id` (engine-stamped from runCommand instanceId — reliable).
+  Gate tightened accordingly: result.* on non-create emitters now WARNS (33 warnings = the
+  long-suspected dead-reaction inventory: Payment/Contract/Maintenance/Shipment/Lead reactions
+  all read payload.result.* off mutate commands — follow-up per domain).
+- **Inverted block constraint #3 found+fixed**: Event.confirm's `blockNoGuestCount` was
+  `self.guestCount == 0` — block PASSES when expr TRUE, so confirm was blocked for EVERY event
+  WITH guests (and would allow 0-guest confirms). Flipped to `> 0` (same class as v0.12.124's two
+  inventory inversions). Implies governed Event.confirm never worked for real events.
+- **Evaluation budget is shared across the whole synchronous cascade** (initEvalBudget is
+  re-entrant; reactions + middleware dispatches re-enter runCommand under the OUTER budget).
+  Default 10k steps died mid-createFromSeed leaving PARTIALLY-APPLIED mutates (non-atomic).
+  Factory now defaults `evaluationLimits.maxEvaluationSteps: 250_000` (still bounded).
+- Ingredient.inventoryItemId is the bridge: seeded PrepListItem.ingredientId resolves to the
+  INVENTORY item id (fallback ingredient id) so §46 reserve/catalog matching connects.
+- Regen side-effect (correct): prisma-model-metadata.generated.* dropped 20 stale
+  `requiresTenantConnect: true` flags — committed artifacts finally reflect the §41 round-2 fix
+  now that 2.4.2 is the installed package. Shard diffs are provenance-only (2.4.1→2.4.2).
+
+Search: auto-seed prep list, EventConfirmed reaction, prep-list-seed-middleware, _subject.id,
+mutate result value, inverted block constraint, evaluation budget, maxEvaluationSteps, seed chain

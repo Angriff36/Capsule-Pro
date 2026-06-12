@@ -31,6 +31,7 @@ import { createAesGcmEncryptionProvider } from "./encryption-provider";
 import {
   createIdentityMiddleware,
   createPrepInventoryDemandMiddleware,
+  createPrepListSeedMiddleware,
   createRbacMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
@@ -511,6 +512,14 @@ export async function createManifestRuntime(
       captureException: deps.captureException,
     }),
     createRbacMiddleware({ rolePolicies }),
+    // after-emit pair completing the declarative event chain:
+    // EventConfirmed -> PrepList.create (reaction) -> seed items (below),
+    // PrepListFinalized -> consolidated draft requisition (below).
+    createPrepListSeedMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
     createPrepInventoryDemandMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
@@ -571,7 +580,14 @@ export async function createManifestRuntime(
       ...(outboxStore ? { outboxStore } : {}),
       ...(approvalStore ? { approvalStore } : {}),
       ...(deps.deterministicMode !== undefined && { deterministicMode: deps.deterministicMode }),
-      ...(deps.evaluationLimits && { evaluationLimits: deps.evaluationLimits }),
+      // The engine's evaluation budget is shared across a command's ENTIRE
+      // synchronous cascade (reactions + middleware dispatches re-enter
+      // runCommand under the outer command's budget — initEvalBudget is
+      // re-entrant). The 10k default dies mid-cascade on real flows like
+      // EventConfirmed -> prep-list seed -> N PrepListItem.create, leaving
+      // partially-applied mutates. 250k keeps the runaway-expression bound
+      // while giving legitimate cascades ~25x headroom.
+      evaluationLimits: deps.evaluationLimits ?? { maxEvaluationSteps: 250_000 },
       ...(deps.profiling && { profiling: deps.profiling }),
       ...(deps.flagProvider && { flagProvider: deps.flagProvider }),
       ...(encryptionProvider && { encryptionProvider }),
