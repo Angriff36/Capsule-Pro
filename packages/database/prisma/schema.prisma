@@ -309,6 +309,9 @@ model EmployeeBankAccount {
   deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
   employee           User      @relation(fields: [tenantId, employeeId], references: [tenantId, id], onDelete: Cascade)
 
+  verificationFailedAt      DateTime? @map("verification_failed_at") @db.Timestamptz(6)
+  verificationFailureReason String?   @map("verification_failure_reason")
+
   @@id([tenantId, id])
   @@index([tenantId, employeeId], map: "employee_bank_accounts_employee_idx")
   @@index([tenantId, status], map: "employee_bank_accounts_status_idx")
@@ -369,6 +372,9 @@ model PrepTask {
   import_id             String?   @db.Uuid
   tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  prepListId String? @map("prep_list_id") @db.Uuid
+  stationId  String? @map("station_id")
+
   @@id([tenantId, id])
   @@index([eventId])
   @@index([locationId])
@@ -392,6 +398,8 @@ model KitchenTaskClaim {
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   tenant        Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  status String? @default("active")
+
   @@id([tenantId, id])
   @@index([taskId])
   @@index([employeeId])
@@ -411,6 +419,9 @@ model KitchenTaskProgress {
   notes             String?
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   tenant            Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  progressPct Decimal?  @map("progress_pct") @db.Decimal(5, 2)
+  recordedAt  DateTime? @map("recorded_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([employeeId])
@@ -437,6 +448,8 @@ model PrepList {
   updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  isActive Boolean? @default(true) @map("is_active")
 
   @@id([tenantId, id])
   @@index([eventId])
@@ -552,6 +565,11 @@ model Station {
   prepListItems PrepListItem[] @relation("PrepListStation")
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  inMaintenance      Boolean?  @map("in_maintenance")
+  maintenanceReason  String?   @map("maintenance_reason")
+  maintenanceStartAt DateTime? @map("maintenance_start_at") @db.Timestamptz(6)
+  currentTaskCount   Int?      @map("current_task_count")
 
   @@unique([tenantId, id])
   @@index([tenantId, locationId])
@@ -779,6 +797,10 @@ model EventReport {
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
+  rejectedAt      DateTime? @map("rejected_at") @db.Timestamptz(6)
+  rejectedBy      String?   @map("rejected_by") @db.Uuid
+  rejectionReason String?   @map("rejection_reason")
+
   @@id([tenantId, id])
   @@index([tenantId, eventId], map: "event_reports_event_id_idx")
   @@index([tenantId, status], map: "event_reports_status_idx")
@@ -995,6 +1017,11 @@ model ClientInteraction {
   tenant            Account                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   attachments       InteractionAttachment[]
 
+  status      String?   @default("open")
+  priority    String?   @default("normal")
+  escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
+  escalatedTo String?   @map("escalated_to")
+
   @@id([tenantId, id])
   @@index([clientId])
   @@index([leadId])
@@ -1016,6 +1043,9 @@ model InteractionAttachment {
 
   tenant      Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   interaction ClientInteraction @relation(fields: [tenantId, interactionId], references: [tenantId, id], onDelete: Cascade)
+
+  uploadedBy String?   @map("uploaded_by")
+  updatedAt  DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@map("interaction_attachments")
@@ -1081,6 +1111,8 @@ model Proposal {
   lead               Lead?              @relation(fields: [leadId], references: [id], onDelete: SetNull)
   event              Event?             @relation(fields: [eventId], references: [id], onDelete: SetNull)
   lineItems          ProposalLineItem[]
+
+  lineItemCount Int? @default(0) @map("line_item_count")
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -1202,6 +1234,11 @@ model RecipeVersion {
   totalCost        Decimal   @default(0) @map("total_cost") @db.Decimal(12, 2)
   tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  status      String?   @default("draft")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  approvedAt  DateTime? @map("approved_at") @db.Timestamptz(6)
+  approvedBy  String?   @map("approved_by")
+
   @@id([tenantId, id])
   @@unique([tenantId, recipeId, versionNumber])
   @@index([recipeId])
@@ -1251,6 +1288,14 @@ model Ingredient {
   updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  inventoryItemId      String?   @map("inventory_item_id") @db.Uuid
+  currentLotNumber     String?   @map("current_lot_number")
+  currentLotReceivedAt DateTime? @map("current_lot_received_at") @db.Timestamptz(6)
+  currentLotExpiresAt  DateTime? @map("current_lot_expires_at") @db.Timestamptz(6)
+  isRecalled           Boolean?  @default(false) @map("is_recalled")
+  recallReason         String?   @map("recall_reason")
+  recalledAt           DateTime? @map("recalled_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([allergens], type: Gin)
@@ -1325,6 +1370,14 @@ model Dish {
   tenant                 Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   menuDishes             MenuDish[]
 
+  isSeasonal       Boolean?  @default(false) @map("is_seasonal")
+  seasonLabel      String?   @map("season_label")
+  seasonStartMonth Int?      @default(0) @map("season_start_month") @db.SmallInt
+  seasonEndMonth   Int?      @default(0) @map("season_end_month") @db.SmallInt
+  isEightySix      Boolean?  @default(false) @map("is_eighty_six")
+  eightySixReason  String?   @map("eighty_six_reason")
+  eightySixAt      DateTime? @map("eighty_six_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([recipeId])
   @@map("dishes")
@@ -1349,6 +1402,13 @@ model Menu {
   tenant         Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   menuDishes     MenuDish[]
 
+  isSeasonal  Boolean?  @default(false) @map("is_seasonal")
+  seasonLabel String?   @map("season_label")
+  seasonYear  Int?      @map("season_year")
+  status      String?   @default("draft")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@map("menus")
   @@schema("tenant_kitchen")
@@ -1368,6 +1428,8 @@ model MenuDish {
   tenant     Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   menu       Menu      @relation(fields: [tenantId, menuId], references: [tenantId, id], onDelete: Restrict)
   dish       Dish      @relation(fields: [tenantId, dishId], references: [tenantId, id], onDelete: Restrict)
+
+  priceOverride Decimal? @map("price_override") @db.Decimal(10, 2)
 
   @@id([tenantId, id])
   @@unique([tenantId, menuId, dishId])
@@ -1414,6 +1476,8 @@ model EventTimeline {
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  durationMinutes Int? @map("duration_minutes")
+
   @@id([tenantId, id])
   @@index([eventId])
   @@map("event_timeline")
@@ -1442,6 +1506,10 @@ model EventImport {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  totalRows    Int? @map("total_rows")
+  importedRows Int? @map("imported_rows")
+  skippedRows  Int? @map("skipped_rows")
 
   @@id([tenantId, id])
   @@index([tenantId, createdAt(sort: Desc)], map: "event_imports_created_idx")
@@ -1670,6 +1738,9 @@ model Note {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  entityType String? @map("entity_type")
+  entityId   String? @map("entity_id") @db.Uuid
+
   @@id([tenantId, id])
   @@map("notes")
   @@schema("tenant_events")
@@ -1692,6 +1763,9 @@ model BoardAnnotation {
 
   tenant Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   board  CommandBoard @relation(fields: [tenantId, boardId], references: [tenantId, id], onDelete: Cascade)
+
+  positionX Int? @map("position_x")
+  positionY Int? @map("position_y")
 
   @@id([tenantId, id])
   @@index([boardId])
@@ -1720,6 +1794,9 @@ model TimelineTask {
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  sortOrder   Int?      @map("sort_order")
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([eventId])
@@ -1772,6 +1849,9 @@ model CateringOrder {
   deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  delivered_at    DateTime? @db.Timestamptz(6)
+  prep_started_at DateTime? @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@map("catering_orders")
   @@schema("tenant_events")
@@ -1805,6 +1885,8 @@ model InventoryItem {
   tenant            Account            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   supplier          InventorySupplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
+  quantityReserved Int? @default(0) @map("quantity_reserved")
+
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@index([supplierId])
@@ -1831,6 +1913,11 @@ model InventoryTransaction {
   employee_id         String?   @db.Uuid
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  reversedAt             DateTime? @map("reversed_at") @db.Timestamptz(6)
+  reversedBy             String?   @map("reversed_by")
+  reverseOfTransactionId String?   @map("reverse_of_transaction_id") @db.Uuid
+  isReversed             Boolean?  @default(false) @map("is_reversed")
 
   @@id([tenantId, id])
   @@index([tenantId, transaction_date], map: "inventory_transactions_tenant_date_idx")
@@ -1874,6 +1961,16 @@ model InventorySupplier {
   vendorContacts       VendorContact[]
   vendorRatings        VendorRating[]
   vendorCatalogs       VendorCatalog[]
+
+  isActive            Boolean?  @default(true) @map("is_active")
+  openPOCount         Int?      @default(0) @map("open_po_count")
+  approvedAt          DateTime? @map("approved_at") @db.Timestamptz(6)
+  approvedBy          String?   @map("approved_by")
+  suspendedAt         DateTime? @map("suspended_at") @db.Timestamptz(6)
+  suspendedReason     String?   @map("suspended_reason")
+  blacklistedAt       DateTime? @map("blacklisted_at") @db.Timestamptz(6)
+  blacklistedReason   String?   @map("blacklisted_reason")
+  qualificationStatus String?   @default("pending") @map("qualification_status")
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -1924,6 +2021,12 @@ model InventoryAlert {
   updated_at      DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at      DateTime? @db.Timestamptz(6)
   tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  severity       String?
+  status         String?
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
+  acknowledgedBy String?   @map("acknowledged_by")
+  resolvedBy     String?   @map("resolved_by")
 
   @@id([tenantId, id])
   @@index([tenantId, itemId], map: "inventory_alerts_tenant_item_idx")
@@ -2020,6 +2123,8 @@ model AlertsConfig {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant      Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@map("alerts_config")
@@ -2121,6 +2226,10 @@ model VarianceReport {
   deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  rejectedAt      DateTime? @map("rejected_at") @db.Timestamptz(6)
+  rejectedBy      String?   @map("rejected_by")
+  rejectionReason String?   @map("rejection_reason")
+
   @@id([tenantId, id])
   @@index([tenantId, sessionId], map: "variance_reports_tenant_session_idx")
   @@index([tenantId, itemId], map: "variance_reports_tenant_item_idx")
@@ -2177,6 +2286,8 @@ model PurchaseOrder {
   deletedAt            DateTime?           @map("deleted_at") @db.Timestamptz(6)
   tenant               Account             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   items                PurchaseOrderItem[]
+
+  itemCount Int? @default(0) @map("item_count")
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -2247,6 +2358,8 @@ model PurchaseRequisition {
   deletedAt         DateTime?                 @map("deleted_at") @db.Timestamptz(6)
   tenant            Account                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   items             PurchaseRequisitionItem[]
+
+  itemCount Int? @default(0) @map("item_count")
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -2370,6 +2483,8 @@ model VendorRating {
   tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
+  ratedAt DateTime? @map("rated_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([tenantId, supplierId], map: "vendor_ratings_tenant_supplier_idx")
   @@map("vendor_ratings")
@@ -2426,6 +2541,8 @@ model ProcurementBudgetAlert {
 
   tenant Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   budget ProcurementBudget @relation(fields: [budgetId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  triggeredAt DateTime? @map("triggered_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, budgetId], map: "procurement_budget_alerts_budget_idx")
@@ -2555,6 +2672,8 @@ model Report {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  isShared Boolean? @default(false) @map("is_shared")
 
   @@id([tenantId, id])
   @@map("reports")
@@ -2711,6 +2830,10 @@ model Schedule {
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant        Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  approvedBy String?   @map("approved_by") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  notes      String?
+
   @@id([tenantId, id])
   @@map("schedules")
   @@schema("tenant_staff")
@@ -2733,6 +2856,11 @@ model ScheduleShift {
   versionAt         DateTime?
   inherited_context String?
   tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  swapOfferedTo  String?   @map("swap_offered_to") @db.Uuid
+  swapStatus     String?   @default("none") @map("swap_status")
+  swapOfferedAt  DateTime? @map("swap_offered_at") @db.Timestamptz(6)
+  swapAcceptedAt DateTime? @map("swap_accepted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([employeeId], map: "schedule_shifts_employee_idx")
@@ -2826,6 +2954,9 @@ model LaborBudget {
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant          Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  approvedBy String?   @map("approved_by") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([tenantId, locationId], map: "labor_budgets_location_idx")
   @@index([tenantId, eventId], map: "labor_budgets_event_idx")
@@ -2918,6 +3049,9 @@ model AllergenWarning {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  escalatedAt DateTime? @map("escalated_at") @db.Timestamptz(6)
+  escalatedTo String?   @map("escalated_to")
 
   @@id([tenantId, id])
   @@index([eventId])
@@ -3555,6 +3689,11 @@ model EmployeeAvailability {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
+  isSuspended   Boolean?  @default(false) @map("is_suspended")
+  suspendReason String?   @map("suspend_reason")
+  suspendedAt   DateTime? @map("suspended_at") @db.Timestamptz(6)
+  reinstatedAt  DateTime? @map("reinstated_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([employeeId], map: "employee_availability_employee_idx")
   @@map("employee_availability")
@@ -3575,6 +3714,8 @@ model EmployeeCertification {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  status String? @default("active")
 
   @@id([tenantId, id])
   @@index([employeeId], map: "employee_certifications_employee_idx")
@@ -3658,6 +3799,9 @@ model PayrollLineItem {
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
 
+  totalDeductions Decimal? @default(0) @map("total_deductions") @db.Decimal(10, 2)
+  hoursWorked     Decimal? @default(0) @map("hours_worked") @db.Decimal(6, 2)
+
   @@id([tenantId, id])
   @@index([employeeId], map: "payroll_line_items_employee_idx")
   @@map("payroll_line_items")
@@ -3701,6 +3845,8 @@ model PayrollRun {
   updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
 
+  rejectedBy String? @map("rejected_by") @db.Uuid
+
   @@id([tenantId, id])
   @@map("payroll_runs")
   @@schema("tenant_staff")
@@ -3723,6 +3869,8 @@ model TimecardApproval {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  notes String?
 
   @@id([tenantId, id])
   @@index([payrollRunId], map: "timecard_approvals_run_idx")
@@ -3874,6 +4022,11 @@ model TipPool {
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  status            String?   @default("open")
+  distributedAmount Decimal?  @default(0) @map("distributed_amount") @db.Decimal(10, 2)
+  distributedAt     DateTime? @map("distributed_at") @db.Timestamptz(6)
+  distributedBy     String?   @map("distributed_by") @db.Uuid
+
   @@id([tenantId, id])
   @@index([tenantId, periodId], map: "tip_pools_period_idx")
   @@map("tip_pools")
@@ -3923,6 +4076,16 @@ model TrainingModule {
   assignments     TrainingAssignment[]
   completions     TrainingCompletion[]
 
+  code                 String?
+  passThresholdPercent Int?      @map("pass_threshold_percent")
+  maxAttempts          Int?      @map("max_attempts")
+  requiredRole         String?   @map("required_role")
+  status               String?   @default("draft")
+  version              Int?      @default(1)
+  publishedAt          DateTime? @map("published_at") @db.Timestamptz(6)
+  archivedAt           DateTime? @map("archived_at") @db.Timestamptz(6)
+  notes                String?
+
   @@id([tenantId, id])
   @@index([category], map: "training_modules_category_idx")
   @@index([isRequired], map: "training_modules_required_idx")
@@ -3946,6 +4109,24 @@ model TrainingAssignment {
   deletedAt     DateTime?            @map("deleted_at") @db.Timestamptz(6)
   module        TrainingModule       @relation(fields: [tenantId, moduleId], references: [tenantId, id])
   completions   TrainingCompletion[]
+
+  moduleCode            String?   @map("module_code")
+  moduleTitle           String?   @map("module_title")
+  staffRole             String?   @map("staff_role")
+  dueDateReviewNeeded   Boolean?  @map("due_date_review_needed")
+  firstShiftAt          DateTime? @map("first_shift_at") @db.Timestamptz(6)
+  startedAt             DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz(6)
+  waivedAt              DateTime? @map("waived_at") @db.Timestamptz(6)
+  waiverReason          String?   @map("waiver_reason")
+  waiverApprovedBy      String?   @map("waiver_approved_by")
+  attemptCount          Int?      @map("attempt_count")
+  lastAttemptId         String?   @map("last_attempt_id")
+  lastScorePercent      Int?      @map("last_score_percent")
+  passThresholdPercent  Int?      @map("pass_threshold_percent")
+  maxAttempts           Int?      @map("max_attempts")
+  managerReviewRequired Boolean?  @map("manager_review_required")
+  reminderSentAt        DateTime? @map("reminder_sent_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([moduleId], map: "training_assignments_module_idx")
@@ -3998,6 +4179,9 @@ model TimeOffRequest {
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  balanceSnapshot Decimal? @map("balance_snapshot") @db.Decimal(6, 2)
+  balanceUnit     String?  @map("balance_unit")
 
   @@id([tenantId, id])
   @@index([employeeId], map: "employee_time_off_requests_employee_idx")
@@ -4056,6 +4240,11 @@ model DisciplinaryAction {
   updated_at       DateTime          @default(now()) @db.Timestamptz(6)
   deleted_at       DateTime?         @db.Timestamptz(6)
   milestones       ActionMilestone[]
+
+  severity          String?   @default("low")
+  escalated_to      String?   @map("escalated_to") @db.Uuid
+  escalation_reason String?   @map("escalation_reason")
+  escalated_at      DateTime? @map("escalated_at") @db.Timestamptz(6)
 
   @@id([tenant_id, id])
   @@index([employee_id], map: "disciplinary_actions_employee_idx")
@@ -4202,6 +4391,10 @@ model WasteEntry {
   event           Event?        @relation(fields: [tenantId, eventId], references: [tenantId, id], onDelete: Cascade)
   tenant          Account       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  approvedBy String?   @map("approved_by") @db.Uuid
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz(6)
+  status     String?   @default("logged")
+
   @@id([tenantId, id])
   @@index([inventoryItemId])
   @@index([reasonId])
@@ -4283,6 +4476,9 @@ model EventGuest {
   versionAt            DateTime?
   tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  declineReason String?   @map("decline_reason")
+  checkedInAt   DateTime? @map("checked_in_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([eventId])
   @@index([eventId, waitlistPosition])
@@ -4314,6 +4510,11 @@ model EventContract {
   client         Client?             @relation(fields: [clientId], references: [id], onDelete: Restrict)
   signatures     ContractSignature[]
 
+  sentAt     DateTime? @map("sent_at") @db.Timestamptz(6)
+  viewedAt   DateTime? @map("viewed_at") @db.Timestamptz(6)
+  signedAt   DateTime? @map("signed_at") @db.Timestamptz(6)
+  canceledBy String?   @map("canceled_by") @db.Uuid
+
   @@id([tenantId, id])
   @@index([tenantId, status])
   @@index([tenantId, eventId])
@@ -4341,6 +4542,12 @@ model ContractSignature {
   tenant        Account       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   contract      EventContract @relation(fields: [contractId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
+  signerRole         String?   @map("signer_role")
+  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
+  invalidatedAt      DateTime? @map("invalidated_at") @db.Timestamptz(6)
+  invalidationReason String?   @map("invalidation_reason")
+  isValid            Boolean?  @default(true) @map("is_valid")
+
   @@id([tenantId, id])
   @@index([tenantId, contractId])
   @@index([tenantId, signedAt])
@@ -4362,6 +4569,14 @@ model DocumentVersion {
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   tenant        Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   createdBy     User?    @relation(fields: [createdById, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  status       String?   @default("draft")
+  approvedBy   String?   @map("approved_by")
+  publishedBy  String?   @map("published_by")
+  supersededBy String?   @map("superseded_by") @db.Uuid
+  approvedAt   DateTime? @map("approved_at") @db.Timestamptz(6)
+  publishedAt  DateTime? @map("published_at") @db.Timestamptz(6)
+  supersededAt DateTime? @map("superseded_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@unique([tenantId, documentType, documentId, versionNumber])
@@ -4676,6 +4891,10 @@ model Invoice {
   payments        Payment[]
   collectionCases CollectionCase[]
 
+  overdueSince   DateTime? @map("overdue_since") @db.Timestamptz(6)
+  reminderCount  Int?      @default(0) @map("reminder_count")
+  lastReminderAt DateTime? @map("last_reminder_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@unique([id])
   @@index([tenantId])
@@ -4703,6 +4922,21 @@ model PaymentMethod {
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   client Client  @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  externalMethodId    String?   @map("external_method_id")
+  cardExpiryMonth     Int?      @map("card_expiry_month")
+  cardExpiryYear      Int?      @map("card_expiry_year")
+  cardHolderName      String?   @map("card_holder_name")
+  bankAccountLastFour String?   @map("bank_account_last_four")
+  bankAccountType     String?   @map("bank_account_type")
+  bankRoutingNumber   String?   @map("bank_routing_number")
+  walletProvider      String?   @map("wallet_provider")
+  walletEmail         String?   @map("wallet_email")
+  fraudFlagged        Boolean?  @map("fraud_flagged")
+  verifiedAt          DateTime? @map("verified_at") @db.Timestamptz(6)
+  verificationMethod  String?   @map("verification_method")
+  nickname            String?
+  expiresAt           DateTime? @map("expires_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@unique([id])
@@ -4740,6 +4974,13 @@ model Payment {
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   event   Event   @relation(fields: [eventId], references: [id], onDelete: Restrict)
   client  Client  @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  chargebackAt DateTime? @map("chargeback_at") @db.Timestamptz(6)
+  fraudStatus  String?   @map("fraud_status")
+  fraudScore   Float?    @map("fraud_score")
+  reviewedAt   DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy   String?   @map("reviewed_by")
+  description  String?
 
   @@id([tenantId, id])
   @@unique([id])
@@ -4809,6 +5050,17 @@ model CollectionCase {
   client         Client?                 @relation(fields: [clientTenantId, clientId], references: [tenantId, id])
   clientTenantId String?                 @db.Uuid
 
+  assignedAt        DateTime? @map("assigned_at") @db.Timestamptz(6)
+  paymentPlanId     String?   @map("payment_plan_id") @db.Uuid
+  nextPaymentDue    DateTime? @map("next_payment_due") @db.Timestamptz(6)
+  disputeReason     String?   @map("dispute_reason") @db.Text
+  disputeResolvedAt DateTime? @map("dispute_resolved_at") @db.Timestamptz(6)
+  legalCaseNumber   String?   @map("legal_case_number")
+  legalFirm         String?   @map("legal_firm")
+  lastActivityAt    DateTime? @map("last_activity_at") @db.Timestamptz(6)
+  resolvedAt        DateTime? @map("resolved_at") @db.Timestamptz(6)
+  closedAt          DateTime? @map("closed_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@unique([id])
   @@index([tenantId])
@@ -4833,6 +5085,15 @@ model CollectionAction {
   tenant         Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   collectionCase CollectionCase @relation(fields: [collectionCaseId], references: [id], onDelete: Cascade)
 
+  direction      String?
+  status         String?   @default("PENDING")
+  nextActionDate DateTime? @map("next_action_date") @db.Timestamptz(6)
+  promiseAmount  Decimal?  @map("promise_amount") @db.Money
+  promiseDate    DateTime? @map("promise_date") @db.Timestamptz(6)
+  scheduledFor   DateTime? @map("scheduled_for") @db.Timestamptz(6)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  updatedAt      DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@unique([id])
   @@index([tenantId])
@@ -4856,6 +5117,11 @@ model CollectionPaymentPlan {
 
   tenant         Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   collectionCase CollectionCase @relation(fields: [collectionCaseId], references: [id], onDelete: Cascade)
+
+  installmentAmount     Decimal?  @map("installment_amount") @db.Money
+  completedInstallments Int?      @default(0) @map("completed_installments")
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz(6)
+  defaultedAt           DateTime? @map("defaulted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@unique([id])
@@ -5795,6 +6061,9 @@ model AuditSchedule {
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  nextRunAt DateTime? @map("next_run_at") @db.Timestamptz(6)
+  lastRunAt DateTime? @map("last_run_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([tenantId, isActive])
   @@index([tenantId, frequency])
@@ -5819,6 +6088,8 @@ model KnowledgeBaseEntry {
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  viewCount Int? @default(0) @map("view_count")
 
   @@id([tenantId, id])
   @@unique([tenantId, slug])
@@ -5852,6 +6123,9 @@ model InventoryTransfer {
   tenant Account                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   items  InventoryTransferItem[]
 
+  discrepancyNotes String?  @map("discrepancy_notes")
+  hasDiscrepancy   Boolean? @default(false) @map("has_discrepancy")
+
   @@id([tenantId, id])
   @@unique([tenantId, transferNumber])
   @@index([tenantId, status])
@@ -5876,6 +6150,8 @@ model InventoryTransferItem {
 
   tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   transfer InventoryTransfer @relation(fields: [transferId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  unitId String? @map("unit_id")
 
   @@id([tenantId, id])
   @@index([tenantId, transferId])
@@ -6023,6 +6299,10 @@ model CorrectiveAction {
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  escalatedTo      String?   @map("escalated_to") @db.Uuid
+  escalationReason String?   @map("escalation_reason") @db.Text
+  escalatedAt      DateTime? @map("escalated_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@unique([tenantId, actionNumber])
   @@index([tenantId, status])
@@ -6083,6 +6363,8 @@ model TemperatureReading {
   tenant Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   probe  TemperatureProbe @relation(fields: [probeId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
+  withinRange Boolean? @map("within_range")
+
   @@id([tenantId, id])
   @@index([tenantId, probeId])
   @@index([tenantId, eventId])
@@ -6116,6 +6398,9 @@ model IoTAlert {
 
   tenant Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   probe  TemperatureProbe? @relation(fields: [probeId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  ruleId String?  @map("rule_id") @db.Uuid
+  value  Decimal? @db.Decimal(6, 2)
 
   @@id([tenantId, id])
   @@unique([tenantId, alertNumber])
@@ -6240,6 +6525,11 @@ model FacilityAsset {
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  facilityId        String?   @map("facility_id") @db.Uuid
+  currentValue      Decimal?  @map("current_value") @db.Decimal(12, 2)
+  lastMaintenanceAt DateTime? @map("last_maintenance_at") @db.Timestamptz(6)
+  nextMaintenanceAt DateTime? @map("next_maintenance_at") @db.Timestamptz(6)
+
   @@id([tenantId, id])
   @@index([tenantId, status])
   @@index([tenantId, areaId])
@@ -6278,6 +6568,9 @@ model MaintenanceWorkOrder {
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  partsUsed     String?  @map("parts_used")
 
   @@id([tenantId, id])
   @@unique([tenantId, workOrderNumber])
@@ -6358,6 +6651,9 @@ model DeliveryRoute {
 
   tenant Account     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   stops  RouteStop[]
+
+  completedStops Int? @map("completed_stops")
+  delayMinutes   Int? @map("delay_minutes")
 
   @@id([tenantId, id])
   @@unique([tenantId, routeNumber])
@@ -6607,6 +6903,10 @@ model Budget {
   createdAt       DateTime?
   updatedAt       DateTime?
 
+  approvedBy String?   @default("")
+  approvedAt DateTime?
+  lockedAt   DateTime?
+
   @@id([tenantId, id])
   @@schema("public")
 }
@@ -6648,6 +6948,8 @@ model EntityVersion {
   createdAt         DateTime?
   createdBy         String?   @default("")
 
+  updatedAt DateTime?
+
   @@id([tenantId, id])
   @@schema("public")
 }
@@ -6666,6 +6968,8 @@ model EventWaitlistEntry {
   notifiedAt DateTime?
   createdAt  DateTime?
   updatedAt  DateTime?
+
+  seatedAt DateTime?
 
   @@id([tenantId, id])
   @@schema("public")
@@ -6686,6 +6990,8 @@ model FacilitySchedule {
   notes        String?   @default("")
   createdAt    DateTime?
   updatedAt    DateTime?
+
+  completedAt DateTime?
 
   @@id([tenantId, id])
   @@schema("public")
@@ -6729,6 +7035,9 @@ model LogisticsDispatch {
   notes                 String?   @default("")
   createdAt             DateTime?
   updatedAt             DateTime?
+
+  departedAt    DateTime?
+  failureReason String?   @default("")
 
   @@id([tenantId, id])
   @@schema("public")
@@ -6783,6 +7092,9 @@ model StaffPerformance {
   createdAt    DateTime?
   updatedAt    DateTime?
 
+  acknowledgementNotes String?   @default("")
+  acknowledgedAt       DateTime?
+
   @@id([tenantId, id])
   @@schema("public")
 }
@@ -6808,6 +7120,14 @@ model Vendor {
   createdAt    DateTime?
   updatedAt    DateTime?
 
+  approvedAt         DateTime?
+  approvedBy         String?   @default("")
+  suspendedAt        DateTime?
+  suspendedReason    String?   @default("")
+  blacklistedAt      DateTime?
+  blacklistedReason  String?   @default("")
+  lastContactAddedAt DateTime?
+
   @@id([tenantId, id])
   @@schema("public")
 }
@@ -6821,6 +7141,8 @@ model VersionApproval {
   comments        String?   @default("")
   reviewedAt      DateTime?
   createdAt       DateTime?
+
+  updatedAt DateTime?
 
   @@id([tenantId, id])
   @@schema("public")

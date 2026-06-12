@@ -189,7 +189,8 @@
       "createdAt": "created_at",
       "updatedAt": "updated_at",
       "publishedAt": "published_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "viewCount": "view_count"
     },
     "AdminChatParticipant": {
       "tenantId": "tenant_id",
@@ -216,7 +217,8 @@
     "AlertsConfig": {
       "tenantId": "tenant_id",
       "createdAt": "created_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "updatedAt": "updated_at"
     },
     "AllergenWarning": {
       "tenantId": "tenant_id",
@@ -231,7 +233,9 @@
       "resolvedAt": "resolved_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "escalatedAt": "escalated_at",
+      "escalatedTo": "escalated_to"
     },
     "ChartOfAccount": {
       "tenantId": "tenant_id",
@@ -283,7 +287,9 @@
       "fileType": "file_type",
       "fileSize": "file_size",
       "createdAt": "created_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "uploadedBy": "uploaded_by",
+      "updatedAt": "updated_at"
     },
     "CrmScoringRule": {
       "tenantId": "tenant_id",
@@ -298,7 +304,8 @@
       "reportType": "report_type",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isShared": "is_shared"
     },
     "AdminChatThread": {
       "tenantId": "tenant_id",
@@ -328,7 +335,13 @@
       "changeSummary": "change_summary",
       "createdById": "created_by_id",
       "createdAt": "created_at",
-      "updatedAt": "updated_at"
+      "updatedAt": "updated_at",
+      "approvedBy": "approved_by",
+      "publishedBy": "published_by",
+      "supersededBy": "superseded_by",
+      "approvedAt": "approved_at",
+      "publishedAt": "published_at",
+      "supersededAt": "superseded_at"
     },
     "EmailTemplate": {
       "tenantId": "tenant_id",
@@ -364,7 +377,11 @@
       "effectiveUntil": "effective_until",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isSuspended": "is_suspended",
+      "suspendReason": "suspend_reason",
+      "suspendedAt": "suspended_at",
+      "reinstatedAt": "reinstated_at"
     },
     "EmployeeCertification": {
       "tenantId": "tenant_id",
@@ -389,7 +406,9 @@
       "followUpCompleted": "follow_up_completed",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "escalatedAt": "escalated_at",
+      "escalatedTo": "escalated_to"
     },
     "Client": {
       "tenantId": "tenant_id",
@@ -471,7 +490,8 @@
       "termsAndConditions": "terms_and_conditions",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "lineItemCount": "line_item_count"
     },
     "ProposalLineItem": {
       "tenantId": "tenant_id",
@@ -603,7 +623,11 @@
       "expiresAt": "expires_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "sentAt": "sent_at",
+      "viewedAt": "viewed_at",
+      "signedAt": "signed_at",
+      "canceledBy": "canceled_by"
     },
     "ContractSignature": {
       "tenantId": "tenant_id",
@@ -616,7 +640,12 @@
       "ipAddress": "ip_address",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "signerRole": "signer_role",
+      "verifiedAt": "verified_at",
+      "invalidatedAt": "invalidated_at",
+      "invalidationReason": "invalidation_reason",
+      "isValid": "is_valid"
     },
     "EventDish": {
       "tenantId": "tenant_id",
@@ -647,7 +676,9 @@
       "rsvpRespondedAt": "rsvp_responded_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "declineReason": "decline_reason",
+      "checkedInAt": "checked_in_at"
     },
     "EventReport": {
       "tenantId": "tenant_id",
@@ -663,7 +694,10 @@
       "completedAt": "completed_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "rejectedAt": "rejected_at",
+      "rejectedBy": "rejected_by",
+      "rejectionReason": "rejection_reason"
     },
     "Event": {
       "tenantId": "tenant_id",
@@ -762,7 +796,8 @@
       "sortOrder": "sort_order",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "durationMinutes": "duration_minutes"
     },
     "TimelineTask": {
       "tenantId": "tenant_id",
@@ -774,7 +809,9 @@
       "slackMinutes": "slack_minutes",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "sortOrder": "sort_order",
+      "completedAt": "completed_at"
     },
     "EventImport": {
       "tenantId": "tenant_id",
@@ -793,7 +830,10 @@
       "parsedAt": "parsed_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "totalRows": "total_rows",
+      "importedRows": "imported_rows",
+      "skippedRows": "skipped_rows"
     },
     "BoardProjection": {
       "tenantId": "tenant_id",
@@ -817,13 +857,17 @@
       "toProjectionId": "to_projection_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "positionX": "position_x",
+      "positionY": "position_y"
     },
     "Note": {
       "tenantId": "tenant_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "entityType": "entity_type",
+      "entityId": "entity_id"
     },
     "CollectionCase": {
       "tenantId": "tenant_id",
@@ -844,14 +888,30 @@
       "isEscalatedToLegal": "is_escalated_to_legal",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "assignedAt": "assigned_at",
+      "paymentPlanId": "payment_plan_id",
+      "nextPaymentDue": "next_payment_due",
+      "disputeReason": "dispute_reason",
+      "disputeResolvedAt": "dispute_resolved_at",
+      "legalCaseNumber": "legal_case_number",
+      "legalFirm": "legal_firm",
+      "lastActivityAt": "last_activity_at",
+      "resolvedAt": "resolved_at",
+      "closedAt": "closed_at"
     },
     "CollectionAction": {
       "tenantId": "tenant_id",
       "collectionCaseId": "collection_case_id",
       "actionType": "action_type",
       "contactedAt": "contacted_at",
-      "createdAt": "created_at"
+      "createdAt": "created_at",
+      "nextActionDate": "next_action_date",
+      "promiseAmount": "promise_amount",
+      "promiseDate": "promise_date",
+      "scheduledFor": "scheduled_for",
+      "completedAt": "completed_at",
+      "updatedAt": "updated_at"
     },
     "CollectionPaymentPlan": {
       "tenantId": "tenant_id",
@@ -860,7 +920,11 @@
       "frequencyDays": "frequency_days",
       "startDate": "start_date",
       "createdAt": "created_at",
-      "updatedAt": "updated_at"
+      "updatedAt": "updated_at",
+      "installmentAmount": "installment_amount",
+      "completedInstallments": "completed_installments",
+      "completedAt": "completed_at",
+      "defaultedAt": "defaulted_at"
     },
     "Invoice": {
       "tenantId": "tenant_id",
@@ -886,7 +950,10 @@
       "voidedAt": "voided_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "overdueSince": "overdue_since",
+      "reminderCount": "reminder_count",
+      "lastReminderAt": "last_reminder_at"
     },
     "PaymentMethod": {
       "tenantId": "tenant_id",
@@ -897,7 +964,20 @@
       "isDefault": "is_default",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "externalMethodId": "external_method_id",
+      "cardExpiryMonth": "card_expiry_month",
+      "cardExpiryYear": "card_expiry_year",
+      "cardHolderName": "card_holder_name",
+      "bankAccountLastFour": "bank_account_last_four",
+      "bankAccountType": "bank_account_type",
+      "bankRoutingNumber": "bank_routing_number",
+      "walletProvider": "wallet_provider",
+      "walletEmail": "wallet_email",
+      "fraudFlagged": "fraud_flagged",
+      "verifiedAt": "verified_at",
+      "verificationMethod": "verification_method",
+      "expiresAt": "expires_at"
     },
     "Payment": {
       "tenantId": "tenant_id",
@@ -912,7 +992,12 @@
       "refundedAt": "refunded_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "chargebackAt": "chargeback_at",
+      "fraudStatus": "fraud_status",
+      "fraudScore": "fraud_score",
+      "reviewedAt": "reviewed_at",
+      "reviewedBy": "reviewed_by"
     },
     "PricingTier": {
       "tenantId": "tenant_id",
@@ -1042,7 +1127,10 @@
       "generatedAt": "generated_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "rejectedAt": "rejected_at",
+      "rejectedBy": "rejected_by",
+      "rejectionReason": "rejection_reason"
     },
     "InventoryStock": {
       "tenantId": "tenant_id",
@@ -1055,7 +1143,10 @@
       "tenantId": "tenant_id",
       "itemId": "item_id",
       "alertType": "alert_type",
-      "createdAt": "created_at"
+      "createdAt": "created_at",
+      "acknowledgedAt": "acknowledged_at",
+      "acknowledgedBy": "acknowledged_by",
+      "resolvedBy": "resolved_by"
     },
     "InventoryForecast": {
       "tenantId": "tenant_id",
@@ -1087,7 +1178,8 @@
       "ratedBy": "rated_by",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "ratedAt": "rated_at"
     },
     "InventoryTransferItem": {
       "tenantId": "tenant_id",
@@ -1095,7 +1187,8 @@
       "itemId": "item_id",
       "receivedQuantity": "received_quantity",
       "createdAt": "created_at",
-      "updatedAt": "updated_at"
+      "updatedAt": "updated_at",
+      "unitId": "unit_id"
     },
     "ProcurementBudget": {
       "tenantId": "tenant_id",
@@ -1123,7 +1216,8 @@
       "resolvedAt": "resolved_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "triggeredAt": "triggered_at"
     },
     "AuditSchedule": {
       "tenantId": "tenant_id",
@@ -1133,7 +1227,9 @@
       "createdBy": "created_by",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "nextRunAt": "next_run_at",
+      "lastRunAt": "last_run_at"
     },
     "InventoryItem": {
       "tenantId": "tenant_id",
@@ -1144,7 +1240,8 @@
       "supplierId": "supplier_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "quantityReserved": "quantity_reserved"
     },
     "InventorySupplier": {
       "tenantId": "tenant_id",
@@ -1157,7 +1254,16 @@
       "postalCode": "postal_code",
       "taxId": "tax_id",
       "performanceRating": "performance_rating",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isActive": "is_active",
+      "openPOCount": "open_po_count",
+      "approvedAt": "approved_at",
+      "approvedBy": "approved_by",
+      "suspendedAt": "suspended_at",
+      "suspendedReason": "suspended_reason",
+      "blacklistedAt": "blacklisted_at",
+      "blacklistedReason": "blacklisted_reason",
+      "qualificationStatus": "qualification_status"
     },
     "InventoryTransaction": {
       "tenantId": "tenant_id",
@@ -1166,7 +1272,11 @@
       "createdAt": "created_at",
       "referenceType": "reference_type",
       "referenceId": "reference_id",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "reversedAt": "reversed_at",
+      "reversedBy": "reversed_by",
+      "reverseOfTransactionId": "reverse_of_transaction_id",
+      "isReversed": "is_reversed"
     },
     "InventoryTransfer": {
       "tenantId": "tenant_id",
@@ -1183,7 +1293,9 @@
       "receivedAt": "received_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "discrepancyNotes": "discrepancy_notes",
+      "hasDiscrepancy": "has_discrepancy"
     },
     "Dish": {
       "tenantId": "tenant_id",
@@ -1200,7 +1312,14 @@
       "isActive": "is_active",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isSeasonal": "is_seasonal",
+      "seasonLabel": "season_label",
+      "seasonStartMonth": "season_start_month",
+      "seasonEndMonth": "season_end_month",
+      "isEightySix": "is_eighty_six",
+      "eightySixReason": "eighty_six_reason",
+      "eightySixAt": "eighty_six_at"
     },
     "Ingredient": {
       "tenantId": "tenant_id",
@@ -1211,7 +1330,14 @@
       "isActive": "is_active",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "inventoryItemId": "inventory_item_id",
+      "currentLotNumber": "current_lot_number",
+      "currentLotReceivedAt": "current_lot_received_at",
+      "currentLotExpiresAt": "current_lot_expires_at",
+      "isRecalled": "is_recalled",
+      "recallReason": "recall_reason",
+      "recalledAt": "recalled_at"
     },
     "TemperatureProbe": {
       "tenantId": "tenant_id",
@@ -1253,7 +1379,8 @@
       "loggedAt": "logged_at",
       "batteryLevel": "battery_level",
       "signalStrength": "signal_strength",
-      "createdAt": "created_at"
+      "createdAt": "created_at",
+      "withinRange": "within_range"
     },
     "IotAlertRule": {
       "tenantId": "tenant_id",
@@ -1283,7 +1410,8 @@
       "resolvedBy": "resolved_by",
       "resolutionNotes": "resolution_notes",
       "createdAt": "created_at",
-      "updatedAt": "updated_at"
+      "updatedAt": "updated_at",
+      "ruleId": "rule_id"
     },
     "CorrectiveAction": {
       "tenantId": "tenant_id",
@@ -1303,7 +1431,10 @@
       "verifiedBy": "verified_by",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "escalatedTo": "escalated_to",
+      "escalationReason": "escalation_reason",
+      "escalatedAt": "escalated_at"
     },
     "QualityCheck": {
       "tenantId": "tenant_id",
@@ -1344,7 +1475,9 @@
       "oldStatus": "old_status",
       "newStatus": "new_status",
       "quantityCompleted": "quantity_completed",
-      "createdAt": "created_at"
+      "createdAt": "created_at",
+      "progressPct": "progress_pct",
+      "recordedAt": "recorded_at"
     },
     "KitchenTask": {
       "tenantId": "tenant_id",
@@ -1364,7 +1497,12 @@
       "maxGuests": "max_guests",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isSeasonal": "is_seasonal",
+      "seasonLabel": "season_label",
+      "seasonYear": "season_year",
+      "publishedAt": "published_at",
+      "archivedAt": "archived_at"
     },
     "MenuDish": {
       "tenantId": "tenant_id",
@@ -1374,7 +1512,8 @@
       "isOptional": "is_optional",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "priceOverride": "price_override"
     },
     "PrepComment": {
       "tenantId": "tenant_id",
@@ -1400,7 +1539,8 @@
       "finalizedAt": "finalized_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "isActive": "is_active"
     },
     "PrepListItem": {
       "tenantId": "tenant_id",
@@ -1487,7 +1627,9 @@
       "actualMinutes": "actual_minutes",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "prepListId": "prep_list_id",
+      "stationId": "station_id"
     },
     "Recipe": {
       "tenantId": "tenant_id",
@@ -1517,7 +1659,10 @@
       "deletedAt": "deleted_at",
       "costCalculatedAt": "cost_calculated_at",
       "costPerYield": "cost_per_yield",
-      "totalCost": "total_cost"
+      "totalCost": "total_cost",
+      "publishedAt": "published_at",
+      "approvedAt": "approved_at",
+      "approvedBy": "approved_by"
     },
     "RecipeIngredient": {
       "tenantId": "tenant_id",
@@ -1557,7 +1702,11 @@
       "isActive": "is_active",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "inMaintenance": "in_maintenance",
+      "maintenanceReason": "maintenance_reason",
+      "maintenanceStartAt": "maintenance_start_at",
+      "currentTaskCount": "current_task_count"
     },
     "Equipment": {
       "tenantId": "tenant_id",
@@ -1599,7 +1748,9 @@
       "totalCost": "total_cost",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "estimatedCost": "estimated_cost",
+      "partsUsed": "parts_used"
     },
     "Facility": {
       "tenantId": "tenant_id",
@@ -1630,7 +1781,11 @@
       "areaId": "area_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "facilityId": "facility_id",
+      "currentValue": "current_value",
+      "lastMaintenanceAt": "last_maintenance_at",
+      "nextMaintenanceAt": "next_maintenance_at"
     },
     "Driver": {
       "tenantId": "tenant_id",
@@ -1808,7 +1963,8 @@
       "itemCategory": "item_category",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "itemCount": "item_count"
     },
     "PurchaseRequisitionItem": {
       "tenantId": "tenant_id",
@@ -1842,7 +1998,8 @@
       "receivedAt": "received_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "itemCount": "item_count"
     },
     "PurchaseOrderItem": {
       "tenantId": "tenant_id",
@@ -1933,7 +2090,9 @@
       "loggedAt": "logged_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "approvedBy": "approved_by",
+      "approvedAt": "approved_at"
     },
     "LaborBudget": {
       "tenantId": "tenant_id",
@@ -1951,7 +2110,9 @@
       "overrideReason": "override_reason",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "approvedBy": "approved_by",
+      "approvedAt": "approved_at"
     },
     "BudgetAlert": {
       "tenantId": "tenant_id",
@@ -2007,14 +2168,17 @@
       "rejectReason": "reject_reason",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "rejectedBy": "rejected_by"
     },
     "Schedule": {
       "tenantId": "tenant_id",
       "locationId": "location_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "approvedBy": "approved_by",
+      "approvedAt": "approved_at"
     },
     "ScheduleShift": {
       "tenantId": "tenant_id",
@@ -2023,7 +2187,11 @@
       "locationId": "location_id",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "swapOfferedTo": "swap_offered_to",
+      "swapStatus": "swap_status",
+      "swapOfferedAt": "swap_offered_at",
+      "swapAcceptedAt": "swap_accepted_at"
     },
     "TimecardApproval": {
       "tenantId": "tenant_id",
@@ -2052,7 +2220,9 @@
       "netPay": "net_pay",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "totalDeductions": "total_deductions",
+      "hoursWorked": "hours_worked"
     },
     "TipPool": {
       "tenantId": "tenant_id",
@@ -2062,7 +2232,10 @@
       "fixedShares": "fixed_shares",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "distributedAmount": "distributed_amount",
+      "distributedAt": "distributed_at",
+      "distributedBy": "distributed_by"
     },
     "DisciplinaryAction": {
       "employee_id": "employee_id",
@@ -2072,7 +2245,10 @@
       "improvement_plan": "improvement_plan",
       "end_date": "end_date",
       "closed_at": "closed_at",
-      "closed_by": "closed_by"
+      "closed_by": "closed_by",
+      "escalated_to": "escalated_to",
+      "escalation_reason": "escalation_reason",
+      "escalated_at": "escalated_at"
     },
     "ActionMilestone": {
       "disciplinary_action_id": "disciplinary_action_id",
@@ -2133,7 +2309,9 @@
       "actualDistance": "actual_distance",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "completedStops": "completed_stops",
+      "delayMinutes": "delay_minutes"
     },
     "RouteStop": {
       "tenantId": "tenant_id",
@@ -2219,7 +2397,9 @@
       "rejectionReason": "rejection_reason",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "balanceSnapshot": "balance_snapshot",
+      "balanceUnit": "balance_unit"
     },
     "TrainingModule": {
       "tenantId": "tenant_id",
@@ -2231,7 +2411,12 @@
       "createdBy": "created_by",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "passThresholdPercent": "pass_threshold_percent",
+      "maxAttempts": "max_attempts",
+      "requiredRole": "required_role",
+      "publishedAt": "published_at",
+      "archivedAt": "archived_at"
     },
     "TrainingAssignment": {
       "tenantId": "tenant_id",
@@ -2243,7 +2428,24 @@
       "assignedAt": "assigned_at",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
+      "deletedAt": "deleted_at",
+      "moduleCode": "module_code",
+      "moduleTitle": "module_title",
+      "staffRole": "staff_role",
+      "dueDateReviewNeeded": "due_date_review_needed",
+      "firstShiftAt": "first_shift_at",
+      "startedAt": "started_at",
+      "completedAt": "completed_at",
+      "waivedAt": "waived_at",
+      "waiverReason": "waiver_reason",
+      "waiverApprovedBy": "waiver_approved_by",
+      "attemptCount": "attempt_count",
+      "lastAttemptId": "last_attempt_id",
+      "lastScorePercent": "last_score_percent",
+      "passThresholdPercent": "pass_threshold_percent",
+      "maxAttempts": "max_attempts",
+      "managerReviewRequired": "manager_review_required",
+      "reminderSentAt": "reminder_sent_at"
     }
   },
   "typeMappings": {},
@@ -2298,6 +2500,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "viewCount": [
+        "@default(0)"
       ]
     },
     "AdminChatParticipant": {
@@ -2325,6 +2530,9 @@
     "AlertsConfig": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "updatedAt": [
+        "@updatedAt"
       ]
     },
     "AllergenWarning": {
@@ -2392,6 +2600,9 @@
     "InteractionAttachment": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "updatedAt": [
+        "@updatedAt"
       ]
     },
     "CrmScoringRule": {
@@ -2420,6 +2631,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isShared": [
+        "@default(false)"
       ]
     },
     "AdminChatThread": {
@@ -2444,6 +2658,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"draft\")"
       ]
     },
     "EmailTemplate": {
@@ -2492,6 +2709,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isSuspended": [
+        "@default(false)"
       ]
     },
     "EmployeeCertification": {
@@ -2500,6 +2720,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"active\")"
       ]
     },
     "ClientInteraction": {
@@ -2511,6 +2734,12 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"open\")"
+      ],
+      "priority": [
+        "@default(\"normal\")"
       ]
     },
     "Client": {
@@ -2616,6 +2845,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "lineItemCount": [
+        "@default(0)"
       ]
     },
     "ProposalLineItem": {
@@ -2911,6 +3143,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isValid": [
+        "@default(true)"
       ]
     },
     "EventDish": {
@@ -3249,6 +3484,9 @@
       ],
       "departmentId": [
         "@default(\"\")"
+      ],
+      "approvedBy": [
+        "@default(\"\")"
       ]
     },
     "CollectionCase": {
@@ -3289,6 +3527,12 @@
     "CollectionAction": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"PENDING\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
       ]
     },
     "CollectionPaymentPlan": {
@@ -3303,6 +3547,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "completedInstallments": [
+        "@default(0)"
       ]
     },
     "Invoice": {
@@ -3332,6 +3579,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "reminderCount": [
+        "@default(0)"
       ]
     },
     "PaymentMethod": {
@@ -3674,6 +3924,9 @@
       ],
       "fsa_traceable": [
         "@default(false)"
+      ],
+      "quantityReserved": [
+        "@default(0)"
       ]
     },
     "InventorySupplier": {
@@ -3691,6 +3944,15 @@
       ],
       "country": [
         "@default(\"US\")"
+      ],
+      "isActive": [
+        "@default(true)"
+      ],
+      "openPOCount": [
+        "@default(0)"
+      ],
+      "qualificationStatus": [
+        "@default(\"pending\")"
       ]
     },
     "InventoryTransaction": {
@@ -3702,6 +3964,9 @@
       ],
       "reason": [
         "@default(\"\")"
+      ],
+      "isReversed": [
+        "@default(false)"
       ]
     },
     "InventoryTransfer": {
@@ -3713,6 +3978,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "hasDiscrepancy": [
+        "@default(false)"
       ]
     },
     "Dish": {
@@ -3727,6 +3995,18 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isSeasonal": [
+        "@default(false)"
+      ],
+      "seasonStartMonth": [
+        "@default(0)"
+      ],
+      "seasonEndMonth": [
+        "@default(0)"
+      ],
+      "isEightySix": [
+        "@default(false)"
       ]
     },
     "Ingredient": {
@@ -3738,6 +4018,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isRecalled": [
+        "@default(false)"
       ]
     },
     "TemperatureProbe": {
@@ -3858,6 +4141,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"active\")"
       ]
     },
     "KitchenTaskProgress": {
@@ -3894,6 +4180,12 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isSeasonal": [
+        "@default(false)"
+      ],
+      "status": [
+        "@default(\"draft\")"
       ]
     },
     "MenuDish": {
@@ -3939,6 +4231,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "isActive": [
+        "@default(true)"
       ]
     },
     "PrepListItem": {
@@ -4044,6 +4339,9 @@
       ],
       "totalCost": [
         "@default(0)"
+      ],
+      "status": [
+        "@default(\"draft\")"
       ]
     },
     "RecipeIngredient": {
@@ -4280,6 +4578,9 @@
       ],
       "notes": [
         "@default(\"\")"
+      ],
+      "failureReason": [
+        "@default(\"\")"
       ]
     },
     "Shipment": {
@@ -4509,6 +4810,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "itemCount": [
+        "@default(0)"
       ]
     },
     "PurchaseRequisitionItem": {
@@ -4540,6 +4844,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "itemCount": [
+        "@default(0)"
       ]
     },
     "PurchaseOrderItem": {
@@ -4662,6 +4969,15 @@
       ],
       "notes": [
         "@default(\"\")"
+      ],
+      "approvedBy": [
+        "@default(\"\")"
+      ],
+      "suspendedReason": [
+        "@default(\"\")"
+      ],
+      "blacklistedReason": [
+        "@default(\"\")"
       ]
     },
     "QACheck": {
@@ -4690,6 +5006,9 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"logged\")"
       ]
     },
     "LaborBudget": {
@@ -4790,6 +5109,9 @@
       ],
       "version": [
         "@default(0)"
+      ],
+      "swapStatus": [
+        "@default(\"none\")"
       ]
     },
     "TimecardApproval": {
@@ -4818,6 +5140,12 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "totalDeductions": [
+        "@default(0)"
+      ],
+      "hoursWorked": [
+        "@default(0)"
       ]
     },
     "TipPool": {
@@ -4835,6 +5163,12 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ],
+      "status": [
+        "@default(\"open\")"
+      ],
+      "distributedAmount": [
+        "@default(0)"
       ]
     },
     "DisciplinaryAction": {
@@ -4843,6 +5177,9 @@
       ],
       "status": [
         "@default(\"active\")"
+      ],
+      "severity": [
+        "@default(\"low\")"
       ]
     },
     "ActionMilestone": {
@@ -4979,6 +5316,9 @@
       ],
       "notes": [
         "@default(\"\")"
+      ],
+      "acknowledgementNotes": [
+        "@default(\"\")"
       ]
     },
     "TimeEntry": {
@@ -5023,6 +5363,12 @@
       ],
       "isActive": [
         "@default(true)"
+      ],
+      "status": [
+        "@default(\"draft\")"
+      ],
+      "version": [
+        "@default(1)"
       ]
     },
     "TrainingAssignment": {
@@ -5078,7 +5424,8 @@
       "tenantId": "Uuid",
       "id": "Uuid",
       "createdAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)"
     },
     "AllergenWarning": {
       "tenantId": "Uuid",
@@ -5090,7 +5437,8 @@
       "resolvedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "escalatedAt": "Timestamptz(6)"
     },
     "ChartOfAccount": {
       "tenantId": "Uuid",
@@ -5124,7 +5472,8 @@
       "id": "Uuid",
       "interactionId": "Uuid",
       "createdAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)"
     },
     "CrmScoringRule": {
       "tenantId": "Uuid",
@@ -5171,7 +5520,11 @@
       "changeSummary": "Text",
       "createdById": "Uuid",
       "createdAt": "Timestamptz(6)",
-      "updatedAt": "Timestamptz(6)"
+      "updatedAt": "Timestamptz(6)",
+      "supersededBy": "Uuid",
+      "approvedAt": "Timestamptz(6)",
+      "publishedAt": "Timestamptz(6)",
+      "supersededAt": "Timestamptz(6)"
     },
     "EmailTemplate": {
       "tenantId": "Uuid",
@@ -5202,7 +5555,9 @@
       "effectiveUntil": "Date",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "suspendedAt": "Timestamptz(6)",
+      "reinstatedAt": "Timestamptz(6)"
     },
     "EmployeeCertification": {
       "tenantId": "Uuid",
@@ -5224,7 +5579,8 @@
       "followUpDate": "Date",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "escalatedAt": "Timestamptz(6)"
     },
     "Client": {
       "tenantId": "Uuid",
@@ -5330,7 +5686,9 @@
       "deposit_paid_at": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "delivered_at": "Timestamptz(6)",
+      "prep_started_at": "Timestamptz(6)"
     },
     "CommandBoard": {
       "tenantId": "Uuid",
@@ -5409,7 +5767,11 @@
       "expiresAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "sentAt": "Timestamptz(6)",
+      "viewedAt": "Timestamptz(6)",
+      "signedAt": "Timestamptz(6)",
+      "canceledBy": "Uuid"
     },
     "ContractSignature": {
       "tenantId": "Uuid",
@@ -5418,7 +5780,9 @@
       "signedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "verifiedAt": "Timestamptz(6)",
+      "invalidatedAt": "Timestamptz(6)"
     },
     "EventDish": {
       "tenantId": "Uuid",
@@ -5436,7 +5800,8 @@
       "rsvpRespondedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "checkedInAt": "Timestamptz(6)"
     },
     "EventReport": {
       "tenantId": "Uuid",
@@ -5447,7 +5812,9 @@
       "completedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "rejectedAt": "Timestamptz(6)",
+      "rejectedBy": "Uuid"
     },
     "Event": {
       "tenantId": "Uuid",
@@ -5533,7 +5900,8 @@
       "assigneeId": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "completedAt": "Timestamptz(6)"
     },
     "EventImport": {
       "tenantId": "Uuid",
@@ -5582,7 +5950,8 @@
       "id": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "entityId": "Uuid"
     },
     "Budget": {
       "totalAmount": "Decimal(12, 2)",
@@ -5604,7 +5973,15 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)",
       "eventTenantId": "Uuid",
-      "clientTenantId": "Uuid"
+      "clientTenantId": "Uuid",
+      "assignedAt": "Timestamptz(6)",
+      "paymentPlanId": "Uuid",
+      "nextPaymentDue": "Timestamptz(6)",
+      "disputeReason": "Text",
+      "disputeResolvedAt": "Timestamptz(6)",
+      "lastActivityAt": "Timestamptz(6)",
+      "resolvedAt": "Timestamptz(6)",
+      "closedAt": "Timestamptz(6)"
     },
     "CollectionAction": {
       "tenantId": "Uuid",
@@ -5613,7 +5990,13 @@
       "description": "Text",
       "outcome": "Text",
       "contactedAt": "Timestamptz(6)",
-      "createdAt": "Timestamptz(6)"
+      "createdAt": "Timestamptz(6)",
+      "nextActionDate": "Timestamptz(6)",
+      "promiseAmount": "Money",
+      "promiseDate": "Timestamptz(6)",
+      "scheduledFor": "Timestamptz(6)",
+      "completedAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)"
     },
     "CollectionPaymentPlan": {
       "tenantId": "Uuid",
@@ -5622,7 +6005,10 @@
       "totalAmount": "Money",
       "startDate": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
-      "updatedAt": "Timestamptz(6)"
+      "updatedAt": "Timestamptz(6)",
+      "installmentAmount": "Money",
+      "completedAt": "Timestamptz(6)",
+      "defaultedAt": "Timestamptz(6)"
     },
     "Invoice": {
       "tenantId": "Uuid",
@@ -5647,7 +6033,9 @@
       "voidedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "overdueSince": "Timestamptz(6)",
+      "lastReminderAt": "Timestamptz(6)"
     },
     "PaymentMethod": {
       "tenantId": "Uuid",
@@ -5657,7 +6045,9 @@
       "status": "Text",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "verifiedAt": "Timestamptz(6)",
+      "expiresAt": "Timestamptz(6)"
     },
     "Payment": {
       "tenantId": "Uuid",
@@ -5671,7 +6061,9 @@
       "refundedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "chargebackAt": "Timestamptz(6)",
+      "reviewedAt": "Timestamptz(6)"
     },
     "PricingTier": {
       "tenantId": "Uuid",
@@ -5792,7 +6184,8 @@
       "generatedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "rejectedAt": "Timestamptz(6)"
     },
     "InventoryStock": {
       "tenantId": "Uuid",
@@ -5815,7 +6208,8 @@
       "resolved_at": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updated_at": "Timestamptz(6)",
-      "deleted_at": "Timestamptz(6)"
+      "deleted_at": "Timestamptz(6)",
+      "acknowledgedAt": "Timestamptz(6)"
     },
     "InventoryForecast": {
       "tenantId": "Uuid",
@@ -5858,7 +6252,8 @@
       "ratedBy": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "ratedAt": "Timestamptz(6)"
     },
     "InventoryTransferItem": {
       "tenantId": "Uuid",
@@ -5894,7 +6289,8 @@
       "resolvedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "triggeredAt": "Timestamptz(6)"
     },
     "AuditSchedule": {
       "tenantId": "Uuid",
@@ -5902,7 +6298,9 @@
       "createdBy": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "nextRunAt": "Timestamptz(6)",
+      "lastRunAt": "Timestamptz(6)"
     },
     "InventoryItem": {
       "tenantId": "Uuid",
@@ -5923,7 +6321,10 @@
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
       "performanceRating": "Decimal(2, 1)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "approvedAt": "Timestamptz(6)",
+      "suspendedAt": "Timestamptz(6)",
+      "blacklistedAt": "Timestamptz(6)"
     },
     "InventoryTransaction": {
       "tenantId": "Uuid",
@@ -5937,7 +6338,9 @@
       "storage_location_id": "Uuid",
       "referenceId": "Uuid",
       "employee_id": "Uuid",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "reversedAt": "Timestamptz(6)",
+      "reverseOfTransactionId": "Uuid"
     },
     "InventoryTransfer": {
       "tenantId": "Uuid",
@@ -5968,7 +6371,10 @@
       "costPerPerson": "Decimal(10, 2)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "seasonStartMonth": "SmallInt",
+      "seasonEndMonth": "SmallInt",
+      "eightySixAt": "Timestamptz(6)"
     },
     "Ingredient": {
       "tenantId": "Uuid",
@@ -5978,7 +6384,11 @@
       "shelfLifeDays": "SmallInt",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "inventoryItemId": "Uuid",
+      "currentLotReceivedAt": "Timestamptz(6)",
+      "currentLotExpiresAt": "Timestamptz(6)",
+      "recalledAt": "Timestamptz(6)"
     },
     "TemperatureProbe": {
       "tenantId": "Uuid",
@@ -6046,7 +6456,9 @@
       "resolvedBy": "Uuid",
       "resolutionNotes": "Text",
       "createdAt": "Timestamptz(6)",
-      "updatedAt": "Timestamptz(6)"
+      "updatedAt": "Timestamptz(6)",
+      "ruleId": "Uuid",
+      "value": "Decimal(6, 2)"
     },
     "CorrectiveAction": {
       "tenantId": "Uuid",
@@ -6067,7 +6479,10 @@
       "verifiedBy": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "escalatedTo": "Uuid",
+      "escalationReason": "Text",
+      "escalatedAt": "Timestamptz(6)"
     },
     "QualityCheck": {
       "tenantId": "Uuid",
@@ -6108,7 +6523,9 @@
       "taskId": "Uuid",
       "employeeId": "Uuid",
       "quantityCompleted": "Decimal(10, 2)",
-      "createdAt": "Timestamptz(6)"
+      "createdAt": "Timestamptz(6)",
+      "progressPct": "Decimal(5, 2)",
+      "recordedAt": "Timestamptz(6)"
     },
     "KitchenTask": {
       "tenantId": "Uuid",
@@ -6130,7 +6547,9 @@
       "maxGuests": "SmallInt",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "publishedAt": "Timestamptz(6)",
+      "archivedAt": "Timestamptz(6)"
     },
     "MenuDish": {
       "tenantId": "Uuid",
@@ -6140,7 +6559,8 @@
       "sortOrder": "SmallInt",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "priceOverride": "Decimal(10, 2)"
     },
     "PrepComment": {
       "tenantId": "Uuid",
@@ -6228,7 +6648,8 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)",
       "do_not_complete_until": "Timestamptz(6)",
-      "import_id": "Uuid"
+      "import_id": "Uuid",
+      "prepListId": "Uuid"
     },
     "Recipe": {
       "tenantId": "Uuid",
@@ -6252,7 +6673,9 @@
       "deletedAt": "Timestamptz(6)",
       "costCalculatedAt": "Timestamptz(6)",
       "costPerYield": "Decimal(12, 2)",
-      "totalCost": "Decimal(12, 2)"
+      "totalCost": "Decimal(12, 2)",
+      "publishedAt": "Timestamptz(6)",
+      "approvedAt": "Timestamptz(6)"
     },
     "RecipeIngredient": {
       "tenantId": "Uuid",
@@ -6288,7 +6711,8 @@
       "notes": "Text",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "maintenanceStartAt": "Timestamptz(6)"
     },
     "Equipment": {
       "tenantId": "Uuid",
@@ -6324,7 +6748,8 @@
       "notes": "Text",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "estimatedCost": "Decimal(10, 2)"
     },
     "Facility": {
       "tenantId": "Uuid",
@@ -6352,7 +6777,11 @@
       "areaId": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "facilityId": "Uuid",
+      "currentValue": "Decimal(12, 2)",
+      "lastMaintenanceAt": "Timestamptz(6)",
+      "nextMaintenanceAt": "Timestamptz(6)"
     },
     "FacilityWorkOrder": {
       "estimatedCost": "Decimal(12, 2)",
@@ -6631,7 +7060,9 @@
       "totalCost": "Decimal(10, 2)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "approvedBy": "Uuid",
+      "approvedAt": "Timestamptz(6)"
     },
     "LaborBudget": {
       "tenantId": "Uuid",
@@ -6644,7 +7075,9 @@
       "actualSpend": "Decimal(10, 2)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "approvedBy": "Uuid",
+      "approvedAt": "Timestamptz(6)"
     },
     "BudgetAlert": {
       "tenantId": "Uuid",
@@ -6702,7 +7135,8 @@
       "paidAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "rejectedBy": "Uuid"
     },
     "Schedule": {
       "tenantId": "Uuid",
@@ -6713,7 +7147,9 @@
       "published_by": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "approvedBy": "Uuid",
+      "approvedAt": "Timestamptz(6)"
     },
     "ScheduleShift": {
       "tenantId": "Uuid",
@@ -6725,7 +7161,10 @@
       "shift_end": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "swapOfferedTo": "Uuid",
+      "swapOfferedAt": "Timestamptz(6)",
+      "swapAcceptedAt": "Timestamptz(6)"
     },
     "TimecardApproval": {
       "tenantId": "Uuid",
@@ -6755,7 +7194,9 @@
       "netPay": "Decimal(10, 2)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "totalDeductions": "Decimal(10, 2)",
+      "hoursWorked": "Decimal(6, 2)"
     },
     "TipPool": {
       "tenantId": "Uuid",
@@ -6765,7 +7206,10 @@
       "fixedShares": "JsonB",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "distributedAmount": "Decimal(10, 2)",
+      "distributedAt": "Timestamptz(6)",
+      "distributedBy": "Uuid"
     },
     "DisciplinaryAction": {
       "tenant_id": "Uuid",
@@ -6778,7 +7222,9 @@
       "closed_by": "Uuid",
       "created_at": "Timestamptz(6)",
       "updated_at": "Timestamptz(6)",
-      "deleted_at": "Timestamptz(6)"
+      "deleted_at": "Timestamptz(6)",
+      "escalated_to": "Uuid",
+      "escalated_at": "Timestamptz(6)"
     },
     "ActionMilestone": {
       "tenant_id": "Uuid",
@@ -6930,7 +7376,8 @@
       "reviewedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "balanceSnapshot": "Decimal(6, 2)"
     },
     "TrainingModule": {
       "tenantId": "Uuid",
@@ -6939,7 +7386,9 @@
       "createdBy": "Uuid",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "publishedAt": "Timestamptz(6)",
+      "archivedAt": "Timestamptz(6)"
     },
     "TrainingAssignment": {
       "tenantId": "Uuid",
@@ -6951,7 +7400,12 @@
       "assignedAt": "Timestamptz(6)",
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
+      "deletedAt": "Timestamptz(6)",
+      "firstShiftAt": "Timestamptz(6)",
+      "startedAt": "Timestamptz(6)",
+      "completedAt": "Timestamptz(6)",
+      "waivedAt": "Timestamptz(6)",
+      "reminderSentAt": "Timestamptz(6)"
     }
   },
   "indexes": {
@@ -9204,11 +9658,19 @@
       "threshold": {
         "precision": 6,
         "scale": 2
+      },
+      "value": {
+        "precision": 6,
+        "scale": 2
       }
     },
     "KitchenTaskProgress": {
       "quantityCompleted": {
         "precision": 10,
+        "scale": 2
+      },
+      "progressPct": {
+        "precision": 5,
         "scale": 2
       }
     },
@@ -9218,6 +9680,12 @@
         "scale": 2
       },
       "pricePerPerson": {
+        "precision": 10,
+        "scale": 2
+      }
+    },
+    "MenuDish": {
+      "priceOverride": {
         "precision": 10,
         "scale": 2
       }
@@ -9302,10 +9770,18 @@
       "totalCost": {
         "precision": 10,
         "scale": 2
+      },
+      "estimatedCost": {
+        "precision": 10,
+        "scale": 2
       }
     },
     "FacilityAsset": {
       "purchaseCost": {
+        "precision": 12,
+        "scale": 2
+      },
+      "currentValue": {
         "precision": 12,
         "scale": 2
       }
@@ -9574,10 +10050,22 @@
       "netPay": {
         "precision": 10,
         "scale": 2
+      },
+      "totalDeductions": {
+        "precision": 10,
+        "scale": 2
+      },
+      "hoursWorked": {
+        "precision": 6,
+        "scale": 2
       }
     },
     "TipPool": {
       "totalTips": {
+        "precision": 10,
+        "scale": 2
+      },
+      "distributedAmount": {
         "precision": 10,
         "scale": 2
       }
@@ -9640,6 +10128,10 @@
     },
     "TimeOffRequest": {
       "hours": {
+        "precision": 6,
+        "scale": 2
+      },
+      "balanceSnapshot": {
         "precision": 6,
         "scale": 2
       }
