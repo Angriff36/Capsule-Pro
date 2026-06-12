@@ -1,0 +1,7 @@
+# Only the queryable graph, the report, and the incremental-update index are
+# tracked. Cache, viz, cost log, and machine-specific dotfiles stay local.
+*
+!.gitignore
+!graph.json
+!GRAPH_REPORT.md
+!manifest.json
