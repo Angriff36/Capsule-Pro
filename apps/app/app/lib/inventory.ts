@@ -2,8 +2,6 @@
 
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
-  listInventoryItems as _listInventoryItems,
-  getInventoryItem as _getInventoryItem,
   inventoryItemCreate,
   inventoryItemUpdate,
   inventoryItemSoftDelete,
@@ -153,26 +151,39 @@ export async function listInventoryItems(params: {
   page?: number;
   limit?: number;
 }): Promise<InventoryItemListResponse> {
-  const query: Record<string, string | number> = {};
-  if (params.search) query.search = params.search;
-  if (params.category) query.category = params.category;
-  if (params.supplierId) query.supplier_id = params.supplierId;
-  if (params.stockStatus) query.stock_status = params.stockStatus;
-  if (params.fsaStatus) query.fsa_status = params.fsaStatus;
-  if (params.tags?.length) query.tags = params.tags.join(",");
-  if (params.page) query.page = params.page;
-  if (params.limit) query.limit = params.limit;
+  // NOTE: Keeping apiFetch — /api/inventory/items response shape (snake_case +
+  // computed stock_status/total_value + server-side filters/pagination) differs
+  // from generated listInventoryItems (/api/kitchen/inventory/list raw rows).
+  const searchParams = new URLSearchParams();
+  if (params.search) searchParams.set("search", params.search);
+  if (params.category) searchParams.set("category", params.category);
+  if (params.supplierId) searchParams.set("supplier_id", params.supplierId);
+  if (params.stockStatus) searchParams.set("stock_status", params.stockStatus);
+  if (params.fsaStatus) searchParams.set("fsa_status", params.fsaStatus);
+  if (params.tags?.length) searchParams.set("tags", params.tags.join(","));
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
 
-  return _listInventoryItems(query) as unknown as Promise<InventoryItemListResponse>;
+  const response = await apiFetch(`/api/inventory/items?${searchParams.toString()}`);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to list inventory items");
+  }
+  return response.json();
 }
 
 // Get a single inventory item by ID
 export async function getInventoryItem(
   itemId: string
 ): Promise<InventoryItemWithStatus> {
-  const result = await _getInventoryItem(itemId);
-  if (!result) throw new Error("Failed to get inventory item");
-  return result as unknown as InventoryItemWithStatus;
+  // NOTE: Keeping apiFetch — /api/inventory/items/[id] returns the computed
+  // InventoryItemWithStatus shape; generated getInventoryItem does not.
+  const response = await apiFetch(`/api/inventory/items/${itemId}`);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to get inventory item");
+  }
+  return response.json();
 }
 
 // Create a new inventory item
