@@ -41,7 +41,7 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
-import { useReducer } from "react";
+import { Fragment, useReducer } from "react";
 
 // Types for the multi-location dashboard data
 interface LocationMetricBreakdown {
@@ -795,10 +795,9 @@ function LocationComparisonSection({
                   </TableRow>
                 ) : (
                   initialData.locationComparison.map((location) => (
-                    <>
+                    <Fragment key={location.locationId}>
                       <TableRow
                         className="cursor-pointer hover:bg-muted/50"
-                        key={location.locationId}
                         onClick={() =>
                           dispatch({
                             type: "SET_EXPANDED_LOCATION",
@@ -885,7 +884,7 @@ function LocationComparisonSection({
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   ))
                 )}
               </TableBody>

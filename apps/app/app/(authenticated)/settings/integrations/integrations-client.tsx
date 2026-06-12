@@ -110,12 +110,13 @@ interface NowstaConfigResponse {
 interface NowstaStatus {
   configured: boolean;
   syncEnabled: boolean;
-  autoSyncInterval: number;
+  // Absent in the not-configured payload; lastSync/statistics are null until first sync
+  autoSyncInterval?: number;
   lastSync: {
     at: string | null;
     status: string | null;
     error: string | null;
-  };
+  } | null;
   statistics: {
     employeeMappings: {
       total: number;
@@ -133,7 +134,7 @@ interface NowstaStatus {
       error: string;
       at: string;
     }>;
-  };
+  } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -908,7 +909,7 @@ function GoodShuffleIntegration() {
 function NowstaStatistics({
   statistics,
 }: {
-  statistics: NowstaStatus["statistics"];
+  statistics: NonNullable<NowstaStatus["statistics"]>;
 }) {
   return (
     <>
@@ -973,7 +974,7 @@ function NowstaStatistics({
 function NowstaRecentErrors({
   errors,
 }: {
-  errors: NowstaStatus["statistics"]["recentErrors"];
+  errors: NonNullable<NowstaStatus["statistics"]>["recentErrors"];
 }) {
   return (
     <div>
@@ -1029,12 +1030,12 @@ function NowstaStatusCard({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Sync Status</p>
-                {syncStatusBadge(status.lastSync.status)}
+                {syncStatusBadge(status.lastSync?.status)}
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Last Sync</p>
                 <p className="text-sm font-medium">
-                  {formatDate(status.lastSync.at)}
+                  {formatDate(status.lastSync?.at)}
                 </p>
               </div>
               <div className="space-y-1">
@@ -1042,12 +1043,12 @@ function NowstaStatusCard({
                   Auto Sync Interval
                 </p>
                 <p className="text-sm font-medium">
-                  {status.autoSyncInterval} minutes
+                  {status.autoSyncInterval ?? "—"} minutes
                 </p>
               </div>
             </div>
 
-            {status.lastSync.error && (
+            {status.lastSync?.error && (
               <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3">
                 <p className="text-sm text-destructive">
                   {status.lastSync.error}

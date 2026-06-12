@@ -234,7 +234,8 @@ export const createEvent = async (
         eventNumber: "",
         title: ed.title ?? "",
         eventType: ed.eventType ?? "",
-        eventDate: ed.eventDate ?? "",
+        // Epoch ms: the Manifest datetime contract (ISO strings rejected by pre-coercion runtimes)
+        eventDate: ed.eventDate.getTime(),
         guestCount: ed.guestCount ?? 1,
         venueName: ed.venueName ?? "",
         venueAddress: ed.venueAddress ?? "",
@@ -315,7 +316,8 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
       eventNumber: data.eventNumber ?? existing?.eventNumber ?? "",
       title: ed.title ?? "",
       eventType: ed.eventType ?? "",
-      eventDate: ed.eventDate ?? "",
+      // Epoch ms: the Manifest datetime contract (ISO strings rejected by pre-coercion runtimes)
+      eventDate: ed.eventDate.getTime(),
       guestCount: ed.guestCount ?? 0,
       venueName: ed.venueName ?? "",
       venueAddress: ed.venueAddress ?? "",
@@ -373,7 +375,8 @@ export const assignClientToEvent = async (
       eventNumber: existing.eventNumber ?? "",
       title: existing.title ?? "",
       eventType: existing.eventType ?? "",
-      eventDate: existing.eventDate ?? "",
+      // Epoch ms: the Manifest datetime contract (ISO strings rejected by pre-coercion runtimes)
+      eventDate: existing.eventDate ? existing.eventDate.getTime() : "",
       guestCount: existing.guestCount ?? 0,
       venueName: existing.venueName ?? "",
       venueAddress: existing.venueAddress ?? "",

@@ -1377,7 +1377,8 @@ export const importEventFromPdf = async ({
       eventNumber: mergedEvent.number || "",
       title,
       eventType: mergedEvent.serviceStyle?.trim() || "catering",
-      eventDate: eventDate.toISOString(),
+      // Epoch ms: the Manifest datetime contract (ISO strings rejected by pre-coercion runtimes)
+      eventDate: eventDate.getTime(),
       guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 1,
       venueName: mergedEvent.venue?.name || "",
       venueAddress: mergedEvent.venue?.address || "",
