@@ -32,14 +32,8 @@ entity CommandBoard {
   command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
     guard name != null and name != "" "Board name is required"
 
-    mutate name = name
-    mutate description = description
-    mutate eventId = eventId
-    mutate isTemplate = isTemplate
-    mutate tags = tags
-    mutate autoPopulate = autoPopulate
-    mutate scope = scope
-
+    // Auto-create seed persists the full command body in one INSERT; per-field
+    // `mutate x = x` echoes were redundant SELECT+UPDATE round-trips.
     emit CommandBoardCreated
   }
 
@@ -135,23 +129,11 @@ entity CommandBoardCard {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
 
-    mutate boardId = boardId
-    mutate title = title
-    mutate content = content
-    mutate cardType = cardType
-    mutate status = status
-    mutate positionX = positionX
-    mutate positionY = positionY
-    mutate width = width
-    mutate height = height
-    mutate color = color
-    mutate metadata = metadata
-    mutate groupId = groupId
-    mutate entityId = entityId
-    mutate entityType = entityType
-    mutate version = 0
-    mutate zIndex = 0
-
+    // The engine's auto-create seed (shouldAutoCreateInstance) persists the full
+    // command body in ONE INSERT. Per-field `mutate x = x` echoes are redundant —
+    // each one costs a separate SELECT+UPDATE round-trip (was ~70 queries / ~8s
+    // per create on a remote DB). Defaults (version/zIndex = 0) come from the
+    // property declarations above. Same pattern as the AdminTask.create fix.
     emit CommandBoardCardCreated
   }
 
@@ -243,16 +225,8 @@ entity CommandBoardGroup {
     guard boardId != null and boardId != "" "Board ID is required"
     guard name != null and name != "" "Group name is required"
 
-    mutate boardId = boardId
-    mutate name = name
-    mutate color = color
-    mutate positionX = positionX
-    mutate positionY = positionY
-    mutate width = width
-    mutate height = height
-    mutate collapsed = false
-    mutate zIndex = 0
-
+    // Auto-create seed persists the full body + property defaults (collapsed,
+    // zIndex) in one INSERT; per-field echoes were redundant round-trips.
     emit CommandBoardGroupCreated
   }
 
@@ -313,13 +287,8 @@ entity CommandBoardConnection {
     guard toCardId != null and toCardId != "" "Target card ID is required"
     guard fromCardId != toCardId "Cannot connect a card to itself"
 
-    mutate boardId = boardId
-    mutate fromCardId = fromCardId
-    mutate toCardId = toCardId
-    mutate relationshipType = relationshipType
-    mutate label = label
-    mutate visible = true
-
+    // Auto-create seed persists the full body + property defaults (visible) in
+    // one INSERT; per-field echoes were redundant round-trips.
     emit CommandBoardConnectionCreated
   }
 
@@ -363,15 +332,8 @@ entity CommandBoardLayout {
     guard userId != null and userId != "" "User ID is required"
     guard name != null and name != "" "Layout name is required"
 
-    mutate boardId = boardId
-    mutate userId = userId
-    mutate name = name
-    mutate viewport = viewport
-    mutate visibleCards = visibleCards
-    mutate gridSize = gridSize
-    mutate showGrid = showGrid
-    mutate snapToGrid = snapToGrid
-
+    // Auto-create seed persists the full command body in one INSERT; per-field
+    // `mutate x = x` echoes were redundant SELECT+UPDATE round-trips.
     emit CommandBoardLayoutCreated
   }
 

@@ -1,3 +1,21 @@
+# ⚠️ "BOARD" DISAMBIGUATION — READ BEFORE TOUCHING ANYTHING WITH "BOARD" IN THE NAME
+
+Several UNRELATED features have "board" in the name. Agents repeatedly grab the WRONG
+one (lazy substring match). When the user OR code says "board", STOP and identify WHICH
+of these it is — never assume the nearest match:
+
+| User's word | What it is | Entities / source | Where |
+|---|---|---|---|
+| **event tree** | the LIVE per-event card tree | `CommandBoard`, `CommandBoardCard`/`Group`/`Connection`/`Layout` (`tenant_events`) | `/events/{id}?tab=board` · `manifest/source/events/command-board-rules.manifest` |
+| **command grid** | OLD deprecated grid + Ably realtime board, to be revived as the **global board** (future work) | (deprecated — NOT the `CommandBoard*` entities) | — |
+| **battle board** | the per-event battle board | `BattleBoard`, `BoardProjection`, `BoardAnnotation` | `/events/battle-boards/…` |
+| **kanban** | the admin task kanban | `AdminTask*`, `BoardConfig` (`tenant_admin`) | admin tasks |
+
+RULES:
+1. `CommandBoard*` = the **event tree**. It is NOT the battle board, NOT the kanban, NOT the (deprecated) command grid.
+2. Never resolve "board" by proximity. Confirm against this table first.
+3. If the user's intent is ambiguous, ASK which board — do not guess.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # Next.js: ALWAYS read bundled docs before coding

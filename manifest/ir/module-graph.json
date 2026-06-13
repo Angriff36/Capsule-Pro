@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-12T20:01:50.095Z",
-  "contentHash": "29acdfce882f3fc4d89f9208b80931928eede92a4fa0fa9abfa6175c6e061c79",
+  "compiledAt": "2026-06-13T16:05:20.294Z",
+  "contentHash": "32aaa391a141f035ea25f7677d564684249796ddc0e87aabb55742cf23da638f",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",

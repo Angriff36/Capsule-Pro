@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0bacd0b7b103fb095f6290856283daf61fd3a53e0e25a7f1f412bd23bd638237",
-    "irHash": "5292bb1cdcbfaa270545cadfdb84f6431af8bbc1696ced3a2169e1ff788c22a4",
+    "contentHash": "0a9c438f5d1c3b46b658f6c0e8cacacc0a0a9fdcbc92ff31cd3e871e8bb85fd3",
+    "irHash": "e1019d0be1345a20d579e85e23945a8fc329c0030f2cbb6b6b4cd52f128116ca",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-12T20:01:49.923Z"
+    "compiledAt": "2026-06-13T16:16:58.656Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -3355,62 +3355,6 @@
               "value": "Board name is required"
             }
           }
-        },
-        {
-          "kind": "mutate",
-          "target": "name",
-          "expression": {
-            "kind": "identifier",
-            "name": "name"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "description",
-          "expression": {
-            "kind": "identifier",
-            "name": "description"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "eventId",
-          "expression": {
-            "kind": "identifier",
-            "name": "eventId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isTemplate",
-          "expression": {
-            "kind": "identifier",
-            "name": "isTemplate"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "tags",
-          "expression": {
-            "kind": "identifier",
-            "name": "tags"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "autoPopulate",
-          "expression": {
-            "kind": "identifier",
-            "name": "autoPopulate"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "scope",
-          "expression": {
-            "kind": "identifier",
-            "name": "scope"
-          }
         }
       ],
       "emits": [
@@ -3982,140 +3926,6 @@
             "value": {
               "kind": "string",
               "value": "Card title is required"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "boardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "boardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "title",
-          "expression": {
-            "kind": "identifier",
-            "name": "title"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "content",
-          "expression": {
-            "kind": "identifier",
-            "name": "content"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "cardType",
-          "expression": {
-            "kind": "identifier",
-            "name": "cardType"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "identifier",
-            "name": "status"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "positionX",
-          "expression": {
-            "kind": "identifier",
-            "name": "positionX"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "positionY",
-          "expression": {
-            "kind": "identifier",
-            "name": "positionY"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "width",
-          "expression": {
-            "kind": "identifier",
-            "name": "width"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "height",
-          "expression": {
-            "kind": "identifier",
-            "name": "height"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "color",
-          "expression": {
-            "kind": "identifier",
-            "name": "color"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "metadata",
-          "expression": {
-            "kind": "identifier",
-            "name": "metadata"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "groupId",
-          "expression": {
-            "kind": "identifier",
-            "name": "groupId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "entityId",
-          "expression": {
-            "kind": "identifier",
-            "name": "entityId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "entityType",
-          "expression": {
-            "kind": "identifier",
-            "name": "entityType"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "version",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "zIndex",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
             }
           }
         }
@@ -4877,84 +4687,6 @@
               "value": "Group name is required"
             }
           }
-        },
-        {
-          "kind": "mutate",
-          "target": "boardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "boardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "name",
-          "expression": {
-            "kind": "identifier",
-            "name": "name"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "color",
-          "expression": {
-            "kind": "identifier",
-            "name": "color"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "positionX",
-          "expression": {
-            "kind": "identifier",
-            "name": "positionX"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "positionY",
-          "expression": {
-            "kind": "identifier",
-            "name": "positionY"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "width",
-          "expression": {
-            "kind": "identifier",
-            "name": "width"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "height",
-          "expression": {
-            "kind": "identifier",
-            "name": "height"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "collapsed",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": false
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "zIndex",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
         }
       ],
       "emits": [
@@ -5400,57 +5132,6 @@
               "value": "Cannot connect a card to itself"
             }
           }
-        },
-        {
-          "kind": "mutate",
-          "target": "boardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "boardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "fromCardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "fromCardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "toCardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "toCardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "relationshipType",
-          "expression": {
-            "kind": "identifier",
-            "name": "relationshipType"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "label",
-          "expression": {
-            "kind": "identifier",
-            "name": "label"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "visible",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
         }
       ],
       "emits": [
@@ -5729,70 +5410,6 @@
               "kind": "string",
               "value": "Layout name is required"
             }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "boardId",
-          "expression": {
-            "kind": "identifier",
-            "name": "boardId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "userId",
-          "expression": {
-            "kind": "identifier",
-            "name": "userId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "name",
-          "expression": {
-            "kind": "identifier",
-            "name": "name"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "viewport",
-          "expression": {
-            "kind": "identifier",
-            "name": "viewport"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "visibleCards",
-          "expression": {
-            "kind": "identifier",
-            "name": "visibleCards"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "gridSize",
-          "expression": {
-            "kind": "identifier",
-            "name": "gridSize"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "showGrid",
-          "expression": {
-            "kind": "identifier",
-            "name": "showGrid"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "snapToGrid",
-          "expression": {
-            "kind": "identifier",
-            "name": "snapToGrid"
           }
         }
       ],
