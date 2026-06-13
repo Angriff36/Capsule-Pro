@@ -55,6 +55,8 @@ const exampleWarnings: Array<
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
+    escalatedAt: null,
+    escalatedTo: null,
     dishName: "Pad Thai with Crushed Peanuts",
     affectedGuestDetails: [
       { id: "guest-1", name: "Sarah Johnson", email: "sarah.j@example.com" },
@@ -80,6 +82,8 @@ const exampleWarnings: Array<
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
+    escalatedAt: null,
+    escalatedTo: null,
     dishName: "Beef Wellington",
     affectedGuestDetails: [
       { id: "guest-3", name: "Emma Davis", email: "emma.d@example.com" },
@@ -104,6 +108,8 @@ const exampleWarnings: Array<
     createdAt: new Date(Date.now() - 172_800_000),
     updatedAt: new Date(Date.now() - 86_400_000),
     deletedAt: null,
+    escalatedAt: null,
+    escalatedTo: null,
     dishName: "Grilled Salmon with Shrimp Scampi",
     affectedGuestDetails: [
       { id: "guest-4", name: "John Smith" },
@@ -130,6 +136,8 @@ const exampleWarnings: Array<
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
+    escalatedAt: null,
+    escalatedTo: null,
     dishName: undefined,
     affectedGuestDetails: [
       { id: "guest-7", name: "Ahmed Hassan", email: "ahassan@example.com" },
@@ -154,6 +162,8 @@ const exampleWarnings: Array<
     createdAt: new Date(Date.now() - 259_200_000),
     updatedAt: new Date(),
     deletedAt: null,
+    escalatedAt: null,
+    escalatedTo: null,
     dishName: "Crème Brûlée",
     affectedGuestDetails: [
       { id: "guest-8", name: "Jennifer Lee", email: "jlee@example.com" },
