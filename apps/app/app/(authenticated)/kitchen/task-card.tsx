@@ -457,7 +457,7 @@ export function TaskCard({
           {(task.status === "open" || task.status === "pending") &&
             !userClaim && (
               <Button
-                className="w-full gap-2 bg-ink text-white hover:bg-ink/90"
+                className="w-full gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90"
                 disabled={isLoading}
                 onClick={handleClaim}
                 size="sm"

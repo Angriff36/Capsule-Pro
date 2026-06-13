@@ -1,0 +1,42 @@
+/*
+ * Sanity ("Saniti") design-language PREVIEW — scoped to the Kitchen production board.
+ *
+ * Generated from design-sanity.md (`npx getdesign add sanity`): a dark-first,
+ * editorial content-platform system — near-black canvas, white ink, hairline
+ * borders, and a single scarce coral-red accent. This page is the only surface
+ * opted in so the look can be evaluated without touching the rest of the app.
+ *
+ * Mechanism: the design-system utilities (`bg-canvas`, `text-ink`,
+ * `border-hairline`, `bg-card`, …) all resolve through CSS custom properties via
+ * Tailwind's `@theme inline`. Remapping the `--ds-*` raw tokens (and the few
+ * semantic vars not derived from them) on this subtree re-themes the whole page
+ * with no per-element class churn. Scope is held to the production board page
+ * only: `:has()` matches the shared PageCanvas shell solely when it contains our
+ * opted-in wrapper, so sibling /kitchen/** routes are unaffected.
+ */
+
+[data-design="sanity"],
+[data-slot="page-canvas"]:has([data-design="sanity"]) {
+  /* --- raw palette → Sanity tokens (design-sanity.md `colors:`) --- */
+  --ds-canvas: #0b0b0b; /* canvas — near-black reading surface */
+  --ds-ink: #ededed; /* ink/body text inverted for the dark canvas */
+  --ds-primary: #ffffff; /* white pill primary (button-primary) */
+  --ds-soft-stone: #212121; /* canvas-soft — card / panel surface */
+  --ds-hairline: #353535; /* hairline-soft — 1px borders on dark */
+  --ds-border-light: #353535;
+  --ds-card-border: #353535;
+  --ds-input-border: #353535;
+  --ds-body-muted: #b9b9b9; /* ash — body text on dark */
+  --ds-muted: #797979; /* mute — mid-grey captions */
+  --ds-slate: #b9b9b9;
+  --ds-action-blue: #55beff; /* link-blue-soft — links on dark */
+  --ds-pale-blue: #0e2a3a; /* dark info wash (alert-banner surface) */
+  --ds-coral: #f36458; /* brand — the single scarce coral accent */
+  --ds-coral-soft: #f36458;
+
+  /* --- semantic vars not derived from the tokens above --- */
+  --success: #37cd84; /* Sanity success green */
+  --ring: #0052ef; /* link-blue focus ring */
+
+  color-scheme: dark;
+}

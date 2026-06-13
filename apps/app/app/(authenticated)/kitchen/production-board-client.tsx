@@ -416,7 +416,7 @@ export function ProductionBoardClient({
                 )}
               </Button>
               <Button
-                className="gap-2 bg-ink text-white hover:bg-ink/90"
+                className="gap-2 rounded-full bg-coral text-background hover:bg-coral/90"
                 onClick={handleCreateTask}
               >
                 <Plus className="h-4 w-4" />
@@ -474,7 +474,7 @@ export function ProductionBoardClient({
             {myTasks.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-medium text-sm text-muted-foreground">
+                  <h2 className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
                     My Tasks
                   </h2>
                   <Badge variant="secondary">{myTasks.length} assigned</Badge>
@@ -493,7 +493,7 @@ export function ProductionBoardClient({
 
             {/* Kanban Board */}
             <section className="space-y-4">
-              <h2 className="font-medium text-sm text-muted-foreground">
+              <h2 className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
                 Task Board
               </h2>
               <div className="grid gap-4 lg:grid-cols-3">
@@ -566,7 +566,7 @@ export function ProductionBoardClient({
                         optimize your kitchen operations.
                       </p>
                       <Button
-                        className="w-full bg-ink text-white hover:bg-ink/90"
+                        className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90"
                         onClick={() => setShowSuggestions(true)}
                         size="sm"
                       >
