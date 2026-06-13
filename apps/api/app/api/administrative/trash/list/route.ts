@@ -691,7 +691,7 @@ export async function GET(request: NextRequest) {
             [tenantField]: true,
             [deletedAtField]: true,
           },
-        })) as Array<Record<string, unknown>>;
+        })) as Record<string, unknown>[];
 
         for (const result of results) {
           items.push({

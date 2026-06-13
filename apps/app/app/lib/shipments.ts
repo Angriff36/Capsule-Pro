@@ -331,7 +331,7 @@ export async function listShipments(
   const data = await _listShipments(query);
 
   // Add summary metadata — cast through unknown since generated Shipment type differs from local
-  const rawItems = data.data as unknown as Array<Record<string, unknown>>;
+  const rawItems = data.data as unknown as Record<string, unknown>[];
   const summary = {
     totalShipments: data.pagination.total,
     byStatus: rawItems.reduce(

@@ -187,7 +187,7 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
       toast.success("Proposal sent successfully");
       setSendDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to send proposal");
     } finally {
       setIsSending(false);
@@ -207,7 +207,7 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
 
       toast.success("Magic link refreshed");
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh magic link");
     }
   }, [proposal.id, router]);

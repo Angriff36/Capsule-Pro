@@ -513,7 +513,7 @@ describe("Global Search API — GET /api/search", () => {
 
       const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
         where: {
-          AND?: Array<{ OR: Array<Record<string, unknown>> }>;
+          AND?: Array<{ OR: Record<string, unknown>[] }>;
           OR?: unknown[];
         };
       };

@@ -203,7 +203,7 @@ function postRequest(path: string, body: Record<string, unknown> = {}) {
 
 function mockCommandSuccess(
   result: Record<string, unknown>,
-  events: Array<Record<string, unknown>> = []
+  events: Record<string, unknown>[] = []
 ) {
   vi.mocked(runManifestCommand).mockResolvedValue(
     NextResponse.json({

@@ -517,7 +517,7 @@ async function analyzeEntityDependencies(
           [deletedAtField]: true,
         },
         take: 50, // Limit results
-      })) as Array<Record<string, unknown>>;
+      })) as Record<string, unknown>[];
 
       for (const record of records) {
         const isDeleted = record[deletedAtField] !== null;

@@ -44,7 +44,7 @@ export interface MenuManifestActionResult {
   isActive?: boolean;
   menuId?: string;
   name?: string;
-  overrideRequests?: Array<unknown>;
+  overrideRequests?: unknown[];
   redirectUrl?: string;
   success: boolean;
 }

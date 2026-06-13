@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
   // Group data by time period
   const trends = groupWasteEntriesByPeriod(
-    entries as Array<WasteEntryRow>,
+    entries as WasteEntryRow[],
     groupBy
   );
 
@@ -64,11 +64,11 @@ export async function GET(request: NextRequest) {
 
   // Analyze waste reasons
   const { topReasons, reasonCounts } = await analyzeWasteReasons(
-    entries as Array<WasteEntryRow>
+    entries as WasteEntryRow[]
   );
 
   // Analyze wasted items
-  const topItems = analyzeWastedItems(entries as Array<WasteEntryRow>);
+  const topItems = analyzeWastedItems(entries as WasteEntryRow[]);
 
   // Calculate reduction opportunities
   const reductionOpportunities = await calculateReductionOpportunities(

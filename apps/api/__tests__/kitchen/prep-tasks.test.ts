@@ -269,7 +269,7 @@ describe("Prep Tasks API", () => {
       const ands = findManyAndClauses();
       const orClause = ands.find(
         (c) => (c as Record<string, unknown>).OR !== undefined
-      ) as { OR: Array<Record<string, { contains: string; mode: string }>> };
+      ) as { OR: Record<string, { contains: string; mode: string }>[] };
       expect(orClause).toBeDefined();
       expect(orClause.OR[0].name.contains).toBe("onion");
       expect(orClause.OR[0].name.mode).toBe("insensitive");
@@ -291,7 +291,7 @@ describe("Prep Tasks API", () => {
           return false;
         }
         return inner.some((x) => (x as Record<string, unknown>).dueByDate);
-      }) as { AND: Array<Record<string, unknown>> };
+      }) as { AND: Record<string, unknown>[] };
 
       expect(overdueClause).toBeDefined();
       const statusClause = overdueClause.AND.find(

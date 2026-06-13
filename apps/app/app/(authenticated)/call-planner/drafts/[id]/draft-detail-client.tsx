@@ -249,7 +249,7 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
       }));
 
       toast.success("Draft saved successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save draft");
     } finally {
       setIsSaving(false);
@@ -283,7 +283,7 @@ export function DraftDetailClient({ draft }: DraftDetailClientProps) {
 
       setProposalDialogOpen(false);
       router.push(`/call-planner/proposals/${data.proposal.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate proposal");
     } finally {
       setIsGenerating(false);

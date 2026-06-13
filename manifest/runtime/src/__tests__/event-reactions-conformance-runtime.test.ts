@@ -75,7 +75,7 @@ function makeProvider(): (entity: string) => Store {
 
 describe("Reaction conformance: EventCreated → BattleBoard.create", () => {
   it("the compiled IR carries the EventCreated reaction", () => {
-    const reactions: Array<Record<string, unknown>> = ir.reactions ?? [];
+    const reactions: Record<string, unknown>[] = ir.reactions ?? [];
     const created = reactions.find(
       (r) =>
         r.event === "EventCreated" &&
@@ -141,9 +141,7 @@ describe("Reaction conformance: EventCreated → BattleBoard.create", () => {
       : null;
     expect(createdEvent?.id).toBeTruthy();
 
-    const boards = (await provider("BattleBoard").getAll()) as Array<
-      Record<string, unknown>
-    >;
+    const boards = (await provider("BattleBoard").getAll()) as Record<string, unknown>[];
     expect(boards.length).toBe(1);
     expect(boards[0]?.eventId).toBe(createdEvent?.id);
     expect(boards[0]?.boardName).toBe("Reaction Board Test - Battle Board");

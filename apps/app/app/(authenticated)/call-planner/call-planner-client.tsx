@@ -172,7 +172,7 @@ export function CallPlannerClient({
         toast.success("Draft deleted");
 
         setDrafts((prev) => prev.filter((d) => d.id !== draftId));
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete draft");
       }
     },
@@ -196,7 +196,7 @@ export function CallPlannerClient({
             : null,
         }))
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh drafts");
     }
   }, []);

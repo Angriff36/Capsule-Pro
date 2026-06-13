@@ -106,7 +106,7 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
   });
 
   it("maps each Kanban column 1:1 to the command that owns it", async () => {
-    const cases: Array<[string, string]> = [
+    const cases: [string, string][] = [
       ["backlog", "moveToBacklog"],
       ["in_progress", "startProgress"],
       ["review", "submitForReview"],

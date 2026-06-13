@@ -178,7 +178,7 @@ export function determineEventStage(event: {
   createdAt?: Date;
   clientId?: string;
   venueName?: string;
-  eventDishes?: Array<unknown>;
+  eventDishes?: unknown[];
   prepTasks?: Array<{ status?: string }>;
   status?: string;
   eventDate?: Date;

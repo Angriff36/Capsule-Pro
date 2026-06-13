@@ -174,7 +174,7 @@ export function validateCreateInvoiceRequest(
   // Validate optional line items
   if (data.lineItems !== undefined && data.lineItems !== null) {
     invariant(Array.isArray(data.lineItems), "lineItems must be an array");
-    for (const item of data.lineItems as Array<unknown>) {
+    for (const item of data.lineItems as unknown[]) {
       invariant(
         item && typeof item === "object",
         "Each line item must be an object"

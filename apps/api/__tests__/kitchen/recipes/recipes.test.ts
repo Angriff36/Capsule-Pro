@@ -249,9 +249,7 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(makeRequest("/api/kitchen/recipes?search=Caesar") as Request);
 
-      const ands = rootFindManyArg().where.AND as Array<
-        Record<string, unknown>
-      >;
+      const ands = rootFindManyArg().where.AND as Record<string, unknown>[];
       const orClause = ands.find((c) => "OR" in c) as { OR: unknown[] };
       expect(orClause).toBeDefined();
       expect(orClause.OR).toEqual([
