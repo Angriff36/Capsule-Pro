@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
     const date = searchParams.get("date");
-    const limit = Number.parseInt(searchParams.get("limit") || "50");
+    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
 
     const where: any = { tenantId, deletedAt: null };
     if (status) {

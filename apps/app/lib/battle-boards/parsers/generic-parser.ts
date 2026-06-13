@@ -28,7 +28,7 @@ export function parseGenericPdf(lines: string[]): ParsedDocumentResult {
       } else if (key.includes("date") && !key.includes("update")) {
         try {
           const d = new Date(value);
-          if (!isNaN(d.getTime())) {
+          if (!Number.isNaN(d.getTime())) {
             meta.event_date = d.toISOString().split("T")[0];
           }
         } catch {
@@ -44,7 +44,7 @@ export function parseGenericPdf(lines: string[]): ParsedDocumentResult {
         key.includes("attendee")
       ) {
         const num = Number.parseInt(value, 10);
-        if (!isNaN(num)) {
+        if (!Number.isNaN(num)) {
           meta.headcount = num;
         }
       } else if (key.includes("style") || key.includes("service")) {

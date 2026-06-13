@@ -23,7 +23,7 @@ export default function GuestSlider({ value, onChange }: GuestSliderProps) {
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-stone-200 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-stone-800 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
         max={MARKS.length - 1}
         min={0}
-        onChange={(e) => onChange(MARKS[Number.parseInt(e.target.value)])}
+        onChange={(e) => onChange(MARKS[Number.parseInt(e.target.value, 10)])}
         type="range"
         value={activeIndex}
       />

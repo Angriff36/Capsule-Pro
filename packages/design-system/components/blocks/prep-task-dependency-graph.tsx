@@ -514,7 +514,7 @@ export function CreateDependencyForm({
           onChange={(e) =>
             setFormData({
               ...formData,
-              lagMinutes: Number.parseInt(e.target.value) || 0,
+              lagMinutes: Number.parseInt(e.target.value, 10) || 0,
             })
           }
           type="number"

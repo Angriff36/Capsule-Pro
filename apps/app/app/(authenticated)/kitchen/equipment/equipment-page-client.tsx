@@ -232,7 +232,7 @@ export function EquipmentPageClient() {
         manufacturer: formData.manufacturer || undefined,
         model: formData.model || undefined,
         maintenanceIntervalDays:
-          Number.parseInt(formData.maintenanceIntervalDays) || 90,
+          Number.parseInt(formData.maintenanceIntervalDays, 10) || 90,
         maxUsageHours: Number.parseFloat(formData.maxUsageHours) || 1000,
         notes: formData.notes || undefined,
       };

@@ -202,7 +202,7 @@ export default function VehiclesPage() {
           id: editing.id,
           make: form.make,
           model: form.model,
-          year: form.year ? Number.parseInt(form.year) : undefined,
+          year: form.year ? Number.parseInt(form.year, 10) : undefined,
           plateNumber: form.plateNumber || undefined,
           vin: form.vin || undefined,
           capacityWeight: form.capacityWeight

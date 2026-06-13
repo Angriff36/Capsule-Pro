@@ -276,8 +276,8 @@ function parseModelBlock(body) {
       const pm = field.db.match(RE_DECIMAL);
       if (pm) {
         result.precision[field.name] = {
-          precision: Number.parseInt(pm[1]),
-          scale: Number.parseInt(pm[2]),
+          precision: Number.parseInt(pm[1], 10),
+          scale: Number.parseInt(pm[2], 10),
         };
       }
     }

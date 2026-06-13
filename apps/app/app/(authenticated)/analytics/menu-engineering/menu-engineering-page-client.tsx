@@ -161,7 +161,7 @@ const MetricCard = ({
 }: MetricCardProps) => {
   const formatValue = (val: string | number) => {
     const numValue = typeof val === "string" ? Number.parseFloat(val) : val;
-    if (isNaN(numValue)) {
+    if (Number.isNaN(numValue)) {
       return "N/A";
     }
 

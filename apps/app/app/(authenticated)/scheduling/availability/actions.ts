@@ -195,7 +195,7 @@ export async function createAvailability(formData: FormData) {
   const effectiveUntil = formData.get("effectiveUntil") as string | null;
 
   // Validate required fields
-  if (!(employeeId && !isNaN(dayOfWeek) && startTime && endTime)) {
+  if (!(employeeId && !Number.isNaN(dayOfWeek) && startTime && endTime)) {
     throw new Error(
       "Employee, day of week, start time, and end time are required"
     );

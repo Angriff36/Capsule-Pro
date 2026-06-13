@@ -42,7 +42,7 @@ export function createEnvFlagProvider(): (name: string) => unknown {
     }
 
     const num = Number(value);
-    if (!isNaN(num) && value.trim() !== "") {
+    if (!Number.isNaN(num) && value.trim() !== "") {
       return num;
     }
 

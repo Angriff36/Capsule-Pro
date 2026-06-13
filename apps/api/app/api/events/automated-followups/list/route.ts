@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
     const status = searchParams.get("status");
-    const limit = Number.parseInt(searchParams.get("limit") || "50");
-    const offset = Number.parseInt(searchParams.get("offset") || "0");
+    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+    const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
 
     const where: Record<string, unknown> = { tenantId };
     if (eventId) {

@@ -29,7 +29,7 @@ vi.mock("@/lib/pagination", () => ({
       return 50;
     }
     const n = Number.parseInt(v, 10);
-    if (isNaN(n) || n < 1) {
+    if (Number.isNaN(n) || n < 1) {
       return 50;
     }
     return Math.min(n, 200);
@@ -39,7 +39,7 @@ vi.mock("@/lib/pagination", () => ({
       return 0;
     }
     const n = Number.parseInt(v, 10);
-    if (isNaN(n) || n < 0) {
+    if (Number.isNaN(n) || n < 0) {
       return 0;
     }
     return n;

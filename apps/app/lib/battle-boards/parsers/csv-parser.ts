@@ -180,7 +180,7 @@ function parseTime(value: string | undefined): string {
   const [, hourStr, minuteStr, meridiem] = match;
   let hour = Number.parseInt(hourStr, 10);
   const minute = Number.parseInt(minuteStr, 10);
-  if (isNaN(hour) || isNaN(minute)) {
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
     return trimmed;
   }
   if (meridiem) {
@@ -210,7 +210,7 @@ function formatTime12Hour(time24: string): string {
   const [hoursStr, minutesStr] = time24.split(":");
   const hours = Number.parseInt(hoursStr, 10);
   const minutes = Number.parseInt(minutesStr, 10);
-  if (isNaN(hours) || isNaN(minutes)) {
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
     return time24;
   }
   const period = hours >= 12 ? "PM" : "AM";

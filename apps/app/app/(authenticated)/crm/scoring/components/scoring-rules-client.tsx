@@ -566,7 +566,7 @@ export function ScoringRulesClient({
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    points: Number.parseInt(e.target.value) || 0,
+                    points: Number.parseInt(e.target.value, 10) || 0,
                   }))
                 }
                 type="number"
@@ -585,7 +585,7 @@ export function ScoringRulesClient({
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    priority: Number.parseInt(e.target.value) || 0,
+                    priority: Number.parseInt(e.target.value, 10) || 0,
                   }))
                 }
                 type="number"

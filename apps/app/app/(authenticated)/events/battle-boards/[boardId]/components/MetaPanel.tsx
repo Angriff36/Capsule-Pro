@@ -66,7 +66,7 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                 min="0"
                 onChange={(e) =>
-                  update("headcount", Number.parseInt(e.target.value) || 0)
+                  update("headcount", Number.parseInt(e.target.value, 10) || 0)
                 }
                 placeholder="Number of guests"
                 type="number"

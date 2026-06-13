@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
     if (fiscalYear) {
-      where.fiscalYear = Number.parseInt(fiscalYear);
+      where.fiscalYear = Number.parseInt(fiscalYear, 10);
     }
 
     const budgets = await database.procurementBudget.findMany({

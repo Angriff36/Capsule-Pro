@@ -178,7 +178,7 @@ function EditTaskDialog({
                 id="edit-qty"
                 min={1}
                 onChange={(e) =>
-                  setQuantityTotal(Number.parseInt(e.target.value) || 1)
+                  setQuantityTotal(Number.parseInt(e.target.value, 10) || 1)
                 }
                 type="number"
                 value={quantityTotal}
@@ -190,7 +190,7 @@ function EditTaskDialog({
                 id="edit-mins"
                 min={5}
                 onChange={(e) =>
-                  setEstimatedMinutes(Number.parseInt(e.target.value) || 30)
+                  setEstimatedMinutes(Number.parseInt(e.target.value, 10) || 30)
                 }
                 type="number"
                 value={estimatedMinutes}

@@ -127,7 +127,7 @@ export default function AreasPage() {
           areaType: form.areaType,
           floor: form.floor || undefined,
           squareFeet: form.squareFeet
-            ? Number.parseInt(form.squareFeet)
+            ? Number.parseInt(form.squareFeet, 10)
             : undefined,
           description: form.description || undefined,
         });
@@ -140,7 +140,7 @@ export default function AreasPage() {
           areaType: form.areaType,
           floor: form.floor || undefined,
           squareFeet: form.squareFeet
-            ? Number.parseInt(form.squareFeet)
+            ? Number.parseInt(form.squareFeet, 10)
             : undefined,
           description: form.description || undefined,
         });

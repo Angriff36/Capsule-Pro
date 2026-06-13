@@ -205,9 +205,9 @@ export function WasteEntriesClient() {
           ? Number.parseFloat(formData.quantity)
           : undefined,
         reasonId: formData.reasonId
-          ? Number.parseInt(formData.reasonId)
+          ? Number.parseInt(formData.reasonId, 10)
           : undefined,
-        unitId: formData.unitId ? Number.parseInt(formData.unitId) : undefined,
+        unitId: formData.unitId ? Number.parseInt(formData.unitId, 10) : undefined,
         notes: formData.notes || undefined,
       });
 

@@ -150,7 +150,7 @@ export default function BudgetPage() {
     try {
       await budgetCreate({
         ...form,
-        fiscalYear: Number.parseInt(form.fiscalYear),
+        fiscalYear: Number.parseInt(form.fiscalYear, 10),
       });
       setDialogOpen(false);
       setForm({
