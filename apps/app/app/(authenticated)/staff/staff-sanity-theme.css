@@ -1,0 +1,45 @@
+/*
+ * Sanity ("Saniti") design-language PREVIEW — scoped to the Staff landing page.
+ *
+ * Mirrors kitchen/kitchen-sanity-theme.css: a dark-first, editorial
+ * content-platform system (design-sanity.md) — near-black canvas, white ink,
+ * hairline borders, and a single scarce coral-red accent. Only this page opts
+ * in via `data-design="sanity"`, so sibling /staff/** routes are unaffected.
+ *
+ * Mechanism: the page renders through PageCanvas, whose `.editorial-surface-reset`
+ * re-declares the semantic vars (--card / --foreground / --muted-foreground / …)
+ * as `var(--ds-*)` ON the canvas element itself. Because that element sits inside
+ * this opted-in subtree, remapping the raw `--ds-*` tokens below cascades through
+ * those semantic vars into every design-system utility — no per-element churn and
+ * none of the :root indirection pitfalls.
+ */
+[data-design="sanity"],
+[data-slot="page-canvas"]:has([data-design="sanity"]) {
+  /* --- raw palette → Sanity tokens (design-sanity.md `colors:`) --- */
+  --ds-canvas: #0b0b0b; /* canvas — near-black reading surface */
+  --ds-ink: #ededed; /* ink/body text inverted for the dark canvas */
+  --ds-primary: #ffffff; /* white pill primary (button-primary) */
+  --ds-soft-stone: #212121; /* canvas-soft — card / panel surface */
+  --ds-hairline: #353535; /* hairline-soft — 1px borders on dark */
+  --ds-border-light: #353535;
+  --ds-card-border: #353535;
+  --ds-input-border: #353535;
+  --ds-body-muted: #b9b9b9; /* ash — body text on dark */
+  --ds-muted: #797979; /* mute — mid-grey captions */
+  --ds-slate: #b9b9b9;
+  --ds-action-blue: #55beff; /* link-blue-soft — links on dark */
+  --ds-pale-blue: #0e2a3a; /* dark info wash (alert-banner surface) */
+  --ds-coral: #f36458; /* brand — the single scarce coral accent */
+  --ds-coral-soft: #f36458;
+
+  /* dark editorial feature bands (CommandBand hero / metric tiles) — the Sanity
+     system has no forest-green band, so collapse deep-green/navy to near-black. */
+  --ds-deep-green: #161616;
+  --ds-dark-navy: #11151b;
+
+  /* --- semantic vars not derived from the tokens above --- */
+  --success: #37cd84; /* Sanity success green */
+  --ring: #0052ef; /* link-blue focus ring */
+
+  color-scheme: dark;
+}
