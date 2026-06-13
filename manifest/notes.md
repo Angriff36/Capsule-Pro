@@ -1921,3 +1921,21 @@ reverts them — endless churn. Rule: after any blanket lint fix, run
 committing (commit producer bytes only). Durable fix (follow-up): make the nextjs
 projection emit lint-clean code upstream, or teach generate.mjs to run biome on its
 staged output before materializing.
+
+### §51 addendum — 2026-06-13 autonomous run (baseline repair + value-ordered burn-down)
+Two scope/baseline corrections before resuming the burn-down:
+1. **(B, scope)** Excluded `.aboardai/`, `.superpowers/`, `__previewjs__/` from biome.jsonc
+   (agent/Preview.js tooling state, not app source). They had inflated the count
+   2,628→2,815; exclude restored it to **2,784 errors + 2,185 warnings**. Mirrors the
+   existing `.codex`/`.claude`/`.specify` excludes. Per user request. Reported as a tool/scope
+   change, NOT a code fix (lessons.md #8).
+2. **(A, fix)** `app#typecheck` was NOT green on main: `allergen-warning-banner.examples.tsx`
+   had 5x TS2322 — the `AllergenWarning` model gained nullable `escalatedAt`/`escalatedTo`
+   (schema.prisma:3053-3054) but the example fixtures lacked them. The "fixed allergen-banner"
+   note in tasks/todo.md was on the `port/kanban-call-planner` branch, not main. Added both as
+   `null` to all 5 fixtures → app/api/runtime typecheck green. (commit 815507fc3)
+
+Burn-down is re-ordered by **app value**, not raw count: correctness rules first
+(useParseIntRadix, noGlobalIsNan, noArrayIndexKey), then perf+a11y (noImgElement/useImageSize,
+useButtonType, noSvgWithoutTitle), then noExplicitAny, then mechanical, then useTopLevelRegex
+(safe non-/g subset only). Plan + gates in tasks/todo.md.

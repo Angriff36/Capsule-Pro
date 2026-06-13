@@ -1,20 +1,67 @@
-# Schema-Drift Baseline Drain (2026-06-12, autonomous 8h run)
+# Autonomous 8h run — App quality burn-down (2026-06-13)
 
-## Stages — ALL COMPLETE
-- [x] 1. Classification: 13 agents, 614 decisions, 0 failed groups
-- [x] 2. Adversarial verify: 178 REMOVE/RENAME → 167 CONFIRM, 10 REVISE, 0 REJECT
-- [x] 3. Apply: 276/279 across 52 manifests + 23 callers (1 skip: signature reserved word)
-- [x] 4. Schema: 247 columns, migration 20260612150718 applied, db:check zero drift
-- [x] 5. Regen chain + straggler fixes (audit create-mutation coverage, BoardAnnotation int, OnboardingCompletion mutate)
-- [x] 6. Gates: manifest:ci GREEN; api/app/runtime typecheck 0 errors; tests 5263+341+172 pass
-- [x] 7. Baseline 614 → 58 (exactly the 57 design-conflict DEFERs + 1 reserved-word blocker)
-- [x] 8. Commits: ed162e0bb, ee4e62f8a, 1c7777732 (+docs)
+Goal: improve the app while the user is at work. Safe, verifiable, reversible work only —
+small atomic commits, each gated by typecheck (api/app/runtime) + targeted tests. No DB
+deploys, no branch merges, no high-blast-radius refactors unattended.
+
+Baseline at start (measured, not assumed):
+- app typecheck: **5 errors** (allergen-warning-banner.examples.tsx — pre-existing on main). api/runtime: green.
+- biome: **2,815 errors + 2,189 warnings** → after tooling-dir exclude **2,784 + 2,185**.
+- Active workstream (notes §51): ultracite/biome burn-down (11,987 → 2,784 errors).
+
+Honesty rule (lessons.md #8): every error-count drop is classified **(A) real code fix** or
+**(B) tool/scope change**. B is never reported as A. The biome exclude below is **(B)**.
+
+Ping-pong rule (notes §51): after any blanket lint fix, run `pnpm manifest:generate` and
+`git checkout` every modified `// Generated from Manifest IR - DO NOT EDIT` file before
+committing. Commit producer bytes only — never hand-edit generated routes.
+
+---
+
+## Stage 0 — Baseline repair & scope  [in progress]
+- [x] (B) Exclude `.aboardai/`, `.superpowers/`, `__previewjs__/` from biome (user request) — 2,815→2,784
+- [x] (A) Fix `allergen-warning-banner.examples.tsx` — add nullable `escalatedAt`/`escalatedTo` to 5 fixtures
+- [ ] Confirm api + app + runtime typecheck all green; commit baseline repair
+
+## Stage 1 — Correctness-class lint (real bugs)  [highest value]
+Each rule: `biome --write --unsafe --only=<rule>` OR manual, then typecheck + tests + commit.
+- [ ] useParseIntRadix (20) — `parseInt(x)` → add radix (silent base bugs)
+- [ ] noGlobalIsNan (11) — `isNaN` → `Number.isNaN` (coercion bug)
+- [ ] noAssignInExpressions (18) — un-nest assignments
+- [ ] noImplicitAnyLet (15) + noEvolvingTypes (27) — close type holes
+- [ ] noArrayIndexKey (119) — stable React keys where a real id exists (skip where none)
+
+## Stage 2 — Performance + accessibility (user-facing)
+- [ ] noImgElement (8) + useImageSize (8) — `<img>` → `next/image` w/ dimensions
+- [ ] noNamespaceImport (92) — `import * as` → named imports
+- [ ] a11y: useButtonType (29), noSvgWithoutTitle (16), useKeyWithClickEvents (13),
+      noLabelWithoutControl (155), useHtmlLang (1), useAriaPropsSupportedByRole (1)
+
+## Stage 3 — Type safety
+- [ ] noExplicitAny (313: 35 err + 278 warn) — real types where locally inferable; skip deep-inference sites
+
+## Stage 4 — Mechanical readability (bulk, low risk)
+- [ ] organizeImports (337), noSubstr (33→slice), useForOf (33), useOptionalChain (19),
+      noVoid (27), noDelete (3), useLiteralKeys (12), noUseless{CatchBinding,Constructor,SwitchCase,Fragments}
+- [ ] noNestedTernary (348) — extract to named helpers / if-else
+
+## Stage 5 — useTopLevelRegex (1,393, largest bucket)  [careful]
+- [ ] Hoist ONLY non-global, non-sticky regex literals (script-identified). /g and /y change
+      `lastIndex` semantics when hoisted (notes §51) — leave those for per-site human review.
+
+## Stage 6 — Latent functional bugs (TDD, only if time + clearly bounded)
+Candidates from notes/memory (failing test first, then fix):
+- [ ] AdminTaskActivity has no writer (notes §52)
+- [ ] EventPlanningDraft.proposalId never written (notes §52)
+- [ ] Reactions that reference non-input payload fields silently no-op (memory: reactions-payload-model)
+
+---
 
 ## Review
-The 58 residual baseline entries need USER decisions — documented in manifest/notes.md §50:
-EventImportWorkflow own-table, ML trio (ForecastInput/InventoryForecast/ReorderSuggestion),
-EventTimelineItem vs TimelineTask dup, CorrectiveAction polymorphic source,
-TemperatureProbe.isActive shape, Schedule.shiftCount defect, Shipment 'signature' upstream fix.
+(filled as stages complete — counts before/after, A/B classification, commits, tests)
 
-# Next: lint pass (in progress)
-- [ ] Biome/ultracite triage: 11,147 errors + 4,683 warnings repo-wide
+---
+
+# (prior run, COMPLETE) Port: Kanban v2 + Call Planner → `port/kanban-call-planner`
+Branch ready, NOT merged (db:deploy at merge). 5 commits; 2 bypasses pending user sign-off.
+Full detail preserved in git history + manifest/notes.md §52. See commit 392bbc764 and prior.
