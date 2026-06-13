@@ -63,7 +63,7 @@ function findColumn(row, candidates) {
             }
         }
     }
-    return undefined;
+    return;
 }
 function parseRowToRecord(row, dateColumn) {
     // Find date column - use provided one or search for it

@@ -118,7 +118,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
         search: searchQuery || undefined,
       });
       setInteractions(data.data);
-    } catch (_error) {
+    } catch {
       toast.error("Failed to load communications");
     } finally {
       setLoading(false);

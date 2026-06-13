@@ -289,7 +289,7 @@ export function DependencyAnalysisDialog({
           >
             Cancel
           </Button>
-          {analysis && analysis.summary.canRestore && (
+          {analysis?.summary.canRestore && (
             <>
               <Button
                 disabled={loading}

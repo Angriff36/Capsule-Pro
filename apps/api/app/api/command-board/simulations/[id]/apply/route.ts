@@ -195,7 +195,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
+    if (!(simulationBoard?.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }

@@ -78,7 +78,7 @@ async function detectMergeConflicts(
     },
   });
 
-  if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
+  if (!(simulationBoard?.tags.includes("simulation"))) {
     return {
       hasConflicts: true,
       conflicts: [
@@ -205,7 +205,7 @@ async function mergeSimulationToSource(
       },
     });
 
-    if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
+    if (!(simulationBoard?.tags.includes("simulation"))) {
       return { success: false, error: "Simulation not found" };
     }
 

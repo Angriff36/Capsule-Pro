@@ -59,7 +59,7 @@ export declare class UsFoodsConnector implements SupplierConnector {
      * - Scheduled (e.g., nightly file delivery)
      * - Triggered by catalog changes
      */
-    fetchCatalog(config: SupplierConnectorConfig): Promise<SupplierProduct[]>;
+    fetchCatalog(_config: SupplierConnectorConfig): Promise<SupplierProduct[]>;
     /**
      * Check real-time availability for SKUs.
      *
@@ -67,7 +67,7 @@ export declare class UsFoodsConnector implements SupplierConnector {
      * Send X12 846 (Inventory Inquiry) transaction and parse response.
      * The 846 document returns stock levels by warehouse location.
      */
-    checkAvailability(config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
+    checkAvailability(_config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
         available: boolean;
         quantity?: number;
     }>>;
@@ -78,7 +78,7 @@ export declare class UsFoodsConnector implements SupplierConnector {
      * Request updated pricing via X12 832 or retrieve from
      * cached catalog data. US Foods pricing may be contract-specific.
      */
-    fetchPricing(config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
+    fetchPricing(_config: SupplierConnectorConfig, _skus: string[]): Promise<Record<string, {
         unitCost: number;
         currency: string;
         effectiveFrom?: Date;
@@ -110,7 +110,7 @@ export declare class UsFoodsConnector implements SupplierConnector {
  * BLOCKER: EDI infrastructure not yet available. Implement full 832 parsing with proper segment handling.
  * Tracked as capsule-pro/TODO:us-foods-edi-integration
  */
-export declare function parseEdi832Catalog(ediContent: string): SupplierProduct[];
+export declare function parseEdi832Catalog(_ediContent: string): SupplierProduct[];
 /**
  * Singleton instance of the US Foods connector.
  */

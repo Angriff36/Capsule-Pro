@@ -84,7 +84,7 @@ const audit = spawnSync(
 );
 // pnpm audit exits non-zero when vulnerabilities are found at the level, which
 // is the entire point. We only care that stdout is parseable JSON.
-if (!(audit.stdout && audit.stdout.trim())) {
+if (!(audit.stdout?.trim())) {
   console.error("[security-baseline] pnpm audit produced no output. Aborting.");
   if (audit.stderr) {
     console.error(audit.stderr);

@@ -92,11 +92,11 @@ export default async function MarketingLeadsPage() {
 
   const summary = {
     totalCount: leads.length,
-    newCount: countByStatus["new"] ?? 0,
-    contactedCount: countByStatus["contacted"] ?? 0,
-    qualifiedCount: countByStatus["qualified"] ?? 0,
-    convertedCount: countByStatus["converted"] ?? 0,
-    disqualifiedCount: countByStatus["disqualified"] ?? 0,
+    newCount: countByStatus.new ?? 0,
+    contactedCount: countByStatus.contacted ?? 0,
+    qualifiedCount: countByStatus.qualified ?? 0,
+    convertedCount: countByStatus.converted ?? 0,
+    disqualifiedCount: countByStatus.disqualified ?? 0,
     totalEstimatedValue: valueAggregate._sum.estimatedValue
       ? Number(valueAggregate._sum.estimatedValue)
       : 0,

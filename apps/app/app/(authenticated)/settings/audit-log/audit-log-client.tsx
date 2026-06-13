@@ -235,10 +235,8 @@ export function AuditLogClient() {
   const filteredEntries = search.trim()
     ? entries.filter(
         (e) =>
-          (e.performedByName &&
-            e.performedByName.toLowerCase().includes(search.toLowerCase())) ||
-          (e.performedByEmail &&
-            e.performedByEmail.toLowerCase().includes(search.toLowerCase())) ||
+          (e.performedByName?.toLowerCase().includes(search.toLowerCase())) ||
+          (e.performedByEmail?.toLowerCase().includes(search.toLowerCase())) ||
           e.recordId.toLowerCase().includes(search.toLowerCase()) ||
           e.tableName.toLowerCase().includes(search.toLowerCase())
       )

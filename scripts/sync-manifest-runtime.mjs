@@ -380,7 +380,7 @@ function main() {
           shell: process.platform === "win32",
         });
         console.log("[sync-manifest-runtime] Dist rebuild complete.");
-      } catch (_err) {
+      } catch {
         console.error(
           "[sync-manifest-runtime] ERROR: Dist rebuild failed. Run manually:"
         );

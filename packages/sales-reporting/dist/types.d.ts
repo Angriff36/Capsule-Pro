@@ -1,75 +1,67 @@
 export interface SalesRecord {
+    clientName: string;
+    closeDate: Date | null;
     date: Date;
+    eventDate: Date | null;
     eventName: string;
     eventType: string;
-    clientName: string;
     leadSource: string;
-    status: "won" | "lost" | "pending" | "proposal_sent";
     proposalDate: Date | null;
-    closeDate: Date | null;
     revenue: number;
-    eventDate: Date | null;
+    status: "won" | "lost" | "pending" | "proposal_sent";
 }
 export interface ReportConfig {
-    reportType: "weekly" | "monthly" | "quarterly";
+    accentColor?: string;
+    companyName?: string;
+    dateColumn?: string;
     dateRange: {
         start: string;
         end: string;
     };
-    companyName?: string;
-    accentColor?: string;
-    dateColumn?: string;
+    reportType: "weekly" | "monthly" | "quarterly";
 }
 export interface FileInput {
-    name: string;
     data: Buffer;
+    name: string;
     type: "csv" | "xlsx";
 }
 export interface ReportInput {
-    files: FileInput[];
     config: ReportConfig;
+    files: FileInput[];
 }
 export interface WeeklyMetrics {
+    closingRatio: number;
     dateRange: {
         start: Date;
         end: Date;
     };
-    revenueByEventType: Record<string, number>;
-    leadsReceived: number;
-    proposalsSent: number;
     eventsClosed: number;
-    closingRatio: number;
+    leadsReceived: number;
     lostOpportunities: {
         count: number;
         totalValue: number;
         records: SalesRecord[];
     };
+    proposalsSent: number;
+    revenueByEventType: Record<string, number>;
     topPendingDeals: SalesRecord[];
 }
 export interface MonthlyMetrics {
+    avgEventValue: number;
     dateRange: {
         start: Date;
         end: Date;
     };
-    totalRevenue: number;
-    previousMonthRevenue: number | null;
-    yearOverYearRevenue: number | null;
-    avgEventValue: number;
-    leadSourceBreakdown: Record<string, {
-        count: number;
-        revenue: number;
-        conversionRate: number;
-    }>;
     funnelMetrics: {
         leads: number;
         proposals: number;
         won: number;
         lost: number;
     };
-    winLossTrends: Array<{
-        period: string;
-        wins: number;
-        losses: number;
+    leadSourceBreakdown: Record<string, {
+        count: number;
+        revenue: number;
+        conversionRate: number;
     }>;
     pipelineForecast: {
         pendingCount: number;
@@ -77,17 +69,40 @@ export interface MonthlyMetrics {
         weightedForecast: number;
         deals: SalesRecord[];
     };
+    previousMonthRevenue: number | null;
+    totalRevenue: number;
+    winLossTrends: Array<{
+        period: string;
+        wins: number;
+        losses: number;
+    }>;
+    yearOverYearRevenue: number | null;
 }
 export interface QuarterlyMetrics {
-    dateRange: {
-        start: Date;
-        end: Date;
-    };
-    totalRevenue: number;
     customerSegments: Record<string, {
         count: number;
         revenue: number;
         avgValue: number;
+    }>;
+    dateRange: {
+        start: Date;
+        end: Date;
+    };
+    nextQuarterGoals: {
+        revenueTarget: number;
+        leadTarget: number;
+        conversionTarget: number;
+    };
+    pricingTrends: Array<{
+        month: string;
+        avgValue: number;
+        dealCount: number;
+    }>;
+    recommendations: string[];
+    referralPerformance: Record<string, {
+        count: number;
+        revenue: number;
+        conversionRate: number;
     }>;
     salesCycleLength: {
         avg: number;
@@ -95,40 +110,22 @@ export interface QuarterlyMetrics {
         max: number;
         bySegment: Record<string, number>;
     };
-    pricingTrends: Array<{
-        month: string;
-        avgValue: number;
-        dealCount: number;
-    }>;
-    referralPerformance: Record<string, {
-        count: number;
-        revenue: number;
-        conversionRate: number;
-    }>;
-    recommendations: string[];
-    nextQuarterGoals: {
-        revenueTarget: number;
-        leadTarget: number;
-        conversionTarget: number;
-    };
+    totalRevenue: number;
 }
 export interface BarChartOptions {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    colors?: string[];
     data: Array<{
         label: string;
         value: number;
     }>;
-    title: string;
-    colors?: string[];
+    height: number;
     showCurrency?: boolean;
-}
-export interface LineChartOptions {
+    title: string;
+    width: number;
     x: number;
     y: number;
-    width: number;
+}
+export interface LineChartOptions {
     height: number;
     series: Array<{
         label: string;
@@ -138,32 +135,35 @@ export interface LineChartOptions {
         }>;
         color: string;
     }>;
-    title: string;
     showCurrency?: boolean;
-}
-export interface FunnelChartOptions {
+    title: string;
+    width: number;
     x: number;
     y: number;
-    width: number;
+}
+export interface FunnelChartOptions {
+    colors?: string[];
     height: number;
     stages: Array<{
         label: string;
         value: number;
     }>;
     title: string;
-    colors?: string[];
-}
-export interface TableOptions {
+    width: number;
     x: number;
     y: number;
-    width: number;
+}
+export interface TableOptions {
     columns: Array<{
         header: string;
         width: number;
         align?: "left" | "center" | "right";
     }>;
-    rows: string[][];
     headerColor?: string;
+    rows: string[][];
+    width: number;
+    x: number;
+    y: number;
 }
 export declare const COLORS: {
     readonly navy: "#0F4C81";

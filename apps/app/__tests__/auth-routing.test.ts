@@ -29,7 +29,7 @@ vi.mock("@clerk/nextjs/server", () => ({
           protect: () => Promise<void>;
         },
         req: { url: string }
-      ) => Promise<Response | void>
+      ) => Promise<Response | undefined>
     ) =>
     async (req: { url: string }) => {
       const auth = clerkState.authMock as unknown as (() => Promise<{
@@ -49,7 +49,7 @@ function request(pathname: string) {
 
 async function runMiddleware(pathname: string) {
   const { default: middleware } = await import("../proxy");
-  return (middleware as (req: { url: string }) => Promise<Response | void>)(
+  return (middleware as (req: { url: string }) => Promise<Response | undefined>)(
     request(pathname)
   );
 }

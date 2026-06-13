@@ -2,9 +2,9 @@ import type PDFDocument from "pdfkit";
 import { type TableOptions } from "../types";
 export interface MetricCardData {
     label: string;
-    value: string;
     subtext?: string;
     trend?: "up" | "down" | "neutral";
+    value: string;
 }
 export declare function drawMetricCards(doc: InstanceType<typeof PDFDocument>, y: number, cards: MetricCardData[], columns?: number): number;
 export declare function drawSectionTitle(doc: InstanceType<typeof PDFDocument>, title: string, y: number): number;

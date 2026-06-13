@@ -566,11 +566,11 @@ function isLikelyUnit(value) {
 }
 function buildPreparationNotes(lines) {
     if (lines.length === 0) {
-        return undefined;
+        return;
     }
     const formatted = lines.map((line) => toSentenceCase(line)).filter(Boolean);
     if (formatted.length === 0) {
-        return undefined;
+        return;
     }
     return formatted.join(" ");
 }
@@ -847,7 +847,7 @@ function cleanupTimelineLabel(value) {
 }
 function formatMinutesLabel(value) {
     if (value === null || value === undefined) {
-        return undefined;
+        return;
     }
     const minutesInDay = ((value % (24 * 60)) + 24 * 60) % (24 * 60);
     const hours24 = Math.floor(minutesInDay / 60);

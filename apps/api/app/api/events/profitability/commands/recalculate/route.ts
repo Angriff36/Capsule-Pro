@@ -41,7 +41,7 @@ async function calculateBudgetTotals(
 
   const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
-  if (!(eventBudget && eventBudget.lineItems.length)) {
+  if (!(eventBudget?.lineItems.length)) {
     return {
       budgetedRevenue,
       budgetedFoodCost: 0,

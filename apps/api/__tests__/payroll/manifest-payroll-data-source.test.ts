@@ -51,7 +51,6 @@ vi.mock("@repo/database", () => ({ database: mockDatabase }));
 // Isolate the unit: the base class only needs to accept the prisma client.
 vi.mock("@repo/payroll-engine", () => ({
   PrismaPayrollDataSource: class {
-    constructor(_prisma: unknown) {}
   },
 }));
 vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({

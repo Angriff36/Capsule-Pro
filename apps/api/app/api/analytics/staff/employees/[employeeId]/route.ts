@@ -63,7 +63,6 @@ function getDateFromPeriod(period: string): Date {
       return new Date(now.getFullYear(), now.getMonth() - 6, 1);
     case "12m":
       return new Date(now.getFullYear(), now.getMonth() - 12, 1);
-    case "3m":
     default:
       return new Date(now.getFullYear(), now.getMonth() - 3, 1);
   }

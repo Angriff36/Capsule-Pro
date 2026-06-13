@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!(sync && sync.accessToken)) {
+    if (!(sync?.accessToken)) {
       return NextResponse.json(
         { error: `${provider} is not connected. Please connect first.` },
         { status: 400 }

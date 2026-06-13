@@ -63,7 +63,7 @@ export async function GET(_request: Request, context: RouteContext) {
       },
     });
 
-    if (!(board && board.tags.includes("simulation"))) {
+    if (!(board?.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }
@@ -168,7 +168,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     },
   });
 
-  if (!(board && board.tags?.includes("simulation"))) {
+  if (!(board?.tags?.includes("simulation"))) {
     return NextResponse.json(
       { message: "Simulation not found" },
       { status: 404 }

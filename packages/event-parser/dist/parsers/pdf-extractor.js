@@ -122,9 +122,7 @@ export async function extractPdfText(pdfBuffer) {
         const isParserCtor = (value) => typeof value === "function";
         const pdf2jsonModule = (await import("pdf2json"));
         const defaultExport = pdf2jsonModule.default;
-        const hasPDFParserProperty = (obj) => {
-            return typeof obj === "object" && obj !== null && "PDFParser" in obj;
-        };
+        const hasPDFParserProperty = (obj) => typeof obj === "object" && obj !== null && "PDFParser" in obj;
         const PDFParserClass = (isParserCtor(pdf2jsonModule.PDFParser)
             ? pdf2jsonModule.PDFParser
             : undefined) ??

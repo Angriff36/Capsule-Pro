@@ -247,7 +247,7 @@ export default function WaitlistPage() {
   };
 
   const capacityPct =
-    summary && summary.capacity
+    summary?.capacity
       ? Math.min(100, (summary.confirmed / summary.capacity) * 100)
       : 0;
 

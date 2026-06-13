@@ -70,7 +70,7 @@ export declare class CharliesProduceConnector implements SupplierConnector {
      * May also be available as part of catalog response with
      * real-time flag.
      */
-    checkAvailability(config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
+    checkAvailability(_config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
         available: boolean;
         quantity?: number;
     }>>;
@@ -86,7 +86,7 @@ export declare class CharliesProduceConnector implements SupplierConnector {
      * - Volume-based discounts
      * - Contract-specific pricing
      */
-    fetchPricing(config: SupplierConnectorConfig, skus: string[]): Promise<Record<string, {
+    fetchPricing(_config: SupplierConnectorConfig, _skus: string[]): Promise<Record<string, {
         unitCost: number;
         currency: string;
         effectiveFrom?: Date;

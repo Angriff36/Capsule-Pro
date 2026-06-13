@@ -71,10 +71,10 @@ export function updateChecklistQuestion(checklist, questionId, updates) {
             if (question.id !== questionId) {
                 return question;
             }
-            const nextValue = updates.value !== undefined ? updates.value : question.value;
-            const nextNotes = updates.notes !== undefined
-                ? (updates.notes ?? undefined)
-                : question.notes;
+            const nextValue = updates.value === undefined ? question.value : updates.value;
+            const nextNotes = updates.notes === undefined
+                ? question.notes
+                : (updates.notes ?? undefined);
             const sameValue = nextValue === question.value;
             const sameNotes = (nextNotes ?? "") === (question.notes ?? "");
             if (sameValue && sameNotes) {

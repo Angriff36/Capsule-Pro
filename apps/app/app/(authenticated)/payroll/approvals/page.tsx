@@ -1042,8 +1042,7 @@ export default function PayrollApprovalsPage() {
                 {/* Actions */}
                 {(detailRun.status === "pending" ||
                   detailRun.status === "completed") && (
-                  <>
-                    <div className="border-hairline border-t pt-4">
+                  <div className="border-hairline border-t pt-4">
                       <div className="flex justify-end gap-2">
                         <Button
                           disabled={actionLoading !== null}
@@ -1070,7 +1069,6 @@ export default function PayrollApprovalsPage() {
                         </Button>
                       </div>
                     </div>
-                  </>
                 )}
               </div>
             )}

@@ -112,7 +112,7 @@ export async function GET(request: Request) {
     return acc;
   }, {});
   const totalSms = Object.values(smsStatusCounts).reduce((a, b) => a + b, 0);
-  const smsDelivered = smsStatusCounts["delivered"] || 0;
+  const smsDelivered = smsStatusCounts.delivered || 0;
   const smsDeliveryRate = totalSms > 0 ? (smsDelivered / totalSms) * 100 : null;
 
   // Email performance by workflow

@@ -71,7 +71,7 @@ export class UsFoodsConnector {
      * - Scheduled (e.g., nightly file delivery)
      * - Triggered by catalog changes
      */
-    async fetchCatalog(config) {
+    async fetchCatalog(_config) {
         // BLOCKER: EDI infrastructure not yet available.
         // 1. Connect to EDI endpoint
         // 2. Request or retrieve 832 catalog document
@@ -87,7 +87,7 @@ export class UsFoodsConnector {
      * Send X12 846 (Inventory Inquiry) transaction and parse response.
      * The 846 document returns stock levels by warehouse location.
      */
-    async checkAvailability(config, skus) {
+    async checkAvailability(_config, skus) {
         // BLOCKER: EDI infrastructure not yet available.
         // Tracked as capsule-pro/TODO:us-foods-edi-integration
         console.log("[us-foods] Availability check not implemented - EDI infrastructure required");
@@ -105,7 +105,7 @@ export class UsFoodsConnector {
      * Request updated pricing via X12 832 or retrieve from
      * cached catalog data. US Foods pricing may be contract-specific.
      */
-    async fetchPricing(config, skus) {
+    async fetchPricing(_config, _skus) {
         // BLOCKER: EDI infrastructure not yet available.
         // Tracked as capsule-pro/TODO:us-foods-edi-integration
         console.log("[us-foods] Pricing fetch not implemented - EDI infrastructure required");
@@ -139,7 +139,7 @@ export class UsFoodsConnector {
  * BLOCKER: EDI infrastructure not yet available. Implement full 832 parsing with proper segment handling.
  * Tracked as capsule-pro/TODO:us-foods-edi-integration
  */
-export function parseEdi832Catalog(ediContent) {
+export function parseEdi832Catalog(_ediContent) {
     // BLOCKER: EDI infrastructure not yet available.
     // 1. Split by segment terminator (usually ~ or newline)
     // 2. Parse each segment by element delimiter (*)

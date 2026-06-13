@@ -18,7 +18,7 @@ const relevantFiles = new Set([
 function getCommitMessage() {
   try {
     return execSync("git log -1 --pretty=%B").toString().trim();
-  } catch (_error) {
+  } catch {
     console.warn("Skipping commit message check because git is unavailable.");
     return "";
   }
@@ -41,7 +41,7 @@ function getChangedFiles() {
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean);
-    } catch (_error) {
+    } catch {
       // Try the next command.
     }
   }

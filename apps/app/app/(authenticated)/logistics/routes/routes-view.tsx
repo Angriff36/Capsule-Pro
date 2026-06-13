@@ -265,7 +265,7 @@ export function RoutesView() {
         setShowEditDialog(false);
         toast.success("Route updated");
       }
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update route");
     } finally {
       setSaving(false);
@@ -282,7 +282,7 @@ export function RoutesView() {
       await logisticsRouteRemove({ id: deleteRouteId });
       setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
       toast.success("Route deleted");
-    } catch (_error) {
+    } catch {
       toast.error("Failed to delete route");
     } finally {
       setDeleting(false);

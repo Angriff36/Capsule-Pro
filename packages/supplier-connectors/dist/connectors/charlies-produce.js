@@ -105,7 +105,7 @@ export class CharliesProduceConnector {
      * May also be available as part of catalog response with
      * real-time flag.
      */
-    async checkAvailability(config, skus) {
+    async checkAvailability(_config, skus) {
         // BLOCKER: API credentials from Charlie's Produce not yet obtained.
         // Tracked as capsule-pro/TODO:charlies-produce-api-integration
         // const response = await fetch(`${apiBaseUrl}/availability?skus=${skus.join(',')}`, {
@@ -132,7 +132,7 @@ export class CharliesProduceConnector {
      * - Volume-based discounts
      * - Contract-specific pricing
      */
-    async fetchPricing(config, skus) {
+    async fetchPricing(_config, _skus) {
         // BLOCKER: API credentials from Charlie's Produce not yet obtained.
         // Tracked as capsule-pro/TODO:charlies-produce-api-integration
         // const response = await fetch(`${apiBaseUrl}/pricing?skus=${skus.join(',')}`, {

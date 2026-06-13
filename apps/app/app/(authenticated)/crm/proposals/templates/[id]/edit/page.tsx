@@ -151,7 +151,7 @@ export default function EditProposalTemplatePage() {
 
         const items = template.defaultLineItems as unknown as LineItem[];
         setLineItems(Array.isArray(items) ? items : []);
-      } catch (_error) {
+      } catch {
         toast.error("Failed to load template");
         router.push("/crm/proposals/templates");
       } finally {

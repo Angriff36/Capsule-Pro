@@ -936,8 +936,8 @@ try {
   });
   console.log("prisma validate passed");
 } catch (err) {
-  const stdout = (err.stdout && err.stdout.toString()) || "";
-  const stderr = (err.stderr && err.stderr.toString()) || "";
+  const stdout = (err.stdout?.toString()) || "";
+  const stderr = (err.stderr?.toString()) || "";
   console.log("prisma validate FAILED");
   const errorOutput = stdout + stderr;
   const errorLines = errorOutput.split("\n").filter((l) => l.trim());

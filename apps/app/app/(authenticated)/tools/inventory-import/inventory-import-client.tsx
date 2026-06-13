@@ -59,7 +59,7 @@ export function InventoryImportClient() {
     const arrayBuffer = await f.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
     const wb = XLSX.read(buffer, { type: "array", cellDates: true });
-    const ws = wb.Sheets["Inventory"];
+    const ws = wb.Sheets.Inventory;
 
     if (!ws) {
       setErrorMsg("Sheet 'Inventory' not found");
@@ -94,7 +94,7 @@ export function InventoryImportClient() {
         continue;
       }
 
-      const name = String(row[colIndex["Title"]] ?? "").trim();
+      const name = String(row[colIndex.Title] ?? "").trim();
       const primaryCat = String(row[colIndex["Primary Category"]] ?? "").trim();
       const subCat = String(row[colIndex["Sub Category"]] ?? "").trim();
       const category = primaryCat || subCat || "Uncategorized";

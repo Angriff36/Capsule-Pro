@@ -4,15 +4,15 @@
  * Uses dynamic import to avoid Next.js bundling issues
  */
 export interface PdfExtractionResult {
+    errors: string[];
     lines: string[];
-    pageCount: number;
     metadata?: {
         title?: string;
         author?: string;
         subject?: string;
         creator?: string;
     };
-    errors: string[];
+    pageCount: number;
 }
 /**
  * Extract text from a PDF buffer
@@ -23,8 +23,8 @@ export declare function extractPdfText(pdfBuffer: ArrayBuffer | Uint8Array): Pro
  * Detect PDF format (TPP, generic, etc.)
  */
 export interface FormatDetectionResult {
-    format: "tpp" | "generic";
     confidence: number;
+    format: "tpp" | "generic";
     markers: string[];
 }
 export declare function detectPdfFormat(lines: string[]): FormatDetectionResult;

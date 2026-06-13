@@ -99,7 +99,6 @@ function getDateRange(period: "7d" | "30d" | "90d" | "12m"): {
         startDate.getDate()
       );
       break;
-    case "30d":
     default:
       startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       previousEndDate = startDate;

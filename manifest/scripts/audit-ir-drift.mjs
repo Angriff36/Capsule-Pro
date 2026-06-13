@@ -86,7 +86,7 @@ function loadGitBaseline() {
     });
     const raw = readFileSync(tmpFile, "utf8");
     return JSON.parse(raw);
-  } catch (_err) {
+  } catch {
     // May be untracked or first commit — fall back to self-comparison
     console.log(
       "  Note: Could not load git HEAD baseline (file may be untracked)."

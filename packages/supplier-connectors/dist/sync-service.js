@@ -76,8 +76,7 @@ export class SupplierSyncService {
                 }
             }
             // Deactivate products no longer in catalog (individual Manifest deactivate commands)
-            if (config.options?.syncFullCatalog !== false &&
-                existingBySku.size > 0) {
+            if (config.options?.syncFullCatalog !== false && existingBySku.size > 0) {
                 const idsToDeactivate = Array.from(existingBySku.values());
                 for (const id of idsToDeactivate) {
                     try {
@@ -132,8 +131,9 @@ export class SupplierSyncService {
             const products = await connector.fetchCatalog(config);
             // Filter to changed products
             const changedProducts = products.filter((p) => {
-                if (!p.effectiveFrom)
+                if (!p.effectiveFrom) {
                     return true;
+                }
                 return new Date(p.effectiveFrom) >= since;
             });
             productsSynced = changedProducts.length;

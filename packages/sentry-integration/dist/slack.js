@@ -1,7 +1,7 @@
 import {
   SlackNotifier,
   createSlackNotifier
-} from "./chunk-AAKN7HMS.js";
+} from "./chunk-IM3XOCXX.js";
 export {
   SlackNotifier,
   createSlackNotifier

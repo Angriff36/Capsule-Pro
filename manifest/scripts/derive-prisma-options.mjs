@@ -272,7 +272,7 @@ function parseModelBlock(body) {
       result.fieldAttributes[field.name] = attrs;
     }
 
-    if (field.db && field.db.startsWith("Decimal(")) {
+    if (field.db?.startsWith("Decimal(")) {
       const pm = field.db.match(RE_DECIMAL);
       if (pm) {
         result.precision[field.name] = {

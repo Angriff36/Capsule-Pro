@@ -1,31 +1,31 @@
 import { SentryFixJobRecord } from './queue.js';
-import { P as ParsedSentryIssue, J as JobExecutionResult } from './types-Bu9K8qR5.js';
+import { P as ParsedSentryIssue, J as JobExecutionResult } from './types-CZP2VeKg.js';
 import 'zod';
 
 /**
  * Job runner configuration
  */
 interface JobRunnerConfig {
-    /** GitHub repository owner */
-    repoOwner: string;
-    /** GitHub repository name */
-    repoName: string;
+    /** AI model to use for fix generation (default: gpt-4o) */
+    aiModel: string;
+    /** Base branch for PRs */
+    baseBranch: string;
+    /** Blocked path patterns */
+    blockedPatterns: RegExp[];
     /** GitHub token for API access */
     githubToken: string;
     /** OpenAI API key for AI-powered fix generation */
     openaiApiKey: string;
-    /** Base branch for PRs */
-    baseBranch: string;
-    /** Working directory for git operations */
-    workingDir: string;
-    /** Blocked path patterns */
-    blockedPatterns: RegExp[];
-    /** Test command to run */
-    testCommand: string;
+    /** GitHub repository name */
+    repoName: string;
+    /** GitHub repository owner */
+    repoOwner: string;
     /** Whether to actually run tests (can be disabled for safety) */
     runTests: boolean;
-    /** AI model to use for fix generation (default: gpt-4o) */
-    aiModel: string;
+    /** Test command to run */
+    testCommand: string;
+    /** Working directory for git operations */
+    workingDir: string;
 }
 /**
  * Sentry Fix Job Runner

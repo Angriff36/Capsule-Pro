@@ -1,6 +1,6 @@
 import { PrismaClient } from '@repo/database';
 import { JobQueueStore, CreateJobInput, SentryFixJobRecord, UpdateJobInput } from './queue.js';
-import './types-Bu9K8qR5.js';
+import './types-CZP2VeKg.js';
 import 'zod';
 
 /**

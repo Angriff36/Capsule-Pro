@@ -4,15 +4,15 @@
  */
 import type { ParsedEvent, ParsedEventResult, StaffShift } from "../types/index.js";
 export interface ProcessedDocument {
-    id: string;
+    availableEventNames?: string[];
+    confidence: number;
+    detectedFormat: string;
+    errors: string[];
     fileName: string;
     fileType: "pdf" | "csv";
-    detectedFormat: string;
-    confidence: number;
+    id: string;
     parsedEvent?: ParsedEventResult;
     staffShifts?: Map<string, StaffShift[]>;
-    availableEventNames?: string[];
-    errors: string[];
     warnings: string[];
 }
 export interface ProcessDocumentOptions {

@@ -96,9 +96,6 @@ vi.mock("@repo/observability/log", () => ({
 vi.mock("@/app/lib/invariant", () => {
   class InvariantError extends Error {
     name = "InvariantError" as const;
-    constructor(m: string) {
-      super(m);
-    }
   }
   return { invariant: vi.fn(), InvariantError };
 });

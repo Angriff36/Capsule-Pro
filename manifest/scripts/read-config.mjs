@@ -217,8 +217,7 @@ export function getConfigPaths() {
 
 // Allow scripts to call this directly for a quick config dump
 if (
-  process.argv[1] &&
-  process.argv[1].endsWith("read-config.mjs") &&
+  process.argv[1]?.endsWith("read-config.mjs") &&
   process.argv.includes("--dump")
 ) {
   const paths = getConfigPaths();

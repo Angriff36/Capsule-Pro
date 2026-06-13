@@ -88,7 +88,7 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
       const { getClientById } = await import("../../../actions");
       const updated = await getClientById(client.id);
       setPreferences(updated.preferences as Preference[]);
-    } catch (_error) {
+    } catch {
       toast.error("Failed to refresh preferences");
     }
   };

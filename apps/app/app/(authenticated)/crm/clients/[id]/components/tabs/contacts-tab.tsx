@@ -88,7 +88,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
     try {
       const data = await getClientContacts(client.id);
       setContacts(data as ClientContactData[]);
-    } catch (_error) {
+    } catch {
       toast.error("Failed to load contacts");
     } finally {
       setLoading(false);

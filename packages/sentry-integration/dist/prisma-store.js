@@ -109,9 +109,7 @@ var PrismaJobStore = class {
     };
   }
 };
-var createPrismaJobStore = (prisma) => {
-  return new PrismaJobStore(prisma);
-};
+var createPrismaJobStore = (prisma) => new PrismaJobStore(prisma);
 export {
   PrismaJobStore,
   createPrismaJobStore

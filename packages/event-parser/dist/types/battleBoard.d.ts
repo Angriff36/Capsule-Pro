@@ -1,58 +1,58 @@
 export interface BattleBoardMeta {
+    eventDate: string;
     eventName: string;
     eventNumber: string;
-    eventDate: string;
-    staffRestrooms: string;
-    staffParking: string;
     lastUpdatedISO?: string;
+    staffParking: string;
+    staffRestrooms: string;
 }
 export interface BattleBoardStaff {
     name: string;
     role: string;
-    shiftStart: string;
     shiftEnd: string;
+    shiftStart: string;
     station: string;
 }
 export interface BattleBoardLayout {
-    type: string;
     instructions: string;
     linkedMapImage?: string;
+    type: string;
 }
 export type TimelineStyle = "setup" | "service" | "breakdown" | "other";
 export interface BattleBoardTimeline {
-    time: string;
-    item: string;
-    team: string;
-    location: string;
-    style: TimelineStyle | string;
-    notes: string;
     hl: boolean;
+    item: string;
+    location: string;
+    notes: string;
+    style: TimelineStyle | string;
+    team: string;
+    time: string;
 }
 export interface BattleBoardAttachment {
     label: string;
     name: string;
-    type: string;
     size: number;
     src: string;
+    type: string;
 }
 export interface BattleBoardTask {
-    id: string;
-    name: string;
-    description: string;
     category: string;
-    defaultTeam: string;
     defaultLocation: string;
     defaultStyle: TimelineStyle;
+    defaultTeam: string;
+    description: string;
+    id: string;
+    name: string;
 }
 export interface BattleBoardData {
-    schema?: string;
-    version?: string;
-    meta: BattleBoardMeta;
-    staff: BattleBoardStaff[];
-    layouts: BattleBoardLayout[];
-    timeline: BattleBoardTimeline[];
     attachments: BattleBoardAttachment[];
+    layouts: BattleBoardLayout[];
+    meta: BattleBoardMeta;
+    schema?: string;
+    staff: BattleBoardStaff[];
     taskLibrary?: BattleBoardTask[];
+    timeline: BattleBoardTimeline[];
+    version?: string;
 }
 export type PartialBattleBoardData = Partial<BattleBoardData> & {
     meta?: Partial<BattleBoardMeta>;

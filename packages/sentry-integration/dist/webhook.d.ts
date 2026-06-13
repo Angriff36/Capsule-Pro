@@ -1,4 +1,4 @@
-import { a as SentryIssueAlertPayload, P as ParsedSentryIssue } from './types-Bu9K8qR5.js';
+import { a as SentryIssueAlertPayload, P as ParsedSentryIssue } from './types-CZP2VeKg.js';
 import 'zod';
 
 /**
@@ -35,10 +35,10 @@ declare const isIssueAlertWebhook: (resourceHeader: string | null) => boolean;
  * Webhook headers expected from Sentry
  */
 interface SentryWebhookHeaders {
+    requestId: string | null;
+    sentryHookResource: string | null;
     sentryHookSignature: string | null;
     sentryHookTimestamp: string | null;
-    sentryHookResource: string | null;
-    requestId: string | null;
 }
 /**
  * Extract Sentry webhook headers from request headers

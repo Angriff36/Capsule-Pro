@@ -58,7 +58,7 @@ export default async function MarketingAnalyticsPage() {
     emailCounts[row.status] = row._count.status;
   }
   const totalSent = Object.values(emailCounts).reduce((a, b) => a + b, 0) || 0;
-  const opened = emailCounts["opened"] || 0;
+  const opened = emailCounts.opened || 0;
   const openRate = totalSent > 0 ? Math.round((opened / totalSent) * 100) : 0;
 
   const leadCounts: Record<string, number> = {};
@@ -66,7 +66,7 @@ export default async function MarketingAnalyticsPage() {
     leadCounts[row.status] = row._count.status;
   }
   const totalLeads = Object.values(leadCounts).reduce((a, b) => a + b, 0);
-  const convertedLeads = leadCounts["converted"] || 0;
+  const convertedLeads = leadCounts.converted || 0;
   const conversionRate =
     totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
