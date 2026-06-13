@@ -254,7 +254,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -376,7 +376,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -399,7 +399,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -763,7 +763,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -932,7 +932,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1274,7 +1274,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -1409,7 +1409,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1520,7 +1520,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -1543,7 +1543,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1632,14 +1632,14 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
   },
   "AdminTaskDevMeta": {
     "accessor": "admin_task_dev_metas",
-    "dbName": "admin_task_dev_metas",
+    "dbName": "admin_task_dev_meta",
     "pgSchema": null,
     "pkFields": [
       "tenant_id",
@@ -1655,7 +1655,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1766,7 +1766,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -1789,7 +1789,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -1889,7 +1889,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
@@ -2616,7 +2616,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isEnum": false,
         "isList": false,
         "optional": false,
-        "hasDefault": false,
+        "hasDefault": true,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -2705,7 +2705,7 @@ export const PRISMA_MODEL_METADATA: PrismaModelMetadata = {
         "isList": false,
         "optional": true,
         "hasDefault": false,
-        "isUpdatedAt": false,
+        "isUpdatedAt": true,
         "isId": false
       }
     ]
