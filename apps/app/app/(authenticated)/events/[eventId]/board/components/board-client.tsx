@@ -218,23 +218,15 @@ export function BoardClient({
     if (targetBoardId === null) {
       return;
     }
-    createStaffDraft.mutate(
-      {
-        boardId: targetBoardId,
-        staff: { id: pendingStaff.id, name: pendingStaff.name },
-        ...input,
-      },
-      {
-        onSuccess: (res) => {
-          if (res.success) {
-            setPendingStaff(null);
-          } else {
-            setDraftError(res.error ?? "Failed to create draft card");
-          }
-        },
-        onError: (err) => setDraftError(err.message),
-      }
-    );
+    // Close the dialog immediately — the optimistic update in the mutation hook
+    // makes the card appear at once; onError rolls back and shows a toast.
+    setPendingStaff(null);
+    setDraftError(null);
+    createStaffDraft.mutate({
+      boardId: targetBoardId,
+      staff: { id: pendingStaff.id, name: pendingStaff.name },
+      ...input,
+    });
   };
 
   const handleDishConfirm = async (input: DishDialogSubmit) => {
@@ -245,23 +237,15 @@ export function BoardClient({
     if (targetBoardId === null) {
       return;
     }
-    createDishDraft.mutate(
-      {
-        boardId: targetBoardId,
-        dish: { id: pendingDish.id, name: pendingDish.name },
-        ...input,
-      },
-      {
-        onSuccess: (res) => {
-          if (res.success) {
-            setPendingDish(null);
-          } else {
-            setDraftError(res.error ?? "Failed to create draft card");
-          }
-        },
-        onError: (err) => setDraftError(err.message),
-      }
-    );
+    // Close the dialog immediately — the optimistic update in the mutation hook
+    // makes the card appear at once; onError rolls back and shows a toast.
+    setPendingDish(null);
+    setDraftError(null);
+    createDishDraft.mutate({
+      boardId: targetBoardId,
+      dish: { id: pendingDish.id, name: pendingDish.name },
+      ...input,
+    });
   };
 
   return (
