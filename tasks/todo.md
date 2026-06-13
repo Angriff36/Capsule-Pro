@@ -58,10 +58,26 @@ Candidates from notes/memory (failing test first, then fix):
 ---
 
 ## Review
-(filled as stages complete — counts before/after, A/B classification, commits, tests)
+
+### Lint baseline + batches (verified)
+- Stage 0: tooling-dir biome exclude (B) + allergen typecheck baseline repair (A). Commits 1a8bd4856, 815507fc3.
+- Batch 1: 1 real bug (search dead `||` fallback, db16064b4) + 43 safe mechanical autofixes (320669361). noDelete reverted (risky).
+- Batch 2: 20 correctness fixes — isNaN→Number.isNaN, parseInt radix, iterable-callback (c4a99d1bf).
+- True fixable surface = ~3,305 hand-written (1,662 are generated DO-NOT-EDIT routes I can't touch). Classifier: tools/classify-lint.mjs.
+- Every batch gated: typecheck 29/29, tests app 341 / api 5281 / runtime 172. Zero generated routes touched (no ping-pong).
+
+### Kanban v2 + Call Planner MERGE (user-requested, 2026-06-13)
+- ✅ Merged `port/kanban-call-planner` → main (merge `3dcb462f0`). Backup: `backup/main-pre-kanban-merge-20260613`.
+- ✅ Conflicts resolved: notes.md (kept §51 addendum + §52); allergen-banner duplicate `escalatedAt/escalatedTo` (both sides added — kept branch placement).
+- ✅ Fixed branch's STALE runtime store metadata (8 new entities were missing) — regenerated, idempotent (ea9eec5e3).
+- ✅ Verified GREEN: manifest:ci (no drift, 0 new violations), typecheck 29/29, tests app 341 / api 5281 / runtime 172.
+- ✅ Migration `20260612195000_port_kanban_call_planner` confirmed purely additive (11 CREATE TABLE + indexes + 1 nullable col; zero destructive).
+- ⛔ **`pnpm db:deploy` BLOCKED by safety classifier — NEEDS EXPLICIT USER SIGN-OFF.** Migration is committed but NOT applied to the dev DB.
+      **Until deployed, the kanban/call-planner pages will 500 (tables don't exist).**
+      To apply: run `! pnpm db:deploy` in the session, or authorize me to. Then `pnpm db:check` should show zero drift.
+- Note: 2 governed bypasses (ExtractedDetail, ProposalAction) are now in bypasses.json baseline — merging = accepting them.
 
 ---
 
-# (prior run, COMPLETE) Port: Kanban v2 + Call Planner → `port/kanban-call-planner`
-Branch ready, NOT merged (db:deploy at merge). 5 commits; 2 bypasses pending user sign-off.
-Full detail preserved in git history + manifest/notes.md §52. See commit 392bbc764 and prior.
+# (prior run) Port: Kanban v2 + Call Planner — MERGED to main 2026-06-13 (see Review above)
+Migration deploy pending user sign-off. Full detail: manifest/notes.md §52.
