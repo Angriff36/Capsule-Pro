@@ -39,6 +39,12 @@
       "!!**/test/mocks",
       "!!**/.codex",
       "!!**/.claude",
+      // Agent/dev tooling state dirs — not app source (notifications, skill
+      // state, Preview.js cache). They inflate the lint surface with noise.
+      "!!**/.aboardai",
+      "!!**/.superpowers",
+      "!!**/.aboardai-state",
+      "!!**/__previewjs__",
       "!!**/codex-plans",
       "!!**/claude-code-plans",
       "!!**/out",
