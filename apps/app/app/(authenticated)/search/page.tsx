@@ -256,7 +256,9 @@ const GROUP_CONFIG: Record<
     icon: <Receipt className="size-4" />,
     href: (item) => `/accounting/invoices/${item.id}`,
     title: (item) =>
-      `Invoice ${item.invoiceNumber as string}` || "Unknown Invoice",
+      item.invoiceNumber
+        ? `Invoice ${item.invoiceNumber as string}`
+        : "Unknown Invoice",
     description: (item) => (
       <p className="text-muted-foreground text-sm">
         {(item.invoiceType as string) || ""}
