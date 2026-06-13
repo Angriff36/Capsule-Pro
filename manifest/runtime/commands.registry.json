@@ -66,8 +66,18 @@
   },
   {
     "entity": "AdminTask",
+    "command": "moveCard",
+    "commandId": "AdminTask.moveCard"
+  },
+  {
+    "entity": "AdminTask",
     "command": "moveToBacklog",
     "commandId": "AdminTask.moveToBacklog"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "reorder",
+    "commandId": "AdminTask.reorder"
   },
   {
     "entity": "AdminTask",
@@ -88,6 +98,51 @@
     "entity": "AdminTask",
     "command": "update",
     "commandId": "AdminTask.update"
+  },
+  {
+    "entity": "AdminTaskAttachment",
+    "command": "create",
+    "commandId": "AdminTaskAttachment.create"
+  },
+  {
+    "entity": "AdminTaskAttachment",
+    "command": "softDelete",
+    "commandId": "AdminTaskAttachment.softDelete"
+  },
+  {
+    "entity": "AdminTaskComment",
+    "command": "create",
+    "commandId": "AdminTaskComment.create"
+  },
+  {
+    "entity": "AdminTaskComment",
+    "command": "softDelete",
+    "commandId": "AdminTaskComment.softDelete"
+  },
+  {
+    "entity": "AdminTaskComment",
+    "command": "update",
+    "commandId": "AdminTaskComment.update"
+  },
+  {
+    "entity": "AdminTaskDevMeta",
+    "command": "create",
+    "commandId": "AdminTaskDevMeta.create"
+  },
+  {
+    "entity": "AdminTaskDevMeta",
+    "command": "update",
+    "commandId": "AdminTaskDevMeta.update"
+  },
+  {
+    "entity": "AdminTaskFileRef",
+    "command": "create",
+    "commandId": "AdminTaskFileRef.create"
+  },
+  {
+    "entity": "AdminTaskFileRef",
+    "command": "softDelete",
+    "commandId": "AdminTaskFileRef.softDelete"
   },
   {
     "entity": "AiEventSetupSession",
@@ -345,6 +400,26 @@
     "commandId": "BoardAnnotation.update"
   },
   {
+    "entity": "BoardConfig",
+    "command": "create",
+    "commandId": "BoardConfig.create"
+  },
+  {
+    "entity": "BoardConfig",
+    "command": "softDelete",
+    "commandId": "BoardConfig.softDelete"
+  },
+  {
+    "entity": "BoardConfig",
+    "command": "updateColumns",
+    "commandId": "BoardConfig.updateColumns"
+  },
+  {
+    "entity": "BoardConfig",
+    "command": "updateSettings",
+    "commandId": "BoardConfig.updateSettings"
+  },
+  {
     "entity": "BoardProjection",
     "command": "create",
     "commandId": "BoardProjection.create"
@@ -478,6 +553,36 @@
     "entity": "BulkOrderRule",
     "command": "update",
     "commandId": "BulkOrderRule.update"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "abandon",
+    "commandId": "CallPlanningSession.abandon"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "complete",
+    "commandId": "CallPlanningSession.complete"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "create",
+    "commandId": "CallPlanningSession.create"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "finalize",
+    "commandId": "CallPlanningSession.finalize"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "start",
+    "commandId": "CallPlanningSession.start"
+  },
+  {
+    "entity": "CallPlanningSession",
+    "command": "updateTranscript",
+    "commandId": "CallPlanningSession.updateTranscript"
   },
   {
     "entity": "CateringOrder",
@@ -1688,6 +1793,56 @@
     "entity": "EventImportWorkflow",
     "command": "startValidating",
     "commandId": "EventImportWorkflow.startValidating"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "confirmDetail",
+    "commandId": "EventPlanningDraft.confirmDetail"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "convertToEvent",
+    "commandId": "EventPlanningDraft.convertToEvent"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "create",
+    "commandId": "EventPlanningDraft.create"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "expire",
+    "commandId": "EventPlanningDraft.expire"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "markReview",
+    "commandId": "EventPlanningDraft.markReview"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "updateBudget",
+    "commandId": "EventPlanningDraft.updateBudget"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "updateField",
+    "commandId": "EventPlanningDraft.updateField"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "updateGuestCount",
+    "commandId": "EventPlanningDraft.updateGuestCount"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "updateMenuPreferences",
+    "commandId": "EventPlanningDraft.updateMenuPreferences"
+  },
+  {
+    "entity": "EventPlanningDraft",
+    "command": "updateVenue",
+    "commandId": "EventPlanningDraft.updateVenue"
   },
   {
     "entity": "EventProfitability",
@@ -3418,6 +3573,56 @@
     "entity": "Proposal",
     "command": "withdraw",
     "commandId": "Proposal.withdraw"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "approve",
+    "commandId": "ProposalDraft.approve"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "create",
+    "commandId": "ProposalDraft.create"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "generateHtml",
+    "commandId": "ProposalDraft.generateHtml"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "markConverted",
+    "commandId": "ProposalDraft.markConverted"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "markExpired",
+    "commandId": "ProposalDraft.markExpired"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "recordView",
+    "commandId": "ProposalDraft.recordView"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "refreshToken",
+    "commandId": "ProposalDraft.refreshToken"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "requestChanges",
+    "commandId": "ProposalDraft.requestChanges"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "send",
+    "commandId": "ProposalDraft.send"
+  },
+  {
+    "entity": "ProposalDraft",
+    "command": "update",
+    "commandId": "ProposalDraft.update"
   },
   {
     "entity": "ProposalLineItem",

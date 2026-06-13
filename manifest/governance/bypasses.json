@@ -338,6 +338,32 @@
       "approvedDate": "2026-06-09",
       "reviewDate": "2026-09-09",
       "path": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts"
+    },
+    {
+      "entity": "ExtractedDetail",
+      "file": "apps/api/app/api/call-planner/transcript/route.ts",
+      "lines": "181-204",
+      "method": "database.extractedDetail.createMany",
+      "reason": "Child rows of the EventPlanningDraft extraction pipeline; written only inside their parent flow (transcript processing, immediately after governed CallPlanningSession.create and EventPlanningDraft.create); tenant-scoped. ExtractedDetail deliberately has no Manifest entity yet. PENDING USER SIGN-OFF (entry added 2026-06-12 as part of the call-planner governance port).",
+      "whyBypassSafe": "Append-only extraction evidence rows with no state machine, business rules, or governance policies of their own — the governed domain state lives on EventPlanningDraft, which is created via Manifest runtime in the same flow. Batch createMany of N evidence rows has no per-row invariants to enforce.",
+      "tenantBoundary": "createMany rows all carry tenantId from resolveCurrentUser(); sessionId/draftId come from governed creates in the same tenant",
+      "owner": "Ryan",
+      "approvedDate": "2026-06-12",
+      "reviewDate": "2026-08-12",
+      "path": "apps/api/app/api/call-planner/transcript/route.ts"
+    },
+    {
+      "entity": "ProposalAction",
+      "file": "apps/api/app/api/public/proposals-draft/[token]/route.ts",
+      "lines": "246-258",
+      "method": "database.proposalAction.create",
+      "reason": "Public proposal response audit trail; written only inside its parent flow (after the governed ProposalDraft.approve/requestChanges transition runs via Manifest runtime with the tenant system actor); tenant-scoped via the proposal row. ProposalAction deliberately has no Manifest entity yet. PENDING USER SIGN-OFF (entry added 2026-06-12 as part of the call-planner governance port).",
+      "whyBypassSafe": "Append-only audit log recording who responded to a proposal and how — infrastructure metadata, not domain state. The actual domain transition (ProposalDraft status) is governed and executes via runCommand before this insert.",
+      "tenantBoundary": "Create scoped by tenantId read from the magic-token-resolved ProposalDraft row; magicToken is globally unique",
+      "owner": "Ryan",
+      "approvedDate": "2026-06-12",
+      "reviewDate": "2026-08-12",
+      "path": "apps/api/app/api/public/proposals-draft/[token]/route.ts"
     }
   ]
 }

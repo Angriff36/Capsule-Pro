@@ -1,0 +1,296 @@
+tenant tenantId : string from context.tenantId
+// AI Call Planner - Event Planning Draft Rules
+// Manifest spec for event planning draft lifecycle
+
+entity EventPlanningDraft {
+  key [tenantId, id]
+  property required id: string
+  indexed property required tenantId: string
+  indexed property required sessionId: string
+  property required userId: string
+  indexed property status: string = "active"
+  searchable property clientName: string = ""
+  property clientContactId: string = ""
+  property eventType: string = ""
+  property eventDate: datetime
+  property eventTime: string = ""
+  property guestCount: int = 0
+  property guestCountMin: int = 0
+  property guestCountMax: int = 0
+  property venuePreference: string = ""
+  property venueId: string = ""
+  property serviceStyle: string = ""
+  property dietaryRestrictions: string = ""
+  // menuPreferences/customItems: JSON-as-string payloads (Manifest IR grammar
+  // has no object kind; same pattern as CommandBoard.metadata).
+  property menuPreferences: string = "{}"
+  property budgetMin: money = 0
+  property budgetMax: money = 0
+  property packageIds: array<string> = []
+  property addOnIds: array<string> = []
+  property customItems: string = "{}"
+  property timelineNotes: string = ""
+  property openQuestions: array<string> = []
+  property specialNotes: string = ""
+  property aiSummary: string = ""
+  property overallConfidence: decimal = 0
+  property convertedEventId: string = ""
+  property proposalId: string = ""
+  property expiresAt: datetime
+  timestamps
+  property deletedAt: datetime
+
+  computed isActive: boolean = self.status == "active"
+  computed isReview: boolean = self.status == "review"
+  computed isConverted: boolean = self.status == "converted"
+  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now()
+  computed hasVenue: boolean = self.venueId != null and self.venueId != ""
+  computed hasBudget: boolean = self.budgetMin > 0 or self.budgetMax > 0
+  computed hasPackages: boolean = length(self.packageIds) > 0
+  computed isHighConfidence: boolean = self.overallConfidence >= 0.8
+  computed hasClientName: boolean = self.clientName != null and self.clientName != ""
+  computed hasEventDate: boolean = self.eventDate != null
+  computed hasGuestCount: boolean = self.guestCount > 0 or (self.guestCountMin > 0 and self.guestCountMax > 0)
+
+  constraint validStatus: self.status in ["active", "review", "converted", "expired"] "Invalid draft status"
+  constraint validGuestCountRange: self.guestCountMin == 0 or self.guestCountMax == 0 or self.guestCountMin <= self.guestCountMax "Invalid guest count range"
+  constraint validBudgetRange: self.budgetMin == 0 or self.budgetMax == 0 or self.budgetMin <= self.budgetMax "Invalid budget range"
+
+  // State transitions — derived exactly from the command guards below
+  // (markReview, convertToEvent, expire). The initial "active" state comes
+  // from the property default; create must NOT re-mutate it (the runtime
+  // rejects no-op self-transitions). converted/expired are terminal.
+  transition status from "active" to ["review", "expired"]
+  transition status from "review" to ["converted", "expired"]
+
+  constraint warnMissingClientName:warn self.hasClientName == false {
+    messageTemplate: "Draft missing client name"
+    details: {
+      draftId: self.id
+    }
+  }
+
+  constraint warnMissingEventDate:warn self.hasEventDate == false {
+    messageTemplate: "Draft missing event date"
+    details: {
+      draftId: self.id
+    }
+  }
+
+  constraint warnMissingGuestCount:warn self.hasGuestCount == false {
+    messageTemplate: "Draft missing guest count"
+    details: {
+      draftId: self.id
+    }
+  }
+
+  constraint warnLowConfidence:warn self.isHighConfidence == false {
+    messageTemplate: "Draft has low overall confidence ({confidence}%)"
+    details: {
+      draftId: self.id
+      confidence: (self.overallConfidence * 100)
+    }
+  }
+
+  default policy EventPlanningDraftDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI call planner drafts"
+
+  command create(sessionId: string, userId: string) {
+    guard sessionId != null and sessionId != "" "Session ID is required"
+    guard userId != null and userId != "" "User ID is required"
+
+    // `status` is intentionally NOT mutated: the property default seeds the
+    // initial "active" state and active -> active is a rejected no-op
+    // self-transition under the rules above.
+    mutate sessionId = sessionId
+    mutate userId = userId
+    mutate packageIds = []
+    mutate addOnIds = []
+    mutate openQuestions = []
+
+    emit EventPlanningDraftCreated
+  }
+
+  // String values flow through `value`; typed fields (guestCount, eventDate)
+  // flow through the typed optional params because the DSL has no int()/
+  // datetime() cast builtins. A non-matching field name leaves every other
+  // property at its current value (ternary fallback - the DSL has no
+  // conditional statement form).
+  command updateField(fieldName: string, value: string, optional numericValue: int, optional dateValue: datetime, optional normalizedValue: string, confidence: decimal) {
+    guard self.isActive or self.isReview "Can only update active or review drafts"
+    guard fieldName != null and fieldName != "" "Field name is required"
+
+    constraint warnLowConfidenceUpdate:warn confidence < 0.6 {
+      messageTemplate: "Updating field '{fieldName}' with low confidence ({confidence}%)"
+      details: {
+        fieldName: fieldName
+        confidence: (confidence * 100)
+        value: value
+      }
+    }
+
+    mutate clientName = fieldName == "clientName" ? value : self.clientName
+    mutate eventType = fieldName == "eventType" ? value : self.eventType
+    mutate eventTime = fieldName == "eventTime" ? value : self.eventTime
+    mutate guestCount = fieldName == "guestCount" and numericValue != null ? numericValue : self.guestCount
+    mutate venuePreference = fieldName == "venuePreference" ? value : self.venuePreference
+    mutate serviceStyle = fieldName == "serviceStyle" ? value : self.serviceStyle
+    mutate dietaryRestrictions = fieldName == "dietaryRestrictions" ? value : self.dietaryRestrictions
+    mutate timelineNotes = fieldName == "timelineNotes" ? value : self.timelineNotes
+    mutate specialNotes = fieldName == "specialNotes" ? value : self.specialNotes
+    mutate aiSummary = fieldName == "aiSummary" ? value : self.aiSummary
+    mutate venueId = fieldName == "venueId" ? value : self.venueId
+    mutate eventDate = fieldName == "eventDate" and dateValue != null ? dateValue : self.eventDate
+    mutate overallConfidence = confidence
+
+    emit EventPlanningDraftUpdated
+  }
+
+  command confirmDetail(fieldName: string, confirmedValue: string, optional numericValue: int) {
+    guard self.isActive or self.isReview "Can only confirm details for active or review drafts"
+
+    mutate clientName = fieldName == "clientName" ? confirmedValue : self.clientName
+    mutate eventType = fieldName == "eventType" ? confirmedValue : self.eventType
+    mutate eventTime = fieldName == "eventTime" ? confirmedValue : self.eventTime
+    mutate guestCount = fieldName == "guestCount" and numericValue != null ? numericValue : self.guestCount
+    mutate venuePreference = fieldName == "venuePreference" ? confirmedValue : self.venuePreference
+    mutate serviceStyle = fieldName == "serviceStyle" ? confirmedValue : self.serviceStyle
+
+    emit EventPlanningDetailConfirmed
+  }
+
+  command updateBudget(budgetMin: money, budgetMax: money) {
+    guard self.isActive or self.isReview "Can only update budget for active or review drafts"
+
+    constraint warnInvalidBudget:warn budgetMin > budgetMax {
+      messageTemplate: "Invalid budget range: min ({min}) exceeds max ({max})"
+      details: {
+        min: budgetMin
+        max: budgetMax
+      }
+    }
+
+    mutate budgetMin = budgetMin
+    mutate budgetMax = budgetMax
+
+    emit EventPlanningBudgetUpdated
+  }
+
+  command updateGuestCount(guestCount: int, guestCountMin: int, guestCountMax: int) {
+    guard self.isActive or self.isReview "Can only update guest count for active or review drafts"
+
+    mutate guestCount = guestCount
+    mutate guestCountMin = guestCountMin
+    mutate guestCountMax = guestCountMax
+
+    emit EventPlanningGuestCountUpdated
+  }
+
+  command updateMenuPreferences(menuPreferences: string) {
+    guard self.isActive or self.isReview "Can only update menu preferences for active or review drafts"
+    guard menuPreferences != null "Menu preferences are required"
+
+    mutate menuPreferences = menuPreferences
+
+    emit EventPlanningMenuUpdated
+  }
+
+  command updateVenue(venueId: string, venuePreference: string) {
+    guard self.isActive or self.isReview "Can only update venue for active or review drafts"
+
+    mutate venueId = venueId
+    mutate venuePreference = venuePreference
+
+    emit EventPlanningVenueUpdated
+  }
+
+  command markReview() {
+    guard self.isActive "Can only mark active drafts for review"
+
+    mutate status = "review"
+
+    emit EventPlanningDraftMarkedReview
+  }
+
+  command convertToEvent(eventId: string) {
+    guard self.isReview "Can only convert review drafts to events"
+    guard eventId != null and eventId != "" "Event ID is required"
+
+    mutate status = "converted"
+    mutate convertedEventId = eventId
+
+    emit EventPlanningDraftConverted
+  }
+
+  command expire() {
+    guard self.isActive or self.isReview "Can only expire active or review drafts"
+
+    mutate status = "expired"
+    mutate expiresAt = now()
+
+    emit EventPlanningDraftExpired
+  }
+
+  store EventPlanningDraft in durable
+}
+
+policy EventPlanningDraftManagement execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "Staff and above can manage planning drafts"
+
+event EventPlanningDraftCreated: "call-planner.draft.created" {
+  draftId: string
+  tenantId: string
+  sessionId: string
+  userId: string
+  createdAt: datetime
+}
+
+event EventPlanningDraftUpdated: "call-planner.draft.updated" {
+  draftId: string
+  fieldName: string
+  updatedAt: datetime
+}
+
+event EventPlanningDetailConfirmed: "call-planner.draft.detail-confirmed" {
+  draftId: string
+  fieldName: string
+  updatedAt: datetime
+}
+
+event EventPlanningBudgetUpdated: "call-planner.draft.budget-updated" {
+  draftId: string
+  budgetMin: money
+  budgetMax: money
+  updatedAt: datetime
+}
+
+event EventPlanningGuestCountUpdated: "call-planner.draft.guest-count-updated" {
+  draftId: string
+  guestCount: int
+  updatedAt: datetime
+}
+
+event EventPlanningMenuUpdated: "call-planner.draft.menu-updated" {
+  draftId: string
+  updatedAt: datetime
+}
+
+event EventPlanningVenueUpdated: "call-planner.draft.venue-updated" {
+  draftId: string
+  venueId: string
+  updatedAt: datetime
+}
+
+event EventPlanningDraftMarkedReview: "call-planner.draft.marked-review" {
+  draftId: string
+  updatedAt: datetime
+}
+
+event EventPlanningDraftConverted: "call-planner.draft.converted" {
+  draftId: string
+  eventId: string
+  updatedAt: datetime
+}
+
+event EventPlanningDraftExpired: "call-planner.draft.expired" {
+  draftId: string
+  expiresAt: datetime
+}

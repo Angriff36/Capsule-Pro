@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     database.adminTask.count({ where }),
     database.adminTask.findMany({
       where,
-      orderBy: [{ createdAt: "desc" }],
+      orderBy: [{ position: "asc" }, { createdAt: "desc" }],
       skip: (page - 1) * limit,
       take: limit,
     }),

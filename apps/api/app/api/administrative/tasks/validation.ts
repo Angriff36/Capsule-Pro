@@ -5,7 +5,10 @@ import { z } from "zod";
 // Authoritative AdminTask states — the operational Kanban's four columns
 // (backlog/in_progress/review/done) plus the `cancelled` side-state. Mirrors
 // the state machine in manifest/source/admin-task-rules.manifest. (`todo` was
-// removed; no product surface used it.)
+// removed; no product surface used it. The Kanban v2 dev-mode columns
+// `blocked`/`ready_for_qa` are NOT yet part of the state machine — they need
+// new commands/transitions in admin-task-rules.manifest before they can be
+// accepted here.)
 export const ADMIN_TASK_STATUSES = [
   "backlog",
   "in_progress",

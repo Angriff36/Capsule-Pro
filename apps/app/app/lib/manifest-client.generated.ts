@@ -3,7 +3,7 @@
 // dispatcher writes, apiFetch. Regenerate after IR/domain-map changes.
 import { apiFetch } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
-import type { ActionMilestone, AdminChatMessage, AdminChatParticipant, AdminChatThread, AdminTask, AiEventSetupSession, AlertsConfig, AllergenWarning, ApiKey, AuditSchedule, AutomatedFollowup, BankAccount, BattleBoard, BoardAnnotation, BoardProjection, Budget, BudgetAlert, BudgetLineItem, BulkCombineRule, BulkOrderRule, CateringOrder, ChartOfAccount, Client, ClientContact, ClientInteraction, ClientPreference, CollectionAction, CollectionCase, CollectionPaymentPlan, CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, Container, ContractSignature, CorrectiveAction, CrmScoringRule, CycleCountRecord, CycleCountSession, Deal, DeliveryRoute, DisciplinaryAction, Dish, Document, DocumentVersion, Driver, EmailTemplate, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EntityVersion, Equipment, Event, EventBudget, EventContract, EventDish, EventFollowup, EventGuest, EventImport, EventImportWorkflow, EventProfitability, EventReport, EventStaff, EventSummary, EventTimeline, EventTimelineItem, EventWaitlistEntry, Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder, ForecastInput, Ingredient, InteractionAttachment, InventoryAlert, InventoryForecast, InventoryItem, InventoryStock, InventorySupplier, InventoryTransaction, InventoryTransfer, InventoryTransferItem, Invoice, IoTAlert, IotAlertRule, KitchenTask, KitchenTaskClaim, KitchenTaskProgress, KnowledgeBaseEntry, LaborBudget, Lead, LogisticsDispatch, LogisticsRoute, MaintenanceWorkOrder, Menu, MenuDish, MethodVideo, Note, Notification, OnboardingCompletion, OnboardingTask, OpenShift, OverrideAudit, Payment, PaymentMethod, PaymentRefundAttempt, PayrollApprovalHistory, PayrollLineItem, PayrollPeriod, PayrollRun, PerformancePrediction, PerformanceReview, PrepComment, PrepList, PrepListImport, PrepListItem, PrepMethod, PrepTask, PrepTaskPlanWorkflow, PreventiveMaintenanceSchedule, PricingTier, ProcurementBudget, ProcurementBudgetAlert, Proposal, ProposalLineItem, ProposalTemplate, PurchaseOrder, PurchaseOrderItem, PurchaseRequisition, PurchaseRequisitionItem, QACheck, QACorrectiveAction, QATemperatureLog, QualityCheck, QualityCheckItem, RateLimitConfig, Recipe, RecipeIngredient, RecipeStep, RecipeVersion, ReorderSuggestion, Report, RevenueRecognitionLine, RevenueRecognitionSchedule, RolePolicy, RouteStop, SampleData, Schedule, ScheduleShift, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, Shipment, ShipmentItem, SmsAutomationRule, StaffMember, StaffPerformance, StaffTrainingSignal, Station, StorageLocation, TaskBundle, TaskBundleItem, TemperatureLog, TemperatureProbe, TemperatureReading, TimeEntry, TimeOffRequest, TimecardApproval, TimecardEditRequest, TimelineTask, TipPool, TrainingAssignment, TrainingAttempt, TrainingCompletion, TrainingModule, TrainingQuestion, User, VarianceReport, Vehicle, Vendor, VendorCatalog, VendorContact, VendorContract, VendorRating, Venue, VersionApproval, VersionedEntity, WasteEntry, WorkOrder, Workflow, WorkforceOptimization } from "./manifest-types.generated";
+import type { ActionMilestone, AdminChatMessage, AdminChatParticipant, AdminChatThread, AdminTask, AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, AiEventSetupSession, AlertsConfig, AllergenWarning, ApiKey, AuditSchedule, AutomatedFollowup, BankAccount, BattleBoard, BoardAnnotation, BoardConfig, BoardProjection, Budget, BudgetAlert, BudgetLineItem, BulkCombineRule, BulkOrderRule, CallPlanningSession, CateringOrder, ChartOfAccount, Client, ClientContact, ClientInteraction, ClientPreference, CollectionAction, CollectionCase, CollectionPaymentPlan, CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, Container, ContractSignature, CorrectiveAction, CrmScoringRule, CycleCountRecord, CycleCountSession, Deal, DeliveryRoute, DisciplinaryAction, Dish, Document, DocumentVersion, Driver, EmailTemplate, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EntityVersion, Equipment, Event, EventBudget, EventContract, EventDish, EventFollowup, EventGuest, EventImport, EventImportWorkflow, EventPlanningDraft, EventProfitability, EventReport, EventStaff, EventSummary, EventTimeline, EventTimelineItem, EventWaitlistEntry, Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder, ForecastInput, Ingredient, InteractionAttachment, InventoryAlert, InventoryForecast, InventoryItem, InventoryStock, InventorySupplier, InventoryTransaction, InventoryTransfer, InventoryTransferItem, Invoice, IoTAlert, IotAlertRule, KitchenTask, KitchenTaskClaim, KitchenTaskProgress, KnowledgeBaseEntry, LaborBudget, Lead, LogisticsDispatch, LogisticsRoute, MaintenanceWorkOrder, Menu, MenuDish, MethodVideo, Note, Notification, OnboardingCompletion, OnboardingTask, OpenShift, OverrideAudit, Payment, PaymentMethod, PaymentRefundAttempt, PayrollApprovalHistory, PayrollLineItem, PayrollPeriod, PayrollRun, PerformancePrediction, PerformanceReview, PrepComment, PrepList, PrepListImport, PrepListItem, PrepMethod, PrepTask, PrepTaskPlanWorkflow, PreventiveMaintenanceSchedule, PricingTier, ProcurementBudget, ProcurementBudgetAlert, Proposal, ProposalDraft, ProposalLineItem, ProposalTemplate, PurchaseOrder, PurchaseOrderItem, PurchaseRequisition, PurchaseRequisitionItem, QACheck, QACorrectiveAction, QATemperatureLog, QualityCheck, QualityCheckItem, RateLimitConfig, Recipe, RecipeIngredient, RecipeStep, RecipeVersion, ReorderSuggestion, Report, RevenueRecognitionLine, RevenueRecognitionSchedule, RolePolicy, RouteStop, SampleData, Schedule, ScheduleShift, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, Shipment, ShipmentItem, SmsAutomationRule, StaffMember, StaffPerformance, StaffTrainingSignal, Station, StorageLocation, TaskBundle, TaskBundleItem, TemperatureLog, TemperatureProbe, TemperatureReading, TimeEntry, TimeOffRequest, TimecardApproval, TimecardEditRequest, TimelineTask, TipPool, TrainingAssignment, TrainingAttempt, TrainingCompletion, TrainingModule, TrainingQuestion, User, VarianceReport, Vehicle, Vendor, VendorCatalog, VendorContact, VendorContract, VendorRating, Venue, VersionApproval, VersionedEntity, WasteEntry, WorkOrder, Workflow, WorkforceOptimization } from "./manifest-types.generated";
 
 /** Paginated list response matching Capsule API envelope. */
 export interface PaginatedResponse<T> {
@@ -2851,6 +2851,70 @@ export async function aiEventSetupSessionUpdateConfidence(input: AiEventSetupSes
   const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "updateConfidence", input as Record<string, unknown>);
   return r.result;
 }
+export async function callPlanningSessionCreate(input: CallPlanningSessionCreateInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function callPlanningSessionStart(input: CallPlanningSessionStartInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "start", input as Record<string, unknown>);
+  return r.result;
+}
+export async function callPlanningSessionFinalize(input: CallPlanningSessionFinalizeInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "finalize", input as Record<string, unknown>);
+  return r.result;
+}
+export async function callPlanningSessionComplete(input: CallPlanningSessionCompleteInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "complete", input as Record<string, unknown>);
+  return r.result;
+}
+export async function callPlanningSessionAbandon(input: CallPlanningSessionAbandonInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "abandon", input as Record<string, unknown>);
+  return r.result;
+}
+export async function callPlanningSessionUpdateTranscript(input: CallPlanningSessionUpdateTranscriptInput = {}): Promise<CallPlanningSession | undefined> {
+  const r = await executeCommand<CallPlanningSession>("CallPlanningSession", "updateTranscript", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftCreate(input: EventPlanningDraftCreateInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftUpdateField(input: EventPlanningDraftUpdateFieldInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "updateField", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftConfirmDetail(input: EventPlanningDraftConfirmDetailInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "confirmDetail", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftUpdateBudget(input: EventPlanningDraftUpdateBudgetInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "updateBudget", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftUpdateGuestCount(input: EventPlanningDraftUpdateGuestCountInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "updateGuestCount", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftUpdateMenuPreferences(input: EventPlanningDraftUpdateMenuPreferencesInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "updateMenuPreferences", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftUpdateVenue(input: EventPlanningDraftUpdateVenueInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "updateVenue", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftMarkReview(input: EventPlanningDraftMarkReviewInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "markReview", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftConvertToEvent(input: EventPlanningDraftConvertToEventInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "convertToEvent", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventPlanningDraftExpire(input: EventPlanningDraftExpireInput = {}): Promise<EventPlanningDraft | undefined> {
+  const r = await executeCommand<EventPlanningDraft>("EventPlanningDraft", "expire", input as Record<string, unknown>);
+  return r.result;
+}
 export async function knowledgeBaseEntryCreate(input: KnowledgeBaseEntryCreateInput = {}): Promise<KnowledgeBaseEntry | undefined> {
   const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "create", input as Record<string, unknown>);
   return r.result;
@@ -2875,6 +2939,46 @@ export async function knowledgeBaseEntryRecordView(input: KnowledgeBaseEntryReco
   const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "recordView", input as Record<string, unknown>);
   return r.result;
 }
+export async function proposalDraftCreate(input: ProposalDraftCreateInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftUpdate(input: ProposalDraftUpdateInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftGenerateHtml(input: ProposalDraftGenerateHtmlInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "generateHtml", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftSend(input: ProposalDraftSendInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "send", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftRecordView(input: ProposalDraftRecordViewInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "recordView", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftApprove(input: ProposalDraftApproveInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "approve", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftRequestChanges(input: ProposalDraftRequestChangesInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "requestChanges", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftMarkExpired(input: ProposalDraftMarkExpiredInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "markExpired", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftMarkConverted(input: ProposalDraftMarkConvertedInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "markConverted", input as Record<string, unknown>);
+  return r.result;
+}
+export async function proposalDraftRefreshToken(input: ProposalDraftRefreshTokenInput = {}): Promise<ProposalDraft | undefined> {
+  const r = await executeCommand<ProposalDraft>("ProposalDraft", "refreshToken", input as Record<string, unknown>);
+  return r.result;
+}
 export async function adminChatParticipantCreate(input: AdminChatParticipantCreateInput = {}): Promise<AdminChatParticipant | undefined> {
   const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "create", input as Record<string, unknown>);
   return r.result;
@@ -2891,12 +2995,56 @@ export async function adminChatParticipantClearHistory(input: AdminChatParticipa
   const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "clearHistory", input as Record<string, unknown>);
   return r.result;
 }
+export async function adminTaskAttachmentCreate(input: AdminTaskAttachmentCreateInput = {}): Promise<AdminTaskAttachment | undefined> {
+  const r = await executeCommand<AdminTaskAttachment>("AdminTaskAttachment", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskAttachmentSoftDelete(input: AdminTaskAttachmentSoftDeleteInput = {}): Promise<AdminTaskAttachment | undefined> {
+  const r = await executeCommand<AdminTaskAttachment>("AdminTaskAttachment", "softDelete", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskCommentCreate(input: AdminTaskCommentCreateInput = {}): Promise<AdminTaskComment | undefined> {
+  const r = await executeCommand<AdminTaskComment>("AdminTaskComment", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskCommentUpdate(input: AdminTaskCommentUpdateInput = {}): Promise<AdminTaskComment | undefined> {
+  const r = await executeCommand<AdminTaskComment>("AdminTaskComment", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskCommentSoftDelete(input: AdminTaskCommentSoftDeleteInput = {}): Promise<AdminTaskComment | undefined> {
+  const r = await executeCommand<AdminTaskComment>("AdminTaskComment", "softDelete", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskDevMetaCreate(input: AdminTaskDevMetaCreateInput = {}): Promise<AdminTaskDevMeta | undefined> {
+  const r = await executeCommand<AdminTaskDevMeta>("AdminTaskDevMeta", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskDevMetaUpdate(input: AdminTaskDevMetaUpdateInput = {}): Promise<AdminTaskDevMeta | undefined> {
+  const r = await executeCommand<AdminTaskDevMeta>("AdminTaskDevMeta", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskFileRefCreate(input: AdminTaskFileRefCreateInput = {}): Promise<AdminTaskFileRef | undefined> {
+  const r = await executeCommand<AdminTaskFileRef>("AdminTaskFileRef", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskFileRefSoftDelete(input: AdminTaskFileRefSoftDeleteInput = {}): Promise<AdminTaskFileRef | undefined> {
+  const r = await executeCommand<AdminTaskFileRef>("AdminTaskFileRef", "softDelete", input as Record<string, unknown>);
+  return r.result;
+}
 export async function adminTaskCreate(input: AdminTaskCreateInput = {}): Promise<AdminTask | undefined> {
   const r = await executeCommand<AdminTask>("AdminTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminTaskUpdate(input: AdminTaskUpdateInput = {}): Promise<AdminTask | undefined> {
   const r = await executeCommand<AdminTask>("AdminTask", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskMoveCard(input: AdminTaskMoveCardInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "moveCard", input as Record<string, unknown>);
+  return r.result;
+}
+export async function adminTaskReorder(input: AdminTaskReorderInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "reorder", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminTaskMoveToBacklog(input: AdminTaskMoveToBacklogInput = {}): Promise<AdminTask | undefined> {
@@ -2985,6 +3133,22 @@ export async function bankAccountVerifyFailed(input: BankAccountVerifyFailedInpu
 }
 export async function bankAccountRetryVerification(input: BankAccountRetryVerificationInput = {}): Promise<BankAccount | undefined> {
   const r = await executeCommand<BankAccount>("BankAccount", "retryVerification", input as Record<string, unknown>);
+  return r.result;
+}
+export async function boardConfigCreate(input: BoardConfigCreateInput = {}): Promise<BoardConfig | undefined> {
+  const r = await executeCommand<BoardConfig>("BoardConfig", "create", input as Record<string, unknown>);
+  return r.result;
+}
+export async function boardConfigUpdateColumns(input: BoardConfigUpdateColumnsInput = {}): Promise<BoardConfig | undefined> {
+  const r = await executeCommand<BoardConfig>("BoardConfig", "updateColumns", input as Record<string, unknown>);
+  return r.result;
+}
+export async function boardConfigUpdateSettings(input: BoardConfigUpdateSettingsInput = {}): Promise<BoardConfig | undefined> {
+  const r = await executeCommand<BoardConfig>("BoardConfig", "updateSettings", input as Record<string, unknown>);
+  return r.result;
+}
+export async function boardConfigSoftDelete(input: BoardConfigSoftDeleteInput = {}): Promise<BoardConfig | undefined> {
+  const r = await executeCommand<BoardConfig>("BoardConfig", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function chartOfAccountCreate(input: ChartOfAccountCreateInput = {}): Promise<ChartOfAccount | undefined> {
@@ -6862,6 +7026,94 @@ export interface AiEventSetupSessionUpdateConfidenceInput {
   suggestions?: string;
 }
 
+export interface CallPlanningSessionCreateInput {
+  userId?: string;
+  sourceType?: string;
+  transcriptText?: string;
+}
+
+export interface CallPlanningSessionStartInput {
+  id?: string;
+  sourceType?: string;
+  userId?: string;
+}
+
+export interface CallPlanningSessionFinalizeInput {
+  id?: string;
+}
+
+export interface CallPlanningSessionCompleteInput {
+  id?: string;
+}
+
+export interface CallPlanningSessionAbandonInput {
+  id?: string;
+}
+
+export interface CallPlanningSessionUpdateTranscriptInput {
+  id?: string;
+  transcriptText?: string;
+}
+
+export interface EventPlanningDraftCreateInput {
+  sessionId?: string;
+  userId?: string;
+}
+
+export interface EventPlanningDraftUpdateFieldInput {
+  id?: string;
+  fieldName?: string;
+  value?: string;
+  numericValue?: number;
+  dateValue?: string;
+  normalizedValue?: string;
+  confidence?: number;
+}
+
+export interface EventPlanningDraftConfirmDetailInput {
+  id?: string;
+  fieldName?: string;
+  confirmedValue?: string;
+  numericValue?: number;
+}
+
+export interface EventPlanningDraftUpdateBudgetInput {
+  id?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+}
+
+export interface EventPlanningDraftUpdateGuestCountInput {
+  id?: string;
+  guestCount?: number;
+  guestCountMin?: number;
+  guestCountMax?: number;
+}
+
+export interface EventPlanningDraftUpdateMenuPreferencesInput {
+  id?: string;
+  menuPreferences?: string;
+}
+
+export interface EventPlanningDraftUpdateVenueInput {
+  id?: string;
+  venueId?: string;
+  venuePreference?: string;
+}
+
+export interface EventPlanningDraftMarkReviewInput {
+  id?: string;
+}
+
+export interface EventPlanningDraftConvertToEventInput {
+  id?: string;
+  eventId?: string;
+}
+
+export interface EventPlanningDraftExpireInput {
+  id?: string;
+}
+
 export interface KnowledgeBaseEntryCreateInput {
   title?: string;
   category?: string;
@@ -6895,6 +7147,79 @@ export interface KnowledgeBaseEntryRecordViewInput {
   id?: string;
 }
 
+export interface ProposalDraftCreateInput {
+  draftId?: string;
+  userId?: string;
+  title?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  eventSummary?: string;
+  menuSections?: string;
+  servicePlan?: string;
+  pricingBreakdown?: string;
+  timeline?: string;
+  upgradeOptions?: string;
+  visionSummary?: string;
+  notes?: string;
+  nextSteps?: string;
+  templateId?: string;
+}
+
+export interface ProposalDraftUpdateInput {
+  id?: string;
+  title?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  eventSummary?: string;
+  menuSections?: string;
+  servicePlan?: string;
+  pricingBreakdown?: string;
+  timeline?: string;
+  upgradeOptions?: string;
+  visionSummary?: string;
+  notes?: string;
+  nextSteps?: string;
+}
+
+export interface ProposalDraftGenerateHtmlInput {
+  id?: string;
+  htmlContent?: string;
+}
+
+export interface ProposalDraftSendInput {
+  id?: string;
+  deliveryMethod?: string;
+  expiresInDays?: number;
+}
+
+export interface ProposalDraftRecordViewInput {
+  id?: string;
+}
+
+export interface ProposalDraftApproveInput {
+  id?: string;
+  clientMessage?: string;
+}
+
+export interface ProposalDraftRequestChangesInput {
+  id?: string;
+  clientMessage?: string;
+}
+
+export interface ProposalDraftMarkExpiredInput {
+  id?: string;
+}
+
+export interface ProposalDraftMarkConvertedInput {
+  id?: string;
+}
+
+export interface ProposalDraftRefreshTokenInput {
+  id?: string;
+}
+
 export interface AdminChatParticipantCreateInput {
   threadId?: string;
   userId?: string;
@@ -6912,6 +7237,65 @@ export interface AdminChatParticipantClearHistoryInput {
   id?: string;
 }
 
+export interface AdminTaskAttachmentCreateInput {
+  taskId?: string;
+  fileName?: string;
+  fileUrl?: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedBy?: string;
+}
+
+export interface AdminTaskAttachmentSoftDeleteInput {
+  id?: string;
+}
+
+export interface AdminTaskCommentCreateInput {
+  taskId?: string;
+  authorId?: string;
+  authorName?: string;
+  text?: string;
+}
+
+export interface AdminTaskCommentUpdateInput {
+  id?: string;
+  text?: string;
+}
+
+export interface AdminTaskCommentSoftDeleteInput {
+  id?: string;
+}
+
+export interface AdminTaskDevMetaCreateInput {
+  taskId?: string;
+  severity?: string;
+  environment?: string;
+  stepsToRepro?: string;
+  expectedResult?: string;
+  actualResult?: string;
+}
+
+export interface AdminTaskDevMetaUpdateInput {
+  id?: string;
+  severity?: string;
+  environment?: string;
+  stepsToRepro?: string;
+  expectedResult?: string;
+  actualResult?: string;
+}
+
+export interface AdminTaskFileRefCreateInput {
+  taskId?: string;
+  refType?: string;
+  refId?: string;
+  refLabel?: string;
+  linkedBy?: string;
+}
+
+export interface AdminTaskFileRefSoftDeleteInput {
+  id?: string;
+}
+
 export interface AdminTaskCreateInput {
   title?: string;
   description?: string;
@@ -6921,6 +7305,11 @@ export interface AdminTaskCreateInput {
   assignedTo?: string;
   dueDate?: string;
   createdBy?: string;
+  sourceType?: string;
+  sourceId?: string;
+  position?: number;
+  labels?: string[];
+  estimatedHours?: number;
 }
 
 export interface AdminTaskUpdateInput {
@@ -6931,6 +7320,19 @@ export interface AdminTaskUpdateInput {
   category?: string;
   assignedTo?: string;
   dueDate?: string;
+  labels?: string[];
+  estimatedHours?: number;
+}
+
+export interface AdminTaskMoveCardInput {
+  id?: string;
+  status?: string;
+  position?: number;
+}
+
+export interface AdminTaskReorderInput {
+  id?: string;
+  position?: number;
 }
 
 export interface AdminTaskMoveToBacklogInput {
@@ -7050,6 +7452,27 @@ export interface BankAccountVerifyFailedInput {
 }
 
 export interface BankAccountRetryVerificationInput {
+  id?: string;
+}
+
+export interface BoardConfigCreateInput {
+  name?: string;
+  columns?: string;
+  settings?: string;
+  createdBy?: string;
+}
+
+export interface BoardConfigUpdateColumnsInput {
+  id?: string;
+  columns?: string;
+}
+
+export interface BoardConfigUpdateSettingsInput {
+  id?: string;
+  settings?: string;
+}
+
+export interface BoardConfigSoftDeleteInput {
   id?: string;
 }
 

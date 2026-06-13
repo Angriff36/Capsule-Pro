@@ -1939,3 +1939,53 @@ Burn-down is re-ordered by **app value**, not raw count: correctness rules first
 (useParseIntRadix, noGlobalIsNan, noArrayIndexKey), then perf+a11y (noImgElement/useImageSize,
 useButtonType, noSvgWithoutTitle), then noExplicitAny, then mechanical, then useTopLevelRegex
 (safe non-/g subset only). Plan + gates in tasks/todo.md.
+
+## 52. Kanban v2 + AI Call Planner port from stale worktree branch (2026-06-12)
+
+Ported from `feature/main-1779955076940-yv5c` (branched 2026-05-27, rescued as checkpoint
+`9d1cdd41b`) onto `port/kanban-call-planner` (based on main). In scope: Kanban v2
+(board-config, task comments/attachments/file-refs/dev-meta/activity/move, drag-drop board
+UI) + AI Call Planner (transcript → extraction → EventPlanningDraft → ProposalDraft with
+public magic-token response surface). Parked on the feature branch (NOT ported): analytics,
+pricing engine, auto-scheduling, video-conferences, compliance, certifications.
+
+**New manifest entities (8):** core/: AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta,
+AdminTaskFileRef, BoardConfig; ai/: CallPlanningSession, EventPlanningDraft, ProposalDraft.
+AdminTask gained position/labels(array<string>)/estimatedHours/sourceType/sourceId +
+moveCard(status,position) + reorder(position) (split because the runtime rejects no-op
+self-transitions on same-column drags). New Prisma models (11, incl. ungoverned
+ExtractedDetail/ProposalAction/AdminTaskActivity) via migration `20260612195000_port_kanban_call_planner`
+(**create-only authored; NOT yet db:deploy'ed** — deploy at merge so main's db:check stays clean).
+
+**Conformance:** all ported write routes go through runCommand (canonical wrapper); REST-shaped
+route exemptions added to audit-routes-exemptions.json; 2 documented bypasses added to
+bypasses.json (ExtractedDetail createMany in transcript route; ProposalAction create in public
+proposal route) — **PENDING USER SIGN-OFF**. Public proposal respond/view uses the existing
+buildSystemUserContext system-actor pattern.
+
+**Gotchas hit:** (a) imported sources used DSL that silently never compiled on the old branch —
+entity-scoped `event` decls dropped by parser, `if ... mutate` not grammar, `int()/datetime()`
+casts don't exist, `now()+2592000` is 43min not 30d (use addDays), deletedAt defaulted to now()
+(= every row soft-deleted); (b) array fields: manifest `array<string>` ↔ Prisma `String[]` is
+the working pair (KnowledgeBaseEntry.tags precedent); JSON-as-string props pair with Json
+columns (CommandBoard.metadata precedent); sentVia is comma-separated string (no array-append
+in DSL) — UI splits at the serialization boundary; (c) worktrees miss gitignored-but-required
+local files: scripts/* helpers (db-drift-check.mjs etc.) and .env files must be copied from the
+main tree, and stale node_modules had manifest@1.0.32 vs required 2.4.2; (d) the audit
+route-boundary strict gate has ~101 pre-existing ownership errors repo-wide (manifest:build
+fails on main too; manifest:ci does NOT include it) — port files audit clean.
+
+**Open follow-ups:** live speech-to-text never existed (only sourceType scoping; recommend
+Deepgram/AssemblyAI/OpenAI Realtime, NOT Modular — TTS/inference only, no ASR);
+transcript-extractor is regex/heuristic, LLM upgrade candidate; EventPlanningDraft.proposalId
+never written (linkage via ProposalDraft.draftId; needs linkProposal command if wanted);
+AdminTaskActivity feed has no writer (derive from audit/outbox later); CallPlanningSession
+"review" status unreachable by any command (faithful to import).
+
+**§52 addendum (transitions):** all 3 call-planner entities got declared transition graphs
+(CallPlanningSession active→finalizing→completed/abandoned; EventPlanningDraft
+active→review→converted/expired; ProposalDraft draft→sent→viewed→approved/change_requested→
+converted, with a deliberate viewed→viewed self-edge so recordView works on repeat views).
+Companion fix: removed redundant initial-status mutates from create/start commands (runtime
+rejects no-op self-transitions; initial state seeds from property defaults). Conformance
+status-machine test passes without touching its threshold.

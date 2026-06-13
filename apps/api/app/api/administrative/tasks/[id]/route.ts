@@ -52,6 +52,10 @@ export async function GET(
  * column, matching the AdminTask state machine):
  *   backlog → moveToBacklog, in_progress → startProgress, review → submitForReview,
  *   done → complete, cancelled → cancel
+ *
+ * Kanban drag/drop (status + position reorder) does NOT go through PATCH — it
+ * uses the dedicated POST /api/administrative/tasks/[id]/move route (the
+ * AdminTask.moveCard command).
  */
 export async function PATCH(
   request: NextRequest,

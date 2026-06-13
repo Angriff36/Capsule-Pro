@@ -216,3 +216,88 @@ export const staffShiftsCreateCommand = (): string =>
 /** POST /api/manifest/ScheduleShift/commands/update (governed dispatcher) */
 export const staffShiftsUpdateCommand = (): string =>
   "/api/manifest/ScheduleShift/commands/update";
+
+// ---------------------------------------------------------------------------
+// Administrative — Board & Tasks
+// ---------------------------------------------------------------------------
+
+/** GET|POST /api/administrative/tasks */
+export const adminTasks = (): string => "/api/administrative/tasks";
+
+/** GET|PATCH|DELETE /api/administrative/tasks/:id */
+export const adminTask = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}`;
+
+/** POST /api/administrative/tasks/:id/move */
+export const adminTaskMove = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/move`;
+
+/** GET|POST /api/administrative/tasks/:id/comments */
+export const adminTaskComments = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/comments`;
+
+/** DELETE /api/administrative/tasks/:id/comments/:commentId */
+export const adminTaskComment = (id: string, commentId: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/comments/${encodeURIComponent(commentId)}`;
+
+/** GET|POST /api/administrative/tasks/:id/attachments */
+export const adminTaskAttachments = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/attachments`;
+
+/** DELETE /api/administrative/tasks/:id/attachments/:attachmentId */
+export const adminTaskAttachment = (
+  id: string,
+  attachmentId: string
+): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/attachments/${encodeURIComponent(attachmentId)}`;
+
+/** GET|POST /api/administrative/tasks/:id/file-refs */
+export const adminTaskFileRefs = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/file-refs`;
+
+/** DELETE /api/administrative/tasks/:id/file-refs/:refId */
+export const adminTaskFileRef = (id: string, refId: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/file-refs/${encodeURIComponent(refId)}`;
+
+/** GET /api/administrative/tasks/:id/activity */
+export const adminTaskActivity = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/activity`;
+
+/** GET|POST|PATCH /api/administrative/tasks/:id/dev-meta */
+export const adminTaskDevMeta = (id: string): string =>
+  `/api/administrative/tasks/${encodeURIComponent(id)}/dev-meta`;
+
+/** GET /api/administrative/board-config */
+export const adminBoardConfig = (): string =>
+  "/api/administrative/board-config";
+
+/** PATCH /api/administrative/board-config/:id */
+export const adminBoardConfigById = (id: string): string =>
+  `/api/administrative/board-config/${encodeURIComponent(id)}`;
+
+// ---------------------------------------------------------------------------
+// Call Planner
+// ---------------------------------------------------------------------------
+
+/** POST /api/call-planner/transcript */
+export const callPlannerTranscript = (): string =>
+  "/api/call-planner/transcript";
+
+/** GET /api/call-planner/drafts */
+export const callPlannerDrafts = (): string => "/api/call-planner/drafts";
+
+/** GET|PATCH|DELETE /api/call-planner/drafts/:id */
+export const callPlannerDraft = (id: string): string =>
+  `/api/call-planner/drafts/${encodeURIComponent(id)}`;
+
+/** POST /api/call-planner/drafts/:id/generate-proposal */
+export const callPlannerDraftGenerateProposal = (id: string): string =>
+  `/api/call-planner/drafts/${encodeURIComponent(id)}/generate-proposal`;
+
+/** POST /api/call-planner/proposals/:id/send */
+export const callPlannerProposalSend = (id: string): string =>
+  `/api/call-planner/proposals/${encodeURIComponent(id)}/send`;
+
+/** POST /api/call-planner/proposals/:id/refresh-token */
+export const callPlannerProposalRefreshToken = (id: string): string =>
+  `/api/call-planner/proposals/${encodeURIComponent(id)}/refresh-token`;

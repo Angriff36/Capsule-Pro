@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-12T14:47:34.285Z",
-  "contentHash": "52d1f010dd6e4c802ce67ffcb8682239b6b16198bcd3205a0e2e74385a464fca",
+  "compiledAt": "2026-06-12T20:01:50.095Z",
+  "contentHash": "29acdfce882f3fc4d89f9208b80931928eede92a4fa0fa9abfa6175c6e061c79",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -11,11 +11,32 @@
       "events": 5
     },
     {
+      "path": "ai/call-planning-session-rules.manifest",
+      "domain": "ai",
+      "entities": 1,
+      "commands": 6,
+      "events": 5
+    },
+    {
+      "path": "ai/event-planning-draft-rules.manifest",
+      "domain": "ai",
+      "entities": 1,
+      "commands": 10,
+      "events": 10
+    },
+    {
       "path": "ai/knowledge-base-rules.manifest",
       "domain": "ai",
       "entities": 1,
       "commands": 6,
       "events": 6
+    },
+    {
+      "path": "ai/proposal-draft-rules.manifest",
+      "domain": "ai",
+      "entities": 1,
+      "commands": 10,
+      "events": 10
     },
     {
       "path": "core/admin-chat-participant-rules.manifest",
@@ -25,11 +46,39 @@
       "events": 4
     },
     {
+      "path": "core/admin-task-attachment-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 2,
+      "events": 2
+    },
+    {
+      "path": "core/admin-task-comment-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "core/admin-task-dev-meta-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 2,
+      "events": 2
+    },
+    {
+      "path": "core/admin-task-file-ref-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 2,
+      "events": 2
+    },
+    {
       "path": "core/admin-task-rules.manifest",
       "domain": "core",
       "entities": 1,
-      "commands": 8,
-      "events": 4
+      "commands": 10,
+      "events": 5
     },
     {
       "path": "core/alerts-config-rules.manifest",
@@ -51,6 +100,13 @@
       "entities": 1,
       "commands": 7,
       "events": 7
+    },
+    {
+      "path": "core/board-config-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 4,
+      "events": 3
     },
     {
       "path": "core/chart-of-account-rules.manifest",
@@ -664,8 +720,8 @@
   ],
   "merged": {
     "path": "kitchen.ir.json",
-    "entities": 202,
-    "commands": 999,
-    "events": 980
+    "entities": 210,
+    "commands": 1040,
+    "events": 1018
   }
 }

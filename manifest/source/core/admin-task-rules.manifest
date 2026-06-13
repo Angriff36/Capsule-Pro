@@ -12,9 +12,14 @@ entity AdminTask {
   indexed property status: string = "backlog"
   property priority: string = "medium"
   property category: string = ""
+  property position: int = 0
+  property labels: array<string> = []
+  property estimatedHours: decimal = 0
   property assignedTo: string = ""
   property dueDate: datetime
   property createdBy: string = ""
+  property sourceType: string = ""
+  property sourceId: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -30,7 +35,7 @@ entity AdminTask {
   // create fail for any status that owns a transition rule (e.g. backlog->backlog
   // is rejected because backlog's `to` list is [todo, cancelled]). The command
   // body is authoritative for the initial state.
-  command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, createdBy: string) {
+  command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, createdBy: string, optional sourceType: string, optional sourceId: string, optional position: int, optional labels: array<string>, optional estimatedHours: decimal) {
     guard title != null and title != "" "Title is required"
 
     mutate title = title
@@ -40,11 +45,16 @@ entity AdminTask {
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
     mutate createdBy = createdBy
+    mutate sourceType = sourceType != null ? sourceType : ""
+    mutate sourceId = sourceId != null ? sourceId : ""
+    mutate position = position != null ? position : 0
+    mutate labels = labels != null ? labels : []
+    mutate estimatedHours = estimatedHours != null ? estimatedHours : 0
 
     emit AdminTaskCreated
   }
 
-  command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: datetime) {
+  command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: datetime, optional labels: array<string>, optional estimatedHours: decimal) {
     guard self.deletedAt == null "Cannot update a deleted task"
 
     mutate title = title
@@ -53,8 +63,36 @@ entity AdminTask {
     mutate category = category
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
+    mutate labels = labels != null ? labels : self.labels
+    mutate estimatedHours = estimatedHours != null ? estimatedHours : self.estimatedHours
 
     emit AdminTaskUpdated
+  }
+
+  // ── Kanban board movement ──────────────────────────────────────────────
+  // moveCard = cross-column drag (status + position in one command; the
+  // transition table below still governs legal column changes). Same-column
+  // drags go through reorder() instead: the runtime evaluates transitions on
+  // EVERY status mutation and does not exempt no-op self-transitions, so a
+  // moveCard to the current column would always be rejected.
+
+  command moveCard(status: string, position: int) {
+    guard self.deletedAt == null "Cannot move a deleted task"
+    guard status in ["backlog", "in_progress", "review", "done", "cancelled"] "Invalid target column"
+    guard status != self.status "Task is already in this column; use reorder to change position"
+
+    mutate status = status
+    mutate position = position
+
+    emit AdminTaskMoved
+  }
+
+  command reorder(position: int) {
+    guard self.deletedAt == null "Cannot reorder a deleted task"
+
+    mutate position = position
+
+    emit AdminTaskMoved
   }
 
   // ── Status state machine ────────────────────────────────────────────────
@@ -148,6 +186,13 @@ event AdminTaskCreated: "admin.task.created" {
 
 event AdminTaskUpdated: "admin.task.updated" {
   taskId: string
+  updatedAt: datetime
+}
+
+event AdminTaskMoved: "admin.task.moved" {
+  taskId: string
+  status: string
+  position: int
   updatedAt: datetime
 }
 

@@ -6820,6 +6820,18 @@
         "irName": "category"
       },
       {
+        "name": "position",
+        "irName": "position"
+      },
+      {
+        "name": "labels",
+        "irName": "labels"
+      },
+      {
+        "name": "estimatedHours",
+        "irName": "estimatedHours"
+      },
+      {
         "name": "dueDate",
         "irName": "dueDate"
       },
@@ -17767,6 +17779,748 @@
       {
         "name": "completedAt",
         "irName": "completedAt"
+      }
+    ]
+  },
+  "BoardConfig": {
+    "accessor": "boardConfig",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "columns",
+        "irName": "columns"
+      },
+      {
+        "name": "settings",
+        "irName": "settings"
+      },
+      {
+        "name": "createdBy",
+        "irName": "createdBy"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "AdminTaskComment": {
+    "accessor": "adminTaskComment",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "taskId",
+        "irName": "taskId"
+      },
+      {
+        "name": "authorId",
+        "irName": "authorId"
+      },
+      {
+        "name": "authorName",
+        "irName": "authorName"
+      },
+      {
+        "name": "text",
+        "irName": "text"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "AdminTaskAttachment": {
+    "accessor": "adminTaskAttachment",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "taskId",
+        "irName": "taskId"
+      },
+      {
+        "name": "fileName",
+        "irName": "fileName"
+      },
+      {
+        "name": "fileUrl",
+        "irName": "fileUrl"
+      },
+      {
+        "name": "fileSize",
+        "irName": "fileSize"
+      },
+      {
+        "name": "mimeType",
+        "irName": "mimeType"
+      },
+      {
+        "name": "uploadedBy",
+        "irName": "uploadedBy"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "AdminTaskFileRef": {
+    "accessor": "adminTaskFileRef",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "taskId",
+        "irName": "taskId"
+      },
+      {
+        "name": "refType",
+        "irName": "refType"
+      },
+      {
+        "name": "refId",
+        "irName": "refId"
+      },
+      {
+        "name": "refLabel",
+        "irName": "refLabel"
+      },
+      {
+        "name": "linkedBy",
+        "irName": "linkedBy"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "AdminTaskActivity": {
+    "accessor": "adminTaskActivity",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "taskId",
+        "irName": "taskId"
+      },
+      {
+        "name": "actorId",
+        "irName": "actorId"
+      },
+      {
+        "name": "actorName",
+        "irName": "actorName"
+      },
+      {
+        "name": "action",
+        "irName": "action"
+      },
+      {
+        "name": "details",
+        "irName": "details"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      }
+    ]
+  },
+  "AdminTaskDevMeta": {
+    "accessor": "adminTaskDevMeta",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "taskId",
+        "irName": "taskId"
+      },
+      {
+        "name": "severity",
+        "irName": "severity"
+      },
+      {
+        "name": "environment",
+        "irName": "environment"
+      },
+      {
+        "name": "stepsToRepro",
+        "irName": "stepsToRepro"
+      },
+      {
+        "name": "expectedResult",
+        "irName": "expectedResult"
+      },
+      {
+        "name": "actualResult",
+        "irName": "actualResult"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "CallPlanningSession": {
+    "accessor": "callPlanningSession",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "userId",
+        "irName": "userId"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "sourceType",
+        "irName": "sourceType"
+      },
+      {
+        "name": "transcriptText",
+        "irName": "transcriptText"
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata"
+      },
+      {
+        "name": "startedAt",
+        "irName": "startedAt"
+      },
+      {
+        "name": "endedAt",
+        "irName": "endedAt"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "EventPlanningDraft": {
+    "accessor": "eventPlanningDraft",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "sessionId",
+        "irName": "sessionId"
+      },
+      {
+        "name": "userId",
+        "irName": "userId"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "clientName",
+        "irName": "clientName"
+      },
+      {
+        "name": "clientContactId",
+        "irName": "clientContactId"
+      },
+      {
+        "name": "eventType",
+        "irName": "eventType"
+      },
+      {
+        "name": "eventDate",
+        "irName": "eventDate"
+      },
+      {
+        "name": "eventTime",
+        "irName": "eventTime"
+      },
+      {
+        "name": "guestCount",
+        "irName": "guestCount"
+      },
+      {
+        "name": "guestCountMin",
+        "irName": "guestCountMin"
+      },
+      {
+        "name": "guestCountMax",
+        "irName": "guestCountMax"
+      },
+      {
+        "name": "venuePreference",
+        "irName": "venuePreference"
+      },
+      {
+        "name": "venueId",
+        "irName": "venueId"
+      },
+      {
+        "name": "serviceStyle",
+        "irName": "serviceStyle"
+      },
+      {
+        "name": "dietaryRestrictions",
+        "irName": "dietaryRestrictions"
+      },
+      {
+        "name": "menuPreferences",
+        "irName": "menuPreferences"
+      },
+      {
+        "name": "budgetMin",
+        "irName": "budgetMin"
+      },
+      {
+        "name": "budgetMax",
+        "irName": "budgetMax"
+      },
+      {
+        "name": "packageIds",
+        "irName": "packageIds"
+      },
+      {
+        "name": "addOnIds",
+        "irName": "addOnIds"
+      },
+      {
+        "name": "customItems",
+        "irName": "customItems"
+      },
+      {
+        "name": "timelineNotes",
+        "irName": "timelineNotes"
+      },
+      {
+        "name": "openQuestions",
+        "irName": "openQuestions"
+      },
+      {
+        "name": "specialNotes",
+        "irName": "specialNotes"
+      },
+      {
+        "name": "aiSummary",
+        "irName": "aiSummary"
+      },
+      {
+        "name": "overallConfidence",
+        "irName": "overallConfidence"
+      },
+      {
+        "name": "convertedEventId",
+        "irName": "convertedEventId"
+      },
+      {
+        "name": "proposalId",
+        "irName": "proposalId"
+      },
+      {
+        "name": "expiresAt",
+        "irName": "expiresAt"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "ExtractedDetail": {
+    "accessor": "extractedDetail",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "sessionId",
+        "irName": "sessionId"
+      },
+      {
+        "name": "draftId",
+        "irName": "draftId"
+      },
+      {
+        "name": "fieldName",
+        "irName": "fieldName"
+      },
+      {
+        "name": "rawValue",
+        "irName": "rawValue"
+      },
+      {
+        "name": "normalizedValue",
+        "irName": "normalizedValue"
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence"
+      },
+      {
+        "name": "sourceQuote",
+        "irName": "sourceQuote"
+      },
+      {
+        "name": "sourceTimestamp",
+        "irName": "sourceTimestamp"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "catalogMatchType",
+        "irName": "catalogMatchType"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "ProposalDraft": {
+    "accessor": "proposalDraft",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "draftId",
+        "irName": "draftId"
+      },
+      {
+        "name": "userId",
+        "irName": "userId"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "title",
+        "irName": "title"
+      },
+      {
+        "name": "clientName",
+        "irName": "clientName"
+      },
+      {
+        "name": "clientEmail",
+        "irName": "clientEmail"
+      },
+      {
+        "name": "clientPhone",
+        "irName": "clientPhone"
+      },
+      {
+        "name": "eventSummary",
+        "irName": "eventSummary"
+      },
+      {
+        "name": "menuSections",
+        "irName": "menuSections"
+      },
+      {
+        "name": "servicePlan",
+        "irName": "servicePlan"
+      },
+      {
+        "name": "pricingBreakdown",
+        "irName": "pricingBreakdown"
+      },
+      {
+        "name": "timeline",
+        "irName": "timeline"
+      },
+      {
+        "name": "upgradeOptions",
+        "irName": "upgradeOptions"
+      },
+      {
+        "name": "visionSummary",
+        "irName": "visionSummary"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "nextSteps",
+        "irName": "nextSteps"
+      },
+      {
+        "name": "templateId",
+        "irName": "templateId"
+      },
+      {
+        "name": "magicToken",
+        "irName": "magicToken"
+      },
+      {
+        "name": "magicTokenExpiresAt",
+        "irName": "magicTokenExpiresAt"
+      },
+      {
+        "name": "sentAt",
+        "irName": "sentAt"
+      },
+      {
+        "name": "sentVia",
+        "irName": "sentVia"
+      },
+      {
+        "name": "viewedAt",
+        "irName": "viewedAt"
+      },
+      {
+        "name": "respondedAt",
+        "irName": "respondedAt"
+      },
+      {
+        "name": "depositAmount",
+        "irName": "depositAmount"
+      },
+      {
+        "name": "depositPaid",
+        "irName": "depositPaid"
+      },
+      {
+        "name": "htmlContent",
+        "irName": "htmlContent"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "ProposalAction": {
+    "accessor": "proposalAction",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "proposalId",
+        "irName": "proposalId"
+      },
+      {
+        "name": "action",
+        "irName": "action"
+      },
+      {
+        "name": "message",
+        "irName": "message"
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
       }
     ]
   },

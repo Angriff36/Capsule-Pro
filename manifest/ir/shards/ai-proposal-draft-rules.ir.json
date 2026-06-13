@@ -1,0 +1,3550 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "6d98df85c2651d6b5ec3856b78932b0db29caf7290c6a9ef9f1bcedb05718f68",
+    "irHash": "35c778b8eb06282265837809d4a4548616213f36013d1168e4eec98daa2c4441",
+    "compilerVersion": "2.4.2",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-12T20:01:49.883Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "ProposalDraft",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "draftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "draft"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "version",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": []
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clientEmail",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clientPhone",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "eventSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "menuSections",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "servicePlan",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "pricingBreakdown",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "timeline",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "upgradeOptions",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "visionSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "nextSteps",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "magicToken",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "magicTokenExpiresAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sentAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sentVia",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "viewedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "respondedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "depositAmount",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "depositPaid",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "htmlContent",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDraft",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "draft"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isSent",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "sent"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isViewed",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "viewed"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isChangeRequested",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "change_requested"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isApproved",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "approved"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isExpired",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "expired"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isConverted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "converted"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isFinalized",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "approved"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "expired"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "converted"
+                  }
+                }
+              ]
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isTokenExpired",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "magicTokenExpiresAt"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "magicTokenExpiresAt"
+              },
+              "right": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        },
+        {
+          "name": "hasValidEmail",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clientEmail"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clientEmail"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "contains",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clientEmail"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "@"
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "hasDeposit",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "depositAmount"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "generateHtml",
+        "send",
+        "recordView",
+        "approve",
+        "requestChanges",
+        "markExpired",
+        "markConverted",
+        "refreshToken"
+      ],
+      "constraints": [
+        {
+          "name": "validStatus",
+          "code": "validStatus",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "draft"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sent"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "viewed"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "change_requested"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "approved"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "expired"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "converted"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid proposal status",
+          "overrideable": false
+        },
+        {
+          "name": "positiveVersion",
+          "code": "positiveVersion",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "version"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Version must be positive",
+          "overrideable": false
+        },
+        {
+          "name": "validTitle",
+          "code": "validTitle",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Proposal title is required",
+          "overrideable": false
+        },
+        {
+          "name": "validClientName",
+          "code": "validClientName",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clientName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Client name is required",
+          "overrideable": false
+        },
+        {
+          "name": "positiveDepositAmount",
+          "code": "positiveDepositAmount",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "depositAmount"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Deposit amount must be non-negative",
+          "overrideable": false
+        },
+        {
+          "name": "warnNoClientEmail",
+          "code": "warnNoClientEmail",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "hasValidEmail"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isSent"
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Proposal '{title}' sent without valid client email",
+          "detailsMapping": {
+            "proposalId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "id"
+            },
+            "title": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "title"
+            },
+            "clientEmail": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clientEmail"
+            }
+          },
+          "overrideable": false
+        },
+        {
+          "name": "warnTokenExpired",
+          "code": "warnTokenExpired",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isTokenExpired"
+            },
+            "right": {
+              "kind": "unary",
+              "operator": "not",
+              "operand": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "isFinalized"
+              }
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Proposal '{title}' magic link has expired",
+          "detailsMapping": {
+            "proposalId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "id"
+            },
+            "title": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "title"
+            },
+            "expiresAt": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "magicTokenExpiresAt"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [],
+      "defaultPolicies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true,
+      "transitions": [
+        {
+          "property": "status",
+          "from": "draft",
+          "to": [
+            "sent"
+          ]
+        },
+        {
+          "property": "status",
+          "from": "sent",
+          "to": [
+            "viewed",
+            "approved",
+            "change_requested",
+            "expired"
+          ]
+        },
+        {
+          "property": "status",
+          "from": "viewed",
+          "to": [
+            "viewed",
+            "approved",
+            "change_requested",
+            "expired"
+          ]
+        },
+        {
+          "property": "status",
+          "from": "change_requested",
+          "to": [
+            "approved"
+          ]
+        },
+        {
+          "property": "status",
+          "from": "approved",
+          "to": [
+            "converted"
+          ]
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "ProposalDraft",
+      "target": "durable",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "ProposalDraftCreated",
+      "channel": "call-planner.proposal.created",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "draftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftUpdated",
+      "channel": "call-planner.proposal.updated",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftHtmlGenerated",
+      "channel": "call-planner.proposal.html-generated",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftSent",
+      "channel": "call-planner.proposal.sent",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deliveryMethod",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "sentAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftViewed",
+      "channel": "call-planner.proposal.viewed",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "viewedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftApproved",
+      "channel": "call-planner.proposal.approved",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "respondedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftChangeRequested",
+      "channel": "call-planner.proposal.change-requested",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "respondedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftExpired",
+      "channel": "call-planner.proposal.expired",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftConverted",
+      "channel": "call-planner.proposal.converted",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ProposalDraftTokenRefreshed",
+      "channel": "call-planner.proposal.token-refreshed",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "create",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "draftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientEmail",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "clientPhone",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "eventSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "menuSections",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "servicePlan",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "pricingBreakdown",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "upgradeOptions",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "visionSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "nextSteps",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "draftId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "draftId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "userId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "userId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Draft ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "User ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Proposal title is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Client name is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "draftId",
+          "expression": {
+            "kind": "identifier",
+            "name": "draftId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "userId",
+          "expression": {
+            "kind": "identifier",
+            "name": "userId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "title",
+          "expression": {
+            "kind": "identifier",
+            "name": "title"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientName",
+          "expression": {
+            "kind": "identifier",
+            "name": "clientName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientEmail",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clientEmail"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clientEmail"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientPhone",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clientPhone"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clientPhone"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventSummary",
+          "expression": {
+            "kind": "identifier",
+            "name": "eventSummary"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "menuSections",
+          "expression": {
+            "kind": "identifier",
+            "name": "menuSections"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "servicePlan",
+          "expression": {
+            "kind": "identifier",
+            "name": "servicePlan"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "pricingBreakdown",
+          "expression": {
+            "kind": "identifier",
+            "name": "pricingBreakdown"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "timeline",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "timeline"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "timeline"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "{}"
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "upgradeOptions",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "upgradeOptions"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "upgradeOptions"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "{}"
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "visionSummary",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "visionSummary"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "visionSummary"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "notes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "notes"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "nextSteps",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "nextSteps"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "nextSteps"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "templateId",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "templateId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "templateId"
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "version",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "magicToken",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "uuid"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "magicTokenExpiresAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "addDays"
+            },
+            "args": [
+              {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 30
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "sentVia",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientEmail",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "clientPhone",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "eventSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "menuSections",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "servicePlan",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "pricingBreakdown",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "upgradeOptions",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "visionSummary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "nextSteps",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        }
+      ],
+      "guards": [
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isDraft"
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only update draft proposals"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Proposal title is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Client name is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "title",
+          "expression": {
+            "kind": "identifier",
+            "name": "title"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientName",
+          "expression": {
+            "kind": "identifier",
+            "name": "clientName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientEmail",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clientEmail"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clientEmail"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clientEmail"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientPhone",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clientPhone"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clientPhone"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clientPhone"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventSummary",
+          "expression": {
+            "kind": "identifier",
+            "name": "eventSummary"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "menuSections",
+          "expression": {
+            "kind": "identifier",
+            "name": "menuSections"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "servicePlan",
+          "expression": {
+            "kind": "identifier",
+            "name": "servicePlan"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "pricingBreakdown",
+          "expression": {
+            "kind": "identifier",
+            "name": "pricingBreakdown"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "timeline",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "timeline"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "timeline"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "timeline"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "upgradeOptions",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "upgradeOptions"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "upgradeOptions"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "upgradeOptions"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "visionSummary",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "visionSummary"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "visionSummary"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "visionSummary"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "notes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "notes"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "notes"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "nextSteps",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "nextSteps"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "nextSteps"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "nextSteps"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftUpdated"
+      ]
+    },
+    {
+      "name": "generateHtml",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "htmlContent",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isDraft"
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only generate HTML for draft proposals"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "htmlContent",
+          "expression": {
+            "kind": "identifier",
+            "name": "htmlContent"
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftHtmlGenerated"
+      ]
+    },
+    {
+      "name": "send",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "deliveryMethod",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expiresInDays",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isDraft"
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "deliveryMethod"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "email"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "sms"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "link"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "expiresInDays"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "identifier",
+              "name": "expiresInDays"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 90
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnNoClientEmailOnSend",
+          "code": "warnNoClientEmailOnSend",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "identifier",
+                "name": "deliveryMethod"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "email"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "hasValidEmail"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Sending proposal via email without valid client email address",
+          "detailsMapping": {
+            "proposalId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "id"
+            },
+            "title": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "title"
+            },
+            "clientEmail": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clientEmail"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only send draft proposals"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid delivery method"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Expiration must be between 1 and 90 days"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "sent"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "sentAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "sentVia",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "sentVia"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "deliveryMethod"
+            },
+            "alternate": {
+              "kind": "binary",
+              "operator": "+",
+              "left": {
+                "kind": "binary",
+                "operator": "+",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "sentVia"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ","
+                  }
+                }
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "deliveryMethod"
+              }
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "magicTokenExpiresAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "addDays"
+            },
+            "args": [
+              {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              {
+                "kind": "identifier",
+                "name": "expiresInDays"
+              }
+            ]
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftSent"
+      ]
+    },
+    {
+      "name": "recordView",
+      "entity": "ProposalDraft",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSent"
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isViewed"
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only record views for sent or viewed proposals"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "viewed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "viewedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftViewed"
+      ]
+    },
+    {
+      "name": "approve",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "clientMessage",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isSent"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isViewed"
+            }
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isChangeRequested"
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only approve sent, viewed, or change_requested proposals"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "approved"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "respondedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftApproved"
+      ]
+    },
+    {
+      "name": "requestChanges",
+      "entity": "ProposalDraft",
+      "parameters": [
+        {
+          "name": "clientMessage",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSent"
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isViewed"
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientMessage"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientMessage"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only request changes for sent or viewed proposals"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Change request message is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "change_requested"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "respondedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftChangeRequested"
+      ]
+    },
+    {
+      "name": "markExpired",
+      "entity": "ProposalDraft",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSent"
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isViewed"
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only mark sent or viewed proposals as expired"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "expired"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftExpired"
+      ]
+    },
+    {
+      "name": "markConverted",
+      "entity": "ProposalDraft",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isApproved"
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only mark approved proposals as converted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "converted"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftConverted"
+      ]
+    },
+    {
+      "name": "refreshToken",
+      "entity": "ProposalDraft",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isDraft"
+          },
+          "right": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSent"
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only refresh token for draft or sent proposals"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "magicToken",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "uuid"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "magicTokenExpiresAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "addDays"
+            },
+            "args": [
+              {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 30
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "emits": [
+        "ProposalDraftTokenRefreshed"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "ProposalDraftManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "event_coordinator"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Staff and above can manage proposal drafts"
+    },
+    {
+      "name": "ProposalDraftDefaultAccess",
+      "entity": "ProposalDraft",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "event_coordinator"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "AI call planner proposal drafts"
+    }
+  ],
+  "reactions": []
+}
