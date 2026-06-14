@@ -1,0 +1,68 @@
+---
+title: Documentation Governance
+description: What's binding, what's advisory, and what's generated. Where each type of doc lives and who owns it.
+---
+
+Not all docs carry the same weight. This page defines the tiers so you know which source to trust and which to update when things change.
+
+## Binding (Do Not Contradict)
+
+These are enforced by CI, runtime behavior, or explicit agent rules:
+
+| Document | Location | Owned by |
+|---|---|---|
+| Manifest IR + spec | Manifest package | Manifest team |
+| Conformance tests | Manifest package | Manifest team |
+| `CLAUDE.md` (global) | `~/.claude/CLAUDE.md` | Dev team |
+| `CLAUDE.md` (project) | Repo root | Dev team |
+| `AGENTS.md` | Repo root | Dev team |
+| Database migration rules | `docs/database/CONTRIBUTING.md` | Dev team |
+| `constitution.md` | Repo root | Dev team |
+
+If any doc in this docs app (`apps/docs/`) contradicts a binding source above, **the binding source wins**. Update this docs app to match — not the other way around.
+
+## Advisory (Orientation and Reference)
+
+These docs describe the system as it is. They should stay accurate but are not the authoritative spec:
+
+| Document | Location | Purpose |
+|---|---|---|
+| [Architecture](/docs/architecture) | `apps/docs/content/docs/architecture.mdx` | Stack overview, module map |
+| [Manifest System](/docs/platform/manifest-system) | `apps/docs/content/docs/platform/manifest-system.mdx` | Pipeline, entities, store adapters |
+| [Storage Projection](/docs/platform/storage-projection) | `apps/docs/content/docs/platform/storage-projection.mdx` | IR → schema.prisma contract |
+| [Multi-Tenancy](/docs/platform/multi-tenancy) | `apps/docs/content/docs/platform/multi-tenancy.mdx` | Tenant scoping model |
+| [Realtime](/docs/platform/realtime) | `apps/docs/content/docs/platform/realtime.mdx` | Ably outbox pipeline |
+| Module docs (Kitchen, Events, etc.) | `apps/docs/content/docs/<module>/` | Feature-level orientation |
+
+Keep these in sync with the codebase. When you change behavior, update the relevant advisory doc in the same PR.
+
+## Generated / Derivative (Never the Source)
+
+These are outputs — editing them directly is wrong:
+
+| Artifact | Source of truth | How it's generated |
+|---|---|---|
+| `schema.prisma` | Manifest IR via PrismaProjection | `pnpm db:dev` after IR change |
+| TypeScript command clients | Manifest IR | Manifest compiler |
+| Hono route handlers (generated) | Manifest IR | Manifest compiler |
+| Vitest test scaffolding | Manifest IR | Manifest compiler |
+| DB migration SQL | `schema.prisma` diff | `pnpm db:dev -- --create-only` |
+
+## Keeping Docs Honest
+
+The `scripts/check-spec-integrity.mjs` script (run in CI) checks:
+- Every `.mdx` file under `apps/docs/content/docs/` has `title` and `description` frontmatter.
+- Internal `href` links that start with `/docs/` resolve to an actual content file.
+
+Run it locally: `node scripts/check-spec-integrity.mjs`
+
+## Update Discipline
+
+When a binding source changes:
+1. Update the binding source first.
+2. Update any advisory docs that reference it in the **same PR**.
+3. Never update an advisory doc to describe behavior that doesn't exist yet.
+
+When an advisory doc is wrong:
+1. Fix the doc (or the code — whichever is wrong).
+2. If the mismatch was a real bug, note it in the PR description.
