@@ -185,7 +185,7 @@ entity EventImportWorkflow {
 
   // Pause for manual intervention
   command pause(reasonList: string) {
-    guard self.isActive
+    guard (self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"])
 
     mutate status = "paused"
     mutate warnings = reasonList

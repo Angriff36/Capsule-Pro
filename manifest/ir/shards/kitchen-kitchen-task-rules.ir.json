@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "9d874d92b5ddb3c6b7393dd63d64ab4ff5bed65df46506c098d408b154498bd9",
-    "irHash": "89aa88dd58d5493ed2ea89919815c8528e3b06fa8345748a3d6fc7f8e080e869",
-    "compilerVersion": "2.4.2",
+    "contentHash": "c9bd5103e4e5088851aff12e4555aaf9cd96df81c3311721d09022e27f359a3e",
+    "irHash": "53b6c194440f9354d0c896201ea4f27727ee9d1dd9939ee7df17e9e5a3b296d8",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.835Z"
+    "compiledAt": "2026-06-14T23:14:10.657Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -586,12 +586,69 @@
           "name": "warnOverdue",
           "code": "warnOverdue",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueDate"
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "done"
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Task '{taskTitle}' is overdue",

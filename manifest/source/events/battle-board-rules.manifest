@@ -77,7 +77,7 @@ entity BattleBoard {
 
   command open(userId: string) {
     guard self.status == "draft" "Can only open draft battle boards"
-    guard self.hasData "Cannot open battle board with no dishes"
+    guard (self.boardData != "{}" and self.boardData != "") "Cannot open battle board with no dishes"
 
     mutate status = "open"
 

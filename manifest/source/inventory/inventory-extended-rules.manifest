@@ -307,7 +307,7 @@ entity InventoryForecast {
   command markPublished() {
     guard self.status == "draft" "Only draft forecasts can be published"
 
-    constraint warnLowConfidence:warn self.isLowConfidence {
+    constraint warnLowConfidence:warn (self.confidence < 0.5) {
       messageTemplate: "Publishing low-confidence forecast ({confidence}) for item '{inventoryItemId}'"
       details: {
         inventoryItemId: self.inventoryItemId
@@ -528,7 +528,7 @@ entity VendorRating {
 
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
-  constraint warnLowScore:warn self.isLowScore {
+  constraint warnLowScore:warn (self.rating < 2) {
     messageTemplate: "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier"
     details: {
       supplierId: self.supplierId
@@ -652,7 +652,7 @@ entity ProcurementBudget {
   // State transitions
   transition status from "active" to ["closed"]
 
-  constraint warnOverBudget:warn self.isOverBudget {
+  constraint warnOverBudget:warn (self.spentAmount > self.budgetAmount) {
     messageTemplate: "Procurement budget '{name}' is over budget (spent {spent}, limit {limit})"
     details: {
       name: self.name
@@ -800,7 +800,7 @@ entity AuditSchedule {
   constraint requireName: self.name != "" "Audit schedule name is required"
   constraint validFrequency: self.frequency in ["daily", "weekly", "biweekly", "monthly", "quarterly"] "Invalid audit frequency"
 
-  constraint warnInactive:warn self.isDeactivated {
+  constraint warnInactive:warn (self.isActive == false) {
     messageTemplate: "Audit schedule '{name}' is inactive — cycle counts will not run automatically"
     details: {
       name: self.name
@@ -847,7 +847,7 @@ entity AuditSchedule {
   }
 
   command activate() {
-    guard self.isDeactivated "Audit schedule is already active"
+    guard (self.isActive == false) "Audit schedule is already active"
 
     mutate isActive = true
 

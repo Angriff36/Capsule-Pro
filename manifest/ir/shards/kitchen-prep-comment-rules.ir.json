@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "dfb66ee05ab0429bacb81cd05deada3768d4fabb3b85eec56b804d961ec364ed",
-    "irHash": "6ea696f81e7da188a26fa4a8c7348d19915ce3ae36ddd7acefa524a1dca10830",
-    "compilerVersion": "2.4.2",
+    "contentHash": "c268b5b8d99ed22f7f80ca04d821883ce6eb2251ba89e563555503e67f33eb25",
+    "irHash": "d1a8f3b0672d0404a3093411070aecfa6d6fa8830810e3514d8e65478dac61c5",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.842Z"
+    "compiledAt": "2026-06-14T23:14:10.661Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -746,12 +746,22 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
         },
         {
           "kind": "binary",
@@ -879,12 +889,22 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
         }
       ],
       "constraints": [
@@ -1046,12 +1066,22 @@
           "property": "isResolved"
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -1174,12 +1204,22 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
         }
       ],
       "constraints": [

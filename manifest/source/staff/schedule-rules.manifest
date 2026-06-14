@@ -146,7 +146,7 @@ entity ScheduleShift {
   constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
   constraint validSwapStatus: self.swapStatus in ["none", "offered", "accepted", "declined"] "Invalid swap status"
 
-  constraint warnLongShift:warn self.durationHours > 12 {
+  constraint warnLongShift:warn (self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0) > 12 {
     messageTemplate: "Shift duration ({hours} hours) exceeds 12 hours"
     details: {
       employeeId: self.employeeId

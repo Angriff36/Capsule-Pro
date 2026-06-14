@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "cdbd4165d83bd0e89b4016363dbaded8ebb7c9907dd4d8396249d58427ebaf26",
-    "irHash": "bb2a2d2468e6da0d71baca3c08a4e1606058802897c343cb798e77ae10c9b098",
-    "compilerVersion": "2.4.2",
+    "contentHash": "68242badc2ecb0b1024bb3bd842aafc9d43bce6e949bfc16198d8bf2e35f05ce",
+    "irHash": "2f7dde9b2d29c2b9742f4b5b6cbff13ab15880e55c35b71de676e237725d32e2",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.930Z"
+    "compiledAt": "2026-06-14T23:14:10.723Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1381,12 +1381,44 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockIn"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "isClockedIn"
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockOut"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              }
             }
           },
           "severity": "block",
@@ -1519,12 +1551,44 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
           },
-          "property": "isClockedIn"
+          "right": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockOut"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          }
         }
       ],
       "constraints": [
@@ -2505,12 +2569,23 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isProcessed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "pending"
+                }
+              }
             }
           },
           "severity": "block",
@@ -2624,12 +2699,23 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isProcessed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "pending"
+                }
+              }
             }
           },
           "severity": "block",

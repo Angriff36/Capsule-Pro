@@ -84,7 +84,7 @@ entity PaymentMethod {
   }
 
   command markAsDefault() {
-    guard self.isUsable "Payment method must be usable to be set as default"
+    guard (self.status == "ACTIVE" and (self.expiresAt != null and self.expiresAt < now()) == false and self.fraudFlagged == false) "Payment method must be usable to be set as default"
     mutate isDefault = true
     emit PaymentMethodSetDefault
   }

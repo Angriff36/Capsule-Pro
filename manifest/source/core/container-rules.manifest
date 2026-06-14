@@ -33,7 +33,7 @@ entity Container {
   constraint positiveWeight: self.capacityWeightG >= 0 "Weight capacity cannot be negative"
   constraint positivePortions: self.capacityPortions >= 0 "Portion capacity cannot be negative"
 
-  constraint warnNoCapacity:warn self.hasAnyCapacity == false and self.isActive {
+  constraint warnNoCapacity:warn (self.capacityVolumeMl > 0 or self.capacityWeightG > 0 or self.capacityPortions > 0) == false and self.isActive {
     messageTemplate: "Container '{containerName}' has no capacity values configured"
     details: {
       containerName: self.name

@@ -224,7 +224,7 @@ entity FacilityAsset {
   transition status from "operational" to ["maintenance", "retired", "sold"]
   transition status from "maintenance" to ["operational", "retired", "sold"]
 
-  constraint warnMaintenanceOverdue:warn self.maintenanceOverdue {
+  constraint warnMaintenanceOverdue:warn (self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational") {
     messageTemplate: "Asset '{assetName}' is overdue for maintenance"
     details: {
       assetName: self.name
@@ -446,7 +446,7 @@ entity FacilityWorkOrder {
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   relationship belongsTo asset: FacilityAsset fields [tenantId, assetId] references [tenantId, id]
 
-  constraint warnOverdue:warn self.isOverdue {
+  constraint warnOverdue:warn (self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])) {
     messageTemplate: "Facility work order '{title}' is past scheduled date"
     details: {
       title: self.title

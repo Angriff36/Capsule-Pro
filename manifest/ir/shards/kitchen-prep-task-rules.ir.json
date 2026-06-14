@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2a0eecfe00d9f611f880df9b5b122423b6cfc8b94349c35b773644f1fa430da4",
-    "irHash": "b842b28f68d82e2257d046d1e31054a611c0cdb3f3c324cd4ddc2e1cca1358b7",
-    "compilerVersion": "2.4.2",
+    "contentHash": "9ffd3c2fd53c8a267b3b21250a568883d7d1c86dd034a6aeda35e31e3add1b50",
+    "irHash": "0a14b567bda84403761b4824109558e2c9308fd039be7c34ea2bc193915f313c",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.853Z"
+    "compiledAt": "2026-06-14T23:14:10.669Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -747,12 +747,69 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "dueByDate"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "now"
+                    },
+                    "args": []
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "dueByDate"
+                  }
+                }
               },
-              "property": "isOverdue"
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "done"
+                  }
+                }
+              }
             },
             "right": {
               "kind": "binary",
@@ -847,12 +904,23 @@
               }
             },
             "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "claimedBy"
               },
-              "property": "isClaimed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
             }
           },
           "severity": "warn",
@@ -1629,12 +1697,69 @@
           "name": "warnOverdueClaim",
           "code": "warnOverdueClaim",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueByDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueByDate"
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "done"
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Claiming overdue task '{taskName}'",

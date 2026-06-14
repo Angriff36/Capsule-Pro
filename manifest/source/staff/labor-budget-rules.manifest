@@ -33,7 +33,7 @@ entity LaborBudget {
   transition status from "draft" to ["approved"]
   transition status from "approved" to ["closed"]
 
-  constraint warnOverBudget:warn self.isOverBudget {
+  constraint warnOverBudget:warn (self.actualSpend > self.budgetTarget) {
     messageTemplate: "Labor budget for location {locationId} is over by {varianceAmount}"
     details: {
       locationId: self.locationId

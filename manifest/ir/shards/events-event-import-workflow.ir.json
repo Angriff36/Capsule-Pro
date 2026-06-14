@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7503b10d7c5134926e1673f98041fbd240a99efffdbfa96b1ce14a400b17689d",
-    "irHash": "7ec58611f66c54ca306713f5bac4e81fd44d2afb12b1602d4a55cf671bab0cdc",
-    "compilerVersion": "2.4.2",
+    "contentHash": "1da2a5b787836a3bb733b48324cfbab4cfc422fed552a5629b0a73b2a8dd1ce4",
+    "irHash": "615a9b5874fde6869546c37d6ed6f27ccad449567702f42d8352a0a9cab7a965",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.765Z"
+    "compiledAt": "2026-06-14T23:14:10.604Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2480,12 +2480,63 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "parsing"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "extracting"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "validating"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "proposing"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "reserving"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "activating"
+                }
+              }
+            ]
+          }
         }
       ],
       "constraints": [],

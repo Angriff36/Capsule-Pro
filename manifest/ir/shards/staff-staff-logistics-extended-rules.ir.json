@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "e96b6da9b6cce066cf6b66567bc61aaa98df527b1b3871834b5f936951aa7184",
-    "irHash": "1fa91ef293955d89b53de24d63416459af35627978108c729befc09c4bf32c5a",
-    "compilerVersion": "2.4.2",
+    "contentHash": "eec02c505e21a96cc6de3d296eca1e354bbdecff35b9551ab60563d116938a23",
+    "irHash": "a588a0fd1ab1fa85c29f074b2aa652359e1072efd0de8a4f89cc9462025df676",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.922Z"
+    "compiledAt": "2026-06-14T23:14:10.717Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -8064,12 +8064,24 @@
             "name": "amount"
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "totalTips"
             },
-            "property": "undistributedAmount"
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "distributedAmount"
+            }
           }
         },
         {

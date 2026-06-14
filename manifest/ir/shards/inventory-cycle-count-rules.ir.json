@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d5f40c92091fe67c671f3ca9e35a342e673f0a7500752eb40381cc5be8a1b528",
-    "irHash": "770535aa96faa4e1f9050e3ec2c9b990efe024d3b358ab5c923a0b8835cc34a4",
-    "compilerVersion": "2.4.2",
+    "contentHash": "378df23587f26e15ee366d4a7904c313691d9374a5d9fe6e78af218b9dd7df33",
+    "irHash": "d303d6f6a1a8a53e7f07b583389cff3acd4b590125f60010ae1103c145119055",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.805Z"
+    "compiledAt": "2026-06-14T23:14:10.634Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -4356,12 +4356,50 @@
           "name": "warnLargeVariance",
           "code": "warnLargeVariance",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 10
+                }
+              }
             },
-            "property": "isLargeVariance"
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "unary",
+                "operator": "-",
+                "operand": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 10
+                  }
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Verifying record for '{itemName}' with large variance ({variancePct}%)",
@@ -5130,12 +5168,50 @@
           "name": "warnHighVariance",
           "code": "warnHighVariance",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 10
+                }
+              }
             },
-            "property": "isHighVariance"
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "unary",
+                "operator": "-",
+                "operand": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 10
+                  }
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Approving high-variance report for '{itemName}' ({variancePct}% variance)",

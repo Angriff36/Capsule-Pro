@@ -44,7 +44,7 @@ entity InventoryItem {
   relationship hasMany transferItems: InventoryTransferItem
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
-  constraint warnBelowPar:warn self.isBelowPar {
+  constraint warnBelowPar:warn (self.parLevel > 0 and self.quantityOnHand < self.parLevel) {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
     details: {
       itemName: self.name
@@ -59,7 +59,7 @@ entity InventoryItem {
     guard quantity != null and quantity > 0
     guard eventId != null and eventId != ""
 
-    constraint warnStockoutRisk:warn (self.quantityAvailable - quantity) < 0 {
+    constraint warnStockoutRisk:warn ((self.quantityOnHand - self.quantityReserved) - quantity) < 0 {
       messageTemplate: "Reserving {quantity} {unit} - only {available} available"
       details: {
         itemName: self.name

@@ -32,7 +32,7 @@ entity Budget {
   transition status from "active" to ["closed"]
   transition status from "closed" to ["archived"]
 
-  constraint warnOverBudget:warn self.isOverBudget and self.status == "active" {
+  constraint warnOverBudget:warn (self.spentAmount > self.allocatedAmount) and self.status == "active" {
     messageTemplate: "Budget '{budgetName}' is over by {overAmount}"
     details: {
       budgetName: self.name

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "914672235964ee5902e5184a26ef8d43455a14dff2ac482456fed09282f1a25b",
-    "irHash": "a360b5ebcdf2ff42cc445f29066c661e3061a2bb39bcb080f669f6b94dd62f1c",
-    "compilerVersion": "2.4.2",
+    "contentHash": "388060f2ca9fbf67b84221e57968e7364fc502c662ad839ffd40e57e64d90e3b",
+    "irHash": "7f4551080bf8085ed6d2df264bad5de04f79ea11ee6cbb0b8d495c7d8f0c302b",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.815Z"
+    "compiledAt": "2026-06-14T23:14:10.642Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -509,12 +509,47 @@
           "name": "warnBelowPar",
           "code": "warnBelowPar",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
             },
-            "property": "isBelowPar"
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "quantityOnHand"
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "parLevel"
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Item '{itemName}' is below par level ({onHand} < {parLevel})",
@@ -1177,12 +1212,24 @@
               "kind": "binary",
               "operator": "-",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityOnHand"
                 },
-                "property": "quantityAvailable"
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "quantityReserved"
+                }
               },
               "right": {
                 "kind": "identifier",

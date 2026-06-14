@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d1cb84b81a0f92fa23e3d064e349f1b10655d9333f68b1777678ac7953432fce",
-    "irHash": "be466055fdb918efa6eabd16a520dac7fb42b0b45fd57b0a622cd6c861226051",
-    "compilerVersion": "2.4.2",
+    "contentHash": "41fe9c39e9a7cffaf92882e74402d83be258fecf145fd4dae1620feffd613f3f",
+    "irHash": "d17eeacd5f2c1879cfd44f42683fce2f3b4cb8f3ee7368824ebda812dcce0858",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.739Z"
+    "compiledAt": "2026-06-14T23:14:10.587Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1486,12 +1486,46 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "boardData"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "{}"
+              }
+            }
           },
-          "property": "hasData"
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "boardData"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
         }
       ],
       "constraints": [],

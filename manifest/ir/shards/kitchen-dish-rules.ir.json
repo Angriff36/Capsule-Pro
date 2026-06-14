@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "071496859df63c7e8f7b83f2278222c291f6d04ec8ef4a6067d60717d16b875c",
-    "irHash": "ee6205d96258e78675f39e5424bab1cf3c8b4723117010c17616dcdd38d8778a",
-    "compilerVersion": "2.4.2",
+    "contentHash": "8ae9a18eb775c43b9b31a042e2cecc0caac739932c24b1fdaa9b9a47e853f4af",
+    "irHash": "cd8172c3eb3ff333b169732b536a8e9128909d3099fcb0f09186d0ec4455cdcb",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.823Z"
+    "compiledAt": "2026-06-14T23:14:10.647Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1178,12 +1178,99 @@
               "kind": "binary",
               "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "conditional",
+                "condition": {
+                  "kind": "binary",
+                  "operator": "and",
+                  "left": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "costPerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  }
                 },
-                "property": "marginPercent"
+                "consequent": {
+                  "kind": "binary",
+                  "operator": "*",
+                  "left": {
+                    "kind": "binary",
+                    "operator": "/",
+                    "left": {
+                      "kind": "binary",
+                      "operator": "-",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "pricePerPerson"
+                      },
+                      "right": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "costPerPerson"
+                      }
+                    },
+                    "right": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    }
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 100
+                    }
+                  }
+                },
+                "alternate": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
               },
               "right": {
                 "kind": "literal",
@@ -1197,12 +1284,99 @@
               "kind": "binary",
               "operator": "<",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "conditional",
+                "condition": {
+                  "kind": "binary",
+                  "operator": "and",
+                  "left": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "costPerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  }
                 },
-                "property": "marginPercent"
+                "consequent": {
+                  "kind": "binary",
+                  "operator": "*",
+                  "left": {
+                    "kind": "binary",
+                    "operator": "/",
+                    "left": {
+                      "kind": "binary",
+                      "operator": "-",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "pricePerPerson"
+                      },
+                      "right": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "costPerPerson"
+                      }
+                    },
+                    "right": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    }
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 100
+                    }
+                  }
+                },
+                "alternate": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
               },
               "right": {
                 "kind": "literal",

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "15f9b3f274ab8dfd94b68bc150701ed12e8d93207b24c443b9fc9b552c46b434",
-    "irHash": "44056653d770f2730d08e5a0dc4823390b2346fa86daf144c8f4d4e35a2bc574",
-    "compilerVersion": "2.4.2",
+    "contentHash": "a47571d979a5a5a3d47a149d8ceeabf7915c93a4a5c18dd319a1c293f8133de9",
+    "irHash": "330bf763206c5961fac4578c3ae87e97038a9cc8d7f4b3b766459b1953179039",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.781Z"
+    "compiledAt": "2026-06-14T23:14:10.617Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -389,12 +389,24 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "spentAmount"
               },
-              "property": "isOverBudget"
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "allocatedAmount"
+              }
             },
             "right": {
               "kind": "binary",

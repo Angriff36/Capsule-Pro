@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "44699a4b99542b5d8cdd110403f60cc7e743b37bcece47af2a7187acc8cb4dbe",
-    "irHash": "f345a5a526410a66359f1964a7b748e79eb6235c66df15f957ef037934971624",
-    "compilerVersion": "2.4.2",
+    "contentHash": "1a8acb8b7bc539d91db359d37d994b52cf905a50a25b222ce2c1ea04b2470055",
+    "irHash": "8d8562d3986826dd0e8fab90a841f46cf06326fd0908d2b5af795ba23ca657ba",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.788Z"
+    "compiledAt": "2026-06-14T23:14:10.623Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1216,12 +1216,103 @@
       "parameters": [],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "ACTIVE"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "expiresAt"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": "<",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "expiresAt"
+                  },
+                  "right": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "now"
+                    },
+                    "args": []
+                  }
+                }
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
           },
-          "property": "isUsable"
+          "right": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "fraudFlagged"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            }
+          }
         }
       ],
       "constraints": [],

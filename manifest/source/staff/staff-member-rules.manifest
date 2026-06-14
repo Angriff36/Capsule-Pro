@@ -42,7 +42,7 @@ entity StaffMember {
   }
 
   command updateProfile(displayName: string, email: string, phone: string, role: string) {
-    guard self.isActive "Cannot update an inactive staff member"
+    guard (self.status == "active") "Cannot update an inactive staff member"
 
     mutate displayName = displayName
     mutate email = email
@@ -53,7 +53,7 @@ entity StaffMember {
   }
 
   command deactivate(reason: string) {
-    guard self.isActive "Staff member is already inactive"
+    guard (self.status == "active") "Staff member is already inactive"
 
     mutate status = "inactive"
 
@@ -69,7 +69,7 @@ entity StaffMember {
   }
 
   command changeRole(role: string, changedBy: string) {
-    guard self.isActive "Cannot change the role of an inactive staff member"
+    guard (self.status == "active") "Cannot change the role of an inactive staff member"
     guard role != null and role != "" "Role is required"
 
     mutate role = role

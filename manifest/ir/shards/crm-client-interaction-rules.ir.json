@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "180c56bf06441cceb84dcfb3922c95ddb0aed95b9a7bc7b222b73df613b20df1",
-    "irHash": "46ccdca2724a81b102b3a2cf4ece7900d176cd5f9e0f89ac14b5ce8b4dd5a154",
-    "compilerVersion": "2.4.2",
+    "contentHash": "f10ed48a2d533ae4a0e389f94c0cbf6925544580bc449ef8fa2b2641b8820a4f",
+    "irHash": "4cfc935fee6b5a72adf4c53290eddfa63d1ba7284be123c2d3f52ff8f7ea5203",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.723Z"
+    "compiledAt": "2026-06-14T23:14:10.572Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -829,12 +829,69 @@
           "name": "warnOverdueFollowUp",
           "code": "warnOverdueFollowUp",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "followUpDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "<",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "followUpDate"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
             },
-            "property": "isFollowUpOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "followUpCompleted"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Follow-up for '{subject}' is overdue (due {followUpDate})",
@@ -2108,12 +2165,22 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "followUpDate"
               },
-              "property": "hasFollowUp"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
             },
             "right": {
               "kind": "literal",

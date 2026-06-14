@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "fbe35f691273c4e8c4c473ed1c37a187a6279924a4495c42ae9774cf83d99c30",
-    "irHash": "2cd2ff989919a274d0cb98156816ce2da53ff5f95b784b59e520d348f422d7e3",
-    "compilerVersion": "2.4.2",
+    "contentHash": "c8a9abd3b389aaceb22e287fe396facf5d5b9762f46a31d8726bee3e0ccf1ad5",
+    "irHash": "5d2c4424a3e51f43a5db879c1283835f9a4166fd0b50efc1b12f5920203c7577",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.732Z"
+    "compiledAt": "2026-06-14T23:14:10.580Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -606,12 +606,23 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "estimatedValue"
               },
-              "property": "isHighValue"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 10000
+                }
+              }
             },
             "right": {
               "kind": "binary",
@@ -1922,12 +1933,45 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "convertedToClientId"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
               },
-              "property": "isConverted"
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "convertedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              }
             }
           },
           "severity": "block",
@@ -2109,12 +2153,45 @@
           "kind": "binary",
           "operator": "==",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "convertedToClientId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
             },
-            "property": "isConverted"
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "convertedAt"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            }
           },
           "right": {
             "kind": "literal",
@@ -2130,12 +2207,23 @@
           "name": "warnHighValueDisqualify",
           "code": "warnHighValueDisqualify",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "estimatedValue"
             },
-            "property": "isHighValue"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 10000
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Disqualifying high-value lead '{contactName}' (${estimatedValue})",
@@ -2258,12 +2346,49 @@
           "name": "warnArchiveOpenLead",
           "code": "warnArchiveOpenLead",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isOpen"
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "new"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "contacted"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "qualified"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "proposal"
+                  }
+                }
+              ]
+            }
           },
           "severity": "warn",
           "messageTemplate": "Archiving open lead '{contactName}' with status '{status}'",

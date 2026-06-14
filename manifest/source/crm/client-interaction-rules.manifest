@@ -54,7 +54,7 @@ entity ClientInteraction {
   transition status from "overdue" to ["scheduled", "completed", "escalated"]
   transition status from "escalated" to ["open", "scheduled", "completed"]
 
-  constraint warnOverdueFollowUp:warn self.isFollowUpOverdue {
+  constraint warnOverdueFollowUp:warn (self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false) {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
     details: {
       subject: self.subject
@@ -118,7 +118,7 @@ entity ClientInteraction {
     guard self.deletedAt == null "Cannot complete a deleted interaction"
     guard self.followUpCompleted == false "Interaction follow-up is already completed"
 
-    constraint warnNoFollowUp:warn self.hasFollowUp == false {
+    constraint warnNoFollowUp:warn (self.followUpDate != null) == false {
       messageTemplate: "Completing interaction '{subject}' that has no follow-up date set"
       details: {
         subject: self.subject

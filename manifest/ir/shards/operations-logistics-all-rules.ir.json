@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "73612941b902b9231c873ebbca7ea5c42734936cb7fa4874ee1bfbf51ff5b7e7",
-    "irHash": "741b505d82746992918444303934c0a1d5e1e83250d5d8c3f293a087989b86df",
-    "compilerVersion": "2.4.2",
+    "contentHash": "99cb22d162fb2e43845db2cdf6dc73701703a57cab36496e1ec329913f912fdd",
+    "irHash": "70b62bda7983a34dced7867069d0e250be9dbe15a0835667440bc06319b6e2c7",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.871Z"
+    "compiledAt": "2026-06-14T23:14:10.682Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -403,32 +403,139 @@
               "kind": "binary",
               "operator": "and",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
                 },
-                "property": "licenseExpiring"
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "addDays"
+                    },
+                    "args": [
+                      {
+                        "kind": "call",
+                        "callee": {
+                          "kind": "identifier",
+                          "name": "now"
+                        },
+                        "args": []
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "number",
+                          "value": 30
+                        }
+                      }
+                    ]
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  }
+                }
               },
               "right": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "in",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
                 },
-                "property": "isActive"
+                "right": {
+                  "kind": "array",
+                  "elements": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "available"
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "on_route"
+                      }
+                    }
+                  ]
+                }
               }
             },
             "right": {
               "kind": "unary",
               "operator": "not",
               "operand": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
                 },
-                "property": "licenseExpired"
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "now"
+                    },
+                    "args": []
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  }
+                }
               }
             }
           },
@@ -461,20 +568,77 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "licenseExpiry"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "licenseExpired"
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "licenseExpiry"
+                }
+              }
             },
             "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "in",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isActive"
+              "right": {
+                "kind": "array",
+                "elements": [
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "available"
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "on_route"
+                    }
+                  }
+                ]
+              }
             }
           },
           "severity": "warn",

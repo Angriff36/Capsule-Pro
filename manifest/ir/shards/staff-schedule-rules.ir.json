@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "307de4bae5516d6a100bba7e0a92b389d1b9c3a934dc02d8841d4e227ecf723e",
-    "irHash": "c626f8855754d9bcf4b09bfa8380e0dbd46dbca37c1b95e982f5aaf59071b0d9",
-    "compilerVersion": "2.4.2",
+    "contentHash": "9b79246e534659bdc765e610a76079b7ef267d277144967759aee34d0d9a95b0",
+    "irHash": "255957faa8a8c0e2faa534f29d16b494820b2bff6693a7f216d90808ee5c4a4d",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.919Z"
+    "compiledAt": "2026-06-14T23:14:10.714Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -918,12 +918,59 @@
             "kind": "binary",
             "operator": ">",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "conditional",
+              "condition": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "shiftEnd"
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "shiftStart"
+                }
               },
-              "property": "durationHours"
+              "consequent": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "hoursBetween"
+                },
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "shiftStart"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "shiftEnd"
+                  }
+                ]
+              },
+              "alternate": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
             },
             "right": {
               "kind": "literal",

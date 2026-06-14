@@ -38,7 +38,7 @@ entity Lead {
   transition status from "qualified" to ["proposal", "disqualified", "lost"]
   transition status from "proposal" to ["won", "lost", "disqualified"]
 
-  constraint warnHighValueUnassigned:warn self.isHighValue and self.assignedTo == "" {
+  constraint warnHighValueUnassigned:warn (self.estimatedValue >= 10000) and self.assignedTo == "" {
     messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"
     details: {
       contactName: self.contactName
@@ -122,7 +122,7 @@ entity Lead {
     guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
-    constraint blockAlreadyConverted:block !self.isConverted {
+    constraint blockAlreadyConverted:block !(self.convertedToClientId != "" and self.convertedAt != null) {
       messageTemplate: "Lead '{contactName}' has already been converted to client '{existingClientId}'"
       details: {
         contactName: self.contactName
@@ -148,9 +148,9 @@ entity Lead {
 
   command disqualify(reason: string, userId: string) {
     guard self.deletedAt == null "Cannot disqualify an archived lead"
-    guard self.isConverted == false "Cannot disqualify a converted lead"
+    guard (self.convertedToClientId != "" and self.convertedAt != null) == false "Cannot disqualify a converted lead"
 
-    constraint warnHighValueDisqualify:warn self.isHighValue {
+    constraint warnHighValueDisqualify:warn (self.estimatedValue >= 10000) {
       messageTemplate: "Disqualifying high-value lead '{contactName}' (${estimatedValue})"
       details: {
         contactName: self.contactName
@@ -168,7 +168,7 @@ entity Lead {
   command archive(reason: string, userId: string) {
     guard self.deletedAt == null "Lead is already archived"
 
-    constraint warnArchiveOpenLead:warn self.isOpen {
+    constraint warnArchiveOpenLead:warn (self.status in ["new", "contacted", "qualified", "proposal"]) {
       messageTemplate: "Archiving open lead '{contactName}' with status '{status}'"
       details: {
         contactName: self.contactName

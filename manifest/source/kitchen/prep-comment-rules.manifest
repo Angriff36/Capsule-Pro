@@ -45,7 +45,7 @@ entity PrepComment {
   command edit(newText: string, userId: string) {
     guard userId != null and userId != "" "User ID is required"
     guard newText != null and newText != "" "Comment text cannot be empty"
-    guard self.isActive "Cannot edit a deleted comment"
+    guard (self.deletedAt == null) "Cannot edit a deleted comment"
     guard self.isResolved == false "Cannot edit a resolved comment"
 
     mutate commentText = newText
@@ -55,7 +55,7 @@ entity PrepComment {
 
   command markResolved(resolvedBy: string) {
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
-    guard self.isActive "Cannot resolve a deleted comment"
+    guard (self.deletedAt == null) "Cannot resolve a deleted comment"
 
     constraint warnAlreadyResolved:warn self.isResolved {
       messageTemplate: "Comment '{commentId}' is already resolved by '{resolvedBy}'"
@@ -76,7 +76,7 @@ entity PrepComment {
   command unresolve(userId: string) {
     guard userId != null and userId != "" "User ID is required"
     guard self.isResolved "Comment is not resolved"
-    guard self.isActive "Cannot unresolve a deleted comment"
+    guard (self.deletedAt == null) "Cannot unresolve a deleted comment"
 
     // BUG FIX: was `mutate resolvedAt = 0` — datetime cannot be set to 0; use null
     mutate isResolved = false
@@ -88,7 +88,7 @@ entity PrepComment {
 
   command softDelete(userId: string) {
     guard userId != null and userId != "" "User ID is required"
-    guard self.isActive "Comment is already deleted"
+    guard (self.deletedAt == null) "Comment is already deleted"
 
     constraint blockDeleteIfResolved:block !self.isResolved {
       messageTemplate: "Cannot delete resolved comment '{commentId}' — unresolve it first"

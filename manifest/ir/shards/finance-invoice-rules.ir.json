@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "9b340097fe29ef3e53960874c05697d6ef05c71e030a2c2c67a0a680225f177e",
-    "irHash": "1da65720f850f89a5d62d63323abb30548f12b78ef6d8e32806a46cb4d89d2ed",
-    "compilerVersion": "2.4.2",
+    "contentHash": "a3aafee6f27e33349b7e4ce64a989d52d5bb7c005dc7c2e8262e85a49222ed9c",
+    "irHash": "f39a809df85c479b0676ec00ef13d93958d366210f9c13e0f85f37931b715cdc",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.786Z"
+    "compiledAt": "2026-06-14T23:14:10.621Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1940,12 +1940,23 @@
           "kind": "binary",
           "operator": "==",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "amountDue"
             },
-            "property": "isPaidInFull"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
           },
           "right": {
             "kind": "literal",

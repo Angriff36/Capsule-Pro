@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0db485a931c4f29a5dda31e114b41720ef4f1bf28d7e2708db5ab57d633a54db",
-    "irHash": "ec0c69628e980eb25647bf30d07bd92ef4593fc4af5c966212fd135e1752cfbe",
-    "compilerVersion": "2.4.2",
+    "contentHash": "60ae1ac1590083f45b119643e484edfc74a2f26a1103285c050b1061326f9264",
+    "irHash": "cb3081f5fe7324084b6f18c931eba595723df0fe605d613a0145c7006c52349b",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.863Z"
+    "compiledAt": "2026-06-14T23:14:10.676Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -896,12 +896,61 @@
                 "kind": "binary",
                 "operator": ">=",
                 "left": {
-                  "kind": "member",
-                  "object": {
-                    "kind": "identifier",
-                    "name": "self"
+                  "kind": "conditional",
+                  "condition": {
+                    "kind": "binary",
+                    "operator": "!=",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "nextMaintenanceDate"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "null"
+                      }
+                    }
                   },
-                  "property": "daysUntilMaintenance"
+                  "consequent": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "daysBetween"
+                    },
+                    "args": [
+                      {
+                        "kind": "call",
+                        "callee": {
+                          "kind": "identifier",
+                          "name": "now"
+                        },
+                        "args": []
+                      },
+                      {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "nextMaintenanceDate"
+                      }
+                    ]
+                  },
+                  "alternate": {
+                    "kind": "unary",
+                    "operator": "-",
+                    "operand": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 1
+                      }
+                    }
+                  }
                 },
                 "right": {
                   "kind": "literal",
@@ -915,12 +964,61 @@
                 "kind": "binary",
                 "operator": "<=",
                 "left": {
-                  "kind": "member",
-                  "object": {
-                    "kind": "identifier",
-                    "name": "self"
+                  "kind": "conditional",
+                  "condition": {
+                    "kind": "binary",
+                    "operator": "!=",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "nextMaintenanceDate"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "null"
+                      }
+                    }
                   },
-                  "property": "daysUntilMaintenance"
+                  "consequent": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "daysBetween"
+                    },
+                    "args": [
+                      {
+                        "kind": "call",
+                        "callee": {
+                          "kind": "identifier",
+                          "name": "now"
+                        },
+                        "args": []
+                      },
+                      {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "nextMaintenanceDate"
+                      }
+                    ]
+                  },
+                  "alternate": {
+                    "kind": "unary",
+                    "operator": "-",
+                    "operand": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 1
+                      }
+                    }
+                  }
                 },
                 "right": {
                   "kind": "literal",
@@ -988,12 +1086,46 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "nextMaintenanceDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "isOverdueForMaintenance"
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "nextMaintenanceDate"
+                }
+              }
             },
             "right": {
               "kind": "binary",
@@ -1064,12 +1196,29 @@
               "kind": "binary",
               "operator": ">=",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "usagePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "usageHours"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "maxUsageHours"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
@@ -1881,12 +2030,81 @@
           "name": "warnOverdueWorkOrder",
           "code": "warnOverdueWorkOrder",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "scheduledDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "in",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
+                },
+                "right": {
+                  "kind": "array",
+                  "elements": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "open"
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "in_progress"
+                      }
+                    }
+                  ]
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "scheduledDate"
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Work order '{title}' for {equipment} is overdue by {days} day(s)",

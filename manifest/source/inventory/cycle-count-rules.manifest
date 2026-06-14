@@ -238,7 +238,7 @@ entity CycleCountRecord {
   command verify(userId: string) {
     guard not self.isVerified "Record is already verified"
 
-    constraint warnLargeVariance:warn self.isLargeVariance {
+    constraint warnLargeVariance:warn (self.variancePct > 10 or self.variancePct < -10) {
       messageTemplate: "Verifying record for '{itemName}' with large variance ({variancePct}%)"
       details: {
         itemName: self.itemName
@@ -359,7 +359,7 @@ entity VarianceReport {
   command approve(userId: string, adjustmentType: string, adjustmentAmount: money) {
     guard self.status == "reviewed" "Can only approve reviewed reports"
 
-    constraint warnHighVariance:warn self.isHighVariance {
+    constraint warnHighVariance:warn (self.variancePct > 10 or self.variancePct < -10) {
       messageTemplate: "Approving high-variance report for '{itemName}' ({variancePct}% variance)"
       details: {
         itemName: self.itemName

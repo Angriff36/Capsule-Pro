@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "48afb5d9148e425d965e8c25bac3cabbb8436537860e191988bc044717b5e040",
-    "irHash": "51cd3ddbf641ce666b127b568753de2c87a7440369dffa2f91771f8477899203",
-    "compilerVersion": "2.4.2",
+    "contentHash": "aaccf17885fae57b0fd0516e45a41a81114c06c92e81e51b02ee0d5497fb6206",
+    "irHash": "72c697d7611411f540638510910c529e1ab51bb39349fa1a5e595e9275f3435a",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.705Z"
+    "compiledAt": "2026-06-14T23:14:10.561Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -496,12 +496,69 @@
               "kind": "binary",
               "operator": "==",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "or",
+                "left": {
+                  "kind": "binary",
+                  "operator": "or",
+                  "left": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "capacityVolumeMl"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "capacityWeightG"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  }
                 },
-                "property": "hasAnyCapacity"
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "capacityPortions"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0
+                    }
+                  }
+                }
               },
               "right": {
                 "kind": "literal",

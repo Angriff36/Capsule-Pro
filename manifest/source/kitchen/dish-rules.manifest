@@ -77,7 +77,7 @@ entity Dish {
     }
   }
 
-  constraint warnLowMargin:warn self.marginPercent > 0 and self.marginPercent < 20 {
+  constraint warnLowMargin:warn (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) > 0 and (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) < 20 {
     messageTemplate: "Dish '{dishName}' has a low margin of {margin}%"
     details: {
       dishName: self.name

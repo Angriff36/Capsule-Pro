@@ -39,7 +39,7 @@ entity Equipment {
   constraint positiveMaintenanceInterval: self.maintenanceIntervalDays > 0 "Maintenance interval must be positive"
   constraint positiveMaxUsage: self.maxUsageHours > 0 "Max usage hours must be positive"
 
-  constraint warnMaintenanceDue:warn self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 and self.status == "active" {
+  constraint warnMaintenanceDue:warn (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) >= 0 and (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) <= 7 and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' is due for maintenance in {days} day(s)"
     details: {
       equipmentName: self.name
@@ -48,7 +48,7 @@ entity Equipment {
     }
   }
 
-  constraint warnOverdueMaintenance:warn self.isOverdueForMaintenance and self.status == "active" {
+  constraint warnOverdueMaintenance:warn (self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate) and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' is overdue for maintenance by {days} day(s)"
     details: {
       equipmentName: self.name
@@ -57,7 +57,7 @@ entity Equipment {
     }
   }
 
-  constraint warnHighUsage:warn self.usagePercentage >= 80 and self.status == "active" {
+  constraint warnHighUsage:warn (percent(self.usageHours, self.maxUsageHours)) >= 80 and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' has reached {usage}% of its recommended usage limit"
     details: {
       equipmentName: self.name
@@ -239,7 +239,7 @@ entity MaintenanceWorkOrder {
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
 
-  constraint warnOverdueWorkOrder:warn self.isOverdue {
+  constraint warnOverdueWorkOrder:warn (self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate) {
     messageTemplate: "Work order '{title}' for {equipment} is overdue by {days} day(s)"
     details: {
       title: self.title

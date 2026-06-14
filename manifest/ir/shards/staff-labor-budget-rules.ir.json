@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "6aca600a79a2a5afa8bfe63efd16038458b7ca530b279bcba358534f6fd9bc9e",
-    "irHash": "be2c791d5390be300ecb405d03ae80e5d1c6e193cd01637b2312d95029763c4f",
-    "compilerVersion": "2.4.2",
+    "contentHash": "340a187dcaebeba3db6d5591bba53d56dbac753bae4047413951deb4792f37c0",
+    "irHash": "d290246e9eb81483fe961c33b300099dac848d7bf15f27b0832ddfd3c11fc323",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.914Z"
+    "compiledAt": "2026-06-14T23:14:10.711Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -398,12 +398,24 @@
           "name": "warnOverBudget",
           "code": "warnOverBudget",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "actualSpend"
             },
-            "property": "isOverBudget"
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "budgetTarget"
+            }
           },
           "severity": "warn",
           "messageTemplate": "Labor budget for location {locationId} is over by {varianceAmount}",

@@ -21,7 +21,7 @@ entity Driver {
 
   constraint validStatus: self.status in ["available", "on_route", "off_duty", "inactive"] "Invalid driver status"
 
-  constraint warnLicenseExpiring:warn self.licenseExpiring and self.isActive and not self.licenseExpired {
+  constraint warnLicenseExpiring:warn (self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry) and (self.status in ["available", "on_route"]) and not (self.licenseExpiry != null and now() > self.licenseExpiry) {
     messageTemplate: "Driver '{driverName}' license expiring within 30 days"
     details: {
       driverName: self.name
@@ -29,7 +29,7 @@ entity Driver {
     }
   }
 
-  constraint warnExpiredLicense:warn self.licenseExpired and self.isActive {
+  constraint warnExpiredLicense:warn (self.licenseExpiry != null and now() > self.licenseExpiry) and (self.status in ["available", "on_route"]) {
     messageTemplate: "Driver '{driverName}' has an expired license — suspend or renew before dispatching"
     details: {
       driverName: self.name

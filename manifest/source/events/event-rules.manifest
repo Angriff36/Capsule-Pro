@@ -308,7 +308,7 @@ entity EventProfitability {
 
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
-  constraint warnNegativeMargin:warn self.actualGrossMarginPct < 0 {
+  constraint warnNegativeMargin:warn (percent(self.actualGrossMargin, self.actualRevenue)) < 0 {
     messageTemplate: "Event profitability is negative ({marginPct}%)"
     details: {
       marginPct: self.actualGrossMarginPct

@@ -38,7 +38,7 @@ entity KitchenTask {
   constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
   constraint validComplexity: self.complexity >= 1 and self.complexity <= 5 "Complexity must be between 1 (simple) and 5 (very complex)"
 
-  constraint warnOverdue:warn self.isOverdue {
+  constraint warnOverdue:warn (self.dueDate != null and now() > self.dueDate and self.status != "done") {
     messageTemplate: "Task '{taskTitle}' is overdue"
     details: {
       taskTitle: self.title

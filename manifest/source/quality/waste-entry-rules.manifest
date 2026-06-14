@@ -84,7 +84,7 @@ entity WasteEntry {
     guard self.deletedAt == null "Cannot approve a deleted waste entry"
     guard approvedBy != null and approvedBy != "" "Approving user is required"
 
-    constraint warnLowCost:warn self.isHighCost == false {
+    constraint warnLowCost:warn (self.totalCost > 100) == false {
       messageTemplate: "Approving low-cost waste entry ({totalCost}) — manual approval usually reserved for high-cost losses"
       details: {
         inventoryItemId: self.inventoryItemId

@@ -51,7 +51,7 @@ entity PrepTask {
   constraint positiveQuantity: self.quantityTotal >= 0 "Total quantity must be non-negative"
   constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
 
-  constraint warnOverdue:warn self.isOverdue and self.status != "done" {
+  constraint warnOverdue:warn (self.dueByDate != null and now() > self.dueByDate and self.status != "done") and self.status != "done" {
     messageTemplate: "Task '{taskName}' is overdue by {daysOverdue} day(s)"
     details: {
       taskName: self.name
@@ -60,7 +60,7 @@ entity PrepTask {
     }
   }
 
-  constraint warnStationCapacity:warn self.stationId != "" and self.isClaimed {
+  constraint warnStationCapacity:warn self.stationId != "" and (self.claimedBy != "") {
     messageTemplate: "Station '{stationId}' has active task - verify capacity"
     details: {
       stationId: self.stationId
@@ -74,7 +74,7 @@ entity PrepTask {
     guard self.status == "open" or self.status == "pending" "Task is not claimable"
     guard self.claimedBy == "" "Task is already claimed"
 
-    constraint warnOverdueClaim:warn self.isOverdue {
+    constraint warnOverdueClaim:warn (self.dueByDate != null and now() > self.dueByDate and self.status != "done") {
       messageTemplate: "Claiming overdue task '{taskName}'"
       details: {
         taskName: self.name

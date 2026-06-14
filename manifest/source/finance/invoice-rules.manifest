@@ -128,7 +128,7 @@ entity Invoice {
 
   command sendReminder() {
     guard self.status in ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] "Cannot send reminder for invoice in current status"
-    guard self.isPaidInFull == false "Cannot send reminder for paid invoices"
+    guard (self.amountDue <= 0) == false "Cannot send reminder for paid invoices"
     mutate reminderCount = self.reminderCount + 1
     mutate lastReminderAt = now()
     emit InvoiceReminderSent

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "1efb55efb12050ecc10700a808dc16ee7054bf65473380a455df6574b26a999c",
-    "irHash": "b4388bc3155a00a84f51d8a64ec570e323af110a9a32d0a33652221e585df322",
-    "compilerVersion": "2.4.2",
+    "contentHash": "39754fe2336e8feaeb71376ed559779ab7299cda27409b3c81854aaab0121b06",
+    "irHash": "baadfa75a3518480a0c411a690b08fadf446d049d9b93122bb5d8ffb9b0c793f",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.892Z"
+    "compiledAt": "2026-06-14T23:14:10.696Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1509,12 +1509,22 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "terminationDate"
               },
-              "property": "isTerminated"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
             }
           },
           "severity": "block",

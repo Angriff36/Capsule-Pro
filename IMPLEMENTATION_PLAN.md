@@ -49,7 +49,17 @@ The `payload.result.*` reaction no-op class is the single highest-leverage defec
 
 ---
 
-## ⛔ TREE-BLOCKING: `@angriff36/manifest` 2.5.0 upgrade broke `manifest:compile` (discovered 2026-06-14)
+## ✅ RESOLVED (2026-06-14): `@angriff36/manifest` 2.5.0 computed-in-guard compile blocker
+
+**Status: RESOLVED — `pnpm manifest:compile` is GREEN; the IR is regenerated with 2.5.0 and the tree is unblocked. All IR-touching increments can land again.**
+
+**Resolution (2026-06-14):** inlined every computed-property reference inside `guard`/`constraint`/`:block`/`:warn` expressions with the computed's own stored-prop formula (transitively resolved, parenthesized for precedence). Done via a deterministic one-off transform (faithful by construction — substitutes each entity's exact computed formula, scoped by string/comment-aware brace-tracked entity boundaries, verified against the actual `entity` declarations before applying). **Actual scope: 121 references across 34 files** — NOT 130/35. The "130" over-counted: it grepped `guard self.is*`-style lines without distinguishing **computed** refs (rejected) from **stored `property is*`** refs (legal). Confirmed examples of the over-count: `kitchen-extended-rules` (`TemperatureProbe`/`IotAlertRule`/`BulkCombineRule` all have `property isActive: boolean = true`, not a computed → 7 non-violations) and `prep-list-rules` (`PrepList.isActive` is a stored property → 2 non-violations). The compiler agrees: green after exactly the 121 computed inlines.
+
+**Verification (all green):** `pnpm manifest:compile` (210 entities, 1048 commands), runtime suite **350/350 pass** (no regression from making 121 dead guards live — the change only *enables* commands that were wrongly `guard_failed`), `pnpm manifest:schema:check` no drift (guards/constraints don't project to the Prisma schema), `pnpm manifest:validate` valid, `pnpm manifest:validate-ai` 100/100. The committed IR (`kitchen.ir.json` + all shards) is regenerated with 2.5.0 — untouched-entity shards changed only in provenance (`compilerVersion 2.4.2→2.5.0`); the 34 edited entities' shards carry the real inlined guards.
+
+**Newly-live (previously INERT) commands** — making these guards live is the correctness win: `StaffMember.deactivate`/`updateProfile`/`changeRole` (`self.isActive` → `self.status == "active"`) now fire, so `StaffMemberDeactivated` emits and the already-committed `staff-member-deactivated-unassign-event-staff-middleware` (commit `05ddf9533`) is no longer dead. The same revival applies across CallPlanningSession, EventPlanningDraft, ProposalDraft, Lead, Invoice, Equipment, TimeEntry, etc. **Follow-up for the [[computeds-dead-in-guards-and-constraints]] memory:** under 2.5.0 this class is now a hard COMPILE error (not a silent dead guard), so the gate is self-enforcing going forward — no new computed-in-guard can land.
+
+<details><summary>Original blocker writeup (historical)</summary>
 
 **Status: BLOCKER — `pnpm manifest:compile` fails, so the IR cannot be regenerated and `manifest:ci` drift gates cannot pass. No IR-touching increment can land until this is resolved.**
 
@@ -81,6 +91,8 @@ quality/waste-entry-rules.manifest (1)             staff/labor-budget-rules.mani
 staff/schedule-rules.manifest (1)                  staff/staff-logistics-extended-rules.manifest (1)
 staff/time-entry-rules.manifest (4)
 ```
+
+</details>
 
 ## Pre-existing infra issues observed (2026-06-14, during the CollectionWrittenOff→Invoice.writeOff increment)
 

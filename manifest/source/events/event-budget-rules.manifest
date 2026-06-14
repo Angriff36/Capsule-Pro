@@ -50,7 +50,7 @@ entity EventBudget {
     }
   }
 
-  constraint warnHighVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {
+  constraint warnHighVariance:warn (percent(self.varianceAmount, self.totalBudgetAmount)) > 10 or (percent(self.varianceAmount, self.totalBudgetAmount)) < -10 {
     messageTemplate: "Budget variance exceeds 10% threshold ({variancePct}%)"
     details: {
       variancePercentage: self.variancePercentage
@@ -111,7 +111,7 @@ entity EventBudget {
   }
 
   command finalize(userId: string) {
-    constraint blockFinalizeHighVariance:block self.variancePercentage <= 20 and self.variancePercentage >= -20 {
+    constraint blockFinalizeHighVariance:block (percent(self.varianceAmount, self.totalBudgetAmount)) <= 20 and (percent(self.varianceAmount, self.totalBudgetAmount)) >= -20 {
       messageTemplate: "Cannot finalize budget - variance ({variancePct}%) exceeds 20% threshold"
       details: {
         variancePercentage: self.variancePercentage
@@ -121,7 +121,7 @@ entity EventBudget {
 
     guard self.status == "draft" or self.status == "approved" "Can only finalize draft or approved budgets"
 
-    constraint warnFinalizeWithVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {
+    constraint warnFinalizeWithVariance:warn (percent(self.varianceAmount, self.totalBudgetAmount)) > 10 or (percent(self.varianceAmount, self.totalBudgetAmount)) < -10 {
       messageTemplate: "Finalizing budget with {variancePct}% variance"
       details: {
         variancePercentage: self.variancePercentage

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8039f47ab041cf0871a2ee2071184fbeb9872d829e3ea5f663ef9ac7f931c3c5",
-    "irHash": "b446dd4a37f2891ab9f954cc9933b5cfe4b19695a8a41a140e5e1d5ea65cdc2a",
-    "compilerVersion": "2.4.2",
+    "contentHash": "0d77bfae586645f22fdec473ea03a5becea7793e83d27be327d8b1a55fa771e8",
+    "irHash": "da5142c9feb18feb153c28191d4f9f50efbd81c388110756f5b0edeff72ef71c",
+    "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T21:02:50.909Z"
+    "compiledAt": "2026-06-14T23:14:10.708Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1170,12 +1170,114 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "conditional",
+              "condition": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "unit"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "fahrenheit"
+                  }
+                }
               },
-              "property": "isInSafeRange"
+              "consequent": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": ">=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "temperature"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": "<=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "temperature"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 40
+                    }
+                  }
+                }
+              },
+              "alternate": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": ">=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "temperature"
+                  },
+                  "right": {
+                    "kind": "unary",
+                    "operator": "-",
+                    "operand": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 18
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": "<=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "temperature"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 4
+                    }
+                  }
+                }
+              }
             }
           },
           "severity": "warn",

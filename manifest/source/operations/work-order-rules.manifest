@@ -38,7 +38,7 @@ entity WorkOrder {
   constraint validType: self.type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
   constraint requireTitle: self.title != "" "Title is required"
 
-  constraint warnOverdue:warn self.isOverdue {
+  constraint warnOverdue:warn (self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])) {
     messageTemplate: "Work order '{title}' is past scheduled date"
     details: {
       title: self.title
@@ -46,7 +46,7 @@ entity WorkOrder {
     }
   }
 
-  constraint warnCriticalUnassigned:warn self.isCritical and self.status == "open" {
+  constraint warnCriticalUnassigned:warn (self.priority == "critical") and self.status == "open" {
     messageTemplate: "Critical work order '{title}' has not been assigned"
     details: {
       title: self.title

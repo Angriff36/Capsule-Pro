@@ -214,7 +214,7 @@ entity TipPool {
     guard self.status == "allocated" "Only allocated tip pools can be distributed"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard amount > 0 "Distribution amount must be positive"
-    guard amount <= self.undistributedAmount "Distribution amount cannot exceed undistributed balance"
+    guard amount <= (self.totalTips - self.distributedAmount) "Distribution amount cannot exceed undistributed balance"
     guard distributedBy != null and distributedBy != "" "Distributor ID is required"
 
     mutate distributedAmount = self.distributedAmount + amount
