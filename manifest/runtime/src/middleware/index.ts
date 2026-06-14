@@ -87,6 +87,11 @@ export {
   type MaintenanceEquipmentRecordDiagnostic,
 } from "./maintenance-completed-equipment-record-middleware";
 export {
+  createMaintenanceCreatedEquipmentStatusMiddleware,
+  type MaintenanceCreatedEquipmentStatusMiddlewareOptions,
+  type MaintenanceEquipmentStatusDiagnostic,
+} from "./maintenance-created-equipment-status-middleware";
+export {
   createPaymentProcessedInvoiceApplyMiddleware,
   type PaymentInvoiceApplyDiagnostic,
   type PaymentProcessedInvoiceApplyMiddlewareOptions,

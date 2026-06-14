@@ -51,6 +51,7 @@ import {
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
+  createMaintenanceCreatedEquipmentStatusMiddleware,
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
@@ -813,6 +814,20 @@ export async function createManifestRuntime(
     // the redundant updateStatus reaction whose newStatus != self.status guard
     // would fail once active).
     createMaintenanceCompletedEquipmentRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Equipment: MaintenanceWorkOrderCreated -> Equipment.updateStatus("maintenance").
+    // Symmetric counterpart of the completed leg above: opening a work order takes the
+    // parent equipment OUT of service (status -> "maintenance") so it stops reading as
+    // bookable; completing the work order (recordMaintenance, above) returns it to active.
+    // Middleware (not a reaction) for guard-safety — it loads the equipment and skips
+    // cleanly when it is already in maintenance / retired / out_of_service instead of
+    // firing updateStatus and relying on the engine swallowing the FSM-guard failure
+    // (equipmentId IS a create param, so a reaction was technically possible here; we
+    // choose middleware deliberately). Pure runtime addition, no IR/source change.
+    createMaintenanceCreatedEquipmentStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
