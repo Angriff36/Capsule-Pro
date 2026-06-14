@@ -11,7 +11,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -66,20 +67,15 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/crm/scoring — Create a scoring rule
+//
+// Governed write: routes through the Manifest runtime (CrmScoringRule.create)
+// per constitution §9 (no direct prisma.*.create on governed entities) and §4a
+// (delegate command execution to the execute-command wrapper). The previous
+// direct `database.crmScoringRule.create` was a governance bypass; the live
+// frontend create path already uses the dispatcher (generated `crmScoringRuleCreate`).
 export async function POST(request: NextRequest) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 400 }
-      );
-    }
+    const user = await resolveCurrentUser(request);
 
     const body = await request.json();
     const {
@@ -136,9 +132,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Invalid field" }, { status: 400 });
     }
 
-    const rule = await database.crmScoringRule.create({
-      data: {
-        tenantId,
+    return runManifestCommand({
+      entity: "CrmScoringRule",
+      command: "create",
+      body: {
         ruleName: rule_name,
         field,
         condition,
@@ -147,39 +144,8 @@ export async function POST(request: NextRequest) {
         isActive: Boolean(is_active),
         priority: Number(priority),
       },
-      select: {
-        id: true,
-        tenantId: true,
-        ruleName: true,
-        field: true,
-        condition: true,
-        value: true,
-        points: true,
-        isActive: true,
-        priority: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-
-    return NextResponse.json(
-      {
-        data: {
-          id: rule.id,
-          tenant_id: rule.tenantId,
-          rule_name: rule.ruleName,
-          field: rule.field,
-          condition: rule.condition,
-          value: rule.value,
-          points: rule.points,
-          is_active: rule.isActive,
-          priority: rule.priority,
-          created_at: rule.createdAt,
-          updated_at: rule.updatedAt,
-        },
-      },
-      { status: 201 }
-    );
   } catch (error) {
     captureException(error);
     log.error("Error creating scoring rule:", error);

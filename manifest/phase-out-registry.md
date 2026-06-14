@@ -107,6 +107,11 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 |---|---|---|
 | `app/api/inventory/items/[id]/route.ts` | InventoryItem | PUT update → Manifest (COALESCE→read-merge-write; snake_case→camelCase mapping; recipe cost recalculation retained as post-command side effect); DELETE softDelete → Manifest (7-table dependency pre-validation retained); GET unchanged (Prisma read). `$executeRaw` writes fully removed. |
 
+### Migrated (1 route, 2026-06-14) — direct-write governance cleanup (Known Blocker #22, v0.12.285)
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/crm/scoring/route.ts` | CrmScoringRule | POST create → Manifest (`runManifestCommand("CrmScoringRule","create")`); was a direct `database.crmScoringRule.create` bypass (constitution §9). snake_case→camelCase param mapping + coercion preserved; input validation (required fields + condition/field enums) retained pre-dispatch; GET `$queryRaw` read unchanged (§10). Live frontend create already used the dispatcher (`crmScoringRuleCreate`), so no consumer contract changed. Conformance test: `apps/api/__tests__/crm/scoring-post-governed.test.ts` (4). Drops governed direct-write violations 7→6. |
+
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
 - All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`
