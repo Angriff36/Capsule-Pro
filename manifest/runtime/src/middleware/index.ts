@@ -28,6 +28,11 @@ export {
   type EventCreatedClientInteractionMiddlewareOptions,
 } from "./event-created-client-interaction-middleware";
 export {
+  createEventGuestCountPrepRescaleMiddleware,
+  type EventGuestCountPrepRescaleMiddlewareOptions,
+  type EventGuestCountRescaleDiagnostic,
+} from "./event-guest-count-prep-rescale-middleware";
+export {
   createEventLocationCateringSyncMiddleware,
   type EventCateringVenueSyncDiagnostic,
   type EventLocationCateringSyncMiddlewareOptions,

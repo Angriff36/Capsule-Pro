@@ -39,6 +39,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
+  createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
@@ -599,6 +600,20 @@ export async function createManifestRuntime(
     // inert. This dispatches the absolute, idempotent Station.syncTaskCount only
     // for stations whose stored count drifted from their true in_progress load.
     createPrepTaskStationCountMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events→Kitchen: EventGuestCountUpdated -> rescale draft PrepLists +
+    // PrepListItems. Middleware (not a reaction) for TWO reasons: it is a 1:N
+    // fan-out (one Event → many prep lists → many items), and the rescale is a
+    // RATIO (new/old guest count) whose OLD value is destroyed by the command's
+    // `mutate guestCount = newGuestCount` and never carried on the payload. It
+    // captures the old count on the `before-guard` hook (evalContext.self still
+    // pre-mutation) and applies the ratio on `after-emit`. batchMultiplier was
+    // frozen at the seed's hardcoded 1 and item scaledQuantity was derived once,
+    // so guest-count changes silently left the kitchen prepping the wrong amount.
+    createEventGuestCountPrepRescaleMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
