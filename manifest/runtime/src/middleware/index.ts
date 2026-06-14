@@ -17,6 +17,11 @@ export {
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";
 export {
+  createInventoryMovementTransactionMiddleware,
+  type InventoryLedgerDiagnostic,
+  type InventoryMovementTransactionMiddlewareOptions,
+} from "./inventory-movement-transaction-middleware";
+export {
   createLeadConvertedDealCreateMiddleware,
   type LeadConvertedDealCreateMiddlewareOptions,
   type LeadConvertedDealDiagnostic,

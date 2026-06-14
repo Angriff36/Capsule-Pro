@@ -37,6 +37,7 @@ import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createContractSignedEventConfirmMiddleware,
   createIdentityMiddleware,
+  createInventoryMovementTransactionMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
@@ -599,6 +600,18 @@ export async function createManifestRuntime(
     // dispatches the governed Invoice.recordRefund (guard-safe; skips when the invoice
     // was never credited or the refund exceeds amountPaid).
     createPaymentRefundedInvoiceRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Inventory: InventoryConsumed/Wasted/Restocked/Adjusted -> InventoryTransaction.create.
+    // Middleware (not a reaction) because the ledger row's unitCost is the
+    // InventoryItem's OWN field (loaded from the store; restock alone carries
+    // costPerUnit as a param) and the SIGNED ledger delta (consume/waste = −qty,
+    // restock/adjust = +qty) cannot be expressed in a reaction's payload params.
+    // Records every governed inventory movement in the append-only ledger that
+    // valuation/par-reorder/audit read — previously empty for kitchen movements.
+    createInventoryMovementTransactionMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
