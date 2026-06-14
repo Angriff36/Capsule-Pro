@@ -30,20 +30,24 @@ entity Station {
 
   computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks
   computed isOverCapacity: boolean = self.currentTaskCount > self.capacitySimultaneousTasks
-  computed capacityRemaining: int = 0
-  computed availablePercentage: int = 0
+  computed capacityRemaining: int = self.capacitySimultaneousTasks - self.currentTaskCount
+  computed availablePercentage: number = percent(self.capacityRemaining, self.capacitySimultaneousTasks)
   computed isAvailable: boolean = self.isActive and self.inMaintenance == false
 
   constraint positiveCapacity: self.capacitySimultaneousTasks > 0 "Station capacity must be positive"
   constraint validStationType: self.stationType in ["hot-line", "cold-prep", "bakery", "garnish", "prep-station"] "Invalid station type"
 
-  constraint warnNearCapacity:warn self.capacityRemaining == 1 and self.capacitySimultaneousTasks > 1 {
+  // NOTE: constraints/guards must reference STORED properties — the runtime does NOT
+  // resolve computed properties inside constraint expressions (verified against the
+  // ManifestRuntimeEngine + storeProvider path). Referencing `self.capacityRemaining`
+  // (a computed) here left this warning permanently dead. Inlined the stored-prop
+  // expression so it actually evaluates. Same applies to assignTask's warn/block below.
+  constraint warnNearCapacity:warn (self.capacitySimultaneousTasks - self.currentTaskCount) == 1 and self.capacitySimultaneousTasks > 1 {
     messageTemplate: "Station '{stationName}' is near capacity ({current}/{max} tasks)"
     details: {
       stationName: self.name
       current: self.currentTaskCount
       max: self.capacitySimultaneousTasks
-      remaining: self.capacityRemaining
     }
   }
 
@@ -72,7 +76,7 @@ entity Station {
     guard self.isActive "Cannot assign tasks to an inactive station"
     guard self.inMaintenance == false "Cannot assign tasks to a station in maintenance"
 
-    constraint warnNearCapacity:warn self.capacityRemaining == 1 {
+    constraint warnNearCapacity:warn (self.capacitySimultaneousTasks - self.currentTaskCount) == 1 {
       messageTemplate: "Assigning task '{taskName}' to near-capacity station '{stationName}'"
       details: {
         stationName: self.name
@@ -82,7 +86,7 @@ entity Station {
       }
     }
 
-    constraint blockFull:block !self.isAtCapacity {
+    constraint blockFull:block self.currentTaskCount < self.capacitySimultaneousTasks {
       messageTemplate: "Cannot assign task — station '{stationName}' is at full capacity ({current}/{max})"
       details: {
         stationName: self.name

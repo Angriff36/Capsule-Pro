@@ -81,3 +81,64 @@ Candidates from notes/memory (failing test first, then fix):
 
 # (prior run) Port: Kanban v2 + Call Planner — MERGED to main 2026-06-13 (see Review above)
 Migration deploy pending user sign-off. Full detail: manifest/notes.md §52.
+
+---
+
+# Task (2026-06-13): Fix hardcoded Station computeds (Stage 6 — latent functional bug)
+
+_Source: IMPLEMENTATION_PLAN.md P2 — "Fix hardcoded computeds: Station.capacityRemaining / availablePercentage"._
+
+## Problem (the why)
+`manifest/source/kitchen/station-rules.manifest:33-34` declares two computeds as literal `0`:
+`capacityRemaining: int = 0` and `availablePercentage: int = 0`. Because `capacityRemaining`
+is always `0`, the `warnNearCapacity` constraint (`self.capacityRemaining == 1`, station-rules :40
++ the `assignTask` variant :75) **can never fire** — dead guard logic. Any dashboard reading
+`availablePercentage` sees a constant 0% utilization. Verified in compiled IR: both are
+`{ kind: "literal", value: { number: 0 } }`.
+
+## Fix
+- `capacityRemaining: int = self.capacitySimultaneousTasks - self.currentTaskCount`
+- `availablePercentage: number = percent(self.capacityRemaining, self.capacitySimultaneousTasks)`
+  - `percent(part, whole)` (`manifest/runtime/src/manifest-builtins.ts:65`) = `(part/whole)*100`,
+    returns `0` when `whole <= 0`. Returns `number` → type widened `int`→`number` to match the
+    20+ other `percent` computeds (e.g. `Equipment.usagePercentage`).
+  - Safe: neither is a Prisma column (only `capacity_simultaneous_tasks`/`current_task_count`
+    are stored), and no app-layer code consumes either computed (only the constraint does).
+
+## Checklist
+- [x] Verify bug in source + IR; verify `percent` semantics; verify no schema/consumer impact
+- [x] Edit `manifest/source/kitchen/station-rules.manifest`
+- [x] Recompile IR (`pnpm manifest:compile`) — expressions now `binary` / `call`
+- [x] Add conformance test (IR non-literal lock + production-engine runtime proof)
+- [x] Run new test (5/5) + existing api stations (20/20) + runtime typecheck (clean)
+- [x] manifest:ci gates: validate ✓, validate-ai 100/100 ✓, doctor ✓, check ✓, schema:check (no drift) ✓, audit:strict ✓
+- [ ] Commit (hold push pending confirmation)
+
+## Review
+**Scope grew on a verified discovery.** The plan framed this as a pure computed fix
+(literal `0` → derived). Investigation against the **real** `ManifestRuntimeEngine` +
+storeProvider + `createCustomBuiltins` path revealed the deeper truth: the runtime does
+**not resolve computed properties inside constraint expressions**. So fixing the computed
+alone left `warnNearCapacity` (refs `self.capacityRemaining`) still dead — AND exposed that
+`blockFull` (refs `self.isAtCapacity`) never enforced capacity at all (a cap-3 station
+accepted a 5th task).
+
+**Shipped (one entity, `station-rules.manifest`):**
+1. Derived computeds: `capacityRemaining = capacitySimultaneousTasks - currentTaskCount`,
+   `availablePercentage = percent(capacityRemaining, capacitySimultaneousTasks)` (int→number).
+2. Inlined stored-prop expressions into the 3 computed-referencing constraints
+   (`warnNearCapacity` ×2, `blockFull`) so they actually evaluate. Removed an unresolvable
+   compound-arithmetic `details.remaining` (details only resolve simple member access).
+3. Conformance test proves (production engine) the warn fires at one-slot-remaining and the
+   block enforces capacity — both previously dead.
+
+**Verification:** new test 5/5; api stations 20/20; runtime typecheck clean; full manifest:ci
+gate set green; no schema/route drift (computeds/constraints aren't schema). No app code calls
+`Station.assignTask`, so enabling `blockFull` has no current caller blast radius.
+
+**Documented systemic finding** in IMPLEMENTATION_PLAN.md: computeds-in-constraints don't
+resolve → any entity with a constraint/guard referencing a computed has a dead rule; needs a
+repo-wide audit (Station is the first fix).
+
+**Commit staged with explicit manifest paths** (not `-A`) to avoid bundling the 3 pre-existing
+unrelated app-file edits in the working tree. Push HELD pending user confirmation (push = Tier 3).

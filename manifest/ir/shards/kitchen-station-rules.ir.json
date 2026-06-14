@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d1e631ee1ebb2cb3cb39ccc48e6d18b63750c21f50510ae23a694afdbfc839d6",
-    "irHash": "3e62ac589711ed27eeadd463ad468fe7aab7cedbe2b204f11687a75fe0112b79",
+    "contentHash": "ab18d86e21507feccf8a46a1f31ba32c7acb300e28b26901e0abc42f279e55ef",
+    "irHash": "838e314eee238436ece81df19801a59f3d5ad1ec9a56a9de25269bc1c0b3a994",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-13T16:16:58.744Z"
+    "compiledAt": "2026-06-14T06:37:20.233Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -256,10 +256,23 @@
             "nullable": false
           },
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
+            "kind": "binary",
+            "operator": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "capacitySimultaneousTasks"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "currentTaskCount"
             }
           },
           "dependencies": []
@@ -267,17 +280,37 @@
         {
           "name": "availablePercentage",
           "type": {
-            "name": "int",
+            "name": "number",
             "nullable": false
           },
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "percent"
+            },
+            "args": [
+              {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "capacityRemaining"
+              },
+              {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "capacitySimultaneousTasks"
+              }
+            ]
           },
-          "dependencies": []
+          "dependencies": [
+            "percent"
+          ]
         },
         {
           "name": "isAvailable",
@@ -443,12 +476,24 @@
               "kind": "binary",
               "operator": "==",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "capacitySimultaneousTasks"
                 },
-                "property": "capacityRemaining"
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "currentTaskCount"
+                }
               },
               "right": {
                 "kind": "literal",
@@ -504,14 +549,6 @@
                 "name": "self"
               },
               "property": "capacitySimultaneousTasks"
-            },
-            "remaining": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "capacityRemaining"
             }
           },
           "overrideable": false
@@ -1390,12 +1427,24 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "capacitySimultaneousTasks"
               },
-              "property": "capacityRemaining"
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "currentTaskCount"
+              }
             },
             "right": {
               "kind": "literal",
@@ -1443,15 +1492,23 @@
           "name": "blockFull",
           "code": "blockFull",
           "expression": {
-            "kind": "unary",
-            "operator": "!",
-            "operand": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "isAtCapacity"
+              "property": "currentTaskCount"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "capacitySimultaneousTasks"
             }
           },
           "severity": "block",
