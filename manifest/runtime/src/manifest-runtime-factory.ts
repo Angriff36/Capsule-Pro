@@ -39,6 +39,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
+  createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
   createLeadConvertedDealCreateMiddleware,
@@ -754,6 +755,17 @@ export async function createManifestRuntime(
     // the payload, and logs a governed "note" interaction on the client's timeline.
     // Skips clientless events; idempotent per event via correlationId.
     createEventCreatedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventUpdated/EventDateUpdated/EventLocationUpdated -> re-sync the
+    // event's battle boards. Middleware (not a reaction) because boards are 1:N
+    // by eventId AND the snapshot fields are the Event's own fields, absent from
+    // the partial update-event payloads — so it loads the updated Event and fans
+    // out BattleBoard.syncFromEvent per board. Retires the imperative
+    // syncBattleBoardsForEvent() server-action helper.
+    createEventUpdatedBoardSyncMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

@@ -3,7 +3,6 @@
 import { database, Prisma } from "@repo/database";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { syncBattleBoardsForEvent } from "../actions/sync-battle-boards";
 import { type EventStatus, eventStatuses } from "../constants";
 
 /**
@@ -218,11 +217,8 @@ export async function updateEventForMutation(
     throw new Error(result.message ?? "Failed to update event.");
   }
 
-  await syncBattleBoardsForEvent(tenantId, eventId, {
-    id: user.id,
-    tenantId,
-    role: user.role,
-  });
-
+  // Battle boards linked to this event are re-synced by the
+  // event-updated-board-sync runtime middleware (fires on EventUpdated) — no
+  // imperative post-update sync needed here.
   // No revalidatePath, no redirect — TanStack Query handles the refetch
 }
