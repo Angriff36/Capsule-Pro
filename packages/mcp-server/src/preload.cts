@@ -4,8 +4,8 @@
  * Loads .env from the monorepo root so DATABASE_URL is available
  * before @repo/database/standalone initializes.
  *
- * Note: server-only and @prisma/client shims are no longer needed
- * because we use the standalone entry point which doesn't import server-only
+ * Note: server-only and @prisma/client shims are not needed when consumers
+ * import @repo/database/standalone (not @repo/database).
  * and uses the generated client directly.
  *
  * Usage: tsx --require ./src/preload.cts src/index.ts
@@ -14,9 +14,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nodePath = require("node:path");
 
-// In CJS context, __dirname is always available
-const preloadDir = import.meta.dirname;
-const repoRoot = nodePath.resolve(preloadDir, "../../..");
+// tsx --require runs this as CJS; __dirname is reliable (import.meta.dirname is not).
+const repoRoot = nodePath.resolve(__dirname, "../../..");
 
 // MCP/Cursor may spawn with cwd = home; set project root so loadPrecompiledIR finds IR
 if (!(process.env.MCP_PROJECT_ROOT || process.env.REPO_ROOT)) {

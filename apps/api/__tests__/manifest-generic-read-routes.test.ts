@@ -194,9 +194,11 @@ describe("Generic Manifest read routes", () => {
     });
 
     it("should return 404 for dropped entities (no backing table)", async () => {
-      // Deal is in ENTITY_ACCESSOR_OVERRIDES with value null
-      const res = await listGet(listRequest("Deal"), {
-        params: Promise.resolve({ entity: "Deal" }),
+      // IR-only entity with no Prisma model (auto-dropped by metadata resolution)
+      const res = await listGet(listRequest("SelOnboardingTrainingModuleDefinition"), {
+        params: Promise.resolve({
+          entity: "SelOnboardingTrainingModuleDefinition",
+        }),
       });
       expect(res.status).toBe(404);
     });
@@ -319,9 +321,15 @@ describe("Generic Manifest read routes", () => {
     });
 
     it("should return 404 for dropped entities", async () => {
-      const res = await detailGet(detailRequest("Deal", "deal-1"), {
-        params: Promise.resolve({ entity: "Deal", id: "deal-1" }),
-      });
+      const res = await detailGet(
+        detailRequest("SelOnboardingTrainingModuleDefinition", "x"),
+        {
+          params: Promise.resolve({
+            entity: "SelOnboardingTrainingModuleDefinition",
+            id: "x",
+          }),
+        }
+      );
       expect(res.status).toBe(404);
     });
 

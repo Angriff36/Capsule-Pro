@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
+import { getAccessorConfig } from "./read-config.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
@@ -349,28 +349,28 @@ function buildOptions(irEntities, prismaModels) {
 
   const report = { matched: [], noPrismaModel: [], errors: [] };
 
+  const { accessorNames, entityToPrismaModel } = getAccessorConfig();
+
   for (const entity of irEntities) {
     const entityName = entity.name;
-    // Try direct lookup first, then fall back to accessor override name.
-    // ENTITY_ACCESSOR_OVERRIDES maps IR entity names to their actual Prisma client
-    // accessor names (e.g., BankAccount → employeeBankAccount, Document → documents).
-    // Null values mean the entity genuinely has no matching Prisma model.
-    // Two accessor→model patterns exist in schema.prisma:
-    //   camelCase accessor → PascalCase model (e.g., employeeBankAccount → EmployeeBankAccount)
-    //   snake_case accessor → snake_case model (e.g., documents → documents)
-    const accessorOverride = ENTITY_ACCESSOR_OVERRIDES[entityName];
+    // manifest.config.yaml bridges IR entity → Prisma model when names differ.
+    const bridgedModel = entityToPrismaModel[entityName];
+    const configAccessor = accessorNames[entityName];
     let model = prismaModels.get(entityName);
     let modelName = entityName;
 
-    if (!model && accessorOverride !== undefined && accessorOverride !== null) {
-      // Try accessor name directly (handles snake_case legacy models)
-      model = prismaModels.get(accessorOverride);
-      modelName = accessorOverride;
+    if (!model && bridgedModel) {
+      model = prismaModels.get(bridgedModel);
+      modelName = bridgedModel;
+    }
 
-      // Try PascalCase version (handles camelCase accessors from PascalCase models)
+    if (!model && configAccessor) {
+      model = prismaModels.get(configAccessor);
+      modelName = configAccessor;
+
       if (!model) {
         const pascalCase =
-          accessorOverride[0].toUpperCase() + accessorOverride.slice(1);
+          configAccessor[0].toUpperCase() + configAccessor.slice(1);
         model = prismaModels.get(pascalCase);
         modelName = pascalCase;
       }

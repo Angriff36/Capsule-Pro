@@ -2,9 +2,9 @@
   "name": "@repo/collaboration",
   "version": "0.0.0",
   "dependencies": {
-    "@liveblocks/client": "^3.19.3",
-    "@liveblocks/node": "^3.19.3",
-    "@liveblocks/react": "^3.19.3",
+    "@liveblocks/client": "^3.19.5",
+    "@liveblocks/node": "^3.19.5",
+    "@liveblocks/react": "^3.19.5",
     "@repo/design-system": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.11",
     "server-only": "^0.0.1",

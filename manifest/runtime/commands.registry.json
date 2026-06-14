@@ -50,6 +50,11 @@
     "commandId": "AdminChatThread.create"
   },
   {
+    "entity": "AdminChatThread",
+    "command": "recordLastMessage",
+    "commandId": "AdminChatThread.recordLastMessage"
+  },
+  {
     "entity": "AdminTask",
     "command": "cancel",
     "commandId": "AdminTask.cancel"

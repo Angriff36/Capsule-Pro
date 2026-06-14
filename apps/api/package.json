@@ -1,8 +1,8 @@
 {
   "name": "api",
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.65",
-    "@angriff36/manifest": "2.4.2",
+    "@ai-sdk/openai": "^3.0.71",
+    "@angriff36/manifest": "2.5.0",
     "@capsule-pro/sales-reporting": "workspace:*",
     "@react-pdf/renderer": "^4.5.1",
     "@repo/analytics": "workspace:*",
@@ -22,18 +22,18 @@
     "@repo/sentry-integration": "workspace:*",
     "@repo/supplier-connectors": "workspace:*",
     "@scalar/nextjs-api-reference": "^0.11.3",
-    "@sentry/nextjs": "^10.54.0",
+    "@sentry/nextjs": "^10.57.0",
     "@t3-oss/env-nextjs": "^0.13.11",
-    "ai": "^6.0.191",
-    "date-fns": "^4.3.0",
-    "geist": "^1.7.1",
-    "import-in-the-middle": "^3.0.1",
+    "ai": "^6.0.205",
+    "date-fns": "^4.4.0",
+    "geist": "^1.7.2",
+    "import-in-the-middle": "^3.0.2",
     "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "require-in-the-middle": "8.0.1",
     "server-only": "^0.0.1",
-    "svix": "^1.94.0",
+    "svix": "^1.95.2",
     "uuid": "^14.0.0",
     "zod": "^4.4.3"
   },
@@ -51,7 +51,7 @@
     "fast-check": "^4.8.0",
     "typescript": "^6.0.3",
     "vite": "8.0.14",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": "22.x"

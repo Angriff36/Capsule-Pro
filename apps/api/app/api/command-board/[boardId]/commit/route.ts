@@ -14,8 +14,11 @@
 
 import { database, type Prisma } from "@repo/database";
 import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
-import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
-import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import {
+  runManifestCommandCore,
+  type ManifestUserContext,
+  type RunManifestCommandCoreDeps,
+} from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -27,27 +30,53 @@ import { createManifestRuntime } from "@/lib/manifest-runtime";
 export const runtime = "nodejs";
 
 /**
- * Build runManifestCommandCore deps bound to the shared transaction client.
- * Mirrors makeCoreDeps in lib/payroll/manifest-payroll-data-source.ts: every
- * Manifest write (and entity read during command execution) routes through
- * `prismaOverride`, so all commands in the batch share ONE atomic transaction
- * with read-your-writes semantics.
+ * One RuntimeEngine per commit transaction (WeakMap keyed by the Prisma tx).
+ *
+ * Manifest contract: all writes use `prismaOverride` on the active transaction
+ * client (same as ManifestPayrollDataSource). Reusing the engine across
+ * sequential `runCommand` calls in that tx is safe — middleware cascades
+ * already re-enter the same engine via `dispatchCommand`, and payroll creates
+ * a fresh engine per command only because it never added this cache.
+ *
+ * Without reuse, each command paid full factory init (~4–10s), so a handful of
+ * draft cards exceeded Prisma's 30s interactive transaction limit.
  */
-function makeCoreDeps(prismaOverride: PrismaTransactionClient) {
+const commitTxCoreDeps = new WeakMap<object, RunManifestCommandCoreDeps>();
+
+function makeCachedCoreDeps(
+  prismaOverride: PrismaTransactionClient
+): RunManifestCommandCoreDeps {
+  let cached: Awaited<ReturnType<typeof createManifestRuntime>> | null = null;
   return {
-    createRuntime: ({
+    createRuntime: async ({
       user,
       entityName,
     }: {
       user: ManifestUserContext;
       entityName: string;
-    }) => createManifestRuntime({ user, entityName, prismaOverride }),
+    }) => {
+      if (!cached) {
+        cached = await createManifestRuntime({
+          user,
+          entityName,
+          prismaOverride,
+        });
+      }
+      return cached;
+    },
   };
 }
 
 const deps: CommitDeps = {
   transact: (fn) =>
-    database.$transaction(fn, { timeout: 30_000, maxWait: 15_000 }),
+    database.$transaction(async (tx) => {
+      commitTxCoreDeps.set(tx, makeCachedCoreDeps(tx as PrismaTransactionClient));
+      try {
+        return await fn(tx);
+      } finally {
+        commitTxCoreDeps.delete(tx);
+      }
+    }, { timeout: 120_000, maxWait: 15_000 }),
 
   /**
    * Row-lock the board for the transaction's duration (FOR UPDATE) and return
@@ -120,16 +149,17 @@ const deps: CommitDeps = {
   },
 
   runCommand: async (tx, params) => {
-    const result = await runManifestCommandCore(
-      makeCoreDeps(tx as PrismaTransactionClient),
-      {
-        entity: params.entity,
-        command: params.command,
-        body: params.body,
-        user: params.user,
-        ...(params.instanceId ? { instanceId: params.instanceId } : {}),
-      }
-    );
+    const coreDeps = commitTxCoreDeps.get(tx);
+    if (!coreDeps) {
+      throw new Error("commit runCommand invoked outside active transaction");
+    }
+    const result = await runManifestCommandCore(coreDeps, {
+      entity: params.entity,
+      command: params.command,
+      body: params.body,
+      user: params.user,
+      ...(params.instanceId ? { instanceId: params.instanceId } : {}),
+    });
     if (!result.ok) {
       return { success: false as const, error: result.message };
     }

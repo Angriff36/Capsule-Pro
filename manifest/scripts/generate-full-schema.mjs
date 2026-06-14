@@ -23,10 +23,13 @@ import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
+import { getAccessorConfig } from "./read-config.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
+const IR_BRIDGED_ENTITIES = new Set(
+  Object.keys(getAccessorConfig().entityToPrismaModel)
+);
 
 // Paths
 const IR_PATH = resolve(PROJECT_ROOT, "manifest/ir/kitchen.ir.json");
@@ -617,7 +620,7 @@ console.log(`  @db.Time stripped: ${strippedDbTime}`);
       // Keep the "canonical" model and remove the alias.
       // Heuristic: the alias entity is the one listed in ENTITY_ACCESSOR_OVERRIDES
       // (it maps to a different Prisma model name). The canonical entity maps directly.
-      const canonical = models.find((m) => !ENTITY_ACCESSOR_OVERRIDES[m]);
+      const canonical = models.find((m) => !IR_BRIDGED_ENTITIES.has(m));
       const toRemove = canonical
         ? models.filter((m) => m !== canonical)
         : models.slice(1);

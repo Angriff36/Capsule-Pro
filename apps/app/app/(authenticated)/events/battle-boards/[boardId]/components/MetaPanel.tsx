@@ -7,9 +7,19 @@ interface MetaPanelProps {
 }
 
 export function MetaPanel({ board, onChange }: MetaPanelProps) {
+  // Event-owned fields (name, number, date, headcount, venue) are read LIVE
+  // from the linked event and cannot be edited here — editing them on the board
+  // would have no effect. Standalone boards (no linked event) stay editable.
+  const eventLinked = Boolean(board.event_id);
+
   function update(field: keyof BattleBoardFull, value: string | number) {
     onChange({ ...board, [field]: value });
   }
+
+  // Appended to event-owned inputs so they read as inert when synced.
+  const lockedCls = eventLinked
+    ? " disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+    : "";
 
   return (
     <div className="space-y-6">
@@ -17,13 +27,26 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
         <h2 className="mb-4 font-semibold text-slate-900 text-sm uppercase tracking-wide">
           Event Details
         </h2>
+        {eventLinked && (
+          <p className="mb-4 flex flex-wrap items-center gap-1.5 text-slate-500 text-xs">
+            <Info className="h-3.5 w-3.5" />
+            Synced live from the linked event.
+            <a
+              className="font-medium text-slate-700 underline hover:text-slate-900"
+              href={`/events/${board.event_id}`}
+            >
+              Edit on the event →
+            </a>
+          </p>
+        )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className="mb-1 block font-medium text-slate-700 text-sm">
               Event Name
             </label>
             <input
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+              disabled={eventLinked}
               onChange={(e) => update("event_name", e.target.value)}
               placeholder="Client or event name..."
               type="text"
@@ -35,7 +58,8 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
               Event Number
             </label>
             <input
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+              disabled={eventLinked}
               onChange={(e) => update("event_number", e.target.value)}
               placeholder="Invoice / reference #"
               type="text"
@@ -49,7 +73,8 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
             <div className="relative">
               <Calendar className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className={`w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+                disabled={eventLinked}
                 onChange={(e) => update("event_date", e.target.value)}
                 type="date"
                 value={board.event_date || ""}
@@ -63,7 +88,8 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
             <div className="relative">
               <Users className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className={`w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+                disabled={eventLinked}
                 min="0"
                 onChange={(e) =>
                   update("headcount", Number.parseInt(e.target.value, 10) || 0)
@@ -118,7 +144,8 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
             <div className="relative">
               <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className={`w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pr-3 pl-9 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+                disabled={eventLinked}
                 onChange={(e) => update("venue_name", e.target.value)}
                 placeholder="Venue name"
                 type="text"
@@ -131,7 +158,8 @@ export function MetaPanel({ board, onChange }: MetaPanelProps) {
               Address
             </label>
             <input
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 text-sm transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10${lockedCls}`}
+              disabled={eventLinked}
               onChange={(e) => update("venue_address", e.target.value)}
               placeholder="Street address"
               type="text"

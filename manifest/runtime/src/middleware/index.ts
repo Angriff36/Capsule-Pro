@@ -187,6 +187,11 @@ export {
   type StaffTrainingAssignDiagnostic,
 } from "./staff-member-created-training-assignment-middleware";
 export {
+  createStaffMemberDeactivatedUnassignEventStaffMiddleware,
+  type StaffMemberDeactivatedUnassignDiagnostic,
+  type StaffMemberDeactivatedUnassignEventStaffMiddlewareOptions,
+} from "./staff-member-deactivated-unassign-event-staff-middleware";
+export {
   createTimeOffApprovedShiftCleanupMiddleware,
   type TimeOffApprovedShiftCleanupDiagnostic,
   type TimeOffApprovedShiftCleanupMiddlewareOptions,

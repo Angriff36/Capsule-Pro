@@ -72,6 +72,7 @@ import {
   createTimeOffApprovedShiftCleanupMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
+  createStaffMemberDeactivatedUnassignEventStaffMiddleware,
   createTimecardEditApprovedTimeEntryApplyMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
 } from "./middleware";
@@ -959,6 +960,20 @@ export async function createManifestRuntime(
     // and the shifts queried by employee + date. Approving PTO without this left the
     // employee both on approved leave AND rostered to work (a double-booking).
     createTimeOffApprovedShiftCleanupMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: StaffMemberDeactivated -> unassign the staff member's open
+    // EventStaff assignments. Middleware (not a reaction) because it is a 1:N
+    // fan-out (one deactivated staff member -> many open EventStaff rows). Scoped
+    // to EventStaff only: EventStaff.staffMemberId belongsTo StaffMember (same id
+    // space), whereas ScheduleShift.employeeId belongsTo User (a DIFFERENT id
+    // space), so a ScheduleShift leg here would be an identity mismatch. Only
+    // pre-work assignments (assigned/confirmed — exactly EventStaff.unassign's
+    // guard) are touched, so a deactivated person stops showing as still-rostered
+    // on upcoming events. Without this, deactivation left every assignment live.
+    createStaffMemberDeactivatedUnassignEventStaffMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

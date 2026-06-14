@@ -1,4 +1,4 @@
-import { Prisma } from "@repo/database";
+import { Prisma } from "@repo/database/standalone";
 import type { PrismaClient } from "@repo/database/standalone";
 
 type TransactionClient = Omit<

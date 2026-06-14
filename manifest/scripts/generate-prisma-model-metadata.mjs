@@ -22,8 +22,9 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ENTITY_TO_PRISMA_MODEL } from "./entity-domain-map.mjs";
+import { getAccessorConfig } from "./read-config.mjs";
 
+const { entityToPrismaModel: ENTITY_TO_PRISMA_MODEL } = getAccessorConfig();
 const root = resolve(process.cwd());
 const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
 const outPath = resolve(
@@ -283,7 +284,7 @@ const bridgeOutPath = resolve(
   root,
   "manifest/generated/runtime/entity-to-prisma-model.generated.ts"
 );
-const bridgeHeader = `// Generated from manifest/scripts/entity-domain-map.mjs - DO NOT EDIT
+const bridgeHeader = `// Generated from manifest.config.yaml — DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs
 // Re-run via \`pnpm manifest:generate-metadata\` after bridge map changes.
 /* eslint-disable */

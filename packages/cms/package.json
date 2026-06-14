@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.11",
-    "basehub": "^9.5.3",
+    "basehub": "^9.6.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

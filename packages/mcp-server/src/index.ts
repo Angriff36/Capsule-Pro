@@ -22,6 +22,10 @@ import { keys } from "./keys.js";
 import { resolveIdentity } from "./lib/auth.js";
 import { startIRWatcher } from "./lib/ir-loader.js";
 import { disconnectPrisma, setPrisma } from "./lib/runtime-factory.js";
+import {
+  EXPLAIN_BRIDGE_REV,
+  warmupExplainBridge,
+} from "./lib/upstream-manifest-mcp.js";
 import { createServer } from "./server.js";
 import type { ServerMode } from "./types.js";
 
@@ -88,15 +92,36 @@ async function main() {
     })}\n`
   );
 
-  // 4. Start IR file watcher for hot-reload in development
+  // 4. Eager-load upstream explain bridge (Windows path + ESM interop).
+  try {
+    await warmupExplainBridge();
+    process.stderr.write(
+      `${JSON.stringify({
+        level: "info",
+        message: "Explain bridge ready",
+        rev: EXPLAIN_BRIDGE_REV,
+      })}\n`
+    );
+  } catch (error) {
+    process.stderr.write(
+      `${JSON.stringify({
+        level: "error",
+        message: "Explain bridge failed to load",
+        rev: EXPLAIN_BRIDGE_REV,
+        error: error instanceof Error ? error.message : String(error),
+      })}\n`
+    );
+  }
+
+  // 5. Start IR file watcher for hot-reload in development
   if (!isProd) {
     startIRWatcher();
   }
 
-  // 5. Create and configure server
+  // 6. Create and configure server
   const server = await createServer({ mode, identity });
 
-  // 6. Connect stdio transport
+  // 7. Connect stdio transport
   const transport = new StdioServerTransport();
   await server.connect(transport);
 

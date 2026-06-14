@@ -2,6 +2,8 @@ export interface BattleBoard {
   created_at: string;
   deleted_at: string | null;
   event_date: string | null;
+  /** Linked Event id ("" for standalone boards). Event-owned fields are read live from this event. */
+  event_id: string;
   event_name: string;
   event_number: string;
   headcount: number;
