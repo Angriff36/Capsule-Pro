@@ -1,55 +1,50 @@
-# Task: EventDishCreated/QuantityUpdated → PrepList sync (IMPLEMENTATION_PLAN P1 Event lifecycle)
+# Task: TimecardEditApproved → TimeEntry correction (P1)
+
+**Source of truth:** IMPLEMENTATION_PLAN.md P1 line 81 (scoped & verified 2026-06-14).
 
 ## Problem (the why)
-The event prep list is derived ONCE, at seed time, from the event's dishes
-(`prep-list-seed-middleware` on the `EventConfirmed run PrepList.create` shell).
-`EventDishCreated` (a dish added AFTER the event is confirmed/seeded) and
-`EventDishQuantityUpdated` (a serving-count change) had NO consumer — so a dish
-added to a confirmed event never appeared in the kitchen's prep list, and
-re-portioning a dish never re-scaled its ingredient demand. Silent
-missing-mise-en-place / food-quantity defect.
+`TimecardEditRequest.approve(userId)` only `mutate status = "approved"` + emits
+`TimecardEditApproved`. The corrected values (`requestedClockIn/Out`,
+`requestedBreakMinutes`) — the request's OWN fields, NOT approve params — NEVER reach
+the `TimeEntry`. Approved edits are silently lost; payroll/labor uses uncorrected hours.
+No `TimeEntry` command exists to apply a correction.
 
-## Approach (decision)
-A **middleware** (not a reaction) on `EventDishCreated` + `EventDishQuantityUpdated`:
-- Why middleware: (1) 1:N fan-out (one dish change → many PrepLists → many items);
-  (2) the new rows are DERIVED across a cross-store walk the DSL can't express;
-  (3) `updateQuantity` carries no `eventId` (the dish's own field) → load the dish.
-- **RE-DERIVE + RECONCILE** (not per-dish incremental): the seed aggregates
-  ingredients across all dishes by inventory-item id, so a naive single-dish add
-  double-counts. Re-derive the FULL demand from the current dishes via the shared
-  `deriveSeedLines` (exported from the seed middleware), then reconcile per draft
-  list: missing ingredient → create; changed qty → updateQuantity; same → no-op.
-- **Preserve guest-count rescale:** target = `derivedScaled × batchMultiplier`.
-- **Scope:** draft lists only (finalized are locked; unseeded event = no-op).
-- **Defer `EventDishRemoved`:** needs a new `PrepListItem.remove` command
-  (source/IR change) — spun out as its own IMPLEMENTATION_PLAN follow-up.
+## Mechanism: command + middleware (NOT reaction)
+The corrected values + `timeEntryId` are the request's own fields, so no reaction can
+read them (engine payload = `{...commandInput, result}`). No double-apply (verified: the
+non-governed bulk route never writes corrected clock values back). No migration
+(`applyEdit` reuses existing `clockIn/clockOut/breakMinutes`).
+
+## Design refinements (over the plan, justified)
+- **Coalesce in the command, not the middleware** — mutate-RHS ternary
+  (`x != null ? x : self.x`) is an established idiom (call-planning-session-rules:53).
+  Makes `applyEdit` self-protecting; middleware just passes the request's raw fields.
+- `requestedBreakMinutes` is `int=0` (never null, no migration) → clock times coalesce,
+  break applies directly.
+- Emit a new `TimeEntryEdited` event (convention + forward-compat for LaborBudget actuals).
 
 ## Steps
-- [x] Export `deriveSeedLines` / `assignStation` / `SeedLine` / `DerivationStores`
-      from `prep-list-seed-middleware.ts` (single source of truth — no copy).
-- [x] `manifest/runtime/src/middleware/event-dish-prep-sync-middleware.ts`
-      (after-emit; EventDishCreated + EventDishQuantityUpdated; load EventDish →
-      eventId/tenantId; re-derive + reconcile draft lists; bm-aware target).
-- [x] Barrel export in `middleware/index.ts`.
-- [x] Import + register in `manifest-runtime-factory.ts` (after the guest-count leg).
-- [x] Conformance test `event-dish-prep-sync-middleware.test.ts` (5 tests).
-- [x] Verify: new test 5/5; runtime suite 287 pass; runtime typecheck exit 0;
-      api typecheck exit 0. No IR change → reaction-payload + schema:check gates
-      unaffected.
-- [x] Update IMPLEMENTATION_PLAN.md (mark add/rescale DONE; spin out the
-      `EventDishRemoved` leg as a new open item with the command prerequisite).
-- [ ] Commit explicit paths (NEVER `git add -A` — tree carries unrelated
-      preview.js/UI workstream changes), push, tag.
+- [ ] Add `TimeEntry.applyEdit(clockIn, clockOut, breakMinutes)` + `TimeEntryEdited` event to source.
+- [ ] Recompile IR (`pnpm manifest:compile`).
+- [ ] Create `timecard-edit-approved-time-entry-apply-middleware.ts`.
+- [ ] Barrel export + factory import + registration.
+- [ ] Conformance test (real IR through engine).
+- [ ] `pnpm --filter @repo/manifest-runtime typecheck` + runtime suite green.
+- [ ] Update IMPLEMENTATION_PLAN.md, commit surgically (explicit paths), tag, push.
 
 ## Review
-- **Files:** new `event-dish-prep-sync-middleware.ts` + its test; edited
-  `prep-list-seed-middleware.ts` (4 `export` keywords), `middleware/index.ts`
-  (barrel), `manifest-runtime-factory.ts` (import + registration).
-- **No IR/source/schema change** — pure runtime middleware reusing the existing
-  derivation; audit-reaction-payloads + schema:check gates are unaffected.
-- **Engine-semantics notes captured** in the middleware doc-comment + the plan:
-  the re-derive-from-authoritative-state design sidesteps the old-value problem
-  the guest-count leg needed a two-hook capture for, and the
-  `× batchMultiplier` reconcile target is what keeps a prior guest rescale intact.
-- **Deferred leg documented, not silent:** `EventDishRemoved` is a tracked
-  IMPLEMENTATION_PLAN item (needs `PrepListItem.remove`).
+- **Files (source+IR):** `time-entry-rules.manifest` (applyEdit command + TimeEntryEdited
+  event); recompiled `kitchen.ir.json`/`kitchen.commands.json`/merge-report/provenance/
+  module-graph + `shards/staff-time-entry-rules.ir.json` + `runtime/commands.registry.json`.
+- **Files (runtime):** new `timecard-edit-approved-time-entry-apply-middleware.ts` + its
+  test; `middleware/index.ts` (barrel), `manifest-runtime-factory.ts` (import + register).
+- **Verified:** new test 4/4; runtime suite 315 pass (56 files); runtime typecheck exit 0;
+  `manifest:audit-reaction-payloads` 0 errors; `manifest:schema:check` no drift.
+- **Coalesce in command, not middleware** (refinement over plan) — `applyEdit` self-protects
+  via mutate-ternary; middleware is a thin pass-through. Documented in middleware doc-comment
+  + plan.
+- **Surgical staging** — only this increment's paths; left the 100 pre-existing
+  provenance-noise shards + unrelated app/AGENTS workstream changes untouched
+  ([[concurrent-loop-shared-tree]]).
+- **Deferred (tracked, not silent):** the `timecards/bulk` route direct-Prisma bypass
+  (constitution §9) stays a separate migration, noted under the same plan item.

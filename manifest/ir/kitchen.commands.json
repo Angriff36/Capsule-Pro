@@ -4616,6 +4616,11 @@
   },
   {
     "entity": "TimeEntry",
+    "command": "applyEdit",
+    "commandId": "TimeEntry.applyEdit"
+  },
+  {
+    "entity": "TimeEntry",
     "command": "clockIn",
     "commandId": "TimeEntry.clockIn"
   },

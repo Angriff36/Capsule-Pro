@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T16:07:21.650Z",
-  "contentHash": "87ed303347eec4c5f448b28dddfca751395e8bc00d8c076425d0404c998690a6",
+  "compiledAt": "2026-06-14T18:23:22.032Z",
+  "contentHash": "3c7be16246bcb4b9176f6bf77ff7c69d905c1af3022bd180e217ecf1681f6216",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -686,8 +686,8 @@
       "path": "staff/time-entry-rules.manifest",
       "domain": "staff",
       "entities": 2,
-      "commands": 7,
-      "events": 7
+      "commands": 8,
+      "events": 8
     },
     {
       "path": "staff/time-off-request-rules.manifest",
@@ -721,7 +721,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1046,
-    "events": 1021
+    "commands": 1047,
+    "events": 1022
   }
 }

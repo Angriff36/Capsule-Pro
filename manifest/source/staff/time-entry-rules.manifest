@@ -103,6 +103,24 @@ entity TimeEntry {
     emit TimeEntryAdded
   }
 
+  // Apply an APPROVED timecard edit back onto the entry. Invoked by the
+  // timecard-edit-approved middleware (the corrected values + timeEntryId are the
+  // TimecardEditRequest's OWN fields, which `approve` does not take as params, so no
+  // reaction can carry them). Clock times COALESCE against the current value so a
+  // partial edit (only one clock field requested) can never blank a real time — the
+  // command is self-protecting even if called directly with nulls. breakMinutes is a
+  // concrete int (requestedBreakMinutes defaults 0, never null) so it applies through.
+  // No transition (status untouched); guarded against editing a deleted entry.
+  command applyEdit(clockIn: datetime, clockOut: datetime, breakMinutes: number) {
+    guard self.deletedAt == null "Cannot edit a deleted time entry"
+
+    mutate clockIn = clockIn != null ? clockIn : self.clockIn
+    mutate clockOut = clockOut != null ? clockOut : self.clockOut
+    mutate breakMinutes = breakMinutes != null ? breakMinutes : self.breakMinutes
+
+    emit TimeEntryEdited
+  }
+
   command softDelete(reason: string, userId: string) {
     guard self.deletedAt == null "Time entry is already deleted"
 
@@ -228,6 +246,16 @@ event TimeEntryAdded: "staff.timeentry.added" {
   totalHours: number
   breakMinutes: number
   createdAt: datetime
+}
+
+event TimeEntryEdited: "staff.timeentry.edited" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  clockIn: datetime
+  clockOut: datetime
+  breakMinutes: number
+  editedAt: datetime
 }
 
 event TimeEntryDeleted: "staff.timeentry.deleted" {

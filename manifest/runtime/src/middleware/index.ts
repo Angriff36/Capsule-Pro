@@ -162,6 +162,11 @@ export {
   type StaffTrainingAssignDiagnostic,
 } from "./staff-member-created-training-assignment-middleware";
 export {
+  createTimecardEditApprovedTimeEntryApplyMiddleware,
+  type TimecardEditApplyDiagnostic,
+  type TimecardEditApprovedTimeEntryApplyMiddlewareOptions,
+} from "./timecard-edit-approved-time-entry-apply-middleware";
+export {
   createTrainingAttemptSubmittedRecordMiddleware,
   type TrainingAttemptRecordDiagnostic,
   type TrainingAttemptSubmittedRecordMiddlewareOptions,

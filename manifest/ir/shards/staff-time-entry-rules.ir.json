@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c1b00841716123007a15a6889f33b218d45de99769252d04b33e1018837e9f5a",
-    "irHash": "15e644438cc0f83d392047531ec51487454b0eea8b0f1f63edc9ae46bcb15153",
+    "contentHash": "cdbd4165d83bd0e89b4016363dbaded8ebb7c9907dd4d8396249d58427ebaf26",
+    "irHash": "7c6fd56b113b61f5776363fd4a51b258912dca003c9dcafe8e6edfa823a64d52",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T16:07:21.601Z"
+    "compiledAt": "2026-06-14T18:23:21.979Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -467,6 +467,7 @@
         "clockIn",
         "clockOut",
         "addEntry",
+        "applyEdit",
         "softDelete"
       ],
       "constraints": [],
@@ -1004,6 +1005,68 @@
         },
         {
           "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimeEntryEdited",
+      "channel": "staff.timeentry.edited",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "editedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1915,6 +1978,174 @@
       ],
       "emits": [
         "TimeEntryAdded"
+      ]
+    },
+    {
+      "name": "applyEdit",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot edit a deleted time entry"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockIn",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clockIn"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clockIn"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockOut",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clockOut"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clockOut"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockOut"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "breakMinutes",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "breakMinutes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "breakMinutes"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "breakMinutes"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryEdited"
       ]
     },
     {

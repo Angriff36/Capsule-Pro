@@ -66,6 +66,7 @@ import {
   createScheduleShiftFirstShiftDueDateMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
+  createTimecardEditApprovedTimeEntryApplyMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
@@ -934,6 +935,23 @@ export async function createManifestRuntime(
     // leg is guard-safe + idempotent; inventory reservations release via the
     // prep-list-cancelled middleware above (the dispatched PrepList.cancel chains).
     createEventCancelledCascadeMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: TimecardEditApproved -> TimeEntry.applyEdit. Middleware (not a
+    // reaction) because the corrected values (requestedClockIn/Out/BreakMinutes) and
+    // the target timeEntryId are the TimecardEditRequest's OWN fields, which
+    // `approve(userId)` does not take as params — and declared event fields are never
+    // auto-populated from self.*, so no reaction can carry them. Without this,
+    // approving a timecard edit only flipped the request to "approved" and the
+    // corrected clock times NEVER reached the TimeEntry (payroll/labor kept using the
+    // uncorrected hours). Loads the approved request via _subject.id, reads its fields,
+    // and dispatches the governed TimeEntry.applyEdit (guard-safe: skips deleted/missing
+    // entries; clock-time coalescing lives in the command so a partial edit can't blank
+    // a real time; idempotent per request). No double-apply (the non-governed bulk
+    // route never writes corrected clock values back).
+    createTimecardEditApprovedTimeEntryApplyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
