@@ -67,6 +67,11 @@ export {
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
 export {
+  createScheduleShiftFirstShiftDueDateMiddleware,
+  type FirstShiftDueDateDiagnostic,
+  type ScheduleShiftFirstShiftDueDateMiddlewareOptions,
+} from "./schedule-shift-first-shift-due-date-middleware";
+export {
   createShipmentItemReceivedInventoryRestockMiddleware,
   type ShipmentItemReceivedInventoryRestockMiddlewareOptions,
   type ShipmentRestockDiagnostic,

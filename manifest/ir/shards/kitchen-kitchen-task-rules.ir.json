@@ -2,10 +2,10 @@
   "version": "1.0",
   "provenance": {
     "contentHash": "9d874d92b5ddb3c6b7393dd63d64ab4ff5bed65df46506c098d408b154498bd9",
-    "irHash": "b4305d35dbb35a779b4210f18eb00e1c6f99b0d6e40b57dea63438eba05e6777",
+    "irHash": "01cb8f48ac8400b154c474d1c225b67b92dd62243733b4b1b52457aaf38cffcd",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T10:54:12.683Z"
+    "compiledAt": "2026-06-14T11:10:59.076Z"
   },
   "tenant": {
     "property": "tenantId",

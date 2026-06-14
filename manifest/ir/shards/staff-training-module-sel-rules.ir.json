@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "54f601fa7f30120db48bc3056238e931373be7b1091d32ee0cbf1ceb1a9f81ce",
-    "irHash": "64d6e19c6dfb1a8034a900f36a1b419af8b5947f0f07cb4bb12ac1edf076cf30",
+    "contentHash": "8c98ebf203cc53ce22657eb98d325c516a08fd8008c2420072eb325161c0f1e5",
+    "irHash": "e2ece6945c9b2bd7ee8ff40823f94be292fa93273ed9f532444765e8e5e8ed3e",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T10:54:12.770Z"
+    "compiledAt": "2026-06-14T11:10:59.158Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2664,36 +2664,6 @@
   ],
   "events": [
     {
-      "name": "StaffMemberFirstShiftScheduled",
-      "channel": "staff.member.first-shift-scheduled",
-      "payload": [
-        {
-          "name": "staffMemberId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "firstShiftAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "dueAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
       "name": "SelOnboardingTrainingDefinitionCreated",
       "channel": "training.sel-onboarding.definition-created",
       "payload": [
@@ -3783,75 +3753,6 @@
               "property": "result"
             },
             "property": "whyItMatters"
-          }
-        }
-      ]
-    },
-    {
-      "event": "StaffMemberFirstShiftScheduled",
-      "targetEntity": "TrainingAssignment",
-      "targetCommand": "applyFirstShiftDueDate",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "identifier",
-          "name": "payload"
-        },
-        "property": "staffMemberId"
-      },
-      "params": [
-        {
-          "name": "assignmentId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "assignmentId"
-          }
-        },
-        {
-          "name": "moduleId",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "training-module-sel-event-staff-onboarding"
-            }
-          }
-        },
-        {
-          "name": "staffMemberId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "staffMemberId"
-          }
-        },
-        {
-          "name": "firstShiftAt",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "firstShiftAt"
-          }
-        },
-        {
-          "name": "dueAt",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "dueAt"
           }
         }
       ]

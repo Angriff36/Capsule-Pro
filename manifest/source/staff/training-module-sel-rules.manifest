@@ -9,11 +9,9 @@ tenant tenantId : string from context.tenantId
 // where it used to be, below) and is now staff-member-created-training-assignment
 // middleware. The duplicate is removed so the two definitions no longer conflict.
 
-event StaffMemberFirstShiftScheduled: "staff.member.first-shift-scheduled" {
-  staffMemberId: string
-  firstShiftAt: datetime
-  dueAt: datetime
-}
+// `StaffMemberFirstShiftScheduled` event removed: it had no emitter and its only
+// consumer was the orphan applyFirstShiftDueDate reaction (now
+// schedule-shift-first-shift-due-date-middleware, triggered by ScheduleShiftCreated).
 
 event SelOnboardingTrainingDefinitionCreated: "training.sel-onboarding.definition-created" {
   id: string
@@ -484,12 +482,18 @@ on SelOnboardingTrainingQuestionDefinitionCreated run TrainingQuestion.create
 // dueDateReviewNeeded=true (firstShiftAt/dueAt are pinned later by the
 // StaffMemberFirstShiftScheduled -> applyFirstShiftDueDate path below).
 
-on StaffMemberFirstShiftScheduled run TrainingAssignment.applyFirstShiftDueDate
-  resolve payload.staffMemberId
-  params {
-    assignmentId: payload.assignmentId
-    moduleId: "training-module-sel-event-staff-onboarding"
-    staffMemberId: payload.staffMemberId
-    firstShiftAt: payload.firstShiftAt
-    dueAt: payload.dueAt
-  }
+// StaffMemberFirstShiftScheduled -> TrainingAssignment.applyFirstShiftDueDate is
+// handled by schedule-shift-first-shift-due-date-middleware (registered in
+// manifest-runtime-factory). It was an ORPHAN reaction: no command ever emitted
+// `StaffMemberFirstShiftScheduled`, so it could never fire (the lone remaining
+// reaction-payload-baseline entry). It could not be salvaged as a reaction either —
+// applyFirstShiftDueDate resolves its target via `guard assignmentId == self.id`
+// (the assignment id is not on a shift payload), the would-be emitter
+// `ScheduleShift.create` is a MUTATE whose payload {...commandInput, result} carries
+// only employeeId/shiftStart (no assignmentId/dueAt), and "first shift" is a stateful
+// fact a declarative reaction cannot express. The middleware triggers on the real
+// `ScheduleShiftCreated`, finds the employee's open SEL onboarding assignment still
+// needing its due date pinned (dueDateReviewNeeded == true), and dispatches the
+// governed applyFirstShiftDueDate(dueAt = shiftStart). The command clears
+// dueDateReviewNeeded, so later shifts don't re-pin (first-shift-only idempotency).
+// The now-dead StaffMemberFirstShiftScheduled event declaration is removed too.

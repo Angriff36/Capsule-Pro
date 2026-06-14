@@ -25,8 +25,8 @@
  * `staffRole` to the literal "staff" (so the guard passes), and dispatches the
  * governed `TrainingAssignment.create` with `dueDateReviewNeeded = true`.
  * `firstShiftAt`/`dueAt` are intentionally left unset — they are pinned later by
- * the `StaffMemberFirstShiftScheduled → applyFirstShiftDueDate` path once the
- * staff member's first shift is actually scheduled.
+ * the `schedule-shift-first-shift-due-date` middleware (triggered by
+ * `ScheduleShiftCreated`) once the staff member's first shift is actually scheduled.
  *
  * Idempotent: one onboarding assignment per (tenant, staff member, SEL module).
  * If one already exists for the staff member, the create is skipped. Every skip

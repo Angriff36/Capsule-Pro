@@ -47,6 +47,7 @@ import {
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
+  createScheduleShiftFirstShiftDueDateMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
@@ -692,6 +693,22 @@ export async function createManifestRuntime(
     // (the due date is pinned later by applyFirstShiftDueDate). Idempotent per
     // (tenant, staff member, SEL module).
     createStaffMemberCreatedTrainingAssignmentMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff onboarding: ScheduleShiftCreated -> TrainingAssignment.applyFirstShiftDueDate.
+    // Middleware (not the orphan "emit + reaction") because the SEL onboarding
+    // assignment is created with no due date (firstShiftAt unknown at staff-create
+    // time) and the due date must be pinned to the staff member's FIRST scheduled
+    // shift. applyFirstShiftDueDate resolves its target via `assignmentId == self.id`
+    // (not derivable from a shift payload) and "first shift" is a stateful fact — so
+    // the old `on StaffMemberFirstShiftScheduled run applyFirstShiftDueDate` reaction
+    // was an unfireable orphan (no command emitted the event). The middleware looks up
+    // the employee's open SEL assignment that still needs its due date pinned
+    // (dueDateReviewNeeded == true), sets dueDate = shiftStart, and the command clears
+    // the flag so later shifts don't re-pin (first-shift-only idempotency).
+    createScheduleShiftFirstShiftDueDateMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
