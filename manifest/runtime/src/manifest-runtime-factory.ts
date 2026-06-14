@@ -36,6 +36,7 @@ import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generat
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createIdentityMiddleware,
+  createLeadConvertedDealCreateMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
@@ -537,6 +538,15 @@ export async function createManifestRuntime(
         engine.runCommand(commandName, input, options),
     }),
     createPrepInventoryDemandMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: LeadConvertedToClient -> Deal.create. Middleware (not a reaction)
+    // because the deal's title/value are the Lead's OWN fields, which
+    // convertToClient does not take as params — the middleware loads the
+    // converted Lead from the store and dispatches the governed Deal.create.
+    createLeadConvertedDealCreateMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

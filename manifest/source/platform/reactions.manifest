@@ -108,22 +108,17 @@ on ShipmentItemReceived run InventoryItem.restock
 
 // ── CRM: Lead conversion → Deal creation ──────────────────────────────────
 
-// When a lead is converted to a client, automatically create a deal in the
-// sales pipeline. Ensures no converted lead falls through the cracks.
-// The deal starts in "new" stage with the lead's estimated value.
-on LeadConvertedToClient run Deal.create
-  resolve payload.result.id
-  params {
-    leadId: payload.result.id
-    title: payload.result.companyName
-    value: payload.result.estimatedValue
-    currency: "USD"
-    stage: "new"
-    probability: 25
-    expectedCloseDate: now()
-    assignedTo: ""
-    notes: "Auto-created from lead conversion"
-  }
+// Handled by MIDDLEWARE, not a reaction. When a lead is converted to a client,
+// a deal is auto-created in the sales pipeline so no converted lead falls
+// through the cracks. The deal's title/value come from the Lead's OWN fields
+// (companyName, estimatedValue), which `Lead.convertToClient` does NOT take as
+// input params — so a reaction cannot read them (the emitted payload is only
+// `{...commandInput, result}` + `payload._subject.id`; declared event fields
+// are NOT auto-populated from self.*). The prior `on LeadConvertedToClient run
+// Deal.create` reaction reading `payload.result.*` was a silent no-op
+// (`Lead.convertToClient` is a MUTATE; `result` = the last mutate's scalar).
+// `lead-converted-deal-create-middleware.ts` loads the converted Lead from the
+// store via `_subject.id` and dispatches the governed `Deal.create` command.
 
 // ── Sales: Proposal acceptance → Event creation ───────────────────────────
 

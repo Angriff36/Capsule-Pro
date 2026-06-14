@@ -12,6 +12,11 @@ export {
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";
 export {
+  createLeadConvertedDealCreateMiddleware,
+  type LeadConvertedDealCreateMiddlewareOptions,
+  type LeadConvertedDealDiagnostic,
+} from "./lead-converted-deal-create-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,

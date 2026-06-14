@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c9f80cdcd15a5966b6c40554da3555d1ef3afb5d3e358c9de920936338b82914",
-    "irHash": "b61a1c0c4d5fa18d9842d672d85a924dda870894605c1ad051c68c01929efcfe",
+    "contentHash": "0cdd82cafc4ebeef5affe8c77806f6fc60528e9d3840571aba86dadd5e18cb29",
+    "irHash": "6d40e085907a1ef874cd0c0657c8bf0f3ee821f563b2cfe3f7d2c99f2856d09d",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T07:02:47.496Z"
+    "compiledAt": "2026-06-14T07:32:46.871Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -414,131 +414,6 @@
               "name": "payload"
             },
             "property": "userId"
-          }
-        }
-      ]
-    },
-    {
-      "event": "LeadConvertedToClient",
-      "targetEntity": "Deal",
-      "targetCommand": "create",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "id"
-      },
-      "params": [
-        {
-          "name": "leadId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "id"
-          }
-        },
-        {
-          "name": "title",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "companyName"
-          }
-        },
-        {
-          "name": "value",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "estimatedValue"
-          }
-        },
-        {
-          "name": "currency",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "USD"
-            }
-          }
-        },
-        {
-          "name": "stage",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "new"
-            }
-          }
-        },
-        {
-          "name": "probability",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 25
-            }
-          }
-        },
-        {
-          "name": "expectedCloseDate",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        },
-        {
-          "name": "assignedTo",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": ""
-            }
-          }
-        },
-        {
-          "name": "notes",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Auto-created from lead conversion"
-            }
           }
         }
       ]
