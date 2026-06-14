@@ -142,6 +142,11 @@ export {
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
 export {
+  createSchedulePublishedNotifyStaffMiddleware,
+  type SchedulePublishedNotifyStaffDiagnostic,
+  type SchedulePublishedNotifyStaffMiddlewareOptions,
+} from "./schedule-published-notify-staff-middleware";
+export {
   createScheduleShiftFirstShiftDueDateMiddleware,
   type FirstShiftDueDateDiagnostic,
   type ScheduleShiftFirstShiftDueDateMiddlewareOptions,

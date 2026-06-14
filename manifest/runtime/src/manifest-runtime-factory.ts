@@ -62,6 +62,7 @@ import {
   createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
   createRbacMiddleware,
+  createSchedulePublishedNotifyStaffMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
@@ -859,6 +860,18 @@ export async function createManifestRuntime(
     // (dueDateReviewNeeded == true), sets dueDate = shiftStart, and the command clears
     // the flag so later shifts don't re-pin (first-shift-only idempotency).
     createScheduleShiftFirstShiftDueDateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: SchedulePublished -> Notification per distinct shift employee.
+    // Middleware (not a reaction) for two reasons: it is a 1:N fan-out (one
+    // Schedule -> many ScheduleShift rows -> one Notification per distinct
+    // employee), and the recipients are NOT on the SchedulePublished payload
+    // (scheduleId/scheduleDate/shiftCount/publishedBy/publishedAt only) — the
+    // employee ids live on the ScheduleShift rows and must be queried by
+    // scheduleId. Without this, publishing a schedule silently told no one.
+    createSchedulePublishedNotifyStaffMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
