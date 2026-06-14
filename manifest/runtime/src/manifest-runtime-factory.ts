@@ -51,6 +51,7 @@ import {
   createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
+  createPrepTaskStationCountMiddleware,
   createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
   createRbacMiddleware,
@@ -582,6 +583,21 @@ export async function createManifestRuntime(
     // EventCancelled cascade: the cascade's PrepList.cancel re-enters runCommand,
     // emits PrepListCancelled, and this middleware releases the held stock.
     createPrepListCancelledReleaseReservationMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen: PrepTask claim/complete/cancel/unclaim/release/reassign ->
+    // reconcile Station.currentTaskCount. Middleware (not a reaction) because it
+    // fans out across all of a tenant's stations and derives occupancy from a
+    // cross-entity PrepTask scan. RECOMPUTE, not +1/-1 deltas: unclaim/release
+    // CLEAR stationId in the same mutate, so by after-emit a delta middleware has
+    // lost the station to decrement — the count would leak upward forever. Nothing
+    // moved the stored count before (assignTask/removeTask had no caller), so the
+    // Station capacity computeds + assignTask blockFull/warnNearCapacity were
+    // inert. This dispatches the absolute, idempotent Station.syncTaskCount only
+    // for stations whose stored count drifted from their true in_progress load.
+    createPrepTaskStationCountMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

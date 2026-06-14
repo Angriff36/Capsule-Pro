@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "ab18d86e21507feccf8a46a1f31ba32c7acb300e28b26901e0abc42f279e55ef",
-    "irHash": "0c1364d28f68eeacf72a9391444e319415e37e9899329129fccee314b370baf9",
+    "contentHash": "494daf5ce0e59b8cefd266ba09f5dde4c77fa7d16c68287ac5f4081ee447c025",
+    "irHash": "051be20f4b5143222313fe65a66264c4d0d17138d1175068f9804f8dc1aeee33",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T13:45:57.134Z"
+    "compiledAt": "2026-06-14T14:09:05.703Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -373,6 +373,7 @@
         "create",
         "assignTask",
         "removeTask",
+        "syncTaskCount",
         "updateCapacity",
         "deactivate",
         "activate",
@@ -736,6 +737,44 @@
         },
         {
           "name": "removedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "StationTaskCountSynced",
+      "channel": "kitchen.station.task.count.synced",
+      "payload": [
+        {
+          "name": "stationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "currentTaskCount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "syncedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -1777,6 +1816,82 @@
       ],
       "emits": [
         "StationTaskRemoved"
+      ]
+    },
+    {
+      "name": "syncTaskCount",
+      "entity": "Station",
+      "parameters": [
+        {
+          "name": "count",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "count"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "count"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "StationDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Task count must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "currentTaskCount",
+          "expression": {
+            "kind": "identifier",
+            "name": "count"
+          }
+        }
+      ],
+      "emits": [
+        "StationTaskCountSynced"
       ]
     },
     {

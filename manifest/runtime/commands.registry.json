@@ -626,6 +626,11 @@
   },
   {
     "entity": "CateringOrder",
+    "command": "syncVenue",
+    "commandId": "CateringOrder.syncVenue"
+  },
+  {
+    "entity": "CateringOrder",
     "command": "update",
     "commandId": "CateringOrder.update"
   },
@@ -4473,6 +4478,11 @@
     "entity": "Station",
     "command": "startMaintenance",
     "commandId": "Station.startMaintenance"
+  },
+  {
+    "entity": "Station",
+    "command": "syncTaskCount",
+    "commandId": "Station.syncTaskCount"
   },
   {
     "entity": "Station",

@@ -88,6 +88,11 @@ export {
   type PrepSeedDiagnostic,
 } from "./prep-list-seed-middleware";
 export {
+  createPrepTaskStationCountMiddleware,
+  type PrepTaskStationCountDiagnostic,
+  type PrepTaskStationCountMiddlewareOptions,
+} from "./prep-task-station-count-middleware";
+export {
   createProposalLifecycleLeadStatusMiddleware,
   type ProposalLeadStatusDiagnostic,
   type ProposalLifecycleLeadStatusMiddlewareOptions,

@@ -115,6 +115,22 @@ entity Station {
     emit StationTaskRemoved
   }
 
+  // System reconciliation: set the ABSOLUTE active-task count for the station.
+  // Dispatched by the prep-task-station-count middleware after a PrepTask
+  // lifecycle event (claim/complete/cancel/unclaim/release/reassign), which
+  // recomputes the true count = in_progress PrepTasks assigned to this station.
+  // Absolute (not the +1/-1 assignTask/removeTask deltas) and free of the
+  // capacity block so it can correct drift in EITHER direction — the deltas
+  // cannot decrement on unclaim/release (those commands clear stationId before
+  // the after-emit hook runs, so a delta middleware loses the station link).
+  command syncTaskCount(count: int) {
+    guard count != null and count >= 0 "Task count must be non-negative"
+
+    mutate currentTaskCount = count
+
+    emit StationTaskCountSynced
+  }
+
   command updateCapacity(newCapacity: number, userId: string) {
     guard newCapacity != null and newCapacity > 0 "Capacity must be positive"
 
@@ -233,6 +249,13 @@ event StationTaskRemoved: "kitchen.station.task.removed" {
   taskId: string
   currentTaskCount: number
   removedAt: datetime
+}
+
+event StationTaskCountSynced: "kitchen.station.task.count.synced" {
+  stationId: string
+  tenantId: string
+  currentTaskCount: number
+  syncedAt: datetime
 }
 
 event StationCapacityUpdated: "kitchen.station.capacity.updated" {

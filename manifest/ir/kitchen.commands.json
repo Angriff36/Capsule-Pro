@@ -4481,6 +4481,11 @@
   },
   {
     "entity": "Station",
+    "command": "syncTaskCount",
+    "commandId": "Station.syncTaskCount"
+  },
+  {
+    "entity": "Station",
     "command": "updateCapacity",
     "commandId": "Station.updateCapacity"
   },
