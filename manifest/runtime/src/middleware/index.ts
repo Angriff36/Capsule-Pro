@@ -67,6 +67,11 @@ export {
   type InventoryMovementTransactionMiddlewareOptions,
 } from "./inventory-movement-transaction-middleware";
 export {
+  createInventoryStockSyncItemMiddleware,
+  type InventoryStockSyncDiagnostic,
+  type InventoryStockSyncItemMiddlewareOptions,
+} from "./inventory-stock-sync-item-middleware";
+export {
   createInvoiceFullyPaidMarkPaidMiddleware,
   type InvoiceFullyPaidMarkPaidDiagnostic,
   type InvoiceFullyPaidMarkPaidMiddlewareOptions,

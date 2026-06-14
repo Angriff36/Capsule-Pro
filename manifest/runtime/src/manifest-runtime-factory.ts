@@ -47,6 +47,7 @@ import {
   createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
+  createInventoryStockSyncItemMiddleware,
   createInvoiceFullyPaidMarkPaidMiddleware,
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createLeadConvertedDealCreateMiddleware,
@@ -786,6 +787,20 @@ export async function createManifestRuntime(
     // valuation/par-reorder/audit read — previously empty for kitchen movements.
     createInventoryMovementTransactionMiddleware({
       storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Inventory: InventoryStock.adjust/recount -> InventoryItem.adjust. Keeps the
+    // aggregate item total in sync with per-storage-location stock movements;
+    // without it the per-location stock and item total diverge permanently after
+    // any location adjustment/recount. Middleware (not a reaction) because the
+    // target item is InventoryStock.itemId (the stock row's OWN field, NOT an
+    // adjust/recount param — declared event fields are never auto-populated from
+    // self.*), and recount's delta = newQuantity - PRE-mutation on-hand, which is
+    // gone by after-emit (captured on before-guard, same two-hook pattern as the
+    // guest-count rescale). The propagated InventoryItem.adjust emits
+    // InventoryAdjusted, which the inventory-movement middleware above ledgers.
+    createInventoryStockSyncItemMiddleware({
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
