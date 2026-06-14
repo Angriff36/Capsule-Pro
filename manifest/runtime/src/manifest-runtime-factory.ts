@@ -39,6 +39,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
+  createEventDishPrepSyncMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventUpdatedBoardSyncMiddleware,
@@ -615,6 +616,20 @@ export async function createManifestRuntime(
     // frozen at the seed's hardcoded 1 and item scaledQuantity was derived once,
     // so guest-count changes silently left the kitchen prepping the wrong amount.
     createEventGuestCountPrepRescaleMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events→Kitchen: EventDishCreated / EventDishQuantityUpdated -> sync the
+    // event's draft PrepLists. Middleware (not a reaction) because it is a 1:N
+    // fan-out, the ingredient demand is DERIVED across a cross-store walk the DSL
+    // cannot express, and updateQuantity carries no eventId (the dish's own
+    // field). A dish added or re-portioned AFTER the seed had no consumer, so it
+    // never reached the kitchen. RE-DERIVES the full demand from the current
+    // dishes and reconciles create/updateQuantity per draft list (target scale =
+    // derivedScaled × batchMultiplier, preserving the guest-count rescale).
+    // Removal is deferred (no PrepListItem.remove command exists yet).
+    createEventDishPrepSyncMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

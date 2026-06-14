@@ -28,6 +28,11 @@ export {
   type EventCreatedClientInteractionMiddlewareOptions,
 } from "./event-created-client-interaction-middleware";
 export {
+  createEventDishPrepSyncMiddleware,
+  type EventDishPrepSyncDiagnostic,
+  type EventDishPrepSyncMiddlewareOptions,
+} from "./event-dish-prep-sync-middleware";
+export {
   createEventGuestCountPrepRescaleMiddleware,
   type EventGuestCountPrepRescaleMiddlewareOptions,
   type EventGuestCountRescaleDiagnostic,
