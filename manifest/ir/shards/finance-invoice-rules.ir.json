@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7b507dcf68044472c914d55380e6c1aceaf2e063fac001a601d7041105ba0712",
-    "irHash": "c7284bc6be027f6b3ae0f02669bffe8b1a8c868f6583b757e3bfd8bcd54c24ba",
+    "contentHash": "9b340097fe29ef3e53960874c05697d6ef05c71e030a2c2c67a0a680225f177e",
+    "irHash": "6d55490046aa28d6f8d76ce410c58831389c77e21968155936fb744008f10f35",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T11:48:29.303Z"
+    "compiledAt": "2026-06-14T12:43:47.071Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -610,7 +610,7 @@
           "from": "DRAFT",
           "to": [
             "SENT",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -621,7 +621,7 @@
             "OVERDUE",
             "PARTIALLY_PAID",
             "PAID",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -631,7 +631,7 @@
             "OVERDUE",
             "PARTIALLY_PAID",
             "PAID",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -640,8 +640,8 @@
           "to": [
             "PARTIALLY_PAID",
             "PAID",
-            "WRITTEN_OFF",
-            "VOIDED"
+            "WRITE_OFF",
+            "VOID"
           ]
         },
         {
@@ -649,7 +649,7 @@
           "from": "PARTIALLY_PAID",
           "to": [
             "PAID",
-            "WRITTEN_OFF",
+            "WRITE_OFF",
             "PARTIALLY_PAID"
           ]
         },

@@ -37,6 +37,7 @@ import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createContractSignedEventConfirmMiddleware,
+  createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
@@ -45,6 +46,7 @@ import {
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
+  createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createProposalLineItemCountMiddleware,
@@ -569,6 +571,18 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
+    // Kitchen: PrepListCancelled -> InventoryItem.releaseReservation (per item).
+    // Symmetric counterpart of the consume leg above: prep-inventory-demand
+    // RESERVES on finalize, consume releases on complete, and THIS releases on
+    // cancel — closing the reservation leak a cancelled (but finalized) prep
+    // list would otherwise strand forever. Also the inventory leg of the
+    // EventCancelled cascade: the cascade's PrepList.cancel re-enters runCommand,
+    // emits PrepListCancelled, and this middleware releases the held stock.
+    createPrepListCancelledReleaseReservationMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
     // CRM: LeadConvertedToClient -> Deal.create. Middleware (not a reaction)
     // because the deal's title/value are the Lead's OWN fields, which
     // convertToClient does not take as params — the middleware loads the
@@ -740,6 +754,17 @@ export async function createManifestRuntime(
     // the payload, and logs a governed "note" interaction on the client's timeline.
     // Skips clientless events; idempotent per event via correlationId.
     createEventCreatedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventCancelled -> cascade-cancel children. Middleware (not a
+    // reaction) because each leg is a 1:N fan-out by eventId (EventStaff.unassign,
+    // CateringOrder.cancel, PrepList.cancel, Invoice.voidInvoice,
+    // CollectionCase.close) that a single-target reaction cannot resolve. Each
+    // leg is guard-safe + idempotent; inventory reservations release via the
+    // prep-list-cancelled middleware above (the dispatched PrepList.cancel chains).
+    createEventCancelledCascadeMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
