@@ -56,3 +56,8 @@ export {
   createRbacMiddleware,
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
+export {
+  createShipmentItemReceivedInventoryRestockMiddleware,
+  type ShipmentItemReceivedInventoryRestockMiddlewareOptions,
+  type ShipmentRestockDiagnostic,
+} from "./shipment-item-received-inventory-restock-middleware";

@@ -109,16 +109,17 @@ on MaintenanceWorkOrderCompleted run Equipment.updateStatus
 
 // ── Procurement: Shipment receiving → Inventory restock ────────────────────
 
-// When a shipment line item is confirmed received, automatically restock the
-// inventory item. Replaces manual stock updates in receiving workflows.
-// Per-item granularity (not per-shipment) ensures accurate quantity tracking.
-on ShipmentItemReceived run InventoryItem.restock
-  resolve payload.result.itemId
-  params {
-    quantity: payload.quantityReceived
-    costPerUnit: 0
-    userId: payload.userId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a shipment line item is confirmed
+// received (ShipmentItem.updateReceived → ShipmentItemReceived), the linked
+// inventory item is restocked by the received quantity. This is middleware
+// because the values restock needs are the ShipmentItem's OWN fields, not
+// updateReceived params: `itemId` (which item) is ShipmentItem.itemId, and
+// `costPerUnit` must be ShipmentItem.unitCost — declared event fields are never
+// auto-populated from self.*, so no reaction could read them. The old reaction
+// resolved `payload.result.itemId` (a mutate scalar, undefined) AND hardcoded
+// `costPerUnit: 0`, so it silently no-op'd and, if naively fixed, would have
+// zeroed InventoryItem.unitCost on every receipt. See
+// manifest/runtime/src/middleware/shipment-item-received-inventory-restock-middleware.ts.
 
 // ── CRM: Lead conversion → Deal creation ──────────────────────────────────
 

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a80f00a79eb4540815452a30c6ecc3224f0e5796a9323dcbeaf260e37a10052c",
-    "irHash": "6cd08a48a066f7a01f38654ee5507dd91c6ce85d9f5eb692c38fc10935437f04",
+    "contentHash": "0ae86b413971f041f8548ab4b1b3059c464b846fc7ef878f9c46551ee47fa7dd",
+    "irHash": "7dbead64ba319dee398e629d7a67ac0c75e27649f58f01f5276b12d54eafdb4a",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.036Z"
+    "compiledAt": "2026-06-14T09:31:54.060Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -228,57 +228,6 @@
             "value": {
               "kind": "string",
               "value": "Maintenance work order completed"
-            }
-          }
-        },
-        {
-          "name": "userId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
-          }
-        }
-      ]
-    },
-    {
-      "event": "ShipmentItemReceived",
-      "targetEntity": "InventoryItem",
-      "targetCommand": "restock",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "itemId"
-      },
-      "params": [
-        {
-          "name": "quantity",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "quantityReceived"
-          }
-        },
-        {
-          "name": "costPerUnit",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
             }
           }
         },

@@ -45,6 +45,7 @@ import {
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
+  createShipmentItemReceivedInventoryRestockMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
@@ -612,6 +613,19 @@ export async function createManifestRuntime(
     // Records every governed inventory movement in the append-only ledger that
     // valuation/par-reorder/audit read — previously empty for kitchen movements.
     createInventoryMovementTransactionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Procurement: ShipmentItemReceived -> InventoryItem.restock. Middleware (not a
+    // reaction) because the values restock needs are the ShipmentItem's OWN fields,
+    // not updateReceived params: itemId (which item) is ShipmentItem.itemId, and
+    // costPerUnit must be ShipmentItem.unitCost — declared event fields are never
+    // auto-populated from self.*. The old reaction resolved payload.result.itemId (a
+    // mutate scalar) and hardcoded costPerUnit: 0, so it silently no-op'd and would
+    // have zeroed InventoryItem.unitCost on every receipt. The nested restock emits
+    // InventoryRestocked, which the inventory-movement middleware above ledgers.
+    createShipmentItemReceivedInventoryRestockMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

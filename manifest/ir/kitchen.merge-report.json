@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-14T08:39:57.122Z",
+  "generatedAt": "2026-06-14T09:31:54.143Z",
   "sources": [
     "ai/ai-event-setup-rules.manifest",
     "ai/call-planning-session-rules.manifest",
@@ -116,7 +116,7 @@
     "enums": 0,
     "values": 0,
     "sagas": 5,
-    "reactions": 16
+    "reactions": 15
   },
   "droppedDuplicates": []
 }
