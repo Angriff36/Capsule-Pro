@@ -4042,6 +4042,7 @@ model PrepListItem {
   isCompleted Boolean? @map("is_completed") @default(false)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   completedBy String? @map("completed_by") @db.Uuid @default("")
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 

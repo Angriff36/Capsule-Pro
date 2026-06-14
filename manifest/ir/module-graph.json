@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T14:49:14.686Z",
-  "contentHash": "f4762a258ed59d7212e59e8187bf46a97ede0bd301bc49579ca890278b50fc18",
+  "compiledAt": "2026-06-14T16:07:21.650Z",
+  "contentHash": "87ed303347eec4c5f448b28dddfca751395e8bc00d8c076425d0404c998690a6",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -448,8 +448,8 @@
       "path": "kitchen/prep-list-rules.manifest",
       "domain": "kitchen",
       "entities": 2,
-      "commands": 16,
-      "events": 17
+      "commands": 17,
+      "events": 18
     },
     {
       "path": "kitchen/prep-method-rules.manifest",
@@ -721,7 +721,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1045,
-    "events": 1020
+    "commands": 1046,
+    "events": 1021
   }
 }

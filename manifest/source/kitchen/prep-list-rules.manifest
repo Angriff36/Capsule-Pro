@@ -234,9 +234,11 @@ entity PrepListItem {
   property completedBy: string = ""
 
   timestamps
+  property deletedAt: datetime
   computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0
   computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and length(self.dietarySubstitutions) > 0
   computed isRequired: boolean = self.isOptional == false
+  computed isDeleted: boolean = self.deletedAt != null
 
   relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
   relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
@@ -363,6 +365,14 @@ entity PrepListItem {
     mutate completedBy = ""
 
     emit PrepListItemCreated
+  }
+
+  command remove(reason: string, userId: string) {
+    guard self.deletedAt == null "Prep list item is already removed"
+
+    mutate deletedAt = now()
+
+    emit PrepListItemRemoved
   }
 
   store PrepListItem in durable
@@ -508,6 +518,16 @@ event PrepListItemUncompleted: "kitchen.preplist.item_uncompleted" {
   tenantId: string
   ingredientName: string
   uncompletedAt: datetime
+}
+
+event PrepListItemRemoved: "kitchen.preplist.item_removed" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  reason: string
+  userId: string
+  removedAt: datetime
 }
 
 // Saga: Create prep list from seed → import items → finalize

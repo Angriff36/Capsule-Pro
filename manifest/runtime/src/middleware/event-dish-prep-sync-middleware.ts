@@ -51,11 +51,24 @@
  * event not yet seeded (no draft list) is a clean no-op — the seed picks the
  * dish up when the event is confirmed.
  *
- * DEFERRED — `EventDishRemoved`. Pruning an ingredient that a removed dish no
- * longer demands requires a `PrepListItem.remove` command, which does not exist
- * in the manifest (items are only ever created or quantity-updated). Adding it is
- * a source/IR change tracked as a follow-up; this leg handles add + re-scale,
- * the cases that surface the reported bug.
+ * REMOVAL — `EventDishRemoved` prunes the demand a removed dish no longer
+ * carries. Because the same re-derive+reconcile is used, a removed dish simply
+ * drops out of the re-derived line set: an ingredient ONLY that dish demanded
+ * disappears from the derivation and is pruned (`PrepListItem.remove`, a soft
+ * delete), while an ingredient SHARED with a surviving dish stays in the
+ * derivation at its reduced quantity and is decremented (the update path), not
+ * pruned. Two subtleties drive the implementation:
+ *   • Once `remove` soft-deletes the EventDish, the store filters the row out
+ *     (getById/getAll exclude `deletedAt != null`) AND the `EventDishRemoved`
+ *     payload does not carry `eventId` (engine payload is `{...commandInput,
+ *     result}` only). So the dish's `eventId`/`tenantId` are captured on the
+ *     `before-guard` hook (while `evalContext.self` is still the live row) and
+ *     read back on `after-emit` — the same two-hook contextPatch technique the
+ *     sibling guest-count rescale uses.
+ *   • Prune touches ONLY derived rows — those carrying a non-empty
+ *     `recipeVersionId` (the fingerprint the seed/sync stamps on every row it
+ *     creates). A hand-added row (no `recipeVersionId`) is left alone: a menu
+ *     change should retract only what the menu derivation introduced.
  *
  * Every skip/failure reports through `onDiagnostic` (default console.warn) —
  * never silently.
@@ -109,6 +122,12 @@ export interface EventDishPrepSyncMiddlewareOptions {
 /** Below this absolute delta a quantity is treated as unchanged (no update). */
 const QTY_EPSILON = 1e-4;
 
+/**
+ * evalContext key carrying a removed dish's parent keys from `before-guard`
+ * (live row) to `after-emit` (row already soft-deleted and store-filtered).
+ */
+const REMOVED_DISH_KEY = "__eventDishPrepSync_removed";
+
 interface EventDishRow {
   deletedAt?: unknown;
   eventId?: unknown;
@@ -127,9 +146,11 @@ interface PrepListRow {
 
 interface PrepListItemRow {
   baseQuantity?: unknown;
+  deletedAt?: unknown;
   id?: unknown;
   ingredientId?: unknown;
   prepListId?: unknown;
+  recipeVersionId?: unknown;
   scaledQuantity?: unknown;
   sortOrder?: unknown;
   tenantId?: unknown;
@@ -156,18 +177,41 @@ export function createEventDishPrepSyncMiddleware(
   } = options;
 
   return {
-    hooks: ["after-emit"],
+    hooks: ["before-guard", "after-emit"],
 
     async handler(ctx: MiddlewareContext): Promise<MiddlewareResult> {
-      // Only EventDish add / serving-count changes are relevant. (Removal is the
-      // deferred leg — no PrepListItem.remove command exists yet.)
-      if (ctx.entityName !== "EventDish") {
+      // Phase 1 (before-guard): a dish being removed is about to be soft-deleted.
+      // Once `deletedAt` is set, the store filters the row out, and the
+      // EventDishRemoved payload does not carry `eventId` — so snapshot the
+      // parent keys now, while evalContext.self is still the live row.
+      if (ctx.hook === "before-guard") {
+        if (ctx.entityName === "EventDish" && ctx.command.name === "remove") {
+          const self = ctx.evalContext.self as
+            | { eventId?: unknown; id?: unknown; tenantId?: unknown }
+            | undefined;
+          return {
+            contextPatch: {
+              [REMOVED_DISH_KEY]: {
+                eventDishId:
+                  asNonEmptyString(self?.id) ?? asNonEmptyString(ctx.instanceId),
+                eventId: asNonEmptyString(self?.eventId),
+                tenantId: asNonEmptyString(self?.tenantId),
+              },
+            },
+          };
+        }
+        return {};
+      }
+
+      // Only EventDish add / serving-count / removal changes are relevant.
+      if (ctx.hook !== "after-emit" || ctx.entityName !== "EventDish") {
         return {};
       }
       const triggers = ctx.emittedEvents.filter(
         (event) =>
           event.name === "EventDishCreated" ||
-          event.name === "EventDishQuantityUpdated"
+          event.name === "EventDishQuantityUpdated" ||
+          event.name === "EventDishRemoved"
       );
       if (triggers.length === 0) {
         return {};
@@ -184,9 +228,45 @@ export function createEventDishPrepSyncMiddleware(
 
       // Resolve the distinct set of (event, tenant) to reconcile. Re-derivation
       // is full-list, so each affected event is reconciled exactly once even if
-      // several of its dishes changed in the same command.
-      const events = new Map<string, { eventId: string; tenantId: string }>();
+      // several of its dishes changed in the same command. `prune` is set when a
+      // removal contributed — only then do we retract no-longer-demanded rows.
+      const events = new Map<
+        string,
+        { eventId: string; prune: boolean; tenantId: string }
+      >();
       for (const trigger of triggers) {
+        if (trigger.name === "EventDishRemoved") {
+          // The removed dish is soft-deleted (store-filtered) → use the
+          // before-guard snapshot.
+          const snapshot = ctx.evalContext[REMOVED_DISH_KEY] as
+            | { eventDishId?: unknown; eventId?: unknown; tenantId?: unknown }
+            | undefined;
+          const eventId = asNonEmptyString(snapshot?.eventId);
+          const tenantId =
+            asNonEmptyString(snapshot?.tenantId) ??
+            asNonEmptyString(
+              (ctx.runtimeContext.user as { tenantId?: unknown } | undefined)
+                ?.tenantId
+            );
+          if (!(eventId && tenantId)) {
+            onDiagnostic({
+              stage: "resolve",
+              reason:
+                "EventDishRemoved: pre-mutation eventId/tenantId snapshot missing — prune skipped",
+              eventDishId:
+                asNonEmptyString(snapshot?.eventDishId) ??
+                asNonEmptyString(trigger.subject?.id),
+              eventId,
+              tenantId,
+            });
+            continue;
+          }
+          events.set(eventId, { eventId, tenantId, prune: true });
+          continue;
+        }
+
+        // EventDishCreated / EventDishQuantityUpdated: the dish is still live, so
+        // load it for its eventId/tenantId.
         const payload = trigger.payload as
           | { eventId?: unknown; result?: { id?: unknown; tenantId?: unknown } }
           | undefined;
@@ -205,7 +285,7 @@ export function createEventDishPrepSyncMiddleware(
         const row = (await eventDishStore.getById(eventDishId)) as
           | EventDishRow
           | undefined;
-        // A dish removed in the same breath (deletedAt set) is the deferred leg.
+        // A dish removed in the same breath surfaces as EventDishRemoved above.
         if (row && row.deletedAt != null) {
           continue;
         }
@@ -228,13 +308,19 @@ export function createEventDishPrepSyncMiddleware(
           });
           continue;
         }
-        events.set(eventId, { eventId, tenantId });
+        const prev = events.get(eventId);
+        events.set(eventId, {
+          eventId,
+          tenantId,
+          prune: prev?.prune ?? false,
+        });
       }
 
-      for (const { eventId, tenantId } of events.values()) {
+      for (const { eventId, tenantId, prune } of events.values()) {
         await reconcileEvent({
           eventId,
           tenantId,
+          prune,
           ctx,
           storeProvider,
           dispatchCommand,
@@ -251,13 +337,21 @@ export function createEventDishPrepSyncMiddleware(
 async function reconcileEvent(args: {
   eventId: string;
   tenantId: string;
+  prune: boolean;
   ctx: MiddlewareContext;
   storeProvider: (entityName: string) => Store | undefined;
   dispatchCommand: DispatchCommand;
   onDiagnostic: (diag: EventDishPrepSyncDiagnostic) => void;
 }): Promise<void> {
-  const { eventId, tenantId, ctx, storeProvider, dispatchCommand, onDiagnostic } =
-    args;
+  const {
+    eventId,
+    tenantId,
+    prune,
+    ctx,
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic,
+  } = args;
 
   const prepListStore = storeProvider("PrepList");
   if (!prepListStore) {
@@ -319,10 +413,11 @@ async function reconcileEvent(args: {
     onDiagnostic: (d) =>
       onDiagnostic({ ...d, eventId, tenantId, prepListId: undefined }),
   });
-  if (lines.length === 0) {
-    // No derivable demand (e.g. dishes lack recipes). Not an error here.
+  if (lines.length === 0 && !prune) {
+    // No derivable demand and nothing to retract (add/update path). Not an error.
     return;
   }
+  const derivedIds = new Set(lines.map((line) => line.ingredientId));
 
   const allItems = (await stores.prepListItem!.getAll()).map(
     (row) => row as PrepListItemRow
@@ -344,6 +439,11 @@ async function reconcileEvent(args: {
         asNonEmptyString(item.tenantId) !== tenantId ||
         asNonEmptyString(item.prepListId) !== prepListId
       ) {
+        continue;
+      }
+      // A soft-deleted row is gone in production (the store filters it); skip it
+      // so it is neither updated nor re-removed (the test store does not filter).
+      if (item.deletedAt != null) {
         continue;
       }
       const ingredientId = asNonEmptyString(item.ingredientId);
@@ -447,6 +547,52 @@ async function reconcileEvent(args: {
           prepListId,
           detail: { itemId, targetScaled },
         });
+      }
+    }
+
+    // Prune (removal path only): retract derived rows the menu no longer demands.
+    // An ingredient still demanded by a surviving dish stays in `derivedIds` and
+    // was decremented above; one only the removed dish demanded has dropped out
+    // and is soft-deleted here. Only rows the seed/sync produced (non-empty
+    // recipeVersionId) are pruned — a hand-added row is deliberately left alone.
+    if (prune) {
+      const actorId =
+        asNonEmptyString(
+          (ctx.runtimeContext.user as { id?: unknown } | undefined)?.id
+        ) ?? "system";
+      for (const [ingredientId, item] of existing) {
+        if (derivedIds.has(ingredientId)) {
+          continue;
+        }
+        if (!asNonEmptyString(item.recipeVersionId)) {
+          continue;
+        }
+        const itemId = asNonEmptyString(item.id);
+        if (!itemId) {
+          continue;
+        }
+        const result = await dispatchCommand(
+          "remove",
+          { reason: "event dish removed", userId: actorId },
+          {
+            entityName: "PrepListItem",
+            instanceId: itemId,
+            correlationId: eventId,
+            causationId: "EventDishRemoved",
+            idempotencyKey: `event-dish-prep:${tenantId}:${eventId}:remove:${prepListId}:${itemId}`,
+          }
+        );
+        bubble(ctx, result);
+        if (!result.success) {
+          onDiagnostic({
+            stage: "remove",
+            reason: `PrepListItem.remove failed for ${itemId}: ${result.error ?? "unknown"}`,
+            eventId,
+            tenantId,
+            prepListId,
+            detail: { itemId, ingredientId },
+          });
+        }
       }
     }
   }

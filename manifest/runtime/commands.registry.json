@@ -3281,6 +3281,11 @@
   },
   {
     "entity": "PrepListItem",
+    "command": "remove",
+    "commandId": "PrepListItem.remove"
+  },
+  {
+    "entity": "PrepListItem",
     "command": "updatePrepNotes",
     "commandId": "PrepListItem.updatePrepNotes"
   },
