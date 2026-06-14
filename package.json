@@ -171,7 +171,7 @@
     "check:manifest:structure": "node tools/manifest-structure-audit.mjs",
     "check:manifest:domain": "node tools/manifest-domain-drift-audit.mjs",
     "manifest:audit": "pnpm manifest:audit-schema-drift && pnpm manifest:audit-route-drift && pnpm manifest:audit-parent-context && pnpm manifest:audit-reaction-payloads",
-    "manifest:audit:strict": "pnpm manifest:audit-schema-drift:strict && pnpm manifest:audit-route-drift:strict && pnpm manifest:audit-parent-context:strict && pnpm manifest:audit-direct-writes:baseline"
+    "manifest:audit:strict": "pnpm manifest:audit-schema-drift:strict && pnpm manifest:audit-route-drift:strict && pnpm manifest:audit-parent-context:strict && pnpm manifest:audit-direct-writes:baseline && pnpm manifest:audit-reaction-payloads"
   },
   "type": "module"
 }
