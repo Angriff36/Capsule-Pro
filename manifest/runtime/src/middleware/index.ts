@@ -58,6 +58,11 @@ export {
   type EventUpdatedBoardSyncMiddlewareOptions,
 } from "./event-updated-board-sync-middleware";
 export {
+  createFacilityWorkOrderAssetStatusMiddleware,
+  type FacilityWorkOrderAssetStatusDiagnostic,
+  type FacilityWorkOrderAssetStatusMiddlewareOptions,
+} from "./facility-work-order-asset-status-middleware";
+export {
   createIdentityMiddleware,
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";

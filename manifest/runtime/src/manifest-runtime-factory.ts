@@ -45,6 +45,7 @@ import {
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventUpdatedBoardSyncMiddleware,
+  createFacilityWorkOrderAssetStatusMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
   createInventoryStockSyncItemMiddleware,
@@ -858,6 +859,20 @@ export async function createManifestRuntime(
     // (equipmentId IS a create param, so a reaction was technically possible here; we
     // choose middleware deliberately). Pure runtime addition, no IR/source change.
     createMaintenanceCreatedEquipmentStatusMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Facilities: FacilityWorkOrder lifecycle -> FacilityAsset maintenance status.
+    // The facility-side mirror of the two Equipment legs above:
+    //   FacilityWorkOrderCreated   -> FacilityAsset.sendToMaintenance   (operational -> maintenance)
+    //   FacilityWorkOrderCompleted -> FacilityAsset.returnFromMaintenance (maintenance -> operational)
+    // Middleware (not a reaction) because the COMPLETED leg's assetId is the work order's OWN
+    // field, NOT a `complete` param (declared event fields are never auto-populated from self.*),
+    // and the CREATED leg needs guard-safety (sendToMaintenance guards status == "operational")
+    // — load the asset and skip cleanly rather than firing blindly and relying on the engine
+    // swallowing the FSM-guard failure. Pure runtime addition, no IR/source change.
+    createFacilityWorkOrderAssetStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
