@@ -49,12 +49,13 @@ export async function POST(request: NextRequest) {
       user: { id: userId, tenantId },
     });
 
+    // Use the dedicated `activate` command, not generic `update`. The dedicated
+    // command enforces the activation transition guard (`isActive == false`) and
+    // emits `SmsAutomationRuleActivated`; the generic `update` path emits only
+    // `SmsAutomationRuleUpdated`, so activation never propagated to any reaction.
     const result = await runtime.runCommand(
-      "update",
-      {
-        id,
-        isActive: true,
-      },
+      "activate",
+      { id },
       {
         entityName: "SmsAutomationRule",
         instanceId: id,

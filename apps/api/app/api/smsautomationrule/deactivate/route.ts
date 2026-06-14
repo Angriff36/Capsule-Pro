@@ -49,12 +49,13 @@ export async function POST(request: NextRequest) {
       user: { id: userId, tenantId },
     });
 
+    // Use the dedicated `deactivate` command, not generic `update`. The dedicated
+    // command enforces the deactivation transition guard (`isActive == true`) and
+    // emits `SmsAutomationRuleDeactivated`; the generic `update` path emits only
+    // `SmsAutomationRuleUpdated`, so deactivation never propagated to any reaction.
     const result = await runtime.runCommand(
-      "update",
-      {
-        id,
-        isActive: false,
-      },
+      "deactivate",
+      { id },
       {
         entityName: "SmsAutomationRule",
         instanceId: id,
