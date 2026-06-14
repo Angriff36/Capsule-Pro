@@ -39,6 +39,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
+  createEventLocationCateringSyncMiddleware,
   createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
@@ -779,6 +780,17 @@ export async function createManifestRuntime(
     // out BattleBoard.syncFromEvent per board. Retires the imperative
     // syncBattleBoardsForEvent() server-action helper.
     createEventUpdatedBoardSyncMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventLocationUpdated -> re-sync the venue on the event's ACTIVE
+    // catering orders. Sibling of the board-sync leg above (split per PR):
+    // middleware (not a reaction) because orders are 1:N by eventId. Syncs only
+    // venueName/venueAddress (the venue fields the Event owns) and skips
+    // delivered/completed/cancelled orders (physical history must not be
+    // rewritten). Loads the updated Event and fans out CateringOrder.syncVenue.
+    createEventLocationCateringSyncMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

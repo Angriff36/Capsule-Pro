@@ -626,6 +626,11 @@
   },
   {
     "entity": "CateringOrder",
+    "command": "syncVenue",
+    "commandId": "CateringOrder.syncVenue"
+  },
+  {
+    "entity": "CateringOrder",
     "command": "update",
     "commandId": "CateringOrder.update"
   },

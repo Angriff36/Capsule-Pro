@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T13:30:29.138Z",
-  "contentHash": "c0cde478ccca16ce974ec85bc56c5e96d5cfa2c5f521f0a27dc5b87e4c73afbd",
+  "compiledAt": "2026-06-14T13:45:57.228Z",
+  "contentHash": "456e0795a5d4ed51256fa419df4a705f57ea7b1509bc73a0295bafd53a9c9b71",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -210,8 +210,8 @@
       "path": "events/catering-order-rules.manifest",
       "domain": "events",
       "entities": 1,
-      "commands": 9,
-      "events": 9
+      "commands": 10,
+      "events": 10
     },
     {
       "path": "events/command-board-rules.manifest",
@@ -721,7 +721,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1042,
-    "events": 1017
+    "commands": 1043,
+    "events": 1018
   }
 }
