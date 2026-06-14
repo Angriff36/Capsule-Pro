@@ -1,1128 +1,184 @@
-# IMPLEMENTATION_PLAN.md -- Capsule-Pro Manifest Full Adoption
+# Manifest Entity Interconnection — Implementation Plan
 
-> **Purpose:** Prioritized, outcome-oriented task list for making Manifest the sole source-of-truth generator across Capsule-Pro. Each task is ready for a BUILDING loop to pick up and execute.
->
-> **Ultimate Goal:** Fully utilize Manifest features that are currently useful but not implemented, AND use Manifest as the sole source of truth generator for as many surfaces as possible.
->
-> **Prioritization:** Fix typecheck baseline -> fix permission guard (SECURITY) -> resolve Prisma model gaps -> adopt `timestamps` modifier (ROOT FIX for datetime-as-number) -> fix remaining source type mismatches (datetime DONE v0.12.208, money DONE v0.12.212-213, command-param parent-context DONE v0.12.214) -> model relationships -> wire middleware (highest-leverage runtime) -> schema projection -> store strategy -> runtime wiring -> governance -> frontend strategy -> reactions -> projection evaluation -> advanced features -> federation evaluation.
->
-> **Companion docs:** task_plan.md, notes.md, phase-out-registry.md, AGENTS.md, constitution.md
-> **Official Manifest docs:** https://manifest-b1e8623f.mintlify.app/ (docs/manifest-official/ does NOT exist locally; schemas are in `node_modules/@angriff36/manifest/docs/spec/`)
+_Last updated: 2026-06-13 (re-verified against current source via parallel code audit; corrections folded in inline)_
 
----
+> **Second verification pass (2026-06-13):** a 6-agent parallel re-audit re-confirmed the highest-leverage claims against live source. All checks held: the `payload.result.*` no-op class (reactions.manifest:12-151, file is 196 lines), `EventCreated→BattleBoard` correct/DONE (line 164 `payload.result.id` valid on a create), the `ProcessInvoicePayment` saga vs. Payment→Invoice reaction **double-apply risk** (payment-rules.manifest:195-205 + reactions.manifest:12), unregistered inventory-listener stubs (`event-listeners.ts:29-32,59` exist; never registered in `manifest-runtime-factory.ts` — only prep-list-seed + prep-inventory-demand middleware wired at factory:534-543), the empty `InventoryTransaction` ledger (3 direct-Prisma producers, zero reaction), `manifest:audit-reaction-payloads` absent from `manifest:ci` (it routes through `manifest:audit:strict`, which omits it), the 4-entry `reaction-payload-baseline.json` (all StaffMember→TrainingAssignment + the `StaffMemberFirstShiftScheduled` orphan), the duplicate `StaffMemberCreated` event (staff-member-rules:85 vs training-module-sel-rules:4, incompatible topics/fields), SmsAutomationRule activate/deactivate routes calling generic `update` (events never emit), missing `CalendarEntry`/`ForecastEntry` entities, the 4 orphan Event-lifecycle events (Guest/Dish/Cancelled/Finalized — zero consumers), zero `realtime`/`async`/`role…extends` declarations, the single aggregate computed (`Recipe.hasVersion`, 1 of 45 hasMany), opt-in idempotency (factory:496) + wired outbox (factory:563), flagProvider in apps/api only, and all CSV-importer + 5 unregistered-write bypass claims. **No contradictions surfaced; only the role-check file count below was off.**
 
-## Task 10.14 — Quarantine Test Recovery (v0.12.230)
+## Executive summary
 
-**Status:** COMPLETE — All 74 quarantine files recovered, baseline ZERO (v0.12.230)
+The goal is a fully interconnected domain where Manifest itself dictates how every entity propagates its effects to related entities — so that creating, updating, or transitioning any entity correctly fans out to calendar, CRM, kitchen prep, inventory demand, staffing, payroll, finance, and notifications without hand-written glue. Today the wiring is sparse and partly broken: 20 reactions exist, but a multi-agent audit confirms that **11 of those 20 (~55%) silently no-op** because they read `payload.result.*` off MUTATE commands (where `result` is the last mutate's scalar value, not the entity instance), and only **two domain middleware** (prep-list-seed, prep-inventory-demand) cover the 1:N fan-out that reactions structurally cannot do. Whole domains are islands — integrations (SMS automation), versioning (VersionedEntity/EntityVersion/VersionApproval), and knowledge base emit events that nothing consumes; payroll/labor, staffing, and finance pipelines require manual hops at every stage. The biggest leverage points, in order: (1) fix the `payload.result.*` no-op reaction class — it unblocks payment→invoice, contract→event, lead→deal, proposal→event, maintenance→equipment, shipment→inventory in one pass; (2) wire the core event-lifecycle propagations (EventCreated/Confirmed/Cancelled/Finalized, EventStaffAssigned, EventDish/guest-count changes) via reactions + a small set of new middleware; (3) connect the many self-contained child→parent rollups (computed aggregates) and orphan events. Schema/store codegen (Phases 2b/4/5/6) is explicitly **out of scope** here and tracked in `manifest/task_plan.md`.
 
-**v0.12.230 milestone (2026-06-09):**
-- Baseline: 74 → 0 (100% recovery)
-- Tests: 5,188 pass, 0 fail, 0 typecheck errors
+A recurring pattern surfaced by verification: **many planned reactions have no valid target command or event field yet**. Several MUTATE-emitter events (`LeadConvertedToClient`, `ProposalAccepted`, `TrainingAttemptSubmitted`) already carry the needed fields as direct payload entries — the fix is to stop reading `payload.result.*` and read `payload.<field>`. But many others require authoring a missing command (`VersionedEntity.setCurrentVersion`, `ScheduleShift.flag`, `Dish.clearDefaultContainer`, `AdminChatThread.recordLastMessage`, `Schedule.incrementShiftCount`, `TimeEntry.applyEdit`) or even a missing entity (`CalendarEntry`, `ForecastEntry`, `EventFinancialSummary`) **before** the reaction can be declared. Each such prerequisite is now called out inline.
 
-**Production bugs found and fixed during recovery:**
-1. Missing `await` in manifest command dispatcher route (returned unhandled rejections instead of 500)
-2. Missing self-deactivation prevention in /api/user/deactivate route
-3. Stale IR file paths referencing deleted packages (manifest-ir, manifest-adapters)
+## Guiding principles
 
-**Root cause patterns fixed across all test files (catalog for future recovery):**
-1. `requireCurrentUser` (not `auth()+getTenantIdForOrg`) is the dispatcher's auth mechanism
-2. `runManifestCommand` (not `createManifestRuntime`) is the command execution path
-3. `params: Promise.resolve({entity, command})` required for Next.js App Router
-4. Prisma field names are camelCase (assertions had snake_case drift)
-5. `manifestErrorResponse` returns `{success, error, diagnostics}` not `{success, message}`
-6. Per-file `@repo/database` mocks override the global mock with incomplete model sets
-7. Generated read routes use `findFirst` not `findUnique`
-
-**Global setup.ts enhanced:** Added @sentry/nextjs, @/app/lib/webhook-dispatch, @/lib/manifest/issue-log, @repo/notifications
-
-**Post-quarantine fixes:**
-- `latency.test.ts` renamed to `.integration.test.ts` (not a unit test)
-- `prep-list-autogeneration.test.ts` fixed (barrel import → subpath export, `@repo/realtime` mock)
-
----
-## Validation Baseline (2026-06-09)
-
-### Claim Verification Matrix
-
-| # | Claim | Status | Detail |
-|---|---|---|---|
-| --- | --- | --- | --- |
-| 1 | 189 entities, ALL durable | **CONFIRMED** | `stores[]` in IR: 189 entries, all `target: "durable"`, 0 memory |
-| 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found... |
-| 3 | ~~32~~ ~~**1**~~ **0** IR entities without Prisma model — ALL 189 MATCHED | **RESOLVED** | **All 189 IR entities match a Prisma model.** QACheck was the last unmatched... |
-| 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1... |
-| 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported... |
-| 6 | **6 of 19 RuntimeOptions wired (8 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore`... |
-| 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only... |
-| 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment... |
-| 9 | ~~1~~ **6** sagas (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList, + 3 more) | **RESOLVED** (Task 9.3) | 6 sagas defined: ProcessInvoicePayment (2 steps), FinalizeEventWithReporting (3... |
-| 10 | **1,330** generated client functions, **0** consumers | **CONFIRMED** | `manifest-client.generated.ts` has 1,330 exported async functions. Prior audit... |
-| 11 | prisma-store.ts: ~~3,061~~ ~1,085 lines, ~~94~~ **5** switch cases | **UPDATED** (Task 3.2/3.3) | GenericPrismaStore strategy: 89/94 entities use generic, 5 custom |
-| 12 | Custom outbox duplicates upstream | **CONFIRMED** | Factory has `createPrismaOutboxWriter` (~60 lines) in telemetry hooks; upstream... |
-
-### Package & IR
-
-- `@angriff36/manifest@2.4.0` (upgraded 2.2.0→2.3.1 v0.12.240, →2.4.0 v0.12.243, both verified zero-drift). `compile.mjs` now reads this version dynamically for IR provenance (was hardcoded). Newly-available keywords: `async`, `saga`, `webhook`, contextual `masked` + `realtime` — see Known Blockers #15/#21 for architecture-fit verdicts (realtime REJECT, masked NO-OP).
-- IR: **202 entities (ALL durable)**, 999 commands, 981 events (-18 from duplicate removal in v0.12.201), 6 sagas, 3 approval blocks, 241 policies, 92 source files. **3 feature flags** using `flag()` builtin in guards/constraints.
-- **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
-- **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
-- **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
-- 168 entities with computed properties (610 total; 553 have empty `dependencies` arrays)
-- 183 entities with 583 constraints
-- **145 entities have relationships** (219 declarations total). **57 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
-- 553/610 computed properties have empty `dependencies` (90.7% — NOT a runtime correctness bug; all uncached CPs recompute fresh. 7 cross-property gaps resolved via compile-time enrichment)
-- **provenance.irHash and contentHash correctly generated** (compile.mjs uses deterministic JSON, verified at runtime via verifyProvenanceHash). irHash = deterministic hash of IR JSON, contentHash = hash of source manifests.
-- **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
-- 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
-- **5 overrideable constraints out of 583 total** (Task 9.8 DONE: 5 overrideable warn constraints across 5 entities)
-- **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
-- **Event payload + command param money fields: FIXED (v0.12.212–214)** — 153 event payload + 95 command param fields typed `number` changed to `money` across 34+25 source files (248 total financial fields fixed) + 54 additional command-param type mismatches resolved across 14 sources (v0.12.214: vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and others)
-- **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
-### Property types (all resolved)
-
-- string(1,584), datetime(741), int(158), money(109), decimal(102), boolean(94), array(7), float(1)
-- **0 number-typed properties** (was 17 -- all fixed to proper types)
-- **0 number-typed financial fields** (was ~248 across event payloads + command params — all fixed to `money` in v0.12.212–213, + 54 command-param parent-context mismatches resolved in v0.12.214)
-
-### Prisma & Database
-
-- 226 models, 29 enums, 12 PostgreSQL schemas, ~6,430 LOC in schema.prisma
-- Two naming conventions: ~146 models use camelCase fields + `@map("snake_case")`; ~40 legacy models use raw `snake_case` fields without `@map`
-- **20 models with PascalCase physical tables** (NOT 4): 4 with explicit @@map("PascalCase") (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent) + 16 PascalCase models with NO @@map (Task 0.3 IR-entity additions: Budget, Deal, Vendor, SampleData, FacilityWorkOrder, AiEventSetupSession, AutomatedFollowup, EntityVersion, EventWaitlistEntry, FacilitySchedule, LogisticsDispatch, PerformancePrediction, StaffPerformance, VersionApproval, VersionedEntity, WorkforceOptimization). Frozen in manifest/governance/schema-naming-allowlist.json; enforced by pnpm manifest:lint-schema:strict (Task 10.9).
-- **166 Prisma models match IR entities**
-- **69 Prisma-only models** (infrastructure: Account, Location, UserPreference, Role, OutboxEvent, ManifestEntity, audit_*, admin_*, etc.)
-- **~~16~~ 0 IR entities without Prisma model** (all 16 now have Prisma model declarations from Task 0.3). ~~Additionally 15 entities with models but wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor remaps auto-resolved via metadata bridge; only QACheck remains unmatched (different concept from QualityCheck).
-
-### API Typecheck
-
-- **0 errors** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED 2026-06-06). Original generator-side fixes: ENTITY_ACCESSOR_OVERRIDES 2→33, new ENTITY_FIELD_OVERRIDES + applyFieldOverrides(), new ENTITY_DETAIL_DROP, 9 hand-written source fixes. 2026-06-06 follow-up: added `deletedAt` branch to `applyFieldOverrides()` — rewrites to `deleted_at` for 4 snake_case models (Document, SmsAutomationRule, StorageLocation, OnboardingTask), drops the filter for 2 no-column models (CrmScoringRule, EventFollowup). 12 generated routes corrected; drift gate idempotent.
-- **Historical baseline (now fixed) -- 80 errors, 71 in GENERATED files** (62 files, "DO NOT EDIT") -- 3 systematic generator bugs:
-  - TS2339 (32 from 19 entities): 16 entities have NO Prisma model (routes should be dropped) + 3 have models with renamed names (BankAccount→EmployeeBankAccount, LogisticsRoute→DeliveryRoute, QACheck→QualityCheck)
-  - TS2551 (28 from 14 entities): 12 entities need accessor name overrides (Document→documents, SmsAutomationRule→sms_automation_rules, EventTimelineItem→eventTimeline, StorageLocation→storage_locations, BulkCombineRule→bulk_combine_rules, MethodVideo→method_videos, PrepListImport→prep_list_imports, QACorrectiveAction→correctiveAction, QATemperatureLog→temperatureLog, TaskBundleItem→task_bundle_items, TaskBundle→task_bundles, OpenShift→open_shifts)
-  - TS2353 (9): `createdAt` emitted but Prisma field is `created_at` (7 entities) or absent (2 entities)
-  - TS2561 (6): `tenantId` emitted but Prisma field is `tenant_id` (6 entities, raw snake_case without @map)
-- **9 errors in HANDWRITTEN files** (6 files):
-  - 4 shipment files: `signatureData` should be `signature` (TS2551)
-  - 2 kitchen task files: `tags: { contains: }` invalid for `String[]`, should use `{ has: }` (TS2322)
-  - 1 payroll-engine: Json value not assignable to string (TS2345)
-  - 2 additional handwritten files (13th rev discovery)
-
-### Runtime Typecheck
-
-- **0 errors** (was 96 -- all store/schema alignment debt resolved)
-
-### Routes & Frontend
-
-- **767** total `route.ts` files in `apps/api/app/api/`
-- 363 generated files with "DO NOT EDIT" header
-- **404** hand-written files (including 1 manifest dispatcher)
-- **188 hand-written files with direct Prisma writes** (46% of hand-written routes)
-- 1 dynamic manifest dispatcher at `manifest/[entity]/commands/[command]/route.ts`
-- 6 hand-written command routes alongside the dispatcher
-- Frontend: 4 patterns coexist -- generated client (1,330 functions, **0 consumers**), **167 files** with inline `apiFetch()` (**1,092 call sites**), Server Actions (~20 files), 21 hand-written data modules (10 plain functions, 11 hooks, 1 TanStack Query)
-- **Data caching partially implemented**: TanStack Query IS installed with QueryProvider, but only 5 files (31 uses) use it. Other apiFetch files get zero caching. 81% of API URLs are hardcoded strings.
-
-### Runtime Wiring
-
-- Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
-- **18 of 19 RuntimeOptions properties wired** (11 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2). encryptionProvider added (v0.12.235).
-- **2 of 19 NOT wired** (requireValidProvenance + expectedIRHash now handled; encryptionProvider wired v0.12.235; remaining: jobQueue, wasmEvaluator); additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
-- Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
-- Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
-- Custom outbox implementation duplicates upstream `OutboxStore` contract
-- No audit trail (`auditSink` not wired despite upstream having full `emitAudit` infrastructure)
-- ~~No durable approval state (`approvalStore` not wired)~~ **WIRED** (Task 7.6)
-- No middleware pipeline (all cross-cutting concerns handled by Proxy wrapper)
-- Permission guard: whitelist-based `COMMAND_PERMISSION_MAP` covering **31 entries** across 9 entity types
-- **Single command handler**: `execute-command.ts` (CANONICAL). Legacy `manifest-command-handler.ts` removed (Task 10.13, 2026-06-04). All routes use full middleware pipeline (identity, RBAC, audit, outbox).
-
-### Store Layer
-
-- `prisma-store.ts`: ~1,085 lines, **5** switch cases (was 3,061/94 — Task 3.2/3.3)
-- `prisma-stores/` directory: 3 files (was 45 — Task 3.3)
-- **89 of 94 switch-case entities now route to GenericPrismaStore** -- **5 have custom logic** (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). GenericPrismaStore is the default strategy.
-- **VendorContract appears twice** in ENTITIES_WITH_SPECIFIC_STORES (lines 199 and 226 -- duplicate entry, benign)
-- GenericPrismaStore available as fallback for unmapped entities
-- `ShipmentPrismaStore` uses `as any` cast on status field
-- `BattleBoardPrismaStore` uses snake_case field names inconsistent with all other stores
-- `AllergenWarningPrismaStore` has dead-code `toCommaString` method never called
-- ~~**User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case**~~ **RESOLVED** -- neither entity is in that set anymore. Both route through GenericPrismaStore successfully via `GENERIC_STORE_SAFE_ENTITIES`.
-- **MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`** -- inconsistent with all other stores
-
-### Governance
-
-- **0 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 100+ in 60+ route files + 30+ server action writes. Governed-entity direct-write violations reduced from 33 to 0 in batches 23–29 (v0.12.149).
-  - **21 documented bypasses** in `manifest/governance/bypasses.json` — cross-entity batch patterns (PaymentMethod clearOthers→markAsDefault), bulk operations, raw SQL imports, and operations with no Manifest command equivalent.
-  - **47 ungoverned writes** — entities with no Manifest IR definition (infrastructure tables, sync logs, operational entities outside governed domain).
-  - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes. All governed-entity files now report 0 violations.
-- Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
-- Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
-- `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
-- describe.skip: ~~1 entire test suite (sales-reporting) disabled~~ **RESOLVED 2026-06-05 (Task 10.10)** — empty stub deleted; feature fully tested at package level
-- 7 it.skipIf tests in sentry-integration (conditional on API keys -- valid pattern)
----
-
-## Validation Commands
-
-```bash
-pnpm --filter api typecheck          # TypeScript check on API surface
-pnpm --filter manifest-runtime typecheck  # Runtime typecheck (currently 0 errors)
-pnpm manifest:generate               # Regenerate routes from IR
-pnpm manifest:compile                # Recompile IR from .manifest sources
-pnpm manifest:validate manifest/ir/kitchen.ir.json  # Validate IR
-pnpm manifest:try-prisma <Entity>    # Per-entity schema projection diff
-pnpm manifest:audit-direct-writes    # Find writes bypassing runtime
-pnpm manifest:audit-schema-drift     # Schema drift audit
-pnpm manifest:lint-schema:strict        # Schema naming-convention gate (model/table casing)
-pnpm db:check                        # Prisma schema drift check
-git diff --stat apps/api/app/api/    # Check for route drift after regen
-```
-
----
-## Completed Milestones
-
-| Date | Milestone | Evidence |
-|---|---|---|
-| 2026-05-30 | Phase 1: Route accessor correctness | 0 broken accessors, ENTITY_ACCESSOR_OVERRIDES covers 2 proven... |
-| 2026-05-30 | Phase 2: Functional gate (Event/StaffMember/EventStaff commands) | Audit rows in outbox_events, runtime + api typecheck GREEN |
-| 2026-05-30 | ENTITY_DOMAIN_MAP consolidation (generate.mjs -> entity-domain-map.mjs) | generate.mjs imports canonical map |
-| 2026-05-31 | Durability classifier + GenericPrismaStore fallback | Store provider falls back to GenericPrismaStore for unmapped... |
-| 2026-05-31 | manifest.config.yaml created (147 lines, descriptive) | File exists at repo root; scripts not yet consuming it |
-| 2026-05-31 | 3 entity durability flips (AlertsConfig, PrepMethod, Container) | IR declarations honest; runtime behavior unchanged |
-| 2026-06-01 | Bootstrap constraint fix via upstream 1.7.0 | createInstance seeds proper defaults; requireName blocks pass |
-| 2026-06-01 | Custom expression builtins wired (5 helpers) | customBuiltins in RuntimeOptions |
-| 2026-06-02 | Signature reserved word fix for Shipment | signatureData rename in generated output |
-| 2026-06-03 | **ALL 189 entities flipped to durable** | Zero memory entities. PrismaProjection can emit models for ALL. |
-| 2026-06-03 | **Number-type properties fixed to proper types** | 0 number-typed properties (was 17). All use... |
-| 2026-06-03 | **Runtime typecheck: 0 errors** | Was 96. All store/schema alignment debt resolved. |
-| 2026-06-04 | **Task 0.1: API typecheck 80 → 0 errors (deploy type-blocker cleared)** | Producer fix: ENTITY_ACCESSOR_OVERRIDES 2→33, new... |
-| 2026-06-06 | **Task 0.1 follow-up: soft-delete `deletedAt` drift — 12 residual typecheck errors fixed** | Root cause: 4 Prisma models use raw snake_case `deleted_at`... |
-| 2026-06-04 | **Kitchen governed-logic bugs: RecipeVersion.totalTimeMinutes + Ingredient.recordLot expiresAt** | totalTimeMinutes computed was hardcoded 0 (now sums... |
-| 2026-06-04 | **Repaired ~40 kitchen runtime tests broken by the all-durable flip + tag v0.12.57** | Shared in-memory storeProvider test helper; createCustomBuiltins... |
-| 2026-06-04 | **Repaired 30 test-drift failures (4 files) + 1 Edge-safety bug** | Full `pnpm --filter api test` was 82 failed → 67 failed... |
-| 2026-06-04 | **Dispatcher auth error handling: InvariantError → 401 (was 500)** | Canonical dispatcher route catches `InvariantError` from... |
-| 2026-06-04 | **Task 0.2: Fix build.mjs broken path, stale compilerVersion, dead variable** | `pnpm manifest:build` completes all 4 steps. Line 170 path fixed... |
-| 2026-06-04 | **Producer-level InvariantError→401 auth fix** | Moved from generated dispatcher to... |
-| 2026-06-04 | **Task 0.6: 7 HIGH-priority source type mismatches fixed** | VendorContract (lastComplianceReview decimal→datetime... |
-| 2026-06-04 | **Task 0.6: 11 more source bugs fixed (event, contract, budget, role-policy, waste-entry)** | Event (eventDate/tags type fixes across 3 commands)... |
-| 2026-06-04 | **Task 0.6: 8 more source bugs fixed (payroll, event, inventory, admin, chart-of-account)** | EventProfitability marginPct now computed via percent() builtin... |
-| 2026-06-04 | **Task 0.3: Create Prisma models for 16 IR entities** | 16 Prisma model declarations added to schema.prisma for... |
-| 2026-06-04 | **Task 2.8: Adopt timestamps modifier (ROOT FIX for datetime-as-number)** | All 189 entities use `timestamps` modifier. Net -1,202 lines of... |
-| 2026-06-04 | **Task 2.7: Fix 988 datetime-as-number occurrences across 90 manifest sources** | Event payload (923) and command param (69) timestamp fields... |
-| 2026-06-04 | **Task 2.4: ENTITY_DOMAIN_MAP consolidation** | 3 stale copies eliminated; generate-route-manifest.ts imports... |
-| 2026-06-05 | **Task 2.5 Phase 1-2: PrismaProjection pipeline verified and wired** | Two-phase pipeline: `derive-options` (173/189 matched, 154 full... |
-| 2026-06-05 | **Task 2.5 Phase 3: PrismaProjection pipeline completed for all 189 entities** | derive-prisma-options.mjs uses ENTITY_ACCESSOR_OVERRIDES for... |
-| 2026-06-04 | **Task 2.6: Remove duplicate VendorContract** | Duplicate entry at line 226 removed from... |
-| 2026-06-04 | **Task 0.4: ~104 relationship declarations across 60+ entities** | Expanded from 12 to ~104 declarations. Event pilot (27), kitchen... |
-| 2026-06-08 | **Task 0.4 COMPLETE: 68 belongsTo relationship declarations across 48 entities** | Final batch: 68 new belongsTo declarations added to 48 entities... |
-| 2026-06-08 | **3 pre-existing typecheck errors fixed in flip-durable tests** | flip-durable-smoke.test.ts: `isEnum` on FieldMeta (method... |
-| 2026-06-08 | **Task 9.7 DONE: Property modifier adoption** | 534 modifier annotations across 94 files: indexed(92)... |
-| 2026-06-04 | **Task 7.4c: Audit/outbox middleware replaces telemetry-embedded outbox writes** | `createAuditOutboxMiddleware()` at `after-emit` hook persists... |
-| 2026-06-04 | **Task 10.4: Delete dead code (~4,971 LOC removed)** | rules-engine/ (5 files), entity-graph/ (7 files)... |
-| 2026-06-05 | **Task 3.1: Generic Manifest read routes (list + detail)** | List route at `manifest/[entity]/route.ts` and detail route at... |
-| 2026-06-04 | **Task 7.4a: RBAC middleware replaces Proxy-based permission guard** | `createRbacMiddleware()` registered as Manifest-native... |
-| 2026-06-04 | **Task 7.4b: Identity middleware wired into lifecycle pipeline** | `createIdentityMiddleware` registered as Manifest-native... |
-| 2026-06-04 | **Task 7.1 + 7.2: Wire auditSink + outboxStore from upstream** | PostgresAuditSink + PostgresOutboxStore wired via singleton... |
-| 2026-06-05 | **Task 10.5: Outbox consolidation — unsafe helper removed** | Bundle-claim route outbox events moved inside transaction (data... |
-| 2026-06-05 | **Task 10.1: Legacy dead code already deleted** | Confirmed legacy 3,205-line manifest-runtime.ts was deleted in... |
-| 2026-06-05 | **Task 9.2: First 2 Manifest reactions implemented** | `on PaymentProcessed run Invoice.applyPayment` + `on... |
-| 2026-06-05 | **Task 3.4: Store-level bug fixes (MenuPrismaStore + ShipmentPrismaStore)** | MenuPrismaStore uses toDecimalInput() (was raw new... |
-| 2026-06-05 | **Task 0.6 + 9.2: Source bug fixes + 2 equipment maintenance reactions** | CollectionCase.dunningStage string→int (was NaN on arithmetic)... |
-| 2026-06-05 | **Task 9.3 + 0.7: State transitions for 5 entities + searchable modifiers** | Added state machine enforcement to InventoryTransfer (4 rules)... |
-| 2026-06-05 | **Task 9.3/9.7: State transitions for 10 entities + readonly audit fields** | 22 new transition rules across CycleCountSession (4)... |
-| 2026-06-05 | **Task 9.3 COMPLETE: State transitions for 96 entities (256 rules)** | Added state machine enforcement to 30+ entities. Only 4 entities... |
-| 2026-06-05 | **Task 8.6 + Policy Binding Fix: `default policy` binds RBAC to ALL 952 commands** | ROOT CAUSE: 250 top-level policies were declared OUTSIDE entity... |
-| 2026-06-05 | **Task 0.5: Route regen-diff harness** | `manifest/scripts/audit-route-drift.mjs` exists with... |
-| 2026-06-05 | **Task 8.2 batch 4: 4 route files migrated (IoTAlert, IoTAlertRule, InteractionAttachment POST+DELETE)** | IoTAlert/IotAlertRule manifest sources expanded with missing... |
-| 2026-06-05 | **Task 8.1: Payroll governance migration (4 phases)** | 3 routes migrated to Manifest runtime. ManifestPayrollDataSource... |
-| 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware.... |
-| 2026-06-05 | **Task 3.3 Phase 1: Delete dead prisma-stores (~11,210 LOC)** | 39 dead store files deleted. prisma-stores/ reduced from 45→6... |
-| 2026-06-05 | **Task 7.6 partial: Wire generateId + now RuntimeOptions** | Two RuntimeOptions wired: generateId (randomUUID from... |
-| 2026-06-05 | **Task 9.2 COMPLETE: 3 new reactions (10 total, target 5+ exceeded)** | ShipmentItemReceived→InventoryItem.restock... |
-| 2026-06-05 | **Task 7.3: requireTenantContext — confirmed already wired** | requireTenantContext: true at line 466 of... |
-| 2026-06-05 | **Task 7.8: API shim audit — 276 lines of dead code removed** | 28 unused entity convenience helpers deleted (zero callers).... |
-| 2026-06-05 | **Task 7.6: Wire 5 RuntimeOptions (approvalStore, deterministicMode, evaluationLimits, profiling, flagProvider)** | PostgresApprovalStore wired with schema bootstrap... |
-| 2026-06-05 | **Task 3.2/3.3: Store strategy decision + migration phase 2 — ~1,800 LOC deleted** | Decision: GenericPrismaStore is the strategy.... |
-| 2026-06-05 | **Task 0.7: EventStaff / EventStaffAssignment consolidation** | EventStaff confirmed canonical; EventStaffAssignment is... |
-| 2026-06-05 | **Task 9.16: Wire Governance CLI suite (11 scripts)** | 7 governance scripts + 4 CLI utility scripts added to... |
-| 2026-06-05 | **Task 10.10: Remove empty skipped test stub** | `apps/api/__tests__/sales-reporting/generate.test.ts` was an... |
-| 2026-06-05 | **Task 10.2: Delete dead recipe engine code (-1,488 LOC)** | recipe-optimization-engine.ts (837 lines) +... |
-| 2026-06-05 | **Task 8.2 progress: 5 hybrid files migrated to Manifest-only** | 4 SmsAutomationRule files (activate, deactivate, create... |
-| 2026-06-05 | **Task 8.2 progress (batch 2): 10 mutate handlers migrated across 9 route files** | ApiKey (5 routes: create/update/softDelete/revoke/rotate), Venue... |
-| 2026-06-05 | **Task 8.4: Kitchen task claim routes migrated to Manifest-only** | `POST /api/kitchen/tasks/[id]/claim` and `POST... |
-| 2026-06-05 | **Task 8.2 batch 3: 5 accounting routes + 1 procurement route migrated to Manifest runtime** | CollectionCase create, Invoice create, PaymentMethod... |
-| 2026-06-05 | **Task 8.2 batch 5: Payment process/refund + revenue-recognition schedule actions migrated** | PUT/POST payments/[id] route: Payment process/refund through... |
-| 2026-06-05 | **Task 8.3 progress (batch 1 — Lead.create): first server-action migration** | `apps/app/app/(authenticated)/marketing/leads/actions.ts`... |
-| 2026-06-05 | **Task 8.3 progress (batch 2 — Venue): drift-blocked entity reconciled + migrated** | `apps/app/app/(authenticated)/crm/venues/actions.ts`... |
-| 2026-06-05 | **BUG FIX (root cause) — governed `AdminTask.create` broken for most statuses** | `manifest/source/admin-task-rules.manifest`: removed `mutate... |
-| 2026-06-05 | **Task 8.3 progress (batch 3 — AdminTask.create): create migrated, status-update deferred** | `apps/app/app/(authenticated)/administrative/kanban/actions.ts`... |
-| 2026-06-05 | **Task 8.3 progress (batch 5 — EmployeeAvailability create/batch/softDelete): 3 of 4 writes migrated** | `apps/app/app/(authenticated)/scheduling/availability/actions.ts`... |
-| 2026-06-06 | **Task 8.3 (Facility): drift-blocked entity reconciled + createFacility governed** | `manifest/source/facilities-all-rules.manifest`: replaced... |
-| 2026-06-06 | **fix(tests): resolve 4 governance test failures + migration baseline collapse (v0.12.126)** | Fixed 3 `fileURLToPath` URL-scheme errors in governance tests... |
-| 2026-06-06 | **Task 8.3 server-action governance batch — 8 files migrated (v0.12.127)** | Governed writes for EmailTemplate (create/update/softDelete)... |
-| 2026-06-06 | **Shipment test reconciliation verified (61→0 failures)** | Both shipment test files (shipment-commands.test.ts: 25 tests... |
-| 2026-06-06 | **Task 8.2/8.4 batch: 4 route migrations to Manifest runtime (v0.12.130)** | EventProfitability.recalculate (extended command with... |
-| 2026-06-06 | **Task 8.2 batch 6: 5 route files migrated — IoT + inventory audit + override audit (v0.12.131)** | IoTAlert PATCH (acknowledge/markResolved), TemperatureProbe POST... |
-| 2026-06-06 | **Task 8.2 batch 7: 5 route files migrated to Manifest runtime (v0.12.132)** | EventContract document upload (update), Shipment status... |
-| 2026-06-06 | **Task 8.2 batch 7b: inventory audit discrepancy/reports migrated (v0.12.132)** | VarianceReport discrepancy update (new updateDiscrepancy command... |
-| 2026-06-06 | **Task 8.2 batch 8 + Task 8.3: recipe cost/budgets, shipment items, battle-board actions migrated (v0.12.133)** | Recipe cost route: inline Manifest→canonical runManifestCommand.... |
-| 2026-06-06 | **Task 8.2 batch 9: Proposal markViewed + supplier-catalog webhook migrated (v0.12.134)** | `public/proposals/[token]` markViewed now dispatched via... |
-| 2026-06-06 | **Task 8.2 batch 10: Invoice [id] route governance migration** | PUT/PATCH/POST/DELETE migrated from 7 direct Prisma writes to... |
-| 2026-06-06 | **Task 8.2 batch 12: inventory audit reports, supplier-sync bypass, discrepancy resolution, calendar reschedule (v0.12.135)** | `POST /api/inventory/audit/reports` → Report.create via... |
-| 2026-06-06 | **Task 8.2 batch 13: AI bulk-tasks confirm + cron inventory-audit governance migration (v0.12.138)** | bulk-tasks/confirm: PrepTask.create via runManifestCommandCore... |
-| 2026-06-06 | **Task 8.3 batch 9: proposals, staff team, procurement actions governance migration + 6 new manifest commands (v0.12.139)** | Proposals: 6 writes migrated... |
-| 2026-06-07 | **Task 8.2 batch 14: Payments POST + InventoryItem update/softDelete governance migration (v0.12.140)** | Payments POST: `database.payment.create` →... |
-| 2026-06-07 | **Task 8.2 batch 15: Admin chat threads + inventory items governance migration (v0.12.140)** | Admin chat: `POST/GET /api/administrative/chat/threads` —... |
-| 2026-06-07 | **ClientInteraction governance migration** | ClientInteraction followUpCompleted → governed complete command... |
-| 2026-06-07 | **FacilityAsset + ir-drift CI drift detection** | FacilityAsset.create governed + semantic IR drift detection... |
-| 2026-06-07 | **Task 8.3 batch 11: InventoryItem server actions governance migration** | `apps/app/app/(authenticated)/inventory/actions.ts` — 3 writes... |
-| 2026-06-07 | **Task 8.3 batch 12: WasteEntry server actions governance migration** | `apps/app/app/(authenticated)/kitchen/actions.ts` — 3 writes... |
-| 2026-06-07 | **Task 8.3 batch 13: KitchenTask/Claim/Progress server actions governance migration** | `apps/app/app/(authenticated)/kitchen/tasks/actions.ts` — 7... |
-| 2026-06-07 | **Task 8.3 batch 14: Ingredient raw SQL → governed create** | `apps/app/app/(authenticated)/kitchen/recipes/actions-ingredient.... |
-| 2026-06-07 | **Task 8.3 batch 17: ClientInteraction.softDelete governance migration** | `apps/app/app/(authenticated)/crm/clients/actions.ts` —... |
-| 2026-06-07 | **Schema drift audit: 0 violations (110/110 entities clean)** | Fixed allowlist path, added MANIFEST_SEMANTIC_ALIASES... |
-| 2026-06-07 | **Task 8.2 batch 16: RevenueRecognitionSchedule adjust+default fallback governance migration** | Expanded `adjustSchedule` command with... |
-| 2026-06-07 | **Infrastructure classification confirmed (no migration needed)** | Calendar sync routes (ProviderSync — OAuth credential... |
-| 2026-06-07 | **Deferred items documented** | events/actions.ts EventImport raw SQL — IR lacks... |
-| 2026-06-07 | **Task 8.2 batch 18: RevenueRecognition reverse + EmailWorkflow recordTriggered + Events soft-delete/assign** | RevenueRecognition reverse: `$transaction` → 2 governed... |
-| 2026-06-07 | **Task 8.3 batch 18: CycleCountSession.softDelete governance migration** | `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts`... |
-| 2026-06-07 | **Task 8.2/8.3 batch 19: payment-methods clearSiblingDefaults, cycle-counting records sync, email-template updateMany→governed, email-workflow-triggers callback required** | PaymentMethods: clearSiblingDefaults() routes updateMany through... |
-| 2026-06-07 | **Task 8.3 batch 20: CycleCountSession.finalize supplementary write + fix pre-existing TS error** | CycleCountSession.finalize command expanded with... |
-| 2026-06-07 | **Task 8.2 batch 21: Payments route status fallbacks migrated to governed Manifest commands** | Replace 2 direct database.payment.update() calls in payments... |
-| 2026-06-07 | **Task 8.3 batch 21: Driver/Vehicle logistics server actions governed** | Driver entity reconciled (firstName/lastName→name, new state... |
-| 2026-06-07 | **Task 8.2 batch 22: Dead code cleanup + CommandBoard.create migration** | Deleted recipe-version-helpers.ts (815 LOC dead code, 0... |
-| 2026-06-07 | **Task 8.2/8.3 batches 23–29: Governance migration milestone — 0 governed-entity violations (v0.12.149)** | Governed-entity direct-write violations reduced from 33 to 0.... |
-| 2026-06-07 | **Task baseline repair: menus.is_template drift + runtime declaration fixes + simulation test mock drift (v0.12.151)** | Repair migration `20260607155307_repair_drift` adds... |
-| 2026-06-07 | **Task 8.5: Conformance test index (Constitution S17)** | 100 structural IR-level conformance checks at... |
-| 2026-06-07 | **Task 5.12: Agent SDK for MCP server integration** | MCP server IR introspection enhanced with agent-sdk functions... |
-| 2026-06-07 | **Task 10.8: `as unknown as` double-cast cleanup** | 67% reduction (60→20). Created `toJson()` helper. Fixed allergen... |
-| 2026-06-07 | **Task 2.3: manifest.config.yaml script wiring** | Shared `read-config.mjs` reads paths from config. generate.mjs +... |
-| 2026-06-07 | **Task 10.11: Telemetry collector placeholder fixed** | `getAggregateMetrics()` now queries real persisted telemetry... |
-| 2026-06-07 | **Task 10.6: MCP server entity-domain-map ESM consolidation** | Replaced require() CJS hack with proper ESM re-export. 14→8... |
-| 2026-06-07 | **Task 6.5: Rename misleading use-*.ts files** | 10 files renamed from use-*.ts to *.ts in apps/app/app/lib/. 23... |
-| 2026-06-07 | **Schema drift audit fix: allowlist path + semantic aliases** | Fixed allowlist path from stale `scripts/manifest/` to... |
-| 2026-06-07 | **Task 10.8 batch 2: `as unknown as` double-cast cleanup** | 157→91 (54 removed, 42% reduction). 28 files fixed across... |
-| 2026-06-07 | **Task 6.2 phase 1: React Query hooks generator + 2 page migrations** | Generator: `manifest/scripts/generate-react-query-hooks.mjs` →... |
-| 2026-06-07 | **Task 6.2 batch 4: 14 more files migrated to generated client** | 14 files migrated across 4 domains (~35 command call sites, net... |
-| 2026-06-07 | **Task 6.1: Frontend Data Layer Decision** | DECISION: Adopt TanStack Query wrapping generated client as... |
-| 2026-06-07 | **Schema drift allowlist: Json type entries** | Added adapter-derived rules for... |
-| 2026-06-08 | **Task 6.2 batch 6: 6 more files migrated to generated client** | Settings alerts (3 writes), Kitchen allergens (7 calls), Kitchen... |
-| 2026-06-08 | **Task 6.2 batch 8: 8 more frontend files migrated** | lib/leads, lib/proposals, vendors, routes-view, pipeline-board... |
-| 2026-06-08 | **Idempotent command core + allergen acknowledge idempotency** | run-manifest-command-core: IDEMPOTENT_COMMANDS registry, noop... |
-| 2026-06-08 | **Task 8.10 (ScheduleShift parent-context)** | ScheduleShift inherits locationId from Schedule via... |
-| 2026-06-08 | **manifest:check score fix** | Aligned event names in ProcurementBudget + TrainingAssignment... |
-| 2026-06-08 | **Task 6.4 (typed inputs phase 1)** | Array generics fixed (string[] vs unknown[]), client... |
-| 2026-06-08 | **Task 6.4 Phase 2: Strict typed command inputs** | Removed [key: string]: unknown from 833 input interfaces, |
-| 2026-06-08 | **CrmScoringRule/EventFollowup soft-delete drift resolved** | Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES... |
-| 2026-06-09 | **Task 5.4: Mermaid ER diagram projection wired** | `manifest/scripts/generate-mermaid.mjs` generates ER (202... |
-| 2026-06-09 | **Task 5.11: Evaluate new projections — DONE** | All 12 projections evaluated. ADOPT: kysely (191 entity types... |
-| 2026-06-09 | **Task 5.6: Drizzle projection wired** | `manifest/scripts/generate-drizzle.mjs` wraps... |
-| 2026-06-09 | **Task 5.7: LLM-context projection wired** | 3 surfaces: summary (2.7MB, 202 entities), full (2.8MB with... |
-| 2026-06-09 | **Task 5.8: Materialized-views projection wired** | 6 views (event_profitability_summary, inventory_valuation... |
-| 2026-06-09 | **Task 5.10: Analytics projection wired** | 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts... |
-| 2026-06-09 | **Quarantine test recovery: 606 tests recovered from 8/66 files (v0.12.227)** | Migrated 8 quarantined test files from... |
-| 2026-06-10 | **IR provenance verification wired** | compile.mjs hashes match IR spec (contentHash = sources, irHash = deterministic IR). verifyProvenanceHash() in loadManifests.ts. Factory opts in via requireValidProvenance. 9 new tests. |
-| 2026-06-10 | **Training test recovery (10 describe.skip → describe)** | 49 new passing tests. All 10 skipped training test suites recovered: $queryRaw → Prisma ORM, createManifestRuntime → runManifestCommand. v0.12.233. |
-| 2026-06-10 | **PrismaProjection validation fix (152 default-value errors)** | CollectionCase.dunningStage @default(0)→@default("") on String; EventStaff shiftStart/shiftEnd @default(0) removed on DateTime; 149 additional @default("") on non-String fields (Int/Float/Decimal/DateTime). Root cause: post-processing regexes required \S+ after type but many fields had @default("") immediately after type. Fix: final line-by-line post-assembly pass. `prisma validate` now passes on generated 256-model schema. |
-| 2026-06-10 | **Database drift resolved (20260610041450_repair_drift)** | Adds deleted_at column to tenant_events.event_followups; creates tenant_kitchen.qa_checks table with indexes. `pnpm db:check` reports zero drift. |
-| 2026-06-10 | **Verification baseline: 0 typecheck errors, 5,188 tests pass, 0 schema drift** | Confirmed clean across all validation surfaces. |
-| 2026-06-10 | **Task 9.6 COMPLETE: CLI commands — 91 scripts wired, scan CI gate** | All 20 done-when CLI commands + 16 subcommand variants wired. `manifest:scan` reports 191 warnings (all `durable` store target — expected). `seed`/`profile` don't exist in v2.2.0. |
-| 2026-06-10 | **EncryptionProvider wired — AES-256-GCM for 33 encrypted properties** | `encryption-provider.ts` + factory wiring. 15 tests. Key rotation via ENCRYPTION_KEY_PREVIOUS. Dev-safe (no key = plaintext). |
-| 2026-06-10 | **Entity concurrency extended to 8 entities (v0.12.237)** | versionProperty/versionAtProperty added to Event, CateringOrder, Invoice, Payment, VendorContract (3→8 total). Migration 20260610055049. Zero drift. |
-| 2026-06-10 | **SECURITY: Hardcoded roles replaced with actual auth context (v0.12.238)** | 4 route files fixed: payments (manager→currentUser), supplier-sync (admin→currentUser.role), kitchen/import (5× admin→userRole), procurement/update-status (user→currentUser.role). Also prevented manifest:generate drift that removed critical `await` from dispatcher (known production bug). |
-| 2026-06-10 | **Generator await drift fix + as-any removal (v0.12.239)** | generate.mjs template emits `return await`; 0 non-test as-any in runtime; 0 typecheck, 5205 tests pass, 0 route/schema drift |
-| 2026-06-10 | **Manifest 2.2.0 → 2.3.1 upgrade verified + feature re-evaluation (v0.12.240)** | Zero route drift on regen, 0 typecheck (api/runtime/app), 5684 tests pass (5222 API + 154 runtime + 308 app). `compile.mjs` made idempotent (reuse prior `compiledAt` when source contentHash unchanged) + honest dynamic `compilerVersion` (was hardcoded "2.2.0"); zod-gen temp-copy workaround removed (2.3.1 ships proper `.js` extensions, the workaround broke under it); stale generated client regenerated (datetime command-params `number`→`string`), surfacing + fixing a `Number(dateString)`→NaN bug in `routes-view.tsx`. Newly-available keywords re-evaluated vs Capsule's serverless + reads-bypass-runtime architecture: `realtime`=REJECT (semantics.md L427 needs single-instance server; already have @repo/realtime/Ably), `masked`=NO-OP (semantics.md L219 generated reads bypass engine), `async`/`webhook`=DEFER, `mixin`/`rateLimit`/`retry`/`schedule`/entity-`extends`=STILL BLOCKED. |
-| 2026-06-10 | **Task 10.9: Schema naming-convention lint + style guide (CI gate)** | New `manifest/scripts/lint-schema.mjs` (R1 model PascalCase, R2 resolved table snake_case, R3 allowlist hygiene; report-only default, `--strict` CI gate, `--self-test` 11/11) + frozen `manifest/governance/schema-naming-allowlist.json` (31 legacy snake_case models + 20 PascalCase-table exceptions). Style guide added to docs/database/CONTRIBUTING.md; SCHEMAS.md model-vs-table conflict fixed. Strict lint exits 0 on 245-model schema. CORRECTION: the long-cited "4 PascalCase @@map anomalies" undercounts — there are 20 models with PascalCase physical tables (4 explicit @@map("PascalCase") + 16 PascalCase models with NO @@map, the Task 0.3 IR-entity additions). |
-| 2026-06-10 | **Shipment entity rework + derived-surface regen (v0.12.242)** | Finished an interrupted, uncommitted increment in the working tree. `manifest/source/shipment-rules.manifest`: `Shipment.create` reshaped to a draft shell (now `scheduledDate`-required, auto-generates `SHP-<ts>` number, null-coalescing defaults, seeds `status="draft"`); `update` gains `internalNotes`; `ship` now stamps `shippedDate=now()`; `schedule` re-affirms `scheduledDate`; `cancel` gains role + required-reason guards; removed 3 redundant top-level policies (ManagersCanCreateShipment/StaffCanReceiveShipment/ManagersCanCancelShipment) now covered by entity `default policy` (merged-IR policies 451→448); dropped spurious `now()` defaults on `estimatedDeliveryDate`/`expirationDate`; `ShipmentItem` default policy widened to kitchen roles; `ShipmentCreated` event payload gains `eventId`+`scheduledDate`. `locationId` remains parent-context-inherited from Event (not a create param) — `pnpm manifest:audit-parent-context:strict` = 0 violations. The interrupted session had left `manifest-client.generated.ts` STALE vs the new contract (drift); regenerated it (`ShipmentCreateInput` param reorder + `ShipmentUpdateInput.internalNotes`). Reverted inherited CRLF/whitespace source noise (29 CRLF-only + 5 cosmetic) + a CogniLayer CLAUDE.md auto-edit before recompiling so `provenance.contentHash` is honest over the committed sources. Evidence: 5222 API + 154 runtime + 308 app tests pass; api/runtime/app typecheck 0; route drift 0; hooks/routes.manifest in sync. |
-| 2026-06-10 | **Manifest 2.3.1 → 2.4.0 upgrade verified (v0.12.243)** | Finished an interrupted, uncommitted working-tree upgrade (`@angriff36/manifest` 2.3.1→2.4.0, moved to devDependencies; Prisma `@prisma/client`/`@prisma/adapter-neon` pnpm overrides 7.3.0→7.8.0; lockfile regenerated). 2.4.0 compiler is semantically equivalent: recompiled IR is **byte-identical except `provenance.compilerVersion` 2.3.1→2.4.0** (and the consequently-recomputed `irHash`); `contentHash` unchanged. 2.4.0 lexer KEYWORDS unchanged vs 2.3.1 (still no `schedule`/`mixin`/`rateLimit`/`retry`) — no new DSL features. Routes-projection type-map byte-identical to 2.3.1. Regen: 0 route drift, 0 schema drift, 0 parent-context violations; `manifest:ci` PASS (validate-ai score 100). `manifest-client.generated.ts`/`manifest-types.generated.ts` 0 drift. Resynced **stale** `routes.manifest.json` (committed 2026-06-09 predated the v0.12.212-214 int/money/decimal type fixes → ~192 command-param `type:number`→`string` flips; the routes projection maps int/money/decimal/datetime→`string`, a pre-existing upstream limitation, NOT a 2.4.0 change; only affects the command-board AI tool JSON-schema surface). Typecheck api/runtime/app = 0 (after clearing a stale corrupted `.next-dev/dev/types/routes.d.ts` dev artifact — gitignored, regenerated on build, unrelated to upgrade). Tests: runtime 154/0, app 308/0, api 5212 pass / 10 fail — all 10 are pre-existing 5s route-import-timeout flakiness under parallel load (proven: the 3 sampled files pass 46/46 in isolation, 277ms import). Gitignored generated `docs-site/` (output of `pnpm manifest:docs`). |
-| 2026-06-10 | **Payroll run status reconciled to IR + atomic savePayrollRecords (blockers #5/#14)** | `PrismaPayrollDataSource.savePayrollRecords()` now (a) persists the run header + all line items in a single `$transaction` (constructor `Omit` relaxed to expose `$transaction`) — no more silent partial payrolls; (b) writes IR-valid `status: "processing"` instead of the invalid `"completed"` (IR `PayrollRun`: pending→processing→approved→paid; `approve` guards `status=="processing"`). Fixed a LIVE bug: `GET /api/payroll/approvals` filtered `(pending\|completed\|approved)` and so hid governed `processing` runs from the approval queue — added `processing` (kept `completed` for back-compat). Tests: `packages/payroll-engine/tests/prisma-data-source.test.ts` (atomicity, IR status, fail-loud, empty no-op) + `apps/api/__tests__/payroll/approvals-status-filter.test.ts` (filter SQL includes processing). payroll-engine typecheck+46 tests green; api typecheck 0; api payroll + full suite (5,224) green. Follow-up documented: `ManifestPayrollDataSource` still swallows process/line-item failures (non-atomic across command invocations). |
-| 2026-06-10 | **Phase 3: Generated-schema drift gate (`manifest:schema:check`)** | New `manifest/scripts/check-schema-drift.mjs` + `manifest:schema:check` script, wired into the `manifest:ci` gate. Regenerates the IR-derived Prisma artifacts via the production scripts (`derive-prisma-options.mjs` + `generate-full-schema.mjs` — zero logic duplication) and compares byte-for-byte against the committed copies (`manifest/scripts/prisma-options.generated.json`, `manifest/ir/generated-schema.prisma`); backs up + **always restores** the committed files in a `finally` so the working tree is left untouched pass or fail; exits 1 on drift with a line locator + `pnpm manifest:schema:full` remediation hint. WHY: a generated artifact is only trustworthy if regenerated when its inputs change — without a gate it silently rots. Proof this is real: the committed artifacts were **~350 schema lines + a large options diff STALE** when the gate was authored (never refreshed after the v0.12.212–243 IR type-fixes + 2.4.0 upgrade) — refreshed in this commit (generated schema now 7,547 lines / 263 models = 191 generated + 72 infra, `prisma validate` clean; options 10,857 lines). Satisfies phase-out-registry exit-criterion #3 for the schema projection. Generation proven deterministic (byte-identical across runs). Does NOT touch the live `packages/database/prisma/schema.prisma` — full hand-schema replacement (generated == live) remains **Phase 2b**, blocked on modeling back-relations in `.manifest` source (notes.md §14). `--self-test` 11/11 (diff-logic intent); `manifest:ci` exit 0 (validate-ai score 100). |
-| 2026-06-10 | **Governed payroll write path atomic (ManifestPayrollDataSource)** | savePayrollRecords wraps create→process→N×lineItem in one $transaction via prismaOverride; failures roll back (was swallowed). +4 unit tests; api+payroll-engine tests green. v0.12.246 |
-| 2026-06-10 | **Event Hub Propagation + Board Consolidation — interrupted increment finished (v0.12.248)** | Finished a large interrupted, uncommitted working-tree increment realizing the Event-as-hub vision (`manifest/AGENTS.md`): governed Event writes → `EventCreated` emit → reactions/sagas propagate to child surfaces, plus battle-board surface consolidation. WHY: Event create previously bypassed Manifest (`tx.event.create`) so no `EventCreated` fired and no reactions/sagas could propagate — the hub was inert. SHIPPED: (1) `@angriff36/manifest` 2.4.0→**2.4.1** aligned across root/api/runtime/mcp-server (IR byte-stable except `provenance.compilerVersion`). (2) SOURCE: `Event.templateId` property+create-param; `reactions.manifest` `on EventCreated run BattleBoard.create` (parent-context inherits event date/client/venue/guestCount → board needs no parent-owned UI input); `battle-board-rules.manifest` moved 2 un-instantiable entity `block` constraints to `vote`/`finalize` command guards + new `syncFromEvent` command + `BattleBoardSyncedFromEvent` event. (3) RUNTIME: new transport-agnostic `run-manifest-saga-core.ts` (`runManifestSagaCore`, exported subpath) + `apps/api/lib/manifest/execute-saga.ts` + `apps/api/app/api/manifest/sagas/[saga]/route.ts` dispatcher (canonical `requireCurrentUser`, InvariantError→401); `parent-context-resolver.ts` gains `refreshParentContext()` (refresh inherited snapshot on `syncFromEvent`, not just create) wired into `runtime-engine.ts`+`run-manifest-command-core.ts`; `generic-prisma-store.ts` Event.create auto-allocates `EVT-YYYY-####` via Postgres advisory lock (`allocate-event-number.ts`). (4) APP: `events/actions.ts` Event create now routes through governed `Event.create` (5 `runManifestCommand` calls; local advisory-lock numbering deleted — store owns it; BattleBoard auto-create now via the EventCreated reaction, not a separate post-write); saga action wrappers (`event-saga-actions.ts`: FinalizeEventWithReporting/AutoGeneratePrepList/confirm) + `sync-battle-boards.ts` (calls `BattleBoard.syncFromEvent` per board on Event update) + `apps/app/lib/manifest-saga.ts` client; board consolidation — `/tools/battleboards`→`/command-board` (next.config rewrites + module-nav), `/events/battle-boards` canonical (eventId filter), legacy `/events/[eventId]/battle-board` links to canonical via `resolve-event-board-href`. TWO BLOCKERS FIXED to finish: (a) `run-manifest-saga-core.ts:89` cast-through-`unknown` — upstream `RuntimeEngine.ir` is private (was TS2352, broke runtime+api typecheck); graceful-degrades to letting `runSaga` handle unknown sagas if the shape changes. (b) strict parent-context gate — `AutomatedFollowup.templateId` FALSE_POSITIVE override: Event gaining `templateId` created a coincidental name+type collision; the followup's own notification (email/sms/push) template is independent of the event's creation template. EVIDENCE: api/runtime/app typecheck 0; `manifest:ci` PASS (validate-ai 100, doctor, schema:check); `manifest:audit-parent-context:strict` 0; 5232 api + 158 runtime tests pass; regen (compile+registries+generate-metadata) produces no new drift. |
-| 2026-06-10 | **Generated-route auth-import drift gate fixed + Phase 4 store projection + event_staff raw-SQL quoting (v0.12.247)** | (1) DRIFT GATE: `manifest:generate` was emitting `import { auth } from "@clerk/nextjs"` (wrong — Clerk v5 exports `auth` from `@clerk/nextjs/server`) for all 166 generated `list/route.ts` files vs the committed correct `@repo/auth/server`, a LATENT 166-file drift on main (the nextjs projection defaults `authImportPath` to `@/lib/auth` which generator.js:144-148 collapses to `@clerk/nextjs`). Fixed config-native: added `authImportPath: "@repo/auth/server"` to `manifest.config.yaml` nextjs.options. Regen now 0 route drift. (2) STORE PROJECTION (Phase 4): completed an interrupted increment — new `generate-prisma-store-projection.mjs` + `build-prisma-store-options.mjs` chained into `manifest:generate-metadata`; generated IR-entity→Prisma-model bridge (`entity-to-prisma-model.generated.ts`, `resolvePrismaModelKey()`), store metadata + registry; factory/generic-prisma-store now resolve metadata by IR name OR Prisma model key, and GenericPrismaStore.create() handles `tenant: { connect }` for models requiring the tenant relation — fixing PrepList (moved off PrismaJsonStore onto GenericPrismaStore). `StaffMember` gains computed `staffMemberId = self.id` for reaction wiring. (3) event_staff raw-SQL: quoted camelCase columns (`"eventId"`/`"tenantId"`/`"staffMemberId"`/`"deletedAt"`) in 2 apps/api analytics routes (matching the apps/app fix) — the `event_staff` table has camelCase physical columns (no @map), so unquoted raw SQL fails at runtime in Postgres. Verified: API tests 5228 pass / 0 fail, api/runtime/app typecheck 0, parent-context strict 0, schema drift 0, route drift 0, IR valid. |
+- **Governed writes only.** All domain mutations execute through `RuntimeEngine.runCommand` via the canonical dispatcher. Direct `prisma.*` create/update/delete/upsert/raw-SQL on governed entities is a bypass and must be registered or removed.
+- **Reactions for 1:1, middleware for 1:N.** A reaction resolves exactly one target instance. Any "one parent → many children" fan-out must be a runtime middleware (precedent: `prep-list-seed-middleware`, `prep-inventory-demand-middleware`).
+- **Fix producers, not generated files.** Correct `.manifest` source, command params, event payloads, and reaction resolves — never patch generated IR/route/client artifacts.
+- **No reaction without a target.** Before declaring a reaction, confirm (a) the target command exists with the params you intend to pass, and (b) the source event payload actually carries every referenced field. If either is missing, author the command/field/entity in the same PR.
+- **One retirement/migration per PR.** Each bypass removal, reaction fix, or new propagation lands as its own small, verifiable change with its own conformance test.
 
 ---
 
-## Unwired RuntimeOptions (19 properties, 14 wired)
+## P0 — Broken interconnection (fix first)
 
-| Property | Purpose | Status | Tier |
-|---|---|---|---|
-| `storeProvider` | Entity -> Store factory function | WIRED | -- |
-| `idempotencyStore` | Command idempotency dedup | WIRED (conditionally; routes don't pass key yet) | -- |
-| `customBuiltins` | Plugin-provided expression builtins | WIRED | -- |
-| `middleware` | Lifecycle hooks (before-guard, before-policy, before-action, after-emit) | NOT WIRED | 7.4 |
-| `auditSink` | Durable audit record emission | **WIRED** (PostgresAuditSink, conditional on DATABASE_URL) | -- |
-| `outboxStore` | Transactional event persistence | **WIRED** (PostgresOutboxStore, conditional on DATABASE_URL) | -- |
-| `approvalStore` | Multi-stage approval persistence | **WIRED** (PostgresApprovalStore, conditional on DATABASE_URL) | -- |
-| `requireTenantContext` | Fail if tenantId absent | **WIRED** (line 466, manifest-runtime-factory.ts) | -- |
-| `flagProvider` | Feature flag resolver for `flag()` builtin | **WIRED** (passthrough from deps.flagProvider) | -- |
-| `jobQueue` | Async command execution | NOT WIRED | 7.6 |
-| `profiling` | Per-phase command timing | **WIRED** (passthrough from deps.profiling) | -- |
-| `generateId` | Custom ID generator | **WIRED** — generateId: () => randomUUID() | -- |
-| `now` | Custom timestamp function | **WIRED** — now: () => Date.now() | -- |
-| `deterministicMode` | Throw on effect boundaries | **WIRED** (passthrough from deps.deterministicMode) | -- |
-| `evaluationLimits` | Max expression depth/steps | **WIRED** (passthrough from deps.evaluationLimits) | -- |
-| `requireValidProvenance` | IR integrity hash verification | **WIRED** (conditional on deps.requireValidProvenance) | -- |
-| `expectedIRHash` | Expected IR hash | **WIRED** (via irHash in provenance, verified by verifyProvenanceHash) | -- |
-| `wasmEvaluator` | WASM expression evaluation | NOT WIRED | Future |
-| `encryptionProvider` | Field-level AES-256-GCM encryption for `encrypted` properties | **WIRED** (conditional on ENCRYPTION_KEY env var) | 7.6 |
----
+The `payload.result.*` reaction no-op class is the single highest-leverage defect. For every MUTATE command, the engine sets `result` to the last mutate's scalar value, so `payload.result.<field>` is `undefined` and the reaction silently no-ops. Fix by reading the field directly off the emitted event payload (`payload.<field>`) — adding the field as an explicit command param / event field where it is not currently emitted — or `payload._subject.*` for the source instance. Each fix must be paired with a conformance test asserting the target instance is resolved and the downstream mutation occurs.
 
-## Available Projections (27 projection directories in @angriff36/manifest@2.2.0)
+> **⚠ VERIFIED ENGINE-SEMANTICS CORRECTION (2026-06-13, from `@angriff36/manifest@2.4.2` `dist/manifest/runtime-engine.js:2291-2351` + parser:863-865 + spec `semantics.md:392-398`):** the per-item claims below that several reactions are "pure expression fixes (`payload.result.*` → `payload.*`) with **no new command params needed**" are **WRONG**. The emitted payload is built as **`{ ...commandInput, result }` only** — a reaction can see *exactly*: (a) the source command's **input params**, (b) `result` (the last action's value: an **instance** only for `create`/auto-create commands, otherwise the last mutate's **scalar**), and (c) `payload._subject.id` (the source instance id, engine-stamped from `instanceId`). **Declared event fields are NEVER auto-populated from `self.*`** — a bare `emit X` does not copy the entity's fields into the payload, and there is **no `emit X { ... }` payload-block syntax** (parser grammar rejects it). Consequence: any reaction that needs a source-entity field which is *not* a command input param **cannot** be fixed by an expression change. The correct mechanisms are: **(1)** add the needed field as a command **input param** *and* update the caller to supply it (only sensible when the caller already holds the value, e.g. the proposal-respond route has the full proposal); or **(2)** convert the propagation to **middleware**, which has store access and can load the `_subject` entity to read its fields (architecturally cleaner — avoids polluting a command's contract with its own entity's fields). The codebase already uses the correct mutate-source pattern at `reactions.manifest:185-195` (`EventConfirmed run PrepList.create` resolves `payload._subject.id`, **not** `payload.result.id`). **Re-triage each P0 item below under these rules before implementing — do not ship the "expression-only" fix as described.** Per-item param impact (verified): Lead→Deal needs `companyName`+`estimatedValue` added to `convertToClient` (caller does NOT currently fetch the lead); Proposal→Event needs `clientId`+`proposalNumber`+`title`+`total` added to `accept` (the respond route DOES hold the proposal); Training needs `attemptNumber`+`passThresholdPercent` added to the 3 submit commands (`passThresholdPercent` is read from `self.`, not a param). All are param-addition-or-middleware, not one-liners.
 
-| Export Path | Purpose | Used? |
-|---|---|---|
-| `projections/nextjs` | Next.js route generation (list + detail) | YES -- active, generates routes |
-| `projections/routes` | Route metadata/registry | YES -- produces `manifest/runtime/routes.manifest.json` |
-| `projections/prisma` | Prisma schema model generation | PARTIAL -- pilot harness for 4 entities, not in CI |
-| `projections/zod` | Zod input validation schemas | YES -- `pnpm manifest:generate-zod` produces 202 entity schemas with constraint-derived refinements (.min, .max, .int). Output: `manifest/generated/schemas/*.schema.ts`. (v2.3.1 ships proper `.js` extensions on internal imports — the temp-copy+regex-patch workaround was removed in v0.12.240; the generator now imports in place.) |
-| `projections/react-query` | React Query hooks | NO -- blocked (Phase 5 eval) |
-| `projections/openapi` | OpenAPI spec generation | NO -- blocked (Phase 5 eval) |
-| `projections/drizzle` | Drizzle ORM schema | YES -- active, pnpm manifest:drizzle, 191 tables + 156 relations |
-| `projections/mermaid` | Mermaid diagram generation | YES -- active, `pnpm manifest:mermaid`, generates ER/state/sequence diagrams (Task 5.4) |
-| `projections/llm-context` | Structured JSON for LLM agent injection | YES -- active, pnpm manifest:llm-context, 3 surfaces (summary/full/ir). 2.7MB summary (202 entities). Script: `manifest/scripts/generate-llm-context.mjs` |
-| `projections/materialized-views` | PostgreSQL materialized view DDL | YES -- active, pnpm manifest:materialized-views, 6 views (event_profitability_summary, inventory_valuation, kitchen_task_metrics, staff_performance_summary, vendor_spend_summary, waste_analytics). Output: `manifest/generated/materialized-views/views.sql` (179 lines) |
-| `projections/health` | K8s health check endpoints | NO -- zero health infra exists (Task 5.9) |
-| `projections/graphql` | Full SDL + resolver stubs | NO -- not evaluated |
-| `projections/analytics` | Typed tracking event schemas | YES -- active, pnpm manifest:analytics, 3 surfaces + 999 handlers. tracking-plan.json (4,250 events), events.ts (4,098 interfaces), handlers.ts (999 typed handler functions). Provider: Segment. Script: `manifest/scripts/generate-analytics.mjs` |
-| `projections/dart` | Dart/Flutter model generation | NO -- REJECTED (no Dart targets) |
-| `projections/dynamodb` | DynamoDB table definitions | NO -- REJECTED (uses PostgreSQL) |
-| `projections/elasticsearch` | Elasticsearch index mappings | NO -- DEFERRED (no ES infra) |
-| `projections/hono` | Hono framework routes | NO -- DEFERRED (runtime uses Hono but routes are Next.js) |
-| `projections/jsonschema` | JSON Schema output | NO -- DEFERRED (Zod already covers this) |
-| `projections/kysely` | Kysely ORM types | YES -- active, `pnpm manifest:kysely`, generates 3,918-line `database.ts` with 191 table interfaces (Task 5.11) |
-| `projections/mongoose` | Mongoose ODM schemas | NO -- REJECTED (incomplete + wrong DB) |
-| `projections/pydantic` | Pydantic model generation | NO -- DEFERRED (no Python runtime) |
-| `projections/remix` | Remix framework routes | NO -- DEFERRED (uses Next.js) |
-| `projections/storybook` | Storybook story generation | NO -- DEFERRED (useful but secondary) |
-| `projections/sveltekit` | SvelteKit routes | NO -- REJECTED (uses Next.js) |
-| `projections/terraform` | Terraform infrastructure definitions | NO -- DEFERRED (no IaC pipeline) |
-| `projections/shared` | Shared projection utilities | Internal |
-| `projections/express` | Express.js route generation | NO -- not evaluated (uses Next.js API routes) |
+> **Verification nuance (2026-06-13 audit):** for the Payment/Contract items below, the *event* declaration (e.g. `PaymentProcessed` at payment-rules.manifest:152-158, `PaymentRefunded` at :160-165, `ContractSigned` at event-contract-rules.manifest:249-255) already lists the needed fields (`invoiceId`/`amount`/`paymentId`/`eventId`). But the emitting command does **not** take them as params, so the runtime has nothing to populate the declared field with at emit time — confirm whether the value can be sourced from `payload._subject.*` (the field exists on the entity) before adding a command param. The Lead/Proposal/Training items genuinely carry the values in the payload already and need only the `payload.result.* → payload.*` expression fix.
 
-**Other package exports (39 total, 4 used = 10.3%):** compiler, ir-compiler, audit/postgres, audit/memory, outbox/postgres, outbox/memory, approval/postgres, approval/memory, agent-sdk, ir-diff, breaking-change, wasm, profiling, plugin-api, plugin-loader, multi-compiler, module-resolver, parser, lexer, types, config, stores, ir, ir-version-store, registry/emit, federation, compression, projections, audit, outbox, approval.
-
-## Known Blockers & Gotchas (OPEN only)
-
-1. **Bootstrap constraint gotcha:** Edge cases may remain for complex constraint blocks. `0_init` baseline checksum mismatch blocks `db:dev` -- use `db:repair`+`db:deploy`. Generated-column DEFAULT triggers P3006 on shadow replay.
-
-2. **No store projection in the package:** Capsule must use GenericPrismaStore or build a codegen step.
-
-3. **Upstream accessor derivation is naive:** nextjs projection uses `camelCase(entityName)` with zero model validation. RELATED (RESOLVED v0.12.247): the nextjs projection's auth-import default (`authImportPath: "@/lib/auth"` → `@clerk/nextjs` per generator.js:144-148) silently drifted all 166 generated `list/route.ts` files away from the committed `@repo/auth/server`; fixed by pinning `authImportPath: "@repo/auth/server"` in `manifest.config.yaml`. Regen drift gate now 0.
-
-4. **Generated client plateau:** 1,330 functions, 94 consumers. ~107 remaining apiFetch files are non-migratable (custom endpoints, file uploads, binary downloads, enriched responses, composite commands).
-
-5. **Non-transactional writes in payroll — RESOLVED (base data source) 2026-06-10:** `PrismaPayrollDataSource.savePayrollRecords()` now wraps the run-header upsert + all N line-item upserts in a single `$transaction` (the constructor `Omit` was relaxed to expose `$transaction`). Unit tests (`packages/payroll-engine/tests/prisma-data-source.test.ts`) pin atomicity + fail-loud propagation. **Follow-up — RESOLVED (governed path) v0.12.246 2026-06-10:** `ManifestPayrollDataSource.savePayrollRecords()` now wraps `PayrollRun.create` → `process` → N×`PayrollLineItem.create` in a single `database.$transaction(...)`, threading the Prisma transaction client into every `runManifestCommandCore` invocation via `prismaOverride` (factory exposes `prismaForWrites = prismaOverride ?? prisma`; entity store uses the same client for reads, enabling read-your-writes). Swallow try/catch blocks removed — any failure throws out of the transaction callback → full rollback. NOT a saga; the runtime already supported shared-tx via `prismaOverride`. +4 unit tests (`apps/api/__tests__/payroll/manifest-payroll-data-source.test.ts`): atomic success + tx-threading, line-item failure throws, process failure throws, empty no-op. api typecheck exit 0; api (50) + payroll-engine (46) payroll tests green.
-
-6. **EventStaff / EventStaffAssignment duplicate:** Both in IR with overlapping purpose, separate Prisma models.
-
-7. **compile.mjs workaround:** Uses programmatic API instead of CLI due to `--glob` bug.
-
-8. **Mixed schema naming conventions:** 195 PascalCase + 31 legacy snake_case models. 4 PascalCase @@map anomalies.
-
-9. **Permission guard whitelist-based:** Commands NOT in `COMMAND_PERMISSION_MAP` pass through unrestricted. IR policies provide deny-by-default as primary; RBAC middleware is secondary.
-
-10. **compilerVersion ~~`0.3.8`/`2.2.0` hardcoded~~ RESOLVED (v0.12.240):** `compile.mjs` now reads `compilerVersion` dynamically from the installed `@angriff36/manifest/package.json` (honestly `2.3.1`); was a hardcoded literal that silently went stale. `compiledAt` is also reused when source `contentHash` is unchanged → `pnpm manifest:compile` is idempotent (no more 3-file churn). `loadManifests.ts:254` synthetic inline path still hardcodes "2.2.0" (not the committed-artifact producer; left as-is). irHash/contentHash correctly generated + verified at runtime.
-
-11. **57 entities with FK props but NO relationship blocks:** Remaining are polymorphic FKs, FKs to non-IR targets, or no FK props.
-
-12. **39 exports, 4 used (10.3%):** Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM, Encryption, Profiling, Agent SDK, Plugin system.
-
-13. **Manifest vNext features partially unblocked in v2.3.1:** `async`, `saga`, `webhook` keywords now PARSE (re-verified 2026-06-10 against lexer.js KEYWORDS). STILL ABSENT: `schedule`, `mixin`, `rateLimit`, `retry`, and entity-level `extends` (the v2.3.1 `extends` keyword is role-inheritance only — `parseRole`). `async`=DEFER (needs jobQueue worker, serverless-hostile); `webhook`=DEFER (no projection emits the HTTP route). Re-verified 2026-06-10 against v2.4.0 lexer KEYWORDS: unchanged from 2.3.1 — `schedule`/`mixin`/`rateLimit`/`retry` still absent; `async`/`saga`/`webhook` present. No new DSL keywords in 2.4.0.
-
-14. **Payroll-engine invalid status / disconnection — PARTIALLY RESOLVED 2026-06-10:** `PrismaPayrollDataSource.savePayrollRecords()` no longer writes the invalid IR status `"completed"` — it now writes `"processing"`, matching the IR `PayrollRun` state machine (pending→processing→approved→paid) and the governed `ManifestPayrollDataSource` (create→process) path. The constructor no longer strips `$transaction` (it is required for the atomic write — see #5). The live write path has been Manifest-aware since Task 8.1 (`/payroll/generate` uses `ManifestPayrollDataSource`). **Also fixed:** `GET /api/payroll/approvals` filtered for `(pending|completed|approved)` and therefore **hid governed `processing` runs from the approvals queue** — added `processing` to the count + listing filters (legacy `completed` retained for back-compat). **Still legacy / non-IR-conformant (low risk):** `apps/api/app/api/payroll/runs/route.ts` zod enum + the `PayrollRunStatus` type unions still list `"completed"`/`"finalized"`; reads tolerate them but nothing IR-governed produces them. A §14 status-vocabulary reconciliation across the legacy raw-SQL payroll routes remains a follow-up.
-
-15. **`realtime` modifier present in v2.3.1 but REJECTED for Capsule (serverless):** The SSE event stream is per-engine in-memory; `docs/manifest-official/spec/semantics.md` §"Realtime Entities" (L427) requires a long-lived single-instance server — "serverless or multi-instance fan-out needs an external event bus and is out of scope." Capsule deploys to Vercel serverless AND already ships `@repo/realtime` (Ably + transactional outbox, the correct serverless pattern). **Task 9.10 = REJECT, not BLOCKED.**
-
-16. **`manifest generate-tests` still absent in v2.3.1:** re-verified 2026-06-10 (0 hits for `generate-tests`/`generateTests` in `dist`). Task 9.17 remains BLOCKED pending package support.
-
-17. **Federation export (`@angriff36/manifest/federation`):** Full multi-service mesh. Low priority (monolith). Task 12.1.
-
-18. **Entity Property Modifiers at source level only:** 534 annotations, parser accepts but compiler does not emit to JSON.
-
-19. **`encrypted` modifier + encryptionProvider WIRED (v0.12.235):** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) now encrypt at rest when `ENCRYPTION_KEY` env var is set (AES-256-GCM). Provider at `manifest/runtime/src/encryption-provider.ts` — key rotation via `ENCRYPTION_KEY_PREVIOUS`. Dev/test safe (no key = plaintext stored, no error). 15 tests.
-
-20. **RESOLVED (v0.12.239):** Generator template in generate.mjs now emits `return await runManifestCommand(...)`. Regeneration preserves the await — verified with zero route drift.
-
-22. **Direct-write audit drift — the "0 governed violations" claim is STALE:** `pnpm manifest:audit-direct-writes` now reports **7 governed-entity direct-write violations** (file-level, gate still exits 0 — report-only/baseline) across unrelated domains: `PaymentRefundAttempt.create`, `AdminChatThread.update`, `CrmScoringRule.create`, `TrainingCompletion.upsert` (×2), `InventoryForecast`/`ReorderSuggestion` (forecast routes), `ProposalTemplate.updateMany` (×2), and `EventImport.create` (`events/actions.ts` bulk import — already a documented deferral). These are pre-existing tech debt accumulated since the v0.12.149 "0 violations" milestone, **NOT** introduced by the Event-hub increment (which removed a direct Event write). Follow-up: migrate each to a Manifest command or add a justified `bypasses.json` entry, then refresh the §Governance "0 violations" claim.
-
-21. **`masked` data masking present in v2.3.1 but a NO-OP for Capsule:** `docs/manifest-official/spec/semantics.md` §"Property Masking" (L211/L219) — masking is applied ONLY in `RuntimeEngine.getInstance`/`getAllInstances`, and "Generated Next.js read routes query the store directly and bypass the engine — they are NOT masked in this release (follow-up feature)." Every Capsule read bypasses the runtime (Constitution §10), so the modifier would imply protection that does not exist (violates "fail loud"). Adopt only if/when sensitive reads route through the runtime.
+- [ ] **Fix Payment→Invoice payment application** — `reactions.manifest:12-17` `on PaymentProcessed run Invoice.applyPayment`. `Payment.process` (payment-rules.manifest:64-71) takes only `gatewayTransactionId`; `invoiceId` and `amount` are not params, so `payload.result.invoiceId`/`payload.result.amount` are both `undefined`. Add `invoiceId`/`amount` as explicit params + event fields and resolve `payload.invoiceId`/`payload.amount`. Mechanism: reaction.
+- [ ] **Coordinate the ProcessInvoicePayment saga vs. the Payment→Invoice reaction — double-apply risk** — a `ProcessInvoicePayment` saga (payment-rules.manifest:195-205) now covers the payment→invoice path atomically, but the broken reaction at reactions.manifest:12-17 was left in place. Once the reaction gains `invoiceId`/`amount` params, **both** the saga and the reaction fire on `PaymentProcessed`, calling `Invoice.applyPayment` twice. Pick one: **remove the reaction** (preferred — the saga is atomic) or never give the reaction valid params. Do this as part of the Payment→Invoice fix above. Mechanism: saga/reaction de-dup.
+- [ ] **Fix Payment→Invoice refund** — `reactions.manifest:21-26` `on PaymentRefunded run Invoice.recordRefund`. `Payment.refund(refundAmount, reason)` (payment-rules.manifest:80-88) has no `invoiceId` param, and line 25 reads `paymentId: payload.result.id` (also a mutate no-op). `PaymentRefunded` (payment-rules.manifest:160-165) declares `paymentId`. Add `invoiceId` as a param/field, resolve `payload.invoiceId`, and fix `paymentId` to `payload.paymentId` (add the param) or `payload._subject.id`. Mechanism: reaction.
+- [ ] **Fix Collections→Invoice payment** — `reactions.manifest:49-54` `on CollectionPaymentRecorded run Invoice.applyPayment`. Compound no-op: resolve uses `payload.result.invoiceId` (mutate no-op) AND `paymentId: payload.paymentId` references a field the `CollectionPaymentRecorded` event (collections-rules.manifest:390-395) does not carry (only `caseId/invoiceId/amount/outstandingAmount`). Add `paymentId` to `CollectionCase.recordPayment(amount, paymentId, paymentDate)`'s emitted event, and resolve `payload.invoiceId`. Mechanism: reaction.
+- [ ] **Fix Contract→Event confirmation** — `reactions.manifest:61-65` `on ContractSigned run Event.confirm`. `EventContract.sign()` takes **no params** (event-contract-rules.manifest:95-101), so the payload is `{result: <scalar>}` with no `eventId`. `ContractSigned` (event-contract-rules.manifest:249-255) declares `eventId` but it is not a command input. Add `eventId` as a `sign` param/event field and resolve `payload.eventId`. Mechanism: reaction.
+- [ ] **Fix Maintenance→Equipment (×2)** — `reactions.manifest:72-94` `on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance` and `…run Equipment.updateStatus`, both resolving `payload.result.equipmentId`. `MaintenanceWorkOrder.completeWork(totalCost, partsUsed, notes, userId)` (equipment-rules.manifest:267-276) has no `equipmentId` param even though `MaintenanceWorkOrder.equipmentId` exists on the entity. Add `equipmentId` as an explicit **param** to `completeWork` (the engine has no way to carry an entity property into the emitted payload otherwise), then resolve `payload.equipmentId`. Mechanism: reaction + command-param add.
+- [ ] **Fix Shipment→Inventory restock** — `reactions.manifest:101-107` `on ShipmentItemReceived run InventoryItem.restock` resolving `payload.result.itemId`. `ShipmentItem.updateReceived(quantityReceived, quantityDamaged, condition, conditionNotes, userId)` (shipment-rules.manifest:218-246) has no `itemId` param. Add `itemId` and resolve `payload.itemId`. **Also fix the hardcoded cost:** line 105 passes `costPerUnit: 0` literally; `ShipmentItem.unitCost` exists (shipment-rules.manifest:178) but `updateReceived` does not take it — add `unitCost` as a param/field or restock will permanently corrupt `InventoryItem.unitCost` to $0. Mechanism: reaction + command-param add.
+- [ ] **Fix Lead→Deal creation** — `reactions.manifest:114-126` `on LeadConvertedToClient run Deal.create`. `Lead.convertToClient` is a MUTATE (last mutate `status="won"`), so lines 117-119 (`payload.result.companyName/estimatedValue`) and line 115 (`resolve payload.result.id`) are all `undefined`. The `LeadConvertedToClient` event (lead-rules.manifest:212-221) **already carries** `leadId/companyName/clientId/estimatedValue` directly. Change params to `payload.leadId/companyName/estimatedValue` and fix the resolve to `uuid()` (a new Deal id, not the lead's). No new command params needed. Mechanism: reaction.
+- [ ] **Fix Proposal→Event creation** — `reactions.manifest:133-151` `on ProposalAccepted run Event.create`. `Proposal.accept` is a MUTATE (last mutate `acceptedAt = now()`), so lines 136-147 (`payload.result.clientId/proposalNumber/title/total`) and line 134 (`resolve payload.result.id`) are all `undefined`. `ProposalAccepted` (proposal-rules.manifest:396-405) **already carries** `clientId/proposalNumber/title/total`. Change params to `payload.<field>` and fix the resolve to `uuid()`. Mechanism: reaction.
+- [x] **Fix EventCreated→BattleBoard eventId** — `reactions.manifest:159-169` `on EventCreated run BattleBoard.create` with `eventId: payload.result.id`. `Event.create` IS a create command, so `payload.result.id` is valid and `BattleBoard.create` (battle-board-rules.manifest:63-76) takes `eventId`. Boards are not orphaned by this path. — DONE: live code is already correct (this was never broken). Remaining work is only CI-gate coverage, tracked under "Audit-gate the whole class".
+- [ ] **Fix Training attempt recording** — `training-module-rules.manifest:647-660` `on TrainingAttemptSubmitted run TrainingAttempt.create`. Lines 654/656/657 read `payload.result.attemptCount`/`passThresholdPercent` off a mutate (emitters `submitPassingAttempt`/`submitFailedAttempt`/`submitFinalFailedAttempt` end on `managerReviewRequired = false`, a boolean). `TrainingAttemptSubmitted` (training-module-rules.manifest:48-58) carries `attemptNumber`/`passThresholdPercent` directly. Change line 654 → `payload.attemptNumber`, line 656 → `payload.passThresholdPercent`, and line 657 guard `passed: payload.scorePercent >= payload.passThresholdPercent`. Mechanism: reaction.
+- [ ] **Fix StaffMemberCreated→TrainingAssignment (baselined) + resolve duplicate event definition** — `training-module-sel-rules.manifest:471-495` reactions read `payload.staffMemberId/firstShiftAt/dueAt` not present in `StaffMember.create` params (staff-member-rules.manifest:33-42); all 4 violations still in `reaction-payload-baseline.json:4-8`. **Root cause is a duplicate event:** `StaffMemberCreated` is defined twice with incompatible schemas — staff-member-rules.manifest:85 (topic `staff.staff-member.created`, fields staffMemberId/tenantId/displayName/role/createdAt, the one `StaffMember.create` actually emits) and training-module-sel-rules.manifest:4 (topic `staff.member.created`, fields staffMemberId/role/firstShiftAt/dueAt). The sel-rules reaction expects fields only in the stub definition. Reconcile to ONE event definition + topic, add `firstShiftAt`/`dueAt` to the real emitter or derive them, then drain the baseline. Mechanism: event de-dup + reaction.
+- [ ] **Emit StaffMemberFirstShiftScheduled (orphan reaction, no emitter)** — `training-module-sel-rules.manifest:487` `on StaffMemberFirstShiftScheduled run TrainingAssignment.applyFirstShiftDueDate` has **no command anywhere that emits the event** (confirmed orphan in `reaction-payload-baseline.json:7`; 0 hits across apps/ and packages/). `ScheduleShift.create` (schedule-rules.manifest:159) is the natural emitter — the first assigned shift for a staff member should fire `StaffMemberFirstShiftScheduled` so training due-dates pin to the real first shift. Add the emit. Mechanism: emit + reaction.
+- [x] **Fix the two no-op SmsAutomationRule routes** — DONE (2026-06-13). `apps/api/app/api/smsautomationrule/activate|deactivate/route.ts` now invoke the dedicated `activate`/`deactivate` commands (sms-automation-rules.manifest:70-85) instead of generic `update`, so `SmsAutomationRuleActivated/Deactivated` emit and the activation transition guard (`isActive == false`/`== true`) is enforced (the old `update` path also risked clobbering other fields via its full mutate set). No IR change (commands already existed). Coverage added: `apps/api/__tests__/communications/sms-automation-activate.test.ts` (7 tests, locks the contract that the route MUST call the dedicated command, never `update`). Note: still **no consumer** of these events yet — the SMS-as-reaction-target middleware is the open P1 item under "Integrations & versioning"; this fix is its prerequisite. Mechanism: command-variant correction.
+- [ ] **InventoryConsumed/Wasted/Restocked/Adjusted → InventoryTransaction.create** — every `InventoryItem` mutate emits its event (inventory-rules.manifest:131/168/187/208) but **no reaction creates the ledger row**, so the `InventoryTransaction` store is structurally defined but only populated via direct Prisma writes (purchase-orders complete route, stock-levels adjust route, cycle-count finalize). **Infra note (2026-06-13 audit):** handler stubs `onInventoryConsumed/Wasted/Restocked/Adjusted` already exist in `manifest/runtime/src/kitchen/event-listeners.ts:29-32` but are **never registered** in `manifest-runtime-factory.ts`, so they silently no-op — registering them (or wiring reactions) is the fix. Wire `on InventoryConsumed/Wasted/Adjusted/Restocked run InventoryTransaction.create`. Mechanism: reaction (or listener registration). (P0: the entire governed stock ledger is empty.)
+- [ ] **PrepListFinalized reserves but PrepListCompleted never consumes** — `prep-inventory-demand-middleware.ts` reserves inventory on `PrepListFinalized` via `InventoryItem.reserve` (wired at manifest-runtime-factory.ts:539), but `PrepListCompleted` (prep-list-rules.manifest:143/436) has no consumer and never calls `InventoryItem.consume`. A handler stub `onPrepListCompleted` exists in `event-listeners.ts` but is **not registered** in the factory. Reserved quantities are permanently stranded — they never decrement `actualQuantity`. Add a `PrepListCompleted` middleware that converts reservations to consumption. Mechanism: middleware. (P0: reservations leak forever.)
+- [ ] **Audit two more candidate no-op reactions** — `on TrainingCompleted run StaffTrainingSignal.recordSchedulabilityGranted` (training-module-rules.manifest:662-670) and `on TrainingWaived run …` (:672+) read `payload.staffMemberId/moduleId/assignmentId`. Confirm whether `TrainingCompleted`/`TrainingWaived` are CREATE emitters (payload valid) or MUTATE emitters (no-op like the class above). Not currently in the plan or the baseline — verify before declaring them sound. Mechanism: audit (+ reaction fix if MUTATE).
+- [ ] **Audit-gate the whole class** — `manifest/scripts/check-reaction-payloads.mjs` already exists and is wired as `manifest:audit-reaction-payloads` (package.json:157) but is **NOT** in the `manifest:ci` umbrella (package.json:91 chains validate/validate-ai/doctor/check/schema:check/audit:strict only). Add the reaction-payload check to `manifest:ci`, run it over `reactions.manifest`, the two training-module manifests, and every domain file; drain `reaction-payload-baseline.json` (4 open violations) to zero (entries only removed, never added). Mechanism: CI gate. Prevents regression of the no-op class.
 
 ---
 
-## TIER 0 -- FIX TYPECHECK BASELINE & RELATIONSHIP MODELING
+## P1 — Missing core propagations
 
-> **Why:** 80 typecheck errors block deploy. 72 are in generated files (fix the generator). 16 IR entities lack Prisma models. 145/189 entities now have relationships (57 entities with FK properties but no relationship blocks remain). Source-level bugs across ALL domains produce incorrect runtime behavior. This is the single most important blocking tier.
+### Event lifecycle
 
-### 0.1 Categorize and fix the 80 typecheck errors via generator changes — ✅ DONE 2026-06-04 / follow-up RESOLVED 2026-06-06
+- [ ] **EventCreated → Calendar** — **prerequisite:** `CalendarEntry` entity does not exist in any manifest source; author it first. Then `on EventCreated run CalendarEntry.create` (`eventId/date/title` from `payload.result.*`, valid since `Event.create` is a create). Mechanism: entity + reaction.
+- [ ] **EventCreated → CRM activity** — `on EventCreated run ClientInteraction.create` (clientId/eventId). `ClientInteraction` + `create` already exist (client-interaction-rules.manifest:5,92). Mechanism: reaction.
+- [ ] **EventCreated/Confirmed → demand / staffing estimate / forecasting / missing-info Tasks** — new **middleware** (1:N) deriving inventory demand rows, `EventStaff` slots from guestCount+eventType, a `ForecastEntry`, and `AdminTask` for missing fields. **Prerequisite:** `ForecastEntry` entity does not exist — author it first. Note the existing `prep-inventory-demand` middleware hooks `PrepListFinalized`, **not** EventCreated, so demand-at-booking timing (per AGENTS.md) still requires this new middleware. Mechanism: entity + middleware.
+- [ ] **Event update sync → BattleBoard & CateringOrder** — `on EventUpdated/EventDateUpdated/EventLocationUpdated run BattleBoard.syncFromEvent` (command exists at battle-board-rules.manifest:146). Correction: `syncFromEvent` is **not** "never called" — it is invoked **imperatively** today via server actions after `Event.update` (`events/[eventId]/event-mutation-actions.ts:221`, `events/actions.ts:346` → `syncBattleBoardsForEvent()`). No **declarative reaction** exists, and `sync-battle-boards.ts:11` documents the blocker: a reaction can't resolve the board instance(s) because boards are 1:N by `eventId`. So this is genuinely a **middleware** (1:N fan-out), not a pure reaction — the imperative call is the current workaround to retire. Also re-sync `CateringOrder` venue snapshot on `EventLocationUpdated`. Mechanism: middleware (+ reaction for the 1:1 CateringOrder leg).
+- [ ] **EventGuestCountUpdated → PrepList / inventory / budget** — middleware to recompute `PrepList.batchMultiplier`/`PrepListItem` quantities and inventory demand on `EventGuestCountUpdated` (event-rules.manifest:502). `batchMultiplier` is set once at create (reactions.manifest:192) and never recomputed. Mechanism: middleware.
+- [ ] **EventDishCreated/QuantityUpdated/Removed → PrepList & inventory** — middleware fanning out to `PrepListItem.create/updateQuantity/remove` for the dish's ingredients (+ inventory reserve/release). Events exist (event-dish-rules.manifest:45/54/78); `EventDishCreated` carries a valid `payload.result.id` but has no consumer, so dishes added after the seed never appear in the PrepList. Mechanism: middleware.
+- [ ] **EventCancelled → cascade cleanup** — middleware on `EventCancelled` (event-rules.manifest:487) to cancel/unassign `EventStaff`, cancel `CateringOrder`/`PrepList`, void DRAFT/SENT `Invoice`, close `CollectionCase`, release inventory reservations. No reaction or middleware consumes this event today. Mechanism: middleware.
+- [ ] **EventFinalized → finance/inventory/followup** — release reserved inventory, finalize `EventBudget`, generate/finalize `Invoice`, create post-event `EventFollowup`/`ClientInteraction`. — PARTIAL: the `FinalizeEventWithReporting` saga (event-rules.manifest:614-627) already covers `EventProfitability.recalculate` + `EventSummary.create`; the inventory/budget/invoice/followup legs remain unwired (`EventFollowup` exists at events-extended-rules.manifest:517 but is unconnected). Mechanism: reaction + middleware.
+- [ ] **EventProfitability auto-actuals** — feed `actualRevenue` from `Invoice.amountPaid`, `actualFoodCost` from approved `WasteEntry`, `actualLaborCost` from `TimeEntry`; trigger `recalculate` (event-rules.manifest:362) on `EventBudgetFinalized`/`PaymentApplied`. Both `PaymentApplied` (invoice-rules.manifest:186) and `EventBudgetFinalized` (event-budget-rules.manifest:134) are **orphan events** with no consumer. Mechanism: computed + reaction.
 
-> **Complete.** See Completed Milestones for details.
+### Staffing, payroll & labor
 
-### 0.2 Fix build.mjs broken path, stale compilerVersion, and orphaned scripts — ✅ DONE 2026-06-04
+- [ ] **EventStaffAssigned → schedule/profile/calendar/payroll/notify** — reactions (+middleware for fan-out): create `ScheduleShift`, add calendar call-time, update labor estimate on `EventProfitability`, notify the staff member. Note: `EventStaffAssigned` (event-staff-rules.manifest:148) carries `staffMemberId` as a plain string and `StaffMember` has no `User`/`employeeId` FK, so any notification leg needs a middleware lookup to resolve a recipient — it cannot be a pure declarative reaction `params` block. Mechanism: reaction + middleware.
+- [ ] **EventStaffCheckedOut → TimeEntry / labor actuals** — `on EventStaffCheckedOut` (event-staff-rules.manifest:116) `run TimeEntry.addEntry` and feed `LaborBudget.recordActual`. Mechanism: reaction.
+- [ ] **TimecardEditApproved → TimeEntry correction** — **prerequisite:** `TimeEntry` has no command to apply a correction (only clockIn/clockOut/addEntry/softDelete at time-entry-rules.manifest:32-112). Add `TimeEntry.applyEdit(clockIn, clockOut, breakMinutes)` first, then `on TimecardEditApproved` (time-entry-rules.manifest:173) `run TimeEntry.applyEdit`. Mechanism: command + reaction.
+- [ ] **TimeEntryClockedOut/Added → LaborBudget.recordActual** — middleware aggregating hours×rate into the matching location/period budget. Events exist (time-entry-rules.manifest:211/221); `LaborBudget.recordActual` exists (labor-budget-rules.manifest:93). Mechanism: middleware.
+- [ ] **TimecardApproved → PayrollLineItem.create** — `TimecardApproved` (staff-logistics-extended-rules.manifest:947, emitted line 54) has no consumer; `PayrollLineItem` exists (line 975) but its creation is not wired to approval. `on TimecardApproved run PayrollLineItem.create`. Mechanism: reaction.
+- [ ] **PayrollRunPaid → lock period / close tip pool / notify** — `on PayrollRunPaid` (payroll-rules.manifest:353) `run PayrollPeriod.lock` (line 55); close `TipPool` (staff-logistics-extended-rules.manifest:240); notify employees. **Prerequisite:** `TipPool` (line 158) has only `periodId` → `PayrollPeriod` (staff-logistics-extended-rules.manifest:162); it has no direct `payrollRunId` FK, so the close leg cannot resolve a TipPool from the `PayrollRunPaid` payload (runId/totalNet/paidAt) without first chaining `PayrollRun.payrollPeriodId → PayrollPeriod.id ← TipPool.periodId`. Resolve via that chain in middleware (or add a direct FK). Mechanism: reaction (+ FK + middleware for tip pool).
+- [ ] **OpenShiftClaimed → ScheduleShift.create** — `OpenShiftClaimed` (staff-logistics-extended-rules.manifest:1175) → create the formal shift and increment `Schedule.shiftCount`. **Two prerequisites:** (1) `Schedule` has no increment command — `shiftCount` is only set to 0 on create (schedule-rules.manifest:47); add `Schedule.incrementShiftCount` (the `shiftCount > 0` guard on `approve` and the `blockNoShifts` on `release` will always block otherwise). (2) `OpenShiftClaimed` carries only `scheduleId`/`claimedBy` — not `shiftStart/shiftEnd/roleDuringShift` — so `ScheduleShift.create` params cannot be supplied from the event alone; enrich the event or redesign. Mechanism: command + reaction (+ enrichment).
+- [ ] **TimeOffRequestApproved → conflicting shift cleanup** — middleware on `TimeOffRequestApproved` (time-off-request-rules.manifest:155) to flag/remove `ScheduleShift` in the approved range; restore on cancel. Requires a store query (cross-entity scan by employee/date), so a reaction is insufficient. Mechanism: middleware.
+- [ ] **StaffMemberDeactivated → unassign future work** — middleware on `StaffMemberDeactivated` (staff-member-rules.manifest:101) to unassign future `EventStaff`/`ScheduleShift`, cancel open `TimeOffRequest`. The event carries only `staffMemberId/tenantId/reason/deactivatedAt`, so the middleware must full-scan by employee — not expressible as a reaction. **Prerequisite:** `TimecardEditRequest` (time-entry-rules.manifest:117) has no `cancel` command (only approve/reject); add it before cancelling open edit requests. Mechanism: command + middleware.
+- [ ] **SchedulePublished → notify staff** — middleware fan-out `Notification.create` per shift employee on `SchedulePublished` (schedule-rules.manifest:280). The event carries only scheduleId/scheduleDate/shiftCount/publishedBy — the middleware must query `ScheduleShift` by scheduleId to get recipient employeeIds. Mechanism: middleware.
+- [ ] **Fix `BudgetAlert` parent + auto-create** — `BudgetAlert.belongsTo budget: EventBudget with budgetId` (labor-budget-rules.manifest:178) is the wrong parent — `BudgetAlert` lives in the LaborBudget file and `budgetId` is a LaborBudget FK; change to `LaborBudget`. Add `on LaborBudgetActualRecorded (over target) run BudgetAlert.create` (event at labor-budget-rules.manifest:231). Mechanism: relationship fix + reaction.
 
-> **Complete.** See Completed Milestones for details.
+### Finance & collections
 
-### 0.3 Create Prisma models for the 16 IR entities without tables — ✅ DONE 2026-06-04
+- [ ] **InvoiceMarkedOverdue → CollectionCase.create** — auto-open a collection case from an overdue invoice (`InvoiceMarkedOverdue` emitted at invoice-rules.manifest:126/200, no consumer). Mechanism: reaction.
+- [ ] **Invoice reaches zero → markAsPaid** — `on PaymentApplied run Invoice.markAsPaid` when `amountDue <= 0`; make `amountDue` a computed (`total - amountPaid`) to prevent drift (it is a plain stored property at invoice-rules.manifest:21). **Add an idempotency guard** to `markAsPaid` (e.g. `guard self.status != 'PAID'`) before wiring — `markAsPaid` itself emits `PaymentApplied` (line 108), so a naive `on PaymentApplied` reaction can re-trigger on already-PAID invoices. Mechanism: reaction + computed + guard.
+- [ ] **ContractSigned → RevenueRecognitionSchedule.create; Invoice paid → schedule complete; InvoiceWrittenOff → RevenueRecognitionSchedule.cancel** — wire revenue recognition to contract signing and payment reality. `reactions.manifest:61` only has `on ContractSigned run Event.confirm`; no schedule reactions exist. `InvoiceWrittenOff` (invoice-rules.manifest:218) is an orphan event and `RevenueRecognitionSchedule.cancel` (revenue-recognition-rules.manifest:172) is unreachable from the invoice lifecycle. Today recognition is created only via the POST route (accounting/revenue-recognition/schedules/route.ts:82). Mechanism: reaction.
+- [ ] **PaymentProcessed → CollectionCase.markResolved; CollectionWrittenOff → Invoice.writeOff; PaymentPlanCompleted → CollectionCase.markResolved** — close the loops between payments, collections, and invoice status. — (corrected: the event is `CollectionWrittenOff`, not `CollectionCaseWrittenOff`; it is emitted by `CollectionCase.writeOff` at collections-rules.manifest:187,441). All three reactions remain unimplemented. Mechanism: reaction.
+- [ ] **Make `RevenueRecognitionSchedule.recognize` atomic** — `accounting/revenue-recognition/schedules/[id]/route.ts:142-204` chains 3 sequential `runCommand` calls (create line → recognizeAmount → completeIfFullyRecognized) with no compensation; partial failure leaves a dangling RECOGNIZED line. Note the line is created pre-recognized via `status: 'RECOGNIZED'` (line 153), bypassing the governed `RevenueRecognitionLine.recognize` transition. Replace with one governed command or a saga with compensation that routes through the status transition. Mechanism: command/saga.
 
-> **Complete.** See Completed Milestones for details.
+### CRM pipeline
 
-### 0.4 Model relationship declarations in .manifest sources — ✅ TRULY COMPLETE 2026-06-09
+- [ ] **Proposal lifecycle → Lead status** — `on ProposalCreated/Sent run Lead.update(status=proposal)`, `on ProposalAccepted → won`, `on ProposalRejected → lost`. Events exist (proposal-rules.manifest:396/407); `Lead.update` accepts `status` (lead-rules.manifest:88). No reaction wires them. Mechanism: reaction.
+- [ ] **DealClosed → Lead status mirror; DealAssigned → Notification** — `DealClosed` (deal-rules.manifest:103) and `DealAssigned` (deal-rules.manifest:92) have zero reactions; assignees are never notified. Mechanism: reaction.
+- [ ] **ProposalAccepted → Invoice.create** — generate a draft/deposit invoice on acceptance (carry `proposalId`). The only `on ProposalAccepted` reaction today routes to `Event.create` (reactions.manifest:133). **Coordination risk:** `Event.create` already cascades to BattleBoard + (via confirm) PrepList; adding `Invoice.create` on the same event without sequencing can leave Event+BattleBoard without an Invoice (or vice versa) on partial failure — wrap the ProposalAccepted fan-out in a saga. Mechanism: reaction (saga-coordinated).
+- [ ] **ProposalLineItem add/remove → Proposal.lineItemCount (functional deadlock today)** — `lineItemCount` is a plain `int = 0` (proposal-rules.manifest:32), hardcoded on create (line 114) and never incremented, so the `blockNoLineItems` send-guard on `Proposal.send` (line 146) **always blocks sending**. `ProposalLineItemCreated/Removed` (proposal-rules.manifest:448/471) have no consumer. Make `lineItemCount` a `count_of(self.lineItems)` aggregate (preferred — see P2) or wire increment/decrement reactions. Mechanism: computed/reaction. **(Promoted to P0-adjacent: proposals cannot be sent until fixed.)**
+- [ ] **ClientArchived → close open Deals/Proposals; ClientInteractionEscalated/Overdue → Notification** — middleware fan-out for cascade close, reactions for the 1:1 notifications. `ClientInteractionMarkedOverdue` (client-interaction-rules.manifest:237) is an orphan event. Mechanism: middleware + reaction.
+- [ ] **LeadCreated/Updated → re-score** — `on LeadUpdated run Lead.recalculateScore`. **Prerequisite:** no `Lead.recalculateScore` command exists; scoring lives in `crm/scoring/calculate/route.ts` as a manual POST sweep that writes `score`/`scoreBreakdown` via `database.lead.updateMany` (route.ts:144-208) to columns **not declared in the Lead manifest entity**. Add `score`/`scoreBreakdown` as governed properties + a `recalculateScore` command, then wire the reaction. Mechanism: command + property + reaction.
 
-> **Complete.** See Completed Milestones for details.
+### Kitchen, inventory & procurement
 
-### 0.5 Route regen-diff harness — ✅ DONE 2026-06-05
+- [ ] **PurchaseOrderReceived → InventoryItem.restock (1:N)** — middleware fanning out over `PurchaseOrderItem`; create `InventoryTransaction(type=purchase)` per line and update `InventorySupplier.openPOCount`. — PARTIAL: an explicit TODO marks this open (inventory/purchase-orders/[id]/complete/route.ts:12) and raw Prisma writes remain. **Prerequisite:** `InventorySupplier.openPOCount` (inventory-supplier-rules.manifest:18) is set to 0 on create with no governed mutate command — add `InventorySupplier.incrementOpenPOCount`/decrement before the middleware can update it. Mechanism: command + middleware.
+- [ ] **InventoryStock ↔ InventoryItem sync** — `on InventoryStockAdjusted/Recounted run InventoryItem.adjust` (events at inventory-extended-rules.manifest:131/151, no consumer). Per-location stock and item totals diverge permanently after any stock adjustment. Mechanism: reaction.
+- [ ] **VarianceReportApproved → apply adjustment** — `on VarianceReportApproved` (cycle-count-rules.manifest:529) `run InventoryItem.adjust` + `InventoryTransaction.create(type=adjustment)`. — PARTIAL: the cycle-count finalize route (`inventory/cycle-count/sessions/[id]/finalize/route.ts`) already calls governed `InventoryTransaction.create` + `InventoryItem.adjust` + `VarianceReport.approve` inline via `runManifestCommandCore`, so the adjustment fires on that path — but the **declarative reaction** is still missing (variance approved by any other route/path won't propagate). Mechanism: reaction.
+- [ ] **CycleCountSessionFinalized → AuditSchedule.recordRun + ReorderSuggestion/ForecastInput** — middleware fan-out per record on `CycleCountSessionFinalized` (cycle-count-rules.manifest:445). The event carries only sessionId/tenantId/locationId/userId/finalizedAt, so the middleware must query `CycleCountRecord` by sessionId to produce per-record dispatches. `AuditSchedule.recordRun` exists (inventory-extended-rules.manifest:858). Mechanism: middleware.
+- [ ] **ReorderSuggestionAccepted → PurchaseRequisition.create; InventoryForecastApproved → ReorderSuggestion** — events at inventory-extended-rules.manifest:1006/1177; `PurchaseRequisition.create` at procurement-requisition-rules.manifest:74. No reactions. Mechanism: reaction (+middleware where 1:N).
+- [ ] **InventoryTransfer received → stock movement (both levels)** — middleware on `TransferReceived` (inventory-transfer-rules.manifest:163) to adjust **both** `InventoryStock` per-location (from/to) AND `InventoryItem` aggregate, fanning out over `InventoryTransferItem` rows; `TransferDiscrepancyFlagged` (line 183) → `VarianceReport.create`. The plan previously named only `InventoryItem.adjust`; the per-location `InventoryStock` legs are required for accuracy. Mechanism: middleware + reaction.
+- [ ] **Dish/Ingredient lifecycle propagation** — `DishEightySixed`/`DishDeactivated` (dish-rules.manifest:337/292) → flag open `PrepTask`/`PrepListItem`/`EventDish` (middleware); `IngredientRecallFlagged` (ingredient-rules.manifest:285) → quarantine `InventoryItem` + flag active `EventDish`/`PrepListItem`/`PurchaseOrderItem`. Food-safety-critical dead-ends today. Mechanism: reaction + middleware.
+- [ ] **PrepTask completion → Station.removeTask** — `on PrepTaskCompleted/Canceled/Unclaimed` (prep-task-rules.manifest:287) `run Station.removeTask` (station-rules.manifest:99). No reaction consumer today; station task counts only increment. (The PrepListCompleted→consume half is now tracked in P0.) Mechanism: reaction.
+- [ ] **RecipeVersion cost propagation** — `on RecipeVersionCostUpdated` (recipe-rules.manifest:468) `run Dish.updatePricing` (1:N middleware over dishes); derive `RecipeVersion.totalCost` from ingredients. Mechanism: middleware + computed.
+- [ ] **Kitchen QA/IoT → CorrectiveAction (disambiguate the two entities)** — `on IoTAlertCreated(critical) run CorrectiveAction.create`; `on TemperatureReadingCreated(out-of-range) run IoTAlert.create`; `on QualityCheckFailed/QACheckFailed run QACorrectiveAction.create`. **Two distinct entities exist and must be targeted explicitly:** `CorrectiveAction` (kitchen-extended-rules.manifest:325, slug `kitchen.correctiveaction.created`) for the IoT/temperature path, and `QACorrectiveAction` (qa-rules.manifest:102, slug `kitchen.qa.corrective.created`) for the QA-check path. `TemperatureReadingCreated → IoTAlert.create` requires a **middleware** to look up the matching `IotAlertRule` (kitchen-extended-rules.manifest:171) before deciding whether to create an alert — not a pure reaction. Mechanism: reaction + middleware.
 
-> **Complete.** See Completed Milestones for details.
+### Operations & logistics
 
-### 0.6 Fix source-level bugs across manifest entities (ALL DOMAINS) — ✅ DONE (33/33 subtasks, 2026-06-09)
+- [ ] **LogisticsRouteStarted/Completed → Driver/Vehicle status** — flip `Driver`/`Vehicle` between `available`/`on_route`/`in_use`. **Prerequisite:** the status transitions are declared (logistics-all-rules.manifest:41-42/139-140) but **no Driver/Vehicle command mutates to `on_route`/`in_use`** — add `Driver.setOnRoute`/`Vehicle.setInUse` first. Mechanism: command + reaction.
+- [ ] **DispatchAssigned/Delivered/Failed → Driver.status; ShipmentDelivered/Cancelled → Event/LogisticsDispatch** — propagate dispatch/shipment outcomes. Events exist: `LogisticsDispatchAssigned` (logistics-all-rules.manifest:595), `LogisticsDispatchDelivered`/`LogisticsDispatchFailed` (612-626), `ShipmentDelivered`/`ShipmentCancelled` (shipment-rules.manifest:293/304). Include the dispatch-delivery/failure → driver/vehicle `available` reset path. Mechanism: reaction.
+- [ ] **Facilities/maintenance lifecycle** — `MaintenanceWorkOrderCreated → asset under_maintenance`; `FacilityWorkOrderCompleted → FacilityAsset.returnFromMaintenance`; `PreventiveMaintenanceSchedule completed → next MaintenanceWorkOrder`. — PARTIAL: `MaintenanceWorkOrderCompleted → Equipment.recordMaintenance + Equipment.updateStatus` is already wired (reactions.manifest:72-94). Still open: `MaintenanceWorkOrderCreated` → set equipment under_maintenance; `FacilityWorkOrderCompleted` (facilities-all-rules.manifest:705) → `FacilityAsset.returnFromMaintenance`; `MaintenanceScheduleCompleted` (staff-logistics-extended-rules.manifest:908) → create next `MaintenanceWorkOrder` (recurrence loop is broken); `FacilityWorkOrderCreated` (facilities-all-rules.manifest:681) → `FacilityAsset.sendToMaintenance` (line 272, never triggered). Mechanism: reaction.
+- [ ] **WorkforceOptimization/PerformancePrediction → governed action** — propagate AI optimization output to staffing/scheduling and route low-productivity/high-overtime predictions to a `Notification`/`AdminTask`. Events at workforce-ai-rules.manifest:129/142, both orphaned. Mechanism: reaction.
 
-> **Complete.** See Completed Milestones for details.
+### Integrations & versioning
 
-### 0.7 Resolve EventStaff / EventStaffAssignment duplicate — ✅ DONE 2026-06-05
+- [ ] **Generic versioning loop** — **prerequisite:** `VersionedEntity.setCurrentVersion` does not exist (only register/lock/unlock/updateName); author `setCurrentVersion(versionId: string)` first. Then `on EntityVersionCreated run VersionedEntity.setCurrentVersion`; `on VersionApprovalCompleted/Rejected run EntityVersion.approve/reject`; `on VersionApprovalRequested run Notification.create`. Verify reaction params against the event payload — `VersionApprovalCompleted` (version-control-rules.manifest:332) carries `approverId`/`comments`, not the `reviewerId` that `EntityVersion.reject` (line 140) guards on. Replace the hardcoded `versionCount = 0` (line 18) and `hasPendingApprovals = false` (line 21) with real cross-entity computeds. Mechanism: command + reaction + computed.
+- [ ] **SmsAutomationRule as a reaction target** — wire business events (`EventConfirmed/ContractSigned/EventStaffAssigned/ProposalAccepted`) into SMS automation via a **net-new middleware** fan-out to matching active rules (no SMS fan-out middleware exists today); `on EmailTemplateDeleted run SmsAutomationRule.deactivate`. Mechanism: middleware + reaction.
+- [ ] **Notification on email/SMS send** — sending an email/SMS must create a governed `Notification`; currently `packages/notifications/sms-notification-service.ts:121` and `email-notification-service.ts` write only to infra `sms_logs`/`email_logs` with zero `Notification.create` calls, so `/notifications` is blind to all messaging. Mechanism: reaction/governed command.
 
-> **Complete.** See Completed Milestones for details.
+### Core / cross-cutting orphan events
 
-## TIER 1 -- ROUTE ACCESSOR CORRECTNESS (DONE)
+- [ ] **AdminChatMessageSent → AdminChatThread.recordLastMessage** — **prerequisite:** `AdminChatThread` has `lastMessageAt` (crm-admin-extended-rules.manifest:446) but no `recordLastMessage` command; add `recordLastMessage()` (mutate `lastMessageAt = now()` + emit). `AdminChatMessageSent` (line 706) is unread today. Mechanism: command + reaction.
+- [ ] **EmployeeCertificationExpired/Revoked → escalation** — create an `AdminTask`, notify, and suspend `EmployeeAvailability`/flag shifts (1:N middleware). Events at employee-certification-rules.manifest:131/138, no consumer; no scheduling block or notification fires when a cert lapses. Mechanism: reaction + middleware.
+- [ ] **EmployeeAvailabilitySuspended → flag ScheduleShifts; ContainerDeactivated → Dish.clearDefaultContainer; EmailTemplateDeleted → EmailWorkflow.setActive(false); ChartOfAccountDeactivated → deactivate children** — middleware fan-outs. **Prerequisites:** `ScheduleShift.flag` does not exist (only create/update/swap/remove) and `Dish.clearDefaultContainer` does not exist (the `defaultContainerId` field/relationship exists at dish-rules.manifest:16,47) — author both commands first. `EmailWorkflow.setActive` already exists (email-workflow-rules.manifest:60); only the reaction binding is missing. `ChartOfAccount.deactivate` (chart-of-account-rules.manifest:56) deactivates one record only and there is no declared hasMany over children, so child-deactivation needs both a fan-out command and the inverse relationship. Mechanism: command + middleware + reaction.
+- [ ] **DocumentVersionPublished → Document.markParsed** — `Document.markParsed` (crm-admin-extended-rules.manifest:405) guards `self.status == 'parsing'`, but `DocumentVersionPublished` (document-version-rules.manifest:85) does not transition the parent Document into `parsing`, so the reaction as described would always fail the guard. Either set `parsing` in a prior step or relax the guard. Mechanism: reaction (+ guard/precursor).
+- [ ] **WasteEntryApproved → event food-cost rollup** — **prerequisite:** the previously-named `EventFinancialSummary` entity does not exist. Define a governed cost-rollup target (likely a command on `EventBudget` or a cost field on `Event`) before wiring `on WasteEntryApproved` (waste-entry-rules.manifest:177). Mechanism: entity/command + reaction.
+- [ ] **AI planning → CRM/Event** — `AiEventSetupSessionConfirmed → Event.create (+ AiEventSetupSession.markCreated with the new id)`; `ProposalDraftApproved → governed CRM Proposal`; link call-planner drafts to CRM `Lead`. — (corrected: the prior `EventPlanningDraftConverted → Event.create` framing was wrong — `EventPlanningDraft.convertToEvent` receives a **pre-existing** eventId (event-planning-draft-rules.manifest:215), so the Event must already exist; the real disconnected path is `AiEventSetupSessionConfirmed`, where `markCreated` is called manually by the app layer after an ungoverned Prisma create). Overall diagnosis — AI event-creation produces ids with no downstream propagation — stands. Mechanism: reaction.
 
-> **Status:** COMPLETE 2026-05-30. Phase-out-registry.md Section C confirms blast radius was exactly 2 entities.
->
-> NOTE: Accessor correctness is DONE for the 2 proven drifted entities, but Tier 0.1 extends this to fix the remaining ~20 wrong-accessor errors + ~38 missing-model errors in generated files via a more robust generator fix.
+### App-layer governance bypasses (break reaction propagation)
 
----
-
-## TIER 2 -- SCHEMA PROJECTION & GENERATOR FOUNDATIONS
-
-> **Why:** ALL 189 entities are now durable. PrismaProjection can generate models for ALL of them. The 226-model `schema.prisma` is hand-authored and drifts from the IR.
-
-### 2.1 Make the route generator accessor-aware from store layer — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.2 Add ENTITIES_WITHOUT_TABLE filtering at projection time — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.3 manifest.config.yaml script wiring — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.4 ENTITY_DOMAIN_MAP consolidation — ✅ DONE 2026-06-04
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.5 Wire PrismaProjection to generate schema from IR — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.6 Remove duplicate VendorContract from ENTITIES_WITH_SPECIFIC_STORES — ✅ DONE 2026-06-04
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.7 Fix manifest source type mismatches (559+ datetime-as-number occurrences) — ✅ DONE 2026-06-04
-
-> **Complete.** See Completed Milestones for details.
-
-### 2.8 Adopt `timestamps` entity modifier to eliminate datetime-as-number at the root — ✅ DONE 2026-06-04
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 3 -- GENERIC READ ROUTES & STORE STRATEGY
-
-> **Why:** Constitution S6 says canonical route shape is `manifest/{entity}/...`. Zero generic read routes exist. The ~15,755 LOC store layer is 71/94 boilerplate that GenericPrismaStore could handle.
-
-### 3.1 Add generic Manifest read routes -- DONE (2026-06-05)
-
-> **Complete.** See Completed Milestones for details.
-
-### 3.2 Store generation strategy decision — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 3.3 GenericPrismaStore migration — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 3.4 Fix store-level bugs discovered in audit — ✅ PARTIALLY DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 4 -- BOOTSTRAP CONSTRAINT FIX (DONE)
-
-> **Status:** COMPLETE 2026-06-01. Upstream fix in @angriff36/manifest@1.7.0 resolved the core bootstrap constraint issue. `createInstance` now seeds proper defaults.
->
-> NOTE: Edge cases may remain for entities with unusually complex constraint blocks.
+- [ ] **Route event-creating bypasses through governance** — `importer.ts`, `documents/parse`, `setup-event-completely.ts`, calendar `sync/trigger`, and the server-to-server route create Events/EventDish/PrepList via raw SQL/Prisma, so `EventCreated`/`EventDishCreated`/`PrepListCreated` never emit and BattleBoard/PrepList/seed middleware are skipped. — PARTIAL: the **PDF** importer path now uses `runManifestCommand` (importer.ts:898/917/1372) and several routes are registered in `bypasses.json:135-185`. Still ungoverned: the **CSV** importer path (insertEvent at importer.ts:525, insertEventDish:566, insertPrepTask:616 — all `$executeRaw`), `documents/parse` retained `eventDish.updateMany`/`eventImport.create` (registered bypasses.json:147-158), `calendar/sync/trigger` `providerSync.update` (registered bypasses.json:173-185), and `setup-event-completely.ts` creates EventDish/PrepList/EventContract/EventBudget via `$executeRaw` (registered bypasses.json:264-276; note its EventStaff leg at :283 IS governed via runManifestCommand). Clarification (2026-06-13 audit): the documents/parse, calendar/sync, and setup-event-completely paths are **registered** approved bypasses — "ungoverned" here means *event-suppressing* (no reaction propagation), not unregistered. The only **unregistered + ungoverned** event-creating path is the **CSV importer** ($executeRaw, no bypass entry). The **CSV vs PDF asymmetry** means CSV-imported events are invisible to BattleBoard/PrepList seed middleware. Mechanism: governed command.
+- [ ] **Register the unregistered ungoverned writes** — five categories called out in the plan are **both ungoverned and absent from `bypasses.json`**: `crmScoringRule.create` (crm/scoring/route.ts:139), `proposalTemplate.updateMany` (proposals/templates/actions.ts:190,255), `administrative/trash/restore` universal delegate update/delete, `activityFeed.create/createMany` (activity-feed-service.ts:57,89 + payments/route.ts:385,444), `paymentRefundAttempt.create` (payments/[id]/route.ts:339). Route through governed commands or register them. — PARTIAL: `lead.updateMany` (crm/scoring/calculate, bypasses.json:186-198) **and** `providerSync.update` (calendar/sync/trigger, bypasses.json:173-185) are already registered — so `providerSync.update` should be struck from the unregistered list. The five categories above remain both ungoverned and unregistered. Mechanism: governed command / registration.
+- [ ] **Govern the RecipeVersion / forecasting / import / chat side-effect writes** — additional direct writes to governed entities, in `baselines/direct-writes.json` but **not** `bypasses.json`, that suppress events: `recipeVersion.updateMany` (costCalculatedAt backfill — api recipe-costing.ts:275 AND app recipe-costing.ts:262, suppresses RecipeVersion.updated → no downstream cost-recalc; note bypasses.json:199-223 covers the *`recipeIngredient`*.updateMany calls in those same files, NOT these `recipeVersion` calls — the recipeVersion writes are genuinely unregistered); `inventoryForecast.create/update` + `reorderSuggestion.create` (inventory-forecasting.ts:710/693/788/733); `eventImport.create` (events/actions.ts:450, a path separate from importer.ts); `trainingCompletion.upsert` (training/complete/route.ts:159/249); `adminChatThread.update` lastMessageAt (chat messages route.ts:399); `proposalTemplate.updateMany` and `paymentRefundAttempt.create` (also above). Each suppresses its `*.created`/`*.updated` event so reactions never fire. Mechanism: governed command.
 
 ---
 
-## TIER 5 -- PROJECTION EVALUATION
+## P2 — Unused Manifest features worth adopting
 
-> **Why:** 24 of 27 projections ship unused (excluding shared, nextjs, routes). Each could retire hand-written equivalents. Now that ALL entities are durable and IR is complete, projections have maximum coverage potential. 12 projections were NOT in the prior plan. 9 projections now active (nextjs, routes, prisma, mermaid, kysely, drizzle, llm-context, materialized-views, analytics).
-
-### 5.1 Evaluate Zod projection for input validation
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.2 Evaluate React Query projection for client hooks — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.3 Evaluate OpenAPI projection for API documentation — DONE
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.4 Evaluate Mermaid projection for architecture docs — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.5 Evaluate Routes projection for typed path builders
-- **Done when:** Generated typed path builders compared against ~1,092 hardcoded `apiFetch("/api/...")` string paths across 167 files. Decision documented.
-- **Why:** The `projections/routes` export produces canonical route manifests + typed path builders. 81% of API URLs are hardcoded strings (211 paths). Only ~50 typed path builders and 7 files use typed routes despite `routes.ts` having 218 lines of hand-maintained helpers.
-- **Evaluation: DEFER.** RoutesProjection generates 8,447-line typed path builders covering 1,403 routes (404 reads + 999 commands). However, the generated paths follow the canonical `/api/manifest/{entity}` pattern while 81% of Capsule's hardcoded API paths (211 of 260) are custom domain routes (`/api/kitchen/recipes`, `/api/analytics/kitchen`, `/api/events/:eventId/export/csv`) NOT derived from the IR. The projection would add 8K+ lines of dead code for negligible coverage today. Will be valuable when the app migrates reads to canonical manifest paths. Decision: DEFER.
-
-### 5.6 Evaluate Drizzle projection as Prisma alternative
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.7 Evaluate llm-context projection for MCP server integration — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.8 Evaluate materialized-views projection for reporting — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.9 Evaluate health projection for K8s readiness
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.10 Evaluate analytics projection for tracking events — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.11 Evaluate new projections (12 not in prior plan) — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.12 Evaluate and wire agent-sdk for MCP server (HIGH PRIORITY) — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 5.13 Wire ir-diff for CI schema drift detection (HIGH PRIORITY) — ✅ ALREADY DONE
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 6 -- FRONTEND CLIENT STRATEGY
-
-> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 94 consumers** (Task 6.2 batches 1-21). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 94 files now use generated client hooks; remaining ~107 apiFetch files still get zero caching (many retained for valid reasons: custom endpoints, file uploads, binary downloads, enriched responses, composite commands). Before adopting or extending the generated client, decide whether it is the right abstraction.
-
-### 6.1 Frontend data layer decision — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 6.2 Add data caching/deduplication layer — PLATEAU (batches 1-21 done 2026-06-08, 94 files migrated, ~107 remaining categorized as non-migratable)
-- **Phase 1 DONE (2026-06-07):**
-  - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
-  - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
-  - Package script added: `manifest:generate-hooks`
-  - 2 logistics pages migrated from `apiFetch` to generated client: `drivers/page.tsx`, `vehicles/page.tsx`
-  - Adoption guard test created: `apps/app/__tests__/manifest-generated-client-adoption.test.ts`
-  - Verified: generated client throws on HTTP errors (removing `if (res.ok)` was correct)
-  - Verified: import paths resolve correctly via tsconfig `@/*` → `./*` (rooted at `apps/app/`)
-  - QueryProvider already live in `layout.tsx` with proper config (staleTime 60s, gcTime 5min, retry 1)
-  - TanStack Query v5.100.14 installed
-- **Batches 2+3 DONE (2026-06-07):** 20 additional files migrated (~45 command call sites). Net -200 lines boilerplate.
-- **Batch 4 DONE (2026-06-07):** 14 more files migrated (~35 additional command call sites). Net -325 lines boilerplate total across all batches.
-  - Events (7): contracts/create-contract-modal.tsx, battle-boards/new/page.tsx, follow-ups/page.tsx, waitlist/page.tsx, guests/event-guests-client.tsx, staff/event-staff-client.tsx, timeline/event-timeline-client.tsx
-  - Inventory (2): transfers/inventory-transfers-client.tsx, vendor-catalogs/vendor-catalogs-client.tsx
-  - Kitchen (3): quality-assurance/qa-actions-client.tsx, prep-task-plan-workflows/workflows-client.tsx, task-card.tsx
-  - Staff (2): performance/page.tsx, mobile/timeclock/page.tsx
-- **Batch 5 DONE (2026-06-07):** 11 more files migrated across logistics, warehouse, procurement, contracts, kitchen-mobile, facilities, knowledge-base, and events/catering domains.
-- **Frontend `/api/manifest/` migration COMPLETE:** All remaining frontend files referencing `/api/manifest/` endpoints are either infrastructure (`manifest-client.ts`, `routes.ts`, `tool-registry.ts`) or server-side (`crm/clients/actions.ts` uses `runManifestCommand`, not `apiFetch`). No more frontend apiFetch calls to `/api/manifest/` exist.
-- **Store provider regression tests ADDED:** Tests verify generated client store provider integration and prevent regressions in governed-write paths.
-- **Batch 6 DONE (2026-06-08):** 6 more files migrated across 5 domains (~15 apiFetch calls replaced): Settings alerts (3 writes), Kitchen allergens (7 calls), Kitchen containers (1), Accounting chart-of-accounts (1), Staff training-module-create (1), CRM scoring (5 calls; calculate/distribution kept on apiFetch).
-- **Batch 7 DONE (2026-06-08):** 4 more frontend files migrated to generated Manifest client: facilities/areas/page.tsx, facilities/assets/page.tsx, kitchen/schedule/page.tsx, warehouse/audits/cycle-count-client.tsx. Net -12 lines, 4 apiFetch calls replaced.
-- **Batch 8 DONE (2026-06-08):** 8 more frontend files migrated to generated Manifest client: lib/leads.ts (listLeads, getLead), lib/proposals.ts (listProposals, getProposal), procurement/vendors/page.tsx (listVendors), logistics/routes/routes-view.tsx (listLogisticsRoutes), crm/pipeline/pipeline-board.tsx (listDeals), kitchen/equipment/equipment-page-client.tsx (listEquipments, listFacilityWorkOrders), events/catering/catering-client.tsx (listCateringOrders), accounting/collections/collections-client.tsx (listCollectionCases). Net -34 lines, 11 apiFetch calls replaced. 57 files now consume generated client.
-- **Batch 9 DONE (2026-06-08):** 7 more files migrated (vendor-catalogs-client, vendor-contracts/page, requisitions/page, vendor-contracts/[id], requisitions/[id], logistics/drivers/page, logistics/vehicles/page). ~9 apiFetch calls replaced. 59 files total consuming generated client.
-- **Batch 10 DONE (2026-06-08):** 4 more files migrated (facilities/work-orders, inventory/transfers-client, payroll/periods/[id], staff/performance). ~4 apiFetch calls replaced. 60 files total consuming generated client. Note: several files skipped due to endpoint path mismatches (procurement endpoints vs inventory endpoints in generated functions).
-- **Batch 11 DONE (2026-06-08):** 6 files (upcoming-maintenance-widget, workflows-client, vendor-contracts/[id], alerts-client, requisitions/[id], knowledge-base-client). Generated client envelope key fixes for listFacilityAssets and listKnowledgeBaseEntries. Net -46 lines.
-- **Batch 12 DONE (2026-06-08):** 6 files (notifications-client, follow-ups/page, workflows-client command dispatch, security-client, invoices/[id], payments/[id]). Net -74 lines.
-- **Batch 13 DONE (2026-06-08):** 6 files (prep-lists/mobile, allergen-modal, payroll-periods, payroll-payouts, task-card partial, payroll-reports partial). Net -33 lines.
-- **Batch 14 DONE (2026-06-08):** 8 files (knowledge-base-detail, purchase-orders/page, purchase-orders/[id] with 8 command dispatches, vendors/[id] composite response, staff/performance completion, requisitions/new, training delete/edit). Net -4 lines.
-- **Batch 15 DONE (2026-06-08):** 4 files migrated + 9 files with NOTE comments documenting remaining apiFetch blockers (custom endpoints, AI endpoints, file uploads). Collections commands migrated. Net changes.
-- **Batch 16 DONE (2026-06-08):** 6 files (purchase-orders/new, budget/page, mobile prep-lists/page, mobile prep-lists/[id], shipments-client, battleboards-client). Net -42 lines. First mobile-kitchen path migrations.
-- **Batch 17 DONE (2026-06-08):** 2 complex event files migrated (guest-management.tsx, contract-detail-client.tsx). Guest management: 5 apiFetch calls replaced (listEventGuests, listEventDishes, eventGuestCreate, eventGuestUpdate, eventGuestSoftDelete) + dead code removed (GuestsResponse, ApiErrorPayload, getResponseErrorMessage). Contract detail: 5 command calls migrated to generated functions (eventContractSend/Sign/Cancel/Expire/MarkViewed, eventContractSoftDelete, contractSignatureCreate); 3 apiFetch calls retained for custom endpoints (history fetch, send-to-client with signing token, document upload). ~80 files now consuming generated client. API+app typecheck 0, 2785 tests pass, route drift 0. Key finding: 4 additional files investigated but CANNOT migrate — invoices/new, payments/new, payment-form-client (no paymentCreate/invoiceCreate in generated client; server routes have essential pre-validation), admin-chat-client (8 custom endpoints with participant logic not in generated routes).
-- **Batches 18-21 DONE (2026-06-08):** 12+ additional files migrated. ~94 files now import from generated client. ~40 apiFetch calls replaced total. Net -400+ lines of boilerplate eliminated across all batches. 0 typecheck errors.
-- **Remaining apiFetch files (~107):** Many annotated with NOTE comments documenting retention reasons. Categories: (1) custom endpoints (analytics, AI, search, calendar sync) with no generated equivalent, (2) file uploads (FormData/multipart not supported by generated client), (3) binary downloads (PDF, CSV, reports), (4) enriched response shapes with joined data (generated client returns flat entities), (5) composite commands (recipe versioning, batch operations) with different API patterns.
-- **Done when (UPDATED — PLATEAU):** 94 files migrated. ~107 remaining apiFetch files are non-migratable (custom endpoints, file uploads, binary downloads, enriched responses, composite commands). Further progress requires generated client enhancements. Component re-mounts on migrated files do not trigger fresh API calls.
-- **Why:** TanStack Query IS installed with QueryProvider. 94 files now use generated client. ~107 remaining apiFetch files call non-manifest REST endpoints or custom patterns (file uploads, binary downloads, enriched responses, composite commands) — these are architectural mismatches, not oversight.
-- **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
-- **Source to change:** `apps/app/app/lib/api.ts` (expand TanStack Query wrapper beyond events domain).
-
-### 6.3 Implement chosen frontend strategy
-- **Done when:** Single consistent frontend data access pattern. Dead code eliminated.
-- **Backpressure:** `grep -r 'from.*manifest-client.generated' apps/app/` returns only intended consumers. Sample CRUD flow works end-to-end.
-
-### 6.4 Typed command input generation — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 6.5 Rename misleading `use-*.ts` files — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 7 -- RUNTIME FEATURE WIRING
-
-> **Why:** 16 of 19 RuntimeOptions properties are NOT wired. The highest-leverage change is **middleware wiring** -- it enables RBAC, identity enrichment, audit, and bootstrap seed to be expressed as lifecycle hooks instead of hand-rolled proxies. The audit found that the custom outbox implementation duplicates the upstream OutboxStore contract, no audit trail exists, and no durable approval state is possible.
-
-### 7.1 Wire auditSink (PostgresAuditSink) — ✅ DONE (verified 2026-06-07)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.2 Wire outboxStore (PostgresOutboxStore) — ✅ DONE (verified 2026-06-07)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.3 Wire requireTenantContext — **DONE**
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.4 Wire middleware pipeline (HIGHEST PRIORITY)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.5 Wire Rules Engine into factory pipeline — ✅ DONE (deleted 2026-06-04)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.6 Wire remaining RuntimeOptions — ✅ DONE (with documented deferrals, 2026-06-08)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.7 Fix `as any` casts in runtime factory — ✅ DONE (verified 2026-06-06)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.8 Audit API shim for factory migration — ✅ DONE (verified 2026-06-07)
-
-> **Complete.** See Completed Milestones for details.
-
-### 7.9 Wire Runtime Profiler export (`@angriff36/manifest/profiling`) — PARTIALLY DONE (blocked on upstream)
-- **Wiring READY.** The factory already passes `deps.profiling` to the engine via RuntimeOptions (line ~448: `...(deps.profiling && { profiling: deps.profiling })`). The profiling export exists at `@angriff36/manifest/profiling` (not `/profiler` as previously stated). Full API surface available: `ExecutionPhase` (13 phases), `CommandProfile`, `PhaseTiming`, `ProfileSummary`, `toFlameGraph()`, `summarizeProfiles()`.
-- **BLOCKED:** The upstream `ProfileCollector` class is defined but `RuntimeEngine.getProfiles()` returns empty — actual per-phase timing capture is not yet implemented in the shipped `@angriff36/manifest@2.2.0`. When the upstream implements timing capture, the existing wiring will automatically pass profile data to `onProfileComplete` callbacks.
-- **Current status:** Enable profiling by passing `{ profiling: { enabled: true, onProfileComplete: callback } }` to the factory. Structure is correct; awaiting upstream implementation of actual timing capture.
+- [ ] **Add missing inverse relationships** — Correction (2026-06-13 audit): `Event` **already declares 11 `hasMany`** (invoices, payments, budgets, eventStaff, eventGuests, eventDishes, eventFollowups, eventContracts, eventReports, eventProfitabilities, eventSummaries — event-rules.manifest:49-59); still missing are `Event hasMany` cateringOrders, battleBoards, commandBoards, EventTimeline+EventTimelineItem, waitlistEntries, automatedFollowups, TimelineTask. `Vendor`/`InventorySupplier` **already has** `hasMany items/contacts/ratings` (inventory-supplier-rules.manifest:35-37) — only `hasMany contracts` is missing. Genuinely absent: `Equipment hasMany workOrders`; `VersionedEntity hasMany versions`; `EntityVersion hasMany approvals`; `Driver hasMany routes/dispatches`. Mechanism: relationship. Without inverse sides there is no governed query path or basis for aggregate computeds.
+- [ ] **Add missing belongsTo FKs** — `Event.proposalId→Proposal`, `Deal.clientId→Client`, `Invoice.proposalId`, `ClientInteraction.dealId`, `QATemperatureLog.equipmentId→Equipment`, `LogisticsRoute.eventId`, `LogisticsDispatch.shipmentId`, `EventImportWorkflow→EventImport` (note: no `EventImport` FK exists on the workflow entity, and the two model the same domain object at different lifecycle stages). None are implemented yet. Mechanism: relationship.
+- [ ] **Aggregate computed rollups (with caching)** — replace manual/denormalized counters with `sum_of`/`count_of` over hasMany: `Event.totalPaidAmount = sum(invoices…) cache request`, `confirmedStaffCount/confirmedGuestCount = count_of(...)`, `EventBudget.actualSpend = sum(lineItems…)`, `Proposal.lineItemCount = count_of(self.lineItems)` (currently a drift-prone manual int — and the source of the send deadlock in P1), `Shipment.totalItems`, `Station` capacity. Only 1 of 45 hasMany relationships has any aggregate today (`Recipe.hasVersion`). Mechanism: computed + aggregate built-ins + caching.
+- [ ] **Declare state transitions for status fields** — Dish (active/deactivated/eighty_six), Ingredient (active/deactivated/recalled), Station (active/inactive/under_maintenance). — (corrected: these three entities have **no `status` string field** — Dish/Ingredient use boolean `isActive`+`isEightySix`/`isRecalled`, Station uses `isActive`+`inMaintenance`. A boolean-to-string-status migration is required *first*, then transitions.) Audit every other governed status entity for runtime-enforced FSMs. Mechanism: property migration + transition.
+- [ ] **Pull UI/route FSMs into Manifest** — source allowed transitions from the IR instead of the duplicated tables in `apps/api/app/api/shipments/[id]/status/route.ts:37` (`VALID_STATUS_TRANSITIONS` — note: this is an **API** route, not apps/app), `events/contracts/[id]/status/route.ts:29` + `administrative/kanban/actions.ts:27` (`STATUS_COMMAND_MAP`), and `events/constants.ts:1` (`eventStatuses`). Note `eventStatuses` includes `tentative`/`postponed` which are **not** in the Event manifest constraint (event-rules.manifest:63) — the UI offers transitions the engine rejects. Mechanism: transition + IR-derived UI.
+- [ ] **Cross-entity constraints** — `EventStaff.staffMustBeActive`, `Proposal.clientMustBeActive`, `EventContract.eventMustBeConfirmedOrDraft`. None exist (EventStaff.create only checks non-empty ids). Mechanism: cross-entity constraint.
+- [ ] **Fix hardcoded computeds: Station.capacityRemaining / availablePercentage** — both are literal `= 0` (station-rules.manifest:33-34) rather than derived from `currentTaskCount`/`capacitySimultaneousTasks`. The `warnNearCapacity` guard (`capacityRemaining == 1`) therefore never fires and any dashboard reads 0% utilization. Set `capacityRemaining = capacitySimultaneousTasks - currentTaskCount` and `availablePercentage = percent(...)`. Mechanism: computed.
+- [ ] **Adopt async commands for heavy ops** — mark `PayrollRun.process`, `EventSummary.refresh`, `InventoryForecast.create`, bulk lead-scoring as `async` (feature is fully implemented; zero `async` declarations exist in source); wire auto-emitted `…Completed`/`…Failed` events into reactions (e.g. `PayrollRunProcessCompleted` → period lock / tip-pool close). Mechanism: async command + reaction.
+- [ ] **Saga-ize fragile multi-step flows** — express **BookEvent** (Contract.sign → Payment.charge → Inventory.reserve → Calendar.block → Staff.assign) and **revenue recognition** as sagas with compensation; the most business-critical booking chain has no saga today and a payment-success/inventory-failure leaves contract signed + payment charged with no rollback. Existing sagas (FinalizeEventWithReporting, ProcessInvoicePayment, FinalizeCycleCountSession, AutoGeneratePrepList, RequisitionToPurchaseOrder, InstallSelOnboardingTraining) cover sub-flows only. Mechanism: saga.
+- [ ] **Approval workflows on financial/HR commands** — add staged `approval` blocks (not just role guards) to `PayrollRun.process`, `EventBudget.approve`, `EventContract.sign`, emitting `ApprovalRequested/Granted`. Today only procurement has real approval chains (procurementChain, PO managerApproval, vendor contractApproval). Note `PayrollApprovalRequested` is emitted from `PayrollApprovalHistory.create` (a log entity), not from `PayrollRun.process` — so the approval flow has no governance link to the run command. Mechanism: approval workflow.
+- [ ] **Role hierarchy + hasPermission** — declare `role … extends …` (e.g. KitchenLead, CateringManager) and replace the **466 `user.role in [...]` string-list checks across 112 files** (corrected from "63 files"; second 2026-06-13 audit refined to 112 files with the bracket pattern — 286 files touch `.role` overall) with `hasPermission(action, target)`. Zero role declarations exist today; adding a role means editing hundreds of policy expressions. Mechanism: role hierarchy.
+- [ ] **Scheduled/cron command triggers in Manifest** — the `schedule` DSL is **not yet implemented** in the lexer/parser/IR (planned v1.9.0). Near-term action is to emit governed events from the existing raw-Prisma polling crons (`TaskDueSoon`/`ContractExpiringSoon`/`ShiftStartingSoon`) and react, **not** to wait for the DSL. Mechanism: emitted events + reaction (see P3).
+- [ ] **Transactional outbox + idempotency on the dispatcher** — PostgresOutboxStore is already wired into the engine (manifest-runtime-factory.ts:563). — PARTIAL: the remaining work is **idempotency**: `PrismaIdempotencyStore` exists but is opt-in (`if (deps.idempotency)`, factory:496) and no call site sets it, so payment/contract/PO commands have **no retry dedup** — a double-click re-executes the mutation. Wire `idempotencyKey` through generated routes and enable the store by default. Mechanism: idempotency. **(Idempotency gap is P0-severity for payments.)**
+- [ ] **Realtime on live-dashboard entities** — mark `BattleBoard`, `CommandBoard`, `PrepTask`, `EventStaff`, `InventoryAlert` `realtime` so the P1 cascade reactions stream to dashboards (SSE routes + `use{Entity}Subscription` hooks are auto-generated). Zero `realtime` declarations exist; without them, fixing the 20 broken reactions and adding 30+ new ones produces data users must reload to see. This is the **primary live-dashboard enabler**, not optional rollout tooling — land it before the P1 reaction work. Mechanism: realtime.
+- [ ] **Feature flags as reaction killswitches** — gate each P0/P1 reaction fix behind `flag('…')` (e.g. `flag('event-staffing-cascade')`) so a broken reaction can be enabled per-tenant during rollout. The provider works end-to-end (3 flags in use) but no flag gates any reaction. Correction (2026-06-13 audit): `createEnvFlagProvider()` **IS** injected as `deps.flagProvider` in **apps/api** (`apps/api/lib/manifest-runtime.ts:40,96`) — so existing guards (budget.early_warning, procurement.budget_management) DO fire there. The gap is **apps/app**, where no `flagProvider` injection exists (grep returns zero) — verify the app-side runtime path before relying on flags there. Mechanism: feature flags.
+- [ ] **Adopt `cache session`/`cache ttl` for slowly-changing computeds** — all 52 cached computeds use `cache request` only. Time-pure or rarely-changing computeds re-evaluate every command: `Invoice.isOverdue` (invoice-rules.manifest:56) and the three revenue-recognition computeds (revenue-recognition-rules.manifest:243-245) suit `cache ttl 3600`; `Event.budgetedGrossMarginPct`/`actualGrossMarginPct` (event-rules.manifest:284/291) and `Proposal.isExpired` suit `cache session`. Mechanism: computed caching.
 
 ---
 
-## TIER 8 -- GOVERNANCE MIGRATION & CONFORMANCE
-
-> **Why:** The audit found 191 direct-write violations in API routes and 110 in server actions (301 total across 28 server-action files + 80 API files). Payroll engine is 100% bypass. Invoice entity has zero policies. Constitution S12 requires audit discipline. Constitution S17 requires a conformance test index.
->
-> **Status 2026-06-07:** `pnpm manifest:audit-direct-writes` reports **0 governed-entity violations**. 72 files scanned with 250 hits; 11 allowed, 61 reported (47 ungoverned infrastructure + 21 documented bypasses). All governed entities route through Manifest runtime or have approved bypass entries in `bypasses.json`. Governance migration is **effectively COMPLETE** for governed entities. Remaining work: (a) evaluate whether ungoverned entities should be added to Manifest IR, (b) reduce bypass count over time.
-
-### 8.1 Payroll governance migration (HIGHEST GOVERNANCE PRIORITY) — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.2 API route governance migration (~191 violations across 80 files) — ✅ DONE (governed-entity violations = 0)
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.3 Server actions governance migration (~109 violations across ~27 files) — ✅ DONE (governed-entity violations = 0)
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.4 Package-specific governance migration — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.5 Conformance test index (Constitution S17) — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.6 Fill command-level policies — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.7 Reduce write-route-allowlist — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.8 Adopt defaultPolicies for entity-level RBAC — ✅ DONE 2026-06-05 (via Task 8.6)
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.9 Parent-context propagation — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 8.10 Migrate BASELINE parent-context candidates (follow-up to 8.9)
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 9 -- ENTITY GRAPH & ADVANCED FEATURES
-
-> **Why:** The entity-graph module was deleted in Task 10.4 (dead code, zero consumers). The IR has 10 reactions and 6 sagas. Manifest DSL features (reactions, approvals, sagas, modifiers, concurrency, state transitions) are available. 39 export paths in @angriff36/manifest with only 4 actively used (10.3%). 40/40 CLI commands now wired (Task 9.15). Manifest docs confirm: Reactions support declarative event-to-command binding with resolve expressions, condition guards, and batch mode. Workflows (Sagas) support multi-step with compensate actions, timeout, retry. Custom Stores use Store\<T\> interface with 6 methods. Plugin API via definePlugin() for extending projections, store adapters, builtins. See also Tier 11 for newly discovered advanced features (async commands, feature flags, mixin composition, scheduled commands) and Tier 12 for federation.
-
-### 9.1 Entity-graph rebuild (currently dead code) — ✅ DONE 2026-06-04 (Task 10.4)
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.2 Wire reactions (event-driven side effects) — ✅ ALL 10 REACTIONS FIXED (2026-06-06)
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.3 Expand saga orchestration for multi-step workflows -- ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.4 Wire approval workflows — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.5 Adopt state transitions for status fields — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.6 Adopt CLI commands for development workflow — ✅ DONE 2026-06-10
-
-> **Complete.** All 20 done-when CLI commands wired (validate, coverage, watch, fmt, docs, diagram, mock, lint-routes, audit-routes, enforce-surface, audit-governance, diff, migrate, changelog, runtime-check, doctor, integration-check, config, versions, plugins). 16 additional subcommand variants added (diff:breaking, diff:ir-vs-ir, versions:list/save/verify/diff/changelog/tag/rollback, config:validate/defaults/effective, scan, scan:strict). Total: 91 manifest:* scripts in package.json. `manifest:scan` wired as CI gate (191 warnings — all `durable` store target, expected for custom provider). `seed` and `profile` CLI commands do not exist in v2.2.0.
-
-### 9.7 Property modifier adoption -- DONE (2026-06-08)
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.8 Overrideable constraints -- DONE (2026-06-08)
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.9 Permission guard to middleware migration (SECURITY PRIORITY) — **DONE (mitigated by Task 8.6)**
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions — **REJECT (architecturally incompatible with serverless)**
-- **REJECT 2026-06-10 (v0.12.240).** The `realtime` flag + SSE projection NOW EXISTS in v2.3.1 (entity-level `realtime` flag → `nextjs.subscribe` SSE route + `nextjs.subscriptionHook` EventSource hook + shared singleton runtime). But it is architecturally incompatible with Capsule: `docs/manifest-official/spec/semantics.md` §"Realtime Entities" (L427) states the SSE event stream is "per-engine-instance and in-memory… requires a long-lived Node server process and a **single-instance deployment**; serverless or multi-instance fan-out needs an external event bus and is out of scope." Capsule deploys to **Vercel serverless** (command writes and SSE subscribers run in different invocations → the subscriber would never observe events) AND already ships `@repo/realtime` (Ably + transactional outbox) — the correct serverless realtime pattern. **Decision: REJECT.** Revisit only if the API moves to a long-lived single-instance deployment.
-- ~~**BLOCKED 2026-06-07.** The `realtime` modifier does NOT exist in @angriff36/manifest v2.2.0.~~ Superseded: it exists in v2.3.1 (verified), but is rejected for the serverless reason above.
-- **Original done-when:** At least 5 high-value entities use the `realtime` modifier. SSE endpoints auto-generated. `use{Entity}Realtime` React hooks integrated in frontend. Auto-reconnect verified.
-- **Why (future):** The `realtime` modifier would auto-generate SSE endpoints (`GET /api/{entity}/realtime`) and React hooks. Currently ZERO realtime infrastructure exists -- all data refresh is polling-based via 1,092 `apiFetch` call sites. High-value candidates: KitchenTask (live task board), Event (real-time event status), InventoryItem (stock level monitoring), NotificationRules (instant notification delivery), ScheduleShift (real-time schedule changes). This would replace polling with push-based updates for critical workflows.
-- **Doc:** Referenced path `/extensibility/realtime-subscriptions` does not exist in current docs.
-
-### 9.11 Evaluate computed caching for performance-critical computed properties — ✅ DONE 2026-06-09
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.12 Adopt snapshot testing for CI code generation validation — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.13 Add property-based testing for entity invariants — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.14 Evaluate IR compression for large deployments
-- **Done when:** Decision documented on whether to adopt `compressIR()`/`decompressIR()` for IR payload size reduction (60-80% claimed). If adopted, IR loading pipeline updated.
-- **Why:** The `@angriff36/manifest/compression` export provides lossless binary serialization with 60-80% size reduction. The IR for 189 entities is substantial -- compression could reduce load times and memory footprint. Low priority but worth evaluating for production deployments.
-- **Backpressure:** If adopted: `compressIR()` produces smaller payload, `decompressIR()` produces byte-identical roundtrip.
-- **Source to change:** IR loading pipeline, import from `@angriff36/manifest/compression`.
-- **Doc:** Official docs `/extensibility/compression`
-
-### 9.15 Expand CLI adoption (40 commands available) — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.16 Wire Governance CLI suite (7 commands) — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 9.17 Wire AI conformance test generator (`manifest generate-tests`) — **BLOCKED (command still absent in v2.3.1)**
-> **Re-verified 2026-06-10:** `generate-tests`/`generateTests` returns 0 hits across `node_modules/@angriff36/manifest/dist` in v2.3.1. Still blocked.
-- **BLOCKED 2026-06-07.** The `manifest generate-tests` CLI command does NOT exist in @angriff36/manifest v2.2.0. Exhaustive search confirmed: zero hits for `generate-tests`, `generateTests`, or `generate_tests` in the package. The 13th revision referenced this as a discovered feature, but the command is not available in the installed version. Blocked pending package upgrade to a version that includes the AI conformance test generator.
-- **Original done-when:** `pnpm manifest:generate-tests` produces test suites from IR for at least 10 entities. Tests cover command conformance, policy compliance, and guard safety.
-- **Why (future):** The `manifest generate-tests` command would auto-generate test suites from IR definitions. Produces command conformance tests, policy compliance tests, and guard safety tests for all 189 entities. Automates the bulk of Task 8.5 conformance test authoring. Currently zero auto-generated tests exist.
-- **Doc:** Referenced path `/extensibility/ai-tooling` — command not found in current package.
-
-### 9.18 Adopt policy matrix viewer for security audit -- DONE (2026-06-08)
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 10 -- CODEBASE CONSOLIDATION & TYPE SAFETY
-
-> **Why:** Several code modules duplicate functionality that Manifest provides. The audit found significant type-safety gaps (`as any` usage) and code hygiene issues.
-
-### 10.1 Delete legacy manifest-runtime.ts (3,205 lines of dead code) — ✅ ALREADY DONE (prior session)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.2 Recipe engine consolidation — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.3 Rules engine Manifest middleware integration — ✅ DONE 2026-06-04 (via Task 10.4)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.4 Delete confirmed dead code (rules-engine, entity-graph, packages/services)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.5 Outbox duplication consolidation — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.6 MCP server entity-domain-map consolidation — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.7 Fix `as any` usage in API routes — ✅ DONE (2026-06-07)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.8 Fix `as unknown as` double-cast patterns — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.9 Fix schema naming convention anomalies — ✅ DONE 2026-06-10
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.10 Investigate skipped test suite — ✅ DONE 2026-06-05
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.11 Fix manifest runtime placeholder implementations — ✅ DONE 2026-06-07
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.12 Adopt entity concurrency for high-contention entities -- DONE (2026-06-08)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.13 Remove legacy manifest-command-handler.ts -- DONE (2026-06-04)
-
-> **Complete.** See Completed Milestones for details.
-
-### 10.14 Test infrastructure improvements — DONE (2026-06-09, v0.12.224-225)
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 11 -- ADVANCED MANIFEST FEATURES (9TH REVISION + 12TH REVISION ADDITIONS)
-
-> **Why:** The 9th revision research uncovered several high-value Manifest features that are fully implemented in the package but have zero adoption: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands. The 12th revision added Rate Limiting, Command Retry Policies, Dynamic Data Masking, and cataloged 116 planned features across v1.9-v1.12. These features would replace hand-rolled patterns with Manifest-native alternatives, reducing code and increasing consistency. agent-sdk and ir-diff are covered in Tier 5 (Tasks 5.12, 5.13).
->
-> **Tier 11 Status (re-verified 2026-06-10 against v2.3.1 lexer.js KEYWORDS):** `async`, `saga`, `webhook` keywords now PARSE in v2.3.1. Task 11.1 (async) = **DEFER** (keyword available but needs a jobQueue worker; serverless-hostile). Tasks 11.3 (mixin), 11.4 (schedule), 11.5 (rateLimit), 11.6 (retry) = **STILL BLOCKED** — those keywords are absent from v2.3.1 KEYWORDS. Task 11.11 (entity `extends`) = STILL BLOCKED (v2.3.1 `extends` is role-inheritance only). Task 11.12 DONE. Tasks 11.2, 11.7-11.10 remain open.
-
-### 11.1 Implement Async Commands for long-running operations -- **DEFER (keyword available in v2.3.1; needs jobQueue worker)**
-- **DEFER 2026-06-10 (v0.12.240).** The `async` keyword IS now supported by the v2.3.1 compiler (verified in lexer.js KEYWORDS). However, adoption is deferred: `async command` requires a `jobQueue` adapter + a long-lived background worker to drain it, which is serverless-hostile on Capsule's Vercel deployment (would need an external queue + worker process). Revisit when a worker runtime exists. ~~BLOCKED 2026-06-08: not in v2.2.0~~ superseded.
-- **Done when:** At least 3 long-running operations converted to `async command`. `jobQueue` RuntimeOption wired. Auto-synthesized `CommandNameCompleted`/`CommandNameFailed` events verified.
-- **Why:** The `async command <name>()` prefix defers execution to a background worker, returning `{ jobId, status: "pending" }` immediately. The `JobQueue` adapter interface supports pluggable backends. High-value candidates: report generation (currently blocks HTTP request), batch imports (vendor catalog sync), payroll processing (runs for minutes). These operations currently either block the request or use ad-hoc queue mechanisms.
-- **Backpressure:** Async command returns immediately with jobId. Completion event fires when done. Failed commands produce `CommandNameFailed` event.
-- **Source to change:** `manifest/source/*.manifest` (add `async` prefix to commands), `manifest/runtime/src/manifest-runtime-factory.ts` (wire `jobQueue`).
-- **Spec:** `specs/async-commands.md`
-
-### 11.2 Implement Feature Flags via flagProvider — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-### 11.3 Adopt Mixin Composition for shared properties -- **BLOCKED (keyword still not in v2.3.1 compiler)**
-- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `mixin` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
-- **Done when:** `Auditable` mixin created (createdAt, updatedAt, deletedAt, tenantId). Applied to entities with heavy repetition. Source file duplication measurably reduced.
-- **Why:** 189 entities have heavy repetition of common property sets: timestamps (createdAt/updatedAt), tenantId, audit fields, status fields. The `mixin Auditable { ... }` construct allows property/constraint reuse across entities. Currently every entity repeats these declarations verbatim. A single mixin could eliminate duplication across 150+ entities.
-- **Backpressure:** Entities using mixin compile and run identically to entities with inline declarations. `pnpm manifest:compile` succeeds.
-- **Source to change:** `manifest/source/*.manifest` (extract shared properties into mixins).
-
-### 11.4 Implement Scheduled Commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
-- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `schedule` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
-- **Done when:** At least 3 scheduled commands defined. Next.js cron routes auto-generated and registered. Schedules execute on time.
-- **Why:** The `schedule <name> { cron "0 6 * * *" } run <command>` construct auto-generates Next.js cron routes. Zero scheduled commands exist today. Candidates: daily reconciliation (invoice/payroll), nightly inventory sync (supplier connectors), expiration checks (vendor contracts, certifications, licenses). These are currently either manual or implemented as ad-hoc cron jobs outside the Manifest lifecycle.
-- **Backpressure:** Cron route fires at scheduled time. Command executes through full Manifest lifecycle (RBAC, audit, policies).
-- **Source to change:** `manifest/source/*.manifest` (add `schedule` blocks).
-- **Spec:** `specs/scheduled-commands.md`
-
-### 11.5 Adopt Rate Limiting for high-traffic commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
-- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `rateLimit` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
-- **Done when:** At least 3 high-traffic commands have `rateLimit` blocks. `RateLimitConfig` entity governs limits through Manifest rather than external middleware.
-- **Why:** The `rateLimit { window, maxRequests, scope, strategy }` block is a Manifest DSL feature for command-level rate limiting with per-user, per-tenant, or global scope. Capsule has a `RateLimitConfig` entity and rate-limiting infrastructure outside Manifest. Migrating to Manifest-native rate limiting centralizes the policy.
-- **Backpressure:** Command exceeding rate limit returns `rateLimitExceeded` with retry-after metadata.
-- **Source to change:** `manifest/source/*.manifest` (add `rateLimit` blocks to commands).
-- **Doc:** Rate limiting documented at command level in Manifest DSL docs. NOTE: `/features/security-features` URL returns 404.
-
-### 11.6 Adopt Command Retry Policies for transient-failure commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
-- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `retry` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
-- **Done when:** At least 3 commands with external dependencies have `retry` blocks. Notification `sendEmail` and report generation use Manifest-native retry.
-- **Why:** The `retry { maxAttempts, backoff, initialDelay, maxDelay, jitter }` block provides configurable retry with exponential backoff for transient failures. Auto-synthesized `{Command}RetryAttempted` and `{Command}RetryExhausted` events. Currently retry logic is hand-rolled or absent.
-- **Backpressure:** Transient failure triggers retry. Exhausted retries emit `RetryExhausted` event.
-- **Source to change:** `manifest/source/*.manifest` (add `retry` blocks).
-- **Doc:** Retry policies documented at command level in Manifest DSL docs. NOTE: `/features/security-features` URL returns 404.
-
-### 11.7 Evaluate MCP Server export for replacing custom MCP server entirely
-- **Done when:** Decision documented: adopt upstream `@manifest/mcp-server` (4 tools: compile, execute, validate, explain) vs retain custom `packages/mcp-server` with agent-sdk integration (Task 5.12). If upstream adopted, `packages/mcp-server/` becomes thin config wrapper.
-- **Why:** The upstream MCP Server (`manifest-mcp` bin) provides compile-on-the-fly, execute-through-runtime, validate, and explain tools over stdio. The custom `packages/mcp-server` duplicates entity/command introspection that `agent-sdk` already provides. Upstream + agent-sdk may cover all needs without a custom package.
-- **Backpressure:** Decision document comparing upstream MCP vs custom MCP capabilities.
-- **Doc:** `docs/manifest-official/features/mcp-server.md`
-
-### 11.8 Evaluate v1.9-v1.12 roadmap features for capsule-pro adoption priority
-- **Done when:** Each of the 76 unreleased features evaluated with a one-line assessment. Top 10 candidates for immediate adoption identified.
-- **Why:** The FEATURE-LIST documents 116 features (27 shipped, 76 unreleased, 13 no summary). Many are high-value for capsule-pro: Seed Data Generator, Default-Deny Policy, Soft Delete Pattern, Pagination API, CQRS Read Model, Notification Channels, OpenTelemetry Metrics. These may ship in upcoming package versions and should be evaluated for early adoption.
-- **Backpressure:** Assessment document with adoption priority per feature.
-
-### 11.9 Wire Runtime REPL for interactive debugging — BLOCKED (upstream)
-- **Done when:** `pnpm manifest repl` launches interactive REPL. Can inspect entity state, evaluate Manifest expressions, test guards/policies in real-time against loaded IR.
-- **Why:** The `manifest repl` command provides an interactive debugging environment for Manifest runtime. Developers can inspect entity state, evaluate expressions, test guards and policies without deploying. Currently all runtime debugging requires running the full application with breakpoint inspection. REPL dramatically improves development velocity for IR authoring and debugging.
-- **BLOCKED:** The `repl` command does not exist in `@angriff36/manifest@2.2.0`. CLI has no REPL functionality. Awaiting upstream implementation.
-- **Backpressure:** REPL starts, loads IR, responds to entity inspection queries.
-- **Source to change:** `package.json` scripts section.
-- **Doc:** Official docs `/extensibility/runtime-tooling`
-
-### 11.10 Evaluate Time-Travel Debugger for command debugging — BLOCKED (re-verified absent in v2.3.1: no `./debug` export)
-- **BLOCKED 2026-06-09.** The `@angriff36/manifest/debug` export does NOT exist in v2.2.0 despite prior plan claim. The package.json exports map has 28 entries — no `./debug`. No file in `dist/manifest/` contains "debug" or "time-travel". The `serialize()`/`restore()` API exists for single-point snapshots but is not step-by-step replay.
-- **Done when:** `@angriff36/manifest/debug` export exists and is verified functional.
-- **Why:** A time-travel debugger would record every `mutate` during command execution and enable stepping forward/backward through state changes. Invaluable for debugging complex multi-step commands (VendorContract lifecycle, PayrollRun processing, EventGuest RSVP flow).
-- **Backpressure:** Command execution recorded. State replay produces identical final state.
-- **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`. Import from `@angriff36/manifest/debug`.
-- **Doc:** Official docs `/extensibility/runtime-tooling` (NOTE: may also be aspirational, not shipped)
-
-### 11.11 Evaluate entity inheritance (`extends`) for entity hierarchies — **STILL BLOCKED (v2.3.1)**
-- **BLOCKED, re-verified 2026-06-10.** The v2.3.1 `extends` keyword is consumed ONLY by `parseRole()` (role inheritance, pre-existing). `EntityNode` in the v2.3.1 type definitions has NO inheritance field — entity-level `extends` is not supported. Blocked pending package support for entity inheritance.
-- **Done when:** Decision documented on using entity inheritance to reduce repetition across entity families. If adopted, identify entity hierarchies and create base entities.
-- **Why:** The `extends` keyword enables single inheritance for entities, allowing shared properties/constraints to be defined once in a base entity. Complements mixin composition (Task 11.3) for hierarchical relationships. Candidate hierarchies: Event→CateringEvent, InventoryItem→WasteEntry.
-- **Backpressure:** Child entity inherits parent properties/constraints. `pnpm manifest:compile` succeeds.
-- **Source to change:** `manifest/source/*.manifest`.
-- **Doc:** Official docs `/language/advanced-entities`
-
-### 11.12 Wire IR validator/doctor for CI — ✅ DONE 2026-06-08
-
-> **Complete.** See Completed Milestones for details.
-
-## TIER 12 -- FEDERATION & MULTI-SERVICE (10TH REVISION)
-
-> **Why:** The 10th revision discovered the `@angriff36/manifest/federation` export -- a complete multi-service runtime mesh with service discovery, cross-service command invocation, health checks, policy bridge, and HTTP adapter generation. This is entirely absent from the plan and represents a future architectural capability for microservice decomposition. Not actionable today (single-service monolith), but should be tracked for when the architecture evolves.
-
-### 12.1 Evaluate Federation for future multi-service architecture
-- **Done when:** Federation capabilities documented with architecture fit assessment. Decision recorded: adopt, defer, or reject.
-- **Why:** The `federation` export provides: `FederationRegistry` (service registry + discovery), `FederationClient` (typed cross-service command invocation), `buildDescriptor` (service descriptor generation from IR). Policy bridge propagates identity via `X-Manifest-*` headers across service boundaries. HTTP adapter generation produces typed client classes for remote services. Idempotency heuristics for retry-safe cross-service calls. Capsule-Pro is currently a monolith -- federation is NOT needed now. But if the architecture evolves toward microservices (e.g., separating payroll engine, supplier connectors, notification service), Manifest federation would provide the service mesh layer with zero additional infrastructure.
-- **Backpressure:** Architecture decision record with federation evaluation.
-- **Source to change:** Architecture documentation only. No code changes.
-- **Doc:** Official docs `/extensibility/federation`
-- **New package exports discovered:** `./federation`, `./compression`, `./projections` (top-level), `./audit` (top-level), `./outbox` (top-level), `./approval` (top-level)
-
-### 12.2 Evaluate MCP Server export for replacing custom MCP server (CONFIRMED SEPARATE EXPORT)
-- **Done when:** Decision documented: adopt upstream `@manifest/mcp-server` (4 tools: compile, execute, validate, explain) vs retain custom `packages/mcp-server` with agent-sdk integration (Task 5.12). If upstream adopted, `packages/mcp-server/` becomes thin config wrapper.
-- **Why:** **CONFIRMED (13th rev):** MCP Server is a SEPARATE export (`@manifest/mcp-server`, bin `manifest-mcp`) with 4 tools: compile-on-the-fly, execute-through-runtime, validate, and explain over stdio. Distinct from agent-sdk. Resolves prior "NEEDS VERIFICATION" status. Capsule has upstream (unused) + custom (active). Task 11.7 now fully actionable.
-- **Backpressure:** Decision document comparing upstream MCP vs custom MCP capabilities.
-- **Doc:** Official docs `/extensibility/mcp-server`
-
-## Phase-Out Registry Status
-
-| Section | Target | Status |
-|---|---|---|
-| A | Hand-rolled Prisma stores -> GenericPrismaStore or codegen | NEAR-DONE (89/94 use GenericPrismaStore, 5 custom by design) |
-| B | Hand-authored Prisma schema -> PrismaProjection + mapping config | IN PROGRESS (189/189 matched, 263 models generated = 191 IR + 72 infra, `prisma validate` PASSES on full generated schema — 152 default-value errors fixed v0.12.234). **Generated artifact now drift-gated** via `manifest:schema:check` in `manifest:ci` (2026-06-10) — exit-criterion #3 satisfied for the projection. Remaining: **Phase 2b** = replace the live hand schema with generated output (blocked on back-relations being modeled in `.manifest` source — notes.md §14). |
-| C | Route accessor hack -> schema-aware accessor resolution | DONE (2026-05-30) |
-| D | ENTITY_DOMAIN_MAP consolidation | DONE (2026-06-04) |
-| E | Explicitly NOT for phase-out (keep) | N/A |
-
-
-**Exit criteria status (28 total):** Criteria 3, 9, 14-16, 23, 26, 28 COMPLETE. All others addressed in their respective tasks. See individual tier sections for remaining open items.
+## P3 — Governance & hygiene
+
+- [ ] **Resolve pending bypass sign-offs** — `CycleCountAuditLog` (bypasses.json:330), `ExtractedDetail` (:343), `ProposalAction` (:356) are all marked PENDING USER SIGN-OFF with no governance decision. Model as governed entity or formally accept as infra. Mechanism: governance.
+- [ ] **Register/govern ungoverned infra writes (incl. webhook tables)** — `ProviderSync` (only ProviderSync has a partial entry), plus the entirely-unregistered webhook writes: `outboundWebhook.update` (cron/webhook-retry/route.ts:225), `webhookDeliveryLog.update` (cron/webhook-retry/route.ts:99/118/163 — 3 call sites), `webhookDeadLetterQueue.create` (:184), and `manifestIdempotency.deleteMany` (cron/idempotency-cleanup/route.ts:54). Also `notification_preferences`, `email_logs`/`sms_logs`. Add explicit `bypasses.json` entries + migration intent. Mechanism: governance.
+- [ ] **Close IR command-param gaps that force permanent bypasses** — add `EventDish.updateServiceStyle`, `EventSummary.softDelete`, `RecipeIngredient` cost fields (adjustedQuantity/ingredientCost/costCalculatedAt), `Lead.score/scoreBreakdown`, `EventPlanningDraft.linkProposal`, `SmsAutomationRule.recordTriggered` (EmailWorkflow already has `recordTriggered` at email-workflow-rules.manifest:80; SmsAutomationRule's raw-Prisma workaround is also missing from `bypasses.json`). Each missing command is the sole reason a governed entity is written via raw SQL. Mechanism: command/param addition.
+- [ ] **De-duplicate webhook auto-disable logic into a reaction** — `shouldAutoDisable` is already centralized in `@repo/notifications`, but its imperative disable-and-update call-site logic is repeated in **four** files (webhook-dispatch.ts:106, integrations/webhooks/trigger/route.ts:187, integrations/webhooks/retry/route.ts:236, cron/webhook-retry/route.ts:220 — the plan previously said three). Collapse into a single `on WebhookDeliveryFailed` reaction (none exists). Mechanism: reaction.
+- [ ] **Replace polling crons with emitted events** — `cron/email-reminders/route.ts:204/352` polls `kitchenTask`/`scheduleShift`; `cron/contract-expiration-alerts/route.ts:159` polls `eventContract`. Emit `TaskDueSoon`/`ShiftStartingSoon`/`ContractExpiringSoon` (none exist) and react. Mechanism: emitted events + reaction.
+- [ ] **Fix relationship/naming inconsistencies** — `FacilityArea.venueId` (facilities-all-rules.manifest:117) vs siblings' `facilityId` (:195/317/419); `PrepComment` informal `with taskId`/`with employeeId` (prep-comment-rules.manifest:27-28) and `PrepTaskPlanWorkflow` informal `with eventId` (:268) → explicit `fields/references`. (Note: the prior "duplicate CorrectiveAction kitchen vs QA" claim is partly mistaken — `CorrectiveAction` exists only in kitchen-extended-rules.manifest:325; the QA path uses the distinct `QACorrectiveAction` in qa-rules.manifest. `StaffPerformance` and `PerformanceReview` are genuinely distinct live entities, not duplicates.) Mechanism: relationship cleanup.
+- [ ] **Move domain pricing/scoring/threshold logic out of UI/routes** — intake `pricingEngine` (apps/app/.../_intake/engine/pricingEngine.ts:23, client TS), CRM lead scoring (crm/scoring/calculate raw updateMany), par/reorder thresholds (SQL CASE in analytics/consolidated/route.ts:164), overtime thresholds belong in computed properties/policies/governed commands. Mechanism: computed/policy.
+- [ ] **Orphan-event mop-up (lower-severity cascades)** — wire the remaining declared-but-unconsumed events: `CateringOrderConfirmed` (catering-order-rules.manifest:276) → BudgetLineItem on the event's EventBudget; `VendorSuspended`/`VendorBlacklisted` (vendor-rules.manifest:193/202) → cancel/flag open PurchaseOrders/Requisitions; `PurchaseOrderReceived` (purchase-order-rules.manifest:323) full-PO-close → update linked Shipment status / close requisitions; `FacilityWorkOrderCompleted` → FacilityAsset maintenance-history update; `StaffTrainingSchedulingEligibilityGranted` (training-module-rules.manifest:118/622) → mark StaffMember schedulable. Mechanism: reaction/middleware.
 
 ---
 
-## Codebase Metrics (verified 2026-06-08)
+## Verification
 
-| Metric | Value | Prior Value | Change |
-|---|---|---|---|
-| --- | --- | --- | --- |
-| IR entities | **202** (ALL durable) | 189 | UPDATED: Task 0.4 final batch + entity additions |
-| IR commands | **999** (905 with guards, 950 with emits, 2 without emits) | 952 | UPDATED: Task 8.2/8.3 batches |
-| IR events | **981** | 979 | UPDATED: Task 9.3 saga expansion |
-| IR sagas | **6** (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList... | 1 | UPDATED: Task 9.3 DONE — 5 new sagas added |
-| IR reactions | **10** (finance: 3, inventory: 1, events: 1, equipment: 2, crm: 1, events: 1) | 0 | Target 5+ EXCEEDED |
-| IR approval blocks | **3** (PurchaseOrder, VendorContract, PurchaseRequisition) | 0 | NEW: Task 9.4 DONE |
-| IR relationships | **169 entities (290 declarations)** | 8 (12 declarations) | UPDATED: Task 0.4 COMPLETE + AUDITED — 68 belongsTo across... |
-| IR entities with FK props but no relationship | **0** (33 audited, all verified as not needing) | 152→32→0 | UPDATED: 2026-06-09 audit — 28 no FK columns, 2 polymorphic... |
-| IR entities with transitions | 96 | 96 | -- |
-| IR status entities lacking transitions | 4 | 4 | -- |
-| IR computed properties with empty dependencies | **553/610 (90.7%)** (was 563/611 before dependency enrichment) | 563/611 | UPDATED: 7 cross-property dependency gaps resolved via... |
-| IR overrideable constraints | **5/583** (Task 9.8 DONE: 5 warn constraints overrideable) | 0/583 | UPDATED: Task 9.8 DONE |
-| IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
-| IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32)... | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future... |
-| IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 0 | RESOLVED v0.12.208–214 (Task 2.7/2.8, money v0.12.212-213... |
-| IR event payload timestamps as `number` | **0 fields** (21 fixed across 7 files: time-entry, schedule, event-staff... | 916 | RESOLVED 2026-06-09 — remaining event payload... |
-| IR entity property timestamps as `datetime` | **741 fields** | 741 | NEW: correctly declared, mismatch is in events only |
-| IR datetime mutated to 0 | **9 occurrences** | 9 | -- |
-| IR property types | string(1584) datetime(741) int(158) money(109) decimal(102) boolean(94)... | same | -- |
-| IR number-type props | 0 | 0 | -- |
-| Prisma models | 226 total, **188 match IR**, 67 Prisma-only, **1 IR without model** (QACheck)... | 226/173/16 | UPDATED: 188/189 matched after Task 2.5 Phase 3 |
-| `prisma-store.ts` | ~1,085 lines, **5** switch cases | was 3,061 lines, 94 cases | UPDATED: Task 3.2/3.3 — 61% reduction, GenericPrismaStore... |
-| `prisma-stores/` | 3 files | was 45 files, ~12,694 lines | UPDATED: Task 3.3 — phase 1+2 cleanup |
-| Total hand-maintained store code | ~1,085 lines (prisma-store.ts) + 3 files (prisma-stores/) | was ~15,755 lines | UPDATED: Task 3.3 — 93% reduction |
-| `manifest-runtime-factory.ts` | **520** lines | 521 | CORRECTED 11th rev |
-| `manifest-runtime.ts` (package re-export) | 66 lines | 66 | -- |
-| `manifest-runtime.ts` (legacy dead code) | 3,205 lines, 60+ `as any`, 50+ wrappers | same | -- |
-| `manifest-runtime.ts` (API shim) | 376 lines | 376 | -- |
-| `manifest-command-handler.ts` (legacy) | ~~Monolithic handler, SHOULD BE DELETED~~ DELETED (Task 10.13) | N/A | RESOLVED 2026-06-04 |
-| `execute-command.ts` (canonical) | Single canonical handler, used by all 71 routes + dispatcher | N/A | RESOLVED 2026-06-04 |
-| `manifest-client.generated.ts` | **1,330 functions, 94 consumers, 988 strict typed inputs (no index signature)**... | 1,330/0 | UPDATED (Task 6.4 Phases 1-2) |
-| `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
-| API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED... | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes (2026-06-04)... |
-| Runtime typecheck errors | **0** | 0 | -- |
-| Entity graph module | 7 files, **DEAD CODE** (0 consumers, stub) | same | -- |
-| Rules Engine module | 5 files, 10 rules, **DEAD CODE** (0 consumers) | same | -- |
-| Dead code total (graph + rules-engine + services) | **~2400+ lines** | same | -- |
-| CLI scripts using manifest | 13 of **40** (**33%**) | 13/37 | CORRECTED: 40 CLI commands total (was 35-37) |
-| GenericPrismaStore | Available (233 LOC), NOT used at runtime | same | -- |
-| RuntimeOptions wired | **8 of 19** (6 wired + 2 passthrough) | 7 | UPDATED: encryptionProvider wired (conditional on ENCRYPTION_KEY) |
-| Direct-write violations (API) | **0** governed (21 bypassed + 47 ungoverned) | 191 | RESOLVED (v0.12.149) |
-| Direct-write violations (server actions) | **0** governed | 110 | RESOLVED (v0.12.149) |
-| Direct-write violations (packages) | **0** governed (documented bypasses) | 9+ | RESOLVED (v0.12.149) |
-| Hybrid files (partial migration) | **0** | 12 | RESOLVED (v0.12.149) |
-| Total direct-write violations | **0** governed, **21** documented bypasses, **47** ungoverned infrastructure | 301 | RESOLVED (v0.12.149) |
-| `as any` in apps/api/app/ | **0** | 39 | RESOLVED (Task 10.7, 2026-06-07) |
-| `as any` in manifest/runtime/src/ | **0** (factory + permission-checker verified clean 2026-06-10) | 10 | RESOLVED |
-| `as any` in factory specifically | **0** (verified 2026-06-06) | 6 | RESOLVED |
-| `as unknown as` double-casts | **91** (architecturally necessary: test mocks, Prisma JSON, Vega-Lite) | 157 | RESOLVED (Task 10.8, v0.12.168: 42% reduction) |
-| Schema drift violations | **0** (110/110 entities clean, strict mode exit 0) | 179 | RESOLVED (v0.12.170) |
-| describe.skip test suites | 0 | 1 (sales-reporting) | RESOLVED v0.12.233 |
-| apiFetch call sites | **~1,052** across **~107 files** (~40 replaced via generated client) | 1,098/169 | UPDATED (Task 6.2 batches 1-21) |
-| Frontend data caching | TanStack Query installed, **94 files** migrated to generated client, hooks... | 5/31 | UPDATED (Task 6.2 batches 1-21) |
-| use-*.ts files | **11** (10 renamed to `*.ts` in Task 6.5, 1 TanStack Query) | 21 | RESOLVED (Task 6.5, 2026-06-07) |
-| Hardcoded API URL paths | ~1,092 (81% of total) | ~1,098 | CORRECTED (9th rev) |
-| Typed path builders | ~50 | ~50 | -- |
-| Files using typed routes | **7** (routes.ts has 218 lines of helpers) | 6 | CORRECTED (9th rev) |
-| ENTITIES_WITH_SPECIFIC_STORES | 96 entries (95 unique, VendorContract duped) | same | -- |
-| Permission guard coverage | **31 entries across 9/189 entity types (4.8%)**, allow-by-default | ~36 entries | CORRECTED 11th rev: 31 not 28 |
-| Advanced RuntimeOptions features used | 0 of 15 | 0 | -- |
-| Package exports actively used | 4 of **39** (10.3%) | 4/38 | CORRECTED 11th rev: 39 exports total (was 44) |
-| Projections available | **27** (was 25) | 25 | CORRECTED |
-| Projections NOT in prior plan | **12**: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose... | N/A | NEW |
-| Projections active | **9**: nextjs, routes, prisma(pilot), mermaid, kysely, drizzle, llm-context... | 2 (nextjs, routes) + 1 pilot (prisma) | CORRECTED |
-| Projections unevaluated | **19** (12 new + 7 from prior plan) | 20 | CORRECTED |
-| Manifest config consumed | **YES** — paths + appDir + readRoutes + dispatcher executor import + routes... | 0 of 148 lines | RESOLVED 2026-06-09 |
-| irHash / contentHash | **Populated and verified** (irHash = deterministic IR JSON, contentHash = source manifests) | EMPTY | RESOLVED (v0.12.232) |
-| Outbox implementations | **3** (realtime canonical, kitchen helpers unsafe, manifest batch) | same | -- |
-| Snake_case Prisma model names | **30 models** | same | -- |
-| Total API routes | **767** (363 generated + 404 hand-written) | same | -- |
-| Kitchen domain routes | 165 (100 gen, 65 hand, 22 direct writes, 16 manifest) | N/A | NEW breakdown |
-| Events domain routes | 76 (40 gen, 36 hand, 6 direct writes, 16 manifest) | N/A | NEW breakdown |
-| Notifications domain routes | 16 (2 gen, 14 hand, 1 direct write, 7 manifest) | N/A | NEW breakdown |
-| Command Board routes | 26 (12 gen, 14 hand, 4 direct, 4 manifest) | N/A | NEW breakdown |
+- **P0 (reaction no-op class):** `manifest/scripts/check-reaction-payloads.mjs` must report **zero new violations**, and `reaction-payload-baseline.json` must shrink to zero as each fix lands (entries only removed, never added). Each fixed reaction ships a conformance test (engine in `deterministicMode` with `emitIndex` assertions) proving the target instance resolves and the downstream mutation fires. Saga/reaction coexistence fixes (Payment→Invoice) must assert `Invoice.applyPayment` is invoked exactly once.
+- **P1 (propagations):** per-propagation conformance tests assert the source event triggers the expected child command(s); for middleware (1:N) assert the correct fan-out count and consolidation behavior. Every new reaction/middleware must first prove its target command and event fields exist (no reaction without a target). Diff behavior vs `main` for each new chain.
+- **Bypasses:** no new entries in `manifest/governance/bypasses.json` beyond registrations; CI bypass scan stays green; every migrated route asserts the previously-skipped event now emits (BattleBoard/PrepList chains fire for imported events, incl. the CSV path).
+- **Schema/relationship/drift:** `manifest:schema:check`, `manifest-schema-parity`, and `manifest:ci` (validate / validate-ai min-score 100 / doctor) pass after each relationship or computed addition. New transitions/computeds carry IR-validator coverage.
+- **Definition of done per item:** root cause fixed in producer source (not generated files), prerequisite command/field/entity authored where the verdict flagged one missing, conformance test added/strengthened to encode *why* the propagation matters, all gates green, and the change demonstrated against the running app where user-visible.
 
-## Specs to Author (9th Revision)
+## Out of scope (tracked elsewhere)
 
-| Spec File | Purpose | Tier |
-|---|---|---|
-| `specs/async-commands.md` | How to use async commands for long-running operations (report generation, batch imports, payroll processing) | 11.1 |
-| `specs/reactions-implementation.md` | First 10 high-value reactions to implement from 936 available events | 9.2 |
-| `specs/feature-flags.md` | How to integrate `flag()` with external provider for runtime feature gating | 11.2 |
-| `specs/scheduled-commands.md` | Cron routes for periodic tasks (reconciliation, inventory sync, expiration checks) | 11.4 |
-| `specs/agent-sdk-integration.md` | How to replace MCP server with agent-sdk exports | 5.12 |
-| `specs/timestamps-modifier.md` | How to adopt `timestamps` modifier to eliminate createdAt/updatedAt hand-declarations across 189 entities | 2.8 |
-| `specs/realtime-subscriptions.md` | SSE endpoint + React hook strategy for high-value entities (KitchenTask, Event, InventoryItem) | 9.10 |
-| `specs/federation-evaluation.md` | Architecture fit assessment for multi-service Manifest federation | 12.1 |
-| `specs/rate-limiting.md` | How to migrate rate limiting from external middleware to Manifest-native rateLimit blocks | 11.5 |
-| `specs/command-retry.md` | How to add retry policies to transient-failure commands (notifications, reports) | 11.6 |
-| `specs/mcp-server-migration.md` | Decision: upstream MCP Server vs custom packages/mcp-server | 11.7 |
-| `specs/roadmap-feature-evaluation.md` | Prioritized evaluation of 76 unreleased Manifest features for capsule-pro | 11.8 |
-| `specs/governance-cli-suite.md` | How to integrate 7 governance CLI commands (scan, audit-governance, audit-bypasses, enforce-surface, integration-check, doctor, audit-routes) into development and CI workflow | 9.16 |
-| `specs/runtime-profiler.md` | How to wire @angriff36/manifest/profiler export for per-phase command timing and flamegraph visualization | 7.9 |
-| `specs/tenant-isolation-dual-layer.md` | IR-level tenant declaration + RuntimeOption enforcement working together for multi-tenant safety | 7.3 |
-| `specs/ai-tooling-adoption.md` | Decision matrix for conformance test generator, IR validator/repair, and NL transpiler | 9.17 |
-
+Schema and store **code generation** (Manifest Automation Phases 2b/4/5/6 — IR-derived Prisma schema replacement, store-projection bridge, generated-client adoption) is **not** part of this plan. It is owned by `manifest/task_plan.md`. This document covers only **entity interconnection** (reactions, middleware, relationships, computeds, transitions, sagas, events/outbox). Where an interconnection fix is blocked by a missing IR command or field (P3), add the minimal command/param here — do not duplicate the codegen initiative.
