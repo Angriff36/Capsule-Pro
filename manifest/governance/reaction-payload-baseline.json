@@ -1,9 +1,6 @@
 {
   "$doc": "Pre-existing reaction payload violations (see check-reaction-payloads.mjs). Entries may only be REMOVED as reactions are fixed — never added. Strict mode fails on NEW violations only.",
   "violations": [
-    "StaffMemberCreated -> TrainingAssignment.create :: payload.dueAt :: emitter=StaffMember.create",
-    "StaffMemberCreated -> TrainingAssignment.create :: payload.firstShiftAt :: emitter=StaffMember.create",
-    "StaffMemberCreated -> TrainingAssignment.create :: payload.staffMemberId :: emitter=StaffMember.create",
     "StaffMemberFirstShiftScheduled -> TrainingAssignment.applyFirstShiftDueDate :: orphan-event"
   ]
 }

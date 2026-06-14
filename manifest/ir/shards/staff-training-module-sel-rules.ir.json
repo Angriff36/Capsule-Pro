@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d621b38bb098cb07f8c0034eef245d08323dc63dccf363fdfe095842a0c61416",
-    "irHash": "742d5150eedb962f7a32e3126860e38533a976e6ef5ccb27bf4f541daffd86d8",
+    "contentHash": "54f601fa7f30120db48bc3056238e931373be7b1091d32ee0cbf1ceb1a9f81ce",
+    "irHash": "64d6e19c6dfb1a8034a900f36a1b419af8b5947f0f07cb4bb12ac1edf076cf30",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T10:35:20.069Z"
+    "compiledAt": "2026-06-14T10:54:12.770Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -2664,44 +2664,6 @@
   ],
   "events": [
     {
-      "name": "StaffMemberCreated",
-      "channel": "staff.member.created",
-      "payload": [
-        {
-          "name": "staffMemberId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "role",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "firstShiftAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "dueAt",
-          "type": {
-            "name": "datetime",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
       "name": "StaffMemberFirstShiftScheduled",
       "channel": "staff.member.first-shift-scheduled",
       "payload": [
@@ -3821,136 +3783,6 @@
               "property": "result"
             },
             "property": "whyItMatters"
-          }
-        }
-      ]
-    },
-    {
-      "event": "StaffMemberCreated",
-      "targetEntity": "TrainingAssignment",
-      "targetCommand": "create",
-      "resolve": {
-        "kind": "call",
-        "callee": {
-          "kind": "identifier",
-          "name": "uuid"
-        },
-        "args": []
-      },
-      "params": [
-        {
-          "name": "id",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "uuid"
-            },
-            "args": []
-          }
-        },
-        {
-          "name": "moduleId",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "training-module-sel-event-staff-onboarding"
-            }
-          }
-        },
-        {
-          "name": "moduleCode",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "sel_event_staff_onboarding"
-            }
-          }
-        },
-        {
-          "name": "moduleTitle",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "SEL Event Staff — Onboarding Training"
-            }
-          }
-        },
-        {
-          "name": "staffMemberId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "staffMemberId"
-          }
-        },
-        {
-          "name": "staffRole",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "role"
-          }
-        },
-        {
-          "name": "passThresholdPercent",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 80
-            }
-          }
-        },
-        {
-          "name": "maxAttempts",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 3
-            }
-          }
-        },
-        {
-          "name": "firstShiftAt",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "firstShiftAt"
-          }
-        },
-        {
-          "name": "dueAt",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "dueAt"
-          }
-        },
-        {
-          "name": "dueDateReviewNeeded",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
           }
         }
       ]

@@ -1,12 +1,13 @@
 use "./training-module-rules.manifest"
 tenant tenantId : string from context.tenantId
 
-event StaffMemberCreated: "staff.member.created" {
-  staffMemberId: string
-  role: string
-  firstShiftAt: datetime
-  dueAt: datetime
-}
+// NOTE: `StaffMemberCreated` is defined ONCE — in staff-member-rules.manifest
+// (topic "staff.staff-member.created"), the event StaffMember.create actually
+// emits. A duplicate stub used to live here (topic "staff.member.created") purely
+// to give the old `on StaffMemberCreated run TrainingAssignment.create` reaction
+// firstShiftAt/dueAt fields, but that reaction was a silent no-op (see the comment
+// where it used to be, below) and is now staff-member-created-training-assignment
+// middleware. The duplicate is removed so the two definitions no longer conflict.
 
 event StaffMemberFirstShiftScheduled: "staff.member.first-shift-scheduled" {
   staffMemberId: string
@@ -468,21 +469,20 @@ on SelOnboardingTrainingQuestionDefinitionCreated run TrainingQuestion.create
     whyItMatters: payload.result.whyItMatters
   }
 
-on StaffMemberCreated run TrainingAssignment.create
-  resolve uuid()
-  params {
-    id: uuid()
-    moduleId: "training-module-sel-event-staff-onboarding"
-    moduleCode: "sel_event_staff_onboarding"
-    moduleTitle: "SEL Event Staff — Onboarding Training"
-    staffMemberId: payload.staffMemberId
-    staffRole: payload.role
-    passThresholdPercent: 80
-    maxAttempts: 3
-    firstShiftAt: payload.firstShiftAt
-    dueAt: payload.dueAt
-    dueDateReviewNeeded: true
-  }
+// StaffMemberCreated -> TrainingAssignment.create is handled by
+// staff-member-created-training-assignment-middleware (registered in
+// manifest-runtime-factory). It was a reaction reading payload.staffMemberId /
+// firstShiftAt / dueAt off StaffMember.create (a MUTATE; payload = {...input, result}).
+// None of those ride the payload: `staffMemberId` is a COMPUTED (self.id), and
+// `firstShiftAt`/`dueAt` are not knowable at staff-create time (the first shift is
+// scheduled later) — so the reaction silently no-op'd and no onboarding assignment
+// was ever auto-created. It also passed `staffRole: payload.role`, but
+// TrainingAssignment.create guards `staffRole == "staff"` while role defaults to
+// "server", so the create would have been blocked even if the field were reachable.
+// The middleware reads the new StaffMember id from _subject.id, pins staffRole to
+// the literal "staff", and dispatches the governed TrainingAssignment.create with
+// dueDateReviewNeeded=true (firstShiftAt/dueAt are pinned later by the
+// StaffMemberFirstShiftScheduled -> applyFirstShiftDueDate path below).
 
 on StaffMemberFirstShiftScheduled run TrainingAssignment.applyFirstShiftDueDate
   resolve payload.staffMemberId

@@ -48,6 +48,7 @@ import {
   createPrepListSeedMiddleware,
   createRbacMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
+  createStaffMemberCreatedTrainingAssignmentMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
@@ -676,6 +677,21 @@ export async function createManifestRuntime(
     // passed = scorePercent >= threshold, and dispatches the governed
     // TrainingAttempt.create (idempotent per attemptId).
     createTrainingAttemptSubmittedRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff onboarding: StaffMemberCreated -> TrainingAssignment.create. Middleware
+    // (not a reaction) because the staff member id is a COMPUTED (self.id), not a
+    // StaffMember.create param, and firstShiftAt/dueAt are not knowable at create
+    // time — so the old `on StaffMemberCreated run TrainingAssignment.create`
+    // reaction read undefined payload fields and silently no-op'd, leaving every new
+    // staff member without their mandatory SEL onboarding assignment. The middleware
+    // resolves the new id from _subject.id, pins staffRole to "staff" (the create's
+    // guard), and dispatches TrainingAssignment.create with dueDateReviewNeeded=true
+    // (the due date is pinned later by applyFirstShiftDueDate). Idempotent per
+    // (tenant, staff member, SEL module).
+    createStaffMemberCreatedTrainingAssignmentMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
