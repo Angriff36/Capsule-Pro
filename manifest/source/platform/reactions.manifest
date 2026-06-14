@@ -223,3 +223,19 @@ on EventConfirmed run PrepList.create
     totalEstimatedTime: 0
     notes: "[auto-seed:event-confirmed]"
   }
+
+// ── Admin chat: message sent → thread activity timestamp ─────────────────────
+
+// Sending an admin chat message bumps its thread's `lastMessageAt` so thread
+// lists can order by recency (today the column is never written → threads can't
+// sort by activity). This is a REACTION (not middleware) because the target is a
+// single thread whose id IS reachable from the payload: `AdminChatMessage.create`
+// takes `threadId` as an INPUT PARAM, so it rides the emitted payload
+// `{ ...commandInput, result }` as `payload.threadId`. NOTE: resolve on
+// `payload.threadId` (the real create param), NOT `payload.adminChatThreadId`
+// (a declared event field — never auto-populated from self.*, so it would be a
+// silent no-op and fail the reaction-payload audit gate).
+// `recordLastMessage()` takes no params and mutates `lastMessageAt = now()`.
+on AdminChatMessageSent run AdminChatThread.recordLastMessage
+  resolve payload.threadId
+  params {}

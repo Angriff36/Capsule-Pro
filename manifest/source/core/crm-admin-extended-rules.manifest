@@ -460,6 +460,20 @@ entity AdminChatThread {
     emit AdminChatThreadCreated
   }
 
+  // Bump the thread's activity timestamp when a message is sent. Driven by the
+  // `AdminChatMessageSent → AdminChatThread.recordLastMessage` reaction
+  // (manifest/source/platform/reactions.manifest) so thread lists can order by
+  // recency. Takes no params: the send time is `now()` (the message was just
+  // sent), NOT the declared-but-never-auto-populated `AdminChatMessageSent.sentAt`
+  // payload field. `lastMessageAt` already exists as a column — no migration.
+  command recordLastMessage() {
+    guard self.deletedAt == null "Thread is removed"
+
+    mutate lastMessageAt = now()
+
+    emit AdminChatThreadLastMessageRecorded
+  }
+
   store AdminChatThread in durable
 }
 
@@ -717,4 +731,10 @@ event AdminChatMessageRemoved: "admin.chat_message.removed" {
   adminChatThreadId: string
   userId: string
   removedAt: datetime
+}
+
+event AdminChatThreadLastMessageRecorded: "admin.chat_thread.last_message_recorded" {
+  threadId: string
+  tenantId: string
+  lastMessageAt: datetime
 }

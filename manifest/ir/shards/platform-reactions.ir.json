@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "e4f68f089deeef826ed21feb6987dbcf128413d9794a3fa10b609bf4fe59dace",
-    "irHash": "e2e53ed0fb6fcea03e6a675ebc8b5cbeb7e814adf18e4d8af76f181bde6fc7a1",
+    "contentHash": "36de3c2135cb932c5bae656093ab79734ed325c68f97dcd005a86dadd68d519e",
+    "irHash": "4b3fa872e04a64ce01fcdff9738c6192d3261d00a8a71b216bf01d91bdc85bbf",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T16:07:21.569Z"
+    "compiledAt": "2026-06-14T21:02:50.888Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -431,6 +431,19 @@
           }
         }
       ]
+    },
+    {
+      "event": "AdminChatMessageSent",
+      "targetEntity": "AdminChatThread",
+      "targetCommand": "recordLastMessage",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "identifier",
+          "name": "payload"
+        },
+        "property": "threadId"
+      }
     }
   ]
 }
