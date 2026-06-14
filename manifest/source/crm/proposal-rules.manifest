@@ -183,9 +183,14 @@ entity Proposal {
     emit ProposalViewed
   }
 
-  command accept(userId: string) {
+  command accept(userId: string, optional clientId: string, optional proposalNumber: string, optional title: string, optional total: money, optional eventType: string) {
     guard self.deletedAt == null "Cannot accept a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only accept sent or viewed proposals"
+    // clientId/proposalNumber/title/total are pass-through params (not mutated): the runtime
+    // builds the emitted payload as { ...commandInput, result }, so these become payload.<field>
+    // for the `on ProposalAccepted run Event.create` reaction. payload.result is this MUTATE's
+    // last scalar (acceptedAt=now()), NOT the Proposal instance, so the reaction cannot read
+    // the proposal's own fields off result — the caller (public proposal-respond route) supplies them.
 
     constraint blockExpired:block !self.isExpired {
       messageTemplate: "Cannot accept expired proposal '{proposalNumber}' (expired on {validUntil})"

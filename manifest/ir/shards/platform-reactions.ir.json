@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c28b0cb189b737b84ea44e2f7a226b8de2112c582da87c7e74dfa311f906e826",
-    "irHash": "47b2f2275072db4c53431b37ea639bac0e8fe41345dee15fae7175a710ea014a",
+    "contentHash": "c9f80cdcd15a5966b6c40554da3555d1ef3afb5d3e358c9de920936338b82914",
+    "irHash": "b61a1c0c4d5fa18d9842d672d85a924dda870894605c1ad051c68c01929efcfe",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T06:37:20.253Z"
+    "compiledAt": "2026-06-14T07:02:47.496Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -548,16 +548,10 @@
       "targetEntity": "Event",
       "targetCommand": "create",
       "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "id"
+        "kind": "literal",
+        "value": {
+          "kind": "null"
+        }
       },
       "params": [
         {
@@ -565,12 +559,8 @@
           "expression": {
             "kind": "member",
             "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
+              "kind": "identifier",
+              "name": "payload"
             },
             "property": "clientId"
           }
@@ -580,12 +570,8 @@
           "expression": {
             "kind": "member",
             "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
+              "kind": "identifier",
+              "name": "payload"
             },
             "property": "proposalNumber"
           }
@@ -595,12 +581,8 @@
           "expression": {
             "kind": "member",
             "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
+              "kind": "identifier",
+              "name": "payload"
             },
             "property": "title"
           }
@@ -608,11 +590,12 @@
         {
           "name": "eventType",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": ""
-            }
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "eventType"
           }
         },
         {
@@ -688,12 +671,8 @@
           "expression": {
             "kind": "member",
             "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
+              "kind": "identifier",
+              "name": "payload"
             },
             "property": "total"
           }

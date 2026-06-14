@@ -86,6 +86,13 @@ export async function POST(request: Request, { params }: { params: Params }) {
         tenantId: true,
         status: true,
         validUntil: true,
+        // Supplied to Proposal.accept so the ProposalAccepted -> Event.create
+        // reaction can populate the auto-created event (payload pass-through).
+        clientId: true,
+        proposalNumber: true,
+        title: true,
+        total: true,
+        eventType: true,
       },
     });
 
@@ -136,6 +143,16 @@ export async function POST(request: Request, { params }: { params: Params }) {
             id: proposal.id,
             tenantId: proposal.tenantId,
             userId: responderEmail,
+            // Pass-through for the ProposalAccepted -> Event.create reaction.
+            // title/eventType are coalesced to non-empty: Event.create enforces
+            // entity-level block constraints validTitle/validEventType at create
+            // bootstrap, so a blank proposal field would make the reaction's
+            // Event.create fail (and silently skip the propagation).
+            clientId: proposal.clientId ?? "",
+            proposalNumber: proposal.proposalNumber ?? "",
+            title: proposal.title || "Accepted Proposal",
+            total: proposal.total ? Number(proposal.total) : 0,
+            eventType: proposal.eventType || "general",
           }
         : {
             id: proposal.id,

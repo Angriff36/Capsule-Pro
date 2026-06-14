@@ -130,13 +130,21 @@ on LeadConvertedToClient run Deal.create
 // When a client accepts a proposal, automatically create an event planning
 // record. Eliminates manual proposal-to-event handoff and ensures accepted
 // proposals immediately enter the event planning workflow.
+//
+// Proposal.accept is a MUTATE command: payload.result is the LAST MUTATE'S
+// VALUE (acceptedAt = now()), NOT the Proposal instance — so payload.result.id
+// and payload.result.<field> are all undefined and this reaction silently
+// no-op'd. Fixed: clientId/proposalNumber/title/total are now command input
+// params on accept (supplied by the proposal-respond route), so they arrive as
+// payload.<field>. resolve null lets the engine auto-generate the new Event id
+// (same idiom as EventCreated -> BattleBoard.create above).
 on ProposalAccepted run Event.create
-  resolve payload.result.id
+  resolve null
   params {
-    clientId: payload.result.clientId
-    eventNumber: payload.result.proposalNumber
-    title: payload.result.title
-    eventType: ""
+    clientId: payload.clientId
+    eventNumber: payload.proposalNumber
+    title: payload.title
+    eventType: payload.eventType
     eventDate: now()
     guestCount: 1
     venueName: ""
@@ -144,7 +152,7 @@ on ProposalAccepted run Event.create
     notes: "Auto-created from accepted proposal"
     tags: []
     status: "draft"
-    budget: payload.result.total
+    budget: payload.total
     ticketPrice: 0
     ticketTier: ""
     eventFormat: ""

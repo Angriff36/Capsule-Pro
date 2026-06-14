@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "00b14de251d56d7bc0224841a639f376bbc0d197438c33a3515a792837dbd8eb",
-    "irHash": "33f8deda72a74dc46c2120a566c513b712de9b922738bad64ec0f92757f91317",
+    "contentHash": "0b9c0d5a13f1070e63211c6f93bc80a9506258a9dcbe038ffbcb3e17fb1449a5",
+    "irHash": "43556ca9303f58a3811aa695f1cb7429c8e92ba5ede6529974290c823e4f0cf1",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T06:37:20.146Z"
+    "compiledAt": "2026-06-14T07:02:47.386Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -3536,6 +3536,46 @@
             "nullable": false
           },
           "required": true
+        },
+        {
+          "name": "clientId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "proposalNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "total",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "required": false
+        },
+        {
+          "name": "eventType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": false
         }
       ],
       "guards": [
