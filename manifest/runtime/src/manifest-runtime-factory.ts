@@ -38,6 +38,7 @@ import {
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContractSignedEventConfirmMiddleware,
+  createDealLifecyclePropagationMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
@@ -653,6 +654,19 @@ export async function createManifestRuntime(
     // existing fields re-passed. FSM-aware: only advances when the transition is
     // legal from the lead's current status (skips already-advanced/converted leads).
     createProposalLifecycleLeadStatusMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: DealClosed -> Lead.status mirror (won/lost) + DealAssigned ->
+    // Notification.create. Middleware (not a reaction) because the Lead is
+    // identified by Deal.leadId — the deal's OWN field, NOT a `close` param (only
+    // `status` rides the payload) — and `Lead.update` is a full-field mutate guarded
+    // by `contactName != ""`, so the lead must be LOADED and re-passed. FSM-aware:
+    // mirrors only when the transition is legal from the lead's current status. The
+    // assignee notification likewise needs the deal's `title` (its OWN field), so the
+    // deal is loaded before dispatching the governed Notification.create.
+    createDealLifecyclePropagationMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

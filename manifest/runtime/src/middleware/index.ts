@@ -23,6 +23,11 @@ export {
   createContractSignedEventConfirmMiddleware,
 } from "./contract-signed-event-confirm-middleware";
 export {
+  createDealLifecyclePropagationMiddleware,
+  type DealLifecyclePropagationDiagnostic,
+  type DealLifecyclePropagationMiddlewareOptions,
+} from "./deal-lifecycle-propagation-middleware";
+export {
   createEventCancelledCascadeMiddleware,
   type EventCancelledCascadeDiagnostic,
   type EventCancelledCascadeMiddlewareOptions,
