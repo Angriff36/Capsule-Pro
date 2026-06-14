@@ -182,8 +182,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     // Resolve current user for Manifest runtime context
     const user = await resolveCurrentUser(request);
 
-    // Update payment status via Manifest runtime — invoice update handled by
-    // PaymentProcessed reaction (on PaymentProcessed run Invoice.applyPayment).
+    // Update payment status via Manifest runtime — invoice update handled by the
+    // PaymentProcessed → Invoice.applyPayment middleware
+    // (payment-processed-invoice-apply-middleware.ts), which loads the processed
+    // Payment and credits its linked invoice.
     const manifestRuntime = await createManifestRuntime({
       user: { id: user.id, tenantId, role: user.role },
     });

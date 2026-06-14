@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "77144708c7af74eab11bcf1f49e1c3ce6176c61c8aa06c612485cc1818396f88",
-    "irHash": "2d68f804bee098915096acced2c24cf4ddface66897be9fee3416bd532c2484a",
+    "contentHash": "eddcb333477e8025d56990207610dc940b8666e3133b1b717c48eca266956631",
+    "irHash": "076dd5f9fd1c70f27ee728f2b76683932c6b8ce7d7354863f4fcffeddfb2df1c",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T07:56:37.036Z"
+    "compiledAt": "2026-06-14T08:19:23.109Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1890,28 +1890,5 @@
       "message": "Payment processing"
     }
   ],
-  "reactions": [],
-  "sagas": [
-    {
-      "name": "ProcessInvoicePayment",
-      "steps": [
-        {
-          "name": "processPayment",
-          "commandEntity": "Payment",
-          "command": "process",
-          "compensateEntity": "Payment",
-          "compensate": "refund"
-        },
-        {
-          "name": "applyToInvoice",
-          "commandEntity": "Invoice",
-          "command": "applyPayment",
-          "compensateEntity": "Invoice",
-          "compensate": "recordRefund"
-        }
-      ],
-      "onFailure": "compensate",
-      "emits": []
-    }
-  ]
+  "reactions": []
 }

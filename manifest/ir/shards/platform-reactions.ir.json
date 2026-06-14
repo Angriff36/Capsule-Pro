@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "cd40884909a1d7438dce24f69a3ab47c715e3cbca71fef6322563ef59c1f883c",
-    "irHash": "91db6806e16b13f624a884a198cccba0702ecc722f9e7d19e3cdb0d9f83c6cda",
+    "contentHash": "ef20499f41f94c6401d97c0097b670fdd4fb28a30b0e2f324bc1cf05e6df363e",
+    "irHash": "84884cb7303abaaffa981c1bea84af1c55ff542f4eb38554f4bfec9fbadb2f05",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T07:56:37.112Z"
+    "compiledAt": "2026-06-14T08:19:23.185Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -24,55 +24,6 @@
   "commands": [],
   "policies": [],
   "reactions": [
-    {
-      "event": "PaymentProcessed",
-      "targetEntity": "Invoice",
-      "targetCommand": "applyPayment",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "invoiceId"
-      },
-      "params": [
-        {
-          "name": "paymentAmount",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "amount"
-          }
-        },
-        {
-          "name": "paymentId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "id"
-          }
-        }
-      ]
-    },
     {
       "event": "PaymentRefunded",
       "targetEntity": "Invoice",

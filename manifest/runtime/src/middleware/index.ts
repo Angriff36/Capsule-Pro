@@ -22,6 +22,11 @@ export {
   type LeadConvertedDealDiagnostic,
 } from "./lead-converted-deal-create-middleware";
 export {
+  createPaymentProcessedInvoiceApplyMiddleware,
+  type PaymentInvoiceApplyDiagnostic,
+  type PaymentProcessedInvoiceApplyMiddlewareOptions,
+} from "./payment-processed-invoice-apply-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,

@@ -6,15 +6,19 @@ tenant tenantId : string from context.tenantId
 
 // ── Finance: Payment → Invoice ──────────────────────────────────────────────
 
-// When a payment is processed (e.g., Stripe webhook confirms charge), automatically
-// apply it to the linked invoice. Previously done as raw Prisma writes in the
-// webhook handler (apps/api/app/webhooks/payments/route.ts), bypassing governance.
-on PaymentProcessed run Invoice.applyPayment
-  resolve payload.result.invoiceId
-  params {
-    paymentAmount: payload.result.amount
-    paymentId: payload.result.id
-  }
+// Payment → Invoice application is handled by MIDDLEWARE, not a reaction
+// (payment-processed-invoice-apply-middleware.ts). When a payment is processed,
+// it is auto-applied to its linked invoice. The invoice (`Payment.invoiceId`) and
+// amount (`Payment.amount`) are the Payment's OWN fields, NOT `process` input params
+// — and the emitted payload is only `{...commandInput, result}` (`result` = the
+// last mutate's scalar) + `payload._subject.id`, with declared event fields never
+// auto-populated from self.*. So the prior `on PaymentProcessed run
+// Invoice.applyPayment` reaction reading `payload.result.invoiceId/amount` was a
+// silent no-op (invoices never credited). The middleware loads the processed
+// Payment from the store, reads self.invoiceId/self.amount, and dispatches the
+// governed Invoice.applyPayment (guard-safe). This also replaced the dormant
+// `ProcessInvoicePayment` saga (removed from payment-rules.manifest) so the two
+// cannot double-apply.
 
 // When a payment is refunded, automatically record the refund against the invoice.
 // Ensures amountPaid/amountDue stay consistent with payment state.

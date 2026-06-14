@@ -342,13 +342,14 @@ export async function POST(request: NextRequest) {
     }
 
     // NOTE: The PaymentProcessed event emitted by the `process` command triggers
-    // the PaymentProcessed→Invoice.applyPayment reaction automatically
-    // (see manifest/source/reactions.manifest). We no longer call
-    // Invoice.applyPayment explicitly here.
+    // the PaymentProcessed→Invoice.applyPayment MIDDLEWARE automatically
+    // (manifest/runtime/src/middleware/payment-processed-invoice-apply-middleware.ts).
+    // We no longer call Invoice.applyPayment explicitly here.
     //
-    // However, if the reaction fails (e.g. invoice in DRAFT status where the
-    // guard rejects applyPayment), we need a fallback. Since reactions are
-    // fire-and-forget in the current runtime, we do a diagnostic check here.
+    // However, if the middleware skips application (e.g. invoice in DRAFT status
+    // where applyPayment's guard rejects, or an over-payment), we need a fallback.
+    // The middleware is guard-safe (it skips rather than erroring), so we do a
+    // diagnostic check here and mark the payment ACCEPTED_NOT_APPLIED.
     // TODO: Replace this check with reaction-failure notifications once the
     // runtime supports them (§9.3 in IMPLEMENTATION_PLAN.md).
 

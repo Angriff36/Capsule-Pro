@@ -38,6 +38,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createIdentityMiddleware,
   createLeadConvertedDealCreateMiddleware,
+  createPaymentProcessedInvoiceApplyMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
@@ -558,6 +559,18 @@ export async function createManifestRuntime(
     // payload cannot carry it. The middleware loads the signed contract from the
     // store, reads self.eventId, and dispatches the governed Event.confirm.
     createContractSignedEventConfirmMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: PaymentProcessed -> Invoice.applyPayment. Middleware (not a reaction)
+    // because the invoice to credit (Payment.invoiceId) and the amount
+    // (Payment.amount) are the Payment's OWN fields, which `process` does not take
+    // as params — the middleware loads the processed Payment from the store and
+    // dispatches the governed Invoice.applyPayment (guard-safe; skips DRAFT/overpay
+    // so the route's ACCEPTED_NOT_APPLIED fallback handles them). Replaces the
+    // dormant ProcessInvoicePayment saga (removed) to avoid double-apply.
+    createPaymentProcessedInvoiceApplyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

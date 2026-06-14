@@ -188,18 +188,13 @@ event PaymentAcceptedNotApplied: "payment.accepted-not-applied" {
   status: string
 }
 
-// --- 2.0 Saga: atomic payment settlement across Payment + Invoice ---
-// Records a processed payment AND applies it to its invoice as one unit.
-// If applyToInvoice fails, processPayment is compensated (refunded) in reverse.
-// Wired via runtime.runSaga("ProcessInvoicePayment", ...) from the payments route.
-saga ProcessInvoicePayment {
-  step processPayment {
-    command: Payment.process
-    compensate: Payment.refund
-  }
-  step applyToInvoice {
-    command: Invoice.applyPayment
-    compensate: Invoice.recordRefund
-  }
-  on_failure: compensate
-}
+// NOTE: the former `ProcessInvoicePayment` saga (Payment.process + Invoice.applyPayment
+// as one atomic unit) was REMOVED 2026-06-14. It had zero callers (nothing passed
+// "ProcessInvoicePayment" to the generic saga executor) and was incompatible with the
+// PaymentProcessed → Invoice.applyPayment propagation the payments routes actually use:
+// the saga's `processPayment` step emits PaymentProcessed, which the
+// payment-processed-invoice-apply-middleware already turns into an applyPayment — so a
+// wired saga would apply the payment twice (its own `applyToInvoice` step + the
+// middleware). The route's pre-existing `Payment.markAcceptedNotApplied` state covers
+// the non-atomic failure case the saga's compensation aimed at. See
+// manifest/runtime/src/middleware/payment-processed-invoice-apply-middleware.ts.
