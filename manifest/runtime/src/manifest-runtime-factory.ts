@@ -37,6 +37,7 @@ import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createContractSignedEventConfirmMiddleware,
+  createEventCreatedClientInteractionMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
   createLeadConvertedDealCreateMiddleware,
@@ -724,6 +725,21 @@ export async function createManifestRuntime(
     // line items actually send (it blocked EVERY send before — the gate read the
     // `hasLineItems` COMPUTED, which the runtime does not resolve inside constraints).
     createProposalLineItemCountMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: EventCreated -> ClientInteraction.create. Middleware (not the reaction
+    // the plan first proposed) because ClientInteraction.create REQUIRES a
+    // non-empty employeeId (command guard + validEmployeeId block constraint) and
+    // EventCreated carries no creator field — Event.create has no userId/createdBy
+    // param and declared event fields are never auto-populated from self.*, so a
+    // reaction's payload.employeeId is structurally undefined and the create guard
+    // could never pass. The middleware sources the employee from the acting user
+    // (who booked the event = the right CRM attribution), reads clientId/title off
+    // the payload, and logs a governed "note" interaction on the client's timeline.
+    // Skips clientless events; idempotent per event via correlationId.
+    createEventCreatedClientInteractionMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

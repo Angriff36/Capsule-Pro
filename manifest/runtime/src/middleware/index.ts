@@ -18,6 +18,11 @@ export {
   createContractSignedEventConfirmMiddleware,
 } from "./contract-signed-event-confirm-middleware";
 export {
+  createEventCreatedClientInteractionMiddleware,
+  type EventClientInteractionDiagnostic,
+  type EventCreatedClientInteractionMiddlewareOptions,
+} from "./event-created-client-interaction-middleware";
+export {
   createIdentityMiddleware,
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";
