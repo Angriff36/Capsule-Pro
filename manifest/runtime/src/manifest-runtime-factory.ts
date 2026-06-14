@@ -50,6 +50,7 @@ import {
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
+  createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
@@ -714,6 +715,20 @@ export async function createManifestRuntime(
     // CollectionCase.writeOff command was DEAD until the FSM gained a "WRITTEN_OFF"
     // transition target (collections-rules.manifest) — same fix this change makes.
     createCollectionWrittenOffInvoiceWriteOffMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: PaymentPlanCompleted -> CollectionCase.markResolved (closes the
+    // collections payment-plan loop). Middleware (not a reaction) because the case to
+    // resolve is the CollectionPaymentPlan's OWN collectionCaseId field, not a
+    // markCompleted param (markCompleted takes none) — and declared event fields are
+    // never auto-populated from self.*. PaymentPlanCompleted had ZERO consumers, so a
+    // fully-paid plan left its case ACTIVE in dunning forever. Loads the plan via
+    // _subject.id, reads self.collectionCaseId, and dispatches the governed
+    // CollectionCase.markResolved (guard-safe: skips terminal cases and cases that still
+    // owe a balance — markResolved guards outstandingAmount <= 0.01; idempotent per case).
+    createPaymentPlanCompletedCollectionCaseResolveMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

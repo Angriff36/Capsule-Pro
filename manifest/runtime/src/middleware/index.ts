@@ -87,6 +87,11 @@ export {
   type PaymentProcessedInvoiceApplyMiddlewareOptions,
 } from "./payment-processed-invoice-apply-middleware";
 export {
+  createPaymentPlanCompletedCollectionCaseResolveMiddleware,
+  type PaymentPlanCollectionResolveDiagnostic,
+  type PaymentPlanCompletedCollectionCaseResolveMiddlewareOptions,
+} from "./payment-plan-completed-collection-case-resolve-middleware";
+export {
   createPaymentRefundedInvoiceRecordMiddleware,
   type PaymentInvoiceRefundDiagnostic,
   type PaymentRefundedInvoiceRecordMiddlewareOptions,
