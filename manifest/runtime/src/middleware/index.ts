@@ -83,6 +83,11 @@ export {
   type PrepSeedDiagnostic,
 } from "./prep-list-seed-middleware";
 export {
+  createProposalLifecycleLeadStatusMiddleware,
+  type ProposalLeadStatusDiagnostic,
+  type ProposalLifecycleLeadStatusMiddlewareOptions,
+} from "./proposal-lifecycle-lead-status-middleware";
+export {
   createProposalLineItemCountMiddleware,
   type ProposalLineItemCountDiagnostic,
   type ProposalLineItemCountMiddlewareOptions,

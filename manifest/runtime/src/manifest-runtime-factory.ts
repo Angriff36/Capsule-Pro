@@ -50,6 +50,7 @@ import {
   createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
+  createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
   createRbacMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
@@ -589,6 +590,18 @@ export async function createManifestRuntime(
     // convertToClient does not take as params — the middleware loads the
     // converted Lead from the store and dispatches the governed Deal.create.
     createLeadConvertedDealCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ProposalCreated/Sent -> Lead.status="proposal", ProposalAccepted ->
+    // "won", ProposalRejected -> "lost". Middleware (not a reaction) because the
+    // Lead is identified by Proposal.leadId — the proposal's OWN field, which
+    // send/accept/reject do not take as params — and `Lead.update` is a full-field
+    // mutate guarded by `contactName != ""`, so the lead must be LOADED and its
+    // existing fields re-passed. FSM-aware: only advances when the transition is
+    // legal from the lead's current status (skips already-advanced/converted leads).
+    createProposalLifecycleLeadStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

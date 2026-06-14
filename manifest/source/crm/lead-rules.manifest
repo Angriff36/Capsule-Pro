@@ -87,7 +87,12 @@ entity Lead {
 
   command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: money, status: string, assignedTo: string, notes: string) {
     guard self.deletedAt == null "Cannot update an archived lead"
-    guard self.isConverted == false "Cannot update a converted lead"
+    // Stored-prop form of `!self.isConverted` (isConverted = convertedToClientId != ""
+    // and convertedAt != null). Computeds do NOT resolve inside guards in this runtime
+    // (they evaluate to undefined → `undefined == false` is false → the guard rejected
+    // EVERY update, making Lead.update dead for all callers). Inlining the stored props
+    // revives it. Same fix pattern as Proposal.send's isDraft inline.
+    guard self.convertedToClientId == "" or self.convertedAt == null "Cannot update a converted lead"
     guard contactName != null and contactName != "" "Contact name is required"
 
     constraint warnStatusRegression:warn status == "new" and self.status != "new" {
