@@ -1989,3 +1989,51 @@ converted, with a deliberate viewed→viewed self-edge so recordView works on re
 Companion fix: removed redundant initial-status mutates from create/start commands (runtime
 rejects no-op self-transitions; initial state seeds from property defaults). Conformance
 status-machine test passes without touching its threshold.
+
+---
+
+## 53. Event → BattleBoard details never showed: read/write data-model split (2026-06-13)
+
+**Symptom (recurring, "fixed" 2x before in §36/§37):** the battle-board editor
+(`/events/battle-boards/[boardId]`) showed an empty "Untitled Event" even though the linked
+Event had full details. User: "events STILL do not propagate to battle boards."
+
+**Root cause — two disjoint data stores that never met:**
+- The board UI reads event fields ENTIRELY from the `boardData` JSON blob
+  (`battle-boards/actions.ts` `prismaToFull`: `event_name ← boardData.meta.eventName`,
+  `headcount ← boardData.headcount`, `venue_name ← boardData.venue_name`, etc.).
+- `BattleBoard.syncFromEvent` (the §36/§37 propagation) only writes the TYPED COLUMNS
+  (`eventDate, clientId, guestCount, venueName, venueAddress, locationId`) — it NEVER touches
+  `boardData`. So sync wrote columns the UI never reads; the UI read JSON the sync never wrote.
+  **Zero overlap** → every prior "fix" (make sync fire, fix datetime coercion) was invisible.
+- Live-DB proof (board `8a2e158b`, ep-square-dust): `event_id` set → event "Johnson-Williams
+  Wedding Reception" (150 guests, real venue); board columns `guest_count=150`,
+  `venue_name` populated by sync; but `boardData.meta = NULL` → UI showed blank.
+
+**Reactions CANNOT fix this (verified, official docs + §47):** a reaction `on EventUpdated run
+BattleBoard.X` resolves exactly ONE target instance (first match) — it cannot fan out 1 Event →
+its N boards. The sanctioned runtime home for 1:N is middleware (see prep-list-seed-middleware),
+not app-side server actions. The prior `syncBattleBoardsForEvent` app shim
+(`events/actions/sync-battle-boards.ts`) reflected this limit but lived in the wrong layer.
+
+**Fix shipped (chosen: live read-join, not snapshot+propagation):** `getBoardFull` now reads the
+linked Event LIVE (`database.event.findFirst` by `board.eventId` — constitution §10 read-path
+join) and `prismaToFull(board, event)` sources the 6 event-owned fields (name/number/date/
+headcount/venue name+address) from the Event when linked, falling back to `boardData` for
+standalone boards (no `eventId`). MetaPanel disables those 6 inputs when `board.event_id` is set
+(+ "Synced live from the linked event → edit on the event" note) so board edits don't silently
+vanish into the now-ignored JSON. Board-only fields (service_style, staff_parking,
+staff_restrooms, notes, status, staff/timeline/layouts/imports) stay editable. **Zero migration,
+zero propagation step that can fail — the board can never be stale.** `board.event_date` formats
+the Event's `eventDate` via `toISOString().slice(0,10)` for the `type="date"` input.
+Files: `apps/app/.../events/battle-boards/actions.ts`, `.../[boardId]/components/MetaPanel.tsx`,
+`apps/app/lib/battle-boards/types.ts` (+`event_id`). `pnpm --filter app typecheck` green.
+
+`new/page.tsx` proves this was always the intended design: the "Event ID (optional)" field is
+labeled "Link this board to an existing event for automatic data population" — the read side was
+just never wired. The snapshot columns + `syncFromEvent` + the app shim are now vestigial
+(harmless; could be retired later).
+
+Search: battle board untitled event, boardData meta null, syncFromEvent writes columns UI reads
+JSON, prismaToFull live event join, reactions cannot fan out 1:N, event details not propagating,
+getBoardFull database.event findFirst, MetaPanel event-owned read-only

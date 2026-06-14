@@ -109,7 +109,9 @@ for (const [path, methods] of Object.entries(spec.paths || {})) {
 spec.paths = fixedPaths;
 
 // ── Add metadata ──
-spec["x-generated-at"] = new Date().toISOString();
+// NOTE: intentionally no `x-generated-at` timestamp — the committed spec must be a
+// deterministic function of the IR so the CI drift gate (git diff) is meaningful.
+// "When" lives in git history.
 spec["x-generator"] = "manifest-openapi-projection + capsule-post-process";
 spec["x-entity-count"] = entityNames.length;
 spec["x-command-count"] = ir.commands?.length || 0;

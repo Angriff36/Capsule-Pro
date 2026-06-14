@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "eddcb333477e8025d56990207610dc940b8666e3133b1b717c48eca266956631",
-    "irHash": "076dd5f9fd1c70f27ee728f2b76683932c6b8ce7d7354863f4fcffeddfb2df1c",
+    "contentHash": "35b99c6bf0b3611f62b6cb11bd89d32e86afd3fcd44ebdb7226dd62487292eed",
+    "irHash": "6d1ba376cb3a5286db6681e256bfd4e3f7c3e85415ee329659a9bfc4ce102184",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:19:23.109Z"
+    "compiledAt": "2026-06-14T08:39:56.953Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1056,12 +1056,45 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "COMPLETED"
+              }
+            }
           },
-          "property": "isRefundable"
+          "right": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "refundedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          }
         },
         {
           "kind": "binary",
@@ -1193,12 +1226,45 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "COMPLETED"
+              }
+            }
           },
-          "property": "isRefundable"
+          "right": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "refundedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          }
         },
         {
           "kind": "binary",

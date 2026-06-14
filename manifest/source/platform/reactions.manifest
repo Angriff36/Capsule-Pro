@@ -20,14 +20,20 @@ tenant tenantId : string from context.tenantId
 // `ProcessInvoicePayment` saga (removed from payment-rules.manifest) so the two
 // cannot double-apply.
 
-// When a payment is refunded, automatically record the refund against the invoice.
-// Ensures amountPaid/amountDue stay consistent with payment state.
-on PaymentRefunded run Invoice.recordRefund
-  resolve payload.result.invoiceId
-  params {
-    refundAmount: payload.refundAmount
-    paymentId: payload.result.id
-  }
+// Payment → Invoice refund recording is handled by MIDDLEWARE, not a reaction
+// (payment-refunded-invoice-record-middleware.ts). When a payment is refunded
+// (refund/partialRefund), the refund is recorded back against its linked invoice so
+// amountPaid/amountDue/status stay consistent with refund reality. The refund AMOUNT
+// (refundAmount) IS a command input param, so it rides the emitted payload — but the
+// invoice (`Payment.invoiceId`) is the Payment's OWN field, NOT a refund param, and
+// declared event fields are never auto-populated from self.*. So the prior `on
+// PaymentRefunded run Invoice.recordRefund` reaction reading `resolve
+// payload.result.invoiceId` (+ `paymentId: payload.result.id`) was a silent no-op
+// (`refund` is a MUTATE; `result` = the last mutate's scalar `description`). The
+// middleware loads the refunded Payment from the store, reads self.invoiceId, takes
+// refundAmount from the command input, and dispatches the governed
+// Invoice.recordRefund (guard-safe). Symmetric counterpart of the Payment→Invoice
+// apply middleware above.
 
 // ── Inventory: WasteEntry → InventoryItem ────────────────────────────────────
 

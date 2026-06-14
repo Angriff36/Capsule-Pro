@@ -78,7 +78,11 @@ entity Payment {
   }
 
   command refund(refundAmount: money, reason: string) {
-    guard self.isRefundable "Payment must be completed to be refunded"
+    // Inlined from the `isRefundable` computed: the runtime does NOT resolve computed
+    // properties inside guard expressions (IMPLEMENTATION_PLAN P2 systemic finding),
+    // so `guard self.isRefundable` silently evaluated to undefined → the command could
+    // never fire. Inline the stored-property expression so the guard actually enforces.
+    guard self.status == "COMPLETED" and self.refundedAt == null "Payment must be completed to be refunded"
     guard refundAmount <= self.amount "Refund amount cannot exceed payment amount"
     guard self.status != "REFUNDED" "Already fully refunded"
     mutate status = "REFUNDED"
@@ -88,7 +92,10 @@ entity Payment {
   }
 
   command partialRefund(refundAmount: money, reason: string) {
-    guard self.isRefundable "Payment must be completed to be refunded"
+    // Inlined from the `isRefundable` computed (see refund() above) — guards cannot
+    // read computed properties at runtime, so the inlined stored-property expression
+    // is what actually enforces refundability.
+    guard self.status == "COMPLETED" and self.refundedAt == null "Payment must be completed to be refunded"
     guard refundAmount <= self.amount "Refund amount cannot exceed payment amount"
     guard self.status != "REFUNDED" "Already fully refunded"
     mutate status = "PARTIALLY_REFUNDED"

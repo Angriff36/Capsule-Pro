@@ -160,8 +160,15 @@ entity Invoice {
   transition status from "SENT" to ["VIEWED", "OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
   transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
   transition status from "OVERDUE" to ["PARTIALLY_PAID", "PAID", "WRITTEN_OFF", "VOIDED"]
-  transition status from "PARTIALLY_PAID" to ["PAID", "WRITTEN_OFF"]
-  // "PAID", "VOIDED", "WRITTEN_OFF" are terminal states
+  // PARTIALLY_PAID carries a self-loop: a 2nd applyPayment and recordRefund both mutate
+  // status -> PARTIALLY_PAID, and the runtime does NOT exempt no-op self-transitions
+  // (notes §21) — without the self-entry those commands would fail the transition check.
+  transition status from "PARTIALLY_PAID" to ["PAID", "WRITTEN_OFF", "PARTIALLY_PAID"]
+  // PAID is no longer fully terminal: recordRefund reverses a fully-paid invoice back to
+  // PARTIALLY_PAID (guarded refundAmount <= amountPaid), restoring a balance owed. Without
+  // this, refunding a PAID invoice silently no-ops — the exact bug the refund middleware fixes.
+  transition status from "PAID" to ["PARTIALLY_PAID"]
+  // "VOIDED", "WRITTEN_OFF" are terminal states
 }
 
 store Invoice in durable

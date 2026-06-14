@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "ef20499f41f94c6401d97c0097b670fdd4fb28a30b0e2f324bc1cf05e6df363e",
-    "irHash": "84884cb7303abaaffa981c1bea84af1c55ff542f4eb38554f4bfec9fbadb2f05",
+    "contentHash": "a80f00a79eb4540815452a30c6ecc3224f0e5796a9323dcbeaf260e37a10052c",
+    "irHash": "6cd08a48a066f7a01f38654ee5507dd91c6ce85d9f5eb692c38fc10935437f04",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:19:23.185Z"
+    "compiledAt": "2026-06-14T08:39:57.036Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -24,51 +24,6 @@
   "commands": [],
   "policies": [],
   "reactions": [
-    {
-      "event": "PaymentRefunded",
-      "targetEntity": "Invoice",
-      "targetCommand": "recordRefund",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "invoiceId"
-      },
-      "params": [
-        {
-          "name": "refundAmount",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "refundAmount"
-          }
-        },
-        {
-          "name": "paymentId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "id"
-          }
-        }
-      ]
-    },
     {
       "event": "WasteEntryCreated",
       "targetEntity": "InventoryItem",

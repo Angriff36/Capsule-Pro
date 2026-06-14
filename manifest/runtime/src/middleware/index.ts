@@ -27,6 +27,11 @@ export {
   type PaymentProcessedInvoiceApplyMiddlewareOptions,
 } from "./payment-processed-invoice-apply-middleware";
 export {
+  createPaymentRefundedInvoiceRecordMiddleware,
+  type PaymentInvoiceRefundDiagnostic,
+  type PaymentRefundedInvoiceRecordMiddlewareOptions,
+} from "./payment-refunded-invoice-record-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,

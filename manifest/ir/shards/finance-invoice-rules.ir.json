@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c9bc54eb3edfa6d39a362377cbe863ecf79ea5807b93679fdc29650096b01a39",
-    "irHash": "e1211df0697bd126c14830c58deeb5524b318745935f5633c7723874f2b8a9f9",
+    "contentHash": "7b507dcf68044472c914d55380e6c1aceaf2e063fac001a601d7041105ba0712",
+    "irHash": "d0d902f793782ff04fded2ef6a1daea592ef7f4a5f9e6bd277a968e473b823da",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:19:23.105Z"
+    "compiledAt": "2026-06-14T08:39:56.950Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -649,7 +649,15 @@
           "from": "PARTIALLY_PAID",
           "to": [
             "PAID",
-            "WRITTEN_OFF"
+            "WRITTEN_OFF",
+            "PARTIALLY_PAID"
+          ]
+        },
+        {
+          "property": "status",
+          "from": "PAID",
+          "to": [
+            "PARTIALLY_PAID"
           ]
         }
       ]

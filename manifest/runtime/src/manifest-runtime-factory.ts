@@ -39,6 +39,7 @@ import {
   createIdentityMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
+  createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
@@ -571,6 +572,18 @@ export async function createManifestRuntime(
     // so the route's ACCEPTED_NOT_APPLIED fallback handles them). Replaces the
     // dormant ProcessInvoicePayment saga (removed) to avoid double-apply.
     createPaymentProcessedInvoiceApplyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: PaymentRefunded -> Invoice.recordRefund. Middleware (not a reaction)
+    // for the same reason as the apply leg: the invoice to credit back
+    // (Payment.invoiceId) is the Payment's OWN field, which refund/partialRefund do
+    // not take as params. The refund AMOUNT is a command input param (so it rides the
+    // payload), but the middleware still loads the refunded Payment for invoiceId and
+    // dispatches the governed Invoice.recordRefund (guard-safe; skips when the invoice
+    // was never credited or the refund exceeds amountPaid).
+    createPaymentRefundedInvoiceRecordMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
