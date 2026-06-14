@@ -87,8 +87,9 @@ export async function GET(): Promise<Response> {
     status: 200,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      // Spec only changes on deploy (regenerated + committed); safe to cache.
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=86400",
+      // Auth-gated content: never let a shared cache/CDN reuse one user's response
+      // for another (unauthenticated) request.
+      "Cache-Control": "private, no-store",
     },
   });
 }

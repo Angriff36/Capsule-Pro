@@ -113,7 +113,51 @@ for (const [path, methods] of Object.entries(spec.paths || {})) {
   fixedPaths[fixed] = methods;
 }
 
-spec.paths = fixedPaths;
+// ── Canonicalize path casing ──
+// The upstream projection lowercases the entity segment (ActionMilestone →
+// actionmilestone) and kebab-cases command segments (markCreated → mark-created).
+// But BOTH the generic list route (resolveEntityAccessor expects the canonical
+// PascalCase name) and the command dispatcher (matches the canonical entity.command
+// key) require canonical casing — the working client sends e.g.
+// /api/manifest/AiEventSetupSession/commands/markCreated. Without this, Scalar's
+// "Try it" 404s for every multi-word entity/command. Rewrite both segments back to
+// the IR's canonical names so the documented paths are the executable paths.
+const entityCanonByLower = new Map(
+  ir.entities.map((e) => [e.name.toLowerCase(), e.name])
+);
+const cmdCanonByEntitySlug = new Map();
+for (const c of ir.commands || []) {
+  const eLower = c.entity.toLowerCase();
+  const kebab = c.name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  cmdCanonByEntitySlug.set(`${eLower}::${c.name.toLowerCase()}`, c.name);
+  cmdCanonByEntitySlug.set(`${eLower}::${kebab}`, c.name);
+}
+
+const canonicalPaths = {};
+let casingRewrites = 0;
+for (const [path, methods] of Object.entries(fixedPaths)) {
+  const segs = path.split("/").filter(Boolean); // [api, manifest, <entity>, ...]
+  const before = segs.join("/");
+  const eLower = (segs[2] || "").toLowerCase();
+  if (entityCanonByLower.has(eLower)) {
+    segs[2] = entityCanonByLower.get(eLower);
+  }
+  const ci = segs.indexOf("commands");
+  if (ci >= 0 && segs[ci + 1]) {
+    const canon = cmdCanonByEntitySlug.get(
+      `${eLower}::${segs[ci + 1].toLowerCase()}`
+    );
+    if (canon) {
+      segs[ci + 1] = canon;
+    }
+  }
+  if (segs.join("/") !== before) {
+    casingRewrites++;
+  }
+  canonicalPaths[`/${segs.join("/")}`] = methods;
+}
+
+spec.paths = canonicalPaths;
 
 // ── Add metadata ──
 // NOTE: intentionally no `x-generated-at` timestamp — the committed spec must be a
