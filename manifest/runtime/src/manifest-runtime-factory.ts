@@ -35,6 +35,7 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createContractSignedEventConfirmMiddleware,
   createIdentityMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createPrepInventoryDemandMiddleware,
@@ -547,6 +548,16 @@ export async function createManifestRuntime(
     // convertToClient does not take as params — the middleware loads the
     // converted Lead from the store and dispatches the governed Deal.create.
     createLeadConvertedDealCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: ContractSigned -> Event.confirm. Middleware (not a reaction)
+    // because the event to confirm is identified by EventContract.eventId — the
+    // contract's OWN field — and `sign()` takes no params, so a reaction's
+    // payload cannot carry it. The middleware loads the signed contract from the
+    // store, reads self.eventId, and dispatches the governed Event.confirm.
+    createContractSignedEventConfirmMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

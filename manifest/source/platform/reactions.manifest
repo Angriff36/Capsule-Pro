@@ -55,14 +55,18 @@ on CollectionPaymentRecorded run Invoice.applyPayment
 
 // ── Events: Contract → Event confirmation ────────────────────────────────────
 
-// When a client signs an event contract, automatically confirm the event.
-// Replaces manual event confirmation that was disconnected from contract signing.
-// Uses a system-level userId since this is an automatic cascade from contract signing.
-on ContractSigned run Event.confirm
-  resolve payload.result.eventId
-  params {
-    userId: "system"
-  }
+// Handled by MIDDLEWARE, not a reaction. When a client signs an event contract,
+// the linked event is auto-confirmed so signing immediately advances the event
+// lifecycle. The event to confirm is identified by `EventContract.eventId` — the
+// contract's OWN field — and `EventContract.sign()` takes NO input params, so a
+// reaction cannot read it: the emitted payload is only `{...commandInput, result}`
+// + `payload._subject.id`, and declared event fields (`ContractSigned.eventId`)
+// are NOT auto-populated from self.*. The prior `on ContractSigned run
+// Event.confirm` reaction reading `resolve payload.result.eventId` was a silent
+// no-op (`sign` is a MUTATE; `result` = the last mutate's scalar `signedAt`).
+// `contract-signed-event-confirm-middleware.ts` loads the signed EventContract
+// from the store via `_subject.id`, reads `self.eventId`, and dispatches the
+// governed `Event.confirm` (only when the event is still `draft`).
 
 // ── Equipment: MaintenanceWorkOrder → Equipment maintenance record ────────
 

@@ -8,6 +8,11 @@
  */
 
 export {
+  type ContractSignedEventConfirmDiagnostic,
+  type ContractSignedEventConfirmMiddlewareOptions,
+  createContractSignedEventConfirmMiddleware,
+} from "./contract-signed-event-confirm-middleware";
+export {
   createIdentityMiddleware,
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";

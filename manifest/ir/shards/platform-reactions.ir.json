@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0cdd82cafc4ebeef5affe8c77806f6fc60528e9d3840571aba86dadd5e18cb29",
-    "irHash": "6d40e085907a1ef874cd0c0657c8bf0f3ee821f563b2cfe3f7d2c99f2856d09d",
+    "contentHash": "cd40884909a1d7438dce24f69a3ab47c715e3cbca71fef6322563ef59c1f883c",
+    "irHash": "91db6806e16b13f624a884a198cccba0702ecc722f9e7d19e3cdb0d9f83c6cda",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T07:32:46.871Z"
+    "compiledAt": "2026-06-14T07:56:37.112Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -212,35 +212,6 @@
               "name": "payload"
             },
             "property": "paymentId"
-          }
-        }
-      ]
-    },
-    {
-      "event": "ContractSigned",
-      "targetEntity": "Event",
-      "targetCommand": "confirm",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "eventId"
-      },
-      "params": [
-        {
-          "name": "userId",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "system"
-            }
           }
         }
       ]
