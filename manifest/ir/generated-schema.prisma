@@ -721,30 +721,31 @@ model AllergenWarning {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model BankAccount {
-  id String
-  tenantId String
-  employeeId String
-  accountHolderName String?
-  accountNumber String?
-  routingNumber String?
-  accountType String? @default("checking")
-  bankName String? @default("")
-  isDefault Boolean? @default(false)
-  status String? @default("active")
-  verifiedAt DateTime?
-  verificationFailedAt DateTime?
-  verificationFailureReason String? @default("")
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  tenantId String @map("tenant_id") @db.Uuid
+  employeeId String @map("employee_id") @db.Uuid
+  accountHolderName String? @map("account_holder_name")
+  accountNumber String? @map("account_number")
+  routingNumber String? @map("routing_number")
+  accountType String? @map("account_type") @default("checking")
+  bankName String? @map("bank_name") @default("")
+  isDefault Boolean? @map("is_default") @default(false)
+  status String? @default("pending")
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
+  verificationFailedAt DateTime? @map("verification_failed_at") @db.Timestamptz(6)
+  verificationFailureReason String? @map("verification_failure_reason") @default("")
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
+  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
 
 
+  @@map("employee_bank_accounts")
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_staff")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "BankAccount" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "BankAccount"
+// ALTER TABLE "employee_bank_accounts" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "employee_bank_accounts"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model BoardConfig {
@@ -932,7 +933,7 @@ model Report {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model Document {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   name String? @default("")
   documentType String? @default("")
@@ -947,7 +948,10 @@ model Document {
   updatedAt DateTime? @updatedAt
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@index([tenantId, id])
+  @@schema("tenant")
+
+  @@unique([tenantId, id])
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -1679,30 +1683,9 @@ model AutomatedFollowup {
 // ALTER TABLE "AutomatedFollowup" ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON "AutomatedFollowup"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
-
-model EventTimelineItem {
-  id String
-  tenantId String
-  eventId String
-  title String
-  description String? @default("")
-  itemType String? @default("task")
-  status String? @default("pending")
-  assignedTo String? @default("")
-  dueDate DateTime?
-  completedAt DateTime?
-  sortOrder Int?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-
-  @@id([tenantId, id])
-  @@schema("public")
-}
-
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "EventTimelineItem" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "EventTimelineItem"
+// ALTER TABLE "event_timeline" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_timeline"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventWaitlistEntry {
@@ -1910,34 +1893,9 @@ model EventGuest {
 // ALTER TABLE "event_guests" ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON "event_guests"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
-
-model EventImportWorkflow {
-  id String
-  tenantId String
-  eventId String? @default("")
-  idempotencyKey String? @default("")
-  status String? @default("created")
-  currentStep Int?
-  totalSteps Int? @default(6)
-  inputData String? @default("{}")
-  outputData String? @default("{}")
-  stepResults String? @default("{}")
-  errors String? @default("[]")
-  warnings String? @default("[]")
-  confidence Int?
-  startedAt DateTime?
-  completedAt DateTime?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-
-  @@id([tenantId, id])
-  @@schema("public")
-}
-
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "EventImportWorkflow" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "EventImportWorkflow"
+// ALTER TABLE "event_imports" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "event_imports"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model EventReport {
@@ -2745,10 +2703,10 @@ model RevenueRecognitionLine {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model SmsAutomationRule {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   name String @default("")
-  description String? @default("")
+  description String? @db.Text @default("")
   triggerType String @default("custom_event")
   triggerConfig String? @default("{}")
   templateId String? @default("")
@@ -2762,13 +2720,17 @@ model SmsAutomationRule {
   updatedAt DateTime? @updatedAt
 
 
+  @@map("sms_automation_rules")
   @@id([tenantId, id])
-  @@schema("public")
+  @@index([tenantId, isActive])
+  @@index([tenantId, triggerType])
+  @@index([tenantId, priority])
+  @@schema("tenant_admin")
 }
 
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "SmsAutomationRule" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "SmsAutomationRule"
+// ALTER TABLE "sms_automation_rules" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "sms_automation_rules"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model VersionedEntity {
@@ -2988,7 +2950,7 @@ model VarianceReport {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model StorageLocation {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   locationId String
   name String
@@ -3001,7 +2963,7 @@ model StorageLocation {
 
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_inventory")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3779,7 +3741,7 @@ model KitchenTaskProgress {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model TaskBundle {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   name String
   eventId String? @default("")
@@ -3790,7 +3752,8 @@ model TaskBundle {
 
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@index([eventId])
+  @@schema("tenant_kitchen")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3809,7 +3772,7 @@ model TaskBundleItem {
 
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_kitchen")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3818,7 +3781,7 @@ model TaskBundleItem {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model BulkCombineRule {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   name String
   matchCriteria String
@@ -3827,7 +3790,7 @@ model BulkCombineRule {
   updatedAt DateTime? @updatedAt
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_kitchen")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3836,7 +3799,7 @@ model BulkCombineRule {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model MethodVideo {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   prepMethodId String
   title String
@@ -3847,7 +3810,7 @@ model MethodVideo {
 
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_kitchen")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -3856,7 +3819,7 @@ model MethodVideo {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model PrepListImport {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   source String
   fileName String
@@ -3867,7 +3830,7 @@ model PrepListImport {
   updatedAt DateTime? @updatedAt
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_kitchen")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -4619,34 +4582,9 @@ model Vehicle {
 // ALTER TABLE "vehicles" ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON "vehicles"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
-
-model LogisticsRoute {
-  id String
-  tenantId String
-  name String
-  status String? @default("planned")
-  vehicleId String? @default("")
-  driverId String? @default("")
-  totalDistance Decimal? @db.Decimal(12, 2)
-  totalDuration Int?
-  scheduledDate DateTime?
-  endTime DateTime?
-  actualStartTime DateTime?
-  actualEndTime DateTime?
-  completedStops Int?
-  delayMinutes Int? @default(0)
-  description String? @default("")
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-
-  @@id([tenantId, id])
-  @@schema("public")
-}
-
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "LogisticsRoute" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "LogisticsRoute"
+// ALTER TABLE "delivery_routes" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "delivery_routes"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model LogisticsDispatch {
@@ -5354,54 +5292,13 @@ model QACheck {
 // ALTER TABLE "qa_checks" ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON "qa_checks"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
-
-model QACorrectiveAction {
-  id String
-  tenantId String
-  relatedCheckId String? @default("")
-  description String
-  assignedTo String? @default("")
-  severity String? @default("medium")
-  status String? @default("open")
-  resolutionNotes String? @default("")
-  escalatedTo String? @default("")
-  escalationReason String? @default("")
-  dueDate DateTime?
-  resolvedAt DateTime?
-  escalatedAt DateTime?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-
-  @@id([tenantId, id])
-  @@schema("public")
-}
-
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "QACorrectiveAction" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "QACorrectiveAction"
+// ALTER TABLE "corrective_actions" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "corrective_actions"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
-
-model QATemperatureLog {
-  id String
-  tenantId String
-  logType String
-  temperature Decimal @db.Decimal(12, 2)
-  unit String? @default("fahrenheit")
-  equipmentId String? @default("")
-  loggedBy String? @default("")
-  notes String? @default("")
-  loggedAt DateTime?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-  @@id([tenantId, id])
-  @@schema("public")
-}
-
 // -- RLS policy (apply manually or via migration):
-// ALTER TABLE "QATemperatureLog" ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tenant_isolation ON "QATemperatureLog"
+// ALTER TABLE "temperature_logs" ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tenant_isolation ON "temperature_logs"
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model WasteEntry {
@@ -5879,7 +5776,7 @@ model OnboardingCompletion {
 //   USING ("tenantId" = current_setting('app.tenant_id'));
 
 model OpenShift {
-  id String
+  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   tenantId String
   scheduleId String
   role String? @default("")
@@ -5892,7 +5789,7 @@ model OpenShift {
 
 
   @@id([tenantId, id])
-  @@schema("public")
+  @@schema("tenant_staff")
 }
 
 // -- RLS policy (apply manually or via migration):
@@ -6373,38 +6270,6 @@ model Location {
   @@schema("tenant")
 }
 
-model EmployeeBankAccount {
-  tenantId           String    @map("tenant_id") @db.Uuid
-  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employeeId         String    @map("employee_id") @db.Uuid
-  bankName           String    @map("bank_name")
-  accountType        String    @default("checking") @map("account_type")
-  routingNumber      String    @map("routing_number")
-  accountNumber      String    @map("account_number")
-  /// Generated column: GENERATED ALWAYS AS (RIGHT(account_number, 4)) STORED.
-  /// Managed by Postgres; never set from application code.
-  accountNumberLast4 String?   @default(dbgenerated("\"right\"(account_number, 4)")) @map("account_number_last4")
-  accountHolderName  String    @map("account_holder_name")
-  isDefault          Boolean   @default(false) @map("is_default")
-  status             String    @default("pending")
-  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
-  verificationMethod String?   @map("verification_method")
-  depositHistory     Json      @default("[]") @map("deposit_history")
-  notes              String?
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
-
-  verificationFailedAt      DateTime? @map("verification_failed_at") @db.Timestamptz(6)
-  verificationFailureReason String?   @map("verification_failure_reason")
-
-  @@id([tenantId, id])
-  @@index([tenantId, employeeId], map: "employee_bank_accounts_employee_idx")
-  @@index([tenantId, status], map: "employee_bank_accounts_status_idx")
-  @@map("employee_bank_accounts")
-  @@schema("tenant_staff")
-}
-
 model UserPreference {
   tenantId        String    @map("tenant_id") @db.Uuid
   id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -6787,31 +6652,6 @@ model sms_logs {
   @@index([tenant_id, status])
   @@index([tenant_id, employee_id])
   @@index([tenant_id, created_at(sort: Desc)])
-  @@schema("tenant_admin")
-}
-
-model sms_automation_rules {
-  tenant_id        String                      @db.Uuid
-  id               String                      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String
-  description      String?                     @db.Text
-  trigger_type     sms_automation_trigger_type
-  trigger_config   Json                        @default("{}")
-  template_id      String?                     @db.Uuid
-  custom_message   String?                     @db.Text
-  recipient_type   sms_recipient_type          @default(employee)
-  recipient_config Json                        @default("{}")
-  is_active        Boolean                     @default(true) @map("is_active")
-  priority         Int                         @default(100)
-  created_at       DateTime                    @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime                    @default(now()) @updatedAt @db.Timestamptz(6)
-  deleted_at       DateTime?                   @db.Timestamptz(6)
-
-  @@id([tenant_id, id])
-  @@index([tenant_id, is_active])
-  @@index([tenant_id, trigger_type])
-  @@index([tenant_id, priority])
-  @@map("sms_automation_rules")
   @@schema("tenant_admin")
 }
 

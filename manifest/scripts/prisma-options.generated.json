@@ -12,6 +12,7 @@
     "AdminTask": "admin_tasks",
     "AlertsConfig": "alerts_config",
     "AllergenWarning": "allergen_warnings",
+    "BankAccount": "employee_bank_accounts",
     "BoardConfig": "board_configs",
     "ChartOfAccount": "chart_of_accounts",
     "Container": "containers",
@@ -40,12 +41,14 @@
     "CommandBoardGroup": "command_board_groups",
     "CommandBoardConnection": "command_board_connections",
     "CommandBoardLayout": "command_board_layouts",
+    "EventTimelineItem": "event_timeline",
     "EventBudget": "event_budgets",
     "BudgetLineItem": "budget_line_items",
     "EventContract": "event_contracts",
     "ContractSignature": "contract_signatures",
     "EventDish": "event_dishes",
     "EventGuest": "event_guests",
+    "EventImportWorkflow": "event_imports",
     "EventReport": "event_reports",
     "Event": "events",
     "EventProfitability": "event_profitability",
@@ -68,6 +71,7 @@
     "PricingTier": "pricing_tiers",
     "RevenueRecognitionSchedule": "revenue_recognition_schedules",
     "RevenueRecognitionLine": "revenue_recognition_lines",
+    "SmsAutomationRule": "sms_automation_rules",
     "BulkOrderRule": "bulk_order_rules",
     "CycleCountSession": "cycle_count_sessions",
     "CycleCountRecord": "cycle_count_records",
@@ -120,6 +124,7 @@
     "FacilityAsset": "facility_assets",
     "Driver": "drivers",
     "Vehicle": "vehicles",
+    "LogisticsRoute": "delivery_routes",
     "Shipment": "shipments",
     "ShipmentItem": "shipment_items",
     "WorkOrder": "work_orders",
@@ -137,6 +142,8 @@
     "VendorCatalog": "vendor_catalogs",
     "VendorContract": "vendor_contracts",
     "QACheck": "qa_checks",
+    "QACorrectiveAction": "corrective_actions",
+    "QATemperatureLog": "temperature_logs",
     "WasteEntry": "waste_entries",
     "LaborBudget": "labor_budgets",
     "BudgetAlert": "budget_alerts",
@@ -337,6 +344,25 @@
       "deletedAt": "deleted_at",
       "escalatedAt": "escalated_at",
       "escalatedTo": "escalated_to"
+    },
+    "BankAccount": {
+      "tenantId": "tenant_id",
+      "employeeId": "employee_id",
+      "bankName": "bank_name",
+      "accountType": "account_type",
+      "routingNumber": "routing_number",
+      "accountNumber": "account_number",
+      "accountNumberLast4": "account_number_last4",
+      "accountHolderName": "account_holder_name",
+      "isDefault": "is_default",
+      "verifiedAt": "verified_at",
+      "verificationMethod": "verification_method",
+      "depositHistory": "deposit_history",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at",
+      "verificationFailedAt": "verification_failed_at",
+      "verificationFailureReason": "verification_failure_reason"
     },
     "BoardConfig": {
       "tenantId": "tenant_id",
@@ -695,6 +721,19 @@
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
     },
+    "EventTimelineItem": {
+      "tenantId": "tenant_id",
+      "eventId": "event_id",
+      "timelineTime": "timeline_time",
+      "responsibleRole": "responsible_role",
+      "isCompleted": "is_completed",
+      "completedAt": "completed_at",
+      "sortOrder": "sort_order",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at",
+      "durationMinutes": "duration_minutes"
+    },
     "EventBudget": {
       "tenantId": "tenant_id",
       "id": "id",
@@ -787,6 +826,28 @@
       "deletedAt": "deleted_at",
       "declineReason": "decline_reason",
       "checkedInAt": "checked_in_at"
+    },
+    "EventImportWorkflow": {
+      "tenantId": "tenant_id",
+      "eventId": "event_id",
+      "fileName": "file_name",
+      "mimeType": "mime_type",
+      "fileSize": "file_size",
+      "blobUrl": "blob_url",
+      "fileType": "file_type",
+      "detectedFormat": "detected_format",
+      "parseStatus": "parse_status",
+      "extractedData": "extracted_data",
+      "parseErrors": "parse_errors",
+      "reportId": "report_id",
+      "battleBoardId": "battle_board_id",
+      "parsedAt": "parsed_at",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at",
+      "totalRows": "total_rows",
+      "importedRows": "imported_rows",
+      "skippedRows": "skipped_rows"
     },
     "EventReport": {
       "tenantId": "tenant_id",
@@ -1155,6 +1216,9 @@
       "createdAt": "created_at",
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
+    },
+    "SmsAutomationRule": {
+      "is_active": "is_active"
     },
     "BulkOrderRule": {
       "tenantId": "tenant_id",
@@ -1914,6 +1978,29 @@
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
     },
+    "LogisticsRoute": {
+      "tenantId": "tenant_id",
+      "id": "id",
+      "routeNumber": "route_number",
+      "eventId": "event_id",
+      "scheduledDate": "scheduled_date",
+      "startTime": "start_time",
+      "endTime": "end_time",
+      "totalDistance": "total_distance",
+      "totalDuration": "total_duration",
+      "optimizationScore": "optimization_score",
+      "optimizationAlgorithm": "optimization_algorithm",
+      "driverId": "driver_id",
+      "vehicleId": "vehicle_id",
+      "actualStartTime": "actual_start_time",
+      "actualEndTime": "actual_end_time",
+      "actualDistance": "actual_distance",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at",
+      "completedStops": "completed_stops",
+      "delayMinutes": "delay_minutes"
+    },
     "Shipment": {
       "tenantId": "tenant_id",
       "shipmentNumber": "shipment_number",
@@ -2183,6 +2270,44 @@
       "checkType": "check_type",
       "completedAt": "completed_at",
       "reinspectedAt": "reinspected_at",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at"
+    },
+    "QACorrectiveAction": {
+      "tenantId": "tenant_id",
+      "actionNumber": "action_number",
+      "eventId": "event_id",
+      "relatedCheckId": "related_check_id",
+      "relatedTempLogId": "related_temp_log_id",
+      "rootCause": "root_cause",
+      "immediateAction": "immediate_action",
+      "preventiveAction": "preventive_action",
+      "assignedTo": "assigned_to",
+      "dueDate": "due_date",
+      "resolvedAt": "resolved_at",
+      "resolvedBy": "resolved_by",
+      "resolutionNotes": "resolution_notes",
+      "verificationMethod": "verification_method",
+      "verifiedBy": "verified_by",
+      "createdAt": "created_at",
+      "updatedAt": "updated_at",
+      "deletedAt": "deleted_at",
+      "escalatedTo": "escalated_to",
+      "escalationReason": "escalation_reason",
+      "escalatedAt": "escalated_at"
+    },
+    "QATemperatureLog": {
+      "tenantId": "tenant_id",
+      "logNumber": "log_number",
+      "eventId": "event_id",
+      "equipmentId": "equipment_id",
+      "logType": "log_type",
+      "itemName": "item_name",
+      "targetTemp": "target_temp",
+      "loggedAt": "logged_at",
+      "loggedBy": "logged_by",
+      "correctiveAction": "corrective_action",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
@@ -2694,6 +2819,16 @@
       "deletedAt": "Timestamptz(6)",
       "escalatedAt": "Timestamptz(6)"
     },
+    "BankAccount": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "employeeId": "Uuid",
+      "verifiedAt": "Timestamptz(6)",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)",
+      "verificationFailedAt": "Timestamptz(6)"
+    },
     "BoardConfig": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -2755,6 +2890,16 @@
       "createdAt": "Timestamptz(6)",
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
+    },
+    "Document": {
+      "id": "Uuid",
+      "tenant_id": "Uuid",
+      "parsed_at": "Timestamptz(6)",
+      "event_id": "Uuid",
+      "battle_board_id": "Uuid",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
     },
     "AdminChatThread": {
       "tenantId": "Uuid",
@@ -2997,6 +3142,17 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
+    "EventTimelineItem": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "eventId": "Uuid",
+      "timelineTime": "Time(6)",
+      "completedAt": "Timestamptz(6)",
+      "sortOrder": "SmallInt",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
     "EventBudget": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -3064,6 +3220,17 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)",
       "checkedInAt": "Timestamptz(6)"
+    },
+    "EventImportWorkflow": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "eventId": "Uuid",
+      "reportId": "Uuid",
+      "battleBoardId": "Uuid",
+      "parsedAt": "Timestamptz(6)",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
     },
     "EventReport": {
       "tenantId": "Uuid",
@@ -3382,6 +3549,16 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
+    "SmsAutomationRule": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "description": "Text",
+      "template_id": "Uuid",
+      "custom_message": "Text",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
+    },
     "BulkOrderRule": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -3448,6 +3625,17 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)",
       "rejectedAt": "Timestamptz(6)"
+    },
+    "StorageLocation": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "location_id": "Uuid",
+      "temperature_min": "Decimal(5, 1)",
+      "temperature_max": "Decimal(5, 1)",
+      "temperature_unit": "Char(1)",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
     },
     "InventoryStock": {
       "tenantId": "Uuid",
@@ -3789,6 +3977,43 @@
       "progressPct": "Decimal(5, 2)",
       "recordedAt": "Timestamptz(6)"
     },
+    "TaskBundle": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "event_id": "Uuid",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
+    },
+    "TaskBundleItem": {
+      "tenant_id": "Uuid",
+      "bundle_id": "Uuid",
+      "task_id": "Uuid",
+      "sort_order": "SmallInt",
+      "created_at": "Timestamptz(6)"
+    },
+    "BulkCombineRule": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
+    },
+    "MethodVideo": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "method_id": "Uuid",
+      "sort_order": "SmallInt",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
+    },
+    "PrepListImport": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "imported_by": "Uuid",
+      "created_at": "Timestamptz(6)"
+    },
     "KitchenTask": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -4068,6 +4293,24 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
+    "LogisticsRoute": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "eventId": "Uuid",
+      "scheduledDate": "Date",
+      "startTime": "Timestamptz(6)",
+      "endTime": "Timestamptz(6)",
+      "totalDistance": "Decimal(10, 2)",
+      "optimizationScore": "Decimal(5, 2)",
+      "driverId": "Uuid",
+      "vehicleId": "Uuid",
+      "actualStartTime": "Timestamptz(6)",
+      "actualEndTime": "Timestamptz(6)",
+      "actualDistance": "Decimal(10, 2)",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
     "Shipment": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -4307,6 +4550,45 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
+    "QACorrectiveAction": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "eventId": "Uuid",
+      "relatedCheckId": "Uuid",
+      "relatedTempLogId": "Uuid",
+      "description": "Text",
+      "rootCause": "Text",
+      "immediateAction": "Text",
+      "preventiveAction": "Text",
+      "assignedTo": "Uuid",
+      "dueDate": "Timestamptz(6)",
+      "resolvedAt": "Timestamptz(6)",
+      "resolvedBy": "Uuid",
+      "resolutionNotes": "Text",
+      "verificationMethod": "Text",
+      "verifiedBy": "Uuid",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)",
+      "escalatedTo": "Uuid",
+      "escalationReason": "Text",
+      "escalatedAt": "Timestamptz(6)"
+    },
+    "QATemperatureLog": {
+      "tenantId": "Uuid",
+      "id": "Uuid",
+      "eventId": "Uuid",
+      "equipmentId": "Uuid",
+      "temperature": "Decimal(6, 2)",
+      "targetTemp": "Decimal(6, 2)",
+      "loggedAt": "Timestamptz(6)",
+      "loggedBy": "Uuid",
+      "notes": "Text",
+      "correctiveAction": "Text",
+      "createdAt": "Timestamptz(6)",
+      "updatedAt": "Timestamptz(6)",
+      "deletedAt": "Timestamptz(6)"
+    },
     "WasteEntry": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -4538,6 +4820,20 @@
       "completed_at": "Timestamptz(6)",
       "created_at": "Timestamptz(6)",
       "updated_at": "Timestamptz(6)"
+    },
+    "OpenShift": {
+      "tenant_id": "Uuid",
+      "id": "Uuid",
+      "schedule_id": "Uuid",
+      "location_id": "Uuid",
+      "shift_start": "Timestamptz(6)",
+      "shift_end": "Timestamptz(6)",
+      "claimed_by": "Uuid",
+      "claimed_at": "Timestamptz(6)",
+      "assigned_shift_id": "Uuid",
+      "created_at": "Timestamptz(6)",
+      "updated_at": "Timestamptz(6)",
+      "deleted_at": "Timestamptz(6)"
     },
     "DeliveryRoute": {
       "tenantId": "Uuid",
@@ -4871,6 +5167,29 @@
         "@updatedAt"
       ]
     },
+    "BankAccount": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "accountType": [
+        "@default(\"checking\")"
+      ],
+      "accountNumberLast4": [
+        "@default(dbgenerated(\"\\\"right\\\"(account_number, 4)\"))"
+      ],
+      "isDefault": [
+        "@default(false)"
+      ],
+      "status": [
+        "@default(\"pending\")"
+      ],
+      "depositHistory": [
+        "@default(\"[]\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
     "BoardConfig": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
@@ -4970,6 +5289,17 @@
       ],
       "isShared": [
         "@default(false)"
+      ]
+    },
+    "Document": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "parse_status": [
+        "@default(\"pending\")"
+      ],
+      "metadata": [
+        "@default(\"{}\")"
       ]
     },
     "AdminChatThread": {
@@ -5396,6 +5726,20 @@
         "@default(\"\")"
       ]
     },
+    "EventTimelineItem": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "isCompleted": [
+        "@default(false)"
+      ],
+      "sortOrder": [
+        "@default(0)"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
     "EventWaitlistEntry": {
       "email": [
         "@default(\"\")"
@@ -5513,6 +5857,26 @@
       ],
       "version": [
         "@default(0)"
+      ]
+    },
+    "EventImportWorkflow": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "fileSize": [
+        "@default(0)"
+      ],
+      "fileType": [
+        "@default(\"pdf\")"
+      ],
+      "parseStatus": [
+        "@default(\"pending\")"
+      ],
+      "confidence": [
+        "@default(0)"
+      ],
+      "updatedAt": [
+        "@updatedAt"
       ]
     },
     "EventReport": {
@@ -6005,6 +6369,29 @@
         "@updatedAt"
       ]
     },
+    "SmsAutomationRule": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "trigger_config": [
+        "@default(\"{}\")"
+      ],
+      "recipient_type": [
+        "@default(\"employee\")"
+      ],
+      "recipient_config": [
+        "@default(\"{}\")"
+      ],
+      "is_active": [
+        "@default(true)"
+      ],
+      "priority": [
+        "@default(100)"
+      ],
+      "updated_at": [
+        "@updatedAt"
+      ]
+    },
     "VersionedEntity": {
       "isLocked": [
         "@default(false)"
@@ -6107,6 +6494,17 @@
       ],
       "updatedAt": [
         "@updatedAt"
+      ]
+    },
+    "StorageLocation": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "temperature_unit": [
+        "@default(\"F\")"
+      ],
+      "is_active": [
+        "@default(true)"
       ]
     },
     "InventoryStock": {
@@ -6485,6 +6883,49 @@
     "KitchenTaskProgress": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ]
+    },
+    "TaskBundle": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "is_template": [
+        "@default(false)"
+      ]
+    },
+    "TaskBundleItem": {
+      "sort_order": [
+        "@default(0)"
+      ]
+    },
+    "BulkCombineRule": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "is_automatic": [
+        "@default(false)"
+      ],
+      "is_active": [
+        "@default(true)"
+      ]
+    },
+    "MethodVideo": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "sort_order": [
+        "@default(0)"
+      ],
+      "is_active": [
+        "@default(true)"
+      ]
+    },
+    "PrepListImport": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "import_metadata": [
+        "@default(\"{}\")"
       ]
     },
     "KitchenTask": {
@@ -6894,6 +7335,17 @@
       ],
       "status": [
         "@default(\"available\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "LogisticsRoute": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"draft\")"
       ],
       "updatedAt": [
         "@updatedAt"
@@ -7336,6 +7788,31 @@
         "@updatedAt"
       ]
     },
+    "QACorrectiveAction": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "severity": [
+        "@default(\"medium\")"
+      ],
+      "status": [
+        "@default(\"open\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
+    "QATemperatureLog": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "unit": [
+        "@default(\"F\")"
+      ],
+      "updatedAt": [
+        "@updatedAt"
+      ]
+    },
     "WasteEntry": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
@@ -7559,6 +8036,14 @@
     "OnboardingCompletion": {
       "id": [
         "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ]
+    },
+    "OpenShift": {
+      "id": [
+        "@default(dbgenerated(\"gen_random_uuid()\"))"
+      ],
+      "status": [
+        "@default(\"open\")"
       ]
     },
     "DeliveryRoute": {
@@ -8070,6 +8555,16 @@
         "scale": 3
       }
     },
+    "StorageLocation": {
+      "temperature_min": {
+        "precision": 5,
+        "scale": 1
+      },
+      "temperature_max": {
+        "precision": 5,
+        "scale": 1
+      }
+    },
     "InventoryStock": {
       "quantity_on_hand": {
         "precision": 10,
@@ -8394,6 +8889,20 @@
         "scale": 2
       }
     },
+    "LogisticsRoute": {
+      "totalDistance": {
+        "precision": 10,
+        "scale": 2
+      },
+      "optimizationScore": {
+        "precision": 5,
+        "scale": 2
+      },
+      "actualDistance": {
+        "precision": 10,
+        "scale": 2
+      }
+    },
     "Shipment": {
       "shippingCost": {
         "precision": 12,
@@ -8549,6 +9058,16 @@
     "Vendor": {
       "rating": {
         "precision": 12,
+        "scale": 2
+      }
+    },
+    "QATemperatureLog": {
+      "temperature": {
+        "precision": 6,
+        "scale": 2
+      },
+      "targetTemp": {
+        "precision": 6,
         "scale": 2
       }
     },
@@ -8793,6 +9312,12 @@
         "id"
       ]
     ],
+    "Document": [
+      [
+        "tenantId",
+        "id"
+      ]
+    ],
     "AdminChatThread": [
       [
         "tenantId",
@@ -8944,6 +9469,11 @@
         "boardId",
         "userId",
         "name"
+      ]
+    ],
+    "EventTimelineItem": [
+      [
+        "eventId"
       ]
     ],
     "EventContract": [
@@ -9274,6 +9804,20 @@
         "id"
       ]
     ],
+    "SmsAutomationRule": [
+      [
+        "tenantId",
+        "isActive"
+      ],
+      [
+        "tenantId",
+        "triggerType"
+      ],
+      [
+        "tenantId",
+        "priority"
+      ]
+    ],
     "BulkOrderRule": [
       [
         "tenantId",
@@ -9501,6 +10045,11 @@
         "taskId"
       ]
     ],
+    "TaskBundle": [
+      [
+        "eventId"
+      ]
+    ],
     "MenuDish": [
       [
         "menuId"
@@ -9725,6 +10274,20 @@
         "status"
       ]
     ],
+    "LogisticsRoute": [
+      [
+        "tenantId",
+        "status"
+      ],
+      [
+        "tenantId",
+        "scheduledDate"
+      ],
+      [
+        "tenantId",
+        "routeNumber"
+      ]
+    ],
     "Shipment": [
       [
         "tenantId",
@@ -9910,6 +10473,42 @@
         "checkType"
       ]
     ],
+    "QACorrectiveAction": [
+      [
+        "tenantId",
+        "status"
+      ],
+      [
+        "tenantId",
+        "severity"
+      ],
+      [
+        "tenantId",
+        "eventId"
+      ],
+      [
+        "tenantId",
+        "actionNumber"
+      ]
+    ],
+    "QATemperatureLog": [
+      [
+        "tenantId",
+        "logType"
+      ],
+      [
+        "tenantId",
+        "eventId"
+      ],
+      [
+        "tenantId",
+        "loggedAt"
+      ],
+      [
+        "tenantId",
+        "logNumber"
+      ]
+    ],
     "WasteEntry": [
       [
         "inventoryItemId"
@@ -10031,6 +10630,10 @@
     "AllergenWarning": {
       "tenantId": "id"
     },
+    "BankAccount": {
+      "tenantId": "tenantId",
+      "employeeId": "id"
+    },
     "ChartOfAccount": {
       "tenantId": "id"
     },
@@ -10121,6 +10724,9 @@
     "CommandBoardLayout": {
       "tenantId": "id"
     },
+    "EventTimelineItem": {
+      "tenantId": "id"
+    },
     "EventBudget": {
       "tenantId": "id",
       "eventId": "id"
@@ -10139,6 +10745,9 @@
       "contractId": "id"
     },
     "EventGuest": {
+      "tenantId": "id"
+    },
+    "EventImportWorkflow": {
       "tenantId": "id"
     },
     "EventReport": {
@@ -10374,6 +10983,9 @@
     "Vehicle": {
       "tenantId": "id"
     },
+    "LogisticsRoute": {
+      "tenantId": "id"
+    },
     "Shipment": {
       "tenantId": "id",
       "eventId": "id",
@@ -10422,6 +11034,12 @@
       "tenantId": "id"
     },
     "QACheck": {
+      "tenantId": "id"
+    },
+    "QACorrectiveAction": {
+      "tenantId": "id"
+    },
+    "QATemperatureLog": {
       "tenantId": "id"
     },
     "WasteEntry": {
@@ -10495,6 +11113,7 @@
       "AdminTask": "tenant_admin",
       "AlertsConfig": "tenant_inventory",
       "AllergenWarning": "tenant_kitchen",
+      "BankAccount": "tenant_staff",
       "BoardConfig": "tenant_admin",
       "ChartOfAccount": "tenant_accounting",
       "Container": "tenant_kitchen",
@@ -10502,6 +11121,7 @@
       "InteractionAttachment": "tenant_crm",
       "CrmScoringRule": "tenant_crm",
       "Report": "tenant_admin",
+      "Document": "tenant",
       "AdminChatThread": "tenant_admin",
       "AdminChatMessage": "tenant_admin",
       "DocumentVersion": "tenant_events",
@@ -10525,6 +11145,7 @@
       "CommandBoardConnection": "tenant_events",
       "CommandBoardLayout": "tenant_events",
       "AutomatedFollowup": "public",
+      "EventTimelineItem": "tenant_events",
       "EventWaitlistEntry": "public",
       "EventBudget": "tenant_events",
       "BudgetLineItem": "tenant_events",
@@ -10532,6 +11153,7 @@
       "ContractSignature": "tenant_events",
       "EventDish": "tenant_events",
       "EventGuest": "tenant_events",
+      "EventImportWorkflow": "tenant_events",
       "EventReport": "tenant_events",
       "Event": "tenant_events",
       "EventProfitability": "tenant_events",
@@ -10555,6 +11177,7 @@
       "PricingTier": "tenant_inventory",
       "RevenueRecognitionSchedule": "tenant_accounting",
       "RevenueRecognitionLine": "tenant_accounting",
+      "SmsAutomationRule": "tenant_admin",
       "VersionedEntity": "public",
       "EntityVersion": "public",
       "VersionApproval": "public",
@@ -10562,6 +11185,7 @@
       "CycleCountSession": "tenant_inventory",
       "CycleCountRecord": "tenant_inventory",
       "VarianceReport": "tenant_inventory",
+      "StorageLocation": "tenant_inventory",
       "InventoryStock": "tenant_inventory",
       "InventoryAlert": "tenant_inventory",
       "InventoryForecast": "tenant_inventory",
@@ -10589,6 +11213,11 @@
       "QualityCheckItem": "tenant_kitchen",
       "KitchenTaskClaim": "tenant_kitchen",
       "KitchenTaskProgress": "tenant_kitchen",
+      "TaskBundle": "tenant_kitchen",
+      "TaskBundleItem": "tenant_kitchen",
+      "BulkCombineRule": "tenant_kitchen",
+      "MethodVideo": "tenant_kitchen",
+      "PrepListImport": "tenant_kitchen",
       "KitchenTask": "tenant_kitchen",
       "Menu": "tenant_kitchen",
       "MenuDish": "tenant_kitchen",
@@ -10612,6 +11241,7 @@
       "FacilityWorkOrder": "public",
       "Driver": "tenant_logistics",
       "Vehicle": "tenant_logistics",
+      "LogisticsRoute": "tenant_logistics",
       "LogisticsDispatch": "public",
       "Shipment": "tenant_inventory",
       "ShipmentItem": "tenant_inventory",
@@ -10634,6 +11264,8 @@
       "VendorContract": "tenant_inventory",
       "Vendor": "public",
       "QACheck": "tenant_kitchen",
+      "QACorrectiveAction": "tenant_kitchen",
+      "QATemperatureLog": "tenant_kitchen",
       "WasteEntry": "tenant_kitchen",
       "LaborBudget": "tenant_staff",
       "BudgetAlert": "tenant_staff",
@@ -10652,6 +11284,7 @@
       "TrainingCompletion": "tenant_staff",
       "OnboardingTask": "tenant_staff",
       "OnboardingCompletion": "tenant_staff",
+      "OpenShift": "tenant_staff",
       "DeliveryRoute": "tenant_logistics",
       "RouteStop": "tenant_logistics",
       "PaymentRefundAttempt": "tenant_accounting",
@@ -10715,6 +11348,10 @@
       "id"
     ],
     "AllergenWarning": [
+      "tenantId",
+      "id"
+    ],
+    "BankAccount": [
       "tenantId",
       "id"
     ],
@@ -10838,6 +11475,10 @@
       "tenantId",
       "id"
     ],
+    "EventTimelineItem": [
+      "tenantId",
+      "id"
+    ],
     "EventWaitlistEntry": [
       "tenantId",
       "id"
@@ -10863,6 +11504,10 @@
       "id"
     ],
     "EventGuest": [
+      "tenantId",
+      "id"
+    ],
+    "EventImportWorkflow": [
       "tenantId",
       "id"
     ],
@@ -10958,6 +11603,10 @@
       "tenantId",
       "id"
     ],
+    "SmsAutomationRule": [
+      "tenantId",
+      "id"
+    ],
     "VersionedEntity": [
       "tenantId",
       "id"
@@ -10983,6 +11632,10 @@
       "id"
     ],
     "VarianceReport": [
+      "tenantId",
+      "id"
+    ],
+    "StorageLocation": [
       "tenantId",
       "id"
     ],
@@ -11094,6 +11747,27 @@
       "tenantId",
       "id"
     ],
+    "TaskBundle": [
+      "tenantId",
+      "id"
+    ],
+    "TaskBundleItem": [
+      "tenantId",
+      "bundleId",
+      "taskId"
+    ],
+    "BulkCombineRule": [
+      "tenantId",
+      "id"
+    ],
+    "MethodVideo": [
+      "tenantId",
+      "id"
+    ],
+    "PrepListImport": [
+      "tenantId",
+      "id"
+    ],
     "KitchenTask": [
       "tenantId",
       "id"
@@ -11178,6 +11852,10 @@
       "tenantId",
       "id"
     ],
+    "LogisticsRoute": [
+      "tenantId",
+      "id"
+    ],
     "LogisticsDispatch": [
       "tenantId",
       "id"
@@ -11258,6 +11936,14 @@
       "tenantId",
       "id"
     ],
+    "QACorrectiveAction": [
+      "tenantId",
+      "id"
+    ],
+    "QATemperatureLog": [
+      "tenantId",
+      "id"
+    ],
     "WasteEntry": [
       "tenantId",
       "id"
@@ -11327,6 +12013,10 @@
       "id"
     ],
     "OnboardingCompletion": [
+      "tenantId",
+      "id"
+    ],
+    "OpenShift": [
       "tenantId",
       "id"
     ],
@@ -11401,6 +12091,12 @@
       ]
     ],
     "ProposalTemplate": [
+      [
+        "tenantId",
+        "id"
+      ]
+    ],
+    "Document": [
       [
         "tenantId",
         "id"
@@ -11636,6 +12332,12 @@
         "code"
       ]
     ],
+    "LogisticsRoute": [
+      [
+        "tenantId",
+        "routeNumber"
+      ]
+    ],
     "Shipment": [
       [
         "tenantId",
@@ -11711,6 +12413,18 @@
       [
         "tenantId",
         "id"
+      ]
+    ],
+    "QACorrectiveAction": [
+      [
+        "tenantId",
+        "actionNumber"
+      ]
+    ],
+    "QATemperatureLog": [
+      [
+        "tenantId",
+        "logNumber"
       ]
     ],
     "TrainingCompletion": [
