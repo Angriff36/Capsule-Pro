@@ -771,6 +771,11 @@
   },
   {
     "entity": "CollectionCase",
+    "command": "create",
+    "commandId": "CollectionCase.create"
+  },
+  {
+    "entity": "CollectionCase",
     "command": "createPaymentPlan",
     "commandId": "CollectionCase.createPaymentPlan"
   },

@@ -72,6 +72,32 @@ entity CollectionCase {
 
   // Commands
   default policy CollectionCaseDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
+  // Explicit create command. Required so the propagation middleware can dispatch
+  // CollectionCase.create via engine.runCommand (which resolves against the command
+  // registry) — without it the runtime reports "Command 'create' not found". The
+  // engine still auto-instantiates the full instance from the body seed
+  // (shouldAutoCreateInstance) and generates the id, so fields NOT listed here
+  // (invoiceNumber/eventId/clientId/notes/metadata/...) persist from the body and
+  // are protected from parent-context over-inheritance because a value present in
+  // the body always wins over an inherited parent value.
+  // Params are deliberately MINIMAL — only collection-specific identity/amounts that
+  // are NOT inferable from a belongsTo parent. The FK-mirrored fields (invoiceNumber/
+  // eventId/clientId) and the coincidental name-collisions (metadata/assignedTo) are
+  // intentionally NOT params so the parent-context audit (which forbids REQUIRING a
+  // parent-inferable field as input) stays clean; the caller still supplies them in
+  // the body. `status` is excluded too: it carries transitions, the seed defaults it
+  // to "ACTIVE", and mutating it to "ACTIVE" would be a rejected no-op self-transition
+  // (create-command-transition-self-loop-bug).
+  command create(invoiceId: string, clientName: string, originalAmount: money, outstandingAmount: money) {
+    guard invoiceId != "" "Invoice ID is required"
+    guard originalAmount > 0 "Original amount must be positive"
+    mutate invoiceId = invoiceId
+    mutate clientName = clientName
+    mutate originalAmount = originalAmount
+    mutate outstandingAmount = outstandingAmount
+    emit CollectionCaseCreated
+  }
+
   command assignTo(userId: string) {
     guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only assign active cases"
     mutate assignedTo = userId
@@ -374,6 +400,13 @@ entity CollectionPaymentPlan {
 }
 
 // Events
+event CollectionCaseCreated: "collections.case.created" {
+  caseId: string
+  invoiceId: string
+  clientId: string
+  originalAmount: money
+}
+
 event CollectionAssigned: "collections.case.assigned" {
   caseId: string
   invoiceId: string

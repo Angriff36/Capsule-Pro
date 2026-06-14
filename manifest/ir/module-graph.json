@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T14:09:05.799Z",
-  "contentHash": "65b3d02162f2a48661e1f482c2a2d089f8616044bfb94d39596059e452ccc7f1",
+  "compiledAt": "2026-06-14T14:49:14.686Z",
+  "contentHash": "f4762a258ed59d7212e59e8187bf46a97ede0bd301bc49579ca890278b50fc18",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -301,8 +301,8 @@
       "path": "finance/collections-rules.manifest",
       "domain": "finance",
       "entities": 3,
-      "commands": 27,
-      "events": 23
+      "commands": 28,
+      "events": 24
     },
     {
       "path": "finance/invoice-rules.manifest",
@@ -721,7 +721,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1044,
-    "events": 1019
+    "commands": 1045,
+    "events": 1020
   }
 }

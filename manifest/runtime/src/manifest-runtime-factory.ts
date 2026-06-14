@@ -43,6 +43,7 @@ import {
   createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
+  createInvoiceOverdueCollectionCaseCreateMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
@@ -667,6 +668,20 @@ export async function createManifestRuntime(
     // amount/paymentId from the command input, and dispatches the governed
     // Invoice.applyPayment (guard-safe; skips DRAFT/PAID/overpay).
     createCollectionPaymentRecordedInvoiceApplyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: InvoiceMarkedOverdue -> CollectionCase.create. Middleware (not a
+    // reaction) because every field a collection case needs (clientId/eventId/total/
+    // amountDue/invoiceNumber) is the Invoice's OWN field, not a markOverdue param
+    // (markOverdue takes none) — and declared event fields are never auto-populated
+    // from self.*. InvoiceMarkedOverdue had ZERO consumers, so overdue invoices never
+    // opened an AR-recovery case unless someone did it by hand. The middleware loads
+    // the Invoice via _subject.id and dispatches the governed CollectionCase.create
+    // (idempotent: skips when a case already exists for the invoice — mirrors the
+    // route's 409 guard; skips zero-total invoices that would fail amount_positive).
+    createInvoiceOverdueCollectionCaseCreateMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
