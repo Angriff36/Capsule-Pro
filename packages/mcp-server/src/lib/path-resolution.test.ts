@@ -32,7 +32,7 @@ describe("projectRoot resolution", () => {
   });
 
   it("falls back to process.cwd() when MCP_PROJECT_ROOT is not set", () => {
-    process.env.MCP_PROJECT_ROOT = undefined as string;
+    delete process.env.MCP_PROJECT_ROOT;
     const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
     expect(projectRoot).toBe(process.cwd());
   });

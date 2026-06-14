@@ -131,7 +131,7 @@ describe("MCP_ALLOW_DB env gate", () => {
   it("getPrisma succeeds when MCP_ALLOW_DB is not set", () => {
     const mockPrisma = { marker: "test" } as any;
     setPrisma(mockPrisma);
-    process.env.MCP_ALLOW_DB = undefined as string;
+    delete process.env.MCP_ALLOW_DB;
     expect(getPrisma()).toBe(mockPrisma);
   });
 });

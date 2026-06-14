@@ -462,6 +462,62 @@ jobs:
           fi
           echo "Governance registries are in sync with IR."
 
+  manifest-openapi-drift:
+    name: OpenAPI Spec Drift Check
+    if: github.actor != 'dependabot[bot]'
+    # BLOCKING — proves the committed manifest/api-docs/openapi.json matches the
+    # spec the CURRENT manifest sources would produce. Without this, the OpenAPI
+    # spec (consumed by the /api-docs Scalar UI and agent tooling) silently rots
+    # whenever an entity/command changes but the spec isn't regenerated.
+    #
+    # Flow mirrors manifest-registry-drift:
+    #   1. `manifest:compile` re-derives kitchen.ir.json from .manifest sources,
+    #      so step 2 generates from the source-of-truth IR — not a stale committed
+    #      IR (which could yield a false green).
+    #   2. `manifest:openapi` regenerates the spec from the fresh IR.
+    #   3. `git diff` against the committed spec fails if it differs.
+    #
+    # The generator is deterministic (no `x-generated-at` timestamp), so this diff
+    # fires only on genuine substantive drift.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      - name: Compile manifest IR
+        # Re-derive kitchen.ir.json from .manifest sources so the spec is generated
+        # from the CURRENT source-of-truth IR. See header comment for rationale.
+        run: pnpm manifest:compile
+
+      - name: Regenerate OpenAPI spec
+        run: pnpm manifest:openapi
+
+      - name: Verify no drift
+        run: |
+          if ! git diff --exit-code manifest/api-docs/openapi.json; then
+            echo "::error::manifest/api-docs/openapi.json is stale."
+            echo "Run 'pnpm manifest:compile && pnpm manifest:openapi' locally and commit the result."
+            exit 1
+          fi
+          echo "OpenAPI spec is in sync with IR."
+
   manifest-route-drift:
     name: Route Drift Gate
     if: github.actor != 'dependabot[bot]'

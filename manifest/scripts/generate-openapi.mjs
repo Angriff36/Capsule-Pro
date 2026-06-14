@@ -46,9 +46,16 @@ const genResult = projection.generate(ir, {
         "Auto-generated API specification for Capsule-Pro — a catering and events management platform. " +
         "All mutations go through the Manifest runtime dispatcher. Reads bypass runtime per constitution §10.",
     },
+    // Server URLs are ORIGINS ONLY — the operation paths already carry the full
+    // "/api/manifest/..." prefix (basePath above is baked into the paths). Including
+    // /api/manifest here too would double-prefix every "Try it" request.
     servers: [
       {
-        url: "https://pop-os.tail78dd9e.ts.net/api/manifest",
+        url: "/",
+        description: "Same origin (the host serving these docs)",
+      },
+      {
+        url: "https://pop-os.tail78dd9e.ts.net",
         description: "Dev (Tailscale)",
       },
     ],

@@ -9,6 +9,7 @@ import { governanceScannersPlugin } from "./plugins/governance-scanners.js";
 import { irAdminPlugin } from "./plugins/ir-admin.js";
 import { irIntrospectionPlugin } from "./plugins/ir-introspection.js";
 import { manifestQueriesPlugin } from "./plugins/manifest-queries.js";
+import { openapiPlugin } from "./plugins/openapi.js";
 import { routeResolutionPlugin } from "./plugins/route-resolution.js";
 import { runCommandPlugin } from "./plugins/run-command.js";
 import { testReproPlugin } from "./plugins/test-repro.js";
@@ -19,6 +20,7 @@ const env = keys();
 const TENANT_PLUGINS: McpPlugin[] = [
   manifestQueriesPlugin,
   irIntrospectionPlugin,
+  openapiPlugin,
   runCommandPlugin,
   routeResolutionPlugin,
   governanceScannersPlugin,

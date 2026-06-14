@@ -21,6 +21,7 @@
     "@repo/realtime": "workspace:*",
     "@repo/sentry-integration": "workspace:*",
     "@repo/supplier-connectors": "workspace:*",
+    "@scalar/nextjs-api-reference": "^0.11.3",
     "@sentry/nextjs": "^10.54.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "ai": "^6.0.191",
