@@ -52,16 +52,20 @@ on WasteEntryCreated run InventoryItem.waste
 
 // ── Collections: CollectionPayment → Invoice ─────────────────────────────────
 
-// When a collection case records a payment against an invoice, automatically
-// apply it through the governed Invoice.applyPayment command. This ensures
-// invoice amountPaid/amountDue stay consistent with collection activity.
-// Uses caseId as the payment reference for traceability.
-on CollectionPaymentRecorded run Invoice.applyPayment
-  resolve payload.result.invoiceId
-  params {
-    paymentAmount: payload.amount
-    paymentId: payload.paymentId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a collection case records a payment
+// against its invoice, the linked invoice is auto-credited so collection-recovery
+// activity keeps amountPaid/amountDue/status consistent. The invoice to credit is
+// identified by `CollectionCase.invoiceId` — the case's OWN field, NOT a
+// `recordPayment` input param (`recordPayment(amount, paymentId, paymentDate)`), and
+// declared event fields (`CollectionPaymentRecorded.invoiceId`) are NOT
+// auto-populated from self.*. The prior `on CollectionPaymentRecorded run
+// Invoice.applyPayment` reaction reading `resolve payload.result.invoiceId` was a
+// silent no-op (`recordPayment` is a MUTATE; `result` = the last mutate's scalar
+// `lastActivityAt`), so collections never credited the AR books.
+// `collection-payment-recorded-invoice-apply-middleware.ts` loads the CollectionCase
+// from the store via `_subject.id`, reads `self.invoiceId`, takes amount/paymentId
+// from the command input, and dispatches the governed `Invoice.applyPayment`
+// (guard-safe; skips DRAFT/PAID/overpay).
 
 // ── Events: Contract → Event confirmation ────────────────────────────────────
 

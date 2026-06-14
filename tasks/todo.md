@@ -142,3 +142,105 @@ repo-wide audit (Station is the first fix).
 
 **Commit staged with explicit manifest paths** (not `-A`) to avoid bundling the 3 pre-existing
 unrelated app-file edits in the working tree. Push HELD pending user confirmation (push = Tier 3).
+
+---
+
+# Task (2026-06-14): Wire inventory movements into the governed InventoryTransaction ledger (P0)
+
+_Source: IMPLEMENTATION_PLAN.md P0 — "InventoryConsumed/Wasted/Restocked/Adjusted →
+InventoryTransaction.create" (flagged "the entire governed stock ledger is empty")._
+
+## Problem (the why)
+Every `InventoryItem` mutate emits its event (`InventoryConsumed`/`InventoryWasted`/
+`InventoryRestocked`/`InventoryAdjusted`) but **nothing creates the `InventoryTransaction` ledger
+row**. The governed stock ledger is empty — only populated by direct-Prisma writes in 3 routes
+(purchase-orders complete, stock-levels adjust, cycle-count finalize). The `event-listeners.ts`
+`onInventory*` stubs exist but are never registered in the factory.
+
+## Decision (mechanism) — ONE after-emit middleware, not 4 reactions / 4 middleware / listener stubs
+- Reactions can't supply `unitCost` for consume/waste/adjust (item's OWN field, not a command param)
+  nor compute the ledger sign cleanly → would write valuation-incorrect rows.
+- Listener stubs sit outside the Manifest lifecycle → constitution prefers governed dispatch.
+- One middleware + a per-event spec table is simpler than 4 near-identical files (Rule 2/5).
+
+### Event → ledger mapping (transactionType MUST be in the entity's validTransactionType enum)
+| Event | command | transactionType | ledger quantity | unitCost source |
+|---|---|---|---|---|
+| InventoryConsumed | consume | `issue` | `-quantity` | load item.unitCost |
+| InventoryWasted | waste | `waste` | `-quantity` | load item.unitCost |
+| InventoryRestocked | restock | `receipt` | `+quantity` | `payload.costPerUnit` |
+| InventoryAdjusted | adjust | `adjustment` | `+quantity` (param is already a signed delta) | load item.unitCost |
+Signed deltas match the existing direct-Prisma producers (receipt +, adjustment signed).
+
+## Checklist
+- [x] Create `manifest/runtime/src/middleware/inventory-movement-transaction-middleware.ts`
+- [x] Export from `middleware/index.ts`; register in `manifest-runtime-factory.ts` (after-emit)
+- [x] Conformance test (real IR engine; row per movement w/ correct type/signed qty/unitCost; IR lock no reaction)
+- [x] runtime test (207 pass) + runtime+api typecheck green
+- [x] Update IMPLEMENTATION_PLAN.md
+- [ ] commit, push, tag
+
+## Review
+**Shipped one middleware, purely runtime (no IR/source/schema change).** Records an
+`InventoryTransaction` ledger row for every governed `InventoryItem` movement —
+closing the P0 "the entire governed stock ledger is empty" gap.
+
+**Rule-7 refinement of the plan.** The plan said "Mechanism: reaction (or listener
+registration)." Both are wrong on the evidence: a reaction cannot value the row
+(`unitCost` is the item's OWN field for consume/waste/adjust, not a command param,
+and event fields aren't auto-populated from `self.*`) nor sign the delta; the
+`event-listeners.ts` stubs sit outside the Manifest lifecycle (constitution prefers
+governed dispatch). One middleware with a per-event spec table beats 4 near-identical
+files.
+
+**Key correctness findings (test-locked):**
+1. `transactionType` is gated by the entity block `validTransactionType` → the map uses
+   the ENUM members, not command names: consume→`issue`, waste→`waste`, restock→`receipt`,
+   adjust→`adjustment`. (The direct-Prisma producers' `"purchase"` would fail this gate.)
+2. Signed deltas: consume/waste `−qty`, restock/adjust `+qty` (adjust's param is already signed).
+3. `restock` carries `costPerUnit` in its payload → valued from it; others load `item.unitCost`.
+4. Movement events carry no tenantId/itemId field → resolve itemId from `subject.id`, tenant from ctx.
+5. Create id in body, not `instanceId`. Idempotency key per-row (every movement is a real entry).
+
+**Verification:** new test 5/5; full runtime suite 207 pass; runtime + api typecheck exit 0.
+No IR/source/generated change → `manifest:audit-reaction-payloads`, schema-drift, and
+route-drift gates are unaffected by construction.
+
+**Note for the sibling P1 inventory items** (InventoryStock↔InventoryItem sync,
+PurchaseOrderReceived 1:N, Transfer received): the `event-listeners.ts` `onInventory*`
+stubs remain unwired and are NOT the path — governed-dispatch middleware is.
+
+---
+
+# Task (2026-06-14): Fix Collections→Invoice payment (P0 last open financial no-op)
+
+_Source: IMPLEMENTATION_PLAN.md P0 — "Fix Collections→Invoice payment"._
+
+## Problem (the why)
+`on CollectionPaymentRecorded run Invoice.applyPayment` silently no-op'd: `CollectionCase.recordPayment`
+is a MUTATE, so `resolve payload.result.invoiceId` read the last mutate's scalar (`lastActivityAt`),
+not the case. So collections recorded a recovery but the invoice's amountPaid/amountDue/status never
+moved. `invoiceId` is the CollectionCase's OWN field (not a `recordPayment` param, not auto-populated
+into the event) → unreachable by ANY reaction.
+
+## Decision (mechanism) — MIDDLEWARE (direct sibling of the payment apply/refund legs)
+- `amount`/`paymentId` ARE recordPayment params (ride the payload); `invoiceId` is the case's own field
+  → must load the CollectionCase from the store. Reaction structurally cannot.
+- No double-apply: collection payment ≠ Payment.process, so PaymentProcessed apply leg never fires here;
+  the route only calls recordPayment.
+
+## Checklist
+- [x] Investigate path (Explore subagent) — confirmed invoiceId is entity-field, not param
+- [x] Create `collection-payment-recorded-invoice-apply-middleware.ts`; export from barrel; register in factory
+- [x] Remove dead reaction from `reactions.manifest`; recompile IR (210 entities)
+- [x] Conformance test (4 tests: IR lock, credit + PaymentApplied bubble, DRAFT skip, over-pay skip)
+- [x] runtime suite 215 pass; runtime + api typecheck exit 0; `manifest:audit-reaction-payloads` EXIT=0 (0 new)
+- [ ] commit (hold push pending confirmation — push = Tier 3)
+
+## Review
+**Shipped one middleware + reaction removal** (producer source + recompiled IR). Closes the last open
+financial-correctness P0 no-op: collection-case payments now credit the linked invoice through governed
+`Invoice.applyPayment`. Guard-safe (skips DRAFT/PAID/overpay). Idempotency keys on the case's
+post-payment `outstandingAmount` (monotonic → unique per payment, stable on retry). Verified against the
+real compiled IR through the runtime engine — fails loudly if the propagation regresses. No IR reaction
+added, so schema-drift/route-drift gates unaffected. Push HELD (Tier 3).

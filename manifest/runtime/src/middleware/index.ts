@@ -8,6 +8,11 @@
  */
 
 export {
+  type CollectionInvoiceApplyDiagnostic,
+  type CollectionPaymentRecordedInvoiceApplyMiddlewareOptions,
+  createCollectionPaymentRecordedInvoiceApplyMiddleware,
+} from "./collection-payment-recorded-invoice-apply-middleware";
+export {
   type ContractSignedEventConfirmDiagnostic,
   type ContractSignedEventConfirmMiddlewareOptions,
   createContractSignedEventConfirmMiddleware,

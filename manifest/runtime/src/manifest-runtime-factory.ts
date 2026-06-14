@@ -35,6 +35,7 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createContractSignedEventConfirmMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
@@ -601,6 +602,20 @@ export async function createManifestRuntime(
     // dispatches the governed Invoice.recordRefund (guard-safe; skips when the invoice
     // was never credited or the refund exceeds amountPaid).
     createPaymentRefundedInvoiceRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: CollectionPaymentRecorded -> Invoice.applyPayment. Middleware (not a
+    // reaction) for the same reason as the payment legs: the invoice to credit is
+    // CollectionCase.invoiceId — the case's OWN field, NOT a recordPayment param —
+    // and declared event fields are never auto-populated from self.*. The old
+    // reaction resolved payload.result.invoiceId (a mutate scalar) so it silently
+    // no-op'd and collections never credited the AR books. The middleware loads the
+    // CollectionCase from the store via _subject.id, reads self.invoiceId, takes the
+    // amount/paymentId from the command input, and dispatches the governed
+    // Invoice.applyPayment (guard-safe; skips DRAFT/PAID/overpay).
+    createCollectionPaymentRecordedInvoiceApplyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
