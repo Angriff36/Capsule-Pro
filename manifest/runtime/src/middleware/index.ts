@@ -13,6 +13,11 @@ export {
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
 } from "./collection-payment-recorded-invoice-apply-middleware";
 export {
+  type CollectionInvoiceWriteOffDiagnostic,
+  type CollectionWrittenOffInvoiceWriteOffMiddlewareOptions,
+  createCollectionWrittenOffInvoiceWriteOffMiddleware,
+} from "./collection-written-off-invoice-write-off-middleware";
+export {
   type ContractSignedEventConfirmDiagnostic,
   type ContractSignedEventConfirmMiddlewareOptions,
   createContractSignedEventConfirmMiddleware,

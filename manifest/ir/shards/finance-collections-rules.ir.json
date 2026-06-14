@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "e41d5237cdc33ecf2be2f6c512361dbd0777c49c78048b8082f77bb2804994f8",
-    "irHash": "85de603cc567e26a129bad98092dd94e9911a069c5a948db346ac4ad9cccd218",
+    "contentHash": "0718e3b308fc54d635a5e0ea7c2cf9b9ac5cffbcd99b14588020dcbb73d5bce9",
+    "irHash": "6923218703202c4dfaaa994f3260b73700f57b3e06c46f4e41b4d8be2d7a41a1",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T16:07:21.488Z"
+    "compiledAt": "2026-06-14T16:55:00.902Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -685,6 +685,7 @@
             "IN_PROGRESS",
             "LEGAL",
             "RESOLVED",
+            "WRITTEN_OFF",
             "DEFAULTED",
             "CANCELLED"
           ]
@@ -695,6 +696,7 @@
           "to": [
             "LEGAL",
             "RESOLVED",
+            "WRITTEN_OFF",
             "DEFAULTED",
             "CANCELLED"
           ]
@@ -704,6 +706,7 @@
           "from": "LEGAL",
           "to": [
             "RESOLVED",
+            "WRITTEN_OFF",
             "DISPUTED"
           ]
         },

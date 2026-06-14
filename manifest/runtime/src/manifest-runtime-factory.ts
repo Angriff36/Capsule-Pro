@@ -36,6 +36,7 @@ import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generat
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
+  createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContractSignedEventConfirmMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
@@ -699,6 +700,20 @@ export async function createManifestRuntime(
     // amount/paymentId from the command input, and dispatches the governed
     // Invoice.applyPayment (guard-safe; skips DRAFT/PAID/overpay).
     createCollectionPaymentRecordedInvoiceApplyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: CollectionWrittenOff -> Invoice.writeOff (closes the other end of the
+    // collections<->invoice loop). Middleware (not a reaction) because the invoice to
+    // write off is the CollectionCase's OWN invoiceId field, not a writeOff param, and
+    // declared event fields are never auto-populated from self.*. Loads the case via
+    // _subject.id, reads self.invoiceId, and writes off the invoice's full remaining
+    // amountDue via the governed Invoice.writeOff (guard-safe: skips non-OVERDUE/
+    // PARTIALLY_PAID and zero-due invoices; idempotent per case). NOTE: the source
+    // CollectionCase.writeOff command was DEAD until the FSM gained a "WRITTEN_OFF"
+    // transition target (collections-rules.manifest) — same fix this change makes.
+    createCollectionWrittenOffInvoiceWriteOffMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
