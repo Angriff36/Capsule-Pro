@@ -69,6 +69,7 @@ import {
   createRbacMiddleware,
   createSchedulePublishedNotifyStaffMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
+  createTimeOffApprovedShiftCleanupMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
   createTimecardEditApprovedTimeEntryApplyMiddleware,
@@ -945,6 +946,19 @@ export async function createManifestRuntime(
     // employee ids live on the ScheduleShift rows and must be queried by
     // scheduleId. Without this, publishing a schedule silently told no one.
     createSchedulePublishedNotifyStaffMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: TimeOffRequestApproved -> remove the employee's conflicting shifts.
+    // Middleware (not a reaction) because it is a 1:N fan-out (one approved request
+    // -> many ScheduleShift rows) AND the fields needed to find the conflicts
+    // (employeeId/startDate/endDate) are the TimeOffRequest's OWN fields, not
+    // `approve` params — the TimeOffRequestApproved payload carries only
+    // {requestId, processedBy, processedAt}, so the request is loaded via _subject.id
+    // and the shifts queried by employee + date. Approving PTO without this left the
+    // employee both on approved leave AND rostered to work (a double-booking).
+    createTimeOffApprovedShiftCleanupMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
