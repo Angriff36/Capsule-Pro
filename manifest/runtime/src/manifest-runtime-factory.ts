@@ -50,6 +50,7 @@ import {
   createInventoryStockSyncItemMiddleware,
   createInvoiceFullyPaidMarkPaidMiddleware,
   createInvoiceOverdueCollectionCaseCreateMiddleware,
+  createInvoiceWrittenOffRevRecCancelMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createMaintenanceCreatedEquipmentStatusMiddleware,
@@ -774,6 +775,20 @@ export async function createManifestRuntime(
     // re-trigger it; loads the invoice via _subject.id and dispatches markAsPaid when
     // amountDue <= 0 and status != PAID.
     createInvoiceFullyPaidMarkPaidMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: InvoiceWrittenOff -> RevenueRecognitionSchedule.cancel. When an invoice
+    // is written off as uncollectable, any schedule still recognizing revenue against it
+    // must stop — otherwise the books accrue earned revenue on dead debt and PENDING/
+    // IN_PROGRESS schedules dangle forever. Middleware (not a reaction) because the
+    // schedule(s) to cancel are found by RevenueRecognitionSchedule.invoiceId — the
+    // SCHEDULE's OWN field on the related child entity, not a writeOff param — and it is a
+    // 1:N fan-out a reaction cannot do. Loads cancellable schedules (PENDING/IN_PROGRESS/
+    // PAUSED) by invoiceId and dispatches the governed cancel(reason), forwarding the
+    // writeOff reason (a genuine param). InvoiceWrittenOff had ZERO consumers.
+    createInvoiceWrittenOffRevRecCancelMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
