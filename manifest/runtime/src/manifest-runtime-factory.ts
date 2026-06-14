@@ -48,6 +48,7 @@ import {
   createPrepListSeedMiddleware,
   createRbacMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
+  createTrainingAttemptSubmittedRecordMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
@@ -658,6 +659,23 @@ export async function createManifestRuntime(
     // the redundant updateStatus reaction whose newStatus != self.status guard
     // would fail once active).
     createMaintenanceCompletedEquipmentRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff training: TrainingAttemptSubmitted -> TrainingAttempt.create.
+    // Middleware (not a reaction) because the attempt's attemptNumber
+    // (= TrainingAssignment.attemptCount post-increment), passThresholdPercent,
+    // and managerReviewRequired are the assignment's OWN fields, NOT submit-command
+    // params — declared event fields are never auto-populated from self.*. The old
+    // `on TrainingAttemptSubmitted run TrainingAttempt.create` reaction resolved
+    // payload.result.attemptCount/passThresholdPercent/managerReviewRequired off a
+    // MUTATE command (result = the last mutate's scalar), so every ref was undefined
+    // and no attempt ledger row was ever recorded. The middleware loads the
+    // just-mutated TrainingAssignment via _subject.id, reads those fields, derives
+    // passed = scorePercent >= threshold, and dispatches the governed
+    // TrainingAttempt.create (idempotent per attemptId).
+    createTrainingAttemptSubmittedRecordMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

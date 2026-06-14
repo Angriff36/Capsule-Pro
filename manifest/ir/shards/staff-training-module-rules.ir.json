@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "5f96d6dfff1572b3065efb117be278f80047256b83ccc388a92fdbefed0ae4c0",
-    "irHash": "7cbe23b23b1d4d536938fac2f3ccad161c47080ed66e54e1e7822532a6906426",
+    "contentHash": "c35e9dfcf0a25a2576573fd86fb4c9eae4fd89700ebf7c12262d9be6de2df0c8",
+    "irHash": "0d995e2cf5228da889491ad87b7fb68232b3661be7bc850d71eb3b54336fa61a",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T10:19:05.482Z"
+    "compiledAt": "2026-06-14T10:35:20.066Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -7473,159 +7473,6 @@
     }
   ],
   "reactions": [
-    {
-      "event": "TrainingAttemptSubmitted",
-      "targetEntity": "TrainingAttempt",
-      "targetCommand": "create",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "identifier",
-          "name": "payload"
-        },
-        "property": "attemptId"
-      },
-      "params": [
-        {
-          "name": "id",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "attemptId"
-          }
-        },
-        {
-          "name": "assignmentId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "assignmentId"
-          }
-        },
-        {
-          "name": "moduleId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "moduleId"
-          }
-        },
-        {
-          "name": "staffMemberId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "staffMemberId"
-          }
-        },
-        {
-          "name": "attemptNumber",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "attemptCount"
-          }
-        },
-        {
-          "name": "scorePercent",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "scorePercent"
-          }
-        },
-        {
-          "name": "passThresholdPercent",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "passThresholdPercent"
-          }
-        },
-        {
-          "name": "passed",
-          "expression": {
-            "kind": "binary",
-            "operator": ">=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "scorePercent"
-            },
-            "right": {
-              "kind": "member",
-              "object": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "payload"
-                },
-                "property": "result"
-              },
-              "property": "passThresholdPercent"
-            }
-          }
-        },
-        {
-          "name": "managerReviewRequired",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "payload"
-              },
-              "property": "result"
-            },
-            "property": "managerReviewRequired"
-          }
-        },
-        {
-          "name": "answersJson",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "answersJson"
-          }
-        }
-      ]
-    },
     {
       "event": "TrainingCompleted",
       "targetEntity": "StaffTrainingSignal",

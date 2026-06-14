@@ -71,3 +71,8 @@ export {
   type ShipmentItemReceivedInventoryRestockMiddlewareOptions,
   type ShipmentRestockDiagnostic,
 } from "./shipment-item-received-inventory-restock-middleware";
+export {
+  createTrainingAttemptSubmittedRecordMiddleware,
+  type TrainingAttemptRecordDiagnostic,
+  type TrainingAttemptSubmittedRecordMiddlewareOptions,
+} from "./training-attempt-submitted-record-middleware";
