@@ -40,6 +40,7 @@ import {
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
+  createDishDeactivatedPruneMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
@@ -642,6 +643,19 @@ export async function createManifestRuntime(
     // derivedScaled × batchMultiplier, preserving the guest-count rescale).
     // Removal is deferred (no PrepListItem.remove command exists yet).
     createEventDishPrepSyncMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen→Kitchen/Menu: DishDeactivated -> retire the discontinued dish from
+    // open PrepTasks (cancel), draft PrepListItems (remove), and event menus
+    // (EventDish.remove). Middleware (not a reaction) because it is a 1:N fan-out
+    // across three entities keyed by the dish's OWN id (_subject.id) — a reaction
+    // resolves exactly one target. Scoped to deactivate (permanent discontinue),
+    // NOT the transient/reversible eightySix: an 86 has Dish.reinstate and no
+    // restore-on-reinstate provenance, so blanket irreversible pruning would strip
+    // the dish from future events for a same-day stockout (deferred — see plan).
+    createDishDeactivatedPruneMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
