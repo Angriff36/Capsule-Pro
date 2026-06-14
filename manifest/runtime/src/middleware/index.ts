@@ -8,6 +8,11 @@
  */
 
 export {
+  type ClientInteractionOverdueNotifyDiagnostic,
+  type ClientInteractionOverdueNotifyMiddlewareOptions,
+  createClientInteractionOverdueNotifyMiddleware,
+} from "./client-interaction-overdue-notify-middleware";
+export {
   type CollectionInvoiceApplyDiagnostic,
   type CollectionPaymentRecordedInvoiceApplyMiddlewareOptions,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,

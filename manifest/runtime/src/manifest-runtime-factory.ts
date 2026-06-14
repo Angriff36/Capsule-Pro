@@ -35,6 +35,7 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createClientInteractionOverdueNotifyMiddleware,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContractSignedEventConfirmMiddleware,
@@ -673,6 +674,17 @@ export async function createManifestRuntime(
     // assignee notification likewise needs the deal's `title` (its OWN field), so the
     // deal is loaded before dispatching the governed Notification.create.
     createDealLifecyclePropagationMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ClientInteractionMarkedOverdue -> Notification.create for the assignee.
+    // Middleware (not a reaction) because `markOverdue()` takes NO params, so the
+    // emitted payload carries no entity fields (declared event fields are never
+    // auto-populated from self.*) — the recipient (employeeId), subject, and tenantId
+    // are the interaction's OWN fields and must be LOADED from the store. The event
+    // was an orphan (no consumer), so overdue follow-ups generated zero signal.
+    createClientInteractionOverdueNotifyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
