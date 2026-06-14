@@ -196,7 +196,13 @@ entity Equipment {
   }
 
   // State transitions
-  transition status from "active" to ["maintenance", "out_of_service", "retired"]
+  // "active" includes a self-loop so recordMaintenance (which unconditionally
+  // mutates status = "active") succeeds when equipment is already active — the
+  // common case, since MaintenanceWorkOrderCreated → maintenance is not wired, so
+  // equipment stays active through the work-order lifecycle. The engine does not
+  // exempt no-op self-transitions, so without this the whole recordMaintenance
+  // update (incl. lastMaintenanceDate/nextMaintenanceDate) is dropped.
+  transition status from "active" to ["active", "maintenance", "out_of_service", "retired"]
   transition status from "maintenance" to ["active", "out_of_service", "retired"]
   transition status from "out_of_service" to ["active", "maintenance", "retired"]
   // "retired" is terminal

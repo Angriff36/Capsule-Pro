@@ -32,6 +32,11 @@ export {
   type LeadConvertedDealDiagnostic,
 } from "./lead-converted-deal-create-middleware";
 export {
+  createMaintenanceCompletedEquipmentRecordMiddleware,
+  type MaintenanceCompletedEquipmentRecordMiddlewareOptions,
+  type MaintenanceEquipmentRecordDiagnostic,
+} from "./maintenance-completed-equipment-record-middleware";
+export {
   createPaymentProcessedInvoiceApplyMiddleware,
   type PaymentInvoiceApplyDiagnostic,
   type PaymentProcessedInvoiceApplyMiddlewareOptions,

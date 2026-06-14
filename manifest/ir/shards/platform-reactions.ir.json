@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "1b0f91c74f02d69b8de59b75e2f99f3b29a4a358f1184775212325267c468d4d",
-    "irHash": "f2ed19f597a13031dd7528cea2c6804652439fe0a66ae63a58a6b6cd359f3df9",
+    "contentHash": "fcd3bd6c02b918b4d1846e2efb6c0839a82def19ded3f151693a56783aba1937",
+    "irHash": "6a1d64a3a0e13cb6ce4d6da73beecae88c7c232f41ee9c16d8b603506000719c",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T09:49:34.201Z"
+    "compiledAt": "2026-06-14T10:19:05.449Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -77,128 +77,6 @@
               "name": "payload"
             },
             "property": "loggedBy"
-          }
-        }
-      ]
-    },
-    {
-      "event": "MaintenanceWorkOrderCompleted",
-      "targetEntity": "Equipment",
-      "targetCommand": "recordMaintenance",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "equipmentId"
-      },
-      "params": [
-        {
-          "name": "maintenanceDate",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        },
-        {
-          "name": "maintenanceType",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "corrective"
-            }
-          }
-        },
-        {
-          "name": "performedBy",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
-          }
-        },
-        {
-          "name": "cost",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "totalCost"
-          }
-        },
-        {
-          "name": "notes",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Auto-recorded from work order completion"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "event": "MaintenanceWorkOrderCompleted",
-      "targetEntity": "Equipment",
-      "targetCommand": "updateStatus",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "equipmentId"
-      },
-      "params": [
-        {
-          "name": "newStatus",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "active"
-            }
-          }
-        },
-        {
-          "name": "reason",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Maintenance work order completed"
-            }
-          }
-        },
-        {
-          "name": "userId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
           }
         }
       ]

@@ -84,32 +84,21 @@ on WasteEntryCreated run InventoryItem.waste
 
 // ── Equipment: MaintenanceWorkOrder → Equipment maintenance record ────────
 
-// When a maintenance work order is completed, automatically record the maintenance
-// event on the parent equipment. This updates lastMaintenanceDate, calculates
-// nextMaintenanceDate, and keeps the equipment maintenance history current.
-on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
-  resolve payload.result.equipmentId
-  params {
-    // completeWork mutates completedAt = now(); payload.result is the last
-    // mutate's scalar value (not the instance), so derive the date honestly
-    // via now() — the reaction fires in the same runtime turn.
-    maintenanceDate: now()
-    maintenanceType: "corrective"
-    performedBy: payload.userId
-    cost: payload.totalCost
-    notes: "Auto-recorded from work order completion"
-  }
-
-// When maintenance work is completed, automatically transition the equipment
-// back to active status. Ensures equipment availability tracking stays current
-// without requiring a separate manual status update.
-on MaintenanceWorkOrderCompleted run Equipment.updateStatus
-  resolve payload.result.equipmentId
-  params {
-    newStatus: "active"
-    reason: "Maintenance work order completed"
-    userId: payload.userId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a maintenance work order is
+// completed (MaintenanceWorkOrder.completeWork → MaintenanceWorkOrderCompleted),
+// the linked Equipment must have its maintenance dates recorded and be returned
+// to active status. The two old reactions resolved `payload.result.equipmentId`,
+// and `completeWork` is a MUTATE command, so the engine's emitted payload
+// `{ ...commandInput, result }` carries `result` = the last mutate's scalar
+// (`completedAt`), NOT the MaintenanceWorkOrder instance — both silently no-op'd.
+// `equipmentId` is the MaintenanceWorkOrder's OWN field, not a `completeWork`
+// param, and declared event fields are never auto-populated from `self.*`, so no
+// reaction can read it. `maintenance-completed-equipment-record-middleware.ts`
+// loads the completed work order via `_subject.id`, reads `self.equipmentId`,
+// and dispatches the governed `Equipment.recordMaintenance` — which itself
+// mutates `status = "active"` (subsuming the redundant second `updateStatus`
+// reaction; dispatching both would trip updateStatus's `newStatus != self.status`
+// guard once recordMaintenance has already set active).
 
 // ── Procurement: Shipment receiving → Inventory restock ────────────────────
 

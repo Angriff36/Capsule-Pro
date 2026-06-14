@@ -40,6 +40,7 @@ import {
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
   createLeadConvertedDealCreateMiddleware,
+  createMaintenanceCompletedEquipmentRecordMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
@@ -641,6 +642,22 @@ export async function createManifestRuntime(
     // have zeroed InventoryItem.unitCost on every receipt. The nested restock emits
     // InventoryRestocked, which the inventory-movement middleware above ledgers.
     createShipmentItemReceivedInventoryRestockMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Equipment: MaintenanceWorkOrderCompleted -> Equipment.recordMaintenance.
+    // Middleware (not a reaction) because the equipment to record against
+    // (MaintenanceWorkOrder.equipmentId) is the work order's OWN field, NOT a
+    // completeWork param — declared event fields are never auto-populated from
+    // self.*. The two old reactions resolved payload.result.equipmentId (a mutate
+    // scalar) so they silently no-op'd; completed work orders never touched the
+    // equipment record. The middleware loads the completed work order from the
+    // store via _subject.id, reads self.equipmentId, and dispatches the governed
+    // Equipment.recordMaintenance (which itself sets status = "active", subsuming
+    // the redundant updateStatus reaction whose newStatus != self.status guard
+    // would fail once active).
+    createMaintenanceCompletedEquipmentRecordMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
