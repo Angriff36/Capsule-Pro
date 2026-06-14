@@ -626,6 +626,11 @@
   },
   {
     "entity": "CateringOrder",
+    "command": "syncVenue",
+    "commandId": "CateringOrder.syncVenue"
+  },
+  {
+    "entity": "CateringOrder",
     "command": "update",
     "commandId": "CateringOrder.update"
   },
@@ -3541,8 +3546,18 @@
   },
   {
     "entity": "Proposal",
+    "command": "decrementLineItemCount",
+    "commandId": "Proposal.decrementLineItemCount"
+  },
+  {
+    "entity": "Proposal",
     "command": "generatePublicLink",
     "commandId": "Proposal.generatePublicLink"
+  },
+  {
+    "entity": "Proposal",
+    "command": "incrementLineItemCount",
+    "commandId": "Proposal.incrementLineItemCount"
   },
   {
     "entity": "Proposal",
@@ -4463,6 +4478,11 @@
     "entity": "Station",
     "command": "startMaintenance",
     "commandId": "Station.startMaintenance"
+  },
+  {
+    "entity": "Station",
+    "command": "syncTaskCount",
+    "commandId": "Station.syncTaskCount"
   },
   {
     "entity": "Station",

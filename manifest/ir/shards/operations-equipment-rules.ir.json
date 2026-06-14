@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "878773fbb6b598f4748c7dfbf30969ecbd72c83d4fac7d0b2f0ad398f2e758cf",
-    "irHash": "712d851b38c07d082457652270ec78cc068b3a8193a9fe3d2f57f429f9415d6c",
+    "contentHash": "0db485a931c4f29a5dda31e114b41720ef4f1bf28d7e2708db5ab57d633a54db",
+    "irHash": "d958c3ac7f822197d94e223e5e1e688f5162e168c2f085e31610c00fd8a4f434",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.014Z"
+    "compiledAt": "2026-06-14T14:09:05.705Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -1235,6 +1235,7 @@
           "property": "status",
           "from": "active",
           "to": [
+            "active",
             "maintenance",
             "out_of_service",
             "retired"

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0b9c0d5a13f1070e63211c6f93bc80a9506258a9dcbe038ffbcb3e17fb1449a5",
-    "irHash": "88d2f185f91f8804ff314c290e3ea4090dd97b907dc5387c8c5a78bae48eb5d1",
+    "contentHash": "979cbfe6ea34b3c623d6427d84a15e4b99b65211040b850286afb41bb81e9206",
+    "irHash": "be457d1bb453d40639b519f787e64fa19d6f38ff7bdcc629d46026764cc703ff",
     "compilerVersion": "2.4.2",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.910Z"
+    "compiledAt": "2026-06-14T14:09:05.613Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -724,7 +724,9 @@
         "reject",
         "withdraw",
         "remove",
-        "generatePublicLink"
+        "generatePublicLink",
+        "incrementLineItemCount",
+        "decrementLineItemCount"
       ],
       "constraints": [
         {
@@ -2294,6 +2296,44 @@
       ]
     },
     {
+      "name": "ProposalLineItemCountChanged",
+      "channel": "crm.proposal.line_item_count.changed",
+      "payload": [
+        {
+          "name": "proposalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lineItemCount",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "ProposalLineItemCreated",
       "channel": "crm.proposal_line_item.created",
       "payload": [
@@ -3032,12 +3072,23 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isDraft"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "draft"
+            }
+          }
         },
         {
           "kind": "binary",
@@ -3258,12 +3309,23 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isDraft"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "draft"
+            }
+          }
         }
       ],
       "constraints": [
@@ -3271,12 +3333,23 @@
           "name": "blockNoLineItems",
           "code": "blockNoLineItems",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "lineItemCount"
             },
-            "property": "hasLineItems"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
           },
           "severity": "block",
           "messageTemplate": "Cannot send proposal '{proposalNumber}' with no line items",
@@ -3634,15 +3707,45 @@
           "name": "blockExpired",
           "code": "blockExpired",
           "expression": {
-            "kind": "unary",
-            "operator": "!",
-            "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "validUntil"
               },
-              "property": "isExpired"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "validUntil"
+              },
+              "right": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              }
             }
           },
           "severity": "block",
@@ -3899,15 +4002,22 @@
           "name": "blockAlreadyAccepted",
           "code": "blockAlreadyAccepted",
           "expression": {
-            "kind": "unary",
-            "operator": "!",
-            "operand": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "isAccepted"
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "accepted"
+              }
             }
           },
           "severity": "block",
@@ -3944,15 +4054,22 @@
           "name": "blockAlreadyWithdrawn",
           "code": "blockAlreadyWithdrawn",
           "expression": {
-            "kind": "unary",
-            "operator": "!",
-            "operand": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
               "kind": "member",
               "object": {
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "isWithdrawn"
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "withdrawn"
+              }
             }
           },
           "severity": "block",
@@ -4156,6 +4273,111 @@
       ],
       "emits": [
         "ProposalPublicLinkGenerated"
+      ]
+    },
+    {
+      "name": "incrementLineItemCount",
+      "entity": "Proposal",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "ProposalDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "lineItemCount",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "lineItemCount"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalLineItemCountChanged"
+      ]
+    },
+    {
+      "name": "decrementLineItemCount",
+      "entity": "Proposal",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "ProposalDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "lineItemCount",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "lineItemCount"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "lineItemCount"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 1
+                }
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "emits": [
+        "ProposalLineItemCountChanged"
       ]
     },
     {

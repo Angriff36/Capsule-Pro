@@ -7,7 +7,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
-import { syncBattleBoardsForEvent } from "./actions/sync-battle-boards";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { createEventSchema, updateEventSchema } from "./validation";
 
@@ -343,12 +342,9 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
     throw new Error(result.message || "Failed to update event");
   }
 
-  await syncBattleBoardsForEvent(tenantId, data.eventId, {
-    id: user.id,
-    tenantId,
-    role: user.role,
-  });
-
+  // Battle boards linked to this event are re-synced by the
+  // event-updated-board-sync runtime middleware (fires on EventUpdated) — no
+  // imperative post-update sync needed here.
   revalidateEvent(data.eventId, data.clientId);
   redirect(`/events/${data.eventId}`);
 };

@@ -8,19 +8,54 @@
  */
 
 export {
+  type CollectionInvoiceApplyDiagnostic,
+  type CollectionPaymentRecordedInvoiceApplyMiddlewareOptions,
+  createCollectionPaymentRecordedInvoiceApplyMiddleware,
+} from "./collection-payment-recorded-invoice-apply-middleware";
+export {
   type ContractSignedEventConfirmDiagnostic,
   type ContractSignedEventConfirmMiddlewareOptions,
   createContractSignedEventConfirmMiddleware,
 } from "./contract-signed-event-confirm-middleware";
 export {
+  createEventCancelledCascadeMiddleware,
+  type EventCancelledCascadeDiagnostic,
+  type EventCancelledCascadeMiddlewareOptions,
+} from "./event-cancelled-cascade-middleware";
+export {
+  createEventCreatedClientInteractionMiddleware,
+  type EventClientInteractionDiagnostic,
+  type EventCreatedClientInteractionMiddlewareOptions,
+} from "./event-created-client-interaction-middleware";
+export {
+  createEventLocationCateringSyncMiddleware,
+  type EventCateringVenueSyncDiagnostic,
+  type EventLocationCateringSyncMiddlewareOptions,
+} from "./event-location-catering-sync-middleware";
+export {
+  createEventUpdatedBoardSyncMiddleware,
+  type EventBoardSyncDiagnostic,
+  type EventUpdatedBoardSyncMiddlewareOptions,
+} from "./event-updated-board-sync-middleware";
+export {
   createIdentityMiddleware,
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";
+export {
+  createInventoryMovementTransactionMiddleware,
+  type InventoryLedgerDiagnostic,
+  type InventoryMovementTransactionMiddlewareOptions,
+} from "./inventory-movement-transaction-middleware";
 export {
   createLeadConvertedDealCreateMiddleware,
   type LeadConvertedDealCreateMiddlewareOptions,
   type LeadConvertedDealDiagnostic,
 } from "./lead-converted-deal-create-middleware";
+export {
+  createMaintenanceCompletedEquipmentRecordMiddleware,
+  type MaintenanceCompletedEquipmentRecordMiddlewareOptions,
+  type MaintenanceEquipmentRecordDiagnostic,
+} from "./maintenance-completed-equipment-record-middleware";
 export {
   createPaymentProcessedInvoiceApplyMiddleware,
   type PaymentInvoiceApplyDiagnostic,
@@ -37,6 +72,11 @@ export {
   type PrepInventoryDemandMiddlewareOptions,
 } from "./prep-inventory-demand-middleware";
 export {
+  createPrepListCancelledReleaseReservationMiddleware,
+  type PrepListCancelledReleaseReservationMiddlewareOptions,
+  type PrepReleaseReservationDiagnostic,
+} from "./prep-list-cancelled-release-reservation-middleware";
+export {
   createPrepListCompletedConsumeMiddleware,
   type PrepConsumeDiagnostic,
   type PrepListCompletedConsumeMiddlewareOptions,
@@ -48,6 +88,41 @@ export {
   type PrepSeedDiagnostic,
 } from "./prep-list-seed-middleware";
 export {
+  createPrepTaskStationCountMiddleware,
+  type PrepTaskStationCountDiagnostic,
+  type PrepTaskStationCountMiddlewareOptions,
+} from "./prep-task-station-count-middleware";
+export {
+  createProposalLifecycleLeadStatusMiddleware,
+  type ProposalLeadStatusDiagnostic,
+  type ProposalLifecycleLeadStatusMiddlewareOptions,
+} from "./proposal-lifecycle-lead-status-middleware";
+export {
+  createProposalLineItemCountMiddleware,
+  type ProposalLineItemCountDiagnostic,
+  type ProposalLineItemCountMiddlewareOptions,
+} from "./proposal-line-item-count-middleware";
+export {
   createRbacMiddleware,
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
+export {
+  createScheduleShiftFirstShiftDueDateMiddleware,
+  type FirstShiftDueDateDiagnostic,
+  type ScheduleShiftFirstShiftDueDateMiddlewareOptions,
+} from "./schedule-shift-first-shift-due-date-middleware";
+export {
+  createShipmentItemReceivedInventoryRestockMiddleware,
+  type ShipmentItemReceivedInventoryRestockMiddlewareOptions,
+  type ShipmentRestockDiagnostic,
+} from "./shipment-item-received-inventory-restock-middleware";
+export {
+  createStaffMemberCreatedTrainingAssignmentMiddleware,
+  type StaffMemberCreatedTrainingAssignmentMiddlewareOptions,
+  type StaffTrainingAssignDiagnostic,
+} from "./staff-member-created-training-assignment-middleware";
+export {
+  createTrainingAttemptSubmittedRecordMiddleware,
+  type TrainingAttemptRecordDiagnostic,
+  type TrainingAttemptSubmittedRecordMiddlewareOptions,
+} from "./training-attempt-submitted-record-middleware";

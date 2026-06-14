@@ -42,7 +42,9 @@ const baseConfig: NextConfig = withLogging({
       });
     }
 
-    // Security headers for all routes
+    // Security headers for ALL routes EXCEPT the Content-Security-Policy, which is
+    // split out below so the auth-gated Scalar docs route (/api-docs) can carry a
+    // scoped, looser policy without weakening CSP anywhere else.
     routes.push({
       source: "/(.*)",
       headers: [
@@ -65,12 +67,44 @@ const baseConfig: NextConfig = withLogging({
           key: "Cross-Origin-Resource-Policy",
           value: "same-origin",
         },
+      ],
+    });
+
+    // Strict CSP for everything EXCEPT /api-docs. Negative-lookahead source so the
+    // policy is simply ABSENT on the docs route (browsers enforce the intersection
+    // of multiple CSP headers, so a per-route rule cannot loosen one — it must be an
+    // exclusion). The root path "/" still matches and stays locked down.
+    routes.push({
+      source: "/((?!api-docs).*)",
+      headers: [
         {
           key: "Content-Security-Policy",
           value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
         },
       ],
     });
+
+    // Scoped CSP for the auth-gated Scalar API docs (/api-docs and its spec route).
+    // Scalar renders an interactive page from the jsDelivr CDN with an inline config
+    // script and same-origin "Try it" calls. This relaxation applies ONLY here; the
+    // route itself requires an authenticated session (see app/api-docs/route.ts).
+    const scalarCsp = [
+      "default-src 'self'",
+      "base-uri 'none'",
+      "frame-ancestors 'none'",
+      "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+      "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com",
+      "img-src 'self' data: https://cdn.jsdelivr.net",
+      "connect-src 'self' https://cdn.jsdelivr.net",
+      "worker-src 'self' blob:",
+    ].join("; ");
+    for (const source of ["/api-docs", "/api-docs/:path*"]) {
+      routes.push({
+        source,
+        headers: [{ key: "Content-Security-Policy", value: scalarCsp }],
+      });
+    }
 
     return routes;
   },
@@ -107,6 +141,9 @@ const baseConfig: NextConfig = withLogging({
     "/*": [
       "../../manifest/source/**/*.manifest",
       "../../manifest/ir/**/*.json",
+      // Bundle the generated OpenAPI spec so the /api-docs spec route can read it
+      // at runtime on Vercel (the file lives at the monorepo root, outside this app).
+      "../../manifest/api-docs/*.json",
     ],
   },
   // pdfjs-dist / pdfkit: native assets and worker paths must stay in node_modules.

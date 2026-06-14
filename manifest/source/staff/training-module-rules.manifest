@@ -644,20 +644,14 @@ entity StaffTrainingSignal {
   store StaffTrainingSignal in durable
 }
 
-on TrainingAttemptSubmitted run TrainingAttempt.create
-  resolve payload.attemptId
-  params {
-    id: payload.attemptId
-    assignmentId: payload.assignmentId
-    moduleId: payload.moduleId
-    staffMemberId: payload.staffMemberId
-    attemptNumber: payload.result.attemptCount
-    scorePercent: payload.scorePercent
-    passThresholdPercent: payload.result.passThresholdPercent
-    passed: payload.scorePercent >= payload.result.passThresholdPercent
-    managerReviewRequired: payload.result.managerReviewRequired
-    answersJson: payload.answersJson
-  }
+// TrainingAttemptSubmitted -> TrainingAttempt.create is handled by
+// training-attempt-submitted-record-middleware (registered in
+// manifest-runtime-factory). It was a reaction reading
+// payload.result.attemptCount/passThresholdPercent/managerReviewRequired off the
+// MUTATE submit commands (result = the last mutate's scalar), so every ref was
+// undefined and no attempt row was ever recorded. Those fields are the
+// TrainingAssignment's OWN fields, not submit-command params, so no reaction can
+// read them — the middleware loads the assignment from the store instead.
 
 on TrainingCompleted run StaffTrainingSignal.recordSchedulabilityGranted
   resolve uuid()

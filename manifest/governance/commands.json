@@ -1,5 +1,5 @@
 {
-  "irHash": "68b86599f64f4759544289295009c3e1ffae89fd14a4633e8d96b3385684024c",
+  "irHash": "f4868bfa260f8d97929e7b13cd2659d00bf2823a6eaaf6fad791d9d2d30f81cc",
   "compilerVersion": "2.4.2",
   "commands": [
     {
@@ -78,6 +78,262 @@
         "AiEventSetupSessionUpdated"
       ],
       "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "create",
+      "commandId": "CallPlanningSession.create",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "CallPlanningSessionStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "start",
+      "commandId": "CallPlanningSession.start",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "CallPlanningSessionStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "finalize",
+      "commandId": "CallPlanningSession.finalize",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "CallPlanningSessionFinalizing"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "complete",
+      "commandId": "CallPlanningSession.complete",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "CallPlanningSessionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "abandon",
+      "commandId": "CallPlanningSession.abandon",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "CallPlanningSessionAbandoned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CallPlanningSession",
+      "command": "updateTranscript",
+      "commandId": "CallPlanningSession.updateTranscript",
+      "policies": [
+        "CallPlanningSessionDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "CallPlanningTranscriptUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "create",
+      "commandId": "EventPlanningDraft.create",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "EventPlanningDraftCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "updateField",
+      "commandId": "EventPlanningDraft.updateField",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "EventPlanningDraftUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "confirmDetail",
+      "commandId": "EventPlanningDraft.confirmDetail",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningDetailConfirmed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "updateBudget",
+      "commandId": "EventPlanningDraft.updateBudget",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningBudgetUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "updateGuestCount",
+      "commandId": "EventPlanningDraft.updateGuestCount",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningGuestCountUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "updateMenuPreferences",
+      "commandId": "EventPlanningDraft.updateMenuPreferences",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "EventPlanningMenuUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "updateVenue",
+      "commandId": "EventPlanningDraft.updateVenue",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningVenueUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "markReview",
+      "commandId": "EventPlanningDraft.markReview",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningDraftMarkedReview"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "convertToEvent",
+      "commandId": "EventPlanningDraft.convertToEvent",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "EventPlanningDraftConverted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventPlanningDraft",
+      "command": "expire",
+      "commandId": "EventPlanningDraft.expire",
+      "policies": [
+        "EventPlanningDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventPlanningDraftExpired"
+      ],
+      "effects": [
+        "compute",
         "mutate"
       ]
     },
@@ -177,6 +433,166 @@
       ]
     },
     {
+      "entity": "ProposalDraft",
+      "command": "create",
+      "commandId": "ProposalDraft.create",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 4,
+      "emits": [
+        "ProposalDraftCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "update",
+      "commandId": "ProposalDraft.update",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "ProposalDraftUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "generateHtml",
+      "commandId": "ProposalDraft.generateHtml",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftHtmlGenerated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "send",
+      "commandId": "ProposalDraft.send",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "ProposalDraftSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "recordView",
+      "commandId": "ProposalDraft.recordView",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftViewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "approve",
+      "commandId": "ProposalDraft.approve",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "requestChanges",
+      "commandId": "ProposalDraft.requestChanges",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "ProposalDraftChangeRequested"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "markExpired",
+      "commandId": "ProposalDraft.markExpired",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftExpired"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "markConverted",
+      "commandId": "ProposalDraft.markConverted",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftConverted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalDraft",
+      "command": "refreshToken",
+      "commandId": "ProposalDraft.refreshToken",
+      "policies": [
+        "ProposalDraftDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ProposalDraftTokenRefreshed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
       "entity": "AdminChatParticipant",
       "command": "create",
       "commandId": "AdminChatParticipant.create",
@@ -238,6 +654,150 @@
       ]
     },
     {
+      "entity": "AdminTaskAttachment",
+      "command": "create",
+      "commandId": "AdminTaskAttachment.create",
+      "policies": [
+        "AdminTaskAttachmentDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "AdminTaskAttachmentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskAttachment",
+      "command": "softDelete",
+      "commandId": "AdminTaskAttachment.softDelete",
+      "policies": [
+        "AdminTaskAttachmentDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskAttachmentDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskComment",
+      "command": "create",
+      "commandId": "AdminTaskComment.create",
+      "policies": [
+        "AdminTaskCommentDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskCommentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskComment",
+      "command": "update",
+      "commandId": "AdminTaskComment.update",
+      "policies": [
+        "AdminTaskCommentDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskCommentUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskComment",
+      "command": "softDelete",
+      "commandId": "AdminTaskComment.softDelete",
+      "policies": [
+        "AdminTaskCommentDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskCommentDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskDevMeta",
+      "command": "create",
+      "commandId": "AdminTaskDevMeta.create",
+      "policies": [
+        "AdminTaskDevMetaDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskDevMetaCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskDevMeta",
+      "command": "update",
+      "commandId": "AdminTaskDevMeta.update",
+      "policies": [
+        "AdminTaskDevMetaDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskDevMetaUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskFileRef",
+      "command": "create",
+      "commandId": "AdminTaskFileRef.create",
+      "policies": [
+        "AdminTaskFileRefDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "AdminTaskFileRefCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTaskFileRef",
+      "command": "softDelete",
+      "commandId": "AdminTaskFileRef.softDelete",
+      "policies": [
+        "AdminTaskFileRefDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskFileRefDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
       "entity": "AdminTask",
       "command": "create",
       "commandId": "AdminTask.create",
@@ -263,6 +823,38 @@
       "guardCount": 1,
       "emits": [
         "AdminTaskUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "moveCard",
+      "commandId": "AdminTask.moveCard",
+      "policies": [
+        "AdminTaskDefaultAccess"
+      ],
+      "guardCount": 3,
+      "emits": [
+        "AdminTaskMoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "reorder",
+      "commandId": "AdminTask.reorder",
+      "policies": [
+        "AdminTaskDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskMoved"
       ],
       "effects": [
         "compute",
@@ -612,6 +1204,70 @@
       "guardCount": 1,
       "emits": [
         "BankAccountVerificationRetried"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BoardConfig",
+      "command": "create",
+      "commandId": "BoardConfig.create",
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "BoardConfigCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BoardConfig",
+      "command": "updateColumns",
+      "commandId": "BoardConfig.updateColumns",
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "BoardConfigUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BoardConfig",
+      "command": "updateSettings",
+      "commandId": "BoardConfig.updateSettings",
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "BoardConfigUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BoardConfig",
+      "command": "softDelete",
+      "commandId": "BoardConfig.softDelete",
+      "policies": [
+        "BoardConfigDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "BoardConfigDeleted"
       ],
       "effects": [
         "compute",
@@ -1076,38 +1732,6 @@
       "guardCount": 2,
       "emits": [
         "AdminChatThreadCreated"
-      ],
-      "effects": [
-        "compute",
-        "mutate"
-      ]
-    },
-    {
-      "entity": "AdminChatThread",
-      "command": "archive",
-      "commandId": "AdminChatThread.archive",
-      "policies": [
-        "AdminChatThreadDefaultAccess"
-      ],
-      "guardCount": 1,
-      "emits": [
-        "AdminChatThreadArchived"
-      ],
-      "effects": [
-        "compute",
-        "mutate"
-      ]
-    },
-    {
-      "entity": "AdminChatThread",
-      "command": "reopen",
-      "commandId": "AdminChatThread.reopen",
-      "policies": [
-        "AdminChatThreadDefaultAccess"
-      ],
-      "guardCount": 1,
-      "emits": [
-        "AdminChatThreadReopened"
       ],
       "effects": [
         "compute",
@@ -2256,7 +2880,7 @@
       "policies": [
         "BattleBoardDefaultAccess"
       ],
-      "guardCount": 1,
+      "guardCount": 2,
       "emits": [
         "BattleBoardOpened"
       ],
@@ -2546,8 +3170,7 @@
         "CommandBoardCreated"
       ],
       "effects": [
-        "compute",
-        "mutate"
+        "compute"
       ]
     },
     {
@@ -2610,8 +3233,7 @@
         "CommandBoardCardCreated"
       ],
       "effects": [
-        "compute",
-        "mutate"
+        "compute"
       ]
     },
     {
@@ -2690,8 +3312,7 @@
         "CommandBoardGroupCreated"
       ],
       "effects": [
-        "compute",
-        "mutate"
+        "compute"
       ]
     },
     {
@@ -2738,8 +3359,7 @@
         "CommandBoardConnectionCreated"
       ],
       "effects": [
-        "compute",
-        "mutate"
+        "compute"
       ]
     },
     {
@@ -2770,8 +3390,7 @@
         "CommandBoardLayoutCreated"
       ],
       "effects": [
-        "compute",
-        "mutate"
+        "compute"
       ]
     },
     {
@@ -7162,7 +7781,7 @@
       "policies": [
         "InventoryAlertDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 5,
       "emits": [
         "InventoryAlertTriggered"
       ],
@@ -7497,7 +8116,7 @@
       "policies": [
         "ProcurementBudgetDefaultAccess"
       ],
-      "guardCount": 5,
+      "guardCount": 6,
       "emits": [
         "BudgetCreated"
       ],
@@ -7561,7 +8180,7 @@
       "policies": [
         "ProcurementBudgetAlertDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 4,
       "emits": [
         "ProcurementBudgetAlertTriggered"
       ],
@@ -7593,7 +8212,7 @@
       "policies": [
         "AuditScheduleDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 5,
       "emits": [
         "AuditScheduleCreated"
       ],
@@ -8419,7 +9038,7 @@
       "policies": [
         "TemperatureProbeDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 3,
       "emits": [
         "TemperatureProbeCreated"
       ],
@@ -8483,7 +9102,7 @@
       "policies": [
         "TemperatureLogDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 4,
       "emits": [
         "TemperatureLogCreated"
       ],
@@ -8515,7 +9134,7 @@
       "policies": [
         "IotAlertRuleDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 2,
       "emits": [
         "IotAlertRuleCreated"
       ],
@@ -8531,7 +9150,7 @@
       "policies": [
         "IotAlertRuleDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 2,
       "emits": [
         "IotAlertRuleUpdated"
       ],
@@ -8611,7 +9230,7 @@
       "policies": [
         "CorrectiveActionDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 5,
       "emits": [
         "CorrectiveActionCreated"
       ],
@@ -8675,7 +9294,7 @@
       "policies": [
         "QualityCheckDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 4,
       "emits": [
         "QualityCheckCreated"
       ],
@@ -8739,7 +9358,7 @@
       "policies": [
         "QualityCheckItemDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 4,
       "emits": [
         "QualityCheckItemCreated"
       ],
@@ -8803,7 +9422,7 @@
       "policies": [
         "KitchenTaskProgressDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 5,
       "emits": [
         "KitchenTaskProgressRecorded"
       ],
@@ -10398,7 +11017,7 @@
       "policies": [
         "RecipeVersionDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "RecipeVersionPublished"
       ],
@@ -13522,7 +14141,7 @@
       "policies": [
         "QACorrectiveActionDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 2,
       "emits": [
         "CorrectiveActionCreated"
       ],
@@ -13602,7 +14221,7 @@
       "policies": [
         "QATemperatureLogDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 3,
       "emits": [
         "TemperatureLogged"
       ],
@@ -14257,7 +14876,7 @@
       "policies": [
         "TimecardApprovalDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 3,
       "emits": [
         "TimecardApprovalCreated"
       ],
@@ -14353,7 +14972,7 @@
       "policies": [
         "TipPoolDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 2,
       "emits": [
         "TipPoolCreated"
       ],
@@ -14545,7 +15164,7 @@
       "policies": [
         "PerformanceReviewDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 4,
       "emits": [
         "PerformanceReviewCreated"
       ],
@@ -14609,7 +15228,7 @@
       "policies": [
         "TrainingCompletionDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 4,
       "emits": [
         "TrainingCompletionRecorded"
       ],
@@ -14688,12 +15307,11 @@
       "policies": [
         "OnboardingCompletionDefaultAccess"
       ],
-      "guardCount": 1,
+      "guardCount": 0,
       "emits": [
         "OnboardingCompletionCompleted"
       ],
       "effects": [
-        "compute",
         "mutate"
       ]
     },
@@ -14752,7 +15370,7 @@
       "policies": [
         "DeliveryRouteDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 3,
       "emits": [
         "DeliveryRouteCreated"
       ],
@@ -14896,12 +15514,11 @@
       "policies": [
         "PaymentRefundAttemptDefaultAccess"
       ],
-      "guardCount": 1,
+      "guardCount": 0,
       "emits": [
         "PaymentRefundAttemptSucceeded"
       ],
       "effects": [
-        "compute",
         "mutate"
       ]
     },
@@ -14912,12 +15529,11 @@
       "policies": [
         "PaymentRefundAttemptDefaultAccess"
       ],
-      "guardCount": 1,
+      "guardCount": 0,
       "emits": [
         "PaymentRefundAttemptFailed"
       ],
       "effects": [
-        "compute",
         "mutate"
       ]
     },

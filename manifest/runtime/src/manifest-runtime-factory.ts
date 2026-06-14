@@ -35,15 +35,30 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createContractSignedEventConfirmMiddleware,
+  createEventCancelledCascadeMiddleware,
+  createEventCreatedClientInteractionMiddleware,
+  createEventLocationCateringSyncMiddleware,
+  createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
+  createInventoryMovementTransactionMiddleware,
   createLeadConvertedDealCreateMiddleware,
+  createMaintenanceCompletedEquipmentRecordMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
+  createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
+  createPrepTaskStationCountMiddleware,
+  createProposalLifecycleLeadStatusMiddleware,
+  createProposalLineItemCountMiddleware,
   createRbacMiddleware,
+  createScheduleShiftFirstShiftDueDateMiddleware,
+  createShipmentItemReceivedInventoryRestockMiddleware,
+  createStaffMemberCreatedTrainingAssignmentMiddleware,
+  createTrainingAttemptSubmittedRecordMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
@@ -560,11 +575,50 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
+    // Kitchen: PrepListCancelled -> InventoryItem.releaseReservation (per item).
+    // Symmetric counterpart of the consume leg above: prep-inventory-demand
+    // RESERVES on finalize, consume releases on complete, and THIS releases on
+    // cancel — closing the reservation leak a cancelled (but finalized) prep
+    // list would otherwise strand forever. Also the inventory leg of the
+    // EventCancelled cascade: the cascade's PrepList.cancel re-enters runCommand,
+    // emits PrepListCancelled, and this middleware releases the held stock.
+    createPrepListCancelledReleaseReservationMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen: PrepTask claim/complete/cancel/unclaim/release/reassign ->
+    // reconcile Station.currentTaskCount. Middleware (not a reaction) because it
+    // fans out across all of a tenant's stations and derives occupancy from a
+    // cross-entity PrepTask scan. RECOMPUTE, not +1/-1 deltas: unclaim/release
+    // CLEAR stationId in the same mutate, so by after-emit a delta middleware has
+    // lost the station to decrement — the count would leak upward forever. Nothing
+    // moved the stored count before (assignTask/removeTask had no caller), so the
+    // Station capacity computeds + assignTask blockFull/warnNearCapacity were
+    // inert. This dispatches the absolute, idempotent Station.syncTaskCount only
+    // for stations whose stored count drifted from their true in_progress load.
+    createPrepTaskStationCountMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
     // CRM: LeadConvertedToClient -> Deal.create. Middleware (not a reaction)
     // because the deal's title/value are the Lead's OWN fields, which
     // convertToClient does not take as params — the middleware loads the
     // converted Lead from the store and dispatches the governed Deal.create.
     createLeadConvertedDealCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ProposalCreated/Sent -> Lead.status="proposal", ProposalAccepted ->
+    // "won", ProposalRejected -> "lost". Middleware (not a reaction) because the
+    // Lead is identified by Proposal.leadId — the proposal's OWN field, which
+    // send/accept/reject do not take as params — and `Lead.update` is a full-field
+    // mutate guarded by `contactName != ""`, so the lead must be LOADED and its
+    // existing fields re-passed. FSM-aware: only advances when the transition is
+    // legal from the lead's current status (skips already-advanced/converted leads).
+    createProposalLifecycleLeadStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
@@ -599,6 +653,171 @@ export async function createManifestRuntime(
     // dispatches the governed Invoice.recordRefund (guard-safe; skips when the invoice
     // was never credited or the refund exceeds amountPaid).
     createPaymentRefundedInvoiceRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: CollectionPaymentRecorded -> Invoice.applyPayment. Middleware (not a
+    // reaction) for the same reason as the payment legs: the invoice to credit is
+    // CollectionCase.invoiceId — the case's OWN field, NOT a recordPayment param —
+    // and declared event fields are never auto-populated from self.*. The old
+    // reaction resolved payload.result.invoiceId (a mutate scalar) so it silently
+    // no-op'd and collections never credited the AR books. The middleware loads the
+    // CollectionCase from the store via _subject.id, reads self.invoiceId, takes the
+    // amount/paymentId from the command input, and dispatches the governed
+    // Invoice.applyPayment (guard-safe; skips DRAFT/PAID/overpay).
+    createCollectionPaymentRecordedInvoiceApplyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Inventory: InventoryConsumed/Wasted/Restocked/Adjusted -> InventoryTransaction.create.
+    // Middleware (not a reaction) because the ledger row's unitCost is the
+    // InventoryItem's OWN field (loaded from the store; restock alone carries
+    // costPerUnit as a param) and the SIGNED ledger delta (consume/waste = −qty,
+    // restock/adjust = +qty) cannot be expressed in a reaction's payload params.
+    // Records every governed inventory movement in the append-only ledger that
+    // valuation/par-reorder/audit read — previously empty for kitchen movements.
+    createInventoryMovementTransactionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Procurement: ShipmentItemReceived -> InventoryItem.restock. Middleware (not a
+    // reaction) because the values restock needs are the ShipmentItem's OWN fields,
+    // not updateReceived params: itemId (which item) is ShipmentItem.itemId, and
+    // costPerUnit must be ShipmentItem.unitCost — declared event fields are never
+    // auto-populated from self.*. The old reaction resolved payload.result.itemId (a
+    // mutate scalar) and hardcoded costPerUnit: 0, so it silently no-op'd and would
+    // have zeroed InventoryItem.unitCost on every receipt. The nested restock emits
+    // InventoryRestocked, which the inventory-movement middleware above ledgers.
+    createShipmentItemReceivedInventoryRestockMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Equipment: MaintenanceWorkOrderCompleted -> Equipment.recordMaintenance.
+    // Middleware (not a reaction) because the equipment to record against
+    // (MaintenanceWorkOrder.equipmentId) is the work order's OWN field, NOT a
+    // completeWork param — declared event fields are never auto-populated from
+    // self.*. The two old reactions resolved payload.result.equipmentId (a mutate
+    // scalar) so they silently no-op'd; completed work orders never touched the
+    // equipment record. The middleware loads the completed work order from the
+    // store via _subject.id, reads self.equipmentId, and dispatches the governed
+    // Equipment.recordMaintenance (which itself sets status = "active", subsuming
+    // the redundant updateStatus reaction whose newStatus != self.status guard
+    // would fail once active).
+    createMaintenanceCompletedEquipmentRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff training: TrainingAttemptSubmitted -> TrainingAttempt.create.
+    // Middleware (not a reaction) because the attempt's attemptNumber
+    // (= TrainingAssignment.attemptCount post-increment), passThresholdPercent,
+    // and managerReviewRequired are the assignment's OWN fields, NOT submit-command
+    // params — declared event fields are never auto-populated from self.*. The old
+    // `on TrainingAttemptSubmitted run TrainingAttempt.create` reaction resolved
+    // payload.result.attemptCount/passThresholdPercent/managerReviewRequired off a
+    // MUTATE command (result = the last mutate's scalar), so every ref was undefined
+    // and no attempt ledger row was ever recorded. The middleware loads the
+    // just-mutated TrainingAssignment via _subject.id, reads those fields, derives
+    // passed = scorePercent >= threshold, and dispatches the governed
+    // TrainingAttempt.create (idempotent per attemptId).
+    createTrainingAttemptSubmittedRecordMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff onboarding: StaffMemberCreated -> TrainingAssignment.create. Middleware
+    // (not a reaction) because the staff member id is a COMPUTED (self.id), not a
+    // StaffMember.create param, and firstShiftAt/dueAt are not knowable at create
+    // time — so the old `on StaffMemberCreated run TrainingAssignment.create`
+    // reaction read undefined payload fields and silently no-op'd, leaving every new
+    // staff member without their mandatory SEL onboarding assignment. The middleware
+    // resolves the new id from _subject.id, pins staffRole to "staff" (the create's
+    // guard), and dispatches TrainingAssignment.create with dueDateReviewNeeded=true
+    // (the due date is pinned later by applyFirstShiftDueDate). Idempotent per
+    // (tenant, staff member, SEL module).
+    createStaffMemberCreatedTrainingAssignmentMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staff onboarding: ScheduleShiftCreated -> TrainingAssignment.applyFirstShiftDueDate.
+    // Middleware (not the orphan "emit + reaction") because the SEL onboarding
+    // assignment is created with no due date (firstShiftAt unknown at staff-create
+    // time) and the due date must be pinned to the staff member's FIRST scheduled
+    // shift. applyFirstShiftDueDate resolves its target via `assignmentId == self.id`
+    // (not derivable from a shift payload) and "first shift" is a stateful fact — so
+    // the old `on StaffMemberFirstShiftScheduled run applyFirstShiftDueDate` reaction
+    // was an unfireable orphan (no command emitted the event). The middleware looks up
+    // the employee's open SEL assignment that still needs its due date pinned
+    // (dueDateReviewNeeded == true), sets dueDate = shiftStart, and the command clears
+    // the flag so later shifts don't re-pin (first-shift-only idempotency).
+    createScheduleShiftFirstShiftDueDateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ProposalLineItemCreated/Removed -> Proposal.increment/decrementLineItemCount.
+    // Middleware (not a reaction) because the parent proposalId is the line item's OWN
+    // field: it rides the payload on `create` (an input param) but NOT on `remove`
+    // (remove(userId) takes no proposalId, and declared event fields are never
+    // auto-populated from self.*) — so a `resolve payload.proposalId` reaction would
+    // silently no-op on the remove leg. Keeps the STORED `lineItemCount` truthful so
+    // the inlined `Proposal.send` gate (`self.lineItemCount > 0`) lets a proposal with
+    // line items actually send (it blocked EVERY send before — the gate read the
+    // `hasLineItems` COMPUTED, which the runtime does not resolve inside constraints).
+    createProposalLineItemCountMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: EventCreated -> ClientInteraction.create. Middleware (not the reaction
+    // the plan first proposed) because ClientInteraction.create REQUIRES a
+    // non-empty employeeId (command guard + validEmployeeId block constraint) and
+    // EventCreated carries no creator field — Event.create has no userId/createdBy
+    // param and declared event fields are never auto-populated from self.*, so a
+    // reaction's payload.employeeId is structurally undefined and the create guard
+    // could never pass. The middleware sources the employee from the acting user
+    // (who booked the event = the right CRM attribution), reads clientId/title off
+    // the payload, and logs a governed "note" interaction on the client's timeline.
+    // Skips clientless events; idempotent per event via correlationId.
+    createEventCreatedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventUpdated/EventDateUpdated/EventLocationUpdated -> re-sync the
+    // event's battle boards. Middleware (not a reaction) because boards are 1:N
+    // by eventId AND the snapshot fields are the Event's own fields, absent from
+    // the partial update-event payloads — so it loads the updated Event and fans
+    // out BattleBoard.syncFromEvent per board. Retires the imperative
+    // syncBattleBoardsForEvent() server-action helper.
+    createEventUpdatedBoardSyncMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventLocationUpdated -> re-sync the venue on the event's ACTIVE
+    // catering orders. Sibling of the board-sync leg above (split per PR):
+    // middleware (not a reaction) because orders are 1:N by eventId. Syncs only
+    // venueName/venueAddress (the venue fields the Event owns) and skips
+    // delivered/completed/cancelled orders (physical history must not be
+    // rewritten). Loads the updated Event and fans out CateringOrder.syncVenue.
+    createEventLocationCateringSyncMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventCancelled -> cascade-cancel children. Middleware (not a
+    // reaction) because each leg is a 1:N fan-out by eventId (EventStaff.unassign,
+    // CateringOrder.cancel, PrepList.cancel, Invoice.voidInvoice,
+    // CollectionCase.close) that a single-target reaction cannot resolve. Each
+    // leg is guard-safe + idempotent; inventory reservations release via the
+    // prep-list-cancelled middleware above (the dispatched PrepList.cancel chains).
+    createEventCancelledCascadeMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

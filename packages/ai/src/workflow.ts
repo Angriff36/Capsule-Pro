@@ -261,7 +261,7 @@ export class AgentWorkflow {
           step.outputMapping
         )) {
           this.context.sharedState[contextKey] = (
-            result as Record<string, unknown>
+            result as unknown as Record<string, unknown>
           )[outputKey];
         }
       }
