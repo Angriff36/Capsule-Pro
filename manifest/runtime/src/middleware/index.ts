@@ -52,6 +52,11 @@ export {
   type InventoryMovementTransactionMiddlewareOptions,
 } from "./inventory-movement-transaction-middleware";
 export {
+  createInvoiceFullyPaidMarkPaidMiddleware,
+  type InvoiceFullyPaidMarkPaidDiagnostic,
+  type InvoiceFullyPaidMarkPaidMiddlewareOptions,
+} from "./invoice-fully-paid-mark-paid-middleware";
+export {
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   type InvoiceOverdueCollectionCaseCreateMiddlewareOptions,
   type InvoiceOverdueCollectionCaseDiagnostic,

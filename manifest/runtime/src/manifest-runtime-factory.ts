@@ -44,6 +44,7 @@ import {
   createEventUpdatedBoardSyncMiddleware,
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
+  createInvoiceFullyPaidMarkPaidMiddleware,
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
@@ -697,6 +698,19 @@ export async function createManifestRuntime(
     // (idempotent: skips when a case already exists for the invoice — mirrors the
     // route's 409 guard; skips zero-total invoices that would fail amount_positive).
     createInvoiceOverdueCollectionCaseCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Finance: a full payment via Invoice.applyPayment leaves status PARTIALLY_PAID with
+    // amountDue 0 (applyPayment unconditionally sets PARTIALLY_PAID) — the invoice never
+    // closes to PAID, so AR/collections keep chasing settled debt. Middleware (not a
+    // reaction) because "is the balance now zero" depends on the Invoice's OWN
+    // post-mutation amountDue/status, which a reaction's {...commandInput, result} payload
+    // cannot read. Scoped to applyPayment so markAsPaid's own PaymentApplied does not
+    // re-trigger it; loads the invoice via _subject.id and dispatches markAsPaid when
+    // amountDue <= 0 and status != PAID.
+    createInvoiceFullyPaidMarkPaidMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
