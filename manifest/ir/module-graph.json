@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T11:10:59.200Z",
-  "contentHash": "0d366d2e56e36f65b6ec771454f05dbf7a27d1e3f95a71df80208f042728a304",
+  "compiledAt": "2026-06-14T11:48:29.466Z",
+  "contentHash": "047bf04a749a6ef7bf97ae4ed00a176fc2abd9fb59895f4c931e94fa691470a5",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -196,8 +196,8 @@
       "path": "crm/proposal-rules.manifest",
       "domain": "crm",
       "entities": 2,
-      "commands": 12,
-      "events": 12
+      "commands": 14,
+      "events": 13
     },
     {
       "path": "events/battle-board-rules.manifest",
@@ -721,7 +721,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1040,
-    "events": 1016
+    "commands": 1042,
+    "events": 1017
   }
 }

@@ -3541,8 +3541,18 @@
   },
   {
     "entity": "Proposal",
+    "command": "decrementLineItemCount",
+    "commandId": "Proposal.decrementLineItemCount"
+  },
+  {
+    "entity": "Proposal",
     "command": "generatePublicLink",
     "commandId": "Proposal.generatePublicLink"
+  },
+  {
+    "entity": "Proposal",
+    "command": "incrementLineItemCount",
+    "commandId": "Proposal.incrementLineItemCount"
   },
   {
     "entity": "Proposal",

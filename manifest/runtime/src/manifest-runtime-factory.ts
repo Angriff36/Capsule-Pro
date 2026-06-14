@@ -46,6 +46,7 @@ import {
   createPrepInventoryDemandMiddleware,
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
+  createProposalLineItemCountMiddleware,
   createRbacMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
@@ -709,6 +710,20 @@ export async function createManifestRuntime(
     // (dueDateReviewNeeded == true), sets dueDate = shiftStart, and the command clears
     // the flag so later shifts don't re-pin (first-shift-only idempotency).
     createScheduleShiftFirstShiftDueDateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ProposalLineItemCreated/Removed -> Proposal.increment/decrementLineItemCount.
+    // Middleware (not a reaction) because the parent proposalId is the line item's OWN
+    // field: it rides the payload on `create` (an input param) but NOT on `remove`
+    // (remove(userId) takes no proposalId, and declared event fields are never
+    // auto-populated from self.*) — so a `resolve payload.proposalId` reaction would
+    // silently no-op on the remove leg. Keeps the STORED `lineItemCount` truthful so
+    // the inlined `Proposal.send` gate (`self.lineItemCount > 0`) lets a proposal with
+    // line items actually send (it blocked EVERY send before — the gate read the
+    // `hasLineItems` COMPUTED, which the runtime does not resolve inside constraints).
+    createProposalLineItemCountMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

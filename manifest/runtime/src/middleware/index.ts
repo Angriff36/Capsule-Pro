@@ -63,6 +63,11 @@ export {
   type PrepSeedDiagnostic,
 } from "./prep-list-seed-middleware";
 export {
+  createProposalLineItemCountMiddleware,
+  type ProposalLineItemCountDiagnostic,
+  type ProposalLineItemCountMiddlewareOptions,
+} from "./proposal-line-item-count-middleware";
+export {
   createRbacMiddleware,
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";

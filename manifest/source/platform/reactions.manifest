@@ -128,6 +128,25 @@ on WasteEntryCreated run InventoryItem.waste
 // `lead-converted-deal-create-middleware.ts` loads the converted Lead from the
 // store via `_subject.id` and dispatches the governed `Deal.create` command.
 
+// ── Sales: Proposal line items → Proposal.lineItemCount ────────────────────
+
+// Handled by MIDDLEWARE, not a reaction (proposal-line-item-count-middleware.ts).
+// Adding/removing a ProposalLineItem must keep the parent Proposal's stored
+// `lineItemCount` truthful, because `Proposal.send` gates on it
+// (`constraint blockNoLineItems:block self.lineItemCount > 0`). This was a
+// double deadlock: lineItemCount was set to 0 on create and never changed, AND
+// the gate originally read the `hasLineItems` COMPUTED — which the runtime does
+// NOT resolve inside :block/:warn constraints (only inside guards), so it blocked
+// EVERY send (proposals were unsendable). The gate is now inlined to the stored
+// prop; the middleware maintains it. Middleware (not a reaction) because the
+// parent `proposalId` is the line item's OWN field: it rides the payload on
+// `create` (an input param) but NOT on `remove` (`remove(userId)` takes no
+// proposalId, and declared event fields are never auto-populated from self.*),
+// so a `resolve payload.proposalId` reaction would silently no-op on the remove
+// leg. The middleware loads the line item to read self.proposalId and dispatches
+// the governed Proposal.increment/decrementLineItemCount (idempotent per line
+// item per direction).
+
 // ── Sales: Proposal acceptance → Event creation ───────────────────────────
 
 // When a client accepts a proposal, automatically create an event planning
