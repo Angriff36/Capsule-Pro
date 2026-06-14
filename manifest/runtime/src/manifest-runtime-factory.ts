@@ -41,6 +41,7 @@ import {
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
   createPrepInventoryDemandMiddleware,
+  createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createRbacMiddleware,
 } from "./middleware";
@@ -541,6 +542,20 @@ export async function createManifestRuntime(
         engine.runCommand(commandName, input, options),
     }),
     createPrepInventoryDemandMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen: PrepListCompleted -> InventoryItem.consume (per PrepListItem).
+    // Closes the reservation leak left by prep-inventory-demand: that middleware
+    // RESERVES on PrepListFinalized (bumps quantityReserved) but nothing consumed
+    // those reservations, so finalized lists stranded reserved stock forever.
+    // markCompleted now draws the reservation down: `consume` decrements BOTH
+    // quantityOnHand and quantityReserved in one command, so a single dispatch
+    // both records real usage and releases the reservation. Middleware (not a
+    // reaction) because it is a 1:N fan-out over PrepListItem rows that a
+    // reaction cannot resolve.
+    createPrepListCompletedConsumeMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

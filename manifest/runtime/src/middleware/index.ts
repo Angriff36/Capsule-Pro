@@ -37,6 +37,11 @@ export {
   type PrepInventoryDemandMiddlewareOptions,
 } from "./prep-inventory-demand-middleware";
 export {
+  createPrepListCompletedConsumeMiddleware,
+  type PrepConsumeDiagnostic,
+  type PrepListCompletedConsumeMiddlewareOptions,
+} from "./prep-list-completed-consume-middleware";
+export {
   AUTO_SEED_MARKER,
   createPrepListSeedMiddleware,
   type PrepListSeedMiddlewareOptions,
