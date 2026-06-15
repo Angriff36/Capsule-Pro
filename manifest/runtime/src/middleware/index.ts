@@ -147,6 +147,11 @@ export {
   type InvoiceWrittenOffRevRecCancelMiddlewareOptions,
 } from "./invoice-written-off-revrec-cancel-middleware";
 export {
+  createLaborBudgetActualRecordedAlertMiddleware,
+  type LaborBudgetActualRecordedAlertDiagnostic,
+  type LaborBudgetActualRecordedAlertMiddlewareOptions,
+} from "./labor-budget-actual-recorded-alert-middleware";
+export {
   createLeadConvertedDealCreateMiddleware,
   type LeadConvertedDealCreateMiddlewareOptions,
   type LeadConvertedDealDiagnostic,

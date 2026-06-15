@@ -63,6 +63,7 @@ import {
   createInvoiceFullyPaidMarkPaidMiddleware,
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createInvoiceWrittenOffRevRecCancelMiddleware,
+  createLaborBudgetActualRecordedAlertMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createLogisticsDispatchDriverVehicleStatusMiddleware,
   createLogisticsRouteDriverVehicleStatusMiddleware,
@@ -883,6 +884,20 @@ export async function createManifestRuntime(
     // PAUSED) by invoiceId and dispatches the governed cancel(reason), forwarding the
     // writeOff reason (a genuine param). InvoiceWrittenOff had ZERO consumers.
     createInvoiceWrittenOffRevRecCancelMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Labor: LaborBudgetActualRecorded -> BudgetAlert.create (over target). Middleware
+    // (not a reaction) because "is this now over budget?" compares the post-mutation
+    // actualSpend against the budget's OWN budgetTarget — recordActual's
+    // {...commandInput, result} payload carries only actualSpend, not the target, so a
+    // reaction cannot decide. LaborBudgetActualRecorded had ZERO consumers, so an
+    // over-budget labor period stayed silent. Loads the LaborBudget via _subject.id,
+    // and when actualSpend > budgetTarget dispatches the governed BudgetAlert.create
+    // (idempotent: at most one unresolved overage alert per budget; under-budget is a
+    // quiet no-op).
+    createLaborBudgetActualRecordedAlertMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
