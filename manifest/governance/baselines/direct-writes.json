@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T09:07:35.129Z",
+  "generatedAt": "2026-06-15T10:09:07.790Z",
   "capturedFromReport": "manifest/reports/direct-writes/direct-writes.json",
   "keyShape": [
     "file",
@@ -7,7 +7,7 @@
     "method"
   ],
   "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
-  "count": 7,
+  "count": 4,
   "violations": [
     {
       "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
@@ -18,21 +18,6 @@
       "file": "apps/api/app/api/training/complete/route.ts",
       "entity": "TrainingCompletion",
       "method": "upsert"
-    },
-    {
-      "file": "apps/api/app/lib/inventory-forecasting.ts",
-      "entity": "InventoryForecast",
-      "method": "create"
-    },
-    {
-      "file": "apps/api/app/lib/inventory-forecasting.ts",
-      "entity": "InventoryForecast",
-      "method": "update"
-    },
-    {
-      "file": "apps/api/app/lib/inventory-forecasting.ts",
-      "entity": "ReorderSuggestion",
-      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts",

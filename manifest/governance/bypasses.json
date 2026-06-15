@@ -280,6 +280,26 @@
       "owner": "Ryan",
       "approvedAt": "2026-06-12",
       "reviewBy": "2026-08-12"
+    },
+    {
+      "entity": "InventoryForecast",
+      "path": "apps/api/app/lib/inventory-forecasting.ts",
+      "reason": "Statistical depletion-forecast read-model. inventory-forecasting.ts recomputes per-SKU depletion forecasts and writes them to the inventory_forecasts analytics table (sku/date/forecast/lower_bound/upper_bound/confidence/horizon_days/accuracy_tracked). Per constitution §10 this is a derived/denormalized read-model (an analytics projection of governed InventoryItem state), not authoritative governed domain state. KNOWN IR ISSUE: the governed `InventoryForecast` IR entity declares a DIFFERENT, incompatible schema (inventoryItemId/forecastDate/projectedQuantity/status) and is vestigial — no runManifestCommand caller invokes its commands and they cannot persist the real columns. Structural reconciliation (remove the fictional IR entity or rebuild it to match the live table, before any IR-driven schema projection / Phase 2b) is the tracked follow-up. PENDING USER SIGN-OFF on the de-govern-vs-make-governed fork (entry added 2026-06-15).",
+      "whyRuntimeNotRequired": "Forecast rows are wholesale-recomputed statistical output with no state machine, business invariants, or governance policies of their own. The authoritative inventory state (InventoryItem quantities) IS governed via Manifest runtime; these tables are a downstream analytics projection of it, which §10 explicitly permits to bypass the runtime.",
+      "tenantBoundary": "Writes scoped to tenantId; inventory_forecasts is tenant-partitioned (composite PK [tenantId, id], @@schema(\"tenant_inventory\"))",
+      "owner": "governance-migration",
+      "approvedAt": "2026-06-15",
+      "reviewBy": "2026-09-15"
+    },
+    {
+      "entity": "ReorderSuggestion",
+      "path": "apps/api/app/lib/inventory-forecasting.ts",
+      "reason": "Statistical reorder-suggestion read-model. inventory-forecasting.ts computes reorder points/quantities and writes them to the reorder_suggestions analytics table (sku/recommended_order_qty/reorder_point/safety_stock/lead_time_days/justification). Per constitution §10 this is a derived read-model (an analytics projection of governed InventoryItem state), not authoritative governed domain state. KNOWN IR ISSUE: the governed `ReorderSuggestion` IR entity declares a DIFFERENT, incompatible schema (inventoryItemId/suggestedQuantity/reason) and is vestigial — no runManifestCommand caller invokes its commands and they cannot persist the real columns. Structural reconciliation (remove the fictional IR entity or rebuild it to match the live table, before any IR-driven schema projection / Phase 2b) is the tracked follow-up. PENDING USER SIGN-OFF on the de-govern-vs-make-governed fork (entry added 2026-06-15).",
+      "whyRuntimeNotRequired": "Reorder-suggestion rows are recomputed statistical output with no state machine, business invariants, or governance policies of their own. The authoritative inventory state (InventoryItem quantities) IS governed via Manifest runtime; these tables are a downstream analytics projection of it, which §10 explicitly permits to bypass the runtime.",
+      "tenantBoundary": "Writes scoped to tenantId; reorder_suggestions is tenant-partitioned (composite PK [tenantId, id], @@schema(\"tenant_inventory\"))",
+      "owner": "governance-migration",
+      "approvedAt": "2026-06-15",
+      "reviewBy": "2026-09-15"
     }
   ]
 }
