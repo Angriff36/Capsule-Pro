@@ -38,6 +38,7 @@ import {
   createClientInteractionEscalatedNotifyMiddleware,
   createClientInteractionOverdueNotifyMiddleware,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
+  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContainerDeactivatedDishClearMiddleware,
   createContractSignedEventConfirmMiddleware,
@@ -675,6 +676,24 @@ export async function createManifestRuntime(
     // restore-on-reinstate provenance, so blanket irreversible pruning would strip
     // the dish from future events for a same-day stockout (deferred — see plan).
     createDishDeactivatedPruneMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Accounting: ChartOfAccountDeactivated -> deactivate the account's child
+    // accounts. Deactivating a parent GL account left every sub-account pointing
+    // at it (parentId) ACTIVE, so retired sub-accounts stayed postable under a
+    // dead parent. Middleware (not a reaction) because it is a 1:N fan-out keyed
+    // by the parent's OWN id (event.subject?.id, not auto-populated onto the
+    // event; deactivate takes no params) — a reaction resolves one target.
+    // Re-entrant: a deactivated child re-emits the event and deactivates its own
+    // children, so the WHOLE subtree retires (termination guaranteed by
+    // deactivate's isActive guard). Safe to cascade — deactivate is effectively
+    // terminal (no activate; update is guarded against inactive accounts), so the
+    // permanent-cascade rule applies (mirrors VendorBlacklisted, not the
+    // reversible suspend/setActive legs). Guard-safe + idempotent (only active,
+    // non-deleted children dispatched).
+    createChartOfAccountDeactivatedDeactivateChildrenMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

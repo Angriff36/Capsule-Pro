@@ -28,6 +28,11 @@ export {
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
 } from "./collection-written-off-invoice-write-off-middleware";
 export {
+  type ChartOfAccountDeactivatedDeactivateChildrenDiagnostic,
+  type ChartOfAccountDeactivatedDeactivateChildrenMiddlewareOptions,
+  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
+} from "./chart-of-account-deactivated-deactivate-children-middleware";
+export {
   type ContainerDeactivatedDishClearDiagnostic,
   type ContainerDeactivatedDishClearMiddlewareOptions,
   createContainerDeactivatedDishClearMiddleware,
