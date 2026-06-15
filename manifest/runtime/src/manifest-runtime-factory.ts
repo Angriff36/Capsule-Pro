@@ -42,6 +42,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
   createDishDeactivatedPruneMiddleware,
+  createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
   createEventCancelledCascadeMiddleware,
@@ -1224,6 +1225,22 @@ export async function createManifestRuntime(
     // deletedAt==null guard never trips). setActive policy (manager/admin/system) is a
     // superset of softDelete's (manager/admin), so the common path always aligns.
     createEmailTemplateDeletedDeactivateWorkflowsMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Integrations: EmailTemplateDeleted -> SmsAutomationRule.deactivate(). The SMS
+    // sibling of the EmailWorkflow leg above — SmsAutomationRule belongsTo EmailTemplate
+    // via templateId (sms-automation-rules.manifest:97), so a soft-deleted template left
+    // every dependent rule ACTIVE and the SMS trigger service kept firing them against a
+    // template whose content no longer exists (broken/empty SMS). Middleware for the same
+    // reasons as the EmailWorkflow leg: 1:N fan-out by templateId, and the templateId is
+    // reachable only as event.subject?.id (softDelete() takes no params). SAFE +
+    // REVERSIBLE (activate re-enables). Guard-safe + idempotent: only ACTIVE, non-deleted
+    // rules whose templateId matches are toggled (custom-message-only rules with an empty
+    // templateId are correctly left alone). Only the deactivate-on-delete leg; the broader
+    // business-event -> SMS fan-out remains a separate, deferred feature.
+    createEmailTemplateDeletedDeactivateSmsRulesMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
