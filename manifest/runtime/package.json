@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "2.5.0",
+    "@angriff36/manifest": "2.5.1",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.57.0",
