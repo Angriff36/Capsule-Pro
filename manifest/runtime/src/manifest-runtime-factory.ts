@@ -67,6 +67,7 @@ import {
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
+  createPayrollRunPaidCascadeMiddleware,
   createPayrollRunPaidPeriodLockMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListCancelledReleaseReservationMiddleware,
@@ -1204,6 +1205,19 @@ export async function createManifestRuntime(
     // dispatches the governed PayrollPeriod.lock (guard-safe: only locks a "closed"
     // period — already-locked / still-open periods are skipped; idempotent per period).
     createPayrollRunPaidPeriodLockMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Payroll: PayrollRunPaid -> close TipPool(s) + notify employees. The remaining
+    // two legs of the same plan item (the lock leg is above). Both are middleware,
+    // not reactions: markPaid() takes no params so the payload carries no run fields,
+    // the pools are reached via the run->payrollPeriodId->TipPool.periodId chain
+    // (1:N, no direct payrollRunId FK), and the recipients are the distinct
+    // employeeIds on the run's PayrollLineItem rows (1:N, queried by payrollRunId).
+    // Guard-safe (only allocated/distributed pools close) + idempotent per pool /
+    // per (run, employee); the two legs are independent.
+    createPayrollRunPaidCascadeMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

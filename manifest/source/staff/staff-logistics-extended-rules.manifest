@@ -178,7 +178,12 @@ entity TipPool {
   computed undistributedAmount: money = self.totalTips - self.distributedAmount
 
   transition status from "open" to ["allocated"]
-  transition status from "allocated" to ["distributed", "open"]
+  // `close()` guards `status in ["allocated", "distributed"]`, so an allocated pool
+  // must be able to reach "closed" or close() is a dead command from that state
+  // (the engine rejects an undeclared allocated->closed transition). Aligns the FSM
+  // to the command's stated intent (same dead-target fix class as Invoice VOID /
+  // CollectionCase WRITTEN_OFF).
+  transition status from "allocated" to ["distributed", "open", "closed"]
   transition status from "distributed" to ["closed"]
 
   constraint validStatus: self.status in ["open", "allocated", "distributed", "closed"] "Invalid tip pool status"

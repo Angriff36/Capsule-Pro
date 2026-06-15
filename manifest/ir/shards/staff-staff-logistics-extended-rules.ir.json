@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "270eab11cb9bdbb110cbd223910479cd0c02671fbfbfbeb71a98bebf89b0b055",
-    "irHash": "ec8238d7b3d993a19ac6c4acd08f9ba7dbd08560b04285bccb055648b9fc26fc",
-    "compilerVersion": "2.5.0",
+    "contentHash": "ea8cf96db9dee966419d91a3ffd0e9b0cd44ce1b3603e11025b9247117b02c37",
+    "irHash": "e2c69821d17a90e530178e1a9f8e1d67cd53b942e00c0c284c411fc722d631df",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T00:13:08.528Z"
+    "compiledAt": "2026-06-15T03:23:50.512Z"
   },
   "modules": [],
   "values": [],
@@ -1070,7 +1070,8 @@
           "from": "allocated",
           "to": [
             "distributed",
-            "open"
+            "open",
+            "closed"
           ]
         },
         {

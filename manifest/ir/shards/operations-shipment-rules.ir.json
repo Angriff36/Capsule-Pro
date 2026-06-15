@@ -2,10 +2,10 @@
   "version": "1.0",
   "provenance": {
     "contentHash": "8fb6c640e2ea0356309d4f82a25cea7788377f67b64feb74d00515db30a5b686",
-    "irHash": "e57bf9c2689834aee273901fc182e3bd93ee95c673e2ce4f8441ffea841b672f",
-    "compilerVersion": "2.5.0",
+    "irHash": "b35ccd0c46c04ae20f31e01591d1805b001f04d51cd1da0631e0ff6cd9e1445e",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T00:13:08.497Z"
+    "compiledAt": "2026-06-15T03:23:50.479Z"
   },
   "modules": [],
   "values": [],

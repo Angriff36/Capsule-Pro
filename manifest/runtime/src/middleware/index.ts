@@ -167,6 +167,11 @@ export {
   type PaymentRefundedInvoiceRecordMiddlewareOptions,
 } from "./payment-refunded-invoice-record-middleware";
 export {
+  createPayrollRunPaidCascadeMiddleware,
+  type PayrollRunPaidCascadeDiagnostic,
+  type PayrollRunPaidCascadeMiddlewareOptions,
+} from "./payroll-run-paid-cascade-middleware";
+export {
   createPayrollRunPaidPeriodLockMiddleware,
   type PayrollRunPaidPeriodLockDiagnostic,
   type PayrollRunPaidPeriodLockMiddlewareOptions,
