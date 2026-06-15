@@ -58,14 +58,14 @@ Only delete after confirming the projection output covers the real usage.
 | Hand-written Zod input schemas for manifest entities | `projections/zod` | BLOCKED (Phase 5 eval) |
 | Hand-written React Query hooks for manifest entities | `projections/react-query` | BLOCKED (Phase 5 eval) |
 | Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | BLOCKED (Phase 5 eval) |
-| `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | PARTIAL (2026-05-30) |
+| `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | DONE (2026-06-15) |
 
 **ENTITY_DOMAIN_MAP consolidation status (corrected):** the "3 files" claim is stale.
 - `manifest/scripts/generate.mjs` — **now imports** the canonical map from `entity-domain-map.mjs`. DONE.
 - `manifest/scripts/generate-all-routes.mjs` — no longer contains the map; it was refactored into a validation-only script (no `ENTITY_DOMAIN_MAP`). Nothing to consolidate.
-- `manifest/scripts/generate-route-manifest.ts` — still has its own copy (note: it has a pre-existing quirk `Event: "manifest/Event"` that differs from the others — needs reconciliation, not a blind copy). Run by `manifest:routes:ir`. **STILL TO DO.**
-- `packages/mcp-server/src/lib/entity-domain-map.ts` — a 4th copy (TS, in a different workspace package). **STILL TO DO.**
-Deferred deliberately: those two are separate scripts/packages with their own typing + the `manifest/Event` quirk; folding them in is out of scope for the deploy-unblock PR (one concern per PR). Tracked here.
+- `manifest/scripts/generate-route-manifest.ts` — **DONE.** Now imports the canonical map (`generate-route-manifest.ts:6` → `import { ENTITY_DOMAIN_MAP } from "./entity-domain-map.mjs"`); the old embedded copy and its `Event: "manifest/Event"` quirk are gone (run via `tsx` per `manifest:routes:ir`, so the `.mjs` import resolves transparently). Verified 2026-06-15.
+- `packages/mcp-server/src/lib/entity-domain-map.ts` — **DONE** (consolidated 2026-06-07, commit `5af26f3ce`). Now an 8-line ESM re-export (`entity-domain-map.ts:9` → `export { ENTITY_DOMAIN_MAP } from "../../../../manifest/scripts/entity-domain-map.mjs"`), with types from the sibling `manifest/scripts/entity-domain-map.d.mts`. The prior 14-line `require()` CJS hack was removed. Verified 2026-06-15.
+Resolution: all four call sites now resolve `ENTITY_DOMAIN_MAP` from the single canonical `manifest/scripts/entity-domain-map.mjs`; no embedded copies and no `manifest/Event` quirk remain. The `ENTITY_DOMAIN_MAP` duplication is fully retired.
 
 ## E. Legacy `executeManifestCommand` → canonical `runManifestCommand` migration
 
