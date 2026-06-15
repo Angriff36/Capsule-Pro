@@ -50,14 +50,14 @@ export async function GET(_request: NextRequest) {
 
     // Get or create tenant tax config
     let configs = await database.$queryRaw<TaxConfigRow[]>`
-      SELECT * FROM tenant_payroll.tax_configurations
+      SELECT * FROM tenant_staff.tax_configurations
       WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
     `;
 
     // If no configs exist, create default federal + user's state
     if (!configs?.length) {
       await database.$executeRaw`
-        INSERT INTO tenant_payroll.tax_configurations (
+        INSERT INTO tenant_staff.tax_configurations (
           tenant_id, tax_type, jurisdiction, state_code, is_active, created_at
         ) VALUES (
           ${tenantId}::uuid, 'federal', 'US', 'FED', true, NOW()
@@ -65,7 +65,7 @@ export async function GET(_request: NextRequest) {
       `;
 
       configs = await database.$queryRaw<TaxConfigRow[]>`
-        SELECT * FROM tenant_payroll.tax_configurations
+        SELECT * FROM tenant_staff.tax_configurations
         WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
       `;
     }
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const result = await database.$queryRaw<TaxConfigRow[]>`
-      UPDATE tenant_payroll.tax_configurations
+      UPDATE tenant_staff.tax_configurations
       SET is_active = ${isActive ?? true},
           state_code = ${stateCode || null},
           updated_at = NOW()
