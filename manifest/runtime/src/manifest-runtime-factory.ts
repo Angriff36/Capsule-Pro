@@ -76,6 +76,7 @@ import {
   createPrepTaskStationCountMiddleware,
   createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
+  createQaCheckFailedCorrectiveActionMiddleware,
   createRbacMiddleware,
   createSchedulePublishedNotifyStaffMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
@@ -678,6 +679,19 @@ export async function createManifestRuntime(
     // not a reaction) and dispatches the governed InventoryItem.softDelete to pull
     // the stock from inventory. Guard-safe (skips already-deleted / unlinked items).
     createIngredientRecalledQuarantineInventoryMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen QA: QACheckFailed -> open a QACorrectiveAction. A failed quality
+    // check (the fail command's own comment says "callers should open a
+    // QACorrectiveAction") had ZERO consumers, so failures recorded no
+    // remediation. Middleware (not a reaction) because the corrective action's
+    // relatedCheckId is the QACheck id (_subject.id) and the dispatch tenantId is
+    // the check's OWN field — neither is a `fail` param and neither is
+    // auto-populated onto the event -> the leg LOADS the check via _subject.id.
+    // Guard-safe (skips when tenant/store unresolvable) + per-check idempotency.
+    createQaCheckFailedCorrectiveActionMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

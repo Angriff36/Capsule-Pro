@@ -213,6 +213,11 @@ export {
   type ProposalLineItemCountMiddlewareOptions,
 } from "./proposal-line-item-count-middleware";
 export {
+  createQaCheckFailedCorrectiveActionMiddleware,
+  type QaCheckFailedCorrectiveActionDiagnostic,
+  type QaCheckFailedCorrectiveActionMiddlewareOptions,
+} from "./qa-check-failed-corrective-action-middleware";
+export {
   createRbacMiddleware,
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
