@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory - Cycle Count Rules
 // Manifest spec for cycle count sessions, records, and variance reporting
 

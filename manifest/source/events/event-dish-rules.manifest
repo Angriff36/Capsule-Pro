@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Event Dish Rules
 // Manifest spec for event-to-dish associations (event menu composition).
 // Day-of quantity/course adjustments are common as final headcounts firm up.

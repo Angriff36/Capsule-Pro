@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Notifications - Notification Rules
 // Manifest spec for notification delivery, read tracking, and dismissal
 

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Workflow Engine - Workflow Rules
 // Manifest spec for workflow automation with triggers, steps, and lifecycle management
 

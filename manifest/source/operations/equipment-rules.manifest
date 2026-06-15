@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Equipment Maintenance Scheduler - Equipment Rules
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 

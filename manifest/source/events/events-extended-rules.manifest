@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events Extended - Venue, assignments, timeline, tasks, import, followup, board projections, annotations, notes
 // Business-logic entities for the catering-company Events cluster.
 

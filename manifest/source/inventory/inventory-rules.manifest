@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Inventory Rules
 // Manifest spec for inventory operations with constraints, guards, and events
 

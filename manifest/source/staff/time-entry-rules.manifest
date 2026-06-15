@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - Time Entry Rules
 // Manifest spec for time tracking and timecard edit requests
 

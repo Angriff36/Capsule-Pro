@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Domain - Work Order Rules
 // Manifest spec for equipment maintenance work orders
 // Lifecycle: open -> assigned -> in_progress -> completed (or cancelled from any non-terminal state)

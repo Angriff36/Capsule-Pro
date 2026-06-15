@@ -1,5 +1,5 @@
+use "../_base.manifest"
 use "./training-module-rules.manifest"
-tenant tenantId : string from context.tenantId
 
 // NOTE: `StaffMemberCreated` is defined ONCE — in staff-member-rules.manifest
 // (topic "staff.staff-member.created"), the event StaffMember.create actually

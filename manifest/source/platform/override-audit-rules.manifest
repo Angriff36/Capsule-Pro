@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Override Audit - Constraint Override Tracking
 // Manifest spec for recording and authorizing constraint overrides
 

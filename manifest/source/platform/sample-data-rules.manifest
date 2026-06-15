@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Sample Data Operations
 // Manifest spec for seeding and clearing sample/demo data
 //

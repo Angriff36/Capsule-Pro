@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Procurement - Purchase Requisition Rules
 // Manifest spec for purchase requisition lifecycle and approval workflows
 //

@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f7546550190e74d092ecf1ac648474868802edaeebc43361aeb9733754a7d7f2",
-    "irHash": "847e854961fbc3935416067384755ea567803a864dc3fa1592c748fd16c76943",
+    "contentHash": "8acb5bf4243b472884bdbe5158a84226e09cdfdf34911e82f017fa0dae699524",
+    "irHash": "f53dd844f65d18838af9a4372f96191d0c664d60adf3a82c731d5043d52d482e",
     "compilerVersion": "2.5.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T23:14:10.551Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T00:13:08.360Z"
   },
   "modules": [],
   "values": [],

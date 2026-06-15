@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Facilities Domain — Facility Management Rules
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 

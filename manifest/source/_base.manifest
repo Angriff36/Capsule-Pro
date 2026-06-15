@@ -1,0 +1,10 @@
+// Shared base module — the SINGLE tenant declaration for the entire project.
+//
+// Every domain file `use`s this module instead of repeating its own `tenant`
+// line. Declaring the tenant exactly once is what lets native
+// `compileProjectToIR` merge all files: it hard-errors on duplicate `tenant`
+// declarations across files (multi-compiler.ts:106), which is why capsule
+// previously needed a hand-rolled `mergeIrs` with "tenant reconciliation".
+//
+// See manifest/MANIFEST-DIVERGENCES.md — U6 (keystone) and D10/D11/D12.
+tenant tenantId : string from context.tenantId

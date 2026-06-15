@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff Domain - Employee Availability Rules
 // Manifest spec for managing employee availability schedules
 // Lifecycle: active (default) -> suspended -> active (reinstate)

@@ -1,8 +1,15 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T23:14:10.771Z",
-  "contentHash": "8818d43851c6e9767cb902890240d4885af3fd02ccd40f1241644544ae75c5fe",
+  "compiledAt": "2026-06-15T00:10:10.631Z",
+  "contentHash": "ca670d64fdb6b981c6bc1e7277fd1f719454f23b130b164dc582f97e72d0bb1a",
   "sources": [
+    {
+      "path": "_base.manifest",
+      "domain": "root",
+      "entities": 0,
+      "commands": 0,
+      "events": 0
+    },
     {
       "path": "ai/ai-event-setup-rules.manifest",
       "domain": "ai",

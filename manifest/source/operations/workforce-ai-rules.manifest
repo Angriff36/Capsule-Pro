@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Workforce AI - Rules
 // Manifest spec for AI-powered workforce optimization features
 

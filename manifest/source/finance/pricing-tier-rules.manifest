@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Pricing Tier Rules
 // Manifest spec for pricing tier management
 // A PricingTier defines a quantity-based price band for a catalog entry.

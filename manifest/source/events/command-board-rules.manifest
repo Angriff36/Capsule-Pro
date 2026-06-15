@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Command Board - Board Rules
 // Manifest spec for command board operations with cards, groups, layouts, and connections
 

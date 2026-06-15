@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Payment Rules Manifest
 // Defines payment processing, tracking, and reconciliation rules
 

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Kitchen Task Rules
 // Manifest spec for general kitchen task operations with constraints, guards, and events
 // Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)

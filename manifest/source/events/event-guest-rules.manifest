@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Event Guest Rules
 // Manifest spec for event guest management, dietary tracking, RSVP, and day-of check-in.
 // RSVP drives the final headcount the kitchen cooks for; check-in tracks actual attendance.

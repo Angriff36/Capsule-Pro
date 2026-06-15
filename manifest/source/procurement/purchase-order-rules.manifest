@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Purchasing - Purchase Order Rules
 // Manifest spec for purchase order lifecycle and line item management
 

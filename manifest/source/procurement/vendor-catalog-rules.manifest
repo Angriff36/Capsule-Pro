@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Vendor Catalog Rules
 // Manifest spec for vendor catalog management
 // Version: @angriff36/manifest v0.3.35

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Admin Task Dev Meta Rules
 // Manifest spec for dev mode bug tracking metadata on admin tasks
 

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Warehouse / logistics — shipment tracking and receiving.
 // Create = draft shell only. Tracking, costs, and internal notes belong on update.
 // locationId is never a caller param: inherited from Event when eventId is set

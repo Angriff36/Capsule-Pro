@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory / Procurement — Extended Domain Entities
 // Physical storage slots, stock levels, alerts, forecasting, vendor contacts,
 // transfer line items, procurement budgets, and audit scheduling for a

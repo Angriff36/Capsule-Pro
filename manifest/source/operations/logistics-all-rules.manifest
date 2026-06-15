@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
 
 entity Driver {

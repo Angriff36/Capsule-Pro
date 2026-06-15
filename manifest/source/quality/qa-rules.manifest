@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen QA Rules — Quality Checks, Corrective Actions, Temperature Logs
 
 entity QACheck {

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // CRM & Sales - Proposal Rules
 // Manifest spec for proposal lifecycle and line item management
 

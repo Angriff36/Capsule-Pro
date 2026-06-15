@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Prep Task Plan Workflow - Task generation with constraint checking
 // Implements the workflow pattern from spec: generate → review → approve → instantiate tasks → schedule windows
 // Provides structured workflow for AI-assisted task generation with human review

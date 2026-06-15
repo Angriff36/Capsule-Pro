@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Procurement Budget Rules
 // Manifest spec for departmental and project budgets
 

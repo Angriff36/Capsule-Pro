@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Admin Task Attachment Rules
 // Manifest spec for managing file attachments on admin tasks
 

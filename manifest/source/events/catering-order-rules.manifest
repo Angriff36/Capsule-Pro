@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Catering Order Rules
 // Manifest spec for catering order lifecycle and delivery management
 

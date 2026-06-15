@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "d2c7b40d343ea65769c10e0e1ed00e59df02a1236593c7bcc17f11ce8335da21",
+    "irHash": "8ae811769231cc8c6fb97d15f2354152a58ef144622299ebc8a7190ffccf853a",
+    "compilerVersion": "2.5.0",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-15T00:13:08.338Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [],
+  "enums": [],
+  "stores": [],
+  "events": [],
+  "commands": [],
+  "policies": [],
+  "reactions": []
+}

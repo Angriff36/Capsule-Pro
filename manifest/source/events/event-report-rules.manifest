@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Event Report Rules
 // Manifest spec for pre-event review checklists and report lifecycle
 

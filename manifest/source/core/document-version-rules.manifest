@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Document Version Control Rules
 // Manifest spec for document versioning, approval, and publish lifecycle
 

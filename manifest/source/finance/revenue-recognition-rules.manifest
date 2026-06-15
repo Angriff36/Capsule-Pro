@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Finance - Revenue Recognition Rules
 // Manifest spec for revenue recognition schedules and accrual accounting
 

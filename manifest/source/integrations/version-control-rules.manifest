@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Version Control - Generic Versioning System
 // Manifest spec for versioning documents, templates, and configurations
 // with change history, rollback capabilities, and approval workflows

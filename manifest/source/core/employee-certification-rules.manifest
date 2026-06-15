@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff Domain - Employee Certification Rules
 // Manifest spec for managing employee certifications and credentials
 

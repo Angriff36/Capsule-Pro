@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Ingredient Rules
 // Manifest spec for ingredient catalog management, allergen tracking, and shelf life
 // Enriched with: recordLot (track a received lot with expiry), flagRecall (supplier recall),

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Prep Comment Rules
 // Manifest spec for prep task comment threading, resolution, and moderation
 // Bug fixes:

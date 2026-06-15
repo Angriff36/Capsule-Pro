@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Event Import Workflow - Multi-step event import with validation
 // Implements the workflow pattern from spec: parse → extract → validate → propose tasks → reserve inventory → activate
 // Each step is idempotent with clear state transitions

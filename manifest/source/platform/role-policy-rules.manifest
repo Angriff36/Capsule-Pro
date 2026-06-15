@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administration - Role Policy Rules
 // Manifest spec for role-based permission management
 // SECURITY: All commands require admin/owner role (adminOnly policy)

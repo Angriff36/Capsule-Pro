@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Station Rules
 // Manifest spec for station capacity and equipment management
 // Enriched with: maintenance mode (put station in/out of maintenance without full deactivate)

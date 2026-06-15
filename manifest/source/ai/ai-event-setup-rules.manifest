@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // AI Copilot - Event Setup Rules
 // Manifest spec for AI-driven natural language event creation
 

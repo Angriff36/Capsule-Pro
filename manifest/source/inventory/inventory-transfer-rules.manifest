@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory Transfer Rules
 // Manifest spec for inter-location inventory movements
 

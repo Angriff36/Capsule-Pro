@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - User Rules
 // Manifest spec for user/employee lifecycle management
 

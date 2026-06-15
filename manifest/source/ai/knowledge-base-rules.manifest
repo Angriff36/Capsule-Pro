@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Knowledge Base Domain — Entry Rules
 // Manifest spec for internal knowledge base articles and documentation
 

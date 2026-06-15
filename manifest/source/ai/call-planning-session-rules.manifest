@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // AI Call Planner - Call Planning Session Rules
 // Manifest spec for call planning session lifecycle
 

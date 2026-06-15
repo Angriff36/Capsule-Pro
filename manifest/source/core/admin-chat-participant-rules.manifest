@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Chat Participant Rules
 // Manifest spec for admin chat participant operations
 

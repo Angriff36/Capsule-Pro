@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Board Config Rules
 // Manifest spec for managing kanban board configuration per tenant
 

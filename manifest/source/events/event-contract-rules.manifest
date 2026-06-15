@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Event Contract Rules
 // Manifest spec for event contract management and signature tracking
 
