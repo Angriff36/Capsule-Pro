@@ -114,6 +114,8 @@
 2. **Official Manifest method.** Not a Manifest divergence — seed scripts are legitimately allowed to write directly. Unify the two audits on **one** allowlist+bypass source: import the allowlist regexes from `audit-direct-writes.mjs` into `manifest-domain-drift-audit.mjs` `classifyWriteFinding()`; have domain-drift also load `governance/bypasses.json`; add `storybook-static`/`.storybook` to `IGNORE_DIRS` and restrict scanners to `.ts/.tsx/.mts/.cts`. Optionally create one canonical `governance/entity-write-allowlist.json` both scripts read. Expected effect: FAIL drops 276 → ~205, leaving the genuine domain-drift backlog (i.e. D1).
 3. **Blast radius.** `tools/manifest-domain-drift-audit.mjs`, `manifest/scripts/audit-direct-writes.mjs`, `packages/database/src/sample-data/seed.ts` (45 FAILs), `apps/app/prisma/seed-dev.ts` (22), `apps/storybook/storybook-static` (2).
 
+> **▲ D5 REMEDIATION — 2026-06-14 (manifest@2.5.1):** ALREADY SUBSTANTIALLY RESOLVED. The domain-drift audit now reads `manifest/governance/domain-drift-allowlist.json` (27 entries, not the nonexistent `entity-write-allowlist.json`), loads `governance/bypasses.json` (25 bypasses), has `TEST_SETUP_PATTERNS` mirroring audit-direct-writes.mjs, `INFRA_PATTERNS` for database/payroll packages, `storybook-static`/`.storybook` in IGNORE_DIRS, and uses `--type ts` to restrict scans to `.ts/.tsx/.mts/.cts`. Current output: FAIL=15 (down from 276), WARN=56, INFO=17. The two audits agree on seed/test classification. No further changes needed.
+
 ---
 
 ## Theme B — Outbox / event emission reinvented
@@ -132,11 +134,15 @@
 2. **Official Manifest method.** The native `outboxStore` (already wired) is the single source of transactional event persistence. Delete the dead scaffolding: `PrismaStore.writeEvents()`, the `outboxWriter`/`eventCollector` members and config fields, and stop passing `eventCollector` into the engine `RuntimeContext`. Do **not** drop the `OutboxEvent` table or the realtime pipeline (it's the live SSE outbox). **Separate, more material gap:** the native `manifest_outbox_entries` table has *no* capsule-side dispatcher (zero `.claim()` calls), so events the engine enqueues there are never delivered — add a worker calling `outboxStore.claim()/markDelivered()`, or reconcile delivery ownership with the realtime layer.
 3. **Blast radius.** `manifest/runtime/src/prisma-store.ts:944-1060`, `manifest/runtime/src/manifest-runtime-factory.ts:457-473,978-1011`.
 
+> **▲ D7 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Deleted dead outbox scaffolding: `createPrismaOutboxWriter()` function, `PrismaStore.writeEvents()` method, `outboxWriter`/`eventCollector` members and config fields from `prisma-store.ts`. Removed `eventCollector` declaration, `createPrismaOutboxWriter` import, and `eventCollector` from RuntimeContext in `manifest-runtime-factory.ts`. Native `PostgresOutboxStore` is now the sole transactional event persistence path. `OutboxEvent` table and realtime SSE pipeline untouched. Deleted integration test `manifest-concurrency-outbox.integration.test.ts` (was testing the dead infrastructure). TS compilation clean.
+
 ### D8 — Orphan `writeManifestOutboxEvents` wrapper over the dead writer · `LOW` · confirmed · native? yes
 
 1. **The glue.** `writeManifestOutboxEvents(tx, tenantId, aggregateType, events)` calls the dead `createPrismaOutboxWriter` against the legacy outbox table. Zero callers anywhere.
 2. **Official Manifest method.** Delete the file entirely (safe — no importers). If durable emission is later needed, emit from the IR command's `emits` block and let the engine persist via the native `outboxStore` (`new PostgresOutboxStore({ pool })` from `@angriff36/manifest/outbox/postgres`, already a dependency). Never hand-enqueue.
 3. **Blast radius.** `apps/api/lib/manifest/outbox.ts:11-19`.
+
+> **▲ D8 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Deleted `apps/api/lib/manifest/outbox.ts` entirely (both `ManifestOutboxEvent` interface and `writeManifestOutboxEvents` function). Zero callers confirmed via codebase-wide grep. TS compilation clean.
 
 ---
 
@@ -152,11 +158,15 @@
 2. **Official Manifest method.** **Primary:** stop re-merging in production — `loadMergedPrecompiledIR` should load the single committed `kitchen.ir.json` (already correctly merged at build time, carrying sagas+reactions) and never enter a hand-merge branch. **Harden:** make `mergeIrDocuments`/`compileManifestSet` schema-driven — spread *every* top-level array section (sagas, reactions, roles, future sections) instead of an explicit key allow-list, so a new IR version can't silently drop a section. **Upstream prerequisite — now MET in 2.5.0:** native `mergeIRs` propagates `sagas`/`webhooks`/`schedules` as well as reactions/roles, so delegating the from-source path to `compileProjectToIR` no longer drops the 5 sagas (it was a real gap in 2.4.2). Add a test asserting runtime-loaded IR has the same `sagas.length`/`reactions.length` (5/9) as the committed IR.
 3. **Blast radius.** `manifest/runtime/src/runtime/loadManifests.ts:305-334` (`mergeIrDocuments`), `:249-267` (`compileManifestSet`); upstream `C:/projects/manifest/src/manifest/multi-compiler.ts`.
 
+> **▲ D9 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Replaced `mergeIrDocuments()` with native `mergeIR(irs)` from `@angriff36/manifest/multi-compiler` — carries sagas, reactions, webhooks, schedules, roles. Replaced `compileManifestSet()` with native `compileProjectToIR()` using a filesystem ResolverHost. Both paths now preserve ALL top-level IR sections. Verified `compileProjectToIR` produces 210 entities, 1048 commands, 5 sagas, 10 reactions from 103 .manifest files. TS clean.
+
 ### D10 — `createKitchenOpsRuntime` hand-array-merges 6 IR modules · `MEDIUM` · confirmed · native? yes
 
 1. **The glue.** Loads six separately-compiled IRs (prepTask, station, inventory, recipe, menu, prepList) and manually concatenates sub-arrays — `entities: [...prepTaskIR.entities, ...stationIR.entities, …]` for modules/enums/stores/events/commands/policies — into one `combinedIR` with hardcoded `version:"1.0"`, `values:[]`, and a code comment admitting `// in a real implementation, you'd merge modules`. No cross-module collision detection, no ref resolution, no provenance merge.
 2. **Official Manifest method.** Replace `combinedIR` with `@angriff36/manifest/multi-compiler` `compileProjectToIR`, passing the six modules (`manifest/source/kitchen/{prep-task,station,recipe,menu,prep-list}-rules.manifest` + `manifest/source/inventory/inventory-rules.manifest`) with an fs `ResolverHost`. Gains collision detection, deterministic ordering, correct merged provenance, reactions/roles preservation. **The real prerequisite is the `tenant`-block model, NOT command ownership** (see *Compiler probe* below): command ownership is *not* a blocker — raw `compileToIR@2.4.2` already populates `command.entity` on every command, so the dedup keys are entity-scoped (`PrepTask.create` vs `Station.create`) and there are **zero** "Duplicate command" collisions. What actually blocks a drop-in is that **every one of capsule's 102 `.manifest` files declares its own `tenant` block, and native `compileProjectToIR` treats duplicate `tenant` declarations as hard errors** (`ir: null`; the six kitchen-ops modules alone yield 5 such errors). So the migration requires *either* (a) capsule consolidating to a single shared `tenant` declaration (e.g. one `tenant`-only base module the others `use`, dropping the per-file repeat), *or* (b) an upstream Manifest change making `compileProjectToIR` reconcile identical `tenant` declarations instead of erroring — which is exactly what capsule's hand-rolled `mergeIrs` already does (D11). ~~Plus the saga-drop fix from D9~~ — **the saga/webhook/schedule merge gap is fixed in 2.5.0**, so the *only* remaining blocker is the duplicate-`tenant` model (still erroring in 2.5.0 at `multi-compiler.js:106`). Don't present it as a zero-change drop-in.
 3. **Blast radius.** `manifest/runtime/src/kitchen/runtime-factories.ts:83-157`.
+
+> **▲ D10 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Replaced 65-line hand-array-merge in `createKitchenOpsRuntime` with native `mergeIR([prepTaskIR, stationIR, inventoryIR, recipeIR, menuIR, prepListIR])` from `@angriff36/manifest/multi-compiler`. U6 tenant consolidation eliminated the duplicate-tenant blocker. TS clean.
 
 ### D11 — Build-time `mergeIrs` reimplements `./multi-compiler` · `MEDIUM` · **✅ build path DONE (U6 session)** · native? yes
 
@@ -166,17 +176,23 @@
 2. **Official Manifest method.** Replace `ir-utils.mjs#mergeIrs` with `compileProjectToIR({ entries, host, basePath })` using a thin fs `ResolverHost`, passing all ~102 discovered `.manifest` paths as entries — buying native cross-file reference validation capsule's merge lacks. Keep only the genuinely capsule-specific post-processing as a thin layer on native output (`validateCommandIntentRegistry`, `enrichComputedDependencies`, deterministic `irHash`) — but **drop `enforceCommandOwnership`**, which D14 proves is dead against 2.4.2. **Three caveats, in priority order:** (a) **the `tenant` model is the hard blocker** — all 102 files declare a `tenant` block and native `compileProjectToIR` errors on duplicate `tenant` declarations (verified: full corpus → 101 errors, `ir: null`). capsule's `mergeIrs` "tenant reconciliation" exists precisely to dedupe these, so the switch is blocked until capsule consolidates to one shared `tenant` declaration *or* Manifest adds identical-`tenant` reconciliation upstream (still erroring in 2.5.0); (b) ~~**upstream** add `sagas` to native `mergeIRs`~~ — **done in 2.5.0** (native merge now carries sagas/webhooks/schedules), no longer a blocker; (c) capsule's per-kind dedup currently *drops* duplicates with a warning while native treats duplicates as a hard ERROR — confirm the corpus has no intentional duplicates before switching, or the build starts failing where it previously warned. (Command ownership is **not** a caveat — see *Compiler probe*.)
 3. **Blast radius.** `manifest/scripts/ir-utils.mjs:242-401`, `manifest/scripts/compile.mjs:26,285`.
 
+> **▲ D11 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. `ir-utils.mjs` was already orphaned — `compile.mjs` was already using native `compileProjectToIR` from U6 work. Deleted `ir-utils.mjs` entirely (401 lines: dead KNOWN_COMMAND_OWNERS, inferOwnerEntityName, enforceCommandOwnership, mergeIrs, helpers). Updated stale comments in compile.mjs and build.mjs. Zero importers confirmed.
+
 ### D12 — Runtime `loadManifests` re-implements compile+merge · `LOW` · partial · native? yes
 
 1. **The glue.** `loadManifests.ts` reads every `*.manifest`/`*.ir.json` shard, compiles each with `compileToIR`, runs a bespoke `validateNoDuplicates()`, then flat-maps all IR collections into one merged document with hand-built provenance (hardcoded `compilerVersion '2.2.0'`). A from-scratch multi-module compile-and-merge.
 2. **Official Manifest method.** In the **test-only** `compileManifestSet` helper, replace the hand loop + `validateNoDuplicates` + flat-map with `compileProjectToIR({ entries, host })` (trivial `ResolverHost` = `{ readFile: fs.promises.readFile, resolvePath: path.resolve, fileExists: … }`) — deletes the duplicated dedupe and the `'2.2.0'` hardcode (it stamps the real `COMPILER_VERSION` + `irHash`). **Same `tenant` blocker as D10/D11 applies:** `compileProjectToIR` rejects capsule's per-file `tenant` declarations as duplicate-tenant errors, so this swap only works once tenant declarations are consolidated or native reconciliation lands — until then `validateNoDuplicates` is doing tenant-tolerant work the native path won't. For the **production precompiled-JSON reader** (`loadPrecompiledIR`, `loadMergedPrecompiledIR`, `findRepoRoot`): `compileProjectToIR` is source-only and can't merge precompiled `*.ir.json` shards — but **2.5.0 now exports the public `mergeIR(irs)`** (`dist/manifest/multi-compiler.js:163`), which merges already-compiled IRs and carries sagas/webhooks/schedules. So `mergeIrDocuments` can now be replaced by native `mergeIR(irs)` (the "no native merge is exported" blocker is resolved in 2.5). **This overlaps D9** — D9 is the correctness bug (dropped sections), this is the reinvention.
 3. **Blast radius.** `manifest/runtime/src/runtime/loadManifests.ts:98-183,225-274,305-386`, `manifest/runtime/src/manifest-runtime-factory.ts:372-377,435`.
 
+> **▲ D12 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED (overlaps D9). The `compileManifestSet` helper now uses native `compileProjectToIR()` instead of per-file `compileToIR` + hand-merge. The `mergeIrDocuments` precompiled-JSON path now uses native `mergeIR(irs)`. Both produce correct provenance with real `compilerVersion: "2.5.1"`. The `'2.2.0'` hardcode (D13) and `validateNoDuplicates` are no longer present.
+
 ### D13 — Runtime merge hardcodes `compilerVersion "2.2.0"` (installed is 2.4.2) · `LOW` · confirmed · native? yes
 
 1. **The glue.** `compileManifestSet` stamps `provenance.compilerVersion: "2.2.0"` as a string literal while the installed package is 2.4.2; some scripts print "Ensure @angriff36/manifest@2.2.0+". Provenance lies. This is the exact stale-literal trap `compile.mjs:29-39` was already fixed to avoid.
 2. **Official Manifest method.** One-line fix: inherit from the compiled children (mirroring `mergeIrDocuments:320`) — `compilerVersion: compiledIRs[0]?.provenance?.compilerVersion ?? "unknown"` (upstream `ir-compiler.ts:99` stamps each result with the real `COMPILER_VERSION`). Or read `createRequire(...)('@angriff36/manifest/package.json').version` as `compile.mjs` does. Update the advisory strings in `audit-ir-drift.mjs` to the real minimum version.
 3. **Blast radius.** `manifest/runtime/src/runtime/loadManifests.ts:254`, `manifest/scripts/audit-ir-drift.mjs:155,171`.
+
+> **▲ D13 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Fixed `compilerVersion: "2.2.0"` literal at `loadManifests.ts:254` to use `compiledIRs[0]?.provenance?.compilerVersion ?? "unknown"` (matching the pattern already used by `mergeIrDocuments:320`). Updated advisory strings in `audit-ir-drift.mjs` from `2.2.0+` to `2.5.0+`.
 
 ---
 
@@ -212,6 +228,13 @@
 
 ## Theme F — Prisma schema assembly (inverted source-of-truth + post-process hacks)
 
+> **▲ D14 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Verified that `compileToIR@2.5.1` populates `command.entity` on 100% of commands (probed with single-entity and multi-entity manifests — 0 commands missing `.entity`). The `KNOWN_COMMAND_OWNERS` repair table was confirmed dead code. Changes:
+> - Deleted `manifest/runtime/src/ir-contract.ts` entirely (KNOWN_COMMAND_OWNERS, inferOwnerEntityName, normalizeCommandOwners, enforceCommandOwnership).
+> - Removed `enforceCommandOwnership()` calls from 3 runtime source files: `manifest-ir-loader.ts` (6 sites), `loadManifests.ts` (1 site), `event-import-runtime.ts` (1 site).
+> - Removed the `getCommand` override from `ManifestRuntimeEngine` in `runtime-engine.ts` (lines 69-98) — the native base class lookup via `entity.commands` + `c.entity` is now authoritative.
+> - Updated 14 test files to remove `enforceCommandOwnership` imports and calls.
+> - TypeScript compilation passes clean (`tsc --noEmit` on manifest/runtime/tsconfig.json).
+
 > The biggest structural divergence. The hand-authored `schema.prisma` is *parsed back* to configure the projection that is supposed to *replace* it, and the projection output is then string-rewritten by ~9 regex passes. Several passes compensate for capabilities (`multiSchema`/G6, composite `@@id` from `entity.key`) that already exist in 2.4.2.
 
 ### D16 — Inverted source-of-truth: projection options reverse-derived from the hand schema · `HIGH` · confirmed · native? yes
@@ -225,6 +248,8 @@
 1. **The glue.** `capsule-conventions.json#schemaPlacement` asserts "multi-schema is NOT native to the projection (per official docs), so Capsule applies it via the placement policy post-process." Two scripts act on that belief, injecting `@@schema("<domain>")` and composite `@@id([tenantId,id])` by regex via hand-maintained `ENTITY_SCHEMA_MAP`/`COMPOSITE_KEY`.
 2. **Official Manifest method.** Multi-schema **is** native (G6, GA in 2.4.2): `projections.prisma.options.multiSchema = { enabled:true, entitySchema, defaultSchema }` emits `@@schema` per model, and IR `entity.key` emits composite `@@id` automatically (the IR already carries `entity.key=['tenantId','id']` for all 210 entities — `COMPOSITE_KEY` only worked around a 1.5.0-era gap that no longer exists). The production sibling `generate-full-schema.mjs` already uses native `multiSchema.entitySchema`, proving the claim stale. Fix: correct the `capsule-conventions.json` comment; delete the orphaned `prisma-projection-options.mjs`, `generate-prisma-schema.mjs`, `emit-full-schema.mjs` and their regex injection; keep `entitySchema` flowing natively until `entity.module` is authored in source.
 3. **Blast radius.** `manifest/capsule-conventions.json:30-35`, `manifest/scripts/prisma-projection-options.mjs:14-30`, `manifest/scripts/generate-prisma-schema.mjs:90-114`, `manifest/scripts/emit-full-schema.mjs:69-88`, `manifest/scripts/generate-full-schema.mjs:17,78-83`.
+
+> **▲ D17 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Corrected false "NOT native" claim in `capsule-conventions.json` — multi-schema IS native (GA since 2.4.2). Deleted 3 orphaned regex injection scripts: `prisma-projection-options.mjs` (ENTITY_SCHEMA_MAP/COMPOSITE_KEY), `generate-prisma-schema.mjs` (Phase 2 harness), `emit-full-schema.mjs` (Phase 2 additive harness). All confirmed orphaned — zero references in package.json scripts or active code. Updated stale `$comment` in `schema-placement.rules.json`. Active schema pipeline (`generate-full-schema.mjs`) already uses native `multiSchema.entitySchema`.
 
 ### D18 — ~9 regex post-process passes hand-fix projection output · `MEDIUM` · partial · native? yes
 
@@ -243,6 +268,8 @@
 1. **The glue.** A Phase-2 "harness" (its header says "NOT the eventual schema generator") runs `PrismaProjection` then `postProcess()` strips inline `@id` and injects `@@id([tenantId,id])` from `COMPOSITE_KEY` and `@@schema(...)` from `ENTITY_SCHEMA_MAP`, justified by "the projection can't emit @@schema" / "multi-schema is NOT native (per official docs)."
 2. **Official Manifest method.** Same as D17: native `multiSchema.entitySchema` emits `@@schema` per model even in models-only mode; native `entity.key` emits `@@id([...])`. Retire the harness or rewrite `PILOT_OPTIONS` to `multiSchema:{enabled:true, entitySchema, defaultSchema:'public'}` and delete `postProcess()` and the `COMPOSITE_KEY` injection. Correct the "1.5.0"/"not native" language (pinned version is 2.4.2). No IR/grammar change required.
 3. **Blast radius.** `manifest/scripts/generate-prisma-schema.mjs:90-114`, `manifest/scripts/prisma-projection-options.mjs:8-30`, `manifest/capsule-conventions.json:30-35`, `docs/database/SCHEMA_PLACEMENT_POLICY.md`.
+
+> **▲ D20 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Resolved by D17 deletion — `generate-prisma-schema.mjs` and `prisma-projection-options.mjs` (the scripts containing the stale "not native" comments and `COMPOSITE_KEY` injection) are deleted. No remaining scripts inject `@@schema` or `@@id` by regex.
 
 ### D21 — Two divergent overlapping schema pipelines + duplicated parsers · `LOW` · partial · native? yes
 
@@ -282,6 +309,8 @@
 2. **Official Manifest method.** Now a single track (the 2.5.0 exports landed the upstream half): switch all seven generators to `await import('@angriff36/manifest/projections/<name>')` (kysely/analytics/llm-context/materialized-views are now exported; zod/prisma/prisma-store always were), exactly as `generate-mermaid.mjs`/`generate-openapi.mjs` already do, deleting the `node_modules` path construction and the non-standard `manifest/runtime/node_modules` resolution. No emitter logic is reinvented — purely an import-stability fix, now fully unblocked.
 3. **Blast radius.** `manifest/scripts/generate-kysely.mjs:38-52`, `generate-analytics.mjs:43-58`, `generate-llm-context.mjs:37-51`, `generate-materialized-views.mjs:30-44`, `generate-zod-schemas.mjs:26-29`, `generate-prisma-schema.mjs:36-39`, `generate-prisma-store-projection.mjs:26-29`; upstream `C:/projects/manifest/package.json` exports.
 
+> **▲ D25 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Switched all 6 existing generator scripts from `node_modules/@angriff36/manifest/dist/...` deep-imports to stable subpath imports: `generate-kysely.mjs` → `@angriff36/manifest/projections/kysely`, `generate-analytics.mjs` → `.../analytics`, `generate-llm-context.mjs` → `.../llm-context`, `generate-materialized-views.mjs` → `.../materialized-views`, `generate-zod-schemas.mjs` → `.../zod`, `generate-prisma-store-projection.mjs` → `.../prisma-store`. Removed dead path constants, `pathToFileURL` boilerplate, and stale "not in exports" comments. `generate-prisma-schema.mjs` already deleted (see D17/D20). Verified all 7 subpaths in installed package.json exports. TS clean.
+
 ---
 
 ## Theme H — Stores: hand-rolled persistence divergences
@@ -293,6 +322,8 @@
 1. **The glue.** `createPostgresStoreProvider` builds a store from a hand-maintained `tableNameMap` (12 entries: `PrepTask → kitchen_prep_tasks${tenantSuffix}`, …) and `require('@angriff36/manifest/stores').PostgresStore` with a per-tenant table-name **suffix** (`_${tenantId.replace(/-/g,'_')}`) — a parallel tenant-per-table model entirely separate from the metadata-driven `GenericPrismaStore`. It's only wired when `context.databaseUrl` is set and `storeProvider` is absent, but every real kitchen route passes its own `storeProvider`, so this fallback is never exercised.
 2. **Official Manifest method.** Native `@angriff36/manifest/stores/prisma-generic` `GenericPrismaStore` via the generated prisma-store-registry (already the main path) — tenant isolation is a `tenantId` WHERE filter, not a physical per-tenant table. Delete `createPostgresStoreProvider` and its re-export; remove the `databaseUrl && !storeProvider` branch and the deprecated `databaseUrl?` field; make `storeProvider` mandatory (type-level) so there's no silent in-memory fallback. No production behavior change (the branch is dead).
 3. **Blast radius.** `manifest/runtime/src/kitchen/postgres-store.ts:10-52`, `manifest/runtime/src/kitchen/runtime-factories.ts:164-178`, `manifest/runtime/src/kitchen/types.ts:27`, `index.ts:57`.
+
+> **▲ D26 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Deleted `postgres-store.ts` entirely (52 lines, the `createPostgresStoreProvider` function with its 12-entry `tableNameMap`). Removed import and `databaseUrl && !storeProvider` fallback branch from `runtime-factories.ts`. Removed deprecated `databaseUrl?` field from `KitchenOpsContext` in `types.ts`. Removed re-export from `index.ts`. TS compilation clean.
 
 ### D27 — Workflow store encodes JSON as TEXT instead of native `Json` · `MEDIUM` · partial · native? yes
 
@@ -559,6 +590,8 @@ The original audit ran against 2.4.2, where native `mergeIRs` merged reactions +
 2. **Official Manifest method.** Adopt `manifest coverage --ir manifest/ir/kitchen.ir.json --root . --format json` (extracts coverable paths from IR, marks coverage from test evidence), then ratchet with `--min-coverage <baseline> --strict` in `manifest:ci`. End-state: uncovered governed paths are visible and cannot regress. **Caveat (blocker to high-fidelity):** capsule emits no conformance `*.results.json`, so coverage degrades to coarse `.test.ts` string-matching — treat the first number as a floor; optionally emit results fixtures for precise guard-index/policy-denial coverage.
 3. **Blast radius.** `manifest/runtime/src/__tests__/` (59 files), `manifest/ir/kitchen.ir.json`, `package.json` (`manifest:ci`).
 
+> **▲ U3 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Wired `manifest coverage --ir manifest/ir/kitchen.ir.json --root . --format text` as three new scripts: `manifest:coverage`, `manifest:coverage:json`, `manifest:coverage:ci` (--min-coverage 13 --strict). Added `pnpm manifest:coverage:ci` to `manifest:ci` pipeline. Baseline at 13.93% command coverage (146/1048). CI passes at the 13% floor.
+
 ### U4 — Repeated infra fields not DRY'd via mixins · `MEDIUM` · confirmed · native? yes · compounds D16/D22/D10/D11
 
 1. **The glue.** Every entity hand-repeats `key [tenantId, id]` + `property required id` + `indexed property required tenantId` (100/102 files) and `deletedAt` (74/102). No base entity or mixin abstracts this — the same 3-4 infra lines are re-declared ~205 times.
@@ -589,6 +622,8 @@ The original audit ran against 2.4.2, where native `mergeIRs` merged reactions +
 2. **Official Manifest method.** Declare `schedule <name> cron "<expr>" run <Entity>.<command>(args)` in `.manifest` source (IR emits a `schedules` array) and run the native `nextjs.schedule` projection to **generate** both the `vercel.json` crons array and the `app/api/cron/<name>/route.ts` (calling the inherited `runtime.runSchedule(name)` — already works via capsule's engine subclass). End-state: cron bindings are IR-owned and generated. **Keep custom:** interval/`every` jobs (the generator only emits cron-kind routes), handlers with tenant fan-out/pre-filtering, the `x-vercel-cron` auth check, and non-Manifest crons (`keep-alive`, `/outbox/publish`).
 3. **Blast radius.** `apps/api/vercel.json`, `apps/api/app/api/cron/{contract-expiration-alerts,idempotency-cleanup,integration-auto-sync,inventory-audit,email-reminders,webhook-retry}/route.ts`.
 
+> **▲ U8 NOTE — 2026-06-14 (manifest@2.5.1):** PARTIALLY ADDRESSED. The `nextjs.schedule` projection requires confirmed capsule runtime support for `runtime.runSchedule(name)`. The 6 cron route files and `vercel.json` entries remain as-is for now — adopting `schedule` declarations will be done as part of D24 (routes projection). Logged for sequencing with U17 (`manifest watch`) when the routes projection is adopted.
+
 ### U9 — Sagas declared but vestigial; atomic multi-entity flows hand-coded · `MEDIUM` · confirmed · native? yes · compounds D3/D9
 
 1. **The glue.** 5 sagas are declared and present in the runtime IR with full `runSaga` transport wired, but only 2 are referenced by server actions that have **no callers**, and 3 have no caller at all. Meanwhile atomic multi-entity flows (PO-complete, board apply/merge, event import) are hand-coded as raw Prisma `$transaction`s or middleware.
@@ -613,6 +648,8 @@ The original audit ran against 2.4.2, where native `mergeIRs` merged reactions +
 2. **Official Manifest method.** Stop storing it — route creation through the `create` command and let the runtime evaluate `computed quantityAvailable` on demand. **Critical correction to D15's original wording:** `engine.getInstance()` returns the raw stored row and does **not** evaluate computed properties, so the 7 `instance?.quantityAvailable` reads in `commands/inventory.ts` are stale/undefined after any reserve/consume/restock — they must call `engine.evaluateComputed('InventoryItem', id, 'quantityAvailable')`. Also: the `createInventoryItem` wrapper D15 called "already correct" is itself drifted (phantom params, missing required ones) and must be re-synced to the current entity shape first — not a drop-in.
 3. **Blast radius.** `manifest/runtime/src/kitchen/instances.ts:109`, `manifest/runtime/src/kitchen/commands/inventory.ts` (7 read sites), `manifest/source/inventory/inventory-rules.manifest:35`.
 
+> **▲ U12/D15 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Removed `quantityAvailable` from `createInventoryItemInstance` payload (was storing a computed with wrong formula ignoring reserved). Fixed phantom fields: `baseUnit→unitOfMeasure`, `costPerUnit→unitCost`, `reorderPoint→reorder_level`. Removed non-existent fields: `itemType`, `reorderQuantity`, `locationId`, `isActive`. Added missing required field `item_number`. Removed hardcoded defaults from `createPrepTaskInstance` that duplicated IR property defaults. All 7 `instance?.quantityAvailable` reads in `inventory.ts` now call `engine.evaluateComputed("InventoryItem", id, "quantityAvailable")`. TS clean.
+
 ### U13 — Hand-rolled governance scripts duplicate native `scan`/`audit-*`/`enforce-surface` · `MEDIUM` · partial · native? yes (config gap) · compounds D4/D5
 
 1. **The glue.** ~12 hand-rolled governance scripts (`audit-direct-writes.mjs`, `audit-route-drift.mjs`, `audit-schema-drift.mjs`, `lint-schema.mjs`, `tools/manifest-*-audit.mjs`) parallel native `scan`/`audit-routes`/`audit-governance`/`enforce-surface`; `manifest:audit` runs only the `.mjs` scripts (zero native invocations).
@@ -624,6 +661,8 @@ The original audit ran against 2.4.2, where native `mergeIRs` merged reactions +
 1. **The glue.** The 102 `.manifest` files are authored with no LSP — no completion, go-to-definition, hover, document symbols, or in-editor diagnostics. `.vscode/` recommends no Manifest extension.
 2. **Official Manifest method.** The LSP already ships inside `@angriff36/manifest@2.4.2` (`bin manifest-lsp` → `node_modules/.bin/manifest-lsp`); no publish work needed. Point the editor language client at it (mirroring how capsule already wires `fallow.lspPath`/`biome.lsp.bin` in `.vscode/settings.json`) and add `.vscode/extensions.json` recommending the bundled `manifest-lang` VS Code extension. End-state: the 102 files get completion, go-to-def, symbols, hover, diagnostics.
 3. **Blast radius.** `.vscode/` (add `extensions.json`, language-client config), `manifest/source/` (authoring experience).
+
+> **▲ U14/U22 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Created `.vscode/extensions.json` recommending `angriff36.manifest-lang`. Created `.vscode/settings.json` pointing `manifest-lang.lspPath` at `node_modules/.bin/manifest-lsp` (already present in 2.5.1), `manifest-lang.sourcePath` and `manifest-lang.irPath`. Format-on-save enabled for `.manifest` files via `angriff36.manifest-lang` formatter.
 
 ### Low-severity under-adoption (compact)
 
@@ -648,6 +687,8 @@ The original audit ran against 2.4.2, where native `mergeIRs` merged reactions +
 | U31 | Data masking | Field-level masking under-used vs native security feature → declare masking where PII is exposed | — |
 | U32 | zod projection | `generate-zod-schemas.mjs` wraps native (fine) but zod schemas under-consumed at runtime boundaries → use generated zod for request validation | — |
 | U33 | `manifest generate` dispatch | ~15 per-projection scripts vs one native multi-projection `generate` driven by `manifest.config` | D25 |
+
+> **▲ U16/U18 REMEDIATION — 2026-06-14 (manifest@2.5.1):** COMPLETED. Added `manifest:fmt` (--write) and `manifest:fmt:check` scripts to `package.json`. Added `manifest:fmt:check` to `manifest:ci` pipeline. Created `.husky/pre-commit` hook that runs `manifest fmt --check` + `manifest validate` on staged `.manifest` files before commit.
 
 > **Projection forks (react-query, ts.client, prisma, nextjs-routes)** are the *under-adoption face* of existing Part I entries — they are tracked there: react-query/ts.client → **D23**, prisma assembly → **D16/D18/D19**, routes → **D24**. The coverage pass confirmed each and refined two stale claims: the native `ts.client` has **no** command surface to fork (capsule isn't "forking command emission" — it's filling a genuine gap), and capsule's client **already** emits ~1,029 typed `<Entity><Command>Input` interfaces (the "untyped `Record<string,unknown>`" claim in D23 is now outdated). See D23.
 

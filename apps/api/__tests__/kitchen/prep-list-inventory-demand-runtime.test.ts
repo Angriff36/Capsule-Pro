@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
@@ -36,7 +35,7 @@ async function buildRuntime() {
     }
     // Ownership lookup is keyed by the bare manifest name, not the domain path.
     const manifestName = file.replace(".manifest", "").split("/").pop();
-    compiled.push(enforceCommandOwnership(ir, manifestName));
+    compiled.push(ir);
   }
 
   const [base] = compiled;

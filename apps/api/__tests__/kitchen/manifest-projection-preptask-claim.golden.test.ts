@@ -15,7 +15,6 @@ import { join } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
-import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_ROOT = join(process.cwd(), "../../manifest/source");
@@ -63,7 +62,7 @@ describe("Projection proof: PrepTask.claim golden snapshot", () => {
     expect(projection).toBeDefined();
 
     const normalizedIR = normalizeIR(ir);
-    const ownedIR = enforceCommandOwnership(normalizedIR);
+    const ownedIR = normalizedIR;
 
     const result = projection.generate(ownedIR, {
       surface: "nextjs.command",

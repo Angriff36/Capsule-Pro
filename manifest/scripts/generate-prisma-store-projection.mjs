@@ -14,7 +14,6 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 
 const root = resolve(process.cwd());
 const irPath = join(root, "manifest/ir/kitchen.ir.json");
@@ -23,10 +22,6 @@ const optionsPath = join(
   "manifest/scripts/prisma-store-options.generated.json"
 );
 const outDir = join(root, "manifest/generated/runtime");
-const pkgPrismaStore = resolve(
-  root,
-  "node_modules/@angriff36/manifest/dist/manifest/projections/prisma-store/generator.js"
-);
 
 if (!existsSync(irPath)) {
   console.error(`IR not found: ${irPath}. Run pnpm manifest:compile first.`);
@@ -38,17 +33,13 @@ if (!existsSync(optionsPath)) {
   );
   process.exit(1);
 }
-if (!existsSync(pkgPrismaStore)) {
-  console.error(`PrismaStoreProjection not found: ${pkgPrismaStore}`);
-  process.exit(1);
-}
 
 const ir = JSON.parse(readFileSync(irPath, "utf8"));
 const options = JSON.parse(readFileSync(optionsPath, "utf8"));
 mkdirSync(outDir, { recursive: true });
 
 const { PrismaStoreProjection, SURFACE_METADATA, SURFACE_REGISTRY } =
-  await import(pathToFileURL(pkgPrismaStore).href);
+  await import("@angriff36/manifest/projections/prisma-store");
 
 const projection = new PrismaStoreProjection();
 

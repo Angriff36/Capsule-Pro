@@ -32,23 +32,9 @@ console.log("[llm-context] Loading IR...");
 const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 
 // ── Generate using upstream projection ──
-// llm-context projection is not in package exports — import directly from dist.
-// Same approach as generate-kysely.mjs and generate-mermaid.mjs.
-const generatorPath = join(
-  root,
-  "node_modules",
-  "@angriff36",
-  "manifest",
-  "dist",
-  "manifest",
-  "projections",
-  "llm-context",
-  "generator.js"
+const { LlmContextProjection } = await import(
+  "@angriff36/manifest/projections/llm-context"
 );
-const generatorUrl = import.meta.resolve(
-  `file://${generatorPath.replace(/\\/g, "/")}`
-);
-const { LlmContextProjection } = await import(generatorUrl);
 const projection = new LlmContextProjection();
 
 mkdirSync(OUT_DIR, { recursive: true });

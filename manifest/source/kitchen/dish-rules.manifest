@@ -4,10 +4,8 @@ use "../_base.manifest"
 // Lifecycle: active | seasonal | eighty_six (out-of-stock/pulled)
 // "eighty_six" = kitchen term for "we're out / not serving this today"
 
-entity Dish {
+entity Dish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required recipeId: string
   searchable property required name: string
   searchable property description: string = ""
@@ -33,7 +31,6 @@ entity Dish {
   property eightySixReason: string = ""
   property eightySixAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed hasPrice: boolean = self.pricePerPerson > 0
   computed hasCost: boolean = self.costPerPerson > 0

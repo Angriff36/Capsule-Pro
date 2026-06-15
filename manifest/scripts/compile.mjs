@@ -226,7 +226,7 @@ async function compileMergedManifests() {
     const manifestName = manifestFile
       .replace(/\.manifest$/, "")
       .replace(/\//g, "-");
-    // Native compileProjectToIR (below) populates command.entity, so the old
+    // Native compileToIR (2.5.1+) populates command.entity, so the old
     // enforceCommandOwnership repair is no longer applied (see U6 / D14).
     compiledEntries.push({
       source: manifestFile,
@@ -283,7 +283,7 @@ async function compileMergedManifests() {
   // Authoritative merge: NATIVE compileProjectToIR resolves `use` declarations,
   // enforces a single tenant (the shared _base.manifest), validates cross-file
   // references, and merges sagas/webhooks/schedules/reactions (2.5.0+). This
-  // replaces the hand-rolled mergeIrs + tenant-reconciliation glue (U6/D11/D12).
+  // replaces the old hand-rolled mergeIrs + tenant-reconciliation glue (U6/D11/D12).
   const resolverHost = {
     readFile: (p) => readFileAsync(p, "utf8"),
     resolvePath: (fromDir, rel) => resolve(fromDir, rel),

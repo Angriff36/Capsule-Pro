@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "description": "Domain drift allowlist for Capsule-Pro. Files listed here are classified as legacy/custom and show as WARN instead of FAIL in the audit. apps/app direct writes are NEVER permanently allowlisted.",
+  "categories": [
+    "legacy-api-route",
+    "custom-composite-workflow",
+    "import-or-sync-job",
+    "public-token-flow",
+    "cron-job",
+    "temporary-migration-debt"
+  ],
+  "entries": [
+    {
+      "file": "apps/api/app/api/accounting/payment-methods/[id]/route.ts",
+      "reason": "Legacy API route for payment method CRUD. Pre-dates Manifest governance.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest PaymentMethod.update command"
+    },
+    {
+      "file": "apps/api/app/api/accounting/invoices/[id]/route.ts",
+      "reason": "Legacy invoice update route with complex business logic for status transitions.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest Invoice commands"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
+      "reason": "Legacy payment processing route with payment gateway integration.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest Payment commands"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payments/route.ts",
+      "reason": "Legacy payment creation route.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest Payment.create"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "reason": "Event document parser — multi-entity creation from parsed documents. Composite workflow.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Wrap in Manifest orchestration with per-entity commands"
+    },
+    {
+      "file": "apps/api/app/api/calendar/sync/trigger/route.ts",
+      "reason": "Calendar sync job — reads/writes events for external calendar integration.",
+      "owner": "bill",
+      "category": "import-or-sync-job",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Use Manifest Event commands for writes"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/route.ts",
+      "reason": "Chat thread creation with participant upserts.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest AdminChatParticipant commands"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/[threadId]/route.ts",
+      "reason": "Chat thread update with participant management.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest AdminChatParticipant commands"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "reason": "Kitchen data import — bulk creates from external source.",
+      "owner": "bill",
+      "category": "import-or-sync-job",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Use Manifest Dish/Recipe/PrepList create commands"
+    },
+    {
+      "file": "apps/api/app/api/settings/api-keys/[id]/route.ts",
+      "reason": "API key management route.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest ApiKey commands"
+    },
+    {
+      "file": "apps/api/app/api/shipments/[id]/status/route.ts",
+      "reason": "Shipment status updates with complex state machine logic.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest Shipment status commands"
+    },
+    {
+      "file": "apps/api/app/api/accounting/collections/cases/[id]/route.ts",
+      "reason": "Collections case management — multiple action handlers.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest CollectionCase commands"
+    },
+    {
+      "file": "apps/api/app/api/accounting/collections/cases/route.ts",
+      "reason": "Collections case creation route.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest CollectionCase.create"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts",
+      "reason": "Composite recipe update with version creation. Multi-entity workflow.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Wrap in Manifest orchestration"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts",
+      "reason": "Composite recipe creation with version. Multi-entity workflow.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Wrap in Manifest orchestration"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts",
+      "reason": "Recipe version restore. Multi-entity workflow.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Wrap in Manifest orchestration"
+    },
+    {
+      "file": "apps/api/app/api/events/import/server-to-server/route.ts",
+      "reason": "Server-to-server event import. Bulk entity creation.",
+      "owner": "bill",
+      "category": "import-or-sync-job",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Use Manifest Event.create per entity"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/tasks/[id]/route.ts",
+      "reason": "Kitchen task management route.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest KitchenTask commands"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/tasks/sync-claims/route.ts",
+      "reason": "Task claim sync — bulk update.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Use Manifest KitchenTask claim command"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/prep-lists/save-db/route.ts",
+      "reason": "Prep list save — bulk upsert.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Use Manifest PrepList commands"
+    },
+    {
+      "file": "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts",
+      "reason": "SMS automation rule management.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest SmsAutomationRule commands"
+    },
+    {
+      "file": "apps/api/app/api/inventory/audit/discrepancies/[id]/resolve/route.ts",
+      "reason": "Inventory discrepancy resolution.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest commands"
+    },
+    {
+      "file": "apps/api/app/api/training/modules/route.ts",
+      "reason": "Training module management.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Migrate to Manifest TrainingModule commands"
+    },
+    {
+      "file": "apps/api/app/api/communications/email-templates/commands/create/route.ts",
+      "reason": "Email template creation via command route.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Route through shared command dispatcher"
+    },
+    {
+      "file": "apps/api/app/api/user/deactivate/route.ts",
+      "reason": "User deactivation with cascading effects.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Use Manifest User.deactivate command"
+    },
+    {
+      "file": "apps/api/app/api/user/update-role/route.ts",
+      "reason": "User role update.",
+      "owner": "bill",
+      "category": "legacy-api-route",
+      "expiresOrReviewBy": "2026-07-01",
+      "intendedFuturePath": "Use Manifest User.updateRole command"
+    },
+    {
+      "file": "apps/api/app/lib/staff/labor-budget.ts",
+      "reason": "Labor budget calculation library — writes labor budget entries.",
+      "owner": "bill",
+      "category": "custom-composite-workflow",
+      "expiresOrReviewBy": "2026-08-01",
+      "intendedFuturePath": "Use Manifest LaborBudget commands"
+    }
+  ]
+}

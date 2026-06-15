@@ -23,7 +23,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import {
   createCustomBuiltins,
   ManifestRuntimeEngine,
@@ -49,7 +48,7 @@ async function getRuntime() {
   }
 
   return new ManifestRuntimeEngine(
-    enforceCommandOwnership(ir),
+    ir,
     {
       tenantId: "test-tenant-456",
       user: { id: "test-user-123", tenantId: "test-tenant-456", role: "admin" },

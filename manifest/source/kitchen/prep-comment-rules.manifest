@@ -6,10 +6,8 @@ use "../_base.manifest"
 //   - hasBeenResolved computed: was != 0 (invalid for datetime) → now uses != null
 //   - unresolve command: was mutate resolvedAt = 0 (invalid) → mutate resolvedAt = null
 
-entity PrepComment {
+entity PrepComment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required taskId: string
   property required employeeId: string
   property required commentText: string
@@ -18,7 +16,6 @@ entity PrepComment {
   property resolvedAt: datetime
   property resolvedBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.deletedAt == null
   // BUG FIX: was != 0, invalid for datetime — use != null

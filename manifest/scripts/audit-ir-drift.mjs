@@ -152,7 +152,7 @@ async function main() {
   } catch (err) {
     console.error("  ERROR: Could not import @angriff36/manifest/ir-diff");
     console.error(`    ${err.message}`);
-    console.error("  Ensure @angriff36/manifest@2.2.0+ is installed.");
+    console.error("  Ensure @angriff36/manifest@2.5.0+ is installed.");
     process.exit(1);
   }
 
@@ -168,7 +168,7 @@ async function main() {
       "  ERROR: Could not import @angriff36/manifest/breaking-change"
     );
     console.error(`    ${err.message}`);
-    console.error("  Ensure @angriff36/manifest@2.2.0+ is installed.");
+    console.error("  Ensure @angriff36/manifest@2.5.0+ is installed.");
     process.exit(1);
   }
 

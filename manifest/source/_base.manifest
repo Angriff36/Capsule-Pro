@@ -8,3 +8,27 @@
 //
 // See manifest/MANIFEST-DIVERGENCES.md — U6 (keystone) and D10/D11/D12.
 tenant tenantId : string from context.tenantId
+
+// ---------------------------------------------------------------------------
+// U4: Mixin source entities for common infrastructure fields.
+//
+// Entities across the project repeat the same 3-4 infra lines:
+//   key [tenantId, id] + property required id + indexed property required tenantId
+//   (100/102 files) and property deletedAt (74/102).
+//
+// These mixin sources flatten at compile time via `entity Foo mixin ...`:
+// the compiler inlines their properties into the consuming entity (see
+// entity-composition.js expandComposition). Key is "own-only" and must
+// still be declared per-entity.
+// ---------------------------------------------------------------------------
+
+// Provides id + tenantId — the tenant-scoping identity fields.
+entity TenantScoped {
+  property required id: string
+  indexed property required tenantId: string
+}
+
+// Provides deletedAt — soft-delete timestamp (nullable; null = not deleted).
+entity SoftDeletable {
+  property deletedAt: datetime
+}

@@ -54,7 +54,6 @@ export type {
 
 // ============ Utility Exports ============
 
-export { createPostgresStoreProvider } from "./kitchen/postgres-store";
 export { getWorkflowOptions } from "./kitchen/workflow";
 
 // ============ Runtime Factory Exports ============

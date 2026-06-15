@@ -16,77 +16,51 @@ const parseNumber = (value: FormDataEntryValue | null) => {
 };
 
 export const createMenu = async (formData: FormData) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   const name = String(formData.get("name") || "").trim();
   if (!name) {
     throw new Error("Menu name is required.");
   }
 
-  const description = String(formData.get("description") || "").trim() || null;
-  const category = String(formData.get("category") || "").trim() || null;
-  const basePrice = parseNumber(formData.get("basePrice"));
-  const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
-  const minGuests = parseNumber(formData.get("minGuests"));
-  const maxGuests = parseNumber(formData.get("maxGuests"));
+  const description = String(formData.get("description") || "").trim() || "";
+  const category = String(formData.get("category") || "").trim() || "";
+  const basePrice = parseNumber(formData.get("basePrice")) ?? 0;
+  const pricePerPerson = parseNumber(formData.get("pricePerPerson")) ?? 0;
+  const minGuests = parseNumber(formData.get("minGuests")) ?? 0;
+  const maxGuests = parseNumber(formData.get("maxGuests")) ?? 0;
 
-  const menuId = randomUUID();
-
-  await database.$transaction(async (tx) => {
-    await tx.menu.create({
-      data: {
-        tenantId,
-        id: menuId,
-        name,
-        description,
-        category,
-        basePrice,
-        pricePerPerson,
-        minGuests,
-        maxGuests,
-        isActive: true,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.created",
-        payload: { menuId, name },
-        status: "pending" as const,
-      },
-    });
+  // D6: Route through governed Menu.create command — emits MenuCreated
+  // event via the IR command's emits block instead of hand-written
+  // outboxEvent.create.
+  const result = await runManifestCommand({
+    entity: "Menu",
+    command: "create",
+    body: {
+      name,
+      description,
+      category,
+      basePrice,
+      pricePerPerson,
+      minGuests,
+      maxGuests,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create menu");
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   redirect("/kitchen/recipes?tab=menus");
 };
 
 export const updateMenu = async (menuId: string, formData: FormData) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   if (!menuId) {
     throw new Error("Menu ID is required.");
-  }
-
-  // Verify menu exists and belongs to tenant
-  const [existingMenu] = await database.$queryRaw<
-    { id: string; tenant_id: string }[]
-  >(
-    Prisma.sql`
-      SELECT id, tenant_id
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-
-  if (!existingMenu?.tenant_id || existingMenu.tenant_id !== tenantId) {
-    throw new Error("Menu not found or access denied.");
   }
 
   const name = String(formData.get("name") || "").trim();
@@ -94,88 +68,63 @@ export const updateMenu = async (menuId: string, formData: FormData) => {
     throw new Error("Menu name is required.");
   }
 
-  const description = String(formData.get("description") || "").trim() || null;
-  const category = String(formData.get("category") || "").trim() || null;
-  const basePrice = parseNumber(formData.get("basePrice"));
-  const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
-  const minGuests = parseNumber(formData.get("minGuests"));
-  const maxGuests = parseNumber(formData.get("maxGuests"));
-  const isActive = formData.get("isActive") === "on";
+  const description = String(formData.get("description") || "").trim() || "";
+  const category = String(formData.get("category") || "").trim() || "";
+  const basePrice = parseNumber(formData.get("basePrice")) ?? 0;
+  const pricePerPerson = parseNumber(formData.get("pricePerPerson")) ?? 0;
+  const minGuests = parseNumber(formData.get("minGuests")) ?? 0;
+  const maxGuests = parseNumber(formData.get("maxGuests")) ?? 0;
 
-  await database.$transaction(async (tx) => {
-    await tx.menu.updateMany({
-      where: { tenantId, id: menuId },
-      data: {
-        name,
-        description,
-        category,
-        basePrice,
-        pricePerPerson,
-        minGuests,
-        maxGuests,
-        isActive,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.updated",
-        payload: { menuId, name },
-        status: "pending" as const,
-      },
-    });
+  // D6: Route through governed Menu.update command — emits MenuUpdated
+  // event via the IR command's emits block instead of hand-written
+  // outboxEvent.create.
+  const result = await runManifestCommand({
+    entity: "Menu",
+    command: "update",
+    instanceId: menuId,
+    body: {
+      newName: name,
+      newDescription: description,
+      newCategory: category,
+      newBasePrice: basePrice,
+      newPricePerPerson: pricePerPerson,
+      newMinGuests: minGuests,
+      newMaxGuests: maxGuests,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update menu");
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };
 
 export const deleteMenu = async (menuId: string) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   if (!menuId) {
     throw new Error("Menu ID is required.");
   }
 
-  // Verify menu exists and belongs to tenant
-  const [existingMenu] = await database.$queryRaw<
-    { id: string; tenant_id: string; name: string }[]
-  >(
-    Prisma.sql`
-      SELECT id, tenant_id, name
-      FROM tenant_kitchen.menus
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-
-  if (!existingMenu?.tenant_id || existingMenu.tenant_id !== tenantId) {
-    throw new Error("Menu not found or access denied.");
-  }
-
-  // Soft delete the menu + emit outbox event atomically
-  await database.$transaction(async (tx) => {
-    await tx.menu.updateMany({
-      where: { tenantId, id: menuId },
-      data: { deletedAt: new Date() },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.deleted",
-        payload: { menuId, name: existingMenu.name },
-        status: "pending" as const,
-      },
-    });
+  // D6: Route through governed Menu.archive command — emits MenuArchived
+  // event via the IR command's emits block instead of hand-written
+  // outboxEvent.create.
+  const result = await runManifestCommand({
+    entity: "Menu",
+    command: "archive",
+    instanceId: menuId,
+    body: {
+      reason: "Deleted via menu management",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete menu");
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
@@ -423,6 +372,7 @@ export const addDishToMenu = async (
   course?: string
 ) => {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   if (!menuId) {
     throw new Error("Menu ID is required.");
@@ -499,32 +449,26 @@ export const addDishToMenu = async (
   );
 
   const nextSortOrder = (maxSortOrder?.max_sort_order ?? 0) + 1;
-  const menuDishId = randomUUID();
 
-  await database.$transaction(async (tx) => {
-    await tx.menuDish.create({
-      data: {
-        tenantId,
-        id: menuDishId,
-        menuId,
-        dishId,
-        course: course || null,
-        sortOrder: nextSortOrder,
-        isOptional: false,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.dish_added",
-        payload: { menuId, dishId, menuDishId, course: course || null },
-        status: "pending" as const,
-      },
-    });
+  // D6: Route through governed MenuDish.create command — emits
+  // MenuDishAdded event via the IR command's emits block instead of
+  // hand-written outboxEvent.create.
+  const result = await runManifestCommand({
+    entity: "MenuDish",
+    command: "create",
+    body: {
+      menuId,
+      dishId,
+      course: course || "",
+      sortOrder: nextSortOrder,
+      isOptional: false,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to add dish to menu");
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
@@ -532,6 +476,7 @@ export const addDishToMenu = async (
 
 export const removeDishFromMenu = async (menuId: string, dishId: string) => {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   if (!menuId) {
     throw new Error("Menu ID is required.");
@@ -560,24 +505,22 @@ export const removeDishFromMenu = async (menuId: string, dishId: string) => {
     throw new Error("Dish is not in the menu or access denied.");
   }
 
-  // Soft delete the menu-dish relationship + emit outbox event atomically
-  await database.$transaction(async (tx) => {
-    await tx.menuDish.updateMany({
-      where: { tenantId, menuId, dishId },
-      data: { deletedAt: new Date() },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.dish_removed",
-        payload: { menuId, dishId, menuDishId: menuDish.id },
-        status: "pending" as const,
-      },
-    });
+  // D6: Route through governed MenuDish.remove command — emits
+  // MenuDishRemoved event via the IR command's emits block instead of
+  // hand-written outboxEvent.create.
+  const result = await runManifestCommand({
+    entity: "MenuDish",
+    command: "remove",
+    instanceId: menuDish.id,
+    body: {
+      userId: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to remove dish from menu");
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
@@ -585,6 +528,7 @@ export const removeDishFromMenu = async (menuId: string, dishId: string) => {
 
 export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   if (!menuId) {
     throw new Error("Menu ID is required.");
@@ -611,9 +555,11 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   }
 
   // Verify all dishes are in the menu and belong to tenant
-  const menuDishes = await database.$queryRaw<{ dish_id: string }[]>(
+  const menuDishes = await database.$queryRaw<
+    { id: string; dish_id: string; course: string | null; sort_order: number; is_optional: boolean }[]
+  >(
     Prisma.sql`
-      SELECT dish_id
+      SELECT id, dish_id, course, sort_order, is_optional
       FROM tenant_kitchen.menu_dishes
       WHERE menu_id = ${menuId}
         AND tenant_id = ${tenantId}
@@ -626,26 +572,31 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
     throw new Error("One or more dishes not found in menu or access denied.");
   }
 
-  // Update sort order for all dishes + emit outbox event atomically
-  await database.$transaction(async (tx) => {
-    for (let i = 0; i < dishIds.length; i++) {
-      await tx.menuDish.updateMany({
-        where: { tenantId, menuId, dishId: dishIds[i] },
-        data: { sortOrder: i + 1 },
-      });
-    }
+  // D6: Route through governed MenuDish.updateCourse command for each
+  // dish — emits MenuDishUpdated event via the IR command's emits block
+  // instead of hand-written outboxEvent.create.
+  const menuDishByDishId = new Map(menuDishes.map((md) => [md.dish_id, md]));
 
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.dishes_reordered",
-        payload: { menuId, dishIds },
-        status: "pending" as const,
+  for (let i = 0; i < dishIds.length; i++) {
+    const md = menuDishByDishId.get(dishIds[i]);
+    if (!md) continue;
+
+    const result = await runManifestCommand({
+      entity: "MenuDish",
+      command: "updateCourse",
+      instanceId: md.id,
+      body: {
+        newCourse: md.course || "",
+        newSortOrder: i + 1,
+        newIsOptional: md.is_optional,
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-  });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to reorder menu dishes");
+    }
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);

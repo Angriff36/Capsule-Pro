@@ -20,13 +20,8 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 
 const IR_PATH = resolve("manifest/ir/kitchen.ir.json");
-const PKG_ROOT = resolve(
-  "manifest/runtime/node_modules/@angriff36/manifest/dist/manifest"
-);
-const PKG_ZOD = resolve(PKG_ROOT, "projections/zod/generator.js");
 
 // Parse args
 const args = process.argv.slice(2);
@@ -43,23 +38,12 @@ if (!existsSync(IR_PATH)) {
   process.exit(1);
 }
 
-if (!existsSync(PKG_ZOD)) {
-  console.error(`ZodProjection not found at ${PKG_ZOD}.`);
-  process.exit(1);
-}
-
 // Load IR
 const ir = JSON.parse(readFileSync(IR_PATH, "utf-8"));
 console.log(`Loaded IR: ${ir.entities?.length ?? 0} entities`);
 
-// Import the ZodProjection directly from the installed package. Earlier package
-// versions (<=2.2.0) shipped an extensionless ESM import of `constraint-analysis`
-// that broke Node's resolver, which forced a copy-and-patch into a temp file.
-// @angriff36/manifest 2.3.x ships proper `.js` extensions on its internal
-// imports, so importing the generator in place resolves cleanly — and the old
-// temp-copy actually BROKE under 2.3.1 (relative imports resolved against the
-// temp dir, not the package). Direct import is both simpler and correct.
-const { ZodProjection } = await import(pathToFileURL(PKG_ZOD).href);
+// Import the ZodProjection from the installed package's stable subpath export.
+const { ZodProjection } = await import("@angriff36/manifest/projections/zod");
 
 // Generate zod.entity surface (one file per entity — cleanest, no name collisions)
 const projection = new ZodProjection();

@@ -32,24 +32,9 @@ console.log("[kysely] Loading IR...");
 const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 
 // ── Generate using upstream projection ──
-// Kysely projection is not in package exports — import directly from dist.
-// This is the same approach needed for any projection not yet in the exports map.
-// On Windows, dynamic import requires a file:// URL, not a bare path.
-const generatorPath = join(
-  root,
-  "node_modules",
-  "@angriff36",
-  "manifest",
-  "dist",
-  "manifest",
-  "projections",
-  "kysely",
-  "generator.js"
+const { KyselyProjection } = await import(
+  "@angriff36/manifest/projections/kysely"
 );
-const generatorUrl = import.meta.resolve(
-  `file://${generatorPath.replace(/\\/g, "/")}`
-);
-const { KyselyProjection } = await import(generatorUrl);
 const projection = new KyselyProjection();
 
 const result = projection.generate(ir, {

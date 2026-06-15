@@ -925,8 +925,6 @@ export class StationPrismaStore implements Store<EntityInstance> {
  */
 export interface PrismaStoreConfig {
   entityName: string;
-  eventCollector?: unknown[];
-  outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
   prisma: PrismaClient;
   tenantId: string;
   /** RuntimeContext.user.id — threaded through to per-entity stores that
@@ -938,16 +936,10 @@ export interface PrismaStoreConfig {
  * Generic PrismaStore class that wraps entity-specific stores
  *
  * This class provides a unified interface for working with different entity types
- * through their Prisma-backed store implementations. It supports the outbox pattern
- * for reliable event delivery.
+ * through their Prisma-backed store implementations.
  */
 export class PrismaStore implements Store<EntityInstance> {
   private readonly store: Store<EntityInstance>;
-  private readonly outboxWriter: (
-    tx: PrismaClient,
-    events: unknown[]
-  ) => Promise<void>;
-  private readonly eventCollector?: unknown[];
 
   constructor(config: PrismaStoreConfig) {
     // Resolve a bespoke per-entity store from the switch; if none exists for
@@ -966,8 +958,6 @@ export class PrismaStore implements Store<EntityInstance> {
         config.entityName,
         config.tenantId
       );
-    this.outboxWriter = config.outboxWriter;
-    this.eventCollector = config.eventCollector;
   }
 
   async getAll(): Promise<EntityInstance[]> {
@@ -996,67 +986,6 @@ export class PrismaStore implements Store<EntityInstance> {
   async clear(): Promise<void> {
     return this.store.clear();
   }
-
-  /**
-   * Write events to the outbox within a transaction
-   *
-   * This method is called by the manifest runtime to persist events
-   * transactionally with state mutations.
-   */
-  async writeEvents(events: unknown[]): Promise<void> {
-    // If we have a Prisma transaction context, use it
-    // Otherwise, create a new transaction
-    if (this.eventCollector) {
-      // Add events to the in-memory collector for later writing
-      this.eventCollector.push(...events);
-    } else {
-      // Write directly to outbox (creates its own transaction)
-      throw new Error(
-        "Direct outbox writing not supported - use eventCollector pattern"
-      );
-    }
-  }
-}
-
-/**
- * Create an outbox writer function for a given entity and tenant
- *
- * The outbox writer function writes events to the OutboxEvent table
- * within a Prisma transaction for reliable event delivery.
- *
- * @param entityName - The name of the entity (e.g., "PrepTask")
- * @param tenantId - The tenant ID for multi-tenant isolation
- * @returns A function that writes events to the outbox
- */
-export function createPrismaOutboxWriter(
-  entityName: string,
-  tenantId: string
-): (tx: PrismaClient, events: unknown[]) => Promise<void> {
-  return async (tx: PrismaClient, events: unknown[]) => {
-    for (const event of events) {
-      const eventData = event as {
-        name?: string;
-        eventType?: string;
-        payload: { id?: string; taskId?: string };
-        aggregateId?: string;
-        aggregateType?: string;
-      };
-      await tx.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: eventData.aggregateType || entityName,
-          eventType: eventData.eventType || eventData.name || "unknown",
-          payload: eventData.payload as Prisma.InputJsonValue,
-          aggregateId:
-            eventData.aggregateId ||
-            eventData.payload?.taskId ||
-            eventData.payload?.id ||
-            "unknown",
-          status: "pending",
-        },
-      });
-    }
-  };
 }
 
 // ---------------------------------------------------------------------------

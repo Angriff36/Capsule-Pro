@@ -17,15 +17,6 @@ export interface KitchenOpsContext extends RuntimeContext {
    */
   correlationId?: string;
   /**
-   * Optional connection string for PostgresStore.
-   * If provided, entities will be persisted in PostgreSQL.
-   * Defaults to undefined (in-memory storage).
-   *
-   * @deprecated Use `storeProvider` with `createPrismaStoreProvider` for better
-   * integration with existing Prisma schema.
-   */
-  databaseUrl?: string;
-  /**
    * Optional deterministic mode to block adapter side effects (for testing/replay).
    * When true, persist/publish/effect actions throw ManifestEffectBoundaryError.
    * @default false

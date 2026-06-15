@@ -8,6 +8,13 @@ import type { RuntimeEngine } from "@angriff36/manifest";
 
 /**
  * Create a prep task instance
+ *
+ * D15/U12: Removed hardcoded defaults that duplicate IR property defaults
+ * (taskType="prep", status="open", priority=5, claimedBy="", claimedAt=null,
+ * quantityCompleted=0, quantityTotal=0, quantityUnitId=0, servingsTotal=0).
+ * These are now left unset so the entity's own .manifest defaults apply,
+ * preventing drift if the spec defaults change.
+ * Also fixed quantityUnitId type from string to number (entity declares int).
  */
 export async function createPrepTaskInstance(
   engine: RuntimeEngine,
@@ -18,7 +25,7 @@ export async function createPrepTaskInstance(
     name: string;
     taskType?: string;
     quantityTotal?: number;
-    quantityUnitId?: string;
+    quantityUnitId?: number;
     servingsTotal?: number;
     startByDate?: number;
     dueByDate?: number;
@@ -31,18 +38,14 @@ export async function createPrepTaskInstance(
     tenantId: data.tenantId,
     eventId: data.eventId,
     name: data.name,
-    taskType: data.taskType || "prep",
-    status: "open",
-    quantityTotal: data.quantityTotal || 0,
-    quantityCompleted: 0,
-    quantityUnitId: data.quantityUnitId || "",
-    servingsTotal: data.servingsTotal || 0,
-    startByDate: data.startByDate || 0,
-    dueByDate: data.dueByDate || 0,
-    priority: data.priority || 5,
-    stationId: data.stationId || "",
-    claimedBy: "",
-    claimedAt: 0,
+    taskType: data.taskType,
+    quantityTotal: data.quantityTotal,
+    quantityUnitId: data.quantityUnitId,
+    servingsTotal: data.servingsTotal,
+    startByDate: data.startByDate,
+    dueByDate: data.dueByDate,
+    priority: data.priority,
+    stationId: data.stationId,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
@@ -80,6 +83,17 @@ export async function createStationInstance(
 
 /**
  * Create an inventory item instance
+ *
+ * D15/U12: Fixed multiple divergences from the InventoryItem .manifest entity:
+ * - Removed `quantityAvailable` — it's a computed property
+ *   (computed quantityAvailable = self.quantityOnHand - self.quantityReserved).
+ *   Storing it as a static field produced stale/wrong values.
+ * - Removed phantom fields not on the entity: `itemType`, `reorderQuantity`,
+ *   `locationId`, `isActive`.
+ * - Renamed phantom fields to their real entity counterparts:
+ *   baseUnit → unitOfMeasure, costPerUnit → unitCost, reorderPoint → reorder_level.
+ * - Added `item_number` (required property on the entity, was missing).
+ * - Removed `qtyOnHand` local var (was only used for the now-removed quantityAvailable).
  */
 export async function createInventoryItemInstance(
   engine: RuntimeEngine,
@@ -87,32 +101,29 @@ export async function createInventoryItemInstance(
     id: string;
     tenantId: string;
     name: string;
-    itemType?: string;
+    itemNumber?: string;
     category?: string;
-    baseUnit?: string;
+    unitOfMeasure?: string;
     quantityOnHand?: number;
     parLevel?: number;
-    costPerUnit?: number;
-    locationId?: string;
+    unitCost?: number;
+    reorderLevel?: number;
+    supplierId?: string;
   }
 ) {
-  const qtyOnHand = data.quantityOnHand || 0;
   return await engine.createInstance("InventoryItem", {
     id: data.id,
     tenantId: data.tenantId,
+    item_number: data.itemNumber || data.id,
     name: data.name,
-    itemType: data.itemType || "ingredient",
     category: data.category || "",
-    baseUnit: data.baseUnit || "each",
-    quantityOnHand: qtyOnHand,
+    unitOfMeasure: data.unitOfMeasure || "each",
+    quantityOnHand: data.quantityOnHand || 0,
     quantityReserved: 0,
-    quantityAvailable: qtyOnHand,
     parLevel: data.parLevel || 0,
-    reorderPoint: 0,
-    reorderQuantity: 0,
-    costPerUnit: data.costPerUnit || 0,
-    locationId: data.locationId || "",
-    isActive: true,
+    reorder_level: data.reorderLevel || 0,
+    unitCost: data.unitCost || 0,
+    supplierId: data.supplierId || "",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });

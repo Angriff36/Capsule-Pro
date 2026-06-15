@@ -17,7 +17,6 @@
 import { randomUUID } from "node:crypto";
 import type {
   CommandResult,
-  EmittedEvent,
   Middleware,
   RuntimeEngine,
   RuntimeOptions,
@@ -102,7 +101,7 @@ import { ensureManifestSchema, getPool } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
-import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
+import { PrismaStore } from "./prisma-store";
 import {
   loadMergedPrecompiledIR,
   loadPrecompiledIR,
@@ -482,23 +481,16 @@ export async function createManifestRuntime(
     );
   }
 
-  // 3. Create a shared event collector for transactional outbox pattern.
-  const eventCollector: EmittedEvent[] = [];
-
-  // 4. Build the store provider — entities with dedicated Prisma models use
+  // 3. Build the store provider — entities with dedicated Prisma models use
   //    PrismaStore; everything else falls back to PrismaJsonStore.
   const storeProvider: RuntimeOptions["storeProvider"] = (
     entityName: string
   ) => {
     if (hasTypedStore(entityName)) {
-      const outboxWriter = createPrismaOutboxWriter(entityName, user.tenantId);
-
       const config: PrismaStoreConfig = {
         prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prismaForWrites),
         entityName,
         tenantId: user.tenantId,
-        outboxWriter,
-        eventCollector,
         // userId — surfaced for entity stores that audit-derive caller
         // identity (e.g. InventoryTransfer.requestedBy). Most stores ignore.
         userId: user.id,
@@ -1425,7 +1417,7 @@ export async function createManifestRuntime(
   //    When undefined (no DB), the engine skips audit/outbox silently.
   engine = new ManifestRuntimeEngine(
     ir,
-    { user, tenantId: user.tenantId, eventCollector, telemetry },
+    { user, tenantId: user.tenantId, telemetry },
     {
       storeProvider,
       idempotencyStore,

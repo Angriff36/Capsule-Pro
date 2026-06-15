@@ -3,8 +3,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "../ir-contract";
+import {
+  mergeIR,
+  compileProjectToIR,
+} from "@angriff36/manifest/multi-compiler";
+
 
 const MANIFEST_EXTENSION_RE = /\.manifest$/;
 
@@ -223,53 +226,56 @@ export async function loadManifests(
 }
 
 async function compileManifestSet(
-  manifests: LoadedManifestSet
+  manifests: LoadedManifestSet,
+  manifestsDir: string
 ): Promise<CompiledManifestBundle> {
-  const compiledIRs: IR[] = [];
+  // Use the native multi-compiler to compile all files together.
+  // This correctly handles cross-file dependencies, module resolution,
+  // and merges ALL top-level IR sections (sagas, reactions, webhooks,
+  // schedules, roles) — not just the explicit subset the old hand-rolled
+  // merge used.
+  const entryPaths = manifests.files.map((file) =>
+    join(manifestsDir, file.name)
+  );
 
-  for (const file of manifests.files) {
-    const { ir, diagnostics } = await compileToIR(file.content);
-    if (!ir) {
-      const messages = diagnostics
-        .map((d: { message: string }) => d.message)
-        .join(", ");
-      throw new Error(`Failed to compile ${file.name}: ${messages}`);
-    }
-
-    const manifestName = file.name.replace(MANIFEST_EXTENSION_RE, "");
-    compiledIRs.push(enforceCommandOwnership(ir, manifestName));
-  }
-
-  const manifestNames = manifests.files.map((file) => file.name);
-  const { valid, errors } = validateNoDuplicates(compiledIRs, manifestNames);
-  if (!valid) {
-    throw new Error(`Duplicate name validation failed: ${errors.join(" | ")}`);
-  }
-
-  const mergedIR: IR = {
-    version: "1.0",
-    provenance: {
-      contentHash: manifests.hash,
-      irHash: "",
-      compilerVersion: "2.2.0",
-      schemaVersion: "1.0",
-      // Fixed timestamp keeps output deterministic for identical inputs.
-      compiledAt: "1970-01-01T00:00:00.000Z",
+  const host = {
+    readFile(path: string) {
+      return readFile(path, "utf-8");
     },
-    modules: compiledIRs.flatMap((ir) => ir.modules || []),
-    entities: compiledIRs.flatMap((ir) => ir.entities || []),
-    enums: compiledIRs.flatMap((ir) => ir.enums || []),
-    stores: compiledIRs.flatMap((ir) => ir.stores || []),
-    events: compiledIRs.flatMap((ir) => ir.events || []),
-    commands: compiledIRs.flatMap((ir) => ir.commands || []),
-    policies: compiledIRs.flatMap((ir) => ir.policies || []),
-    values: compiledIRs.flatMap((ir) => ir.values || []),
+    resolvePath(base: string, rel: string) {
+      return resolve(base, rel);
+    },
+    async fileExists(path: string) {
+      return existsSync(path);
+    },
+  };
+
+  const { ir, diagnostics } = await compileProjectToIR({
+    entries: entryPaths,
+    host,
+    basePath: manifestsDir,
+  });
+
+  if (!ir) {
+    const messages = diagnostics
+      .map((d: { message: string }) => d.message)
+      .join(", ");
+    throw new Error(`Failed to compile manifest project: ${messages}`);
+  }
+
+  // Preserve the file-content hash as contentHash for cache-key stability.
+  const finalIR: IR = {
+    ...ir,
+    provenance: {
+      ...ir.provenance,
+      contentHash: manifests.hash,
+    },
   };
 
   return {
     files: manifests.files,
     hash: manifests.hash,
-    ir: mergedIR,
+    ir: finalIR,
   };
 }
 
@@ -288,7 +294,8 @@ export async function getCompiledManifestBundle(
     }
   }
 
-  const pending = compileManifestSet(manifests);
+  const manifestsDir = resolveManifestsDir(options.manifestsDir);
+  const pending = compileManifestSet(manifests, manifestsDir);
   compiledBundleCache.set(compileCacheKey, pending);
   return pending;
 }
@@ -308,28 +315,23 @@ function mergeIrDocuments(compiledIRs: IR[], manifestFiles: string[]): IR {
     throw new Error(`Duplicate name validation failed: ${errors.join(" | ")}`);
   }
 
+  // Use the native mergeIR which correctly carries ALL top-level IR sections
+  // (sagas, reactions, webhooks, schedules, roles, tenant) — not just the
+  // explicit subset the old hand-rolled merge used.
+  const merged = mergeIR(compiledIRs);
+
   const contentHash = createHash("sha256")
     .update(compiledIRs.map((ir) => ir.provenance?.contentHash ?? "").join(":"))
     .digest("hex");
 
+  // Overwrite provenance with our computed contentHash while keeping the
+  // native merge's array sections intact.
   return {
-    version: "1.0",
+    ...merged,
     provenance: {
+      ...merged.provenance,
       contentHash,
-      irHash: "",
-      compilerVersion: compiledIRs[0]?.provenance?.compilerVersion ?? "unknown",
-      schemaVersion: compiledIRs[0]?.provenance?.schemaVersion ?? "1.0",
-      compiledAt:
-        compiledIRs[0]?.provenance?.compiledAt ?? new Date().toISOString(),
     },
-    modules: compiledIRs.flatMap((ir) => ir.modules || []),
-    entities: compiledIRs.flatMap((ir) => ir.entities || []),
-    enums: compiledIRs.flatMap((ir) => ir.enums || []),
-    stores: compiledIRs.flatMap((ir) => ir.stores || []),
-    events: compiledIRs.flatMap((ir) => ir.events || []),
-    commands: compiledIRs.flatMap((ir) => ir.commands || []),
-    policies: compiledIRs.flatMap((ir) => ir.policies || []),
-    values: compiledIRs.flatMap((ir) => ir.values || []),
   };
 }
 

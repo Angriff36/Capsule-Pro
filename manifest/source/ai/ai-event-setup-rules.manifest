@@ -45,16 +45,16 @@ entity AiEventSetupSession {
   default policy AiEventSetupSessionDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI event setup"
   command parse(originalInput: string) {
     guard originalInput != null and originalInput != "" "Original input is required"
-    
+
     mutate originalInput = originalInput
     mutate status = "parsed"
-    
+
     emit AiEventSetupSessionParsed
   }
 
   command confirm(title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: string) {
     guard self.status == "parsed" "Can only confirm parsed sessions"
-    
+
     mutate parsedTitle = title
     mutate parsedEventType = eventType
     mutate parsedEventDate = eventDate
@@ -64,27 +64,27 @@ entity AiEventSetupSession {
     mutate parsedNotes = notes
     mutate parsedTags = tags
     mutate status = "confirmed"
-    
+
     emit AiEventSetupSessionConfirmed
   }
 
   command markCreated(eventId: string) {
     guard self.status == "confirmed" "Can only mark confirmed sessions as created"
     guard eventId != null and eventId != "" "Event ID is required"
-    
+
     mutate createdEventId = eventId
     mutate status = "created"
     mutate completedAt = now()
-    
+
     emit AiEventSetupSessionCreated
   }
 
   command cancel(reason: string) {
     guard self.status == "pending" or self.status == "parsed" "Can only cancel pending or parsed sessions"
-    
+
     mutate status = "cancelled"
     mutate notes = reason
-    
+
     emit AiEventSetupSessionCancelled
   }
 
@@ -92,7 +92,7 @@ entity AiEventSetupSession {
     mutate confidence = confidence
     mutate missingFields = missingFields
     mutate suggestions = suggestions
-    
+
     emit AiEventSetupSessionUpdated
   }
 

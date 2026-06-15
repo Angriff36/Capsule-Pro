@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for general kitchen task operations with constraints, guards, and events
 // Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)
 
-entity KitchenTask {
+entity KitchenTask mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required title: string
   property required summary: string
   indexed property required status: string = "pending"
