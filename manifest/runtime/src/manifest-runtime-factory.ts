@@ -45,6 +45,7 @@ import {
   createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
+  createEmployeeCertificationLapsedSuspendAvailabilityMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
@@ -1057,6 +1058,20 @@ export async function createManifestRuntime(
     // events previously had ZERO consumers, so a lapsed/pulled credential notified
     // no one. Guard-safe + idempotent (single-shot FSM transitions; per-cert key).
     createEmployeeCertificationLapsedNotifyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Compliance: EmployeeCertificationExpired/Revoked -> suspend the employee's
+    // EmployeeAvailability rows (sibling of the notify leg). Middleware (not a reaction)
+    // because it is a 1:N fan-out (one lapse -> every active availability row for the
+    // employee) AND the employee FK is the cert's OWN field, never on the MUTATE-command
+    // payload — so the leg LOADS the cert via _subject.id, then queries EmployeeAvailability
+    // by employeeId and dispatches the existing governed suspend(reason) per active row. A
+    // lapsed compliance credential should pull the employee off the schedule until renewed;
+    // suspend is REVERSIBLE (reinstate) so the cascade is safe. Guard-safe + idempotent
+    // (skips already-suspended/deleted rows; per-(cert, availability) key). No IR change.
+    createEmployeeCertificationLapsedSuspendAvailabilityMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

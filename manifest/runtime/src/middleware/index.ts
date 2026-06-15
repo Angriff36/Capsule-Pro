@@ -58,6 +58,11 @@ export {
   type EmployeeCertificationLapsedNotifyMiddlewareOptions,
 } from "./employee-certification-lapsed-notify-middleware";
 export {
+  createEmployeeCertificationLapsedSuspendAvailabilityMiddleware,
+  type EmployeeCertificationLapsedSuspendAvailabilityDiagnostic,
+  type EmployeeCertificationLapsedSuspendAvailabilityMiddlewareOptions,
+} from "./employee-certification-lapsed-suspend-availability-middleware";
+export {
   createEventCancelledCascadeMiddleware,
   type EventCancelledCascadeDiagnostic,
   type EventCancelledCascadeMiddlewareOptions,
