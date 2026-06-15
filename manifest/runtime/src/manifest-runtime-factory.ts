@@ -42,6 +42,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
   createDishDeactivatedPruneMiddleware,
+  createEmployeeCertificationLapsedNotifyMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
@@ -976,6 +977,18 @@ export async function createManifestRuntime(
     // (the due date is pinned later by applyFirstShiftDueDate). Idempotent per
     // (tenant, staff member, SEL module).
     createStaffMemberCreatedTrainingAssignmentMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Compliance: EmployeeCertificationExpired/Revoked -> Notification for the
+    // affected employee. Middleware (not a reaction) because expire()/revoke() are
+    // MUTATE commands and the recipient (EmployeeCertification.employeeId) is the
+    // cert's OWN field, never auto-populated onto the event payload — so the leg
+    // must LOAD the certification via _subject.id to read the employee. Both lapse
+    // events previously had ZERO consumers, so a lapsed/pulled credential notified
+    // no one. Guard-safe + idempotent (single-shot FSM transitions; per-cert key).
+    createEmployeeCertificationLapsedNotifyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

@@ -43,6 +43,11 @@ export {
   type DishDeactivatedPruneMiddlewareOptions,
 } from "./dish-deactivated-prune-middleware";
 export {
+  createEmployeeCertificationLapsedNotifyMiddleware,
+  type EmployeeCertificationLapsedNotifyDiagnostic,
+  type EmployeeCertificationLapsedNotifyMiddlewareOptions,
+} from "./employee-certification-lapsed-notify-middleware";
+export {
   createEventCancelledCascadeMiddleware,
   type EventCancelledCascadeDiagnostic,
   type EventCancelledCascadeMiddlewareOptions,
