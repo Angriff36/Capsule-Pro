@@ -43,6 +43,11 @@ export {
   type DishDeactivatedPruneMiddlewareOptions,
 } from "./dish-deactivated-prune-middleware";
 export {
+  createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
+  type EmailTemplateDeletedDeactivateWorkflowsDiagnostic,
+  type EmailTemplateDeletedDeactivateWorkflowsMiddlewareOptions,
+} from "./email-template-deleted-deactivate-workflows-middleware";
+export {
   createEmployeeCertificationLapsedNotifyMiddleware,
   type EmployeeCertificationLapsedNotifyDiagnostic,
   type EmployeeCertificationLapsedNotifyMiddlewareOptions,

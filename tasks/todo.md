@@ -1,62 +1,57 @@
-# Task: InventoryTransfer received → per-location InventoryStock movement (P1)
+# Task: EmailTemplateDeleted → deactivate dependent EmailWorkflows (P1 core orphan-event leg)
 
-**Source of truth:** IMPLEMENTATION_PLAN.md P1 (Kitchen/Inventory) — "InventoryTransfer
-received → stock movement (both levels)". All P0 done; 2.5.0 compile blocker resolved.
+## Why this, not ClientArchived→withdraw Proposals (re-planned mid-task)
+ClientArchived→withdraw Proposals looked clean but is NOT: `Client.archive` is
+REVERSIBLE (`Client.reactivate` sets deletedAt=null), while `Proposal.withdraw` is
+TERMINAL (no FSM transition out of "withdrawn"). Cascading an irreversible action off a
+reversible parent state is the exact anti-pattern this codebase deliberately DEFERS
+(vendor-suspend, dish-eightySix). So that leg is left deferred + documented in
+IMPLEMENTATION_PLAN.md line 151.
 
-## Problem (the why)
-`InventoryTransfer` tracks status (draft→…→received) but NOTHING ever moves physical
-`InventoryStock` rows when a transfer is received. Verified: no middleware/reaction
-consumes `TransferReceived` or `TransferShipped`. So stock that physically moved between
-locations is never reflected — per-location balances go permanently stale.
+EmailTemplateDeleted→EmailWorkflow.setActive(false) has NO such hazard: `setActive` is
+itself REVERSIBLE, and deactivating workflows that point at a deleted template is the
+correct protective semantic (a workflow whose template is gone would send broken/empty
+emails). It is part of IMPLEMENTATION_PLAN.md line 184's cluster ("EmailWorkflow.setActive
+already exists; only the reaction binding is missing").
 
-## Mechanism: middleware (NOT reaction). No IR change, no schema, no migration.
-On `TransferReceived` (entity InventoryTransfer, command `receive`):
-- Load transfer (fromLocationId/toLocationId/tenantId) via `_subject.id`.
-- Load `InventoryTransferItem` rows (getAll + filter tenantId+transferId).
-- Build `InventoryStock` lookup (getAll + filter tenantId) keyed (itemId, locationId).
-- Per item: dispatch `InventoryStock.adjust(delta=-qty)` on source, then `(+qty)` on dest.
-  - dest row missing → `InventoryStock.create(qty=0, unitId=sourceStock.unitId)` THEN
-    adjust(+qty). create-at-0-then-adjust keeps the aggregate net-zero (create is NOT
-    mirrored by the stock-sync middleware; only adjust is).
-  - source row missing OR source adjust fails (insufficient-stock block) → loud
-    diagnostic, skip the item's dest leg. Never half-book.
-- Aggregate `InventoryItem` nets to ZERO automatically: the existing stock-sync middleware
-  mirrors each `InventoryStockAdjusted` (−qty + +qty = 0). Correct — a transfer redistributes
-  on-hand across locations, it does not change the total.
+## Problem
+`EmailTemplateDeleted` (core/email-template-rules.manifest:92, emitted by
+`EmailTemplate.softDelete`) has ZERO consumers. Soft-deleting a template leaves every
+EmailWorkflow that references it (`EmailWorkflow.emailTemplateId`) ACTIVE — the trigger
+service would keep firing those workflows against a missing template.
 
-## Steps
-- [ ] Write `inventory-transfer-received-stock-movement-middleware.ts`
-- [ ] Barrel export (`middleware/index.ts`) + factory import + registration
-- [ ] Conformance test (real IR + engine; net-zero aggregate; missing-dest bootstrap; insufficient-source skip; IR has no such reaction)
-- [ ] `pnpm --filter @repo/manifest-runtime typecheck` + runtime suite green
-- [ ] Update IMPLEMENTATION_PLAN.md, commit surgically (explicit paths)
+## Design decision
+- On `EmailTemplateDeleted`, deactivate (setActive false) every EmailWorkflow with
+  emailTemplateId == deleted templateId, tenantId match, deletedAt==null, isActive==true.
+  (Skip already-inactive/deleted -> no spurious EmailWorkflowUpdated events; idempotent.)
+- Reversible cascade: if the template is later recreated, an admin can re-activate the
+  workflow. No irreversibility hazard.
+- Mechanism: MIDDLEWARE (1:N fan-out by emailTemplateId; templateId reachable only as
+  event.subject?.id since softDelete takes no params; declared event fields not
+  auto-populated from self.*). NO IR/source/migration change.
 
-## Deferred / notes (tracked, not silent)
-- `partialReceive` (TransferPartiallyReceived) carries a `receivedItems` JSON subset + keeps
-  the transfer in_transit → different semantics, separate increment.
-- Chained ledger rows are `adjustment`-typed (we dispatch InventoryStock.adjust, not a direct
-  "transfer"-typed InventoryTransaction). Faithful but verbose; future leg could refine.
-- Surgical staging only — concurrent-loop shared-tree hazard; commit with explicit pathspecs.
+## Plan
+- [x] Investigate feasibility (orphan confirmed, FK + setActive confirmed, policy aligned).
+- [x] New `manifest/runtime/src/middleware/email-template-deleted-deactivate-workflows-middleware.ts`
+- [x] Export from `manifest/runtime/src/middleware/index.ts` barrel (after Dish*).
+- [x] Import + register in `manifest/runtime/src/manifest-runtime-factory.ts`.
+- [x] Conformance test `email-template-deleted-deactivate-workflows-middleware.test.ts` (3 tests).
+- [x] Verify: runtime typecheck (0) + targeted test (3) + full runtime suite (388) +
+      api typecheck (0) + audit-reaction-payloads (0/0) + schema:check (no drift).
+- [x] Update IMPLEMENTATION_PLAN.md (line 184 leg done; line 151 deferral noted).
+- [ ] commit, tag, push.
 
-## Review (DONE 2026-06-14)
-- **Files (runtime only — NO IR/schema/migration):**
-  - new `manifest/runtime/src/middleware/inventory-transfer-received-stock-movement-middleware.ts`
-  - new `manifest/runtime/src/__tests__/inventory-transfer-received-stock-movement-middleware.test.ts`
-  - `manifest/runtime/src/middleware/index.ts` (barrel export)
-  - `manifest/runtime/src/manifest-runtime-factory.ts` (import + register after stock-sync)
-  - `IMPLEMENTATION_PLAN.md` (leg marked `[~]` — stock-movement DONE; discrepancy + partialReceive remain)
-- **Verified:** new test 4/4; runtime suite **361 pass / 67 files** (was 357); runtime typecheck exit 0.
-- **Key design decisions (refinements over the plan):**
-  - Middleware adjusts ONLY per-location `InventoryStock`; the aggregate `InventoryItem` total is
-    mirrored automatically by the existing stock-sync middleware → source(−)+dest(+) net-zero
-    (correct: a transfer redistributes, doesn't change the total). Rule-7 refinement of the plan's
-    "adjust both" wording.
-  - Destination bootstrap = create-at-0-THEN-adjust(+qty) so the credit IS mirrored (a direct
-    create(qty) emits InventoryStockCreated, which stock-sync does NOT mirror → would break net-zero).
-    unitId (int) copied from the source row.
-  - Source-first ordering + block-guard respect → never half-book; missing source / insufficient
-    stock → loud diagnostic, dest skipped.
-- **Surgical staging** — only this increment's paths; left pre-existing `CLAUDE.md` edit and
-  `graphify-out/` deletions (not mine) untouched.
-- **Deferred (tracked, not silent):** TransferDiscrepancyFlagged→VarianceReport.create; partialReceive
-  (different payload/semantics); transfer-typed ledger rows (currently adjustment-typed via chaining).
+## Notes / known limitations
+- setActive policy = manager/admin/system; EmailTemplate.softDelete default policy =
+  manager/admin -> aligned, common path passes (documented in code + plan).
+- Reference pattern: `vendor-blacklisted-cancel-purchase-orders-middleware.ts`.
+
+## Review
+- Implemented `EmailTemplateDeleted → EmailWorkflow.setActive(false)` as a pure-runtime 1:N
+  middleware. ONE new middleware file + barrel export + factory import/registration + one
+  conformance test. ZERO IR/source/schema/migration change.
+- Re-planned mid-task: the originally-chosen ClientArchived→withdraw-Proposals leg was
+  rejected after read-before-write surfaced that `Client.archive` is reversible while
+  `Proposal.withdraw` is terminal (reversibility hazard) — deferred + documented in the plan
+  instead of shipped. Picked the email leg, whose cascade action (setActive) is reversible.
+- All gates green (see verify line). No pre-existing failures encountered.

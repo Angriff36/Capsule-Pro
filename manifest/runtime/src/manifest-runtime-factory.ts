@@ -42,6 +42,7 @@ import {
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
   createDishDeactivatedPruneMiddleware,
+  createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   createEmployeeCertificationLapsedNotifyMiddleware,
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
@@ -1152,6 +1153,26 @@ export async function createManifestRuntime(
     // and InventorySupplier is a distinct entity from the procurement Vendor PO.vendorId
     // points at — both out of scope.
     createVendorBlacklistedCancelPurchaseOrdersMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Core/collaboration: EmailTemplateDeleted -> EmailWorkflow.setActive(false).
+    // Middleware (not a reaction) because it is a 1:N fan-out by emailTemplateId (one
+    // deleted EmailTemplate -> many dependent EmailWorkflows) that a single-target
+    // reaction cannot resolve, and the templateId is reachable only as event.subject?.id
+    // (softDelete() takes no params, so the declared templateId event field is never
+    // auto-populated from self.*). Without this, EmailTemplateDeleted had ZERO consumers:
+    // soft-deleting a template left every workflow referencing it ACTIVE, so the trigger
+    // service kept firing those workflows against a missing template (broken/empty mail).
+    // SAFE to cascade (unlike ClientArchived -> withdraw Proposals, deferred) because
+    // setActive is REVERSIBLE — a recreated template can be re-linked + re-activated, so
+    // the permanent-vs-reversible split (vendor-suspend / dish-eightySix) does not apply.
+    // Guard-safe + idempotent: only ACTIVE, non-deleted workflows are toggled (skips
+    // already-inactive so no spurious EmailWorkflowUpdated; skips deleted so setActive's
+    // deletedAt==null guard never trips). setActive policy (manager/admin/system) is a
+    // superset of softDelete's (manager/admin), so the common path always aligns.
+    createEmailTemplateDeletedDeactivateWorkflowsMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
