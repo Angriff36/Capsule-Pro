@@ -28,8 +28,8 @@ importers:
         version: 2.4.5
     devDependencies:
       '@angriff36/manifest':
-        specifier: 2.7.0
-        version: 2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.8.0
+        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@auto-it/first-time-contributor':
         specifier: ^11.3.6
         version: 11.3.6(@types/node@25.9.1)(typescript@6.0.3)
@@ -145,8 +145,8 @@ importers:
         specifier: ^3.0.71
         version: 3.0.71(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 2.7.0
-        version: 2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.8.0
+        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -224,7 +224,7 @@ importers:
         version: 3.0.2
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -435,7 +435,7 @@ importers:
         version: 1.18.0(react@19.2.6)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       pdfjs-dist:
         specifier: ^5.7.284
         version: 5.7.284
@@ -550,7 +550,7 @@ importers:
         version: 16.10.2(@tailwindcss/oxide@4.3.1)(@types/mdx@2.0.14)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(fumadocs-core@16.10.2(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.15)(lucide-react@1.18.0(react@19.2.6))(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.1)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -612,7 +612,7 @@ importers:
         version: 19.2.15
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react-email:
         specifier: 6.4.0
         version: 6.4.0(bufferutil@4.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(utf-8-validate@6.0.6)
@@ -851,7 +851,7 @@ importers:
         version: 10.1.1(esbuild@0.28.1)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -917,8 +917,8 @@ importers:
         specifier: ^3.0.71
         version: 3.0.71(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 2.7.0
-        version: 2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.8.0
+        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -1029,7 +1029,7 @@ importers:
         version: 19.2.3(@types/react@19.2.15)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1072,7 +1072,7 @@ importers:
         version: 19.2.3(@types/react@19.2.15)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1108,7 +1108,7 @@ importers:
         version: 19.2.3(@types/react@19.2.15)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1408,7 +1408,7 @@ importers:
         version: 19.2.3(@types/react@19.2.15)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1465,8 +1465,8 @@ importers:
   packages/mcp-server:
     dependencies:
       '@angriff36/manifest':
-        specifier: 2.7.0
-        version: 2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.8.0
+        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(@cfworker/json-schema@4.1.1)(zod@4.4.3)
@@ -1620,7 +1620,7 @@ importers:
         version: 19.2.3(@types/react@19.2.15)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1841,7 +1841,7 @@ importers:
         version: 4.6.2
       next:
         specifier: 16.2.6
-        version: 16.2.6(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -2001,8 +2001,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@2.7.0':
-    resolution: {integrity: sha512-KRKv2PEQUwsiWVYP+9Mv5n47Iryrj6nhCfQ742QsBYgDIz3InGJsD/tUmqhqHlT1AD4Ax+M6Bd9qKb3xKrVEWA==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.7.0/30236b34c8b4defdddcd4d6c801f7ffdf673d413}
+  '@angriff36/manifest@2.8.0':
+    resolution: {integrity: sha512-QW5CNCWTqGtgGMAzdec7oRshNsQFgKu6qrFY0mFQ8+oEpm7WIs+T8jnrObE16tvrpEhYsl3O4H5zubpyfyZBxw==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.8.0/e6e999fc5cf886585adab0c08beb5a1e8a642138}
     hasBin: true
     peerDependencies:
       '@assemblyscript/loader': ^0.27
@@ -16154,7 +16154,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
+  '@angriff36/manifest@2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
     dependencies:
       '@assemblyscript/loader': 0.27.37
       '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -16183,7 +16183,7 @@ snapshots:
       - pg-native
       - supports-color
 
-  '@angriff36/manifest@2.7.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)':
+  '@angriff36/manifest@2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)':
     dependencies:
       '@assemblyscript/loader': 0.27.37
       '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -23616,7 +23616,7 @@ snapshots:
 
   '@types/cors@2.8.19':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.3
 
   '@types/d3-array@3.2.2': {}
 
@@ -27898,7 +27898,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.3
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -29244,7 +29244,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      styled-jsx: 5.1.6(react@19.2.6)
+      styled-jsx: 5.1.6(@babel/core@7.29.7)(react@19.2.6)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.2.6
       '@next/swc-darwin-x64': 16.2.6
@@ -31827,11 +31827,6 @@ snapshots:
       react: 19.2.6
     optionalDependencies:
       '@babel/core': 7.29.7
-
-  styled-jsx@5.1.6(react@19.2.6):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.2.6
 
   styled-jsx@5.1.6(react@19.2.7):
     dependencies:
