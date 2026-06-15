@@ -251,7 +251,11 @@ async function compileManifestSet(
     provenance: {
       contentHash: manifests.hash,
       irHash: "",
-      compilerVersion: "2.2.0",
+      // Inherit the real compiler version from the compiled children (mirrors
+      // mergeIrDocuments below) instead of a stale "2.2.0" literal, so the
+      // stamped provenance never lies about which @angriff36/manifest version
+      // produced this IR.
+      compilerVersion: compiledIRs[0]?.provenance?.compilerVersion ?? "unknown",
       schemaVersion: "1.0",
       // Fixed timestamp keeps output deterministic for identical inputs.
       compiledAt: "1970-01-01T00:00:00.000Z",

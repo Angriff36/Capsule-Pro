@@ -8,7 +8,7 @@ note: >-
 
 # Manifest reference for `apps/api/lib/manifest`
 
-**Why this file:** Manifest API glue: delete the orphan writeManifestOutboxEvents wrapper (D8); use native sagas (runSaga) for atomic multi-entity flows instead of hand-rolled $transactions (D3/U9).
+**Why this file:** Manifest API glue: use native sagas (runSaga) for atomic multi-entity flows instead of hand-rolled $transactions (D3/U9). (The orphan `writeManifestOutboxEvents` wrapper / `outbox.ts` was deleted 2026-06-15 — D8 done.)
 
 **Relevant divergences:** D8, D3, U9 — see `manifest/MANIFEST-DIVERGENCES.md` for the full remediation detail.
 
