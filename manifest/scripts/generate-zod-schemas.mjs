@@ -89,7 +89,13 @@ for (const artifact of result.artifacts ?? []) {
   }
   const fileName = artifact.pathHint ?? `${artifact.id ?? "unknown"}.schema.ts`;
   const filePath = resolve(outDir, basename(fileName));
-  writeFileSync(filePath, artifact.code, "utf-8");
+  // Strip the projection's per-file "// Generated at: <ISO timestamp>" line so the
+  // committed output is deterministic and can be byte-compared by a drift gate
+  // (mirrors the OpenAPI generator, which deliberately emits no timestamp). The
+  // package projection is not editable in-repo, so normalize its output here per
+  // constitution §10 (fix the producer, never hand-edit generated files).
+  const code = artifact.code.replace(/^\/\/ Generated at: .*\r?\n/m, "");
+  writeFileSync(filePath, code, "utf-8");
   entityCount++;
 }
 
@@ -101,7 +107,8 @@ const files = readdirSync(outDir)
 const barrel = [
   "/**",
   " * Manifest Zod Schemas — auto-generated. DO NOT EDIT.",
-  ` * Generated: ${new Date().toISOString()}`,
+  // No timestamp here: the committed barrel must be deterministic so a drift gate
+  // can byte-compare it (mirrors the OpenAPI generator). See the per-file strip above.
   ` * Entities: ${files.length}`,
   " * Projection: zod.entity",
   " */",
