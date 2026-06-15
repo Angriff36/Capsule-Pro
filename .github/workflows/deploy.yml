@@ -60,6 +60,16 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
 
+      # Snapshot production BEFORE migrating. A Neon branch is an instant
+      # copy-on-write restore point. Fail-closed: if this errors, the job stops
+      # here and `prisma migrate deploy` never runs, so prod stays untouched.
+      - name: Create pre-deploy Neon snapshot (prod restore point)
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          SNAPSHOT_TAG: ${{ github.run_id }}
+        run: node scripts/neon-snapshot-branch.mjs
+
       - name: Apply migrations (prisma migrate deploy)
         env:
           # Vercel marks DATABASE_URL as sensitive (write-only — `vercel pull`
