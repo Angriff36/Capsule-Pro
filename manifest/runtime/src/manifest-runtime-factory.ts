@@ -39,6 +39,7 @@ import {
   createClientInteractionOverdueNotifyMiddleware,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
+  createContainerDeactivatedDishClearMiddleware,
   createContractSignedEventConfirmMiddleware,
   createDealLifecyclePropagationMiddleware,
   createDishDeactivatedPruneMiddleware,
@@ -671,6 +672,20 @@ export async function createManifestRuntime(
     // restore-on-reinstate provenance, so blanket irreversible pruning would strip
     // the dish from future events for a same-day stockout (deferred — see plan).
     createDishDeactivatedPruneMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen: ContainerDeactivated -> clear the default-container reference on
+    // every Dish that points at the retired container. Deactivating a container
+    // left dishes' defaultContainerId pointing at it, so the belongsTo
+    // defaultContainer relationship resolved a dead reference. Middleware (not a
+    // reaction) because it is a 1:N fan-out keyed by the container's OWN id
+    // (_subject.id, not auto-populated onto the event) — a reaction resolves one
+    // target. Safe to cascade (clearing an FK is a non-destructive, reversible
+    // cleanup); guard-safe + idempotent (clearDefaultContainer guards
+    // defaultContainerId != "", soft-deleted dishes skipped).
+    createContainerDeactivatedDishClearMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

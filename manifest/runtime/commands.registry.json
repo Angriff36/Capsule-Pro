@@ -1206,6 +1206,11 @@
   },
   {
     "entity": "Dish",
+    "command": "clearDefaultContainer",
+    "commandId": "Dish.clearDefaultContainer"
+  },
+  {
+    "entity": "Dish",
     "command": "create",
     "commandId": "Dish.create"
   },

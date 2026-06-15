@@ -259,6 +259,21 @@ entity Dish {
     emit DishReinstated
   }
 
+  // Clear this dish's default container reference. Used by the
+  // ContainerDeactivated cascade so dishes stop pointing at a retired
+  // container (and the read-time belongsTo defaultContainer relationship stops
+  // resolving a dead reference). Plain mutate on the existing
+  // defaultContainerId field — NO migration. Cleared regardless of dish state
+  // (an inactive/86'd dish can still hold a dangling container reference); the
+  // idempotency guard skips dishes that already have no default container.
+  command clearDefaultContainer(userId: string) {
+    guard self.defaultContainerId != "" "Dish has no default container to clear"
+
+    mutate defaultContainerId = ""
+
+    emit DishDefaultContainerCleared
+  }
+
   store Dish in durable
 }
 
@@ -349,4 +364,12 @@ event DishReinstated: "kitchen.dish.reinstated" {
   name: string
   userId: string
   reinstatedAt: datetime
+}
+
+event DishDefaultContainerCleared: "kitchen.dish.defaultcontainer.cleared" {
+  dishId: string
+  tenantId: string
+  containerId: string
+  userId: string
+  clearedAt: datetime
 }

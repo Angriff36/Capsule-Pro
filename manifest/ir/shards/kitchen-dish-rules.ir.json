@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "4c5386e1516891350aa4d83439c03940027d8702cc73ca72c17b32d18e3a7517",
-    "irHash": "a89f9e0af9073695a960ffe83da86bfe9272743d8fe0ea8b51c05cf80bfa0761",
+    "contentHash": "7422a496a2e0e5287ad009500cfed997194658709a62a61bcf8e7bc322e9dee5",
+    "irHash": "88bc74445b38615c7be2893c2f81592e849e42835b96ee78ae8b732f81031520",
     "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T04:05:00.214Z"
+    "compiledAt": "2026-06-15T05:19:44.327Z"
   },
   "modules": [],
   "values": [],
@@ -700,7 +700,8 @@
         "markSeasonal",
         "unmarkSeasonal",
         "eightySix",
-        "reinstate"
+        "reinstate",
+        "clearDefaultContainer"
       ],
       "constraints": [
         {
@@ -1930,6 +1931,52 @@
         },
         {
           "name": "reinstatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DishDefaultContainerCleared",
+      "channel": "kitchen.dish.defaultcontainer.cleared",
+      "payload": [
+        {
+          "name": "dishId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "containerId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clearedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3845,6 +3892,71 @@
       ],
       "emits": [
         "DishReinstated"
+      ]
+    },
+    {
+      "name": "clearDefaultContainer",
+      "entity": "Dish",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "defaultContainerId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DishDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Dish has no default container to clear"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "defaultContainerId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DishDefaultContainerCleared"
       ]
     }
   ],

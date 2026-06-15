@@ -28,6 +28,11 @@ export {
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
 } from "./collection-written-off-invoice-write-off-middleware";
 export {
+  type ContainerDeactivatedDishClearDiagnostic,
+  type ContainerDeactivatedDishClearMiddlewareOptions,
+  createContainerDeactivatedDishClearMiddleware,
+} from "./container-deactivated-dish-clear-middleware";
+export {
   type ContractSignedEventConfirmDiagnostic,
   type ContractSignedEventConfirmMiddlewareOptions,
   createContractSignedEventConfirmMiddleware,

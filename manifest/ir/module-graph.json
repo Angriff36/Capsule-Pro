@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-15T04:05:00.335Z",
-  "contentHash": "fadf1bc5c1db780d9e3fdcc73bad6b7fa90de8d059f1367f3f02fae77247e22a",
+  "compiledAt": "2026-06-15T05:19:44.450Z",
+  "contentHash": "f62fedc74d0cafdd42dc166e0c2124c36401dc98a81cab042694a3d6134c98dd",
   "sources": [
     {
       "path": "_base.manifest",
@@ -413,8 +413,8 @@
       "path": "kitchen/dish-rules.manifest",
       "domain": "kitchen",
       "entities": 1,
-      "commands": 10,
-      "events": 10
+      "commands": 11,
+      "events": 11
     },
     {
       "path": "kitchen/ingredient-rules.manifest",
@@ -728,7 +728,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1052,
-    "events": 1027
+    "commands": 1053,
+    "events": 1028
   }
 }
