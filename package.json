@@ -181,5 +181,11 @@
     "manifest:fmt": "manifest fmt manifest/source/**/*.manifest --write",
     "manifest:fmt:check": "manifest fmt manifest/source/**/*.manifest --check"
   },
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "overrides": {
+      "react": "19.2.7",
+      "react-dom": "19.2.7"
+    }
+  }
 }
