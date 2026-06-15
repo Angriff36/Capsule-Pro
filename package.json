@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "2.8.0",
+    "@angriff36/manifest": "2.9.0",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.4.15",
@@ -179,7 +179,8 @@
     "manifest:coverage:json": "manifest coverage --ir manifest/ir/kitchen.ir.json --root . --format json",
     "manifest:coverage:ci": "manifest coverage --ir manifest/ir/kitchen.ir.json --root . --format text --min-coverage 10 --strict",
     "manifest:fmt": "manifest fmt manifest/source/**/*.manifest --write",
-    "manifest:fmt:check": "manifest fmt manifest/source/**/*.manifest --check"
+    "manifest:fmt:check": "manifest fmt manifest/source/**/*.manifest --check",
+    "manifest:update": "pnpm -r update @angriff36/manifest@latest"
   },
   "type": "module",
   "pnpm": {
