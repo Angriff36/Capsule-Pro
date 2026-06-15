@@ -142,6 +142,11 @@ export {
   type LogisticsDispatchStatusDiagnostic,
 } from "./logistics-dispatch-driver-vehicle-status-middleware";
 export {
+  createLogisticsRouteDriverVehicleStatusMiddleware,
+  type LogisticsRouteDriverVehicleStatusMiddlewareOptions,
+  type LogisticsRouteStatusDiagnostic,
+} from "./logistics-route-driver-vehicle-status-middleware";
+export {
   createMaintenanceCompletedEquipmentRecordMiddleware,
   type MaintenanceCompletedEquipmentRecordMiddlewareOptions,
   type MaintenanceEquipmentRecordDiagnostic,

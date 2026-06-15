@@ -62,6 +62,7 @@ import {
   createInvoiceWrittenOffRevRecCancelMiddleware,
   createLeadConvertedDealCreateMiddleware,
   createLogisticsDispatchDriverVehicleStatusMiddleware,
+  createLogisticsRouteDriverVehicleStatusMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createMaintenanceCreatedEquipmentStatusMiddleware,
   createMaintenanceScheduleCompletedWorkOrderCreateMiddleware,
@@ -994,6 +995,23 @@ export async function createManifestRuntime(
     // already free is skipped (free idempotency). Reassign deferred (needs two-hook
     // capture of the previous driver/vehicle). Pure runtime + additive IR commands.
     createLogisticsDispatchDriverVehicleStatusMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Logistics: LogisticsRoute lifecycle -> Driver/Vehicle status. Sibling of the
+    // dispatch leg above, reusing the same four status commands (NO IR change):
+    //   LogisticsRouteStarted   -> Driver.setOnRoute  + Vehicle.setInUse
+    //   LogisticsRouteCompleted -> Driver.setAvailable + Vehicle.setAvailable
+    //   LogisticsRouteCancelled -> Driver.setAvailable + Vehicle.setAvailable
+    // Middleware (not a reaction) because driverId/vehicleId are the route's OWN
+    // fields, NOT start/complete/cancel command params (declared event fields are
+    // never auto-populated from self.*) — it loads the route via _subject.id. PRECEDENCE
+    // (route <-> dispatch overlap): the busy leg is unconditional + FSM-guard-safe; the
+    // free legs free the fleet ONLY when no OTHER active route/dispatch still commits
+    // them, so route completion never frees a driver/vehicle mid-delivery (the dispatch
+    // sibling's deliver/fail frees them instead).
+    createLogisticsRouteDriverVehicleStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
