@@ -44,10 +44,14 @@ async function api(path, options = {}) {
       ...(options.headers || {}),
     },
   });
+  const body = res.status === 204 ? null : await res.text();
   if (!res.ok) {
-    throw new Error(`Neon ${options.method ?? "GET"} ${path} → ${res.status}: ${await res.text()}`);
+    const err = new Error(`Neon ${options.method ?? "GET"} ${path} → ${res.status}: ${body}`);
+    err.status = res.status;
+    err.body = body;
+    throw err;
   }
-  return res.status === 204 ? null : res.json();
+  return body ? JSON.parse(body) : null;
 }
 
 /** ep-divine-math-xxxx-pooler.<region>.aws.neon.tech → ep-divine-math-xxxx */
@@ -63,32 +67,51 @@ function endpointIdFromUrl(url) {
 async function resolveProjectId() {
   if (process.env.NEON_PROJECT_ID) return process.env.NEON_PROJECT_ID;
 
-  const { projects } = await api("/projects");
-  if (!projects?.length) throw new Error("No Neon projects visible to this API key.");
-  if (projects.length === 1) return projects[0].id;
-
-  // Disambiguate by matching the prod endpoint host.
-  const wantEndpoint = endpointIdFromUrl(process.env.PRODUCTION_DATABASE_URL || process.env.DATABASE_URL || "");
-  if (wantEndpoint) {
-    for (const p of projects) {
-      const { endpoints } = await api(`/projects/${p.id}/endpoints`);
-      if ((endpoints || []).some((e) => e.id === wantEndpoint || (e.host || "").startsWith(wantEndpoint))) {
-        return p.id;
+  // A project-scoped API key cannot list projects; it answers with the project
+  // it IS scoped to via `subject_project_id`. Use that — it's the prod project.
+  try {
+    const { projects } = await api("/projects");
+    if (!projects?.length) throw new Error("No Neon projects visible to this API key.");
+    if (projects.length === 1) return projects[0].id;
+    const wantEndpoint = endpointIdFromUrl(process.env.PRODUCTION_DATABASE_URL || process.env.DATABASE_URL || "");
+    if (wantEndpoint) {
+      for (const p of projects) {
+        const { endpoints } = await api(`/projects/${p.id}/endpoints`);
+        if ((endpoints || []).some((e) => e.id === wantEndpoint || (e.host || "").startsWith(wantEndpoint))) {
+          return p.id;
+        }
       }
     }
+    const byName = projects.find((p) => /divine[- ]?math/i.test(p.name || ""));
+    if (byName) return byName.id;
+    throw new Error(`Multiple projects; set NEON_PROJECT_ID (endpoint '${wantEndpoint ?? "unknown"}').`);
+  } catch (e) {
+    const m = /subject_project_id:\s*\\?"([^"\\]+)\\?"/.exec(e.body || e.message || "");
+    if (m) return m[1];
+    throw e;
   }
-  // Fallback: name match (prod project is "divine-math").
-  const byName = projects.find((p) => /divine[- ]?math/i.test(p.name || ""));
-  if (byName) return byName.id;
+}
 
-  throw new Error(
-    `Could not resolve the production Neon project (endpoint '${wantEndpoint ?? "unknown"}'). ` +
-      "Set NEON_PROJECT_ID to disambiguate.",
-  );
+/**
+ * Confirm the resolved project actually hosts the production endpoint, so we
+ * never snapshot the wrong project. Skips the check if the prod URL is absent.
+ */
+async function assertIsProdProject(projectId) {
+  const wantEndpoint = endpointIdFromUrl(process.env.PRODUCTION_DATABASE_URL || "");
+  if (!wantEndpoint) return; // no prod URL to verify against
+  const { endpoints } = await api(`/projects/${projectId}/endpoints`);
+  const match = (endpoints || []).some((e) => e.id === wantEndpoint || (e.host || "").startsWith(wantEndpoint));
+  if (!match) {
+    throw new Error(
+      `Resolved project ${projectId} does not host the production endpoint '${wantEndpoint}' — ` +
+        "refusing to snapshot the wrong project.",
+    );
+  }
 }
 
 async function main() {
   const projectId = await resolveProjectId();
+  await assertIsProdProject(projectId);
   const tag = process.env.SNAPSHOT_TAG || `${Date.now()}`;
   const name = `pre-deploy-${tag}`;
 
