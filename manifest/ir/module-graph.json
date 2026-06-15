@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-15T03:23:50.562Z",
-  "contentHash": "736826752c26362de0da32697b6d03bba2c6b10ac8fe86da9f34adb272a73b8e",
+  "compiledAt": "2026-06-15T04:05:00.335Z",
+  "contentHash": "fadf1bc5c1db780d9e3fdcc73bad6b7fa90de8d059f1367f3f02fae77247e22a",
   "sources": [
     {
       "path": "_base.manifest",
@@ -511,8 +511,8 @@
       "path": "operations/logistics-all-rules.manifest",
       "domain": "operations",
       "entities": 4,
-      "commands": 26,
-      "events": 26
+      "commands": 30,
+      "events": 30
     },
     {
       "path": "operations/shipment-rules.manifest",
@@ -728,7 +728,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1048,
-    "events": 1023
+    "commands": 1052,
+    "events": 1027
   }
 }

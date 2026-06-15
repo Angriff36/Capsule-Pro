@@ -61,6 +61,7 @@ import {
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createInvoiceWrittenOffRevRecCancelMiddleware,
   createLeadConvertedDealCreateMiddleware,
+  createLogisticsDispatchDriverVehicleStatusMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createMaintenanceCreatedEquipmentStatusMiddleware,
   createMaintenanceScheduleCompletedWorkOrderCreateMiddleware,
@@ -976,6 +977,23 @@ export async function createManifestRuntime(
     // — load the asset and skip cleanly rather than firing blindly and relying on the engine
     // swallowing the FSM-guard failure. Pure runtime addition, no IR/source change.
     createFacilityWorkOrderAssetStatusMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Logistics: LogisticsDispatch lifecycle -> Driver/Vehicle status. Keeps fleet
+    // availability in lockstep with the dispatch a driver/vehicle is working:
+    //   LogisticsDispatchAssigned  -> Driver.setOnRoute  + Vehicle.setInUse
+    //   LogisticsDispatchDelivered -> Driver.setAvailable + Vehicle.setAvailable
+    //   LogisticsDispatchFailed    -> Driver.setAvailable + Vehicle.setAvailable
+    // Middleware (not a reaction) because driverId/vehicleId are the dispatch's OWN
+    // fields, NOT deliver/fail command params (declared event fields are never
+    // auto-populated from self.*) — it loads the dispatch via _subject.id and reads
+    // them. The four status commands make the previously-UNREACHABLE Driver "on_route"
+    // / Vehicle "in_use" states live. Guard-safe: a driver/vehicle already busy or
+    // already free is skipped (free idempotency). Reassign deferred (needs two-hook
+    // capture of the previous driver/vehicle). Pure runtime + additive IR commands.
+    createLogisticsDispatchDriverVehicleStatusMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

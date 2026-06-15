@@ -137,6 +137,11 @@ export {
   type LeadConvertedDealDiagnostic,
 } from "./lead-converted-deal-create-middleware";
 export {
+  createLogisticsDispatchDriverVehicleStatusMiddleware,
+  type LogisticsDispatchDriverVehicleStatusMiddlewareOptions,
+  type LogisticsDispatchStatusDiagnostic,
+} from "./logistics-dispatch-driver-vehicle-status-middleware";
+export {
   createMaintenanceCompletedEquipmentRecordMiddleware,
   type MaintenanceCompletedEquipmentRecordMiddlewareOptions,
   type MaintenanceEquipmentRecordDiagnostic,

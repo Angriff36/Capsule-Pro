@@ -108,6 +108,28 @@ entity Driver {
     emit DriverReactivated
   }
 
+  // Put a driver on route when a dispatch is assigned to them. This is what makes
+  // the previously-unreachable "on_route" status actually reachable — see the
+  // LogisticsDispatch lifecycle middleware. Guard-safe: a driver already on route
+  // (busy on another dispatch) is left alone.
+  command setOnRoute() {
+    guard self.status == "available" "Only available drivers can be put on route"
+
+    mutate status = "on_route"
+
+    emit DriverSetOnRoute
+  }
+
+  // Return a driver to available once their dispatch is delivered or fails. Distinct
+  // from reactivate (off_duty/inactive -> available); this only frees an on-route driver.
+  command setAvailable() {
+    guard self.status == "on_route" "Only on-route drivers are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit DriverSetAvailable
+  }
+
   relationship belongsTo vehicle: Vehicle with vehicleId
 
   store Driver in durable
@@ -213,6 +235,27 @@ entity Vehicle {
     mutate status = "out_of_service"
 
     emit VehicleDecommissioned
+  }
+
+  // Put a vehicle in use when a dispatch is assigned to it. Makes the
+  // previously-unreachable "in_use" status reachable — see the LogisticsDispatch
+  // lifecycle middleware. Guard-safe: a vehicle already in use is left alone.
+  command setInUse() {
+    guard self.status == "available" "Only available vehicles can be put in use"
+
+    mutate status = "in_use"
+
+    emit VehicleSetInUse
+  }
+
+  // Return a vehicle to available once its dispatch is delivered or fails. Distinct
+  // from returnFromMaintenance (maintenance -> available); this only frees an in-use vehicle.
+  command setAvailable() {
+    guard self.status == "in_use" "Only in-use vehicles are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit VehicleSetAvailable
   }
 
   store Vehicle in durable
@@ -491,6 +534,18 @@ event DriverReactivated: "logistics.driver.reactivated" {
   reactivatedAt: datetime
 }
 
+event DriverSetOnRoute: "logistics.driver.set-on-route" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event DriverSetAvailable: "logistics.driver.set-available" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
 event VehicleCreated: "logistics.vehicle.created" {
   vehicleId: string
   tenantId: string
@@ -530,6 +585,18 @@ event VehicleDecommissioned: "logistics.vehicle.decommissioned" {
   tenantId: string
   reason: string
   decommissionedAt: datetime
+}
+
+event VehicleSetInUse: "logistics.vehicle.set-in-use" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event VehicleSetAvailable: "logistics.vehicle.set-available" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
 }
 
 event LogisticsRouteCreated: "logistics.route.created" {

@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "9421e5f95c6df8acc6c48e2ae541dcb6a432bfd5e81ee210ff5e53344f6ad37d",
-    "irHash": "5440d29f4de212e89976a271ab79f98d80a4dc2b229fd54382eda124823f931f",
+    "contentHash": "8046d6f01bb043288e4a97de8627109d0b47a77a4f747394feb2aa03c69965c2",
+    "irHash": "a0d6e63e7e04d4f3cea95bf344f2caabce17d543258175c794a22f7346106deb",
     "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T03:23:50.476Z"
+    "compiledAt": "2026-06-15T04:05:00.248Z"
   },
   "modules": [],
   "values": [],
@@ -330,7 +330,9 @@
         "update",
         "renewLicense",
         "setOffDuty",
-        "reactivate"
+        "reactivate",
+        "setOnRoute",
+        "setAvailable"
       ],
       "constraints": [
         {
@@ -994,7 +996,9 @@
         "update",
         "sendToMaintenance",
         "returnFromMaintenance",
-        "decommission"
+        "decommission",
+        "setInUse",
+        "setAvailable"
       ],
       "constraints": [
         {
@@ -2145,6 +2149,66 @@
       ]
     },
     {
+      "name": "DriverSetOnRoute",
+      "channel": "logistics.driver.set-on-route",
+      "payload": [
+        {
+          "name": "driverId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DriverSetAvailable",
+      "channel": "logistics.driver.set-available",
+      "payload": [
+        {
+          "name": "driverId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "VehicleCreated",
       "channel": "logistics.vehicle.created",
       "payload": [
@@ -2356,6 +2420,66 @@
         },
         {
           "name": "decommissionedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VehicleSetInUse",
+      "channel": "logistics.vehicle.set-in-use",
+      "payload": [
+        {
+          "name": "vehicleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VehicleSetAvailable",
+      "channel": "logistics.vehicle.set-available",
+      "payload": [
+        {
+          "name": "vehicleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3601,6 +3725,118 @@
       ]
     },
     {
+      "name": "setOnRoute",
+      "entity": "Driver",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DriverDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only available drivers can be put on route"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "on_route"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DriverSetOnRoute"
+      ]
+    },
+    {
+      "name": "setAvailable",
+      "entity": "Driver",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "on_route"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DriverDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only on-route drivers are freed by dispatch completion"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DriverSetAvailable"
+      ]
+    },
+    {
       "name": "create",
       "entity": "Vehicle",
       "parameters": [
@@ -4467,6 +4703,118 @@
       ],
       "emits": [
         "VehicleDecommissioned"
+      ]
+    },
+    {
+      "name": "setInUse",
+      "entity": "Vehicle",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "VehicleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only available vehicles can be put in use"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_use"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "VehicleSetInUse"
+      ]
+    },
+    {
+      "name": "setAvailable",
+      "entity": "Vehicle",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_use"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "VehicleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only in-use vehicles are freed by dispatch completion"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "VehicleSetAvailable"
       ]
     },
     {
