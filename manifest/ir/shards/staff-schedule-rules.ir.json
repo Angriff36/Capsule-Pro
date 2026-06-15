@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "66181f12e100e6bdabf9bab9ed8196ca434cf161e71803a015ad32b06462faa8",
-    "irHash": "910b3ab7ff79e5e5448254b4f43c101340825c5237a365d92a4b4fdaea3579a3",
+    "contentHash": "1b2f8bb5df5f0268d15a4b40deff9dad75fbed9def61f39aa506be8de63db362",
+    "irHash": "ae59de3d32b05fd4cf61729515bbd506022015299897172c38d941b33693d291",
     "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T05:19:44.396Z"
+    "compiledAt": "2026-06-15T06:23:45.366Z"
   },
   "modules": [],
   "values": [],
@@ -357,7 +357,8 @@
         "approve",
         "reopen",
         "release",
-        "close"
+        "close",
+        "syncShiftCount"
       ],
       "constraints": [
         {
@@ -1274,6 +1275,44 @@
         },
         {
           "name": "closedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ScheduleShiftCountSynced",
+      "channel": "staff.schedule.shift-count-synced",
+      "payload": [
+        {
+          "name": "scheduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftCount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "syncedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -2330,6 +2369,82 @@
       ],
       "emits": [
         "ScheduleClosed"
+      ]
+    },
+    {
+      "name": "syncShiftCount",
+      "entity": "Schedule",
+      "parameters": [
+        {
+          "name": "count",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "count"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "count"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "ScheduleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Shift count must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shiftCount",
+          "expression": {
+            "kind": "identifier",
+            "name": "count"
+          }
+        }
+      ],
+      "emits": [
+        "ScheduleShiftCountSynced"
       ]
     },
     {

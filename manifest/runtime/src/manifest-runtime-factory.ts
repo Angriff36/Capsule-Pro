@@ -86,6 +86,7 @@ import {
   createQaCheckFailedCorrectiveActionMiddleware,
   createRbacMiddleware,
   createSchedulePublishedNotifyStaffMiddleware,
+  createScheduleShiftCountMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
   createTimeOffApprovedShiftCleanupMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
@@ -1172,6 +1173,20 @@ export async function createManifestRuntime(
     // governed ScheduleShift. Without this, claiming an open shift produced NO real
     // shift on the roster — the claim was silently dropped.
     createOpenShiftClaimedCreateScheduleShiftMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: ScheduleShiftCreated/Removed -> Schedule.syncShiftCount. Middleware
+    // (not a reaction) because the count is a cross-entity scan of ScheduleShift
+    // rows, and ScheduleShift.remove's payload carries no scheduleId (declared event
+    // fields are never auto-populated from self.*) — the soft-deleted row is loaded
+    // via _subject.id to recover it. RECOMPUTE, not +/- deltas: the stored
+    // Schedule.shiftCount was maintained on NO path, so it stayed 0 and starved the
+    // approve guard (shiftCount > 0) + release blockNoShifts constraint — a real
+    // approval/publish deadlock. Dispatches the absolute, idempotent syncShiftCount
+    // only when the stored count drifted from the true non-deleted shift count.
+    createScheduleShiftCountMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

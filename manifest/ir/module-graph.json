@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-15T05:19:44.450Z",
-  "contentHash": "f62fedc74d0cafdd42dc166e0c2124c36401dc98a81cab042694a3d6134c98dd",
+  "compiledAt": "2026-06-15T06:23:45.420Z",
+  "contentHash": "96e581335e5991d24e69691448b86edc9e2285b64348eb062c75e284794a5a80",
   "sources": [
     {
       "path": "_base.manifest",
@@ -665,8 +665,8 @@
       "path": "staff/schedule-rules.manifest",
       "domain": "staff",
       "entities": 2,
-      "commands": 13,
-      "events": 13
+      "commands": 14,
+      "events": 14
     },
     {
       "path": "staff/staff-logistics-extended-rules.manifest",
@@ -728,7 +728,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1053,
-    "events": 1028
+    "commands": 1054,
+    "events": 1029
   }
 }

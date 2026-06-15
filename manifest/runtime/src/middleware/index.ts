@@ -262,6 +262,11 @@ export {
   type SchedulePublishedNotifyStaffMiddlewareOptions,
 } from "./schedule-published-notify-staff-middleware";
 export {
+  createScheduleShiftCountMiddleware,
+  type ScheduleShiftCountDiagnostic,
+  type ScheduleShiftCountMiddlewareOptions,
+} from "./schedule-shift-count-middleware";
+export {
   createScheduleShiftFirstShiftDueDateMiddleware,
   type FirstShiftDueDateDiagnostic,
   type ScheduleShiftFirstShiftDueDateMiddlewareOptions,

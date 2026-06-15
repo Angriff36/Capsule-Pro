@@ -4231,6 +4231,11 @@
   },
   {
     "entity": "Schedule",
+    "command": "syncShiftCount",
+    "commandId": "Schedule.syncShiftCount"
+  },
+  {
+    "entity": "Schedule",
     "command": "update",
     "commandId": "Schedule.update"
   },

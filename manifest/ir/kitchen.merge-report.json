@@ -108,8 +108,8 @@
   ],
   "counts": {
     "entities": 210,
-    "commands": 1053,
-    "events": 1028,
+    "commands": 1054,
+    "events": 1029,
     "sagas": 5,
     "reactions": 10
   },
