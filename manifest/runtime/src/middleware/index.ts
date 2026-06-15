@@ -68,6 +68,11 @@ export {
   type EventLocationCateringSyncMiddlewareOptions,
 } from "./event-location-catering-sync-middleware";
 export {
+  createEventStaffAssignedNotifyMiddleware,
+  type EventStaffAssignedNotifyDiagnostic,
+  type EventStaffAssignedNotifyMiddlewareOptions,
+} from "./event-staff-assigned-notify-middleware";
+export {
   createEventUpdatedBoardSyncMiddleware,
   type EventBoardSyncDiagnostic,
   type EventUpdatedBoardSyncMiddlewareOptions,

@@ -47,6 +47,7 @@ import {
   createEventDishPrepSyncMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
+  createEventStaffAssignedNotifyMiddleware,
   createEventUpdatedBoardSyncMiddleware,
   createFacilityWorkOrderAssetStatusMiddleware,
   createIdentityMiddleware,
@@ -1066,6 +1067,17 @@ export async function createManifestRuntime(
     // delivered/completed/cancelled orders (physical history must not be
     // rewritten). Loads the updated Event and fans out CateringOrder.syncVenue.
     createEventLocationCateringSyncMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Events: EventStaffAssigned (from EventStaff.assign AND the bootstrap create)
+    // -> notify the assigned staff member. Middleware (not a reaction) so it can
+    // load the Event for its title and compose a useful message ("assigned to
+    // <event> as <role>"); the title is the Event's own field, absent from the
+    // assignment payload. Recipient = the assignment's staffMemberId; idempotent
+    // per (eventStaffId, staffMemberId) so the create/assign double-emit notifies once.
+    createEventStaffAssignedNotifyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
