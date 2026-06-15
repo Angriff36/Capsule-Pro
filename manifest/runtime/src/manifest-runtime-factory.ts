@@ -81,6 +81,7 @@ import {
   createStaffMemberDeactivatedUnassignEventStaffMiddleware,
   createTimecardEditApprovedTimeEntryApplyMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
+  createVendorBlacklistedCancelPurchaseOrdersMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
@@ -1103,6 +1104,26 @@ export async function createManifestRuntime(
     // leg is guard-safe + idempotent; inventory reservations release via the
     // prep-list-cancelled middleware above (the dispatched PrepList.cancel chains).
     createEventCancelledCascadeMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Procurement: VendorBlacklisted -> cancel the vendor's open PurchaseOrders.
+    // Middleware (not a reaction) because it is a 1:N fan-out by vendorId (one
+    // blacklisted Vendor -> many open POs) that a single-target reaction cannot
+    // resolve, and the vendorId is reachable only as event.subject?.id (not a
+    // blacklist param; declared event fields are never auto-populated from self.*).
+    // Scoped to BLACKLIST ONLY (a permanent, terminal ban) — NOT suspend, which is
+    // reversible via approve, so cancelling a suspended vendor's in-flight POs would
+    // be wrong if the pause is lifted (same permanent-vs-reversible split as the Dish
+    // deactivate/eightySix precedent). Without this, blacklisting a vendor for cause
+    // left every open PO still orderable/receivable/payable. Guard- and
+    // transition-safe (only draft/submitted/approved/ordered/partially_received,
+    // non-deleted POs are cancelled; received/cancelled/rejected are skipped) +
+    // idempotent per (vendor, PO). PurchaseRequisition has no vendor FK on its header
+    // and InventorySupplier is a distinct entity from the procurement Vendor PO.vendorId
+    // points at — both out of scope.
+    createVendorBlacklistedCancelPurchaseOrdersMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

@@ -236,3 +236,8 @@ export {
   type TrainingAttemptRecordDiagnostic,
   type TrainingAttemptSubmittedRecordMiddlewareOptions,
 } from "./training-attempt-submitted-record-middleware";
+export {
+  createVendorBlacklistedCancelPurchaseOrdersMiddleware,
+  type VendorBlacklistedCancelPurchaseOrdersDiagnostic,
+  type VendorBlacklistedCancelPurchaseOrdersMiddlewareOptions,
+} from "./vendor-blacklisted-cancel-purchase-orders-middleware";
