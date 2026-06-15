@@ -175,7 +175,7 @@ entity BudgetAlert {
     emit BudgetAlertResolved
   }
 
-  relationship belongsTo budget: EventBudget with budgetId
+  relationship belongsTo budget: LaborBudget with budgetId
 
   store BudgetAlert in durable
 }

@@ -283,3 +283,61 @@ describe("Middleware conformance: LaborBudgetActualRecorded → BudgetAlert.crea
     expect(Number(fresh?.utilization)).toBe(140);
   });
 });
+
+/**
+ * IR correctness — `BudgetAlert.belongsTo budget` must point at `LaborBudget`, not
+ * `EventBudget` (IMPLEMENTATION_PLAN P1 "Fix BudgetAlert parent + auto-create", the
+ * relationship-target leg).
+ *
+ * WHY this matters (not just WHAT it asserts): `BudgetAlert.budgetId` is a LaborBudget id.
+ * The auto-create middleware above loads a LaborBudget via `_subject.id` and dispatches
+ * `BudgetAlert.create({ budgetId: <the LaborBudget id>, ... })` — so the alert's parent is
+ * unambiguously a LaborBudget. The source originally declared the `budget` relationship as
+ * `belongsTo EventBudget`, which made the IR — and any IR-driven introspection/projection
+ * (e.g. the MCP server's governed queries) — traverse `BudgetAlert.budget` to the WRONG
+ * entity. This is IR-only (the one-sided `belongsTo` does not project a Prisma `@relation`,
+ * so there is no schema/migration impact), and this test fails loudly if the wrong target
+ * regresses back into the source.
+ */
+describe("IR correctness: BudgetAlert.budget belongsTo LaborBudget", () => {
+  function entity(name: string): Record<string, unknown> | undefined {
+    const ents = ir.entities;
+    if (Array.isArray(ents)) {
+      return ents.find(
+        (e: Record<string, unknown>) => e.name === name
+      ) as Record<string, unknown> | undefined;
+    }
+    return ents?.[name] as Record<string, unknown> | undefined;
+  }
+
+  it("the BudgetAlert.budget relationship targets LaborBudget, not EventBudget", () => {
+    const budgetAlert = entity("BudgetAlert");
+    expect(budgetAlert).toBeDefined();
+
+    const relationships =
+      (budgetAlert?.relationships as Record<string, unknown>[]) ?? [];
+    const budgetRel = relationships.find((r) => r.name === "budget");
+
+    expect(budgetRel).toBeDefined();
+    expect(budgetRel?.kind).toBe("belongsTo");
+    // The crux: the alert's `budgetId` FK is a LaborBudget id (the auto-create middleware
+    // sets it from the recorded LaborBudget), so the parent must be LaborBudget.
+    expect(budgetRel?.target).toBe("LaborBudget");
+    expect(budgetRel?.target).not.toBe("EventBudget");
+    expect(
+      (budgetRel?.foreignKey as { fields?: string[] } | undefined)?.fields
+    ).toEqual(["budgetId"]);
+  });
+
+  it("EventBudget carries no orphaned `alerts` back-relation to BudgetAlert", () => {
+    const eventBudget = entity("EventBudget");
+    expect(eventBudget).toBeDefined();
+
+    const relationships =
+      (eventBudget?.relationships as Record<string, unknown>[]) ?? [];
+    const alertBackRel = relationships.find(
+      (r) => r.target === "BudgetAlert" || r.name === "alerts"
+    );
+    expect(alertBackRel).toBeUndefined();
+  });
+});

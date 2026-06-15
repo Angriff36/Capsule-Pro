@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2516453af3a1b041829cd92505a5c6856389de20bc8f3169a6b45f99558b3083",
-    "irHash": "abb1dd2c68799912c22ca94b6327393de7c559a0fe11d2f2d8932da8449a9a30",
+    "contentHash": "515fbcd396e72d20d78522f67b89dba48b5482c88ff8918fbd3ba4def82c0918",
+    "irHash": "99cb0031b55a9ac4388f97cdcfecb0c20e1f27cfdb39852951c1dc4db785c95f",
     "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T06:23:45.363Z"
+    "compiledAt": "2026-06-15T06:50:48.562Z"
   },
   "modules": [],
   "values": [],
@@ -674,7 +674,7 @@
         {
           "name": "budget",
           "kind": "belongsTo",
-          "target": "EventBudget",
+          "target": "LaborBudget",
           "foreignKey": {
             "fields": [
               "budgetId"
