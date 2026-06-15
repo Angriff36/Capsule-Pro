@@ -1,50 +1,62 @@
-# Task: TimecardEditApproved → TimeEntry correction (P1)
+# Task: InventoryTransfer received → per-location InventoryStock movement (P1)
 
-**Source of truth:** IMPLEMENTATION_PLAN.md P1 line 81 (scoped & verified 2026-06-14).
+**Source of truth:** IMPLEMENTATION_PLAN.md P1 (Kitchen/Inventory) — "InventoryTransfer
+received → stock movement (both levels)". All P0 done; 2.5.0 compile blocker resolved.
 
 ## Problem (the why)
-`TimecardEditRequest.approve(userId)` only `mutate status = "approved"` + emits
-`TimecardEditApproved`. The corrected values (`requestedClockIn/Out`,
-`requestedBreakMinutes`) — the request's OWN fields, NOT approve params — NEVER reach
-the `TimeEntry`. Approved edits are silently lost; payroll/labor uses uncorrected hours.
-No `TimeEntry` command exists to apply a correction.
+`InventoryTransfer` tracks status (draft→…→received) but NOTHING ever moves physical
+`InventoryStock` rows when a transfer is received. Verified: no middleware/reaction
+consumes `TransferReceived` or `TransferShipped`. So stock that physically moved between
+locations is never reflected — per-location balances go permanently stale.
 
-## Mechanism: command + middleware (NOT reaction)
-The corrected values + `timeEntryId` are the request's own fields, so no reaction can
-read them (engine payload = `{...commandInput, result}`). No double-apply (verified: the
-non-governed bulk route never writes corrected clock values back). No migration
-(`applyEdit` reuses existing `clockIn/clockOut/breakMinutes`).
-
-## Design refinements (over the plan, justified)
-- **Coalesce in the command, not the middleware** — mutate-RHS ternary
-  (`x != null ? x : self.x`) is an established idiom (call-planning-session-rules:53).
-  Makes `applyEdit` self-protecting; middleware just passes the request's raw fields.
-- `requestedBreakMinutes` is `int=0` (never null, no migration) → clock times coalesce,
-  break applies directly.
-- Emit a new `TimeEntryEdited` event (convention + forward-compat for LaborBudget actuals).
+## Mechanism: middleware (NOT reaction). No IR change, no schema, no migration.
+On `TransferReceived` (entity InventoryTransfer, command `receive`):
+- Load transfer (fromLocationId/toLocationId/tenantId) via `_subject.id`.
+- Load `InventoryTransferItem` rows (getAll + filter tenantId+transferId).
+- Build `InventoryStock` lookup (getAll + filter tenantId) keyed (itemId, locationId).
+- Per item: dispatch `InventoryStock.adjust(delta=-qty)` on source, then `(+qty)` on dest.
+  - dest row missing → `InventoryStock.create(qty=0, unitId=sourceStock.unitId)` THEN
+    adjust(+qty). create-at-0-then-adjust keeps the aggregate net-zero (create is NOT
+    mirrored by the stock-sync middleware; only adjust is).
+  - source row missing OR source adjust fails (insufficient-stock block) → loud
+    diagnostic, skip the item's dest leg. Never half-book.
+- Aggregate `InventoryItem` nets to ZERO automatically: the existing stock-sync middleware
+  mirrors each `InventoryStockAdjusted` (−qty + +qty = 0). Correct — a transfer redistributes
+  on-hand across locations, it does not change the total.
 
 ## Steps
-- [ ] Add `TimeEntry.applyEdit(clockIn, clockOut, breakMinutes)` + `TimeEntryEdited` event to source.
-- [ ] Recompile IR (`pnpm manifest:compile`).
-- [ ] Create `timecard-edit-approved-time-entry-apply-middleware.ts`.
-- [ ] Barrel export + factory import + registration.
-- [ ] Conformance test (real IR through engine).
-- [ ] `pnpm --filter @repo/manifest-runtime typecheck` + runtime suite green.
-- [ ] Update IMPLEMENTATION_PLAN.md, commit surgically (explicit paths), tag, push.
+- [ ] Write `inventory-transfer-received-stock-movement-middleware.ts`
+- [ ] Barrel export (`middleware/index.ts`) + factory import + registration
+- [ ] Conformance test (real IR + engine; net-zero aggregate; missing-dest bootstrap; insufficient-source skip; IR has no such reaction)
+- [ ] `pnpm --filter @repo/manifest-runtime typecheck` + runtime suite green
+- [ ] Update IMPLEMENTATION_PLAN.md, commit surgically (explicit paths)
 
-## Review
-- **Files (source+IR):** `time-entry-rules.manifest` (applyEdit command + TimeEntryEdited
-  event); recompiled `kitchen.ir.json`/`kitchen.commands.json`/merge-report/provenance/
-  module-graph + `shards/staff-time-entry-rules.ir.json` + `runtime/commands.registry.json`.
-- **Files (runtime):** new `timecard-edit-approved-time-entry-apply-middleware.ts` + its
-  test; `middleware/index.ts` (barrel), `manifest-runtime-factory.ts` (import + register).
-- **Verified:** new test 4/4; runtime suite 315 pass (56 files); runtime typecheck exit 0;
-  `manifest:audit-reaction-payloads` 0 errors; `manifest:schema:check` no drift.
-- **Coalesce in command, not middleware** (refinement over plan) — `applyEdit` self-protects
-  via mutate-ternary; middleware is a thin pass-through. Documented in middleware doc-comment
-  + plan.
-- **Surgical staging** — only this increment's paths; left the 100 pre-existing
-  provenance-noise shards + unrelated app/AGENTS workstream changes untouched
-  ([[concurrent-loop-shared-tree]]).
-- **Deferred (tracked, not silent):** the `timecards/bulk` route direct-Prisma bypass
-  (constitution §9) stays a separate migration, noted under the same plan item.
+## Deferred / notes (tracked, not silent)
+- `partialReceive` (TransferPartiallyReceived) carries a `receivedItems` JSON subset + keeps
+  the transfer in_transit → different semantics, separate increment.
+- Chained ledger rows are `adjustment`-typed (we dispatch InventoryStock.adjust, not a direct
+  "transfer"-typed InventoryTransaction). Faithful but verbose; future leg could refine.
+- Surgical staging only — concurrent-loop shared-tree hazard; commit with explicit pathspecs.
+
+## Review (DONE 2026-06-14)
+- **Files (runtime only — NO IR/schema/migration):**
+  - new `manifest/runtime/src/middleware/inventory-transfer-received-stock-movement-middleware.ts`
+  - new `manifest/runtime/src/__tests__/inventory-transfer-received-stock-movement-middleware.test.ts`
+  - `manifest/runtime/src/middleware/index.ts` (barrel export)
+  - `manifest/runtime/src/manifest-runtime-factory.ts` (import + register after stock-sync)
+  - `IMPLEMENTATION_PLAN.md` (leg marked `[~]` — stock-movement DONE; discrepancy + partialReceive remain)
+- **Verified:** new test 4/4; runtime suite **361 pass / 67 files** (was 357); runtime typecheck exit 0.
+- **Key design decisions (refinements over the plan):**
+  - Middleware adjusts ONLY per-location `InventoryStock`; the aggregate `InventoryItem` total is
+    mirrored automatically by the existing stock-sync middleware → source(−)+dest(+) net-zero
+    (correct: a transfer redistributes, doesn't change the total). Rule-7 refinement of the plan's
+    "adjust both" wording.
+  - Destination bootstrap = create-at-0-THEN-adjust(+qty) so the credit IS mirrored (a direct
+    create(qty) emits InventoryStockCreated, which stock-sync does NOT mirror → would break net-zero).
+    unitId (int) copied from the source row.
+  - Source-first ordering + block-guard respect → never half-book; missing source / insufficient
+    stock → loud diagnostic, dest skipped.
+- **Surgical staging** — only this increment's paths; left pre-existing `CLAUDE.md` edit and
+  `graphify-out/` deletions (not mine) untouched.
+- **Deferred (tracked, not silent):** TransferDiscrepancyFlagged→VarianceReport.create; partialReceive
+  (different payload/semantics); transfer-typed ledger rows (currently adjustment-typed via chaining).

@@ -52,6 +52,7 @@ import {
   createIdentityMiddleware,
   createInventoryMovementTransactionMiddleware,
   createInventoryStockSyncItemMiddleware,
+  createInventoryTransferReceivedStockMovementMiddleware,
   createInvoiceFullyPaidMarkPaidMiddleware,
   createInvoiceOverdueCollectionCaseCreateMiddleware,
   createInvoiceWrittenOffRevRecCancelMiddleware,
@@ -856,6 +857,21 @@ export async function createManifestRuntime(
     // guest-count rescale). The propagated InventoryItem.adjust emits
     // InventoryAdjusted, which the inventory-movement middleware above ledgers.
     createInventoryStockSyncItemMiddleware({
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Inventory: TransferReceived -> per-location InventoryStock movement. When an
+    // inventory transfer is RECEIVED, move each line item's quantity out of the
+    // source-location stock row (adjust -qty) and into the destination row
+    // (adjust +qty); bootstrap the destination row at 0 first when it doesn't
+    // exist. Middleware (not a reaction) because it is a 1:N fan-out over
+    // InventoryTransferItem rows across two locations, and from/toLocationId are
+    // the transfer's OWN fields (not `receive` params). The aggregate InventoryItem
+    // total is left UNCHANGED automatically: each InventoryStock.adjust is mirrored
+    // by the stock-sync middleware above, so source(-qty)+dest(+qty) cancel — a
+    // transfer redistributes on-hand across locations, it doesn't change the total.
+    createInventoryTransferReceivedStockMovementMiddleware({
+      storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),
