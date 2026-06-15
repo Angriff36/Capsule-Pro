@@ -1,20 +1,13 @@
 # Manifest CLI configuration — https://manifest-b1e8623f.mintlify.app/cli/configuration
 #
-# Config is OPTIONAL: the CLI has built-in defaults and Capsule's wrapper scripts
-# pass explicit flags (which OVERRIDE this file). This file documents and centralizes
-# the project's canonical paths + nextjs projection options so the values live in ONE
-# place instead of being implicit in scripts.
+# AUTHORITATIVE for Capsule Pro Manifest paths, projection options, and accessor naming.
+# Scripts consume this via manifest/scripts/read-config.mjs — do NOT duplicate maps in .mjs.
 #
-# IMPORTANT — current reality (do not assume this file alone drives generation):
-#  - `pnpm manifest:compile` (manifest/scripts/compile.mjs) imports the IR compiler
-#    DIRECTLY and hand-rolls .manifest discovery to dodge a CLI `--glob` "last file wins"
-#    bug — it does NOT read this config.
-#  - `pnpm manifest:generate` (manifest/scripts/generate.mjs) shells `pnpm exec manifest
-#    generate <ir> --projection nextjs --surface route --output <staging>` with EXPLICIT
-#    flags, then post-processes (domain remap + accessor resolution) and writes a singular
-#    dispatcher. Those explicit flags override `src`/`output`/projection settings here.
-#  So today this config is descriptive/forward-looking; wiring the scripts to consume it
-#  is tracked in manifest/task_plan.md §Phase-7. Values below mirror the scripts exactly.
+# Consumed by: compile.mjs (paths), generate.mjs (paths/dispatcher/readRoutes),
+#   entity-domain-map.mjs (entityToPrismaModel + accessorNames), build-prisma-store-options.mjs,
+#   check-accessor-config.mjs (CI gate).
+#
+# CI: pnpm manifest:check-accessor-config:strict
 
 $schema: https://manifest.dev/config.schema.json
 
@@ -87,11 +80,8 @@ projections:
       # prisma.options — see prisma-projection.schema.json for the full spec.
       # When the CLI catches up, add multiSchema here to centralize placement.
   # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
-  # Canonical options bag: manifest/scripts/prisma-store-options.generated.json
-  # (built by build-prisma-store-options.mjs from ENTITY_TO_PRISMA_MODEL + derive-prisma-options).
-  # Generation: pnpm manifest:generate-metadata (IR projection + schema flag merge).
   # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
-  # Schema-derived prisma-model-metadata is auxiliary (requiresTenantConnect merge, bridge, route options).
+  # Options bag: manifest/scripts/prisma-store-options.generated.json (built from THIS config).
   prisma-store:
     output: manifest/generated/runtime/
     options:
@@ -99,8 +89,24 @@ projections:
       naming: snake_case
       metadataOutput: manifest-prisma-store-metadata.generated.ts
       registryOutput: prisma-store-registry.generated.ts
-      # IR entity name → Prisma client delegate. Mirror ENTITY_TO_PRISMA_MODEL in
-      # manifest/scripts/entity-domain-map.mjs. Regenerate via build-prisma-store-options.mjs.
+      # IR entity → Prisma model (when model name differs from IR entity name).
+      entityToPrismaModel:
+        EventImportWorkflow: EventImport
+        BankAccount: EmployeeBankAccount
+        LogisticsRoute: DeliveryRoute
+        Document: documents
+        SmsAutomationRule: sms_automation_rules
+        EventTimelineItem: EventTimeline
+        StorageLocation: storage_locations
+        BulkCombineRule: bulk_combine_rules
+        MethodVideo: method_videos
+        PrepListImport: prep_list_imports
+        QACorrectiveAction: CorrectiveAction
+        QATemperatureLog: TemperatureLog
+        TaskBundleItem: task_bundle_items
+        TaskBundle: task_bundles
+        OpenShift: open_shifts
+      # IR entity → Prisma client delegate (must match live schema; validated in CI).
       accessorNames:
         EventImportWorkflow: eventImport
         BankAccount: employeeBankAccount

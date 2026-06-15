@@ -1,13 +1,11 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Ingredient Rules
 // Manifest spec for ingredient catalog management, allergen tracking, and shelf life
 // Enriched with: recordLot (track a received lot with expiry), flagRecall (supplier recall),
 //   and reactivate commands.
 
-entity Ingredient {
+entity Ingredient mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property category: string = ""
   property defaultUnitId: int = 0
@@ -25,7 +23,6 @@ entity Ingredient {
   property recallReason: string = ""
   property recalledAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isExpirable: boolean = self.shelfLifeDays > 0
   computed hasAllergens: boolean = length(self.allergens) > 0
@@ -35,6 +32,10 @@ entity Ingredient {
   computed hasInventoryItem: boolean = self.inventoryItemId != ""
 
   relationship belongsTo inventoryItem: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Ingredient
+  relationship hasMany recipeIngredients: RecipeIngredient
+  relationship hasMany prepListItems: PrepListItem
 
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
   constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"

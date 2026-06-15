@@ -1,17 +1,23 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - Schedule Rules
 // Manifest spec for schedule and shift management
 // Lifecycle: draft -> approved -> published -> closed
 // ScheduleShift: can offer/swap shifts after publish
 
-entity Schedule {
+// U7: Closed-vocabulary status enum for Schedule lifecycle.
+enum ScheduleStatus {
+  draft
+  approved
+  published
+  closed
+}
+
+entity Schedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property locationId: string = ""
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
-  indexed property status: string = "draft"
+  indexed property status: ScheduleStatus = draft
   property publishedAt: datetime
   property publishedBy: string = ""
   property approvedBy: string = ""
@@ -19,7 +25,6 @@ entity Schedule {
   searchable property notes: string = ""
   property shiftCount: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"
@@ -109,13 +114,27 @@ entity Schedule {
     emit ScheduleClosed
   }
 
+  // Recompute leg: reconcile shiftCount to the true number of non-removed
+  // ScheduleShift rows on this schedule. An ABSOLUTE set (not a +/- delta),
+  // dispatched by schedule-shift-count-middleware on ScheduleShiftCreated/
+  // Removed — mirroring Station.syncTaskCount. Nothing maintained shiftCount on
+  // any ScheduleShift create/remove path before, so it stayed at its create-time
+  // 0 and STARVED the `approve` guard (shiftCount > 0) and the `release`
+  // blockNoShifts constraint — a real approval/publish deadlock for schedules
+  // that genuinely have shifts.
+  command syncShiftCount(count: int) {
+    guard count != null and count >= 0 "Shift count must be non-negative"
+
+    mutate shiftCount = count
+
+    emit ScheduleShiftCountSynced
+  }
+
   store Schedule in durable
 }
 
-entity ScheduleShift {
+entity ScheduleShift mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required scheduleId: string
   property required employeeId: string
   property required locationId: string
@@ -132,7 +151,6 @@ entity ScheduleShift {
   versionAtProperty versionAt: number
   property inheritedContext: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed durationHours: number = self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0 cache request
   computed isAssigned: boolean = self.employeeId != ""
@@ -146,7 +164,7 @@ entity ScheduleShift {
   constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
   constraint validSwapStatus: self.swapStatus in ["none", "offered", "accepted", "declined"] "Invalid swap status"
 
-  constraint warnLongShift:warn self.durationHours > 12 {
+  constraint warnLongShift:warn (self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0) > 12 {
     messageTemplate: "Shift duration ({hours} hours) exceeds 12 hours"
     details: {
       employeeId: self.employeeId
@@ -290,6 +308,13 @@ event ScheduleClosed: "staff.schedule.closed" {
   scheduleDate: datetime
   userId: string
   closedAt: datetime
+}
+
+event ScheduleShiftCountSynced: "staff.schedule.shift-count-synced" {
+  scheduleId: string
+  tenantId: string
+  shiftCount: number
+  syncedAt: datetime
 }
 
 event ScheduleShiftCreated: "staff.schedule.shift.created" {

@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f13d8f40a3529be3c4ad2c3d7ec16893bd574208d503547aaacb67fe4f5fbb4e",
-    "irHash": "8ab6f2b6a35a0246e9b88ad18fef7977b2db90e43bedda73540386bbeff90597",
-    "compilerVersion": "2.4.2",
+    "contentHash": "396910ddbcbc2a8be8115cba62ad247357aa53aa6cec19d24cdbb857dd22b33b",
+    "irHash": "607a2c1204e3f4df1c44f1f66ddec2168116f83a71bab44bdacc123ebd2d1409",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.961Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.484Z"
   },
   "modules": [],
   "values": [],
@@ -345,12 +337,11 @@
             "kind": "binary",
             "operator": ">",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "versionCount"
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
             },
             "right": {
               "kind": "literal",
@@ -1079,23 +1070,46 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "isPending"
-            },
-            "right": {
               "kind": "binary",
-              "operator": ">",
+              "operator": "==",
               "left": {
                 "kind": "member",
                 "object": {
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "waitingTime"
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "pending"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "createdAt"
+                }
               },
               "right": {
                 "kind": "literal",

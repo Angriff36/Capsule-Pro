@@ -26,22 +26,10 @@ const OUT_FILE = join(OUT_DIR, "views.sql");
 console.log("[materialized-views] Loading IR...");
 const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 
-// ── Import projection from dist ──
-const generatorPath = join(
-  root,
-  "node_modules",
-  "@angriff36",
-  "manifest",
-  "dist",
-  "manifest",
-  "projections",
-  "materialized-views",
-  "generator.js"
+// ── Import projection ──
+const { MaterializedViewsProjection } = await import(
+  "@angriff36/manifest/projections/materialized-views"
 );
-const generatorUrl = import.meta.resolve(
-  `file://${generatorPath.replace(/\\/g, "/")}`
-);
-const { MaterializedViewsProjection } = await import(generatorUrl);
 const projection = new MaterializedViewsProjection();
 
 // ── View definitions ──

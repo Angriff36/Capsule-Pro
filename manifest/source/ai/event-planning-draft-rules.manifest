@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // AI Call Planner - Event Planning Draft Rules
 // Manifest spec for event planning draft lifecycle
 
-entity EventPlanningDraft {
+entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property required sessionId: string
   property required userId: string
   indexed property status: string = "active"
@@ -38,7 +36,6 @@ entity EventPlanningDraft {
   property proposalId: string = ""
   property expiresAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   computed isReview: boolean = self.status == "review"
@@ -63,28 +60,28 @@ entity EventPlanningDraft {
   transition status from "active" to ["review", "expired"]
   transition status from "review" to ["converted", "expired"]
 
-  constraint warnMissingClientName:warn self.hasClientName == false {
+  constraint warnMissingClientName:warn (self.clientName != null and self.clientName != "") == false {
     messageTemplate: "Draft missing client name"
     details: {
       draftId: self.id
     }
   }
 
-  constraint warnMissingEventDate:warn self.hasEventDate == false {
+  constraint warnMissingEventDate:warn (self.eventDate != null) == false {
     messageTemplate: "Draft missing event date"
     details: {
       draftId: self.id
     }
   }
 
-  constraint warnMissingGuestCount:warn self.hasGuestCount == false {
+  constraint warnMissingGuestCount:warn (self.guestCount > 0 or (self.guestCountMin > 0 and self.guestCountMax > 0)) == false {
     messageTemplate: "Draft missing guest count"
     details: {
       draftId: self.id
     }
   }
 
-  constraint warnLowConfidence:warn self.isHighConfidence == false {
+  constraint warnLowConfidence:warn (self.overallConfidence >= 0.8) == false {
     messageTemplate: "Draft has low overall confidence ({confidence}%)"
     details: {
       draftId: self.id
@@ -116,7 +113,7 @@ entity EventPlanningDraft {
   // property at its current value (ternary fallback - the DSL has no
   // conditional statement form).
   command updateField(fieldName: string, value: string, optional numericValue: int, optional dateValue: datetime, optional normalizedValue: string, confidence: decimal) {
-    guard self.isActive or self.isReview "Can only update active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only update active or review drafts"
     guard fieldName != null and fieldName != "" "Field name is required"
 
     constraint warnLowConfidenceUpdate:warn confidence < 0.6 {
@@ -146,7 +143,7 @@ entity EventPlanningDraft {
   }
 
   command confirmDetail(fieldName: string, confirmedValue: string, optional numericValue: int) {
-    guard self.isActive or self.isReview "Can only confirm details for active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only confirm details for active or review drafts"
 
     mutate clientName = fieldName == "clientName" ? confirmedValue : self.clientName
     mutate eventType = fieldName == "eventType" ? confirmedValue : self.eventType
@@ -159,7 +156,7 @@ entity EventPlanningDraft {
   }
 
   command updateBudget(budgetMin: money, budgetMax: money) {
-    guard self.isActive or self.isReview "Can only update budget for active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only update budget for active or review drafts"
 
     constraint warnInvalidBudget:warn budgetMin > budgetMax {
       messageTemplate: "Invalid budget range: min ({min}) exceeds max ({max})"
@@ -176,7 +173,7 @@ entity EventPlanningDraft {
   }
 
   command updateGuestCount(guestCount: int, guestCountMin: int, guestCountMax: int) {
-    guard self.isActive or self.isReview "Can only update guest count for active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only update guest count for active or review drafts"
 
     mutate guestCount = guestCount
     mutate guestCountMin = guestCountMin
@@ -186,7 +183,7 @@ entity EventPlanningDraft {
   }
 
   command updateMenuPreferences(menuPreferences: string) {
-    guard self.isActive or self.isReview "Can only update menu preferences for active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only update menu preferences for active or review drafts"
     guard menuPreferences != null "Menu preferences are required"
 
     mutate menuPreferences = menuPreferences
@@ -195,7 +192,7 @@ entity EventPlanningDraft {
   }
 
   command updateVenue(venueId: string, venuePreference: string) {
-    guard self.isActive or self.isReview "Can only update venue for active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only update venue for active or review drafts"
 
     mutate venueId = venueId
     mutate venuePreference = venuePreference
@@ -204,7 +201,7 @@ entity EventPlanningDraft {
   }
 
   command markReview() {
-    guard self.isActive "Can only mark active drafts for review"
+    guard (self.status == "active") "Can only mark active drafts for review"
 
     mutate status = "review"
 
@@ -212,7 +209,7 @@ entity EventPlanningDraft {
   }
 
   command convertToEvent(eventId: string) {
-    guard self.isReview "Can only convert review drafts to events"
+    guard (self.status == "review") "Can only convert review drafts to events"
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate status = "converted"
@@ -222,7 +219,7 @@ entity EventPlanningDraft {
   }
 
   command expire() {
-    guard self.isActive or self.isReview "Can only expire active or review drafts"
+    guard (self.status == "active") or (self.status == "review") "Can only expire active or review drafts"
 
     mutate status = "expired"
     mutate expiresAt = now()

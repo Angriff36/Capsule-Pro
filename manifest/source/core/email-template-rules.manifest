@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Collaboration Domain - Email Template Rules
 // Manifest spec for email template CRUD
 
-entity EmailTemplate {
+entity EmailTemplate mixin TenantScoped, SoftDeletable {
   // No relationships: templateType/category are value strings, no entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   property templateType: string = "custom"
   property subject: string = ""
@@ -15,7 +13,6 @@ entity EmailTemplate {
   property isActive: boolean = true
   property isDefault: boolean = false
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

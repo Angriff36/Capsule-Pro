@@ -1,19 +1,25 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Procurement Budget Rules
 // Manifest spec for departmental and project budgets
 
-entity Budget {
+// U7: Closed-vocabulary status enum for Budget lifecycle.
+enum BudgetStatus {
+  draft
+  active
+  closed
+  archived
+}
+
+entity Budget mixin TenantScoped {
   // No relationships: departmentId/approvedBy are loose identifier strings, no matching entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   searchable property description: string = ""
   property fiscalYear: int = 0
   property totalAmount: money = 0
   property allocatedAmount: money = 0
   property spentAmount: money = 0
-  indexed property status: string = "draft"
+  indexed property status: BudgetStatus = draft
   property category: string = "general"
   property departmentId: string = ""
   property approvedBy: string = ""
@@ -32,7 +38,7 @@ entity Budget {
   transition status from "active" to ["closed"]
   transition status from "closed" to ["archived"]
 
-  constraint warnOverBudget:warn self.isOverBudget and self.status == "active" {
+  constraint warnOverBudget:warn (self.spentAmount > self.allocatedAmount) and self.status == "active" {
     messageTemplate: "Budget '{budgetName}' is over by {overAmount}"
     details: {
       budgetName: self.name

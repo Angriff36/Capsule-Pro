@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Payment Method Rules Manifest
 // Defines payment method storage and tokenization rules
 
-entity PaymentMethod {
+entity PaymentMethod mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
 
   // Client and reference
   property required clientId: string = ""
@@ -84,7 +82,7 @@ entity PaymentMethod {
   }
 
   command markAsDefault() {
-    guard self.isUsable "Payment method must be usable to be set as default"
+    guard (self.status == "ACTIVE" and (self.expiresAt != null and self.expiresAt < now()) == false and self.fraudFlagged == false) "Payment method must be usable to be set as default"
     mutate isDefault = true
     emit PaymentMethodSetDefault
   }

@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "f0b6d1b082e38b707606a662f549970e92f47e4f0c3962b5d3b602dcddc3e9f4",
-    "irHash": "36bdf0e84dfc201e0732af1144feefa9daa585019ff0ef2cb659187b189dcd69",
-    "compilerVersion": "2.4.2",
+    "contentHash": "252d4741c884f57116399e1755cf683cc15e065ecf1fc424d4760613738b2799",
+    "irHash": "4209f326c3e3c915103f51e2bf422d466e2f8bbf13a028956133e2a9b6e13d42",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.017Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.531Z"
   },
   "modules": [],
   "values": [],
@@ -1214,12 +1206,69 @@
           "name": "warnMaintenanceOverdue",
           "code": "warnMaintenanceOverdue",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "nextMaintenanceAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "nextMaintenanceAt"
+                }
+              }
             },
-            "property": "maintenanceOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "operational"
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Asset '{assetName}' is overdue for maintenance",
@@ -2273,12 +2322,85 @@
           "name": "warnOverdue",
           "code": "warnOverdue",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "scheduledDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "scheduledDate"
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "unary",
+              "operator": "not",
+              "operand": {
+                "kind": "binary",
+                "operator": "in",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
+                },
+                "right": {
+                  "kind": "array",
+                  "elements": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "completed"
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "cancelled"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Facility work order '{title}' is past scheduled date",

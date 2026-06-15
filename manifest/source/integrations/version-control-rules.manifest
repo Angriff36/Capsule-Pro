@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Version Control - Generic Versioning System
 // Manifest spec for versioning documents, templates, and configurations
 // with change history, rollback capabilities, and approval workflows
 
-entity VersionedEntity {
+entity VersionedEntity mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required entityType: string
   property required entityId: string
   property required entityName: string
@@ -24,7 +22,7 @@ entity VersionedEntity {
   constraint validEntityId: self.entityId != null and self.entityId != "" "Entity ID is required"
   constraint validEntityName: self.entityName != null and self.entityName != "" "Entity name is required"
 
-  constraint warnManyVersions:warn self.versionCount > 50 {
+  constraint warnManyVersions:warn (0) > 50 {
     messageTemplate: "Entity has {count} versions - consider archiving old versions"
     details: {
       versionCount: self.versionCount
@@ -82,10 +80,8 @@ entity VersionedEntity {
   store VersionedEntity in durable
 }
 
-entity EntityVersion {
+entity EntityVersion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required versionedEntityId: string
   property required versionNumber: int
   property changeReason: string = ""
@@ -162,10 +158,8 @@ entity EntityVersion {
   store EntityVersion in durable
 }
 
-entity VersionApproval {
+entity VersionApproval mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required entityVersionId: string
   property required approverId: string
   indexed property required status: string
@@ -183,7 +177,7 @@ entity VersionApproval {
   // State transitions
   transition status from "pending" to ["approved", "rejected", "cancelled"]
 
-  constraint warnPendingTooLong:warn self.isPending and self.waitingTime > 604800000 {
+  constraint warnPendingTooLong:warn (self.status == "pending") and (now() - self.createdAt) > 604800000 {
     messageTemplate: "Approval pending for {days} days - may need follow-up"
     details: {
       waitingDays: self.waitingTime / 86400000

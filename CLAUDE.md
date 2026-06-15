@@ -259,7 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[auto-bridge snapshot @ 10 changes]
+Files: manifest/MANIFEST-DIVERGENCES.md (edit)
 
 # === END COGNILAYER ===

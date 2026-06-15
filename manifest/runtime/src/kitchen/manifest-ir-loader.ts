@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IR, IRDiagnostic } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "../ir-contract";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -78,7 +78,7 @@ export async function loadPrepTaskManifestIR(): Promise<IR> {
     );
   }
 
-  cachedPrepTaskIR = enforceCommandOwnership(ir);
+  cachedPrepTaskIR = ir;
   return cachedPrepTaskIR;
 }
 
@@ -99,7 +99,7 @@ export async function loadStationManifestIR(): Promise<IR> {
     );
   }
 
-  cachedStationIR = enforceCommandOwnership(ir);
+  cachedStationIR = ir;
   return cachedStationIR;
 }
 
@@ -120,7 +120,7 @@ export async function loadInventoryManifestIR(): Promise<IR> {
     );
   }
 
-  cachedInventoryIR = enforceCommandOwnership(ir);
+  cachedInventoryIR = ir;
   return cachedInventoryIR;
 }
 
@@ -141,7 +141,7 @@ export async function loadRecipeManifestIR(): Promise<IR> {
     );
   }
 
-  cachedRecipeIR = enforceCommandOwnership(ir);
+  cachedRecipeIR = ir;
   return cachedRecipeIR;
 }
 
@@ -162,7 +162,7 @@ export async function loadMenuManifestIR(): Promise<IR> {
     );
   }
 
-  cachedMenuIR = enforceCommandOwnership(ir);
+  cachedMenuIR = ir;
   return cachedMenuIR;
 }
 
@@ -183,6 +183,6 @@ export async function loadPrepListManifestIR(): Promise<IR> {
     );
   }
 
-  cachedPrepListIR = enforceCommandOwnership(ir);
+  cachedPrepListIR = ir;
   return cachedPrepListIR;
 }

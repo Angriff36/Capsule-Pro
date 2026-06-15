@@ -3,11 +3,36 @@
  *
  * Commands for managing inventory:
  * - reserve, consume, waste, adjust, restock, releaseReservation, create
+ *
+ * D15/U12: All `quantityAvailable` reads now use engine.evaluateComputed()
+ * instead of reading a stale/undefined stored value from engine.getInstance().
+ * The IR declares `computed quantityAvailable = self.quantityOnHand - self.quantityReserved`,
+ * but getInstance() returns the raw stored row without evaluating computed properties.
  */
 
 import type { RuntimeEngine } from "@angriff36/manifest";
 import type { OverrideRequest } from "@angriff36/manifest/ir";
 import type { InventoryCommandResult } from "../types";
+
+/**
+ * Helper: read the computed quantityAvailable for an inventory item.
+ * Falls back to undefined if evaluation fails (e.g. instance not found).
+ */
+async function getQuantityAvailable(
+  engine: RuntimeEngine,
+  itemId: string
+): Promise<number | undefined> {
+  try {
+    const value = await engine.evaluateComputed(
+      "InventoryItem",
+      itemId,
+      "quantityAvailable"
+    );
+    return typeof value === "number" ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Reserve inventory
@@ -36,7 +61,7 @@ export async function reserveInventory(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -67,7 +92,7 @@ export async function consumeInventory(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -99,7 +124,7 @@ export async function wasteInventory(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -130,7 +155,7 @@ export async function adjustInventory(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -161,7 +186,7 @@ export async function restockInventory(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -192,7 +217,7 @@ export async function releaseInventoryReservation(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }
 
@@ -243,6 +268,6 @@ export async function createInventoryItem(
     itemId,
     quantityOnHand: instance?.quantityOnHand as number | undefined,
     quantityReserved: instance?.quantityReserved as number | undefined,
-    quantityAvailable: instance?.quantityAvailable as number | undefined,
+    quantityAvailable: await getQuantityAvailable(engine, itemId),
   };
 }

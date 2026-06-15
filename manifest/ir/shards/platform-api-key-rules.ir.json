@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "3dcbbbf33931be00074a560dc5a0cb5b5110db442e565767e60555734cab1057",
-    "irHash": "9a67d59b992395351543a1ce0bfb2355d00ddb65be59a828991fe59cce13d2df",
-    "compilerVersion": "2.4.2",
+    "contentHash": "f0c1e34b6cf39065212c819bfcb1260481089bf9f569ac3482d538d10940b00c",
+    "irHash": "0bc5738f074a78738a2b7d8a3962f4fb32edd0f473857b2be391c76a300e66ff",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.031Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.542Z"
   },
   "modules": [],
   "values": [],
@@ -1694,12 +1686,90 @@
           "name": "warnRevokeActiveKey",
           "code": "warnRevokeActiveKey",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "revokedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "deletedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              }
             },
-            "property": "isActive"
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Revoking active API key '{name}'",
@@ -1815,12 +1885,90 @@
           "name": "warnDeleteActiveKey",
           "code": "warnDeleteActiveKey",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "revokedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "deletedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              }
             },
-            "property": "isActive"
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Deleting active API key '{name}'",
@@ -1930,12 +2078,46 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "isExpired"
+              "right": {
+                "kind": "binary",
+                "operator": "<",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
             }
           },
           "severity": "block",

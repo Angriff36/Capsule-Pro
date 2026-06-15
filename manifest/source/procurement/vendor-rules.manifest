@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Procurement Vendor Rules
 // Manifest spec for vendor management, contacts, and ratings
 
-entity Vendor {
+entity Vendor mixin TenantScoped {
   // No relationships: approvedBy/suspendedBy/blacklistedBy are user identifier strings, no entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property type: string = "supplier"
   indexed property status: string = "active"
@@ -42,6 +40,11 @@ entity Vendor {
 
   transition status from "active" to ["inactive", "blacklisted"]
   transition status from "inactive" to ["active", "blacklisted"]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Vendor
+  hasMany contracts: VendorContract
+  hasMany purchaseOrders: PurchaseOrder
+  hasMany requisitionSuggestions: PurchaseRequisitionItem
 
   default policy VendorDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor management"
   command create(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {

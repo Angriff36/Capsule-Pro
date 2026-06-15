@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@react-email/components": "1.0.12",
-    "@react-email/ui": "^6.5.0",
+    "@react-email/ui": "^6.6.0",
     "@repo/email": "workspace:*",
     "react": "19.2.6"
   },

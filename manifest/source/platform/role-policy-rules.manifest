@@ -1,20 +1,17 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administration - Role Policy Rules
 // Manifest spec for role-based permission management
 // SECURITY: All commands require admin/owner role (adminOnly policy)
 
-entity RolePolicy {
+entity RolePolicy mixin TenantScoped, SoftDeletable {
   // No relationships: roleId is a role identifier string, not a FK to a separate Role entity
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required roleId: string
   property roleName: string = ""
   property permissions: array<string> = []
   searchable property description: string = ""
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed hasPermissions: boolean = length(self.permissions) > 0 cache request

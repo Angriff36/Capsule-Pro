@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "cbb6df930de58ea726d95ab1fab6b04c2e97b483e070953b04726fb21a29d044",
-    "irHash": "857295de413aed19a13eb247c9cfd6d025af5f87f1da549dc6d09999093e7f5b",
-    "compilerVersion": "2.4.2",
+    "contentHash": "455fb9281982a58129de2f6127319e78383b5d747f78b77c901dbbfc5cb9f813",
+    "irHash": "4430ce290361b325acad0a42a5971c7721c8b1869852ed7e0d5aaf0492cebde3",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.935Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.463Z"
   },
   "modules": [],
   "values": [],
@@ -1565,12 +1557,29 @@
             "kind": "binary",
             "operator": "<",
             "left": {
-              "kind": "member",
-              "object": {
+              "kind": "call",
+              "callee": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "percent"
               },
-              "property": "actualGrossMarginPct"
+              "args": [
+                {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "actualGrossMargin"
+                },
+                {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "actualRevenue"
+                }
+              ]
             },
             "right": {
               "kind": "literal",

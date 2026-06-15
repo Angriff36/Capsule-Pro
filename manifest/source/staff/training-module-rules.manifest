@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 
 event TrainingModuleCreated: "staff.training-module.created" {
   id: string
@@ -131,11 +131,9 @@ event StaffTrainingWaiverLogged: "staff.training.waiver-logged" {
   reason: string
 }
 
-entity TrainingModule {
+entity TrainingModule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property code: string = ""
   searchable property title: string = ""
   searchable property description: string = ""
@@ -154,7 +152,6 @@ entity TrainingModule {
   property archivedAt: datetime
   searchable property notes: string = ""
   property createdBy: string = ""
-  property deletedAt: datetime
 
   timestamps
 
@@ -176,8 +173,8 @@ entity TrainingModule {
   constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid module status"
   constraint validContentType: self.contentType in ["document", "video", "quiz", "interactive", "checklist", "mixed"] "Invalid content type"
   constraint validCategory: self.category in ["", "onboarding", "compliance", "refresher", "operational"] "Invalid training category"
-  constraint validThreshold: self.passThresholdPercent >= 0 and self.passThresholdPercent <= 100 "Pass threshold must be between 0 and 100"
-  constraint validAttempts: self.maxAttempts >= 1 and self.maxAttempts <= 10 "Max attempts must be between 1 and 10"
+  constraint validThreshold: between(self.passThresholdPercent, 0, 100) "Pass threshold must be between 0 and 100"
+  constraint validAttempts: between(self.maxAttempts, 1, 10) "Max attempts must be between 1 and 10"
 
   default policy TrainingModuleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
@@ -285,11 +282,9 @@ entity TrainingModule {
   store TrainingModule in durable
 }
 
-entity TrainingQuestion {
+entity TrainingQuestion mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property required moduleId: string
   property code: string = ""
   property sectionTitle: string = ""
@@ -346,11 +341,9 @@ entity TrainingQuestion {
   store TrainingQuestion in durable
 }
 
-entity TrainingAssignment {
+entity TrainingAssignment mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property required moduleId: string
   property moduleCode: string = ""
   property moduleTitle: string = ""
@@ -393,8 +386,8 @@ entity TrainingAssignment {
 
   constraint validStatus: self.status in ["assigned", "in_progress", "completed", "waived", "overdue", "manager_review"] "Invalid training assignment status"
   constraint validAttemptCount: self.attemptCount >= 0 and self.attemptCount <= self.maxAttempts "Attempt count is invalid"
-  constraint validThreshold: self.passThresholdPercent >= 0 and self.passThresholdPercent <= 100 "Pass threshold must be between 0 and 100"
-  constraint validMaxAttempts: self.maxAttempts >= 1 and self.maxAttempts <= 10 "Max attempts must be between 1 and 10"
+  constraint validThreshold: between(self.passThresholdPercent, 0, 100) "Pass threshold must be between 0 and 100"
+  constraint validMaxAttempts: between(self.maxAttempts, 1, 10) "Max attempts must be between 1 and 10"
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
@@ -542,11 +535,9 @@ entity TrainingAssignment {
   store TrainingAssignment in durable
 }
 
-entity TrainingAttempt {
+entity TrainingAttempt mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property required assignmentId: string
   property required moduleId: string
   property required staffMemberId: string
@@ -591,11 +582,9 @@ entity TrainingAttempt {
   store TrainingAttempt in durable
 }
 
-entity StaffTrainingSignal {
+entity StaffTrainingSignal mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property required staffMemberId: string
   property required moduleId: string
   property required assignmentId: string
@@ -644,20 +633,14 @@ entity StaffTrainingSignal {
   store StaffTrainingSignal in durable
 }
 
-on TrainingAttemptSubmitted run TrainingAttempt.create
-  resolve payload.attemptId
-  params {
-    id: payload.attemptId
-    assignmentId: payload.assignmentId
-    moduleId: payload.moduleId
-    staffMemberId: payload.staffMemberId
-    attemptNumber: payload.result.attemptCount
-    scorePercent: payload.scorePercent
-    passThresholdPercent: payload.result.passThresholdPercent
-    passed: payload.scorePercent >= payload.result.passThresholdPercent
-    managerReviewRequired: payload.result.managerReviewRequired
-    answersJson: payload.answersJson
-  }
+// TrainingAttemptSubmitted -> TrainingAttempt.create is handled by
+// training-attempt-submitted-record-middleware (registered in
+// manifest-runtime-factory). It was a reaction reading
+// payload.result.attemptCount/passThresholdPercent/managerReviewRequired off the
+// MUTATE submit commands (result = the last mutate's scalar), so every ref was
+// undefined and no attempt row was ever recorded. Those fields are the
+// TrainingAssignment's OWN fields, not submit-command params, so no reaction can
+// read them — the middleware loads the assignment from the store instead.
 
 on TrainingCompleted run StaffTrainingSignal.recordSchedulabilityGranted
   resolve uuid()

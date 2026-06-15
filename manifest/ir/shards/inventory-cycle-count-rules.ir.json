@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d5f40c92091fe67c671f3ca9e35a342e673f0a7500752eb40381cc5be8a1b528",
-    "irHash": "0f0daff1ce0364810b25a3686873e773fa1aaa59ff1a29f55d511b76f469bf06",
-    "compilerVersion": "2.4.2",
+    "contentHash": "bb2e56b05535e0c52aaeb939cdbf0bd644636771227d65442b00b6baab3459b0",
+    "irHash": "48ff18b6918e643938619593e65613af7435332f4760387d7a6acb26b3b95a0b",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.965Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.487Z"
   },
   "modules": [],
   "values": [],
@@ -4356,12 +4348,50 @@
           "name": "warnLargeVariance",
           "code": "warnLargeVariance",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 10
+                }
+              }
             },
-            "property": "isLargeVariance"
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "unary",
+                "operator": "-",
+                "operand": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 10
+                  }
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Verifying record for '{itemName}' with large variance ({variancePct}%)",
@@ -5130,12 +5160,50 @@
           "name": "warnHighVariance",
           "code": "warnHighVariance",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 10
+                }
+              }
             },
-            "property": "isHighVariance"
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "variancePct"
+              },
+              "right": {
+                "kind": "unary",
+                "operator": "-",
+                "operand": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 10
+                  }
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Approving high-variance report for '{itemName}' ({variancePct}% variance)",

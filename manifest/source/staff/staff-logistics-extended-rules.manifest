@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // HR/Staff + Logistics Extended Rules
 // Manifest spec for TimecardApproval, PayrollLineItem, TipPool, DisciplinaryAction,
 // ActionMilestone, PerformanceReview, TrainingCompletion, OnboardingTask,
@@ -7,10 +7,8 @@ tenant tenantId : string from context.tenantId
 
 // ── HR / STAFF cluster ────────────────────────────────────────────────────────
 
-entity TimecardApproval {
+entity TimecardApproval mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property required payrollRunId: string
   property required submittedBy: string
@@ -85,10 +83,8 @@ entity TimecardApproval {
   store TimecardApproval in durable
 }
 
-entity PayrollLineItem {
+entity PayrollLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required payrollRunId: string
   property required employeeId: string
   property grossPay: money = 0
@@ -100,7 +96,6 @@ entity PayrollLineItem {
   property rateRegular: decimal = 0
   property rateOvertime: decimal = 0
   timestamps
-  property deletedAt: datetime
 
   computed deductionRate: decimal = self.grossPay > 0 ? self.totalDeductions / self.grossPay : 0
   computed isDeleted: boolean = self.deletedAt != null
@@ -155,10 +150,8 @@ entity PayrollLineItem {
   store PayrollLineItem in durable
 }
 
-entity TipPool {
+entity TipPool mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property periodId: string = ""
   property totalTips: money = 0
   indexed property status: string = "open"
@@ -178,7 +171,12 @@ entity TipPool {
   computed undistributedAmount: money = self.totalTips - self.distributedAmount
 
   transition status from "open" to ["allocated"]
-  transition status from "allocated" to ["distributed", "open"]
+  // `close()` guards `status in ["allocated", "distributed"]`, so an allocated pool
+  // must be able to reach "closed" or close() is a dead command from that state
+  // (the engine rejects an undeclared allocated->closed transition). Aligns the FSM
+  // to the command's stated intent (same dead-target fix class as Invoice VOID /
+  // CollectionCase WRITTEN_OFF).
+  transition status from "allocated" to ["distributed", "open", "closed"]
   transition status from "distributed" to ["closed"]
 
   constraint validStatus: self.status in ["open", "allocated", "distributed", "closed"] "Invalid tip pool status"
@@ -214,7 +212,7 @@ entity TipPool {
     guard self.status == "allocated" "Only allocated tip pools can be distributed"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard amount > 0 "Distribution amount must be positive"
-    guard amount <= self.undistributedAmount "Distribution amount cannot exceed undistributed balance"
+    guard amount <= (self.totalTips - self.distributedAmount) "Distribution amount cannot exceed undistributed balance"
     guard distributedBy != null and distributedBy != "" "Distributor ID is required"
 
     mutate distributedAmount = self.distributedAmount + amount
@@ -247,10 +245,8 @@ entity TipPool {
   store TipPool in durable
 }
 
-entity DisciplinaryAction {
+entity DisciplinaryAction mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property actionType: string = ""
   property reason: string = ""
@@ -330,10 +326,8 @@ entity DisciplinaryAction {
   store DisciplinaryAction in durable
 }
 
-entity ActionMilestone {
+entity ActionMilestone mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required disciplinaryActionId: string
   searchable property title: string = ""
   property dueDate: datetime
@@ -386,10 +380,8 @@ entity ActionMilestone {
   store ActionMilestone in durable
 }
 
-entity PerformanceReview {
+entity PerformanceReview mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property required reviewerId: string
   property reviewType: string = ""
@@ -408,7 +400,7 @@ entity PerformanceReview {
   transition status from "submitted" to ["acknowledged", "draft"]
 
   constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
-  constraint validRating: self.rating >= 0 and self.rating <= 5 "Rating must be between 0 and 5"
+  constraint validRating: between(self.rating, 0, 5) "Rating must be between 0 and 5"
 
   relationship belongsTo employee: User with employeeId
   relationship belongsTo reviewer: User with reviewerId
@@ -431,7 +423,7 @@ entity PerformanceReview {
 
   command submit(rating: number) {
     guard self.status == "draft" "Only draft reviews can be submitted"
-    guard rating >= 0 and rating <= 5 "Rating must be between 0 and 5"
+    guard between(rating, 0, 5) "Rating must be between 0 and 5"
 
     mutate rating = rating
     mutate status = "submitted"
@@ -461,10 +453,8 @@ entity PerformanceReview {
   store PerformanceReview in durable
 }
 
-entity TrainingCompletion {
+entity TrainingCompletion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property required assignmentId: string
   property required moduleId: string
@@ -479,14 +469,14 @@ entity TrainingCompletion {
   relationship belongsTo trainingModule: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship belongsTo employee: User with employeeId
 
-  constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
+  constraint scoreRange: between(self.score, 0, 100) "Score must be between 0 and 100"
 
   default policy TrainingCompletionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, assignmentId: string, moduleId: string, completedAt: datetime, score: number, passed: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard assignmentId != null and assignmentId != "" "Assignment ID is required"
     guard moduleId != null and moduleId != "" "Training module ID is required"
-    guard score >= 0 and score <= 100 "Score must be between 0 and 100"
+    guard between(score, 0, 100) "Score must be between 0 and 100"
 
     mutate employeeId = employeeId
     mutate assignmentId = assignmentId
@@ -501,17 +491,14 @@ entity TrainingCompletion {
   store TrainingCompletion in durable
 }
 
-entity OnboardingTask {
+entity OnboardingTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property title: string = ""
   searchable property description: string = ""
   property taskType: string = "OTHER"
   property sortOrder: int = 0
   property isRequired: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.deletedAt == null
 
@@ -549,10 +536,8 @@ entity OnboardingTask {
   store OnboardingTask in durable
 }
 
-entity OnboardingCompletion {
+entity OnboardingCompletion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property required taskId: string
   property completedAt: datetime = now()
@@ -582,10 +567,8 @@ entity OnboardingCompletion {
   store OnboardingCompletion in durable
 }
 
-entity OpenShift {
+entity OpenShift mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required scheduleId: string
   property role: string = ""
   property shiftStart: datetime
@@ -645,10 +628,8 @@ entity OpenShift {
 
 // ── LOGISTICS cluster ─────────────────────────────────────────────────────────
 
-entity DeliveryRoute {
+entity DeliveryRoute mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   property routeNumber: string = ""
   property driverId: string = ""
@@ -716,10 +697,8 @@ entity DeliveryRoute {
   store DeliveryRoute in durable
 }
 
-entity RouteStop {
+entity RouteStop mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required routeId: string
   property name: string = ""
   property stopNumber: int = 0
@@ -786,10 +765,8 @@ entity RouteStop {
   store RouteStop in durable
 }
 
-entity PaymentRefundAttempt {
+entity PaymentRefundAttempt mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required paymentId: string
   property requestedAmount: money = 0
   property effectiveAmount: money = 0
@@ -831,10 +808,8 @@ entity PaymentRefundAttempt {
   store PaymentRefundAttempt in durable
 }
 
-entity PreventiveMaintenanceSchedule {
+entity PreventiveMaintenanceSchedule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property scheduleNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Procurement - Vendor Contract Rules
 // Manifest spec for vendor contract lifecycle and compliance tracking
 //
@@ -7,10 +7,8 @@ tenant tenantId : string from context.tenantId
 // This includes terms, renewal dates, SLAs, and performance tracking.
 // Contracts must be approved before becoming active.
 
-entity VendorContract {
+entity VendorContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property required contractNumber: string
   property required vendorId: string
   property vendorName: string = ""
@@ -43,7 +41,6 @@ entity VendorContract {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   computed isPending: boolean = self.status == "pending_approval"

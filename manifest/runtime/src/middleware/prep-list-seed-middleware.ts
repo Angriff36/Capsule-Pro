@@ -120,7 +120,7 @@ interface InventoryItemLike {
   unitOfMeasure?: unknown;
 }
 
-interface SeedLine {
+export interface SeedLine {
   allergens: string;
   baseQuantity: number;
   category: string;
@@ -144,7 +144,7 @@ const STATIONS: Record<string, string> = {
 };
 
 /** Same keyword mapping as the kitchen UI's assignIngredientToStation. */
-function assignStation(category: string): {
+export function assignStation(category: string): {
   stationId: string;
   stationName: string;
 } {
@@ -410,7 +410,7 @@ export function createPrepListSeedMiddleware(
   };
 }
 
-interface DerivationStores {
+export interface DerivationStores {
   dish: Store;
   event: Store;
   eventDish: Store;
@@ -421,7 +421,7 @@ interface DerivationStores {
   recipeVersion: Store;
 }
 
-async function deriveSeedLines(options: {
+export async function deriveSeedLines(options: {
   tenantId: string;
   eventId: string;
   prepListId: string;

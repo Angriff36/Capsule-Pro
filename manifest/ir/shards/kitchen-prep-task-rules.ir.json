@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2a0eecfe00d9f611f880df9b5b122423b6cfc8b94349c35b773644f1fa430da4",
-    "irHash": "3e6803ac2d96b41cdb1ea1997c9c0083b6268a3accee655ee2bd4f076f1d0d79",
-    "compilerVersion": "2.4.2",
+    "contentHash": "9ae3f79d6317348f4a0a76535d6eafea83f6557685c1adc7b28833a2e51580de",
+    "irHash": "18f52de5e1e58691d2e1b3703b484638b61bb4b9d8f8d5a8b89bcd11c83f6f66",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.007Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.522Z"
   },
   "modules": [],
   "values": [],
@@ -747,12 +739,69 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "dueByDate"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "now"
+                    },
+                    "args": []
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "dueByDate"
+                  }
+                }
               },
-              "property": "isOverdue"
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "done"
+                  }
+                }
+              }
             },
             "right": {
               "kind": "binary",
@@ -847,12 +896,23 @@
               }
             },
             "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "claimedBy"
               },
-              "property": "isClaimed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
             }
           },
           "severity": "warn",
@@ -1629,12 +1689,69 @@
           "name": "warnOverdueClaim",
           "code": "warnOverdueClaim",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueByDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "dueByDate"
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "done"
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Claiming overdue task '{taskName}'",

@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - User Rules
 // Manifest spec for user/employee lifecycle management
 
-entity User {
+entity User mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   encrypted required property email: string
   property required firstName: string = ""
   property required lastName: string = ""
@@ -22,7 +20,6 @@ entity User {
   property avatarUrl: string = ""
   property roleId: string = ""
   timestamps
-  property deletedAt: datetime
 
   belongsTo rolePolicy: RolePolicy with roleId
 
@@ -82,7 +79,7 @@ entity User {
   command terminate(userId: string, reason: string, terminationDate: datetime) {
     guard self.isActive "User is already inactive"
 
-    constraint blockAlreadyTerminated:block !self.isTerminated {
+    constraint blockAlreadyTerminated:block !(self.terminationDate != null) {
       messageTemplate: "User '{name}' is already terminated"
       details: {
         name: self.fullName

@@ -55,17 +55,17 @@ Replaced by: `@angriff36/manifest/stores/prisma-generic` + `prisma-store` projec
 Only delete after confirming the projection output covers the real usage.
 | Candidate area | Could be replaced by projection | Status |
 |---|---|---|
-| Hand-written Zod input schemas for manifest entities | `projections/zod` | BLOCKED (Phase 5 eval) |
-| Hand-written React Query hooks for manifest entities | `projections/react-query` | BLOCKED (Phase 5 eval) |
-| Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | BLOCKED (Phase 5 eval) |
-| `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | PARTIAL (2026-05-30) |
+| Hand-written Zod input schemas for manifest entities | `projections/zod` | **NO-GO for now (eval 2026-06-15).** Generator works (`generate-zod-schemas.mjs`, surface `zod.entity`, 210 files) but its output dir `manifest/generated/schemas/` is **gitignored by design** (`.gitignore:610 manifest/generated/*`) and has **0 consumers** — no committed surface to gate or retire against. Determinism blocker (per-file `// Generated at:` + barrel timestamp) **fixed this increment** (producer-side strip, mirrors OpenAPI; back-to-back runs byte-identical) so it is gate-ready IF de-gitignored + consumed. No hand-written zod schemas exist to retire. Revisit only if input validation is actually wired to the projection. |
+| Hand-written React Query hooks for manifest entities | `projections/react-query` | **DRIFT-GATED (2026-06-15).** `pnpm manifest:react-query:check` (`check-react-query-drift.mjs`, mirror of `check-openapi-drift.mjs`) is wired into `manifest:ci` after `manifest:openapi:check`; output `apps/app/app/lib/manifest-hooks.generated.ts` is tracked + deterministic (byte-identical across runs). The prior wiring blocker — the uncommitted half-applied `@angriff36/manifest 2.5.1→2.7.0` bump (never installed; lockfile/node_modules still 2.5.1) — was reverted to 2.5.1. The committed file was ~13.3k lines stale and was refreshed in the same commit (210 entities / 1413 hook exports). No hand-written react-query hooks exist to retire; the gate protects the generated surface from rot (satisfies exit-criterion #3 for this projection). Consumed today only by the `manifest-hooks-pilot.ts` re-export. |
+| Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | **DONE (2026-06-15)** — `projections/openapi` is wired (`pnpm manifest:openapi` → committed `manifest/api-docs/openapi.json`, served at `/api-docs`, consumed by MCP). No hand-written OpenAPI spec existed to retire; the generated spec is now CI drift-gated (`pnpm manifest:openapi:check` in `manifest:ci`), satisfying exit-criterion #3 for this projection. |
+| `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | DONE (2026-06-15) |
 
 **ENTITY_DOMAIN_MAP consolidation status (corrected):** the "3 files" claim is stale.
 - `manifest/scripts/generate.mjs` — **now imports** the canonical map from `entity-domain-map.mjs`. DONE.
 - `manifest/scripts/generate-all-routes.mjs` — no longer contains the map; it was refactored into a validation-only script (no `ENTITY_DOMAIN_MAP`). Nothing to consolidate.
-- `manifest/scripts/generate-route-manifest.ts` — still has its own copy (note: it has a pre-existing quirk `Event: "manifest/Event"` that differs from the others — needs reconciliation, not a blind copy). Run by `manifest:routes:ir`. **STILL TO DO.**
-- `packages/mcp-server/src/lib/entity-domain-map.ts` — a 4th copy (TS, in a different workspace package). **STILL TO DO.**
-Deferred deliberately: those two are separate scripts/packages with their own typing + the `manifest/Event` quirk; folding them in is out of scope for the deploy-unblock PR (one concern per PR). Tracked here.
+- `manifest/scripts/generate-route-manifest.ts` — **DONE.** Now imports the canonical map (`generate-route-manifest.ts:6` → `import { ENTITY_DOMAIN_MAP } from "./entity-domain-map.mjs"`); the old embedded copy and its `Event: "manifest/Event"` quirk are gone (run via `tsx` per `manifest:routes:ir`, so the `.mjs` import resolves transparently). Verified 2026-06-15.
+- `packages/mcp-server/src/lib/entity-domain-map.ts` — **DONE** (consolidated 2026-06-07, commit `5af26f3ce`). Now an 8-line ESM re-export (`entity-domain-map.ts:9` → `export { ENTITY_DOMAIN_MAP } from "../../../../manifest/scripts/entity-domain-map.mjs"`), with types from the sibling `manifest/scripts/entity-domain-map.d.mts`. The prior 14-line `require()` CJS hack was removed. Verified 2026-06-15.
+Resolution: all four call sites now resolve `ENTITY_DOMAIN_MAP` from the single canonical `manifest/scripts/entity-domain-map.mjs`; no embedded copies and no `manifest/Event` quirk remain. The `ENTITY_DOMAIN_MAP` duplication is fully retired.
 
 ## E. Legacy `executeManifestCommand` → canonical `runManifestCommand` migration
 
@@ -106,6 +106,16 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 | Route | Entity | Notes |
 |---|---|---|
 | `app/api/inventory/items/[id]/route.ts` | InventoryItem | PUT update → Manifest (COALESCE→read-merge-write; snake_case→camelCase mapping; recipe cost recalculation retained as post-command side effect); DELETE softDelete → Manifest (7-table dependency pre-validation retained); GET unchanged (Prisma read). `$executeRaw` writes fully removed. |
+
+### Migrated (1 route, 2026-06-14) — direct-write governance cleanup (Known Blocker #22, v0.12.285)
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/crm/scoring/route.ts` | CrmScoringRule | POST create → Manifest (`runManifestCommand("CrmScoringRule","create")`); was a direct `database.crmScoringRule.create` bypass (constitution §9). snake_case→camelCase param mapping + coercion preserved; input validation (required fields + condition/field enums) retained pre-dispatch; GET `$queryRaw` read unchanged (§10). Live frontend create already used the dispatcher (`crmScoringRuleCreate`), so no consumer contract changed. Conformance test: `apps/api/__tests__/crm/scoring-post-governed.test.ts` (4). Drops governed direct-write violations 7→6. |
+
+### Resolved (1 route, 2026-06-15) — direct-write governance cleanup (Known Blocker #22, v0.12.310)
+| Route | Entity | Notes |
+|---|---|---|
+| `apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts` | AdminChatThread | **DELETED a redundant `database.adminChatThread.update({lastMessageAt})` bypass** (constitution §9), NOT a re-route — the manual thread-activity bump was already covered by the live governed reaction `AdminChatMessageSent → AdminChatThread.recordLastMessage` (resolves `payload.threadId` → `recordLastMessage()` mutates `lastMessageAt = now()`), which fires during the `runManifestCommand("AdminChatMessage","create")` dispatch earlier in the same handler. So the direct write was both a §9 governed-entity bypass AND a double-write. No IR/source/artifact change (the reaction + command already existed). `message.createdAt` stays used (SSE publish + response). Regression protection: the existing reaction conformance test (`manifest/runtime/src/__tests__/admin-chat-message-thread-activity-reaction.test.ts`, 4 tests, proves the propagation against the real IR via `RuntimeEngine.runCommand`) + the direct-write baseline gate (`manifest:audit-direct-writes:baseline`, now 8→7 triples). Governed direct-write violations drop 6→5 files. api typecheck green. |
 
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**

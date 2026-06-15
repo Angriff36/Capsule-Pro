@@ -1,18 +1,25 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Domain - Work Order Rules
 // Manifest spec for equipment maintenance work orders
 // Lifecycle: open -> assigned -> in_progress -> completed (or cancelled from any non-terminal state)
 
-entity WorkOrder {
+// U7: Closed-vocabulary status enum for WorkOrder lifecycle.
+enum WorkOrderStatus {
+  open
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+entity WorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required equipmentId: string
   property equipmentName: string = ""
   searchable property required title: string
   property type: string = "repair"
   property priority: string = "medium"
-  indexed property status: string = "open"
+  indexed property status: WorkOrderStatus = open
   searchable property description: string = ""
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime
@@ -38,7 +45,7 @@ entity WorkOrder {
   constraint validType: self.type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
   constraint requireTitle: self.title != "" "Title is required"
 
-  constraint warnOverdue:warn self.isOverdue {
+  constraint warnOverdue:warn (self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])) {
     messageTemplate: "Work order '{title}' is past scheduled date"
     details: {
       title: self.title
@@ -46,7 +53,7 @@ entity WorkOrder {
     }
   }
 
-  constraint warnCriticalUnassigned:warn self.isCritical and self.status == "open" {
+  constraint warnCriticalUnassigned:warn (self.priority == "critical") and self.status == "open" {
     messageTemplate: "Critical work order '{title}' has not been assigned"
     details: {
       title: self.title

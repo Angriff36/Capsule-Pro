@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "a80f00a79eb4540815452a30c6ecc3224f0e5796a9323dcbeaf260e37a10052c",
-    "irHash": "6cd08a48a066f7a01f38654ee5507dd91c6ce85d9f5eb692c38fc10935437f04",
-    "compilerVersion": "2.4.2",
+    "contentHash": "6a8dc3e4592cb72a181f79449a3355fb6568b28d7213e6ed536112855ffef4a4",
+    "irHash": "84f41778a0f1ca3f69a40883497d86fe10c4eeade3e34afb4ee0ba69e3f39508",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.036Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.545Z"
   },
   "modules": [],
   "values": [],
@@ -77,220 +69,6 @@
               "name": "payload"
             },
             "property": "loggedBy"
-          }
-        }
-      ]
-    },
-    {
-      "event": "CollectionPaymentRecorded",
-      "targetEntity": "Invoice",
-      "targetCommand": "applyPayment",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "invoiceId"
-      },
-      "params": [
-        {
-          "name": "paymentAmount",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "amount"
-          }
-        },
-        {
-          "name": "paymentId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "paymentId"
-          }
-        }
-      ]
-    },
-    {
-      "event": "MaintenanceWorkOrderCompleted",
-      "targetEntity": "Equipment",
-      "targetCommand": "recordMaintenance",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "equipmentId"
-      },
-      "params": [
-        {
-          "name": "maintenanceDate",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        },
-        {
-          "name": "maintenanceType",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "corrective"
-            }
-          }
-        },
-        {
-          "name": "performedBy",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
-          }
-        },
-        {
-          "name": "cost",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "totalCost"
-          }
-        },
-        {
-          "name": "notes",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Auto-recorded from work order completion"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "event": "MaintenanceWorkOrderCompleted",
-      "targetEntity": "Equipment",
-      "targetCommand": "updateStatus",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "equipmentId"
-      },
-      "params": [
-        {
-          "name": "newStatus",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "active"
-            }
-          }
-        },
-        {
-          "name": "reason",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Maintenance work order completed"
-            }
-          }
-        },
-        {
-          "name": "userId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
-          }
-        }
-      ]
-    },
-    {
-      "event": "ShipmentItemReceived",
-      "targetEntity": "InventoryItem",
-      "targetCommand": "restock",
-      "resolve": {
-        "kind": "member",
-        "object": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "payload"
-          },
-          "property": "result"
-        },
-        "property": "itemId"
-      },
-      "params": [
-        {
-          "name": "quantity",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "quantityReceived"
-          }
-        },
-        {
-          "name": "costPerUnit",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "name": "userId",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "payload"
-            },
-            "property": "userId"
           }
         }
       ]
@@ -645,6 +423,19 @@
           }
         }
       ]
+    },
+    {
+      "event": "AdminChatMessageSent",
+      "targetEntity": "AdminChatThread",
+      "targetCommand": "recordLastMessage",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "identifier",
+          "name": "payload"
+        },
+        "property": "threadId"
+      }
     }
   ]
 }

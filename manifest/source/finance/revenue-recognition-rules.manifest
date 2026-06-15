@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Finance - Revenue Recognition Rules
 // Manifest spec for revenue recognition schedules and accrual accounting
 
-entity RevenueRecognitionSchedule {
+entity RevenueRecognitionSchedule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
 
   // Reference information
   property required invoiceId: string
@@ -209,10 +207,8 @@ entity RevenueRecognitionSchedule {
   store RevenueRecognitionSchedule in durable
 }
 
-entity RevenueRecognitionLine {
+entity RevenueRecognitionLine mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required scheduleId: string
 
   // Line details

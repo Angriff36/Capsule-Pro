@@ -5,3 +5,9 @@ packages:
 
 overrides:
   "@types/react": "19.2.15"
+  # Security: patch transitive advisories (GHSA-gv7w-rqvm-qjhr, GHSA-w7jw-789q-3m8p)
+  "esbuild": "^0.28.1"
+  "shell-quote": "^1.8.4"
+  # Security: force a stray transitive next@16.1.7 up to the patched 16.2.6 that all
+  # workspace apps already use (clears the 11 next GHSA advisories on the old copy).
+  "next": "16.2.6"

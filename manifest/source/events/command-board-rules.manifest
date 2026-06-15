@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Command Board - Board Rules
 // Manifest spec for command board operations with cards, groups, layouts, and connections
 
-entity CommandBoard {
+entity CommandBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   searchable property name: string = ""
   searchable property description: string = ""
@@ -15,7 +13,6 @@ entity CommandBoard {
   property autoPopulate: boolean = false
   property scope: string = "{}"
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isActive: boolean = self.status == "active"
@@ -86,10 +83,8 @@ entity CommandBoard {
   store CommandBoard in durable
 }
 
-entity CommandBoardCard {
+entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   searchable property title: string = ""
   property content: string = ""
@@ -107,7 +102,6 @@ entity CommandBoardCard {
   property entityType: string = ""
   property version: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -195,10 +189,8 @@ entity CommandBoardCard {
   store CommandBoardCard in durable
 }
 
-entity CommandBoardGroup {
+entity CommandBoardGroup mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   searchable property name: string = ""
   property color: string = ""
@@ -209,7 +201,6 @@ entity CommandBoardGroup {
   property height: int = 200
   property zIndex: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 
@@ -255,10 +246,8 @@ entity CommandBoardGroup {
   store CommandBoardGroup in durable
 }
 
-entity CommandBoardConnection {
+entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   property required fromCardId: string
   property required toCardId: string
@@ -266,7 +255,6 @@ entity CommandBoardConnection {
   property label: string = ""
   property visible: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 
@@ -303,10 +291,8 @@ entity CommandBoardConnection {
   store CommandBoardConnection in durable
 }
 
-entity CommandBoardLayout {
+entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   property required userId: string
   searchable property name: string = ""
@@ -316,7 +302,6 @@ entity CommandBoardLayout {
   property showGrid: boolean = true
   property snapToGrid: boolean = true
   timestamps
-  property deletedAt: datetime
 
   constraint validName: self.name != null and self.name != "" "Layout name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"

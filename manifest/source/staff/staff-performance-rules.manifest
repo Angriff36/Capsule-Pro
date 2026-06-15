@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff Performance Review Rules
 // Manifest spec for employee performance evaluations and reviews
 // Lifecycle: draft -> in_review -> completed -> acknowledged (employee sign-off)
 
-entity StaffPerformance {
+entity StaffPerformance mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property reviewType: string = "quarterly"
   indexed property status: string = "draft"
@@ -36,7 +34,7 @@ entity StaffPerformance {
 
   constraint validReviewType: self.reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
   constraint validStatus: self.status in ["draft", "in_review", "completed", "acknowledged", "cancelled"] "Invalid review status"
-  constraint validRating: self.rating >= 0 and self.rating <= 5 "Rating must be between 0 and 5"
+  constraint validRating: between(self.rating, 0, 5) "Rating must be between 0 and 5"
 
   relationship belongsTo employee: User with employeeId
   relationship belongsTo reviewer: User with reviewerId
@@ -101,7 +99,7 @@ entity StaffPerformance {
   // Complete the review with a final rating — transitions to awaiting employee sign-off.
   command complete(rating: number) {
     guard self.status in ["draft", "in_review"] "Review must be draft or in_review to complete"
-    guard rating >= 0 and rating <= 5 "Rating must be between 0 and 5"
+    guard between(rating, 0, 5) "Rating must be between 0 and 5"
 
     mutate rating = rating
     mutate status = "completed"

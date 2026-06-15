@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory - Cycle Count Rules
 // Manifest spec for cycle count sessions, records, and variance reporting
 
-entity CycleCountSession {
+entity CycleCountSession mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required locationId: string
   property required sessionId: string
   property required sessionName: string
@@ -23,7 +21,6 @@ entity CycleCountSession {
   property createdById: string = ""
   property approvedById: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -160,10 +157,8 @@ entity CycleCountSession {
   store CycleCountSession in durable
 }
 
-entity CycleCountRecord {
+entity CycleCountRecord mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required sessionId: string
   property required itemId: string
   property required itemNumber: string
@@ -183,7 +178,6 @@ entity CycleCountRecord {
   property syncStatus: string = "synced"
   property offlineId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed hasVariance: boolean = self.variance != 0
   computed isOvercount: boolean = self.variance > 0
@@ -238,7 +232,7 @@ entity CycleCountRecord {
   command verify(userId: string) {
     guard not self.isVerified "Record is already verified"
 
-    constraint warnLargeVariance:warn self.isLargeVariance {
+    constraint warnLargeVariance:warn (self.variancePct > 10 or self.variancePct < -10) {
       messageTemplate: "Verifying record for '{itemName}' with large variance ({variancePct}%)"
       details: {
         itemName: self.itemName
@@ -268,10 +262,8 @@ entity CycleCountRecord {
   store CycleCountRecord in durable
 }
 
-entity VarianceReport {
+entity VarianceReport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required sessionId: string
   property required reportType: string
   property required itemId: string
@@ -296,7 +288,6 @@ entity VarianceReport {
   property resolvedAt: datetime
   property generatedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isReviewed: boolean = self.status == "reviewed"
@@ -359,7 +350,7 @@ entity VarianceReport {
   command approve(userId: string, adjustmentType: string, adjustmentAmount: money) {
     guard self.status == "reviewed" "Can only approve reviewed reports"
 
-    constraint warnHighVariance:warn self.isHighVariance {
+    constraint warnHighVariance:warn (self.variancePct > 10 or self.variancePct < -10) {
       messageTemplate: "Approving high-variance report for '{itemName}' ({variancePct}% variance)"
       details: {
         itemName: self.itemName
@@ -555,15 +546,7 @@ event VarianceReportDiscrepancyUpdated: "inventory.variance.report.discrepancy_u
   updatedAt: datetime
 }
 
-saga FinalizeCycleCountSession {
-  step finalizeSession {
-    command: CycleCountSession.finalize
-  }
-
-  step approveVarianceReports {
-    command: VarianceReport.approve
-    compensate: CycleCountSession.reopen
-  }
-
-  on_failure: compensate
-}
+// REMOVED: saga FinalizeCycleCountSession — was vestigial; no code caller
+// (runManifestSaga / runSaga) ever invoked it. Cycle count finalization and
+// variance report approval are handled by direct command dispatch + middleware,
+// so the saga orchestration was dead IR with no runtime path.

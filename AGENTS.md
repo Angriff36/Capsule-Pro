@@ -25,6 +25,8 @@ Your training data is outdated — the docs are the source of truth.
 
 ## GraphRAG rule
 
+**Enforced by `.cursor/hooks.json`** — on architecture/debug prompts, Grep/Read/SemanticSearch/Glob/Task are blocked until GraphRAG runs.
+
 For architecture/debugging tasks, run:
 
 `powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/graphrag.ps1 "<task question>"`

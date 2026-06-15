@@ -40,22 +40,10 @@ for (let i = 0; i < args.length; i++) {
 console.log("[analytics] Loading IR...");
 const ir = JSON.parse(readFileSync(IR_PATH, "utf8"));
 
-// ── Import projection (direct dist path, not in package exports) ──
-const generatorPath = join(
-  root,
-  "node_modules",
-  "@angriff36",
-  "manifest",
-  "dist",
-  "manifest",
-  "projections",
-  "analytics",
-  "generator.js"
+// ── Import projection ──
+const { AnalyticsProjection } = await import(
+  "@angriff36/manifest/projections/analytics"
 );
-const generatorUrl = import.meta.resolve(
-  `file://${generatorPath.replace(/\\/g, "/")}`
-);
-const { AnalyticsProjection } = await import(generatorUrl);
 const projection = new AnalyticsProjection();
 
 // ── Surfaces to generate ──

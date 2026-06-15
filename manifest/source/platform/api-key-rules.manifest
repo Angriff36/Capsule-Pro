@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administration - API Key Rules
 // Manifest spec for API key lifecycle management
 // SECURITY: All commands require admin/manager role. Keys are hashed before storage.
 
-entity ApiKey {
+entity ApiKey mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string = ""
   readonly property required keyPrefix: string = ""
   readonly property required hashedKey: string = ""
@@ -16,7 +14,6 @@ entity ApiKey {
   property revokedAt: datetime
   property required createdByUserId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isRevoked: boolean = self.revokedAt != null
   computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request
@@ -89,7 +86,7 @@ entity ApiKey {
     guard self.revokedAt == null "API key is already revoked"
     guard self.deletedAt == null "Cannot revoke a deleted API key"
 
-    constraint warnRevokeActiveKey:warn self.isActive {
+    constraint warnRevokeActiveKey:warn (self.revokedAt == null and self.deletedAt == null and (self.expiresAt == null or self.expiresAt > now())) {
       messageTemplate: "Revoking active API key '{name}'"
       details: {
         name: self.name
@@ -106,7 +103,7 @@ entity ApiKey {
   command softDelete(reason: string, deletedBy: string) {
     guard self.deletedAt == null "API key is already deleted"
 
-    constraint warnDeleteActiveKey:warn self.isActive {
+    constraint warnDeleteActiveKey:warn (self.revokedAt == null and self.deletedAt == null and (self.expiresAt == null or self.expiresAt > now())) {
       messageTemplate: "Deleting active API key '{name}'"
       details: {
         name: self.name
@@ -124,7 +121,7 @@ entity ApiKey {
     guard self.revokedAt == null "Cannot record usage for a revoked API key"
     guard self.deletedAt == null "Cannot record usage for a deleted API key"
 
-    constraint blockExpiredKey:block !self.isExpired {
+    constraint blockExpiredKey:block !(self.expiresAt != null and self.expiresAt < now()) {
       messageTemplate: "API key '{name}' has expired"
       details: {
         name: self.name

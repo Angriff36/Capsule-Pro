@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "1d67111be9a823cbdd8135cc0f9a99154ae976f50b170c74c9d647feb93d59fa",
-    "irHash": "1dfbb6fba334751c7422bbf56652bfd8f20dba8820e3c045ac93e43b77fa2d98",
-    "compilerVersion": "2.4.2",
+    "contentHash": "04681935770810b770eb1483a256ccf339fcef817e57606c5507e332cbedac7b",
+    "irHash": "fe4793f29dfd1205c6aeee2f73c90b89762e19fccb4a3ae1058e70be6c64310e",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.863Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.401Z"
   },
   "modules": [],
   "values": [],
@@ -1084,12 +1076,45 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clientName"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "hasClientName"
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clientName"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              }
             },
             "right": {
               "kind": "literal",
@@ -1120,12 +1145,22 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "eventDate"
               },
-              "property": "hasEventDate"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
             },
             "right": {
               "kind": "literal",
@@ -1156,12 +1191,69 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "guestCount"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
               },
-              "property": "hasGuestCount"
+              "right": {
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "guestCountMin"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "guestCountMax"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 0
+                    }
+                  }
+                }
+              }
             },
             "right": {
               "kind": "literal",
@@ -1192,12 +1284,23 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "overallConfidence"
               },
-              "property": "isHighConfidence"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0.8
+                }
+              }
             },
             "right": {
               "kind": "literal",
@@ -1798,20 +1901,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         },
         {
@@ -2412,20 +2537,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],
@@ -2697,20 +2844,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],
@@ -2814,20 +2983,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],
@@ -2893,20 +3084,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         },
         {
@@ -2988,20 +3201,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],
@@ -3047,12 +3282,23 @@
       "parameters": [],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -3101,12 +3347,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isReview"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "review"
+            }
+          }
         },
         {
           "kind": "binary",
@@ -3200,20 +3457,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],

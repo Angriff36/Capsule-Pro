@@ -476,16 +476,16 @@ model PrepTaskPlanWorkflow {
   status              String    @default("created")
   currentStep         Int       @default(0) @map("current_step")
   totalSteps          Int       @default(5) @map("total_steps")
-  generationOptions   String?   @map("generation_options") @db.Text
-  generatedTasks      String?   @map("generated_tasks") @db.Text
-  reviewedTasks       String?   @map("reviewed_tasks") @db.Text
-  approvedTaskIds     String?   @map("approved_task_ids") @db.Text
-  rejectedTaskIds     String?   @map("rejected_task_ids") @db.Text
-  instantiatedTaskIds String?   @map("instantiated_task_ids") @db.Text
-  scheduledWindows    String?   @map("scheduled_windows") @db.Text
-  constraintOutcomes  String?   @map("constraint_outcomes") @db.Text
-  errors              String?   @map("errors") @db.Text
-  warnings            String?   @map("warnings") @db.Text
+  generationOptions   Json?     @map("generation_options")
+  generatedTasks      Json?     @map("generated_tasks")
+  reviewedTasks       Json?     @map("reviewed_tasks")
+  approvedTaskIds     Json?     @map("approved_task_ids")
+  rejectedTaskIds     Json?     @map("rejected_task_ids")
+  instantiatedTaskIds Json?     @map("instantiated_task_ids")
+  scheduledWindows    Json?     @map("scheduled_windows")
+  constraintOutcomes  Json?     @map("constraint_outcomes")
+  errors              Json?     @map("errors")
+  warnings            Json?     @map("warnings")
   generatedCount      Int       @default(0) @map("generated_count")
   approvedCount       Int       @default(0) @map("approved_count")
   instantiatedCount   Int       @default(0) @map("instantiated_count")

@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "6aca600a79a2a5afa8bfe63efd16038458b7ca530b279bcba358534f6fd9bc9e",
-    "irHash": "0ac3ef06ebba427d291bdf656503179c997883a901c3ccaff56d30e5ad85beca",
-    "compilerVersion": "2.4.2",
+    "contentHash": "515fbcd396e72d20d78522f67b89dba48b5482c88ff8918fbd3ba4def82c0918",
+    "irHash": "99cb0031b55a9ac4388f97cdcfecb0c20e1f27cfdb39852951c1dc4db785c95f",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.055Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.562Z"
   },
   "modules": [],
   "values": [],
@@ -398,12 +390,24 @@
           "name": "warnOverBudget",
           "code": "warnOverBudget",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "actualSpend"
             },
-            "property": "isOverBudget"
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "budgetTarget"
+            }
           },
           "severity": "warn",
           "messageTemplate": "Labor budget for location {locationId} is over by {varianceAmount}",
@@ -670,7 +674,7 @@
         {
           "name": "budget",
           "kind": "belongsTo",
-          "target": "EventBudget",
+          "target": "LaborBudget",
           "foreignKey": {
             "fields": [
               "budgetId"

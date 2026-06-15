@@ -1,11 +1,20 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // CRM & Sales - Proposal Rules
 // Manifest spec for proposal lifecycle and line item management
 
-entity Proposal {
+// U7: Closed-vocabulary status enum for Proposal lifecycle.
+enum ProposalStatus {
+  draft
+  sent
+  viewed
+  accepted
+  rejected
+  withdrawn
+  expired
+}
+
+entity Proposal mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property proposalNumber: string = ""
   property clientId: string = ""
   property leadId: string = ""
@@ -21,7 +30,7 @@ entity Proposal {
   property taxAmount: money = 0
   property discountAmount: money = 0
   property total: money = 0
-  indexed property status: string = "draft"
+  indexed property status: ProposalStatus = draft
   property validUntil: datetime
   property sentAt: datetime
   property viewedAt: datetime
@@ -32,7 +41,6 @@ entity Proposal {
   property lineItemCount: int = 0
   property publicToken: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent" or self.status == "viewed"
@@ -51,6 +59,10 @@ entity Proposal {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Proposal
+  relationship hasMany lineItems: ProposalLineItem
+
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
@@ -118,7 +130,10 @@ entity Proposal {
 
   command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: money, taxRate: number, taxAmount: money, discountAmount: money, total: number, validUntil: datetime, notes: string, termsAndConditions: string) {
     guard self.deletedAt == null "Cannot update a deleted proposal"
-    guard self.isDraft "Can only update proposals in draft status"
+    // Stored-prop form of `self.isDraft`: the runtime does NOT resolve computeds
+    // inside guards (verified 2026-06-14), so `guard self.isDraft` always failed —
+    // Proposal.update was entirely unusable. See proposal-line-item-count notes.
+    guard self.status == "draft" "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
 
     mutate title = title
@@ -141,9 +156,17 @@ entity Proposal {
 
   command send(userId: string) {
     guard self.deletedAt == null "Cannot send a deleted proposal"
-    guard self.isDraft "Can only send proposals in draft status"
+    // Stored-prop form of `self.isDraft` — computeds do not resolve in guards
+    // (the :block constraint below runs BEFORE guards, which previously masked
+    // this dead guard until blockNoLineItems was inlined to a stored prop).
+    guard self.status == "draft" "Can only send proposals in draft status"
 
-    constraint blockNoLineItems:block self.hasLineItems {
+    // Gate reads the STORED `lineItemCount`, NOT the `hasLineItems` computed: the
+    // runtime resolves computeds inside GUARDS but NOT inside :block/:warn
+    // CONSTRAINTS (verified 2026-06-14 — `self.hasLineItems` evaluated falsy even at
+    // lineItemCount=2, so this gate blocked EVERY send → proposals were unsendable).
+    // lineItemCount is kept current by proposal-line-item-count-middleware.
+    constraint blockNoLineItems:block self.lineItemCount > 0 {
       messageTemplate: "Cannot send proposal '{proposalNumber}' with no line items"
       details: {
         proposalNumber: self.proposalNumber
@@ -192,7 +215,10 @@ entity Proposal {
     // last scalar (acceptedAt=now()), NOT the Proposal instance, so the reaction cannot read
     // the proposal's own fields off result — the caller (public proposal-respond route) supplies them.
 
-    constraint blockExpired:block !self.isExpired {
+    // Stored-prop form of `!self.isExpired` (isExpired = validUntil != null and
+    // validUntil < now()): computeds do not resolve inside constraints, so the
+    // computed form silently never blocked — expired proposals were acceptable.
+    constraint blockExpired:block self.validUntil == null or self.validUntil >= now() {
       messageTemplate: "Cannot accept expired proposal '{proposalNumber}' (expired on {validUntil})"
       details: {
         proposalNumber: self.proposalNumber
@@ -220,7 +246,10 @@ entity Proposal {
   command withdraw(reason: string, userId: string) {
     guard self.deletedAt == null "Cannot withdraw a deleted proposal"
 
-    constraint blockAlreadyAccepted:block !self.isAccepted {
+    // Stored-prop forms of `!self.isAccepted` / `!self.isWithdrawn`: computeds do
+    // not resolve inside constraints, so both blocks were dead — an accepted or
+    // already-withdrawn proposal could be (re-)withdrawn.
+    constraint blockAlreadyAccepted:block self.status != "accepted" {
       messageTemplate: "Cannot withdraw accepted proposal '{proposalNumber}'"
       details: {
         proposalNumber: self.proposalNumber
@@ -229,7 +258,7 @@ entity Proposal {
       }
     }
 
-    constraint blockAlreadyWithdrawn:block !self.isWithdrawn {
+    constraint blockAlreadyWithdrawn:block self.status != "withdrawn" {
       messageTemplate: "Proposal '{proposalNumber}' is already withdrawn"
       details: {
         proposalNumber: self.proposalNumber
@@ -258,13 +287,32 @@ entity Proposal {
     emit ProposalPublicLinkGenerated
   }
 
+  // Line-item count bookkeeping. `lineItemCount` is a STORED int (not a
+  // count_of(self.lineItems) aggregate) on purpose: the send-gate
+  // `blockNoLineItems` is a :block CONSTRAINT, and the runtime does NOT resolve
+  // computed/aggregate properties inside constraint expressions (only inside
+  // guards). An aggregate would leave the gate dead. These two commands keep the
+  // stored count truthful; they are dispatched by
+  // proposal-line-item-count-middleware on ProposalLineItemCreated/Removed
+  // (the line item's proposalId is its OWN field, not a remove() param, so a
+  // declarative reaction cannot resolve the parent on the remove leg).
+  command incrementLineItemCount() {
+    mutate lineItemCount = self.lineItemCount + 1
+
+    emit ProposalLineItemCountChanged
+  }
+
+  command decrementLineItemCount() {
+    mutate lineItemCount = self.lineItemCount > 0 ? self.lineItemCount - 1 : 0
+
+    emit ProposalLineItemCountChanged
+  }
+
   store Proposal in durable
 }
 
-entity ProposalLineItem {
+entity ProposalLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required proposalId: string
   property itemType: string = ""
   property category: string = ""
@@ -277,7 +325,6 @@ entity ProposalLineItem {
   property sortOrder: int = 0
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
 
@@ -447,6 +494,13 @@ event ProposalPublicLinkGenerated: "crm.proposal.public_link.generated" {
   title: string
   publicToken: string
   generatedAt: datetime
+}
+
+event ProposalLineItemCountChanged: "crm.proposal.line_item_count.changed" {
+  proposalId: string
+  tenantId: string
+  lineItemCount: int
+  changedAt: datetime
 }
 
 // ProposalLineItem events

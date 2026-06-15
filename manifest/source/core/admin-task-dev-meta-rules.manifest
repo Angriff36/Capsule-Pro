@@ -1,13 +1,11 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Admin Task Dev Meta Rules
 // Manifest spec for dev mode bug tracking metadata on admin tasks
 
-entity AdminTaskDevMeta {
+entity AdminTaskDevMeta mixin TenantScoped, SoftDeletable {
   // No relationships: taskId is a loose key by design; AdminTask declares no
   // child relationships (see core/admin-task-rules.manifest).
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property taskId: string = ""
   property severity: string = "medium"
   property environment: string = ""
@@ -15,7 +13,6 @@ entity AdminTaskDevMeta {
   property expectedResult: string = ""
   property actualResult: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

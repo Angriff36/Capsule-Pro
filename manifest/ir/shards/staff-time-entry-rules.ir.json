@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "c1b00841716123007a15a6889f33b218d45de99769252d04b33e1018837e9f5a",
-    "irHash": "712b3ec56bda8595faf25ce2bcdf5e63dbbfddc05e36ee33a3baa7174aaf25b6",
-    "compilerVersion": "2.4.2",
+    "contentHash": "e1975aac6bc1fbaf91e78bc07ce908c086bab7022c3ef8ca73ce486c0349ee86",
+    "irHash": "c91fc0baebebbda638b6e16ef4d50c524c7f3892e0cf41cb16679f216f5b03d9",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.069Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.573Z"
   },
   "modules": [],
   "values": [],
@@ -467,6 +459,7 @@
         "clockIn",
         "clockOut",
         "addEntry",
+        "applyEdit",
         "softDelete"
       ],
       "constraints": [],
@@ -1013,6 +1006,68 @@
       ]
     },
     {
+      "name": "TimeEntryEdited",
+      "channel": "staff.timeentry.edited",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "editedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "TimeEntryDeleted",
       "channel": "staff.timeentry.deleted",
       "payload": [
@@ -1318,12 +1373,44 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockIn"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "isClockedIn"
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockOut"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              }
             }
           },
           "severity": "block",
@@ -1456,12 +1543,44 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
           },
-          "property": "isClockedIn"
+          "right": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockOut"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          }
         }
       ],
       "constraints": [
@@ -1918,6 +2037,174 @@
       ]
     },
     {
+      "name": "applyEdit",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot edit a deleted time entry"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockIn",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clockIn"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clockIn"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockOut",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "clockOut"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "clockOut"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockOut"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "breakMinutes",
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "breakMinutes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "consequent": {
+              "kind": "identifier",
+              "name": "breakMinutes"
+            },
+            "alternate": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "breakMinutes"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryEdited"
+      ]
+    },
+    {
       "name": "softDelete",
       "entity": "TimeEntry",
       "parameters": [
@@ -2274,12 +2561,23 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isProcessed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "pending"
+                }
+              }
             }
           },
           "severity": "block",
@@ -2393,12 +2691,23 @@
             "kind": "unary",
             "operator": "!",
             "operand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isProcessed"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "pending"
+                }
+              }
             }
           },
           "severity": "block",

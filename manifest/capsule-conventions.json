@@ -28,7 +28,7 @@
   },
 
   "schemaPlacement": {
-    "$comment": "Prisma @@schema placement — multi-schema is NOT native to the projection (per official docs), so Capsule applies it via the placement policy post-process.",
+    "$comment": "Prisma @@schema placement — multi-schema IS native to the projection (multiSchema.enabled=true with entitySchema, GA since @angriff36/manifest 2.4.2). Capsule configures it via the placement rules + PrismaProjectionOptions; no regex post-process needed.",
     "rules": "manifest/schema-placement.rules.json",
     "policy": "docs/database/SCHEMA_PLACEMENT_POLICY.md",
     "neverUse": ["public"]

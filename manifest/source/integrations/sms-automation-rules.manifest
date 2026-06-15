@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // SMS Automation - SMS Automation Rules
 // Manifest spec for event-triggered SMS automation rules
 
-entity SmsAutomationRule {
+entity SmsAutomationRule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string = ""
   searchable property description: string = ""
   property required triggerType: string = "custom_event"
@@ -17,7 +15,6 @@ entity SmsAutomationRule {
   property isActive: boolean = true
   property priority: int = 100
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed hasTemplate: boolean = self.templateId != null and self.templateId != ""

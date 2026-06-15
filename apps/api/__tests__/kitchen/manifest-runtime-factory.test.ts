@@ -440,14 +440,14 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
-    it("routes all 5 dedicated entities to PrismaStore", async () => {
+    it("routes all 4 dedicated entities to PrismaStore", async () => {
       // Only entities with genuine custom logic (cross-table queries,
       // non-standard delete semantics, transactional multi-table writes)
       // remain in ENTITIES_WITH_SPECIFIC_STORES. All others use GenericPrismaStore.
+      // PrepTaskPlanWorkflow moved to GenericPrismaStore via softDeleteStatus metadata.
       const dedicatedEntities = [
         "PrepTask",
         "KitchenTask",
-        "PrepTaskPlanWorkflow",
         "Station",
         "InventoryTransfer",
       ];

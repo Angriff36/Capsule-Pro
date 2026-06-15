@@ -11,7 +11,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import {
   createPrepInventoryDemandMiddleware,
   createPrepListSeedMiddleware,
@@ -52,7 +51,7 @@ async function buildRuntime() {
       );
     }
     const manifestName = file.replace(".manifest", "").split("/").pop();
-    compiled.push(enforceCommandOwnership(ir, manifestName));
+    compiled.push(ir);
   }
 
   const [base] = compiled;

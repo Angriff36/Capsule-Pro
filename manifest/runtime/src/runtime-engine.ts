@@ -64,39 +64,6 @@ interface RunCommandOptions {
  *    is the bridge that makes the factory's outbox-write logic fire.
  */
 export class ManifestRuntimeEngine extends RuntimeEngine {
-  // ---- command lookup fallback (unchanged) --------------------------------
-
-  override getCommand(
-    name: string,
-    entityName?: string
-  ): IRCommand | undefined {
-    const direct = super.getCommand(name, entityName);
-    if (direct) {
-      return direct;
-    }
-
-    if (!entityName) {
-      return;
-    }
-
-    const command = this.getCommands().find(
-      (item) =>
-        item.name === name && (item.entity === entityName || !item.entity)
-    );
-    if (!command) {
-      return;
-    }
-
-    if (command.entity) {
-      return command;
-    }
-
-    return {
-      ...command,
-      entity: entityName,
-    };
-  }
-
   // ---- runCommand override (new) -----------------------------------------
 
   override async runCommand(

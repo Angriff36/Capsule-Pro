@@ -1,8 +1,15 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-14T08:39:57.122Z",
-  "contentHash": "faf411d96215e17900fccfbe9717320774f8f74891a628d4001ec4bb0138d78d",
+  "compiledAt": "2026-06-15T06:50:48.618Z",
+  "contentHash": "288e53de29e92a76e91af7f51d597fbe8e3afe90bfd3ae2cfe75693469320c14",
   "sources": [
+    {
+      "path": "_base.manifest",
+      "domain": "root",
+      "entities": 0,
+      "commands": 0,
+      "events": 0
+    },
     {
       "path": "ai/ai-event-setup-rules.manifest",
       "domain": "ai",
@@ -126,8 +133,8 @@
       "path": "core/crm-admin-extended-rules.manifest",
       "domain": "core",
       "entities": 7,
-      "commands": 23,
-      "events": 23
+      "commands": 24,
+      "events": 24
     },
     {
       "path": "core/document-version-rules.manifest",
@@ -196,8 +203,8 @@
       "path": "crm/proposal-rules.manifest",
       "domain": "crm",
       "entities": 2,
-      "commands": 12,
-      "events": 12
+      "commands": 14,
+      "events": 13
     },
     {
       "path": "events/battle-board-rules.manifest",
@@ -210,8 +217,8 @@
       "path": "events/catering-order-rules.manifest",
       "domain": "events",
       "entities": 1,
-      "commands": 9,
-      "events": 9
+      "commands": 10,
+      "events": 10
     },
     {
       "path": "events/command-board-rules.manifest",
@@ -301,8 +308,8 @@
       "path": "finance/collections-rules.manifest",
       "domain": "finance",
       "entities": 3,
-      "commands": 27,
-      "events": 23
+      "commands": 28,
+      "events": 24
     },
     {
       "path": "finance/invoice-rules.manifest",
@@ -406,8 +413,8 @@
       "path": "kitchen/dish-rules.manifest",
       "domain": "kitchen",
       "entities": 1,
-      "commands": 10,
-      "events": 10
+      "commands": 11,
+      "events": 11
     },
     {
       "path": "kitchen/ingredient-rules.manifest",
@@ -448,8 +455,8 @@
       "path": "kitchen/prep-list-rules.manifest",
       "domain": "kitchen",
       "entities": 2,
-      "commands": 16,
-      "events": 17
+      "commands": 17,
+      "events": 18
     },
     {
       "path": "kitchen/prep-method-rules.manifest",
@@ -483,8 +490,8 @@
       "path": "kitchen/station-rules.manifest",
       "domain": "kitchen",
       "entities": 1,
-      "commands": 9,
-      "events": 9
+      "commands": 10,
+      "events": 10
     },
     {
       "path": "operations/equipment-rules.manifest",
@@ -504,8 +511,8 @@
       "path": "operations/logistics-all-rules.manifest",
       "domain": "operations",
       "entities": 4,
-      "commands": 26,
-      "events": 26
+      "commands": 30,
+      "events": 30
     },
     {
       "path": "operations/shipment-rules.manifest",
@@ -658,8 +665,8 @@
       "path": "staff/schedule-rules.manifest",
       "domain": "staff",
       "entities": 2,
-      "commands": 13,
-      "events": 13
+      "commands": 14,
+      "events": 14
     },
     {
       "path": "staff/staff-logistics-extended-rules.manifest",
@@ -686,8 +693,8 @@
       "path": "staff/time-entry-rules.manifest",
       "domain": "staff",
       "entities": 2,
-      "commands": 7,
-      "events": 7
+      "commands": 8,
+      "events": 8
     },
     {
       "path": "staff/time-off-request-rules.manifest",
@@ -715,13 +722,13 @@
       "domain": "staff",
       "entities": 11,
       "commands": 11,
-      "events": 4
+      "events": 2
     }
   ],
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 210,
-    "commands": 1040,
-    "events": 1018
+    "commands": 1054,
+    "events": 1029
   }
 }

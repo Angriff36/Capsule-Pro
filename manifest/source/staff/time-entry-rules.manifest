@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - Time Entry Rules
 // Manifest spec for time tracking and timecard edit requests
 
-entity TimeEntry {
+entity TimeEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property locationId: string = ""
   property shiftId: string = ""
@@ -16,7 +14,6 @@ entity TimeEntry {
   property approvedBy: string = ""
   property approvedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isClockedIn: boolean = self.clockIn != null and self.clockOut == null
   computed isCompleted: boolean = self.clockIn != null and self.clockOut != null
@@ -28,11 +25,11 @@ entity TimeEntry {
   relationship belongsTo employee: User with employeeId
   relationship belongsTo location: Facility with locationId
 
-  default policy TimeEntryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
+  default policy TimeEntryDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
-    constraint blockAlreadyClockedIn:block !self.isClockedIn {
+    constraint blockAlreadyClockedIn:block !(self.clockIn != null and self.clockOut == null) {
       messageTemplate: "Employee '{employeeId}' is already clocked in"
       details: {
         employeeId: self.employeeId
@@ -52,7 +49,7 @@ entity TimeEntry {
   }
 
   command clockOut(breakMinutes: number, notes: string) {
-    guard self.isClockedIn "Must be clocked in to clock out"
+    guard (self.clockIn != null and self.clockOut == null) "Must be clocked in to clock out"
 
     constraint blockNotClockedIn:block self.clockIn != null {
       messageTemplate: "Cannot clock out - no active clock-in found"
@@ -103,6 +100,24 @@ entity TimeEntry {
     emit TimeEntryAdded
   }
 
+  // Apply an APPROVED timecard edit back onto the entry. Invoked by the
+  // timecard-edit-approved middleware (the corrected values + timeEntryId are the
+  // TimecardEditRequest's OWN fields, which `approve` does not take as params, so no
+  // reaction can carry them). Clock times COALESCE against the current value so a
+  // partial edit (only one clock field requested) can never blank a real time — the
+  // command is self-protecting even if called directly with nulls. breakMinutes is a
+  // concrete int (requestedBreakMinutes defaults 0, never null) so it applies through.
+  // No transition (status untouched); guarded against editing a deleted entry.
+  command applyEdit(clockIn: datetime, clockOut: datetime, breakMinutes: number) {
+    guard self.deletedAt == null "Cannot edit a deleted time entry"
+
+    mutate clockIn = clockIn != null ? clockIn : self.clockIn
+    mutate clockOut = clockOut != null ? clockOut : self.clockOut
+    mutate breakMinutes = breakMinutes != null ? breakMinutes : self.breakMinutes
+
+    emit TimeEntryEdited
+  }
+
   command softDelete(reason: string, userId: string) {
     guard self.deletedAt == null "Time entry is already deleted"
 
@@ -114,10 +129,8 @@ entity TimeEntry {
   store TimeEntry in durable
 }
 
-entity TimecardEditRequest {
+entity TimecardEditRequest mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required timeEntryId: string
   property required employeeId: string
   property requestedClockIn: datetime
@@ -140,7 +153,7 @@ entity TimecardEditRequest {
   // State transitions
   transition status from "pending" to ["approved", "rejected"]
 
-  default policy TimecardEditRequestDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
+  default policy TimecardEditRequestDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
   command create(timeEntryId: string, employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -159,7 +172,7 @@ entity TimecardEditRequest {
   command approve(userId: string) {
     guard self.status == "pending" "Can only approve pending requests"
 
-    constraint blockAlreadyProcessed:block !self.isProcessed {
+    constraint blockAlreadyProcessed:block !(self.status != "pending") {
       messageTemplate: "Edit request has already been processed (status: '{status}')"
       details: {
         timeEntryId: self.timeEntryId
@@ -176,7 +189,7 @@ entity TimecardEditRequest {
   command reject(userId: string, reason: string) {
     guard self.status == "pending" "Can only reject pending requests"
 
-    constraint blockAlreadyProcessed:block !self.isProcessed {
+    constraint blockAlreadyProcessed:block !(self.status != "pending") {
       messageTemplate: "Edit request has already been processed (status: '{status}')"
       details: {
         timeEntryId: self.timeEntryId
@@ -193,11 +206,16 @@ entity TimecardEditRequest {
   store TimecardEditRequest in durable
 }
 
-policy StaffCanClockInOut execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can clock in and out"
-policy ManagersCanAddEntries execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can add manual time entries"
-policy ManagersCanDeleteEntries execute: user.role in ["manager", "admin"] "Only managers can delete time entries"
-policy StaffCanRequestEdit execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can request timecard edits"
-policy ManagersCanApproveEdits execute: user.role in ["manager", "admin"] "Only managers can approve timecard edits"
+// U1: Role hierarchy migration — policies now use roleAllows() instead of
+// inline role arrays. Permission tiers declared in _base.manifest.
+//   staffAccess: Staff (all employees incl. KitchenStaff, KitchenLead, Manager, Admin)
+//   leadAccess: KitchenLead, Manager+
+//   manageAccess: Manager+ (incl. HRAdmin, PayrollAdmin, all specialized managers)
+policy StaffCanClockInOut execute: roleAllows(user.role, "staffAccess") "All staff can clock in and out"
+policy ManagersCanAddEntries execute: roleAllows(user.role, "leadAccess") "Leads and managers can add manual time entries"
+policy ManagersCanDeleteEntries execute: roleAllows(user.role, "manageAccess") "Only managers can delete time entries"
+policy StaffCanRequestEdit execute: roleAllows(user.role, "staffAccess") "All staff can request timecard edits"
+policy ManagersCanApproveEdits execute: roleAllows(user.role, "manageAccess") "Only managers can approve timecard edits"
 
 event TimeEntryClockedIn: "staff.timeentry.clocked_in" {
   timeEntryId: string
@@ -228,6 +246,16 @@ event TimeEntryAdded: "staff.timeentry.added" {
   totalHours: number
   breakMinutes: number
   createdAt: datetime
+}
+
+event TimeEntryEdited: "staff.timeentry.edited" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  clockIn: datetime
+  clockOut: datetime
+  breakMinutes: number
+  editedAt: datetime
 }
 
 event TimeEntryDeleted: "staff.timeentry.deleted" {

@@ -31,7 +31,8 @@ const statusColors: Record<string, string> = {
   VIEWED: "default",
   PAID: "default",
   OVERDUE: "destructive",
-  VOIDED: "outline",
+  VOID: "outline",
+  WRITE_OFF: "outline",
   PARTIALLY_PAID: "default",
 };
 

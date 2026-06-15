@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Equipment Maintenance Scheduler - Equipment Rules
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 
-entity Equipment {
+entity Equipment mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required locationId: string
   searchable property required name: string
   property required type: string = "general"
@@ -33,13 +31,18 @@ entity Equipment {
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo Equipment
+  relationship hasMany kitchenTasks: KitchenTask
+  relationship hasMany temperatureLogs: TemperatureLog
+  relationship hasMany workOrders: MaintenanceWorkOrder
+
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
   constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
   constraint validCondition: self.condition in ["excellent", "good", "fair", "poor"] "Invalid equipment condition"
   constraint positiveMaintenanceInterval: self.maintenanceIntervalDays > 0 "Maintenance interval must be positive"
   constraint positiveMaxUsage: self.maxUsageHours > 0 "Max usage hours must be positive"
 
-  constraint warnMaintenanceDue:warn self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 and self.status == "active" {
+  constraint warnMaintenanceDue:warn (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) >= 0 and (self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1) <= 7 and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' is due for maintenance in {days} day(s)"
     details: {
       equipmentName: self.name
@@ -48,7 +51,7 @@ entity Equipment {
     }
   }
 
-  constraint warnOverdueMaintenance:warn self.isOverdueForMaintenance and self.status == "active" {
+  constraint warnOverdueMaintenance:warn (self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate) and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' is overdue for maintenance by {days} day(s)"
     details: {
       equipmentName: self.name
@@ -57,7 +60,7 @@ entity Equipment {
     }
   }
 
-  constraint warnHighUsage:warn self.usagePercentage >= 80 and self.status == "active" {
+  constraint warnHighUsage:warn (percent(self.usageHours, self.maxUsageHours)) >= 80 and self.status == "active" {
     messageTemplate: "Equipment '{equipmentName}' has reached {usage}% of its recommended usage limit"
     details: {
       equipmentName: self.name
@@ -196,7 +199,13 @@ entity Equipment {
   }
 
   // State transitions
-  transition status from "active" to ["maintenance", "out_of_service", "retired"]
+  // "active" includes a self-loop so recordMaintenance (which unconditionally
+  // mutates status = "active") succeeds when equipment is already active — the
+  // common case, since MaintenanceWorkOrderCreated → maintenance is not wired, so
+  // equipment stays active through the work-order lifecycle. The engine does not
+  // exempt no-op self-transitions, so without this the whole recordMaintenance
+  // update (incl. lastMaintenanceDate/nextMaintenanceDate) is dropped.
+  transition status from "active" to ["active", "maintenance", "out_of_service", "retired"]
   transition status from "maintenance" to ["active", "out_of_service", "retired"]
   transition status from "out_of_service" to ["active", "maintenance", "retired"]
   // "retired" is terminal
@@ -204,10 +213,8 @@ entity Equipment {
   store Equipment in durable
 }
 
-entity MaintenanceWorkOrder {
+entity MaintenanceWorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property workOrderNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""
@@ -233,7 +240,7 @@ entity MaintenanceWorkOrder {
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "assigned", "in_progress", "awaiting_parts", "completed", "cancelled"] "Invalid status"
 
-  constraint warnOverdueWorkOrder:warn self.isOverdue {
+  constraint warnOverdueWorkOrder:warn (self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate) {
     messageTemplate: "Work order '{title}' for {equipment} is overdue by {days} day(s)"
     details: {
       title: self.title

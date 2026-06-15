@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "bd3f0e982d0855137efb1ffb6e9e8cf6a4d67af040e0cee1ad12add949537841",
-    "irHash": "790ee073f9812c9269f3100f5f2ee97a8e21f15a87e0af415de2346641264347",
-    "compilerVersion": "2.4.2",
+    "contentHash": "2de9241a8952f61c773b2a44beb9098be1456d2c76a9cc20f63922774453c8d9",
+    "irHash": "e6b91ac24cacafb3d728c17d3dcee0f16797fb3d82a013bf05e1fd4757565fb3",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.948Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.472Z"
   },
   "modules": [],
   "values": [],
@@ -593,6 +585,7 @@
         }
       ],
       "commands": [
+        "create",
         "assignTo",
         "updateStatus",
         "settle",
@@ -684,6 +677,7 @@
             "IN_PROGRESS",
             "LEGAL",
             "RESOLVED",
+            "WRITTEN_OFF",
             "DEFAULTED",
             "CANCELLED"
           ]
@@ -694,6 +688,7 @@
           "to": [
             "LEGAL",
             "RESOLVED",
+            "WRITTEN_OFF",
             "DEFAULTED",
             "CANCELLED"
           ]
@@ -703,6 +698,7 @@
           "from": "LEGAL",
           "to": [
             "RESOLVED",
+            "WRITTEN_OFF",
             "DISPUTED"
           ]
         },
@@ -1632,6 +1628,44 @@
   ],
   "events": [
     {
+      "name": "CollectionCaseCreated",
+      "channel": "collections.case.created",
+      "payload": [
+        {
+          "name": "caseId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "invoiceId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "originalAmount",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "CollectionAssigned",
       "channel": "collections.case.assigned",
       "payload": [
@@ -2387,6 +2421,137 @@
     }
   ],
   "commands": [
+    {
+      "name": "create",
+      "entity": "CollectionCase",
+      "parameters": [
+        {
+          "name": "invoiceId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "originalAmount",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "outstandingAmount",
+          "type": {
+            "name": "money",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "invoiceId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">",
+          "left": {
+            "kind": "identifier",
+            "name": "originalAmount"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "CollectionCaseDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invoice ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Original amount must be positive"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "invoiceId",
+          "expression": {
+            "kind": "identifier",
+            "name": "invoiceId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientName",
+          "expression": {
+            "kind": "identifier",
+            "name": "clientName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "originalAmount",
+          "expression": {
+            "kind": "identifier",
+            "name": "originalAmount"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "outstandingAmount",
+          "expression": {
+            "kind": "identifier",
+            "name": "outstandingAmount"
+          }
+        }
+      ],
+      "emits": [
+        "CollectionCaseCreated"
+      ]
+    },
     {
       "name": "assignTo",
       "entity": "CollectionCase",

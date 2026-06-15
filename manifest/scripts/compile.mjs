@@ -17,13 +17,14 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
+import { readFile as readFileAsync, access as accessAsync } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import {
   compileToIR,
   validateCommandIntentRegistry,
 } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
+import { compileProjectToIR } from "@angriff36/manifest/multi-compiler";
 import { getConfigPaths } from "./read-config.mjs";
 
 // Honest provenance: read the installed compiler version from the package
@@ -212,6 +213,15 @@ async function compileMergedManifests() {
     const manifestPath = join(MANIFESTS_DIR, manifestFile);
     const manifestSource = readFileSync(manifestPath, "utf-8");
 
+    // Files with `use` declarations depend on cross-file resolution — skip
+    // per-file compile (compileToIR doesn't resolve `use` directives) and let
+    // compileProjectToIR handle them authoritatively below.
+    const hasUseDeclarations = /^\s*use\s+"[^"]+\.manifest"/m.test(manifestSource);
+    if (hasUseDeclarations) {
+      compiledEntries.push({ source: manifestFile, ir: null, skipped: true });
+      continue;
+    }
+
     const { ir, diagnostics } = await compileToIR(manifestSource);
 
     if (!ir) {
@@ -225,18 +235,19 @@ async function compileMergedManifests() {
     const manifestName = manifestFile
       .replace(/\.manifest$/, "")
       .replace(/\//g, "-");
-    const ownedIr = enforceCommandOwnership(ir, manifestName);
+    // Native compileToIR (2.5.1+) populates command.entity, so the old
+    // enforceCommandOwnership repair is no longer applied (see U6 / D14).
     compiledEntries.push({
       source: manifestFile,
-      ir: ownedIr,
+      ir,
     });
 
     mkdirSync(SHARDS_DIR, { recursive: true });
     const shardPath = join(SHARDS_DIR, `${manifestName}.ir.json`);
-    writeFileSync(shardPath, JSON.stringify(ownedIr, null, 2));
+    writeFileSync(shardPath, JSON.stringify(ir, null, 2));
   }
 
-  enforceNoDuplicateCommandIntent(compiledEntries);
+  enforceNoDuplicateCommandIntent(compiledEntries.filter(e => !e.skipped));
 
   const crypto = await import("node:crypto");
 
@@ -278,58 +289,96 @@ async function compileMergedManifests() {
     return new Date().toISOString();
   })();
 
-  const {
-    ir: mergedIR,
-    duplicateWarnings,
-    mergeReport,
-  } = mergeIrs(compiledEntries, {
-    contentHash: "",
-    irHash: "",
+  // Authoritative merge: NATIVE compileProjectToIR resolves `use` declarations,
+  // enforces a single tenant (the shared _base.manifest), validates cross-file
+  // references, and merges sagas/webhooks/schedules/reactions (2.5.0+). This
+  // replaces the old hand-rolled mergeIrs + tenant-reconciliation glue (U6/D11/D12).
+  const resolverHost = {
+    readFile: (p) => readFileAsync(p, "utf8"),
+    resolvePath: (fromDir, rel) => resolve(fromDir, rel),
+    fileExists: async (p) => {
+      try {
+        await accessAsync(p);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
+  const projectEntries = manifestFiles.map((f) => join(MANIFESTS_DIR, f));
+  const { ir: mergedIR, diagnostics: mergeDiagnostics } =
+    await compileProjectToIR({
+      entries: projectEntries,
+      host: resolverHost,
+      basePath: MANIFESTS_DIR,
+    });
+  const mergeErrors = (mergeDiagnostics ?? []).filter(
+    (d) => d.severity === "error"
+  );
+  if (!mergedIR || mergeErrors.length > 0) {
+    console.error("[manifest/compile] Native multi-file merge failed:");
+    for (const d of mergeErrors.slice(0, 30)) {
+      console.error(`  - ${d.message}`);
+    }
+    if (mergeErrors.length > 30) {
+      console.error(`  ... and ${mergeErrors.length - 30} more`);
+    }
+    process.exit(1);
+  }
+  const mergeWarnings = (mergeDiagnostics ?? []).filter(
+    (d) => d.severity !== "error"
+  );
+
+  const mergeReport = {
+    strategy: "native-compileProjectToIR",
     compilerVersion: COMPILER_VERSION,
-    schemaVersion: "1.0",
-    compiledAt,
-  });
-
-  // Compute provenance hashes after merge.
-  // Per IR spec: contentHash = SHA-256 of source manifest(s) (provenance of where
-  // the IR came from). irHash = deterministic SHA-256 of the IR JSON itself
-  // (runtime integrity — matches what RuntimeEngine.verifyIRHash() computes).
-  // irHash: deterministic hash of the IR JSON (sorted keys, irHash stripped from
-  // provenance — matches RuntimeEngine.verifyIRHash() algorithm).
-  // We must compute BEFORE writing irHash into the provenance, then set it.
-  if (mergedIR.provenance) {
-    mergedIR.provenance.contentHash = contentHash;
-    mergedIR.provenance.irHash = ""; // clear for canonical computation
-  }
-  const canonicalIR = JSON.parse(JSON.stringify(mergedIR));
-  const irHash = crypto
-    .createHash("sha256")
-    .update(deterministicStringify(canonicalIR))
-    .digest("hex");
-  if (mergedIR.provenance) {
-    mergedIR.provenance.irHash = irHash;
-  }
-
-  if (duplicateWarnings.length > 0) {
-    console.warn(
-      `[manifest/compile] Merge dropped ${duplicateWarnings.length} duplicate definitions`
-    );
-    for (const warning of duplicateWarnings.slice(0, 20)) {
-      console.warn(`  ${warning}`);
-    }
-    if (duplicateWarnings.length > 20) {
-      console.warn(
-        `  ... and ${duplicateWarnings.length - 20} more duplicate definitions`
-      );
-    }
-  }
+    sources: compiledEntries.map((e) => e.source),
+    counts: {
+      entities: mergedIR.entities?.length ?? 0,
+      commands: mergedIR.commands?.length ?? 0,
+      events: mergedIR.events?.length ?? 0,
+      sagas: mergedIR.sagas?.length ?? 0,
+      reactions: mergedIR.reactions?.length ?? 0,
+    },
+    warnings: mergeWarnings.map((d) => d.message),
+  };
 
   // Enrich computed-property dependencies (self.X → computed-to-computed chains)
+  // BEFORE hashing, so the stored irHash covers the final (enriched) IR and the
+  // runtime's verifyIRHash() matches. (Enriching after the hash would silently
+  // invalidate it.)
   const enrichedDeps = enrichComputedDependencies(mergedIR);
   if (enrichedDeps > 0) {
     console.log(
       `[manifest/compile] Enriched ${enrichedDeps} computed-property dependency declarations`
     );
+  }
+
+  // Provenance: overwrite native provenance with capsule's deterministic shape
+  // so the IR hash stays stable and runtime verifyIRHash() matches. contentHash
+  // is the SHA-256 of the sources (computed above); irHash is the deterministic
+  // SHA-256 of the IR JSON itself with irHash cleared first.
+  mergedIR.provenance = {
+    compilerVersion: COMPILER_VERSION,
+    schemaVersion: "1.0",
+    contentHash,
+    compiledAt,
+    irHash: "",
+  };
+  const canonicalIR = JSON.parse(JSON.stringify(mergedIR));
+  const irHash = crypto
+    .createHash("sha256")
+    .update(deterministicStringify(canonicalIR))
+    .digest("hex");
+  mergedIR.provenance.irHash = irHash;
+
+  if (mergeWarnings.length > 0) {
+    console.warn(
+      `[manifest/compile] Native merge emitted ${mergeWarnings.length} warning(s)`
+    );
+    for (const w of mergeWarnings.slice(0, 20)) {
+      console.warn(`  ${w.message}`);
+    }
   }
 
   console.log(
@@ -379,9 +428,9 @@ async function compileMergedManifests() {
     sources: compiledEntries.map(({ source, ir }) => ({
       path: source,
       domain: source.includes("/") ? source.split("/")[0] : "root",
-      entities: ir.entities?.length ?? 0,
-      commands: ir.commands?.length ?? 0,
-      events: ir.events?.length ?? 0,
+      entities: ir?.entities?.length ?? 0,
+      commands: ir?.commands?.length ?? 0,
+      events: ir?.events?.length ?? 0,
     })),
     merged: {
       path: "kitchen.ir.json",

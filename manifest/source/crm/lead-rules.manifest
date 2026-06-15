@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // CRM & Sales - Lead Rules
 // Manifest spec for lead tracking, qualification, and conversion
 
-entity Lead {
+entity Lead mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property source: string = ""
   searchable property companyName: string = ""
   searchable property contactName: string = ""
@@ -21,7 +19,6 @@ entity Lead {
   property convertedToClientId: string = ""
   property convertedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null
   computed isHighValue: boolean = self.estimatedValue >= 10000
@@ -38,7 +35,7 @@ entity Lead {
   transition status from "qualified" to ["proposal", "disqualified", "lost"]
   transition status from "proposal" to ["won", "lost", "disqualified"]
 
-  constraint warnHighValueUnassigned:warn self.isHighValue and self.assignedTo == "" {
+  constraint warnHighValueUnassigned:warn (self.estimatedValue >= 10000) and self.assignedTo == "" {
     messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"
     details: {
       contactName: self.contactName
@@ -57,6 +54,11 @@ entity Lead {
   }
 
   relationship belongsTo convertedToClient: Client with convertedToClientId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Lead
+  relationship hasMany deals: Deal
+  relationship hasMany interactions: ClientInteraction
+  relationship hasMany proposals: Proposal
 
   default policy LeadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Lead management"
   command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: money, assignedTo: string, notes: string) {
@@ -87,7 +89,12 @@ entity Lead {
 
   command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: money, status: string, assignedTo: string, notes: string) {
     guard self.deletedAt == null "Cannot update an archived lead"
-    guard self.isConverted == false "Cannot update a converted lead"
+    // Stored-prop form of `!self.isConverted` (isConverted = convertedToClientId != ""
+    // and convertedAt != null). Computeds do NOT resolve inside guards in this runtime
+    // (they evaluate to undefined → `undefined == false` is false → the guard rejected
+    // EVERY update, making Lead.update dead for all callers). Inlining the stored props
+    // revives it. Same fix pattern as Proposal.send's isDraft inline.
+    guard self.convertedToClientId == "" or self.convertedAt == null "Cannot update a converted lead"
     guard contactName != null and contactName != "" "Contact name is required"
 
     constraint warnStatusRegression:warn status == "new" and self.status != "new" {
@@ -117,7 +124,7 @@ entity Lead {
     guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
-    constraint blockAlreadyConverted:block !self.isConverted {
+    constraint blockAlreadyConverted:block !(self.convertedToClientId != "" and self.convertedAt != null) {
       messageTemplate: "Lead '{contactName}' has already been converted to client '{existingClientId}'"
       details: {
         contactName: self.contactName
@@ -143,9 +150,9 @@ entity Lead {
 
   command disqualify(reason: string, userId: string) {
     guard self.deletedAt == null "Cannot disqualify an archived lead"
-    guard self.isConverted == false "Cannot disqualify a converted lead"
+    guard (self.convertedToClientId != "" and self.convertedAt != null) == false "Cannot disqualify a converted lead"
 
-    constraint warnHighValueDisqualify:warn self.isHighValue {
+    constraint warnHighValueDisqualify:warn (self.estimatedValue >= 10000) {
       messageTemplate: "Disqualifying high-value lead '{contactName}' (${estimatedValue})"
       details: {
         contactName: self.contactName
@@ -163,7 +170,7 @@ entity Lead {
   command archive(reason: string, userId: string) {
     guard self.deletedAt == null "Lead is already archived"
 
-    constraint warnArchiveOpenLead:warn self.isOpen {
+    constraint warnArchiveOpenLead:warn (self.status in ["new", "contacted", "qualified", "proposal"]) {
       messageTemplate: "Archiving open lead '{contactName}' with status '{status}'"
       details: {
         contactName: self.contactName

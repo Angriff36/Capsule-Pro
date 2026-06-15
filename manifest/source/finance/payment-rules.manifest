@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Payment Rules Manifest
 // Defines payment processing, tracking, and reconciliation rules
 
-entity Payment {
+entity Payment mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
 
   // Payment details
   property required amount: money = 0

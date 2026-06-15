@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "89e590a1bf6d165e4299e86e167e728d5832f31eb48a19939c9b3ff0e098d82d",
-    "irHash": "120ad1d55b4bd39f53139176b9782f3ac43ec60b4bd8096070622b8ba7e0f598",
-    "compilerVersion": "2.4.2",
+    "contentHash": "135945afe6fbf70286414e7eaab04e7856e2f24c5b81ab837a7652216b732db6",
+    "irHash": "46c19564c38ef386b0652db6191f1029b309a638b7ddae451329294237218d1a",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.066Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.571Z"
   },
   "modules": [],
   "values": [],
@@ -694,12 +686,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -769,12 +772,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -887,12 +901,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         },
         {
           "kind": "binary",

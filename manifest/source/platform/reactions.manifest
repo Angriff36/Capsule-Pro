@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Cross-Entity Reactions
 // Declarative event-to-command bindings that replace manual cross-entity Prisma writes.
 // Reactions fire synchronously within the same Manifest runtime turn after event emission.
@@ -52,16 +52,20 @@ on WasteEntryCreated run InventoryItem.waste
 
 // ── Collections: CollectionPayment → Invoice ─────────────────────────────────
 
-// When a collection case records a payment against an invoice, automatically
-// apply it through the governed Invoice.applyPayment command. This ensures
-// invoice amountPaid/amountDue stay consistent with collection activity.
-// Uses caseId as the payment reference for traceability.
-on CollectionPaymentRecorded run Invoice.applyPayment
-  resolve payload.result.invoiceId
-  params {
-    paymentAmount: payload.amount
-    paymentId: payload.paymentId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a collection case records a payment
+// against its invoice, the linked invoice is auto-credited so collection-recovery
+// activity keeps amountPaid/amountDue/status consistent. The invoice to credit is
+// identified by `CollectionCase.invoiceId` — the case's OWN field, NOT a
+// `recordPayment` input param (`recordPayment(amount, paymentId, paymentDate)`), and
+// declared event fields (`CollectionPaymentRecorded.invoiceId`) are NOT
+// auto-populated from self.*. The prior `on CollectionPaymentRecorded run
+// Invoice.applyPayment` reaction reading `resolve payload.result.invoiceId` was a
+// silent no-op (`recordPayment` is a MUTATE; `result` = the last mutate's scalar
+// `lastActivityAt`), so collections never credited the AR books.
+// `collection-payment-recorded-invoice-apply-middleware.ts` loads the CollectionCase
+// from the store via `_subject.id`, reads `self.invoiceId`, takes amount/paymentId
+// from the command input, and dispatches the governed `Invoice.applyPayment`
+// (guard-safe; skips DRAFT/PAID/overpay).
 
 // ── Events: Contract → Event confirmation ────────────────────────────────────
 
@@ -80,45 +84,35 @@ on CollectionPaymentRecorded run Invoice.applyPayment
 
 // ── Equipment: MaintenanceWorkOrder → Equipment maintenance record ────────
 
-// When a maintenance work order is completed, automatically record the maintenance
-// event on the parent equipment. This updates lastMaintenanceDate, calculates
-// nextMaintenanceDate, and keeps the equipment maintenance history current.
-on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
-  resolve payload.result.equipmentId
-  params {
-    // completeWork mutates completedAt = now(); payload.result is the last
-    // mutate's scalar value (not the instance), so derive the date honestly
-    // via now() — the reaction fires in the same runtime turn.
-    maintenanceDate: now()
-    maintenanceType: "corrective"
-    performedBy: payload.userId
-    cost: payload.totalCost
-    notes: "Auto-recorded from work order completion"
-  }
-
-// When maintenance work is completed, automatically transition the equipment
-// back to active status. Ensures equipment availability tracking stays current
-// without requiring a separate manual status update.
-on MaintenanceWorkOrderCompleted run Equipment.updateStatus
-  resolve payload.result.equipmentId
-  params {
-    newStatus: "active"
-    reason: "Maintenance work order completed"
-    userId: payload.userId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a maintenance work order is
+// completed (MaintenanceWorkOrder.completeWork → MaintenanceWorkOrderCompleted),
+// the linked Equipment must have its maintenance dates recorded and be returned
+// to active status. The two old reactions resolved `payload.result.equipmentId`,
+// and `completeWork` is a MUTATE command, so the engine's emitted payload
+// `{ ...commandInput, result }` carries `result` = the last mutate's scalar
+// (`completedAt`), NOT the MaintenanceWorkOrder instance — both silently no-op'd.
+// `equipmentId` is the MaintenanceWorkOrder's OWN field, not a `completeWork`
+// param, and declared event fields are never auto-populated from `self.*`, so no
+// reaction can read it. `maintenance-completed-equipment-record-middleware.ts`
+// loads the completed work order via `_subject.id`, reads `self.equipmentId`,
+// and dispatches the governed `Equipment.recordMaintenance` — which itself
+// mutates `status = "active"` (subsuming the redundant second `updateStatus`
+// reaction; dispatching both would trip updateStatus's `newStatus != self.status`
+// guard once recordMaintenance has already set active).
 
 // ── Procurement: Shipment receiving → Inventory restock ────────────────────
 
-// When a shipment line item is confirmed received, automatically restock the
-// inventory item. Replaces manual stock updates in receiving workflows.
-// Per-item granularity (not per-shipment) ensures accurate quantity tracking.
-on ShipmentItemReceived run InventoryItem.restock
-  resolve payload.result.itemId
-  params {
-    quantity: payload.quantityReceived
-    costPerUnit: 0
-    userId: payload.userId
-  }
+// Handled by MIDDLEWARE, not a reaction. When a shipment line item is confirmed
+// received (ShipmentItem.updateReceived → ShipmentItemReceived), the linked
+// inventory item is restocked by the received quantity. This is middleware
+// because the values restock needs are the ShipmentItem's OWN fields, not
+// updateReceived params: `itemId` (which item) is ShipmentItem.itemId, and
+// `costPerUnit` must be ShipmentItem.unitCost — declared event fields are never
+// auto-populated from self.*, so no reaction could read them. The old reaction
+// resolved `payload.result.itemId` (a mutate scalar, undefined) AND hardcoded
+// `costPerUnit: 0`, so it silently no-op'd and, if naively fixed, would have
+// zeroed InventoryItem.unitCost on every receipt. See
+// manifest/runtime/src/middleware/shipment-item-received-inventory-restock-middleware.ts.
 
 // ── CRM: Lead conversion → Deal creation ──────────────────────────────────
 
@@ -133,6 +127,25 @@ on ShipmentItemReceived run InventoryItem.restock
 // (`Lead.convertToClient` is a MUTATE; `result` = the last mutate's scalar).
 // `lead-converted-deal-create-middleware.ts` loads the converted Lead from the
 // store via `_subject.id` and dispatches the governed `Deal.create` command.
+
+// ── Sales: Proposal line items → Proposal.lineItemCount ────────────────────
+
+// Handled by MIDDLEWARE, not a reaction (proposal-line-item-count-middleware.ts).
+// Adding/removing a ProposalLineItem must keep the parent Proposal's stored
+// `lineItemCount` truthful, because `Proposal.send` gates on it
+// (`constraint blockNoLineItems:block self.lineItemCount > 0`). This was a
+// double deadlock: lineItemCount was set to 0 on create and never changed, AND
+// the gate originally read the `hasLineItems` COMPUTED — which the runtime does
+// NOT resolve inside :block/:warn constraints (only inside guards), so it blocked
+// EVERY send (proposals were unsendable). The gate is now inlined to the stored
+// prop; the middleware maintains it. Middleware (not a reaction) because the
+// parent `proposalId` is the line item's OWN field: it rides the payload on
+// `create` (an input param) but NOT on `remove` (`remove(userId)` takes no
+// proposalId, and declared event fields are never auto-populated from self.*),
+// so a `resolve payload.proposalId` reaction would silently no-op on the remove
+// leg. The middleware loads the line item to read self.proposalId and dispatches
+// the governed Proposal.increment/decrementLineItemCount (idempotent per line
+// item per direction).
 
 // ── Sales: Proposal acceptance → Event creation ───────────────────────────
 
@@ -210,3 +223,19 @@ on EventConfirmed run PrepList.create
     totalEstimatedTime: 0
     notes: "[auto-seed:event-confirmed]"
   }
+
+// ── Admin chat: message sent → thread activity timestamp ─────────────────────
+
+// Sending an admin chat message bumps its thread's `lastMessageAt` so thread
+// lists can order by recency (today the column is never written → threads can't
+// sort by activity). This is a REACTION (not middleware) because the target is a
+// single thread whose id IS reachable from the payload: `AdminChatMessage.create`
+// takes `threadId` as an INPUT PARAM, so it rides the emitted payload
+// `{ ...commandInput, result }` as `payload.threadId`. NOTE: resolve on
+// `payload.threadId` (the real create param), NOT `payload.adminChatThreadId`
+// (a declared event field — never auto-populated from self.*, so it would be a
+// silent no-op and fail the reaction-payload audit gate).
+// `recordLastMessage()` takes no params and mutates `lastMessageAt = now()`.
+on AdminChatMessageSent run AdminChatThread.recordLastMessage
+  resolve payload.threadId
+  params {}

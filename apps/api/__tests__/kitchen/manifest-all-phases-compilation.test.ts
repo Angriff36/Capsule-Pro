@@ -5,7 +5,7 @@
  * 1. Can be read from disk
  * 2. Compiles to IR via compileToIR() without errors
  * 3. Contains the expected entity names
- * 4. Contains the expected command names per entity (after enforceCommandOwnership)
+ * 4. Contains the expected command names per entity
  *
  * Also validates:
  * - ENTITY_TO_MANIFEST mapping resolves correctly
@@ -21,7 +21,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
@@ -680,9 +679,8 @@ describe("Manifest All-Phases Compilation", () => {
         throw new Error(`${manifest} should compile to a valid IR`);
       }
 
-      // Apply enforceCommandOwnership to normalize entity→command mapping
-      // This is the same normalization the runtime uses
-      const normalized = enforceCommandOwnership(ir, manifest);
+      // Compiler populates command.entity natively — no normalization needed
+      const normalized = ir;
 
       for (const entitySpec of entities) {
         // After normalization, commands have entity set
@@ -706,7 +704,7 @@ describe("Manifest All-Phases Compilation", () => {
         throw new Error(`${manifest} should compile to a valid IR`);
       }
 
-      const normalized = enforceCommandOwnership(ir, manifest);
+      const normalized = ir;
 
       const runtime = new ManifestRuntimeEngine(
         normalized,

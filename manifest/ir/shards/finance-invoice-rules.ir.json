@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "7b507dcf68044472c914d55380e6c1aceaf2e063fac001a601d7041105ba0712",
-    "irHash": "d0d902f793782ff04fded2ef6a1daea592ef7f4a5f9e6bd277a968e473b823da",
-    "compilerVersion": "2.4.2",
+    "contentHash": "2da41f03090cbb5852deba1acb6a896079f4acc5f09015bba6c4fa1b165bd417",
+    "irHash": "b6541dfdccbf51285cc3cc983898f56ff930f5fe5886f5f23b09f843a3e7d5d7",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.950Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.475Z"
   },
   "modules": [],
   "values": [],
@@ -610,7 +602,7 @@
           "from": "DRAFT",
           "to": [
             "SENT",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -621,7 +613,7 @@
             "OVERDUE",
             "PARTIALLY_PAID",
             "PAID",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -631,7 +623,7 @@
             "OVERDUE",
             "PARTIALLY_PAID",
             "PAID",
-            "VOIDED"
+            "VOID"
           ]
         },
         {
@@ -640,8 +632,8 @@
           "to": [
             "PARTIALLY_PAID",
             "PAID",
-            "WRITTEN_OFF",
-            "VOIDED"
+            "WRITE_OFF",
+            "VOID"
           ]
         },
         {
@@ -649,7 +641,7 @@
           "from": "PARTIALLY_PAID",
           "to": [
             "PAID",
-            "WRITTEN_OFF",
+            "WRITE_OFF",
             "PARTIALLY_PAID"
           ]
         },
@@ -1940,12 +1932,23 @@
           "kind": "binary",
           "operator": "==",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "amountDue"
             },
-            "property": "isPaidInFull"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
           },
           "right": {
             "kind": "literal",

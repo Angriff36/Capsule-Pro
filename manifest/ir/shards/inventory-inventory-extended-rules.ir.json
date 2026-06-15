@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8f70db4b7686d3bf5b7c30ec3c5c6211f3bda3edcc1275c446429baf4c15620c",
-    "irHash": "c613e0f66a35d9c7a8123f8bcdc353ecaeb5dbe618c45b762d66c3f3afd7e2ae",
-    "compilerVersion": "2.4.2",
+    "contentHash": "85b8c3220c9a26b37cc3ec39eeab252aacef98fc99cd7abce6763c51969b777d",
+    "irHash": "d2bc688d6c7cd69ac32fb2fbf7aa01fc93b04208d25a5355a06bc9ff69b983ff",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.969Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.490Z"
   },
   "modules": [],
   "values": [],
@@ -2328,12 +2320,23 @@
           "name": "warnLowScore",
           "code": "warnLowScore",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "rating"
             },
-            "property": "isLowScore"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 2
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier",
@@ -2996,12 +2999,24 @@
           "name": "warnOverBudget",
           "code": "warnOverBudget",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "spentAmount"
             },
-            "property": "isOverBudget"
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "budgetAmount"
+            }
           },
           "severity": "warn",
           "messageTemplate": "Procurement budget '{name}' is over budget (spent {spent}, limit {limit})",
@@ -3528,12 +3543,23 @@
           "name": "warnInactive",
           "code": "warnInactive",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isActive"
             },
-            "property": "isDeactivated"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Audit schedule '{name}' is inactive — cycle counts will not run automatically",
@@ -7655,12 +7681,23 @@
           "name": "warnLowConfidence",
           "code": "warnLowConfidence",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "confidence"
             },
-            "property": "isLowConfidence"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0.5
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Publishing low-confidence forecast ({confidence}) for item '{inventoryItemId}'",
@@ -11438,12 +11475,23 @@
       "parameters": [],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
           },
-          "property": "isDeactivated"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
         }
       ],
       "constraints": [],

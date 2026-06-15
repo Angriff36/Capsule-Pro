@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // CRM & Sales - Client Rules
 // Manifest spec for client, contact, and preference management
 
-entity Client {
+entity Client mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required clientType: string = "company"
   searchable property companyName: string = ""
   property firstName: string = ""
@@ -27,11 +25,18 @@ entity Client {
   property source: string = ""
   property assignedTo: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
   computed hasEmail: boolean = self.email != null and self.email != ""
   computed isArchived: boolean = self.deletedAt != null
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Client
+  relationship hasMany contacts: ClientContact
+  relationship hasMany interactions: ClientInteraction
+  relationship hasMany preferences: ClientPreference
+  relationship hasMany proposals: Proposal
+  relationship hasMany invoices: Invoice
+  relationship hasMany payments: Payment
 
   constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
   constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"
@@ -137,10 +142,8 @@ entity Client {
   store Client in durable
 }
 
-entity ClientContact {
+entity ClientContact mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required clientId: string
   property firstName: string = ""
   property lastName: string = ""
@@ -152,7 +155,6 @@ entity ClientContact {
   property isBillingContact: boolean = false
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed hasContactInfo: boolean = self.email != "" or self.phone != "" or self.phoneMobile != ""
@@ -234,17 +236,14 @@ entity ClientContact {
   store ClientContact in durable
 }
 
-entity ClientPreference {
+entity ClientPreference mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required clientId: string
   property preferenceType: string = ""
   property preferenceKey: string = ""
   property preferenceValue: string = ""
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"

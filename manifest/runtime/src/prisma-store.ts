@@ -541,8 +541,8 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
  *
  * Field mapping: every manifest property is stored 1:1 (same name) in the
  * dedicated table; JSON-shaped properties (generatedTasks, scheduledWindows,
- * errors, etc.) are typed as `string` in the manifest and stored as TEXT in
- * Postgres holding serialized JSON payloads (e.g. `"[]"`, `"{}"`).
+ * errors, etc.) are stored natively as Prisma `Json` columns — objects and
+ * arrays pass through directly without manual serialization.
  */
 export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
   constructor(
@@ -576,16 +576,16 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
         status: (data.status as string) ?? "created",
         currentStep: (data.currentStep as number) ?? 0,
         totalSteps: (data.totalSteps as number) ?? 5,
-        generationOptions: (data.generationOptions as string) ?? "{}",
-        generatedTasks: (data.generatedTasks as string) ?? "[]",
-        reviewedTasks: (data.reviewedTasks as string) ?? "[]",
-        approvedTaskIds: (data.approvedTaskIds as string) ?? "[]",
-        rejectedTaskIds: (data.rejectedTaskIds as string) ?? "[]",
-        instantiatedTaskIds: (data.instantiatedTaskIds as string) ?? "[]",
-        scheduledWindows: (data.scheduledWindows as string) ?? "{}",
-        constraintOutcomes: (data.constraintOutcomes as string) ?? "[]",
-        errors: (data.errors as string) ?? "[]",
-        warnings: (data.warnings as string) ?? "[]",
+        generationOptions: toJsonValue(data.generationOptions, {}),
+        generatedTasks: toJsonValue(data.generatedTasks, []),
+        reviewedTasks: toJsonValue(data.reviewedTasks, []),
+        approvedTaskIds: toJsonValue(data.approvedTaskIds, []),
+        rejectedTaskIds: toJsonValue(data.rejectedTaskIds, []),
+        instantiatedTaskIds: toJsonValue(data.instantiatedTaskIds, []),
+        scheduledWindows: toJsonValue(data.scheduledWindows, {}),
+        constraintOutcomes: toJsonValue(data.constraintOutcomes, []),
+        errors: toJsonValue(data.errors, []),
+        warnings: toJsonValue(data.warnings, []),
         generatedCount: (data.generatedCount as number) ?? 0,
         approvedCount: (data.approvedCount as number) ?? 0,
         instantiatedCount: (data.instantiatedCount as number) ?? 0,
@@ -616,16 +616,6 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
         "eventId",
         "idempotencyKey",
         "status",
-        "generationOptions",
-        "generatedTasks",
-        "reviewedTasks",
-        "approvedTaskIds",
-        "rejectedTaskIds",
-        "instantiatedTaskIds",
-        "scheduledWindows",
-        "constraintOutcomes",
-        "errors",
-        "warnings",
         "reviewedBy",
         "approvedBy",
       ] as const;
@@ -637,6 +627,30 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
           } else {
             updateData[f] = data[f] as string;
           }
+        }
+      }
+      // JSON fields: normalize string-encoded JSON → parsed objects/arrays,
+      // then pass directly to Prisma (native Json columns).
+      const jsonFields = [
+        "generationOptions",
+        "generatedTasks",
+        "reviewedTasks",
+        "approvedTaskIds",
+        "rejectedTaskIds",
+        "instantiatedTaskIds",
+        "scheduledWindows",
+        "constraintOutcomes",
+        "errors",
+        "warnings",
+      ] as const;
+      for (const f of jsonFields) {
+        if (data[f] !== undefined) {
+          updateData[f] = toJsonValue(
+            data[f],
+            f === "generationOptions" || f === "scheduledWindows"
+              ? {}
+              : []
+          );
         }
       }
       const numberFields = [
@@ -710,16 +724,16 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       status: w.status ?? "created",
       currentStep: w.currentStep ?? 0,
       totalSteps: w.totalSteps ?? 5,
-      generationOptions: w.generationOptions ?? "{}",
-      generatedTasks: w.generatedTasks ?? "[]",
-      reviewedTasks: w.reviewedTasks ?? "[]",
-      approvedTaskIds: w.approvedTaskIds ?? "[]",
-      rejectedTaskIds: w.rejectedTaskIds ?? "[]",
-      instantiatedTaskIds: w.instantiatedTaskIds ?? "[]",
-      scheduledWindows: w.scheduledWindows ?? "{}",
-      constraintOutcomes: w.constraintOutcomes ?? "[]",
-      errors: w.errors ?? "[]",
-      warnings: w.warnings ?? "[]",
+      generationOptions: w.generationOptions ?? {},
+      generatedTasks: w.generatedTasks ?? [],
+      reviewedTasks: w.reviewedTasks ?? [],
+      approvedTaskIds: w.approvedTaskIds ?? [],
+      rejectedTaskIds: w.rejectedTaskIds ?? [],
+      instantiatedTaskIds: w.instantiatedTaskIds ?? [],
+      scheduledWindows: w.scheduledWindows ?? {},
+      constraintOutcomes: w.constraintOutcomes ?? [],
+      errors: w.errors ?? [],
+      warnings: w.warnings ?? [],
       generatedCount: w.generatedCount ?? 0,
       approvedCount: w.approvedCount ?? 0,
       instantiatedCount: w.instantiatedCount ?? 0,
@@ -734,6 +748,32 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       isDeleted: w.status === "deleted",
     };
   }
+}
+
+/**
+ * Normalize a manifest entity value to a Prisma Json-compatible input.
+ *
+ * Accepts:
+ * - Already-parsed objects/arrays (preferred path for Json columns)
+ * - String-encoded JSON (backward compat with callers that still serialize)
+ *
+ * Returns the `fallback` for null/undefined/empty-string.
+ */
+function toJsonValue(
+  value: unknown,
+  fallback: Prisma.InputJsonValue
+): Prisma.InputJsonValue {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as Prisma.InputJsonValue;
+    } catch {
+      return fallback;
+    }
+  }
+  return value as Prisma.InputJsonValue;
 }
 
 /**
@@ -795,8 +835,6 @@ export function createPrismaStoreProvider(
         return new PrepTaskPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
-      case "PrepTaskPlanWorkflow":
-        return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
       case "Station":
         return new StationPrismaStore(prisma, tenantId);
       case "InventoryTransfer":
@@ -925,8 +963,6 @@ export class StationPrismaStore implements Store<EntityInstance> {
  */
 export interface PrismaStoreConfig {
   entityName: string;
-  eventCollector?: unknown[];
-  outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
   prisma: PrismaClient;
   tenantId: string;
   /** RuntimeContext.user.id — threaded through to per-entity stores that
@@ -938,16 +974,10 @@ export interface PrismaStoreConfig {
  * Generic PrismaStore class that wraps entity-specific stores
  *
  * This class provides a unified interface for working with different entity types
- * through their Prisma-backed store implementations. It supports the outbox pattern
- * for reliable event delivery.
+ * through their Prisma-backed store implementations.
  */
 export class PrismaStore implements Store<EntityInstance> {
   private readonly store: Store<EntityInstance>;
-  private readonly outboxWriter: (
-    tx: PrismaClient,
-    events: unknown[]
-  ) => Promise<void>;
-  private readonly eventCollector?: unknown[];
 
   constructor(config: PrismaStoreConfig) {
     // Resolve a bespoke per-entity store from the switch; if none exists for
@@ -966,8 +996,6 @@ export class PrismaStore implements Store<EntityInstance> {
         config.entityName,
         config.tenantId
       );
-    this.outboxWriter = config.outboxWriter;
-    this.eventCollector = config.eventCollector;
   }
 
   async getAll(): Promise<EntityInstance[]> {
@@ -996,67 +1024,6 @@ export class PrismaStore implements Store<EntityInstance> {
   async clear(): Promise<void> {
     return this.store.clear();
   }
-
-  /**
-   * Write events to the outbox within a transaction
-   *
-   * This method is called by the manifest runtime to persist events
-   * transactionally with state mutations.
-   */
-  async writeEvents(events: unknown[]): Promise<void> {
-    // If we have a Prisma transaction context, use it
-    // Otherwise, create a new transaction
-    if (this.eventCollector) {
-      // Add events to the in-memory collector for later writing
-      this.eventCollector.push(...events);
-    } else {
-      // Write directly to outbox (creates its own transaction)
-      throw new Error(
-        "Direct outbox writing not supported - use eventCollector pattern"
-      );
-    }
-  }
-}
-
-/**
- * Create an outbox writer function for a given entity and tenant
- *
- * The outbox writer function writes events to the OutboxEvent table
- * within a Prisma transaction for reliable event delivery.
- *
- * @param entityName - The name of the entity (e.g., "PrepTask")
- * @param tenantId - The tenant ID for multi-tenant isolation
- * @returns A function that writes events to the outbox
- */
-export function createPrismaOutboxWriter(
-  entityName: string,
-  tenantId: string
-): (tx: PrismaClient, events: unknown[]) => Promise<void> {
-  return async (tx: PrismaClient, events: unknown[]) => {
-    for (const event of events) {
-      const eventData = event as {
-        name?: string;
-        eventType?: string;
-        payload: { id?: string; taskId?: string };
-        aggregateId?: string;
-        aggregateType?: string;
-      };
-      await tx.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: eventData.aggregateType || entityName,
-          eventType: eventData.eventType || eventData.name || "unknown",
-          payload: eventData.payload as Prisma.InputJsonValue,
-          aggregateId:
-            eventData.aggregateId ||
-            eventData.payload?.taskId ||
-            eventData.payload?.id ||
-            "unknown",
-          status: "pending",
-        },
-      });
-    }
-  };
 }
 
 // ---------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 {
   "name": "docs",
   "dependencies": {
-    "fumadocs-core": "^16.9.1",
-    "fumadocs-mdx": "^15.0.9",
-    "fumadocs-ui": "^16.9.1",
+    "fumadocs-core": "^16.10.2",
+    "fumadocs-mdx": "^15.0.12",
+    "fumadocs-ui": "^16.10.2",
     "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -11,11 +11,11 @@
   "devDependencies": {
     "@repo/design-system": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/mdx": "^2.0.13",
+    "@types/mdx": "^2.0.14",
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
-    "tailwindcss": "^4.3.0",
+    "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3"
   },
   "private": true,

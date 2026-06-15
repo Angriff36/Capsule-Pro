@@ -1,16 +1,23 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Prep List Rules
 // Manifest spec for prep list operations with constraints, guards, and events
 
-entity PrepList {
+// U7: Closed-vocabulary status enum for PrepList lifecycle.
+// Values: draft -> finalized -> completed, or cancelled at any stage.
+enum PrepListStatus {
+  draft
+  finalized
+  completed
+  cancelled
+}
+
+entity PrepList mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   searchable property required name: string
   property batchMultiplier: decimal = 1
   property dietaryRestrictions: array<string> = []
-  indexed property status: string = "draft"
+  indexed property status: PrepListStatus = draft
   property totalItems: int = 0
   property totalEstimatedTime: int = 0
   searchable property notes: string = ""
@@ -207,10 +214,8 @@ entity PrepList {
   store PrepList in durable
 }
 
-entity PrepListItem {
+entity PrepListItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required prepListId: string
   property required stationId: string
   property required stationName: string
@@ -237,6 +242,7 @@ entity PrepListItem {
   computed hasAllergens: boolean = self.allergens != null and length(self.allergens) > 0
   computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and length(self.dietarySubstitutions) > 0
   computed isRequired: boolean = self.isOptional == false
+  computed isDeleted: boolean = self.deletedAt != null
 
   relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
   relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
@@ -363,6 +369,14 @@ entity PrepListItem {
     mutate completedBy = ""
 
     emit PrepListItemCreated
+  }
+
+  command remove(reason: string, userId: string) {
+    guard self.deletedAt == null "Prep list item is already removed"
+
+    mutate deletedAt = now()
+
+    emit PrepListItemRemoved
   }
 
   store PrepListItem in durable
@@ -508,6 +522,16 @@ event PrepListItemUncompleted: "kitchen.preplist.item_uncompleted" {
   tenantId: string
   ingredientName: string
   uncompletedAt: datetime
+}
+
+event PrepListItemRemoved: "kitchen.preplist.item_removed" {
+  itemId: string
+  prepListId: string
+  tenantId: string
+  ingredientName: string
+  reason: string
+  userId: string
+  removedAt: datetime
 }
 
 // Saga: Create prep list from seed → import items → finalize

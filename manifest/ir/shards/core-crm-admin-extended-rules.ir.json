@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "40321550db77740d3b7d65614b25525929956a316d8deac3996f77c271ee8cd9",
-    "irHash": "77942383a3ecee89381f0fe206aeb8fd7addb584e6c1109d4a3f9c1cfc34f3eb",
-    "compilerVersion": "2.4.2",
+    "contentHash": "62e6c233430b7e04b0e2f1b5c2267dbefb3981932b8f55a699bdd257a0135cc7",
+    "irHash": "693f8080c1fc80d3511c220284216e90e20a368e6e561999c91e35e7901fbe23",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.887Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.421Z"
   },
   "modules": [],
   "values": [],
@@ -2131,7 +2123,8 @@
       "computedProperties": [],
       "relationships": [],
       "commands": [
-        "create"
+        "create",
+        "recordLastMessage"
       ],
       "constraints": [],
       "policies": [],
@@ -3586,6 +3579,36 @@
         },
         {
           "name": "removedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "AdminChatThreadLastMessageRecorded",
+      "channel": "admin.chat_thread.last_message_recorded",
+      "payload": [
+        {
+          "name": "threadId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lastMessageAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -6724,6 +6747,62 @@
       ],
       "emits": [
         "AdminChatThreadCreated"
+      ]
+    },
+    {
+      "name": "recordLastMessage",
+      "entity": "AdminChatThread",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "AdminChatThreadDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Thread is removed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "lastMessageAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "AdminChatThreadLastMessageRecorded"
       ]
     },
     {

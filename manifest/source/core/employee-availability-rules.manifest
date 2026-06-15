@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff Domain - Employee Availability Rules
 // Manifest spec for managing employee availability schedules
 // Lifecycle: active (default) -> suspended -> active (reinstate)
 
-entity EmployeeAvailability {
+entity EmployeeAvailability mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property employeeId: string = ""
   property dayOfWeek: int = 0
   property startTime: string = ""
@@ -20,7 +18,6 @@ entity EmployeeAvailability {
   property suspendedAt: datetime
   property reinstatedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isActive: boolean = self.deletedAt == null and self.isSuspended == false

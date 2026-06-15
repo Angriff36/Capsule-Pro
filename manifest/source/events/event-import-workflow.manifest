@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Event Import Workflow - Multi-step event import with validation
 // Implements the workflow pattern from spec: parse → extract → validate → propose tasks → reserve inventory → activate
 // Each step is idempotent with clear state transitions
 
-entity EventImportWorkflow {
+entity EventImportWorkflow mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property idempotencyKey: string = ""
   indexed property status: string = "created"
@@ -185,7 +183,7 @@ entity EventImportWorkflow {
 
   // Pause for manual intervention
   command pause(reasonList: string) {
-    guard self.isActive
+    guard (self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"])
 
     mutate status = "paused"
     mutate warnings = reasonList

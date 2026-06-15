@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T15:14:47.190Z",
+  "generatedAt": "2026-06-15T09:07:35.129Z",
   "capturedFromReport": "manifest/reports/direct-writes/direct-writes.json",
   "keyShape": [
     "file",
@@ -7,21 +7,11 @@
     "method"
   ],
   "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
-  "count": 9,
+  "count": 7,
   "violations": [
     {
       "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
       "entity": "PaymentRefundAttempt",
-      "method": "create"
-    },
-    {
-      "file": "apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts",
-      "entity": "AdminChatThread",
-      "method": "update"
-    },
-    {
-      "file": "apps/api/app/api/crm/scoring/route.ts",
-      "entity": "CrmScoringRule",
       "method": "create"
     },
     {

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff Domain - Training Assignment Rules
 // Manifest spec for assigning training modules to staff and tracking completion.
 // Lifecycle: assigned -> in_progress -> completed (or waived / overdue).

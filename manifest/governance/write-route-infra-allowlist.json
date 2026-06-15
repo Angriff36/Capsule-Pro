@@ -1,5 +1,13 @@
 {
   "description": "Write routes allowed outside the canonical Manifest dispatcher (/api/manifest/{entity}/commands/{command}). Two categories: (1) true infrastructure routes (webhooks, auth, cron, export, AI, integrations), (2) domain routes governed via executeManifestCommand through friendly API paths. All routes below either perform no domain mutation or already route through Manifest runtime.",
+  "tightening_notes": [
+    "Previously, each domain namespace (e.g. /api/kitchen/, /api/events/) used a single broad 'prefix' rule that allowlisted EVERY write route under that prefix — governed and ungoverned alike.",
+    "DIVERGENCES.md D4: those broad prefixes have been replaced with 'pattern' rules that enumerate the specific sub-resource paths currently known to exist. A NEW route under a governed namespace will NO LONGER auto-pass the staged-write-route gate; it must be either:",
+    "  (a) added to routes.manifest.json via a canonical Manifest command (preferred), or",
+    "  (b) explicitly added to a pattern below with a justification comment.",
+    "TODO: As governed routes migrate from friendly API paths to runManifestCommand, remove their sub-resource entries here — the canonical routes.manifest.json entry alone should suffice.",
+    "Last tightened: see D4 remediation in MANIFEST-DIVERGENCES.md."
+  ],
   "rules": [
     {
       "prefix": "/api/webhooks/",
@@ -52,79 +60,84 @@
       "comment": "Infrastructure: Calendar sync (connect, disconnect, trigger, reschedule)"
     },
     {
-      "prefix": "/api/accounting/",
+      "pattern": "^/api/accounting/(accounts|bank-accounts|bank-reconciliation|budgets|chart-of-accounts|collections|financial-reports|invoices|payment-methods|payment-refund-attempts|payments|revenue-recognition)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (ChartOfAccount, Invoice, Payment, CollectionCase, RevenueRecognition) + legacy direct-DB routes (payment-methods)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (ChartOfAccount, Invoice, Payment, CollectionCase, RevenueRecognition, Budget) + legacy direct-DB (payment-methods). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/administrative/",
+      "pattern": "^/api/administrative/(board-config|chat|documents|document-versions|entity-versions|knowledge-base|notes|rate-limits|reports|sample-data|sms-automation-rules|tasks|trash|version-approvals|versioned-entities)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (AdminTask) + infrastructure (chat threads, trash restore)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (AdminTask) + infrastructure (chat threads, trash restore, notes). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/events/",
+      "pattern": "^/api/events/(ai-setup-sessions|allergens|automated-followups|battle-boards|budget-alerts|budget-line-items|budgets|catering-orders|contracts|contract-signatures|documents|event-dishes|event|export|followups|guests|import|imports|import-workflows|profitability|reports|staff|summaries|timeline-items|timelines|timeline-tasks|venues|waitlist-entries)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (EventContract, EventGuest, EventBudget, EventReport, BattleBoard) + infrastructure (export, import, document parse, allergen check)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (EventContract, EventGuest, EventBudget, EventReport, BattleBoard) + infrastructure (export, import, document parse, allergen check). Also matches dynamic /api/events/:eventId/* sub-routes. Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/crm/",
+      "pattern": "^/api/events/[^/]+/(battle-board|dishes|export|guests|run-sheet|shipments|timeline|waitlist|warnings)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (Client, Venue, Proposal, CrmScoringRule) + infrastructure (scoring calculate)"
+      "comment": "Domain (TIGHTENED D4): Dynamic event-id sub-routes (/api/events/:eventId/export, :eventId/guests, :eventId/timeline, etc.). Enumerated the 9 known sub-paths; a new sub-path under :eventId will NOT auto-pass — add it here or route via runManifestCommand."
     },
     {
-      "prefix": "/api/collaboration/",
+      "pattern": "^/api/crm/(client-contacts|client-interactions|client-preferences|clients|deals|interaction-attachments|leads|proposal-line-items|proposals|proposal-templates|scoring|scoring-rules|venues)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (EmailTemplate, EmailWorkflow) + infrastructure (email/SMS send, webhooks, preferences)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (Client, Venue, Proposal, CrmScoringRule, Deal, Lead) + infrastructure (scoring calculate). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/inventory/",
+      "pattern": "^/api/collaboration/(auth|notifications|workflows)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (InventoryItem, CycleCountSession/Record, PurchaseOrder, AlertsConfig) + infrastructure (audit, batch, sync, export, import)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (EmailTemplate, EmailWorkflow) + infrastructure (email/SMS send, webhooks, preferences). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/kitchen/",
+      "pattern": "^/api/inventory/(alerts|audit|audit-schedules|barcode-lookup|batch|bulk-order-rules|cycle-count|forecast-inputs|forecasts|import|items|pricing-tiers|purchase-order-items|purchase-orders|reorder-suggestions|stock|stock-levels|storage-locations|suppliers|supplier-sync|transactions|transfer-items|transfers|vendor-catalogs|vendor-contacts|vendor-ratings|vendors)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (PrepList, PrepListItem, KitchenTask, WasteEntry, Dish) + infrastructure (IoT, overrides, AI, composite recipes, import, nutrition, allergens)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (InventoryItem, CycleCountSession/Record, PurchaseOrder, AlertsConfig) + infrastructure (audit, batch, sync, export, import). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/payroll/",
+      "pattern": "^/api/kitchen/(ai|alerts-config|allergens|allergen-warnings|bulk-combine-rules|containers|corrective-actions|dish|dishes|equipment|events|import|ingredient|ingredients|inventory|inventoryitem|iot|iot-alert-rules|iot-alerts|kitchen-tasks|menu|menu-dishes|menudish|menus|method-videos|nutrition-labels|override-audits|overrides|prep-comments|prep-list-imports|prep-list-items|prep-lists|prep-methods|prep-task-plan-workflows|prep-tasks|preplist|preplistitem|preptask|qa-checks|qa-corrective-actions|qa-temperature-logs|quality-assurance|quality-check-items|quality-checks|recipe|recipe-ingredients|recipe-steps|recipe-versions|recipeingredient|recipes|recipeversion|station|stations|task-bundle-items|task-bundles|task-claims|task-progress|tasks|team-activity|temperature-logs|temperature-probes|temperature-readings|waste|waste-entries)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (PayrollPeriod, EmployeeDeduction, PayrollApprovalHistory) + infrastructure (export, tax brackets, generate)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (PrepList, PrepListItem, KitchenTask, WasteEntry, Dish) + infrastructure (IoT, overrides, AI, composite recipes, import, nutrition, allergens). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/procurement/",
+      "pattern": "^/api/payroll/(approval-history|approvals|bank-accounts|deductions|export|generate|labor-budgets|periods|reports|runs|tax|timecards)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (PurchaseOrder receive/update-status) + infrastructure (approvals)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (PayrollPeriod, EmployeeDeduction, PayrollApprovalHistory) + infrastructure (export, tax brackets, generate). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/shipments",
+      "pattern": "^/api/procurement/(approvals|budget|budget-alerts|budgets|purchase-orders|requisition-items|requisitions|vendor-contracts|vendors)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (Shipment, ShipmentItem) + infrastructure (status transitions)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (PurchaseOrder receive/update-status) + infrastructure (approvals). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/command-board",
+      "pattern": "^/api/shipments(/.*)?$",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (CommandBoard, CommandBoardLayout) + infrastructure (simulations, templates)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (Shipment, ShipmentItem) + infrastructure (status transitions). Sub-resources: [id]/items, [id]/status, shipment/, shipment-items/. Tighten further by enumerating these sub-paths as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/staff/",
+      "pattern": "^/api/command-board(/.*)?$",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (ScheduleShift, EmployeeAvailability, EmployeeCertification, TimeOffRequest, LaborBudget, BudgetAlert, User) + infrastructure (bulk-assignment, optimize, predict)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (CommandBoard, CommandBoardLayout) + infrastructure (simulations, templates). Sub-resources: boards/, cards/, connections/, groups/, layouts/, projections/, simulations/, templates/, annotations/, [boardId]/. Tighten further by enumerating these sub-paths as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/timecards",
+      "pattern": "^/api/staff/(action-milestones|availability|budgets|certifications|disciplinary-actions|employees|members|notifications|onboarding-completions|onboarding-tasks|open-shifts|optimize-schedule|payroll-line-items|performance|performance-predictions|performance-reviews|predict-performance|schedules|shifts|timecard-approvals|time-off|tip-pools|training-completions|workforce-analytics|workforce-optimization)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (TimeEntry) + infrastructure (bulk operations)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (ScheduleShift, EmployeeAvailability, EmployeeCertification, TimeOffRequest, LaborBudget, BudgetAlert, User) + infrastructure (bulk-assignment, optimize, predict). Remove entries as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/training/",
+      "pattern": "^/api/timecards(/.*)?$",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (TrainingModule, TrainingAssignment) + infrastructure (complete)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (TimeEntry) + infrastructure (bulk operations). Sub-resources: bulk/, edit-requests/, entries/, me/, time-off-requests/, [id]/. Tighten further by enumerating these sub-paths as routes migrate to runManifestCommand."
     },
     {
-      "prefix": "/api/user/",
+      "pattern": "^/api/training/(assignments|complete|modules)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via createManifestRuntime (User deactivate, update-role)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (TrainingModule, TrainingAssignment) + infrastructure (complete). Remove entries as routes migrate to runManifestCommand."
+    },
+    {
+      "pattern": "^/api/user/(deactivate|update-role)(/|$)",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Domain (TIGHTENED D4): governed via createManifestRuntime (User deactivate, update-role). Only two sub-routes — remove entirely when these migrate to the canonical dispatcher."
     },
     {
       "prefix": "/api/lead",
@@ -147,9 +160,9 @@
       "comment": "Infrastructure: AI Event Setup NL parsing and session management"
     },
     {
-      "prefix": "/api/communications/",
+      "pattern": "^/api/communications/(email-templates|email-workflows|sms)(/|$)",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Domain routes governed via executeManifestCommand (EmailTemplate commands, SmsAutomationRule)"
+      "comment": "Domain (TIGHTENED D4): governed via executeManifestCommand (EmailTemplate commands, SmsAutomationRule). Remove entries as routes migrate to runManifestCommand."
     },
     {
       "prefix": "/api/smsautomationrule/",

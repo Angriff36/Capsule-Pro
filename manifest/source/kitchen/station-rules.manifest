@@ -1,18 +1,20 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Station Rules
 // Manifest spec for station capacity and equipment management
 // Enriched with: maintenance mode (put station in/out of maintenance without full deactivate)
 // Bug fix: entity-level :block constraints for isAtCapacity/isOverCapacity removed —
 //   they would block ALL commands including removeTask/deactivate. Kept as command-level only.
 
-entity Station {
+entity Station mixin TenantScoped {
   // No relationships: locationId is a loose location reference, not a direct FK to a Manifest entity
   // (relationship added below for parent-context resolution)
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo Station
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepListItems: PrepListItem
+
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required locationId: string
   searchable property required name: string
   property required stationType: string = "prep-station"
@@ -113,6 +115,22 @@ entity Station {
     mutate currentTaskCount = self.currentTaskCount > 0 ? self.currentTaskCount - 1 : 0
 
     emit StationTaskRemoved
+  }
+
+  // System reconciliation: set the ABSOLUTE active-task count for the station.
+  // Dispatched by the prep-task-station-count middleware after a PrepTask
+  // lifecycle event (claim/complete/cancel/unclaim/release/reassign), which
+  // recomputes the true count = in_progress PrepTasks assigned to this station.
+  // Absolute (not the +1/-1 assignTask/removeTask deltas) and free of the
+  // capacity block so it can correct drift in EITHER direction — the deltas
+  // cannot decrement on unclaim/release (those commands clear stationId before
+  // the after-emit hook runs, so a delta middleware loses the station link).
+  command syncTaskCount(count: int) {
+    guard count != null and count >= 0 "Task count must be non-negative"
+
+    mutate currentTaskCount = count
+
+    emit StationTaskCountSynced
   }
 
   command updateCapacity(newCapacity: number, userId: string) {
@@ -233,6 +251,13 @@ event StationTaskRemoved: "kitchen.station.task.removed" {
   taskId: string
   currentTaskCount: number
   removedAt: datetime
+}
+
+event StationTaskCountSynced: "kitchen.station.task.count.synced" {
+  stationId: string
+  tenantId: string
+  currentTaskCount: number
+  syncedAt: datetime
 }
 
 event StationCapacityUpdated: "kitchen.station.capacity.updated" {

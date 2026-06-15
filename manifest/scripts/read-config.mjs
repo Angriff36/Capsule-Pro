@@ -120,6 +120,22 @@ export function readConfig() {
 }
 
 /**
+ * Accessor authority from manifest.config.yaml (single source of truth).
+ * Scripts MUST NOT hardcode entity→model or entity→delegate maps elsewhere.
+ */
+export function getAccessorConfig() {
+  const cfg = readConfig();
+  const prismaStore = cfg.projections?.["prisma-store"]?.options ?? {};
+  const prisma = cfg.projections?.prisma?.options ?? {};
+
+  return {
+    naming: prismaStore.naming ?? prisma.naming ?? "snake_case",
+    entityToPrismaModel: prismaStore.entityToPrismaModel ?? {},
+    accessorNames: prismaStore.accessorNames ?? {},
+  };
+}
+
+/**
  * Derived paths from config — the values scripts actually need.
  * All paths are absolute (resolved from repo root).
  */
@@ -181,7 +197,6 @@ export function getConfigPaths() {
   const registryFile = join(registryDir, "commands.registry.json");
 
   return {
-    // Absolute paths
     repoRoot,
     srcDir: resolve(repoRoot, srcDir),
     outputDir: resolve(repoRoot, outputDir),

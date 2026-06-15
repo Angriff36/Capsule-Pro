@@ -1,16 +1,24 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Prep Task Rules
 // Manifest spec for prep task operations with constraints, guards, and events
 
-entity PrepTask {
+// U7: Closed-vocabulary status enum for PrepTask lifecycle.
+// Values: open -> pending -> in_progress -> done (terminal) or canceled (terminal).
+enum PrepTaskStatus {
+  open
+  pending
+  in_progress
+  done
+  canceled
+}
+
+entity PrepTask mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property prepListId: string = ""
   searchable property required name: string
   property required taskType: string = "prep"
-  indexed property required status: string = "open"
+  indexed property required status: PrepTaskStatus = open
   property stationId: string = ""
   property claimedBy: string = ""
   property claimedAt: datetime
@@ -41,6 +49,9 @@ entity PrepTask {
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo PrepTask
+  relationship hasMany comments: PrepComment
+
   // State transitions enforce valid status flows at runtime
   transition status from "open" to ["in_progress", "canceled"]
   transition status from "pending" to ["in_progress", "canceled"]
@@ -51,7 +62,7 @@ entity PrepTask {
   constraint positiveQuantity: self.quantityTotal >= 0 "Total quantity must be non-negative"
   constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 (critical) and 5 (low)"
 
-  constraint warnOverdue:warn self.isOverdue and self.status != "done" {
+  constraint warnOverdue:warn (self.dueByDate != null and now() > self.dueByDate and self.status != "done") and self.status != "done" {
     messageTemplate: "Task '{taskName}' is overdue by {daysOverdue} day(s)"
     details: {
       taskName: self.name
@@ -60,7 +71,7 @@ entity PrepTask {
     }
   }
 
-  constraint warnStationCapacity:warn self.stationId != "" and self.isClaimed {
+  constraint warnStationCapacity:warn self.stationId != "" and (self.claimedBy != "") {
     messageTemplate: "Station '{stationId}' has active task - verify capacity"
     details: {
       stationId: self.stationId
@@ -74,7 +85,7 @@ entity PrepTask {
     guard self.status == "open" or self.status == "pending" "Task is not claimable"
     guard self.claimedBy == "" "Task is already claimed"
 
-    constraint warnOverdueClaim:warn self.isOverdue {
+    constraint warnOverdueClaim:warn (self.dueByDate != null and now() > self.dueByDate and self.status != "done") {
       messageTemplate: "Claiming overdue task '{taskName}'"
       details: {
         taskName: self.name

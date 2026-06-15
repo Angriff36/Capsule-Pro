@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Event Report Rules
 // Manifest spec for pre-event review checklists and report lifecycle
 
-entity EventReport {
+entity EventReport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   searchable property required name: string
   property version: string = "2025-01-01"
@@ -24,7 +22,6 @@ entity EventReport {
   property rejectedBy: string = ""
   property rejectionReason: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"

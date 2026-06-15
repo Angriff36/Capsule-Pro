@@ -1,36 +1,60 @@
 #!/usr/bin/env node
 
 /**
- * generate-full-schema.mjs -- Phase 2 of Task 2.5
+ * generate-full-schema.mjs — CI Validation Artifact Generator
  *
- * Generates a FULL Prisma schema from the Manifest IR using PrismaProjection
- * with the complete auto-derived options from prisma-options.generated.json.
- *
- * Strategy (ADDITIVE, per notes S14):
- *   - Generated models (189 from IR) go into a SEPARATE validation file
- *   - The committed live schema is NOT replaced (cross-relations would break)
- *   - Output: manifest/ir/generated-schema.prisma (for validation only)
- *
- * Post-processing:
- *   1. @@unique injection from _uniqueIndexes (projection only emits @@index)
- *   2. No RLS stripping needed (projection does not emit RLS comments)
- *   3. No composite @@id injection needed (projection handles this natively)
- *
- * Usage: node manifest/scripts/generate-full-schema.mjs
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │ CI VALIDATION ARTIFACT — NOT THE PRODUCTION SCHEMA                       │
+ * │                                                                         │
+ * │ This script generates `manifest/ir/generated-schema.prisma` from the     │
+ * │ Manifest IR using PrismaProjection + a committed options config          │
+ * │ (`manifest/prisma-options.config.json`). The output is a CI-only         │
+ * │ validation artifact used to detect drift between IR entities and the     │
+ * │ hand-authored `packages/database/prisma/schema.prisma`.                  │
+ * │                                                                         │
+ * │ The committed live schema (schema.prisma) is NOT replaced — cross-       │
+ * │ relations between generated and infra-core models would break. Instead,  │
+ * │ both are assembled into the validation artifact and run through           │
+ * │ `prisma validate` to catch type errors, missing fields, and schema      │
+ * │ definition drift before they reach production.                           │
+ * │                                                                         │
+ * │ Pipeline:                                                               │
+ * │   IR (kitchen.ir.json)                                                  │
+ * │     + prisma-options.config.json (committed, frozen mappings)           │
+ * │     + packages/database/prisma/schema.prisma (enums + infra-core)       │
+ * │     → PrismaProjection.generate()                                       │
+ * │     → post-processing (fixups)                                          │
+ * │     → manifest/ir/generated-schema.prisma                               │
+ * │     → prisma validate                                                   │
+ * │                                                                         │
+ * │ Post-processing:                                                        │
+ * │   1. @@unique injection from _uniqueIndexes (projection only emits       │
+ * │      @@index)                                                            │
+ * │   2. No RLS stripping needed (projection does not emit RLS comments)     │
+ * │   3. No composite @@id injection needed (projection handles this)        │
+ * │                                                                         │
+ * │ Usage: node manifest/scripts/generate-full-schema.mjs                    │
+ * └─────────────────────────────────────────────────────────────────────────┘
  */
 
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
+import { getAccessorConfig } from "./read-config.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
+const IR_BRIDGED_ENTITIES = new Set(
+  Object.keys(getAccessorConfig().entityToPrismaModel)
+);
 
 // Paths
 const IR_PATH = resolve(PROJECT_ROOT, "manifest/ir/kitchen.ir.json");
-const OPTIONS_PATH = resolve(__dirname, "prisma-options.generated.json");
+const OPTIONS_PATH = resolve(
+  PROJECT_ROOT,
+  "manifest/prisma-options.config.json"
+);
 const COMMITTED_SCHEMA = resolve(
   PROJECT_ROOT,
   "packages/database/prisma/schema.prisma"
@@ -55,6 +79,7 @@ const irEntityNames = new Set(ir.entities.map((e) => e.name));
 console.log("Loading options from:", OPTIONS_PATH);
 const rawOpts = JSON.parse(readFileSync(OPTIONS_PATH, "utf8"));
 console.log("  tableMappings:", Object.keys(rawOpts.tableMappings).length);
+console.log("  typeMappings:", Object.keys(rawOpts.typeMappings || {}).length);
 console.log("  _compositeIds:", Object.keys(rawOpts._compositeIds).length);
 console.log("  _uniqueIndexes:", Object.keys(rawOpts._uniqueIndexes).length);
 
@@ -68,6 +93,7 @@ const projectionOptions = {
   tableMappings: rawOpts.tableMappings,
   columnMappings: rawOpts.columnMappings,
   dbAttributes: rawOpts.dbAttributes,
+  typeMappings: rawOpts.typeMappings,
   fieldAttributes: rawOpts.fieldAttributes,
   precision: rawOpts.precision,
   indexes: rawOpts.indexes,
@@ -343,6 +369,10 @@ console.log(`  Invalid indexes stripped: ${strippedIndexes}`);
 // ---------------------------------------------------------------------------
 // 5d. Fix type mismatches: @db.* must match the Prisma scalar type
 // ---------------------------------------------------------------------------
+// D18: typeMappings is now passed to PrismaProjection so it should emit the
+// correct scalar types natively. This pass remains as a safety net fallback
+// for any fields the projection doesn't cover, and should report 0 fixes when
+// typeMappings is fully wired.
 // The projection generates field types from IR (String for string, etc.)
 // but dbAttributes from committed schema may not match the generated type.
 // E.g., @db.Decimal(10,2) on a String field → change String to Decimal.
@@ -617,7 +647,7 @@ console.log(`  @db.Time stripped: ${strippedDbTime}`);
       // Keep the "canonical" model and remove the alias.
       // Heuristic: the alias entity is the one listed in ENTITY_ACCESSOR_OVERRIDES
       // (it maps to a different Prisma model name). The canonical entity maps directly.
-      const canonical = models.find((m) => !ENTITY_ACCESSOR_OVERRIDES[m]);
+      const canonical = models.find((m) => !IR_BRIDGED_ENTITIES.has(m));
       const toRemove = canonical
         ? models.filter((m) => m !== canonical)
         : models.slice(1);
@@ -690,17 +720,31 @@ const updatedHeader = header.replace(
 );
 
 // ---------------------------------------------------------------------------
-// 6b. Extract all enums from the committed schema
+// 6b. Enums — mostly emitted natively by PrismaProjection (Manifest 2.7.0+)
 // ---------------------------------------------------------------------------
-// Enums are scattered among models in the committed schema.
-// We need to collect them all and place them after the header.
-const enumBlocks = [];
+// The original enum scrape workaround has been retired: the Prisma projection
+// generator now includes emitEnum() / resolveEnumSchemaName() and emits all
+// 16 manifest-declared enums (PrepTaskStatus, PrepListStatus, RecipeVersionStatus,
+// MenuStatus, KitchenTaskStatus, etc.) directly into generatedCode.
+//
+// However, infra-core models that pass through from the committed schema may
+// reference additional enums (admin_role, sms_status, etc.) that are NOT
+// declared in manifest source files. We collect only those enums that are
+// missing from the projection output to avoid duplicates.
+const projectedEnumNames = new Set(
+  [...generatedCode.matchAll(/^enum\s+(\w+)\s*\{/gm)].map((m) => m[1])
+);
+const infraEnums = [];
 for (const enumMatch of committedSchema.matchAll(
   /^enum\s+(\w+)\s*\{[\s\S]*?\n\}/gm
 )) {
-  enumBlocks.push(enumMatch[0]);
+  if (!projectedEnumNames.has(enumMatch[1])) {
+    infraEnums.push(enumMatch[0]);
+  }
 }
-console.log(`\nHeader: ${enumBlocks.length} enums + datasource/generator`);
+// Union of all enum type names — used to fix @default quoting in §8b
+const allEnumNames = new Set([...projectedEnumNames, ...infraEnums.map((e) => e.match(/^enum\s+(\w+)/)?.[1]).filter(Boolean)]);
+console.log(`\nHeader: ${projectedEnumNames.size} enums from PrismaProjection + ${infraEnums.length} infra-only enums from committed schema`);
 console.log(`  Schemas: ${sortedSchemas.join(", ")}`);
 
 // ---------------------------------------------------------------------------
@@ -855,9 +899,11 @@ console.log(`  Infra-core default fixes: ${defaultFixCount}`);
 // ---------------------------------------------------------------------------
 const output =
   updatedHeader +
-  "// ===== ENUMS (from committed schema) =====\n\n" +
-  enumBlocks.join("\n\n") +
-  "\n\n" +
+  (infraEnums.length > 0
+    ? "// ===== INFRA-ONLY ENUMS (from committed schema, not in manifest IR) =====\n\n" +
+      infraEnums.join("\n\n") +
+      "\n\n"
+    : "") +
   generatedCode.trimEnd() +
   "\n\n// ===== INFRA-CORE PASS-THROUGH MODELS (not from IR) =====\n\n" +
   infraBlocks.join("\n\n") +
@@ -906,6 +952,19 @@ for (let i = 0; i < outputLines.length; i++) {
     const typeMatch = line.match(/^\s+\w+\s+(DateTime)(\??)/);
     if (typeMatch) {
       outputLines[i] = line.replace(/\s*@default\(0\)/, "");
+      finalDefaultFixes++;
+    }
+  }
+  // Fix @default("value") on enum-typed fields → @default(value)
+  // PrismaProjection emits quoted string defaults for enum fields, but
+  // Prisma requires bare (unquoted) enum values in @default.
+  {
+    const fieldMatch = line.match(/^\s+\w+\s+(\w+)(\??)\s+.*?@default\("([^"]+)"\)/);
+    if (fieldMatch && allEnumNames.has(fieldMatch[1])) {
+      outputLines[i] = line.replace(
+        /@default\("([^"]+)"\)/,
+        "@default($1)"
+      );
       finalDefaultFixes++;
     }
   }
@@ -962,7 +1021,7 @@ console.log(
     " diagnostics"
 );
 console.log(`Post-process: ${insertions.length} @@unique injected`);
-console.log(`Header: ${enumBlocks.length} enums + datasource/generator`);
+console.log(`Header: ${projectedEnumNames.size} projected enums + ${infraEnums.length} infra-only enums`);
 console.log(`Infra-core: ${infraBlocks.length} pass-through models appended`);
 console.log(
   "Total: " +

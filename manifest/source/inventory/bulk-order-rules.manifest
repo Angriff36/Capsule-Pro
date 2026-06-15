@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Bulk Order Rules
 // Manifest spec for bulk order management
 // A BulkOrderRule defines quantity-threshold incentives (discounts, free shipping)
@@ -6,11 +6,9 @@ tenant tenantId : string from context.tenantId
 // Enriched with: activate/deactivate lifecycle, adjustPriority command.
 // Bug fix: isEffective computed used == 0 on datetime fields — replaced with == null.
 
-entity BulkOrderRule {
+entity BulkOrderRule mixin TenantScoped, SoftDeletable {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required catalogEntryId: string
   property ruleName: string = ""
   property required minimumQuantity: decimal = 1
@@ -26,7 +24,6 @@ entity BulkOrderRule {
   property effectiveTo: datetime
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
@@ -38,7 +35,7 @@ entity BulkOrderRule {
   constraint requireMinimumQuantity: self.minimumQuantity >= 1 "Minimum quantity must be at least 1"
   constraint requireRuleType: self.ruleType in ["discount", "free_shipping", "threshold"] "Rule type must be discount, free_shipping, or threshold"
   constraint requireAction: self.action in ["discount", "free_shipping"] "Action must be discount or free_shipping"
-  constraint validDiscount: self.discountPercent >= 0 and self.discountPercent <= 100 "Discount percent must be between 0 and 100"
+  constraint validDiscount: between(self.discountPercent, 0, 100) "Discount percent must be between 0 and 100"
 
   constraint warnNoDiscount:warn self.action == "discount" and self.discountPercent == 0 and self.isActive {
     messageTemplate: "Bulk order rule '{ruleName}' has discount action but 0% discount — verify this is intentional"
@@ -55,7 +52,7 @@ entity BulkOrderRule {
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
     guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
     guard action in ["discount", "free_shipping"] "Invalid action"
-    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+    guard between(discountPercent, 0, 100) "Discount percent must be between 0 and 100"
 
     mutate catalogEntryId = catalogEntryId
     mutate ruleName = ruleName
@@ -80,7 +77,7 @@ entity BulkOrderRule {
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
     guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
     guard action in ["discount", "free_shipping"] "Invalid action"
-    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+    guard between(discountPercent, 0, 100) "Discount percent must be between 0 and 100"
 
     constraint warnDiscountIncrease:warn action == "discount" and discountPercent > self.discountPercent and self.discountPercent > 0 {
       messageTemplate: "Discount increased from {oldPct}% to {newPct}% for rule '{ruleName}'"

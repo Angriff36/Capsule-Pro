@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "e20317e784b08eccc5e6d2e611a941a376dfac5623842a6d2ffe5e2d7bbd8593",
-    "irHash": "7deb26e828beb2bc3e568d17479c2bad1dfe05d40907b8710af1f2328b680e07",
-    "compilerVersion": "2.4.2",
+    "contentHash": "c61c47f6b74e8cb6053f230b46f6d40f796568a19763cc8b80b9aa30eecb4bf4",
+    "irHash": "1501c7fc824b28171d4ef6df2ef923592fee3d3315f25995a3b043bd9116eaf8",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.028Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.540Z"
   },
   "modules": [],
   "values": [],
@@ -620,12 +612,85 @@
           "name": "warnOverdue",
           "code": "warnOverdue",
           "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "scheduledDate"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "scheduledDate"
+                }
+              }
             },
-            "property": "isOverdue"
+            "right": {
+              "kind": "unary",
+              "operator": "not",
+              "operand": {
+                "kind": "binary",
+                "operator": "in",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
+                },
+                "right": {
+                  "kind": "array",
+                  "elements": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "completed"
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "cancelled"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           },
           "severity": "warn",
           "messageTemplate": "Work order '{title}' is past scheduled date",
@@ -656,12 +721,23 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "priority"
               },
-              "property": "isCritical"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "critical"
+                }
+              }
             },
             "right": {
               "kind": "binary",

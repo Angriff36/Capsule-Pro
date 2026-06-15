@@ -1,13 +1,11 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Administrative Domain - Admin Task Attachment Rules
 // Manifest spec for managing file attachments on admin tasks
 
-entity AdminTaskAttachment {
+entity AdminTaskAttachment mixin TenantScoped, SoftDeletable {
   // No relationships: taskId is a loose key by design; AdminTask declares no
   // child relationships (see core/admin-task-rules.manifest).
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property taskId: string = ""
   searchable property fileName: string = ""
   property fileUrl: string = ""
@@ -15,7 +13,6 @@ entity AdminTaskAttachment {
   property mimeType: string = ""
   property uploadedBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

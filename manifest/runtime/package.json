@@ -23,22 +23,23 @@
     "./run-manifest-command-core": "./src/run-manifest-command-core.ts",
     "./run-manifest-saga-core": "./src/run-manifest-saga-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
-    "./flag-provider": "./src/flag-provider.ts",
-    "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts"
+    "./entity-accessor": "./src/generated/entity-accessor.generated.ts",
+    "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts",
+    "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.65",
-    "@angriff36/manifest": "2.4.2",
+    "@ai-sdk/openai": "^3.0.71",
+    "@angriff36/manifest": "2.7.0",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@sentry/node": "^10.54.0",
-    "hono": "^4.12.23",
+    "@sentry/node": "^10.57.0",
+    "hono": "^4.12.25",
     "pg": "^8.21.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "build": "tsc --declaration",

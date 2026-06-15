@@ -169,7 +169,12 @@ async function logWaste(
 describe("Reaction conformance: WasteEntryCreated → InventoryItem.waste", () => {
   it("the compiled IR carries the reaction with the expected resolve + param mapping", () => {
     const reactions: Record<string, unknown>[] = ir.reactions ?? [];
-    expect(reactions.length).toBeGreaterThanOrEqual(11);
+    // The IR carries reactions (not asserting an exact floor: the reaction count
+    // legitimately SHRINKS as each `payload.result.*`/non-param no-op reaction is
+    // converted to middleware per IMPLEMENTATION_PLAN P0 — a magic-number floor
+    // here would break on every correct conversion). The meaningful assertion is
+    // that the specific WasteEntry reaction below still exists and is mapped right.
+    expect(reactions.length).toBeGreaterThan(0);
 
     const waste = reactions.find(
       (r) =>

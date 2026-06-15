@@ -1,10 +1,8 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
 
-entity Driver {
+entity Driver mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   encrypted property email: string = ""
   encrypted property phone: string = ""
@@ -21,7 +19,7 @@ entity Driver {
 
   constraint validStatus: self.status in ["available", "on_route", "off_duty", "inactive"] "Invalid driver status"
 
-  constraint warnLicenseExpiring:warn self.licenseExpiring and self.isActive and not self.licenseExpired {
+  constraint warnLicenseExpiring:warn (self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry) and (self.status in ["available", "on_route"]) and not (self.licenseExpiry != null and now() > self.licenseExpiry) {
     messageTemplate: "Driver '{driverName}' license expiring within 30 days"
     details: {
       driverName: self.name
@@ -29,7 +27,7 @@ entity Driver {
     }
   }
 
-  constraint warnExpiredLicense:warn self.licenseExpired and self.isActive {
+  constraint warnExpiredLicense:warn (self.licenseExpiry != null and now() > self.licenseExpiry) and (self.status in ["available", "on_route"]) {
     messageTemplate: "Driver '{driverName}' has an expired license — suspend or renew before dispatching"
     details: {
       driverName: self.name
@@ -108,15 +106,35 @@ entity Driver {
     emit DriverReactivated
   }
 
+  // Put a driver on route when a dispatch is assigned to them. This is what makes
+  // the previously-unreachable "on_route" status actually reachable — see the
+  // LogisticsDispatch lifecycle middleware. Guard-safe: a driver already on route
+  // (busy on another dispatch) is left alone.
+  command setOnRoute() {
+    guard self.status == "available" "Only available drivers can be put on route"
+
+    mutate status = "on_route"
+
+    emit DriverSetOnRoute
+  }
+
+  // Return a driver to available once their dispatch is delivered or fails. Distinct
+  // from reactivate (off_duty/inactive -> available); this only frees an on-route driver.
+  command setAvailable() {
+    guard self.status == "on_route" "Only on-route drivers are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit DriverSetAvailable
+  }
+
   relationship belongsTo vehicle: Vehicle with vehicleId
 
   store Driver in durable
 }
 
-entity Vehicle {
+entity Vehicle mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required make: string
   property required model: string
   property year: int = 0
@@ -140,6 +158,10 @@ entity Vehicle {
   transition status from "in_use" to ["available", "maintenance", "out_of_service"]
   transition status from "maintenance" to ["available", "out_of_service"]
   transition status from "out_of_service" to ["available", "maintenance"]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Vehicle
+  relationship hasMany routes: LogisticsRoute
+  relationship hasMany dispatches: LogisticsDispatch
 
   default policy VehicleDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, status: string, notes: string) {
@@ -215,13 +237,32 @@ entity Vehicle {
     emit VehicleDecommissioned
   }
 
+  // Put a vehicle in use when a dispatch is assigned to it. Makes the
+  // previously-unreachable "in_use" status reachable — see the LogisticsDispatch
+  // lifecycle middleware. Guard-safe: a vehicle already in use is left alone.
+  command setInUse() {
+    guard self.status == "available" "Only available vehicles can be put in use"
+
+    mutate status = "in_use"
+
+    emit VehicleSetInUse
+  }
+
+  // Return a vehicle to available once its dispatch is delivered or fails. Distinct
+  // from returnFromMaintenance (maintenance -> available); this only frees an in-use vehicle.
+  command setAvailable() {
+    guard self.status == "in_use" "Only in-use vehicles are freed by dispatch completion"
+
+    mutate status = "available"
+
+    emit VehicleSetAvailable
+  }
+
   store Vehicle in durable
 }
 
-entity LogisticsRoute {
+entity LogisticsRoute mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   indexed property status: string = "planned"
   property vehicleId: string = ""
@@ -248,6 +289,10 @@ entity LogisticsRoute {
 
   relationship belongsTo vehicle: Vehicle with vehicleId
   relationship belongsTo driver: Driver with driverId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo LogisticsRoute
+  relationship hasMany stops: RouteStop
+  relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
@@ -349,10 +394,8 @@ entity LogisticsRoute {
   store LogisticsRoute in durable
 }
 
-entity LogisticsDispatch {
+entity LogisticsDispatch mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required routeId: string
   property driverId: string = ""
   property vehicleId: string = ""
@@ -491,6 +534,18 @@ event DriverReactivated: "logistics.driver.reactivated" {
   reactivatedAt: datetime
 }
 
+event DriverSetOnRoute: "logistics.driver.set-on-route" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event DriverSetAvailable: "logistics.driver.set-available" {
+  driverId: string
+  tenantId: string
+  changedAt: datetime
+}
+
 event VehicleCreated: "logistics.vehicle.created" {
   vehicleId: string
   tenantId: string
@@ -530,6 +585,18 @@ event VehicleDecommissioned: "logistics.vehicle.decommissioned" {
   tenantId: string
   reason: string
   decommissionedAt: datetime
+}
+
+event VehicleSetInUse: "logistics.vehicle.set-in-use" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
+}
+
+event VehicleSetAvailable: "logistics.vehicle.set-available" {
+  vehicleId: string
+  tenantId: string
+  changedAt: datetime
 }
 
 event LogisticsRouteCreated: "logistics.route.created" {

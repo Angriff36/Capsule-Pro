@@ -1,18 +1,17 @@
+use "../_base.manifest"
 use "./training-module-rules.manifest"
-tenant tenantId : string from context.tenantId
 
-event StaffMemberCreated: "staff.member.created" {
-  staffMemberId: string
-  role: string
-  firstShiftAt: datetime
-  dueAt: datetime
-}
+// NOTE: `StaffMemberCreated` is defined ONCE — in staff-member-rules.manifest
+// (topic "staff.staff-member.created"), the event StaffMember.create actually
+// emits. A duplicate stub used to live here (topic "staff.member.created") purely
+// to give the old `on StaffMemberCreated run TrainingAssignment.create` reaction
+// firstShiftAt/dueAt fields, but that reaction was a silent no-op (see the comment
+// where it used to be, below) and is now staff-member-created-training-assignment
+// middleware. The duplicate is removed so the two definitions no longer conflict.
 
-event StaffMemberFirstShiftScheduled: "staff.member.first-shift-scheduled" {
-  staffMemberId: string
-  firstShiftAt: datetime
-  dueAt: datetime
-}
+// `StaffMemberFirstShiftScheduled` event removed: it had no emitter and its only
+// consumer was the orphan applyFirstShiftDueDate reaction (now
+// schedule-shift-first-shift-due-date-middleware, triggered by ScheduleShiftCreated).
 
 event SelOnboardingTrainingDefinitionCreated: "training.sel-onboarding.definition-created" {
   id: string
@@ -22,11 +21,9 @@ event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.q
   id: string
 }
 
-entity SelOnboardingTrainingModuleDefinition {
+entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "sel_event_staff_onboarding"
   searchable property title: string = "SEL Event Staff — Onboarding Training"
@@ -53,11 +50,9 @@ entity SelOnboardingTrainingModuleDefinition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion01Definition {
+entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q1"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q1"
@@ -86,11 +81,9 @@ entity SelOnboardingTrainingQuestion01Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion02Definition {
+entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q2"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q2"
@@ -119,11 +112,9 @@ entity SelOnboardingTrainingQuestion02Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion03Definition {
+entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q3"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q3"
@@ -152,11 +143,9 @@ entity SelOnboardingTrainingQuestion03Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion04Definition {
+entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q4"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q4"
@@ -185,11 +174,9 @@ entity SelOnboardingTrainingQuestion04Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion05Definition {
+entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q5"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q5"
@@ -218,11 +205,9 @@ entity SelOnboardingTrainingQuestion05Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion06Definition {
+entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q6"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q6"
@@ -251,11 +236,9 @@ entity SelOnboardingTrainingQuestion06Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion07Definition {
+entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q7"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q7"
@@ -284,11 +267,9 @@ entity SelOnboardingTrainingQuestion07Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion08Definition {
+entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q8"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q8"
@@ -317,11 +298,9 @@ entity SelOnboardingTrainingQuestion08Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion09Definition {
+entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q9"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q9"
@@ -350,11 +329,9 @@ entity SelOnboardingTrainingQuestion09Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion10Definition {
+entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q10"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q10"
@@ -383,53 +360,10 @@ entity SelOnboardingTrainingQuestion10Definition {
   store in memory
 }
 
-saga InstallSelOnboardingTraining {
-  step moduleDefinition {
-    command: SelOnboardingTrainingModuleDefinition.create
-  }
-
-  step question01 {
-    command: SelOnboardingTrainingQuestion01Definition.create
-  }
-
-  step question02 {
-    command: SelOnboardingTrainingQuestion02Definition.create
-  }
-
-  step question03 {
-    command: SelOnboardingTrainingQuestion03Definition.create
-  }
-
-  step question04 {
-    command: SelOnboardingTrainingQuestion04Definition.create
-  }
-
-  step question05 {
-    command: SelOnboardingTrainingQuestion05Definition.create
-  }
-
-  step question06 {
-    command: SelOnboardingTrainingQuestion06Definition.create
-  }
-
-  step question07 {
-    command: SelOnboardingTrainingQuestion07Definition.create
-  }
-
-  step question08 {
-    command: SelOnboardingTrainingQuestion08Definition.create
-  }
-
-  step question09 {
-    command: SelOnboardingTrainingQuestion09Definition.create
-  }
-
-  step question10 {
-    command: SelOnboardingTrainingQuestion10Definition.create
-  }
-
-  on_failure: "abort"
-}
+// REMOVED: saga InstallSelOnboardingTraining — was vestigial; no code caller
+// (runManifestSaga / runSaga) ever invoked it. SEL onboarding seed data is
+// installed via direct command dispatch through the middleware pipeline, so
+// this 12-step saga was dead IR with no runtime path.
 
 on SelOnboardingTrainingDefinitionCreated run TrainingModule.create
   resolve payload.result.moduleId
@@ -468,28 +402,33 @@ on SelOnboardingTrainingQuestionDefinitionCreated run TrainingQuestion.create
     whyItMatters: payload.result.whyItMatters
   }
 
-on StaffMemberCreated run TrainingAssignment.create
-  resolve uuid()
-  params {
-    id: uuid()
-    moduleId: "training-module-sel-event-staff-onboarding"
-    moduleCode: "sel_event_staff_onboarding"
-    moduleTitle: "SEL Event Staff — Onboarding Training"
-    staffMemberId: payload.staffMemberId
-    staffRole: payload.role
-    passThresholdPercent: 80
-    maxAttempts: 3
-    firstShiftAt: payload.firstShiftAt
-    dueAt: payload.dueAt
-    dueDateReviewNeeded: true
-  }
+// StaffMemberCreated -> TrainingAssignment.create is handled by
+// staff-member-created-training-assignment-middleware (registered in
+// manifest-runtime-factory). It was a reaction reading payload.staffMemberId /
+// firstShiftAt / dueAt off StaffMember.create (a MUTATE; payload = {...input, result}).
+// None of those ride the payload: `staffMemberId` is a COMPUTED (self.id), and
+// `firstShiftAt`/`dueAt` are not knowable at staff-create time (the first shift is
+// scheduled later) — so the reaction silently no-op'd and no onboarding assignment
+// was ever auto-created. It also passed `staffRole: payload.role`, but
+// TrainingAssignment.create guards `staffRole == "staff"` while role defaults to
+// "server", so the create would have been blocked even if the field were reachable.
+// The middleware reads the new StaffMember id from _subject.id, pins staffRole to
+// the literal "staff", and dispatches the governed TrainingAssignment.create with
+// dueDateReviewNeeded=true (firstShiftAt/dueAt are pinned later by the
+// StaffMemberFirstShiftScheduled -> applyFirstShiftDueDate path below).
 
-on StaffMemberFirstShiftScheduled run TrainingAssignment.applyFirstShiftDueDate
-  resolve payload.staffMemberId
-  params {
-    assignmentId: payload.assignmentId
-    moduleId: "training-module-sel-event-staff-onboarding"
-    staffMemberId: payload.staffMemberId
-    firstShiftAt: payload.firstShiftAt
-    dueAt: payload.dueAt
-  }
+// StaffMemberFirstShiftScheduled -> TrainingAssignment.applyFirstShiftDueDate is
+// handled by schedule-shift-first-shift-due-date-middleware (registered in
+// manifest-runtime-factory). It was an ORPHAN reaction: no command ever emitted
+// `StaffMemberFirstShiftScheduled`, so it could never fire (the lone remaining
+// reaction-payload-baseline entry). It could not be salvaged as a reaction either —
+// applyFirstShiftDueDate resolves its target via `guard assignmentId == self.id`
+// (the assignment id is not on a shift payload), the would-be emitter
+// `ScheduleShift.create` is a MUTATE whose payload {...commandInput, result} carries
+// only employeeId/shiftStart (no assignmentId/dueAt), and "first shift" is a stateful
+// fact a declarative reaction cannot express. The middleware triggers on the real
+// `ScheduleShiftCreated`, finds the employee's open SEL onboarding assignment still
+// needing its due date pinned (dueDateReviewNeeded == true), and dispatches the
+// governed applyFirstShiftDueDate(dueAt = shiftStart). The command clears
+// dueDateReviewNeeded, so later shifts don't re-pin (first-shift-only idempotency).
+// The now-dead StaffMemberFirstShiftScheduled event declaration is removed too.

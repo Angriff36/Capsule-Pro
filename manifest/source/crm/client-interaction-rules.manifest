@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // CRM & Sales - Client Interaction Rules
 // Manifest spec for tracking client interactions, follow-ups, and communication history
 
-entity ClientInteraction {
+entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property clientId: string = ""
   property leadId: string = ""
   property employeeId: string = ""
@@ -21,7 +19,6 @@ entity ClientInteraction {
   property escalatedTo: string = ""
   property correlationId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed hasFollowUp: boolean = self.followUpDate != null
   computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false cache request
@@ -54,7 +51,7 @@ entity ClientInteraction {
   transition status from "overdue" to ["scheduled", "completed", "escalated"]
   transition status from "escalated" to ["open", "scheduled", "completed"]
 
-  constraint warnOverdueFollowUp:warn self.isFollowUpOverdue {
+  constraint warnOverdueFollowUp:warn (self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false) {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
     details: {
       subject: self.subject
@@ -118,7 +115,7 @@ entity ClientInteraction {
     guard self.deletedAt == null "Cannot complete a deleted interaction"
     guard self.followUpCompleted == false "Interaction follow-up is already completed"
 
-    constraint warnNoFollowUp:warn self.hasFollowUp == false {
+    constraint warnNoFollowUp:warn (self.followUpDate != null) == false {
       messageTemplate: "Completing interaction '{subject}' that has no follow-up date set"
       details: {
         subject: self.subject

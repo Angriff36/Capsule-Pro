@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Catering Order Rules
 // Manifest spec for catering order lifecycle and delivery management
 
-entity CateringOrder {
+entity CateringOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property required orderNumber: string
   property customerId: string = ""
   property eventId: string = ""
@@ -40,7 +38,6 @@ entity CateringOrder {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.orderStatus == "draft"
   computed isConfirmed: boolean = self.orderStatus == "confirmed"
@@ -244,6 +241,24 @@ entity CateringOrder {
     emit CateringOrderCompleted
   }
 
+  // Re-sync the venue snapshot from the linked Event. Driven by the
+  // EventLocationUpdated -> CateringOrder middleware (1:N fan-out): when an
+  // event's location changes, every ACTIVE catering order for that event must
+  // reflect the new delivery venue. Only venueName/venueAddress are synced —
+  // they are the only venue fields the Event owns (venueCity/State/Zip/Contact
+  // are caller-supplied on the order, per the create-command note above, because
+  // the Event entity has no such fields). Mirrors BattleBoard.syncFromEvent. The
+  // eventId-link guard makes it a no-op for unlinked orders (the middleware never
+  // dispatches to them anyway).
+  command syncVenue(venueName: string, venueAddress: string) {
+    guard self.eventId != null and self.eventId != "" "Catering order must be linked to an event"
+
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+
+    emit CateringOrderVenueSynced
+  }
+
   store CateringOrder in durable
 }
 
@@ -332,4 +347,13 @@ event CateringOrderCompleted: "catering.order.completed" {
   eventId: string
   userId: string
   completedAt: datetime
+}
+
+event CateringOrderVenueSynced: "events.catering_order.venue_synced" {
+  orderId: string
+  tenantId: string
+  eventId: string
+  venueName: string
+  venueAddress: string
+  syncedAt: datetime
 }

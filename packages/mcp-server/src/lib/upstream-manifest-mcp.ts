@@ -8,7 +8,12 @@
 
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { IR } from "@angriff36/manifest/ir";
+import { createIntrospectionStoreProvider } from "./introspection-store-provider.js";
+
+/** Bumped when bridge loading changes — logged at MCP startup for restart verification. */
+export const EXPLAIN_BRIDGE_REV = "pathToFileURL-v3";
 
 const require = createRequire(import.meta.url);
 
@@ -40,7 +45,12 @@ interface ExplainResult {
 
 interface SessionStoreModule {
   sessionStore: {
-    store: (contentHash: string, ir: IR) => void;
+    store: (
+      contentHash: string,
+      ir: IR,
+      context?: Record<string, unknown>,
+      options?: { storeProvider?: (entityName: string) => unknown }
+    ) => void;
   };
 }
 
@@ -54,7 +64,7 @@ let explainModule: ExplainModule | null = null;
 async function loadSessionStoreModule(): Promise<SessionStoreModule> {
   if (!sessionStoreModule) {
     sessionStoreModule = (await import(
-      sessionStoreModulePath
+      pathToFileURL(sessionStoreModulePath).href
     )) as SessionStoreModule;
   }
   return sessionStoreModule;
@@ -62,9 +72,17 @@ async function loadSessionStoreModule(): Promise<SessionStoreModule> {
 
 async function loadExplainModule(): Promise<ExplainModule> {
   if (!explainModule) {
-    explainModule = (await import(explainModulePath)) as ExplainModule;
+    explainModule = (await import(
+      pathToFileURL(explainModulePath).href
+    )) as ExplainModule;
   }
   return explainModule;
+}
+
+/** Eager-load upstream explain modules so Windows path bugs fail at startup, not on first tool call. */
+export async function warmupExplainBridge(): Promise<void> {
+  await loadSessionStoreModule();
+  await loadExplainModule();
 }
 
 /** Cache IR in upstream session store and return its content hash. */
@@ -74,7 +92,12 @@ export async function registerIrWithUpstreamSession(ir: IR): Promise<string> {
     `capsule-${ir.entities?.length ?? 0}-${ir.commands?.length ?? 0}`;
 
   const { sessionStore } = await loadSessionStoreModule();
-  sessionStore.store(contentHash, ir);
+  sessionStore.store(
+    contentHash,
+    ir,
+    {},
+    { storeProvider: createIntrospectionStoreProvider() }
+  );
   return contentHash;
 }
 

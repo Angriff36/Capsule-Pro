@@ -19,6 +19,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ENTITY_DOMAIN_MAP } from "./entity-domain-map.mjs";
+import { paramTsType, toTsTypes } from "./scalar-type-map.mjs";
 
 const conv = JSON.parse(
   readFileSync("manifest/capsule-conventions.json", "utf8")
@@ -58,15 +59,7 @@ const typesContent = readFileSync(typesFile, "utf8");
 // The stock `types` surface emits raw Manifest scalar names (int/decimal/money/array/Date)
 // as TS types, which don't compile. Map them to TS per Capsule's wire conventions
 // (dates are ISO strings on the wire — manifest/capsule-conventions.json dateSerialization).
-function toTsTypes(src) {
-  return src
-    .replace(/:\s*(int|bigint|float|decimal|money|number)\b/g, ": number")
-    .replace(/:\s*bool\b/g, ": boolean")
-    .replace(/:\s*array\b/g, ": unknown[]")
-    .replace(/:\s*json\b/g, ": unknown")
-    .replace(/:\s*(text|uuid)\b/g, ": string")
-    .replace(/:\s*Date\b/g, ": string");
-}
+// Implementation now lives in scalar-type-map.mjs (D23 — single source of truth).
 const tsTypes = toTsTypes(typesContent);
 writeFileSync(
   conv.client.typesOutput,
@@ -145,36 +138,7 @@ for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
 }
 
 // writes (all IR commands, via dispatcher unless overridden)
-// Map Manifest scalar types to TypeScript types (same mapping as read types above)
-const SCALAR_TO_TS = {
-  string: "string",
-  datetime: "string",
-  number: "number",
-  decimal: "number",
-  money: "number",
-  int: "number",
-  float: "number",
-  bigint: "number",
-  boolean: "boolean",
-  bool: "boolean",
-  array: "unknown[]",
-  json: "unknown",
-  text: "string",
-  uuid: "string",
-};
-function paramTsType(p) {
-  const typeObj = p.type || {};
-  const typeName =
-    typeof typeObj === "string" ? typeObj : typeObj.name || "string";
-  const base = SCALAR_TO_TS[typeName] || "unknown";
-  // Resolve array generic type (e.g., tags: string[] instead of unknown[])
-  if (base === "unknown[]" && typeObj.generic) {
-    const innerType =
-      SCALAR_TO_TS[typeObj.generic.name || typeObj.generic] || "unknown";
-    return `${innerType}[]`;
-  }
-  return base;
-}
+// Scalar→TS type mapping now lives in scalar-type-map.mjs (D23 — single source of truth).
 
 // Generate per-command typed input interfaces
 const overrides = conv.routePaths.commandOverrides || {};

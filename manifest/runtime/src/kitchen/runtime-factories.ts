@@ -5,6 +5,7 @@
  */
 
 import type { IR } from "@angriff36/manifest/ir";
+import { mergeIR } from "@angriff36/manifest/multi-compiler";
 import { ManifestRuntimeEngine } from "../runtime-engine";
 import {
   loadInventoryManifestIR,
@@ -14,7 +15,6 @@ import {
   loadRecipeManifestIR,
   loadStationManifestIR,
 } from "./manifest-ir-loader";
-import { createPostgresStoreProvider } from "./postgres-store";
 import type { KitchenOpsContext } from "./types";
 
 /**
@@ -88,68 +88,16 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
   const menuIR = await loadMenuManifestIR();
   const prepListIR = await loadPrepListManifestIR();
 
-  // Combine IRs - in a real implementation, you'd merge modules
-  const combinedIR: IR = {
-    version: "1.0",
-    provenance: prepTaskIR.provenance,
-    modules: [
-      ...(prepTaskIR.modules || []),
-      ...(stationIR.modules || []),
-      ...(inventoryIR.modules || []),
-      ...(recipeIR.modules || []),
-      ...(menuIR.modules || []),
-      ...(prepListIR.modules || []),
-    ],
-    entities: [
-      ...prepTaskIR.entities,
-      ...stationIR.entities,
-      ...inventoryIR.entities,
-      ...recipeIR.entities,
-      ...menuIR.entities,
-      ...prepListIR.entities,
-    ],
-    enums: [
-      ...(prepTaskIR.enums || []),
-      ...(stationIR.enums || []),
-      ...(inventoryIR.enums || []),
-      ...(recipeIR.enums || []),
-      ...(menuIR.enums || []),
-      ...(prepListIR.enums || []),
-    ],
-    stores: [
-      ...(prepTaskIR.stores || []),
-      ...(stationIR.stores || []),
-      ...(inventoryIR.stores || []),
-      ...(recipeIR.stores || []),
-      ...(menuIR.stores || []),
-      ...(prepListIR.stores || []),
-    ],
-    events: [
-      ...prepTaskIR.events,
-      ...stationIR.events,
-      ...inventoryIR.events,
-      ...recipeIR.events,
-      ...menuIR.events,
-      ...prepListIR.events,
-    ],
-    commands: [
-      ...prepTaskIR.commands,
-      ...stationIR.commands,
-      ...inventoryIR.commands,
-      ...recipeIR.commands,
-      ...menuIR.commands,
-      ...prepListIR.commands,
-    ],
-    policies: [
-      ...prepTaskIR.policies,
-      ...stationIR.policies,
-      ...inventoryIR.policies,
-      ...recipeIR.policies,
-      ...menuIR.policies,
-      ...prepListIR.policies,
-    ],
-    values: [],
-  };
+  // Use native mergeIR — carries all sections (sagas, reactions, webhooks, schedules)
+  // instead of hand-concatenating only known keys.
+  const combinedIR: IR = mergeIR([
+    prepTaskIR,
+    stationIR,
+    inventoryIR,
+    recipeIR,
+    menuIR,
+    prepListIR,
+  ]);
 
   const options = buildRuntimeOptions(context);
   const engine = new ManifestRuntimeEngine(combinedIR, context, options);
@@ -161,7 +109,6 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
  */
 function buildRuntimeOptions(context: KitchenOpsContext) {
   return context.storeProvider ||
-    context.databaseUrl ||
     context.telemetry ||
     context.evaluationLimits ||
     context.deterministicMode
@@ -169,13 +116,6 @@ function buildRuntimeOptions(context: KitchenOpsContext) {
         ...(context.storeProvider && {
           storeProvider: context.storeProvider,
         }),
-        ...(context.databaseUrl &&
-          !context.storeProvider && {
-            storeProvider: createPostgresStoreProvider(
-              context.databaseUrl,
-              context.tenantId
-            ),
-          }),
         ...(context.telemetry && { telemetry: context.telemetry }),
         ...(context.evaluationLimits && {
           evaluationLimits: context.evaluationLimits,

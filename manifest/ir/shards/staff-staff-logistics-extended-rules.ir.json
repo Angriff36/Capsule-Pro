@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "e96b6da9b6cce066cf6b66567bc61aaa98df527b1b3871834b5f936951aa7184",
-    "irHash": "98491d6f832f89a073d89b6b02bfc4a551f25b55c5de363415eabf11821eecbc",
-    "compilerVersion": "2.4.2",
+    "contentHash": "ea8cf96db9dee966419d91a3ffd0e9b0cd44ce1b3603e11025b9247117b02c37",
+    "irHash": "ce25ea17634b0caaaaa7e8b4eead7a543e12ef51eaa42e7a0b1aea004059f0e5",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.062Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.568Z"
   },
   "modules": [],
   "values": [],
@@ -1078,7 +1070,8 @@
           "from": "allocated",
           "to": [
             "distributed",
-            "open"
+            "open",
+            "closed"
           ]
         },
         {
@@ -8064,12 +8057,24 @@
             "name": "amount"
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "totalTips"
             },
-            "property": "undistributedAmount"
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "distributedAmount"
+            }
           }
         },
         {

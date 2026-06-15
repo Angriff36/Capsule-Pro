@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "071496859df63c7e8f7b83f2278222c291f6d04ec8ef4a6067d60717d16b875c",
-    "irHash": "a955776199fbf4400ff54d29dcdb4fcf8d0719052b22c2c2cdfd978aef1d3f00",
-    "compilerVersion": "2.4.2",
+    "contentHash": "7422a496a2e0e5287ad009500cfed997194658709a62a61bcf8e7bc322e9dee5",
+    "irHash": "ec5eef46eb34eaad1c1c92687ab59f0f366544c6fb06829686a22efbdfb18f46",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.981Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.500Z"
   },
   "modules": [],
   "values": [],
@@ -708,7 +700,8 @@
         "markSeasonal",
         "unmarkSeasonal",
         "eightySix",
-        "reinstate"
+        "reinstate",
+        "clearDefaultContainer"
       ],
       "constraints": [
         {
@@ -1178,12 +1171,99 @@
               "kind": "binary",
               "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "conditional",
+                "condition": {
+                  "kind": "binary",
+                  "operator": "and",
+                  "left": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "costPerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  }
                 },
-                "property": "marginPercent"
+                "consequent": {
+                  "kind": "binary",
+                  "operator": "*",
+                  "left": {
+                    "kind": "binary",
+                    "operator": "/",
+                    "left": {
+                      "kind": "binary",
+                      "operator": "-",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "pricePerPerson"
+                      },
+                      "right": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "costPerPerson"
+                      }
+                    },
+                    "right": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    }
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 100
+                    }
+                  }
+                },
+                "alternate": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
               },
               "right": {
                 "kind": "literal",
@@ -1197,12 +1277,99 @@
               "kind": "binary",
               "operator": "<",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "conditional",
+                "condition": {
+                  "kind": "binary",
+                  "operator": "and",
+                  "left": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "binary",
+                    "operator": ">",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "costPerPerson"
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    }
+                  }
                 },
-                "property": "marginPercent"
+                "consequent": {
+                  "kind": "binary",
+                  "operator": "*",
+                  "left": {
+                    "kind": "binary",
+                    "operator": "/",
+                    "left": {
+                      "kind": "binary",
+                      "operator": "-",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "pricePerPerson"
+                      },
+                      "right": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "costPerPerson"
+                      }
+                    },
+                    "right": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "identifier",
+                        "name": "self"
+                      },
+                      "property": "pricePerPerson"
+                    }
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 100
+                    }
+                  }
+                },
+                "alternate": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
               },
               "right": {
                 "kind": "literal",
@@ -1764,6 +1931,52 @@
         },
         {
           "name": "reinstatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DishDefaultContainerCleared",
+      "channel": "kitchen.dish.defaultcontainer.cleared",
+      "payload": [
+        {
+          "name": "dishId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "containerId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clearedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3679,6 +3892,71 @@
       ],
       "emits": [
         "DishReinstated"
+      ]
+    },
+    {
+      "name": "clearDefaultContainer",
+      "entity": "Dish",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "defaultContainerId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DishDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Dish has no default container to clear"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "defaultContainerId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DishDefaultContainerCleared"
       ]
     }
   ],

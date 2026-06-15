@@ -1,13 +1,11 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Kitchen Ops - Dish Rules
 // Manifest spec for dish catalog management, pricing, lead times, and menu integration
 // Lifecycle: active | seasonal | eighty_six (out-of-stock/pulled)
 // "eighty_six" = kitchen term for "we're out / not serving this today"
 
-entity Dish {
+entity Dish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required recipeId: string
   searchable property required name: string
   searchable property description: string = ""
@@ -33,7 +31,6 @@ entity Dish {
   property eightySixReason: string = ""
   property eightySixAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed hasPrice: boolean = self.pricePerPerson > 0
   computed hasCost: boolean = self.costPerPerson > 0
@@ -45,6 +42,12 @@ entity Dish {
 
   relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
   relationship belongsTo defaultContainer: Container fields [tenantId, defaultContainerId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Dish
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepListItems: PrepListItem
+  relationship hasMany menuDishes: MenuDish
+  relationship hasMany allergenWarnings: AllergenWarning
 
   constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
@@ -77,7 +80,7 @@ entity Dish {
     }
   }
 
-  constraint warnLowMargin:warn self.marginPercent > 0 and self.marginPercent < 20 {
+  constraint warnLowMargin:warn (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) > 0 and (self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0) < 20 {
     messageTemplate: "Dish '{dishName}' has a low margin of {margin}%"
     details: {
       dishName: self.name
@@ -259,6 +262,21 @@ entity Dish {
     emit DishReinstated
   }
 
+  // Clear this dish's default container reference. Used by the
+  // ContainerDeactivated cascade so dishes stop pointing at a retired
+  // container (and the read-time belongsTo defaultContainer relationship stops
+  // resolving a dead reference). Plain mutate on the existing
+  // defaultContainerId field — NO migration. Cleared regardless of dish state
+  // (an inactive/86'd dish can still hold a dangling container reference); the
+  // idempotency guard skips dishes that already have no default container.
+  command clearDefaultContainer(userId: string) {
+    guard self.defaultContainerId != "" "Dish has no default container to clear"
+
+    mutate defaultContainerId = ""
+
+    emit DishDefaultContainerCleared
+  }
+
   store Dish in durable
 }
 
@@ -349,4 +367,12 @@ event DishReinstated: "kitchen.dish.reinstated" {
   name: string
   userId: string
   reinstatedAt: datetime
+}
+
+event DishDefaultContainerCleared: "kitchen.dish.defaultcontainer.cleared" {
+  dishId: string
+  tenantId: string
+  containerId: string
+  userId: string
+  clearedAt: datetime
 }

@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Notifications - Notification Rules
 // Manifest spec for notification delivery, read tracking, and dismissal
 
-entity Notification {
+entity Notification mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required recipientEmployeeId: string
   property notificationType: string = ""
   searchable property title: string = ""

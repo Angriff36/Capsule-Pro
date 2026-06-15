@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "6ebb4c6951c38ef089756b804c6d7e10794e3d66e95246ac8c0de44ed0965111",
-    "irHash": "ad2c3c5aa022466d1b4d1e34d80bbb7549e85b718d5324d7769b5fee27ece103",
-    "compilerVersion": "2.4.2",
+    "contentHash": "b23a01743162c9d4735680638b2dc553a35244f634e16f8b102934fba47f6ab4",
+    "irHash": "5629be17dad15c8e1fbdb2b190c0b549e045ab57c7541b4e96490e1752869b3d",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.999Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.515Z"
   },
   "modules": [],
   "values": [],
@@ -1091,6 +1083,14 @@
           "modifiers": []
         },
         {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
           "name": "createdAt",
           "type": {
             "name": "datetime",
@@ -1258,6 +1258,32 @@
             }
           },
           "dependencies": []
+        },
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "dependencies": []
         }
       ],
       "relationships": [
@@ -1343,7 +1369,8 @@
         "updatePrepNotes",
         "markCompleted",
         "markUncompleted",
-        "create"
+        "create",
+        "remove"
       ],
       "constraints": [
         {
@@ -2593,6 +2620,68 @@
         },
         {
           "name": "uncompletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PrepListItemRemoved",
+      "channel": "kitchen.preplist.item_removed",
+      "payload": [
+        {
+          "name": "itemId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "prepListId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ingredientName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "removedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -5333,6 +5422,79 @@
       ],
       "emits": [
         "PrepListItemCreated"
+      ]
+    },
+    {
+      "name": "remove",
+      "entity": "PrepListItem",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "PrepListItemDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Prep list item is already removed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PrepListItemRemoved"
       ]
     }
   ],

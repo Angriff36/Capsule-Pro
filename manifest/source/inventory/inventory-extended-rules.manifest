@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory / Procurement — Extended Domain Entities
 // Physical storage slots, stock levels, alerts, forecasting, vendor contacts,
 // transfer line items, procurement budgets, and audit scheduling for a
@@ -8,21 +8,23 @@ tenant tenantId : string from context.tenantId
 // StorageLocation — a named physical slot (cooler, freezer, dry shelf) inside
 // a Location.  Tracks temperature zone and active/inactive state.
 // ─────────────────────────────────────────────────────────────────────────────
-entity StorageLocation {
+entity StorageLocation mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required locationId: string
   searchable property required name: string
   property required storageType: string
   property temperatureZone: string = ""
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isDeactivated: boolean = self.isActive == false
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo StorageLocation
+  relationship hasMany stockLevels: InventoryStock
+  relationship hasMany transactions: InventoryTransaction
+  relationship hasMany cycleCountRecords: CycleCountRecord
 
   constraint requireName: self.name != "" "Storage location name is required"
   constraint requireStorageType: self.storageType != "" "Storage type is required"
@@ -71,10 +73,8 @@ entity StorageLocation {
 // storage location, including the unit of measure and last physical count
 // timestamp.
 // ─────────────────────────────────────────────────────────────────────────────
-entity InventoryStock {
+entity InventoryStock mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required itemId: string
   property required storageLocationId: string
   property required quantityOnHand: decimal = 0
@@ -158,10 +158,8 @@ entity InventoryStock {
 // InventoryAlert — a system-generated low-stock or expiry alert that staff
 // must acknowledge and resolve.
 // ─────────────────────────────────────────────────────────────────────────────
-entity InventoryAlert {
+entity InventoryAlert mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required itemId: string
   property required alertType: string
   property required severity: string
@@ -248,10 +246,8 @@ entity InventoryAlert {
 // date, with a confidence score.  Used for event planning and reorder
 // decision support.
 // ─────────────────────────────────────────────────────────────────────────────
-entity InventoryForecast {
+entity InventoryForecast mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required inventoryItemId: string
   property required forecastDate: datetime
   property required projectedQuantity: decimal = 0
@@ -270,7 +266,7 @@ entity InventoryForecast {
 
   relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
-  constraint confidenceRange: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
+  constraint confidenceRange: between(self.confidence, 0, 1) "Confidence must be between 0 and 1"
   constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
 
   // State transitions
@@ -282,7 +278,7 @@ entity InventoryForecast {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard forecastDate != null "Forecast date is required"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
-    guard confidence >= 0 and confidence <= 1 "Confidence must be between 0 and 1"
+    guard between(confidence, 0, 1) "Confidence must be between 0 and 1"
 
     mutate inventoryItemId = inventoryItemId
     mutate forecastDate = forecastDate
@@ -295,7 +291,7 @@ entity InventoryForecast {
   command update(projectedQuantity: decimal, confidence: decimal) {
     guard self.status == "draft" "Can only update draft forecasts"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
-    guard confidence >= 0 and confidence <= 1 "Confidence must be between 0 and 1"
+    guard between(confidence, 0, 1) "Confidence must be between 0 and 1"
 
     mutate projectedQuantity = projectedQuantity
     mutate confidence = confidence
@@ -307,7 +303,7 @@ entity InventoryForecast {
   command markPublished() {
     guard self.status == "draft" "Only draft forecasts can be published"
 
-    constraint warnLowConfidence:warn self.isLowConfidence {
+    constraint warnLowConfidence:warn (self.confidence < 0.5) {
       messageTemplate: "Publishing low-confidence forecast ({confidence}) for item '{inventoryItemId}'"
       details: {
         inventoryItemId: self.inventoryItemId
@@ -340,10 +336,8 @@ entity InventoryForecast {
 // ForecastInput — a historical usage data point used to train or refine
 // inventory demand forecasting models.
 // ─────────────────────────────────────────────────────────────────────────────
-entity ForecastInput {
+entity ForecastInput mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required inventoryItemId: string
   property required inputDate: datetime
   property required actualUsage: decimal = 0
@@ -377,10 +371,8 @@ entity ForecastInput {
 // ReorderSuggestion — a system-recommended purchase to replenish an item,
 // with a lifecycle of pending → accepted or dismissed.
 // ─────────────────────────────────────────────────────────────────────────────
-entity ReorderSuggestion {
+entity ReorderSuggestion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required inventoryItemId: string
   property required suggestedQuantity: decimal = 0
   property required reason: string
@@ -448,10 +440,8 @@ entity ReorderSuggestion {
 // VendorContact — a named contact person at a supplier (InventorySupplier),
 // with communication details and a primary-contact flag.
 // ─────────────────────────────────────────────────────────────────────────────
-entity VendorContact {
+entity VendorContact mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required supplierId: string
   searchable property required contactName: string
   encrypted property contactEmail: string = ""
@@ -459,7 +449,6 @@ entity VendorContact {
   property contactRole: string = ""
   property isPrimary: boolean = false
   timestamps
-  property deletedAt: datetime
 
   constraint requireName: self.contactName != "" "Contact name is required"
   constraint requireSupplier: self.supplierId != "" "Supplier ID is required"
@@ -508,10 +497,8 @@ entity VendorContact {
 // VendorRating — a scored evaluation of a supplier on a particular category
 // (e.g. delivery reliability, product quality).
 // ─────────────────────────────────────────────────────────────────────────────
-entity VendorRating {
+entity VendorRating mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required supplierId: string
   property required category: string
   property required rating: int = 0
@@ -523,12 +510,12 @@ entity VendorRating {
   computed isHighScore: boolean = self.rating >= 4
   computed isLowScore: boolean = self.rating < 2
 
-  constraint scoreRange: self.rating >= 0 and self.rating <= 5 "Score must be between 0 and 5"
+  constraint scoreRange: between(self.rating, 0, 5) "Score must be between 0 and 5"
   constraint requireCategory: self.category != "" "Rating category is required"
 
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
-  constraint warnLowScore:warn self.isLowScore {
+  constraint warnLowScore:warn (self.rating < 2) {
     messageTemplate: "Low vendor rating ({rating}/5) for category '{category}' — consider reviewing supplier"
     details: {
       supplierId: self.supplierId
@@ -541,7 +528,7 @@ entity VendorRating {
   command create(supplierId: string, category: string, rating: int, comment: string, ratedBy: string) {
     guard supplierId != null and supplierId != "" "Supplier ID is required"
     guard category != null and category != "" "Rating category is required"
-    guard rating >= 0 and rating <= 5 "Score must be between 0 and 5"
+    guard between(rating, 0, 5) "Score must be between 0 and 5"
 
     mutate supplierId = supplierId
     mutate category = category
@@ -554,7 +541,7 @@ entity VendorRating {
   }
 
   command update(rating: int, comment: string) {
-    guard rating >= 0 and rating <= 5 "Score must be between 0 and 5"
+    guard between(rating, 0, 5) "Score must be between 0 and 5"
 
     mutate rating = rating
     mutate comment = comment
@@ -570,10 +557,8 @@ entity VendorRating {
 // InventoryTransferItem — a single line item within an InventoryTransfer,
 // specifying which item moves, how much, and in what unit.
 // ─────────────────────────────────────────────────────────────────────────────
-entity InventoryTransferItem {
+entity InventoryTransferItem mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required transferId: string
   property required itemId: string
   property required quantity: decimal = 0
@@ -626,10 +611,8 @@ entity InventoryTransferItem {
 // ProcurementBudget — a named spending envelope for procurement over a
 // calendar period; tracks how much has been spent against the approved amount.
 // ─────────────────────────────────────────────────────────────────────────────
-entity ProcurementBudget {
+entity ProcurementBudget mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required fiscalYear: int
   property required periodStart: datetime
@@ -652,7 +635,7 @@ entity ProcurementBudget {
   // State transitions
   transition status from "active" to ["closed"]
 
-  constraint warnOverBudget:warn self.isOverBudget {
+  constraint warnOverBudget:warn (self.spentAmount > self.budgetAmount) {
     messageTemplate: "Procurement budget '{name}' is over budget (spent {spent}, limit {limit})"
     details: {
       name: self.name
@@ -726,10 +709,8 @@ entity ProcurementBudget {
 // ProcurementBudgetAlert — fired when cumulative spend crosses a configured
 // percentage threshold of a ProcurementBudget.
 // ─────────────────────────────────────────────────────────────────────────────
-entity ProcurementBudgetAlert {
+entity ProcurementBudgetAlert mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required budgetId: string
   property required utilizationPct: decimal = 0
   property required alertType: string
@@ -782,10 +763,8 @@ entity ProcurementBudgetAlert {
 // cycle-count audit creation (e.g. weekly freezer count, monthly dry-goods
 // full count).
 // ─────────────────────────────────────────────────────────────────────────────
-entity AuditSchedule {
+entity AuditSchedule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required frequency: string
   property required time: string
@@ -800,7 +779,7 @@ entity AuditSchedule {
   constraint requireName: self.name != "" "Audit schedule name is required"
   constraint validFrequency: self.frequency in ["daily", "weekly", "biweekly", "monthly", "quarterly"] "Invalid audit frequency"
 
-  constraint warnInactive:warn self.isDeactivated {
+  constraint warnInactive:warn (self.isActive == false) {
     messageTemplate: "Audit schedule '{name}' is inactive — cycle counts will not run automatically"
     details: {
       name: self.name
@@ -847,7 +826,7 @@ entity AuditSchedule {
   }
 
   command activate() {
-    guard self.isDeactivated "Audit schedule is already active"
+    guard (self.isActive == false) "Audit schedule is already active"
 
     mutate isActive = true
 

@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "8bc9f18a36c2affc75f74fb9b63624faa7f7e63dbc076cd396b1d0fa4ec87d20",
-    "irHash": "a81231a562b8386ea9b13f94d61ec8f7c599f33725e8db5f77d269dc722ac2cc",
-    "compilerVersion": "2.4.2",
+    "contentHash": "cd4351a867e27b028d73fe745a94fa8692e9f6ca84bc4aaecb6b5cd766a8bae4",
+    "irHash": "32e0e128ba450e59505b3ba128992048994b8009ca8ebc933050664c3703bb4a",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.053Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.560Z"
   },
   "modules": [],
   "values": [],
@@ -1367,12 +1359,23 @@
             "kind": "binary",
             "operator": "==",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "totalCost"
               },
-              "property": "isHighCost"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 100
+                }
+              }
             },
             "right": {
               "kind": "literal",

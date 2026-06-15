@@ -1,8 +1,8 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Facilities Domain — Facility Management Rules
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 
-entity Facility {
+entity Facility mixin TenantScoped {
   // Reconciled 2026-06-06 (Task 8.3) to match the real `tenant_facilities.facilities`
   // Prisma columns so the governed Facility.create persists the exact fields the
   // facilities UI writes — no silent field drops. Prior model declared phantom
@@ -11,8 +11,6 @@ entity Facility {
   // country). GenericPrismaStore maps by camelCase irName → Prisma field, so the
   // entity property names MUST equal the Prisma field names (facilityType, etc.).
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   unique property code: string = ""
   property facilityType: string = "kitchen"
@@ -29,6 +27,15 @@ entity Facility {
 
   computed isActive: boolean = self.status == "active"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Facility
+  relationship hasMany stations: Station
+  relationship hasMany containers: Container
+  relationship hasMany equipment: Equipment
+  relationship hasMany storageLocations: StorageLocation
+  relationship hasMany areas: FacilityArea
+  relationship hasMany schedules: FacilitySchedule
+  relationship hasMany workOrders: FacilityWorkOrder
 
   constraint validFacilityType: self.facilityType in ["kitchen", "warehouse", "commissary", "office", "other"] "Invalid facility type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
@@ -110,10 +117,8 @@ entity Facility {
   store Facility in durable
 }
 
-entity FacilityArea {
+entity FacilityArea mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property venueId: string = ""
   searchable property required name: string
   unique property code: string = ""
@@ -188,10 +193,8 @@ entity FacilityArea {
   store FacilityArea in durable
 }
 
-entity FacilityAsset {
+entity FacilityAsset mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property facilityId: string = ""
   property areaId: string = ""
   searchable property required name: string
@@ -224,7 +227,7 @@ entity FacilityAsset {
   transition status from "operational" to ["maintenance", "retired", "sold"]
   transition status from "maintenance" to ["operational", "retired", "sold"]
 
-  constraint warnMaintenanceOverdue:warn self.maintenanceOverdue {
+  constraint warnMaintenanceOverdue:warn (self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational") {
     messageTemplate: "Asset '{assetName}' is overdue for maintenance"
     details: {
       assetName: self.name
@@ -310,10 +313,8 @@ entity FacilityAsset {
   store FacilityAsset in durable
 }
 
-entity FacilitySchedule {
+entity FacilitySchedule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property facilityId: string = ""
   property areaId: string = ""
   searchable property required title: string
@@ -412,10 +413,8 @@ entity FacilitySchedule {
   store FacilitySchedule in durable
 }
 
-entity FacilityWorkOrder {
+entity FacilityWorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property facilityId: string = ""
   property areaId: string = ""
   property assetId: string = ""
@@ -446,7 +445,7 @@ entity FacilityWorkOrder {
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   relationship belongsTo asset: FacilityAsset fields [tenantId, assetId] references [tenantId, id]
 
-  constraint warnOverdue:warn self.isOverdue {
+  constraint warnOverdue:warn (self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])) {
     messageTemplate: "Facility work order '{title}' is past scheduled date"
     details: {
       title: self.title

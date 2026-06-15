@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "aad5d68b1cd0e4193ea5448202e54b67410c0f61838b83a50f460fcac074e39b",
-    "irHash": "cd76fe15f12cb3c35391ad221503d6e402d4d919491345a4022834482a7e19a8",
-    "compilerVersion": "2.4.2",
+    "contentHash": "0c427e91511916724aeeacc0a2f19e2f44f2817097964ae4ba453219b47e75e0",
+    "irHash": "08e5d1f7131401d28719d147f848b83bd2e7031a405a8ad3ba7b4835a1d55281",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.860Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.397Z"
   },
   "modules": [],
   "values": [],
@@ -984,12 +976,23 @@
           }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],
@@ -1066,20 +1069,64 @@
       "parameters": [],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         },
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "transcriptText"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
           },
-          "property": "hasTranscript"
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "transcriptText"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
         }
       ],
       "constraints": [],
@@ -1132,20 +1179,42 @@
           "kind": "binary",
           "operator": "or",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isFinalizing"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "finalizing"
+              }
+            }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isActive"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "active"
+              }
+            }
           }
         }
       ],
@@ -1204,29 +1273,62 @@
             "kind": "binary",
             "operator": "or",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isActive"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "active"
+                }
+              }
             },
             "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isFinalizing"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "finalizing"
+                }
+              }
             }
           },
           "right": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
             },
-            "property": "isReview"
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "review"
+              }
+            }
           }
         }
       ],
@@ -1288,12 +1390,23 @@
       ],
       "guards": [
         {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "self"
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
           },
-          "property": "isActive"
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
         }
       ],
       "constraints": [],

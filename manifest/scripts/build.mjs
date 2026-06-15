@@ -17,8 +17,10 @@ import { spawnSync } from "node:child_process";
 
 /**
  * Step 1: Delegate compilation to compile.mjs (canonical compile pipeline).
- * compile.mjs handles: read manifests -> compileToIR -> enforceCommandOwnership ->
- * mergeIrs -> write kitchen.ir.json + kitchen.commands.json + commands.registry.json +
+ * compile.mjs handles: read manifests -> native compileProjectToIR (topo-sort,
+ * cycle detection, cross-file validation, deterministic merged IR) ->
+ * validateCommandIntentRegistry + enrichComputedDependencies + deterministic irHash ->
+ * write kitchen.ir.json + kitchen.commands.json + commands.registry.json +
  * kitchen.provenance.json + kitchen.merge-report.json.
  */
 function compileMergedManifests() {

@@ -10,7 +10,7 @@ import type { IR } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
 import * as Sentry from "@sentry/node";
-import { enforceCommandOwnership } from "./ir-contract";
+
 import { ManifestRuntimeEngine } from "./runtime-engine";
 
 const { logger } = Sentry;
@@ -220,7 +220,7 @@ module EventImport {
     );
   }
 
-  cachedIR = enforceCommandOwnership(ir);
+  cachedIR = ir;
   return cachedIR;
 }
 

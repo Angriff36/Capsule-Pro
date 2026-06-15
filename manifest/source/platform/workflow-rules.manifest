@@ -1,19 +1,16 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Workflow Engine - Workflow Rules
 // Manifest spec for workflow automation with triggers, steps, and lifecycle management
 
-entity Workflow {
+entity Workflow mixin TenantScoped, SoftDeletable {
   // No relationships: triggerType/triggerConfig are configuration values, no entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   searchable property description: string = ""
   property triggerType: string = ""
   property triggerConfig: string = "{}"
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isInactive: boolean = self.isActive == false
   computed isDeleted: boolean = self.deletedAt != null

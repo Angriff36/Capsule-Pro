@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Inventory - Supplier Rules
 // Manifest spec for inventory supplier management
 
-entity InventorySupplier {
+entity InventorySupplier mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   unique property supplierNumber: string = ""
   property contactPerson: string = ""
@@ -24,7 +22,6 @@ entity InventorySupplier {
   property blacklistedReason: string = ""
   property qualificationStatus: string = "pending"
   timestamps
-  property deletedAt: datetime
 
   computed hasContact: boolean = self.contactPerson != "" or self.email != ""
   computed hasOpenPOs: boolean = self.openPOCount > 0
@@ -35,6 +32,9 @@ entity InventorySupplier {
   relationship hasMany items: InventoryItem
   relationship hasMany contacts: VendorContact
   relationship hasMany ratings: VendorRating
+  // Back-relations (U11): additional inverse hasMany for children that belongTo InventorySupplier
+  relationship hasMany shipments: Shipment
+  relationship hasMany catalogs: VendorCatalog
 
   constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
   constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"

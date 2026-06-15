@@ -1,12 +1,10 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Override Audit - Constraint Override Tracking
 // Manifest spec for recording and authorizing constraint overrides
 
-entity OverrideAudit {
+entity OverrideAudit mixin TenantScoped {
   // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property entityType: string = ""
   property entityId: string = ""
   property constraintId: string = ""

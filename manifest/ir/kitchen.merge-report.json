@@ -1,8 +1,8 @@
 {
-  "$schema": "https://manifest.dev/merge-report.schema.json",
-  "version": "1.0",
-  "generatedAt": "2026-06-14T08:39:57.122Z",
+  "strategy": "native-compileProjectToIR",
+  "compilerVersion": "2.5.1",
   "sources": [
+    "_base.manifest",
     "ai/ai-event-setup-rules.manifest",
     "ai/call-planning-session-rules.manifest",
     "ai/event-planning-draft-rules.manifest",
@@ -106,17 +106,12 @@
     "staff/training-module-rules.manifest",
     "staff/training-module-sel-rules.manifest"
   ],
-  "totals": {
-    "modules": 0,
+  "counts": {
     "entities": 210,
-    "stores": 210,
-    "events": 1018,
-    "commands": 1040,
-    "policies": 464,
-    "enums": 0,
-    "values": 0,
+    "commands": 1054,
+    "events": 1029,
     "sagas": 5,
-    "reactions": 16
+    "reactions": 10
   },
-  "droppedDuplicates": []
+  "warnings": []
 }

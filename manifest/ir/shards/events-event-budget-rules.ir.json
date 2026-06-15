@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0a62c5918b3b1f52f395433a240329b5eed7e1c2cbd996dcfdb125cf846918d4",
-    "irHash": "03e2b85f978754b8403509e6b2bdb532f88c7cbeb1aaf62a443537397d817835",
-    "compilerVersion": "2.4.2",
+    "contentHash": "5e889663d081b86b9f958335fe16bf111a3d5f50c2e17cf2ea78432079e43da9",
+    "irHash": "dd0a56c0b2424dcb2da06d8abdba00346f208e80a245a8f2e6075d6c94fa3ce2",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.923Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.452Z"
   },
   "modules": [],
   "values": [],
@@ -696,12 +688,29 @@
               "kind": "binary",
               "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
@@ -715,12 +724,29 @@
               "kind": "binary",
               "operator": "<",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "unary",
@@ -2291,12 +2317,29 @@
               "kind": "binary",
               "operator": "<=",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
@@ -2310,12 +2353,29 @@
               "kind": "binary",
               "operator": ">=",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "unary",
@@ -2362,12 +2422,29 @@
               "kind": "binary",
               "operator": ">",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "literal",
@@ -2381,12 +2458,29 @@
               "kind": "binary",
               "operator": "<",
               "left": {
-                "kind": "member",
-                "object": {
+                "kind": "call",
+                "callee": {
                   "kind": "identifier",
-                  "name": "self"
+                  "name": "percent"
                 },
-                "property": "variancePercentage"
+                "args": [
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "varianceAmount"
+                  },
+                  {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "totalBudgetAmount"
+                  }
+                ]
               },
               "right": {
                 "kind": "unary",

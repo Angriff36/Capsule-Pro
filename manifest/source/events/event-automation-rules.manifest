@@ -1,10 +1,8 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Event Automation Rules — Followups, Timeline Items, Waitlist Entries
 
-entity AutomatedFollowup {
+entity AutomatedFollowup mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property type: string = "email"
   indexed property status: string = "pending"
@@ -95,10 +93,8 @@ entity AutomatedFollowup {
   store AutomatedFollowup in durable
 }
 
-entity EventTimelineItem {
+entity EventTimelineItem mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   searchable property required title: string
   searchable property description: string = ""
@@ -209,10 +205,8 @@ entity EventTimelineItem {
   store EventTimelineItem in durable
 }
 
-entity EventWaitlistEntry {
+entity EventWaitlistEntry mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property required guestName: string
   encrypted property email: string = ""

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Events & Catering - Event Dish Rules
 // Manifest spec for event-to-dish associations (event menu composition).
 // Day-of quantity/course adjustments are common as final headcounts firm up.
@@ -9,17 +9,14 @@ tenant tenantId : string from context.tenantId
 // dropped every one of those fields on write (notes.md §33 class). The table
 // has no sort_order column; sortOrder was removed rather than invented.
 
-entity EventDish {
+entity EventDish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property required dishId: string
   property quantityServings: int = 1
   searchable property specialInstructions: string = ""
   property course: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

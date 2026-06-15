@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "73612941b902b9231c873ebbca7ea5c42734936cb7fa4874ee1bfbf51ff5b7e7",
-    "irHash": "7d705a3314c75a761c56d18376bb4351e8c11eab46968d053c4e8416ef321341",
-    "compilerVersion": "2.4.2",
+    "contentHash": "8046d6f01bb043288e4a97de8627109d0b47a77a4f747394feb2aa03c69965c2",
+    "irHash": "5a5e0460ebcd5057dadcc2af8f6f8f7a25fd7898ec4badf9f07d2aee1c811563",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:57.021Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.534Z"
   },
   "modules": [],
   "values": [],
@@ -338,7 +330,9 @@
         "update",
         "renewLicense",
         "setOffDuty",
-        "reactivate"
+        "reactivate",
+        "setOnRoute",
+        "setAvailable"
       ],
       "constraints": [
         {
@@ -403,32 +397,139 @@
               "kind": "binary",
               "operator": "and",
               "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
                 },
-                "property": "licenseExpiring"
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "addDays"
+                    },
+                    "args": [
+                      {
+                        "kind": "call",
+                        "callee": {
+                          "kind": "identifier",
+                          "name": "now"
+                        },
+                        "args": []
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "number",
+                          "value": 30
+                        }
+                      }
+                    ]
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  }
+                }
               },
               "right": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "in",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "status"
                 },
-                "property": "isActive"
+                "right": {
+                  "kind": "array",
+                  "elements": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "available"
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "on_route"
+                      }
+                    }
+                  ]
+                }
               }
             },
             "right": {
               "kind": "unary",
               "operator": "not",
               "operand": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
+                "kind": "binary",
+                "operator": "and",
+                "left": {
+                  "kind": "binary",
+                  "operator": "!=",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "null"
+                    }
+                  }
                 },
-                "property": "licenseExpired"
+                "right": {
+                  "kind": "binary",
+                  "operator": ">",
+                  "left": {
+                    "kind": "call",
+                    "callee": {
+                      "kind": "identifier",
+                      "name": "now"
+                    },
+                    "args": []
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "identifier",
+                      "name": "self"
+                    },
+                    "property": "licenseExpiry"
+                  }
+                }
               }
             }
           },
@@ -461,20 +562,77 @@
             "kind": "binary",
             "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "licenseExpiry"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
               },
-              "property": "licenseExpired"
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "licenseExpiry"
+                }
+              }
             },
             "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "in",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "status"
               },
-              "property": "isActive"
+              "right": {
+                "kind": "array",
+                "elements": [
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "available"
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "on_route"
+                    }
+                  }
+                ]
+              }
             }
           },
           "severity": "warn",
@@ -838,7 +996,9 @@
         "update",
         "sendToMaintenance",
         "returnFromMaintenance",
-        "decommission"
+        "decommission",
+        "setInUse",
+        "setAvailable"
       ],
       "constraints": [
         {
@@ -1989,6 +2149,66 @@
       ]
     },
     {
+      "name": "DriverSetOnRoute",
+      "channel": "logistics.driver.set-on-route",
+      "payload": [
+        {
+          "name": "driverId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DriverSetAvailable",
+      "channel": "logistics.driver.set-available",
+      "payload": [
+        {
+          "name": "driverId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "VehicleCreated",
       "channel": "logistics.vehicle.created",
       "payload": [
@@ -2200,6 +2420,66 @@
         },
         {
           "name": "decommissionedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VehicleSetInUse",
+      "channel": "logistics.vehicle.set-in-use",
+      "payload": [
+        {
+          "name": "vehicleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VehicleSetAvailable",
+      "channel": "logistics.vehicle.set-available",
+      "payload": [
+        {
+          "name": "vehicleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "changedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3445,6 +3725,118 @@
       ]
     },
     {
+      "name": "setOnRoute",
+      "entity": "Driver",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DriverDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only available drivers can be put on route"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "on_route"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DriverSetOnRoute"
+      ]
+    },
+    {
+      "name": "setAvailable",
+      "entity": "Driver",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "on_route"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "DriverDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only on-route drivers are freed by dispatch completion"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "DriverSetAvailable"
+      ]
+    },
+    {
       "name": "create",
       "entity": "Vehicle",
       "parameters": [
@@ -4311,6 +4703,118 @@
       ],
       "emits": [
         "VehicleDecommissioned"
+      ]
+    },
+    {
+      "name": "setInUse",
+      "entity": "Vehicle",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "VehicleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only available vehicles can be put in use"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_use"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "VehicleSetInUse"
+      ]
+    },
+    {
+      "name": "setAvailable",
+      "entity": "Vehicle",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_use"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "VehicleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Only in-use vehicles are freed by dispatch completion"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "available"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "VehicleSetAvailable"
       ]
     },
     {

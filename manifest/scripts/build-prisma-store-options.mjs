@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 /**
- * Build prisma-store projection options for manifest.config.yaml + CLI generation.
+ * Build prisma-store projection options from manifest.config.yaml + derive-prisma-options.
  *
- * Merges:
- *  - ENTITY_TO_PRISMA_MODEL bridge → accessorNames (IR entity → Prisma delegate)
- *  - prisma-options.generated.json → columnMappings, tableMappings, multiSchema, etc.
- *  - schema-derived metadata JSON → accessor fallbacks for bridged models
+ * accessorNames and entityToPrismaModel come ONLY from manifest.config.yaml (via read-config).
+ * prisma-options.generated.json supplies columnMappings, tableMappings, multiSchema, etc.
  *
- * Output: manifest/prisma-store-options.generated.json
- * Consumed by: manifest.config.yaml (documented), generate-prisma-store-projection.mjs
+ * Output: manifest/scripts/prisma-store-options.generated.json
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ENTITY_TO_PRISMA_MODEL } from "./entity-domain-map.mjs";
+import { getAccessorConfig } from "./read-config.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
@@ -33,36 +30,28 @@ function loadJson(path, fallback = {}) {
 
 const prismaOptions = loadJson(prismaOptionsPath);
 const metadata = loadJson(metadataJsonPath);
+const { accessorNames, entityToPrismaModel, naming } = getAccessorConfig();
 
-/** IR entity name → Prisma client delegate (e.g. BankAccount → employeeBankAccount). */
-const accessorNames = {};
-for (const [irName, modelName] of Object.entries(ENTITY_TO_PRISMA_MODEL)) {
-  const meta = metadata[modelName] ?? metadata[irName];
-  if (meta?.accessor) {
-    accessorNames[irName] = meta.accessor;
+// Sanity: config delegates must match live metadata (same check as check-accessor-config.mjs).
+for (const [irName, delegate] of Object.entries(accessorNames)) {
+  const modelName = entityToPrismaModel[irName] ?? irName;
+  const meta = metadata[modelName];
+  if (meta?.accessor && meta.accessor !== delegate) {
+    console.error(
+      `[build-prisma-store-options] ${irName}: config accessorNames=${delegate} but metadata=${meta.accessor} — fix manifest.config.yaml`
+    );
+    process.exit(1);
   }
 }
 
 const options = {
   provider: prismaOptions.provider ?? "postgresql",
-  naming: prismaOptions.naming ?? "snake_case",
+  naming: naming ?? prismaOptions.naming ?? "snake_case",
   metadataOutput: "manifest-prisma-store-metadata.generated.ts",
   registryOutput: "prisma-store-registry.generated.ts",
-  // Extensionless: the runtime package resolves with moduleResolution "Bundler",
-  // and a ".js" specifier breaks Next.js (webpack AND turbopack) when the
-  // dispatcher bundles these files through the src/generated junction —
-  // every governed command 500s in api dev. Repo rule: no .js extensions.
-  //
-  // LIVE schema metadata, NOT the IR-projection metadata: the projection's
-  // manifest-prisma-store-metadata describes the IR-projected schema (snake
-  // accessors like "event_staffs", column-named fields like "tenant_id"),
-  // which does not exist on the live PrismaClient — 173/191 entities had a
-  // delegate name the client doesn't expose, so GenericPrismaStore threw at
-  // construction for every governed write. The runtime must consume the
-  // schema-derived prisma-model-metadata until Phase 2b makes the live schema
-  // IR-generated.
   metadataImportPath: "./prisma-model-metadata.generated",
   storeImportPath: "@angriff36/manifest/stores/prisma-generic",
+  entityToPrismaModel,
   accessorNames,
   tableMappings: prismaOptions.tableMappings ?? {},
   columnMappings: prismaOptions.columnMappings ?? {},

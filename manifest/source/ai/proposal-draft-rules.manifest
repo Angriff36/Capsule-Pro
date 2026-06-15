@@ -1,11 +1,9 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // AI Call Planner - Proposal Draft Rules
 // Manifest spec for proposal draft lifecycle
 
-entity ProposalDraft {
+entity ProposalDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property draftId: string = ""
   property userId: string = ""
   indexed property status: string = "draft"
@@ -41,7 +39,6 @@ entity ProposalDraft {
   property depositPaid: boolean = false
   property htmlContent: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -73,7 +70,7 @@ entity ProposalDraft {
   constraint validClientName: self.clientName != "" "Client name is required"
   constraint positiveDepositAmount: self.depositAmount >= 0 "Deposit amount must be non-negative"
 
-  constraint warnNoClientEmail:warn self.hasValidEmail == false and self.isSent {
+  constraint warnNoClientEmail:warn (self.clientEmail != null and self.clientEmail != "" and self.clientEmail contains "@") == false and (self.status == "sent") {
     messageTemplate: "Proposal '{title}' sent without valid client email"
     details: {
       proposalId: self.id
@@ -82,7 +79,7 @@ entity ProposalDraft {
     }
   }
 
-  constraint warnTokenExpired:warn self.isTokenExpired and not self.isFinalized {
+  constraint warnTokenExpired:warn (self.magicTokenExpiresAt != null and self.magicTokenExpiresAt < now()) and not (self.status in ["approved", "expired", "converted"]) {
     messageTemplate: "Proposal '{title}' magic link has expired"
     details: {
       proposalId: self.id
@@ -127,7 +124,7 @@ entity ProposalDraft {
   }
 
   command update(title: string, clientName: string, optional clientEmail: string, optional clientPhone: string, eventSummary: string, menuSections: string, servicePlan: string, pricingBreakdown: string, optional timeline: string, optional upgradeOptions: string, optional visionSummary: string, optional notes: string, optional nextSteps: string) {
-    guard self.isDraft "Can only update draft proposals"
+    guard (self.status == "draft") "Can only update draft proposals"
     guard title != null and title != "" "Proposal title is required"
     guard clientName != null and clientName != "" "Client name is required"
 
@@ -149,7 +146,7 @@ entity ProposalDraft {
   }
 
   command generateHtml(htmlContent: string) {
-    guard self.isDraft "Can only generate HTML for draft proposals"
+    guard (self.status == "draft") "Can only generate HTML for draft proposals"
 
     mutate htmlContent = htmlContent
 
@@ -157,11 +154,11 @@ entity ProposalDraft {
   }
 
   command send(deliveryMethod: string, expiresInDays: int) {
-    guard self.isDraft "Can only send draft proposals"
+    guard (self.status == "draft") "Can only send draft proposals"
     guard deliveryMethod in ["email", "sms", "link"] "Invalid delivery method"
     guard expiresInDays >= 1 and expiresInDays <= 90 "Expiration must be between 1 and 90 days"
 
-    constraint warnNoClientEmailOnSend:warn deliveryMethod == "email" and self.hasValidEmail == false {
+    constraint warnNoClientEmailOnSend:warn deliveryMethod == "email" and (self.clientEmail != null and self.clientEmail != "" and self.clientEmail contains "@") == false {
       messageTemplate: "Sending proposal via email without valid client email address"
       details: {
         proposalId: self.id
@@ -179,7 +176,7 @@ entity ProposalDraft {
   }
 
   command recordView() {
-    guard self.isSent or self.isViewed "Can only record views for sent or viewed proposals"
+    guard (self.status == "sent") or (self.status == "viewed") "Can only record views for sent or viewed proposals"
 
     mutate status = "viewed"
     mutate viewedAt = now()
@@ -188,7 +185,7 @@ entity ProposalDraft {
   }
 
   command approve(optional clientMessage: string) {
-    guard self.isSent or self.isViewed or self.isChangeRequested "Can only approve sent, viewed, or change_requested proposals"
+    guard (self.status == "sent") or (self.status == "viewed") or (self.status == "change_requested") "Can only approve sent, viewed, or change_requested proposals"
 
     mutate status = "approved"
     mutate respondedAt = now()
@@ -197,7 +194,7 @@ entity ProposalDraft {
   }
 
   command requestChanges(clientMessage: string) {
-    guard self.isSent or self.isViewed "Can only request changes for sent or viewed proposals"
+    guard (self.status == "sent") or (self.status == "viewed") "Can only request changes for sent or viewed proposals"
     guard clientMessage != null and clientMessage != "" "Change request message is required"
 
     mutate status = "change_requested"
@@ -207,7 +204,7 @@ entity ProposalDraft {
   }
 
   command markExpired() {
-    guard self.isSent or self.isViewed "Can only mark sent or viewed proposals as expired"
+    guard (self.status == "sent") or (self.status == "viewed") "Can only mark sent or viewed proposals as expired"
 
     mutate status = "expired"
 
@@ -215,7 +212,7 @@ entity ProposalDraft {
   }
 
   command markConverted() {
-    guard self.isApproved "Can only mark approved proposals as converted"
+    guard (self.status == "approved") "Can only mark approved proposals as converted"
 
     mutate status = "converted"
 
@@ -223,7 +220,7 @@ entity ProposalDraft {
   }
 
   command refreshToken() {
-    guard self.isDraft or self.isSent "Can only refresh token for draft or sent proposals"
+    guard (self.status == "draft") or (self.status == "sent") "Can only refresh token for draft or sent proposals"
 
     mutate magicToken = uuid()
     mutate magicTokenExpiresAt = addDays(now(), 30)

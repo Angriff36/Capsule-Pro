@@ -1,19 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "0c682728c6ec4aa621bba2e1cdec05ad6086d2dc3af273bd8de93ed47664701d",
-    "irHash": "8e9db25933f6cab51760a8f8ce42b959a750b6237ebfc2500148774b1c5acfff",
-    "compilerVersion": "2.4.2",
+    "contentHash": "713adb6dc5ba00063031e960c6823e9f4c41baad45f59fe0bf22432efa1e5e89",
+    "irHash": "5daeb6cd01425abdfd4d19d79e80c73012e22494e214881b866e4011256a7e12",
+    "compilerVersion": "2.5.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-14T08:39:56.914Z"
-  },
-  "tenant": {
-    "property": "tenantId",
-    "type": {
-      "name": "string",
-      "nullable": false
-    },
-    "contextPath": "context.tenantId"
+    "compiledAt": "2026-06-15T06:50:48.444Z"
   },
   "modules": [],
   "values": [],
@@ -799,7 +791,8 @@
         "cancel",
         "startPrep",
         "deliver",
-        "markComplete"
+        "markComplete",
+        "syncVenue"
       ],
       "constraints": [
         {
@@ -1671,6 +1664,60 @@
         },
         {
           "name": "completedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "CateringOrderVenueSynced",
+      "channel": "events.catering_order.venue_synced",
+      "payload": [
+        {
+          "name": "orderId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "venueName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "venueAddress",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "syncedAt",
           "type": {
             "name": "datetime",
             "nullable": false
@@ -3271,6 +3318,106 @@
       ],
       "emits": [
         "CateringOrderCompleted"
+      ]
+    },
+    {
+      "name": "syncVenue",
+      "entity": "CateringOrder",
+      "parameters": [
+        {
+          "name": "venueName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "venueAddress",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "CateringOrderDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Catering order must be linked to an event"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "venueName",
+          "expression": {
+            "kind": "identifier",
+            "name": "venueName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "venueAddress",
+          "expression": {
+            "kind": "identifier",
+            "name": "venueAddress"
+          }
+        }
+      ],
+      "emits": [
+        "CateringOrderVenueSynced"
       ]
     }
   ],

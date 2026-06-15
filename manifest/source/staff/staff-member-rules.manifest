@@ -1,14 +1,12 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Staff - StaffMember Rules
 // Manifest spec for catering staff members assignable to events.
 // Distinct from `User` (auth/employee lifecycle): StaffMember is the domain entity
 // that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
 
-entity StaffMember {
+entity StaffMember mixin TenantScoped, SoftDeletable {
   // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required displayName: string = "Unnamed"
   encrypted property email: string = ""
   encrypted property phone: string = ""
@@ -16,7 +14,6 @@ entity StaffMember {
   indexed property required status: string = "active"
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   // Populates StaffMemberCreated.staffMemberId for reactions (entity uses `id`).
@@ -42,7 +39,7 @@ entity StaffMember {
   }
 
   command updateProfile(displayName: string, email: string, phone: string, role: string) {
-    guard self.isActive "Cannot update an inactive staff member"
+    guard (self.status == "active") "Cannot update an inactive staff member"
 
     mutate displayName = displayName
     mutate email = email
@@ -53,7 +50,7 @@ entity StaffMember {
   }
 
   command deactivate(reason: string) {
-    guard self.isActive "Staff member is already inactive"
+    guard (self.status == "active") "Staff member is already inactive"
 
     mutate status = "inactive"
 
@@ -69,7 +66,7 @@ entity StaffMember {
   }
 
   command changeRole(role: string, changedBy: string) {
-    guard self.isActive "Cannot change the role of an inactive staff member"
+    guard (self.status == "active") "Cannot change the role of an inactive staff member"
     guard role != null and role != "" "Role is required"
 
     mutate role = role

@@ -1,4 +1,4 @@
-tenant tenantId : string from context.tenantId
+use "../_base.manifest"
 // Pricing Tier Rules
 // Manifest spec for pricing tier management
 // A PricingTier defines a quantity-based price band for a catalog entry.
@@ -6,11 +6,9 @@ tenant tenantId : string from context.tenantId
 //   price-reduction warning on update.
 // Bug fix: isEffective computed used == 0 on datetime fields — replaced with == null.
 
-entity PricingTier {
+entity PricingTier mixin TenantScoped, SoftDeletable {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required catalogEntryId: string
   property tierName: string = ""
   property required minQuantity: decimal = 1
@@ -22,7 +20,6 @@ entity PricingTier {
   property effectiveTo: datetime
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
