@@ -70,6 +70,7 @@ import {
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createMaintenanceCreatedEquipmentStatusMiddleware,
   createMaintenanceScheduleCompletedWorkOrderCreateMiddleware,
+  createOpenShiftClaimedCreateScheduleShiftMiddleware,
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
@@ -1157,6 +1158,20 @@ export async function createManifestRuntime(
     // guard) are touched, so a deactivated person stops showing as still-rostered
     // on upcoming events. Without this, deactivation left every assignment live.
     createStaffMemberDeactivatedUnassignEventStaffMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Staffing: OpenShiftClaimed -> ScheduleShift.create. Middleware (not a
+    // reaction) because OpenShift.claim(claimedBy) is a MUTATE whose payload carries
+    // only claimedBy — the shift's scheduleId/role/shiftStart/shiftEnd are the
+    // OpenShift's OWN fields (declared event fields are never auto-populated from
+    // self.*), and ScheduleShift.create additionally needs a locationId that lives
+    // on the parent Schedule. So it loads the claimed OpenShift via _subject.id +
+    // the parent Schedule for locationId, then materializes the claimed shift as a
+    // governed ScheduleShift. Without this, claiming an open shift produced NO real
+    // shift on the roster — the claim was silently dropped.
+    createOpenShiftClaimedCreateScheduleShiftMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

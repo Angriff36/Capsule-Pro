@@ -182,6 +182,11 @@ export {
   type MaintenanceScheduleWorkOrderDiagnostic,
 } from "./maintenance-schedule-completed-work-order-create-middleware";
 export {
+  createOpenShiftClaimedCreateScheduleShiftMiddleware,
+  type OpenShiftClaimedCreateScheduleShiftMiddlewareOptions,
+  type OpenShiftClaimedScheduleShiftDiagnostic,
+} from "./open-shift-claimed-create-schedule-shift-middleware";
+export {
   createPaymentProcessedInvoiceApplyMiddleware,
   type PaymentInvoiceApplyDiagnostic,
   type PaymentProcessedInvoiceApplyMiddlewareOptions,
