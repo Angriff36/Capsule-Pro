@@ -1,0 +1,16 @@
+# Manifest pre-commit hook (U16/U18): when .manifest source is staged, enforce
+# formatting and validation before the commit lands. No-op when no .manifest
+# files are staged so non-manifest commits stay fast.
+staged_manifests=$(git diff --cached --name-only --diff-filter=ACM -- '*.manifest')
+
+if [ -n "$staged_manifests" ]; then
+  echo "manifest pre-commit: formatting + validating staged .manifest files…"
+  pnpm manifest:fmt:check || {
+    echo "✗ manifest formatting check failed — run 'pnpm manifest:fmt' and re-stage."
+    exit 1
+  }
+  pnpm manifest:validate || {
+    echo "✗ manifest validation failed."
+    exit 1
+  }
+fi
