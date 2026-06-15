@@ -3,11 +3,9 @@ use "../_base.manifest"
 // Manifest spec for container inventory, capacity tracking, and storage management
 // Enriched with: reactivate + relocate commands for real kitchen ops needs.
 
-entity Container {
+entity Container mixin TenantScoped, SoftDeletable {
   // No relationships: locationId is a loose storage location reference, not a direct FK to StorageLocation
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required containerType: string
   property locationId: string = ""
@@ -18,7 +16,6 @@ entity Container {
   property isReusable: boolean = true
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed hasVolumeCapacity: boolean = self.capacityVolumeMl > 0
   computed hasWeightCapacity: boolean = self.capacityWeightG > 0
@@ -27,6 +24,9 @@ entity Container {
   computed isDeactivated: boolean = self.isActive == false
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Container
+  relationship hasMany dishes: Dish
 
   constraint requireName: self.name != "" "Container name is required"
   constraint positiveVolume: self.capacityVolumeMl >= 0 "Volume capacity cannot be negative"

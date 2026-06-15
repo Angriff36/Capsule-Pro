@@ -21,11 +21,9 @@ event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.q
   id: string
 }
 
-entity SelOnboardingTrainingModuleDefinition {
+entity SelOnboardingTrainingModuleDefinition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "sel_event_staff_onboarding"
   searchable property title: string = "SEL Event Staff — Onboarding Training"
@@ -52,11 +50,9 @@ entity SelOnboardingTrainingModuleDefinition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion01Definition {
+entity SelOnboardingTrainingQuestion01Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q1"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q1"
@@ -85,11 +81,9 @@ entity SelOnboardingTrainingQuestion01Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion02Definition {
+entity SelOnboardingTrainingQuestion02Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q2"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q2"
@@ -118,11 +112,9 @@ entity SelOnboardingTrainingQuestion02Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion03Definition {
+entity SelOnboardingTrainingQuestion03Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q3"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q3"
@@ -151,11 +143,9 @@ entity SelOnboardingTrainingQuestion03Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion04Definition {
+entity SelOnboardingTrainingQuestion04Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q4"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q4"
@@ -184,11 +174,9 @@ entity SelOnboardingTrainingQuestion04Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion05Definition {
+entity SelOnboardingTrainingQuestion05Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q5"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q5"
@@ -217,11 +205,9 @@ entity SelOnboardingTrainingQuestion05Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion06Definition {
+entity SelOnboardingTrainingQuestion06Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q6"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q6"
@@ -250,11 +236,9 @@ entity SelOnboardingTrainingQuestion06Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion07Definition {
+entity SelOnboardingTrainingQuestion07Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q7"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q7"
@@ -283,11 +267,9 @@ entity SelOnboardingTrainingQuestion07Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion08Definition {
+entity SelOnboardingTrainingQuestion08Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q8"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q8"
@@ -316,11 +298,9 @@ entity SelOnboardingTrainingQuestion08Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion09Definition {
+entity SelOnboardingTrainingQuestion09Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q9"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q9"
@@ -349,11 +329,9 @@ entity SelOnboardingTrainingQuestion09Definition {
   store in memory
 }
 
-entity SelOnboardingTrainingQuestion10Definition {
+entity SelOnboardingTrainingQuestion10Definition mixin TenantScoped {
   key [tenantId, id]
 
-  indexed property required tenantId: string
-  property required id: string
   property questionId: string = "sel-event-staff-onboarding-q10"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "Q10"
@@ -382,53 +360,10 @@ entity SelOnboardingTrainingQuestion10Definition {
   store in memory
 }
 
-saga InstallSelOnboardingTraining {
-  step moduleDefinition {
-    command: SelOnboardingTrainingModuleDefinition.create
-  }
-
-  step question01 {
-    command: SelOnboardingTrainingQuestion01Definition.create
-  }
-
-  step question02 {
-    command: SelOnboardingTrainingQuestion02Definition.create
-  }
-
-  step question03 {
-    command: SelOnboardingTrainingQuestion03Definition.create
-  }
-
-  step question04 {
-    command: SelOnboardingTrainingQuestion04Definition.create
-  }
-
-  step question05 {
-    command: SelOnboardingTrainingQuestion05Definition.create
-  }
-
-  step question06 {
-    command: SelOnboardingTrainingQuestion06Definition.create
-  }
-
-  step question07 {
-    command: SelOnboardingTrainingQuestion07Definition.create
-  }
-
-  step question08 {
-    command: SelOnboardingTrainingQuestion08Definition.create
-  }
-
-  step question09 {
-    command: SelOnboardingTrainingQuestion09Definition.create
-  }
-
-  step question10 {
-    command: SelOnboardingTrainingQuestion10Definition.create
-  }
-
-  on_failure: "abort"
-}
+// REMOVED: saga InstallSelOnboardingTraining — was vestigial; no code caller
+// (runManifestSaga / runSaga) ever invoked it. SEL onboarding seed data is
+// installed via direct command dispatch through the middleware pipeline, so
+// this 12-step saga was dead IR with no runtime path.
 
 on SelOnboardingTrainingDefinitionCreated run TrainingModule.create
   resolve payload.result.moduleId

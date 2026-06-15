@@ -1,10 +1,8 @@
 use "../_base.manifest"
 // Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
 
-entity Driver {
+entity Driver mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   encrypted property email: string = ""
   encrypted property phone: string = ""
@@ -135,10 +133,8 @@ entity Driver {
   store Driver in durable
 }
 
-entity Vehicle {
+entity Vehicle mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required make: string
   property required model: string
   property year: int = 0
@@ -162,6 +158,10 @@ entity Vehicle {
   transition status from "in_use" to ["available", "maintenance", "out_of_service"]
   transition status from "maintenance" to ["available", "out_of_service"]
   transition status from "out_of_service" to ["available", "maintenance"]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Vehicle
+  relationship hasMany routes: LogisticsRoute
+  relationship hasMany dispatches: LogisticsDispatch
 
   default policy VehicleDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(make: string, model: string, year: int, plateNumber: string, vin: string, capacityWeight: decimal, capacityVolume: decimal, fuelType: string, mileage: decimal, status: string, notes: string) {
@@ -261,10 +261,8 @@ entity Vehicle {
   store Vehicle in durable
 }
 
-entity LogisticsRoute {
+entity LogisticsRoute mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   indexed property status: string = "planned"
   property vehicleId: string = ""
@@ -291,6 +289,10 @@ entity LogisticsRoute {
 
   relationship belongsTo vehicle: Vehicle with vehicleId
   relationship belongsTo driver: Driver with driverId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo LogisticsRoute
+  relationship hasMany stops: RouteStop
+  relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
@@ -392,10 +394,8 @@ entity LogisticsRoute {
   store LogisticsRoute in durable
 }
 
-entity LogisticsDispatch {
+entity LogisticsDispatch mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required routeId: string
   property driverId: string = ""
   property vehicleId: string = ""

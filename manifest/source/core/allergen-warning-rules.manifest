@@ -6,10 +6,8 @@ use "../_base.manifest"
 //   - resolvedAt: removed = now() default (lifecycle timestamp, nullable)
 // Enriched with: escalate command for critical unacknowledged warnings.
 
-entity AllergenWarning {
+entity AllergenWarning mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property dishId: string = ""
   property warningType: string = ""
@@ -28,7 +26,6 @@ entity AllergenWarning {
   property escalatedTo: string = ""
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isHighSeverity: boolean = self.severity == "critical"
   computed isPending: boolean = self.isAcknowledged == false and self.resolved == false

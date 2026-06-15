@@ -213,6 +213,15 @@ async function compileMergedManifests() {
     const manifestPath = join(MANIFESTS_DIR, manifestFile);
     const manifestSource = readFileSync(manifestPath, "utf-8");
 
+    // Files with `use` declarations depend on cross-file resolution — skip
+    // per-file compile (compileToIR doesn't resolve `use` directives) and let
+    // compileProjectToIR handle them authoritatively below.
+    const hasUseDeclarations = /^\s*use\s+"[^"]+\.manifest"/m.test(manifestSource);
+    if (hasUseDeclarations) {
+      compiledEntries.push({ source: manifestFile, ir: null, skipped: true });
+      continue;
+    }
+
     const { ir, diagnostics } = await compileToIR(manifestSource);
 
     if (!ir) {
@@ -238,7 +247,7 @@ async function compileMergedManifests() {
     writeFileSync(shardPath, JSON.stringify(ir, null, 2));
   }
 
-  enforceNoDuplicateCommandIntent(compiledEntries);
+  enforceNoDuplicateCommandIntent(compiledEntries.filter(e => !e.skipped));
 
   const crypto = await import("node:crypto");
 
@@ -419,9 +428,9 @@ async function compileMergedManifests() {
     sources: compiledEntries.map(({ source, ir }) => ({
       path: source,
       domain: source.includes("/") ? source.split("/")[0] : "root",
-      entities: ir.entities?.length ?? 0,
-      commands: ir.commands?.length ?? 0,
-      events: ir.events?.length ?? 0,
+      entities: ir?.entities?.length ?? 0,
+      commands: ir?.commands?.length ?? 0,
+      events: ir?.events?.length ?? 0,
     })),
     merged: {
       path: "kitchen.ir.json",

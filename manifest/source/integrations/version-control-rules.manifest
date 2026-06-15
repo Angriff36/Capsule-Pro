@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for versioning documents, templates, and configurations
 // with change history, rollback capabilities, and approval workflows
 
-entity VersionedEntity {
+entity VersionedEntity mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required entityType: string
   property required entityId: string
   property required entityName: string
@@ -82,10 +80,8 @@ entity VersionedEntity {
   store VersionedEntity in durable
 }
 
-entity EntityVersion {
+entity EntityVersion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required versionedEntityId: string
   property required versionNumber: int
   property changeReason: string = ""
@@ -162,10 +158,8 @@ entity EntityVersion {
   store EntityVersion in durable
 }
 
-entity VersionApproval {
+entity VersionApproval mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required entityVersionId: string
   property required approverId: string
   indexed property required status: string

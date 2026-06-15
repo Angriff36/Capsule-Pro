@@ -2,10 +2,8 @@ use "../_base.manifest"
 // CRM & Sales - Client Interaction Rules
 // Manifest spec for tracking client interactions, follow-ups, and communication history
 
-entity ClientInteraction {
+entity ClientInteraction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property clientId: string = ""
   property leadId: string = ""
   property employeeId: string = ""
@@ -21,7 +19,6 @@ entity ClientInteraction {
   property escalatedTo: string = ""
   property correlationId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed hasFollowUp: boolean = self.followUpDate != null
   computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false cache request

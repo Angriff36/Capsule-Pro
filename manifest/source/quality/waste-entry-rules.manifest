@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Kitchen Ops - Waste Entry Rules
 // Manifest spec for waste tracking, cost attribution, and inventory loss management
 
-entity WasteEntry {
+entity WasteEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property inventoryItemId: string = ""
   property reasonId: int = 0
   property quantity: decimal = 0
@@ -21,7 +19,6 @@ entity WasteEntry {
   property totalCost: money = 0
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed hasLocation: boolean = self.locationId != ""
   computed hasEvent: boolean = self.eventId != ""

@@ -10,19 +10,113 @@
 tenant tenantId : string from context.tenantId
 
 // ---------------------------------------------------------------------------
+// U1: Role hierarchy — replaces 465 inline `user.role in [...]` literal arrays.
+//
+// Instead of listing every role in every policy/guard, roles are declared ONCE
+// here with single-parent inheritance. The compiler precomputes
+// effectivePermissions via resolveRoleGraph() (manifest v2.4.0+).
+//
+// Migration pattern:
+//   BEFORE:  policy execute: user.role in ["manager", "admin"]
+//   AFTER:   policy execute: roleAllows(user.role, "manageAccess")
+//
+// Because Admin extends Manager, an Admin user automatically has "manageAccess".
+// Similarly Manager extends Staff, so a Manager has "staffAccess".
+//
+// Deny is absolute — deny at any level overrides allows from parents.
+// Unknown roles (not declared here) default to deny (no permissions).
+//
+// See manifest/MANIFEST-DIVERGENCES.md — U1 (role hierarchy).
+// ---------------------------------------------------------------------------
+
+// ── Base tier ──────────────────────────────────────────────────────────────
+// Staff: every employee. Read-level access, clock in/out, request edits.
+role Staff {
+  allow staffAccess
+}
+
+// Kitchen staff: cooks, prep cooks, dishwashers.
+role KitchenStaff extends Staff {}
+
+// Kitchen leads: shift leads in the kitchen. Can add entries, manage basics.
+role KitchenLead extends KitchenStaff {
+  allow leadAccess
+}
+
+// ── Domain-specific staff ──────────────────────────────────────────────────
+role Driver extends Staff {}
+role Sales extends Staff {
+  allow salesAccess
+}
+role SalesRep extends Sales {}
+role Finance extends Staff {
+  allow financeAccess
+}
+role EventCoordinator extends Staff {}
+role Analyst extends Staff {}
+role Editor extends Staff {}
+
+// ── Manager tier ───────────────────────────────────────────────────────────
+// Manager: general managers. Full operational control below admin.
+role Manager extends Staff {
+  allow manageAccess
+  allow leadAccess
+  allow financeAccess
+  allow salesAccess
+}
+
+// Specialized managers — each extends Manager (inherits manageAccess).
+role KitchenManager extends Manager {}
+role EventManager extends Manager {}
+role SalesManager extends Manager {}
+role FinanceManager extends Manager {}
+role InventoryManager extends Manager {}
+role FacilitiesManager extends Manager {}
+role FacilityManager extends FacilitiesManager {}
+role LogisticsManager extends Manager {}
+role ProcurementManager extends Manager {}
+role CateringManager extends Manager {}
+
+// Administrative managers — HR/payroll/billing.
+role HRAdmin extends Manager {}
+role PayrollAdmin extends Manager {}
+role BillingAdmin extends Manager {}
+
+// Generic lead role (alias used in some policies).
+role Lead extends Manager {}
+
+// ── Admin tier ─────────────────────────────────────────────────────────────
+// Admin: full system access.
+role Admin extends Manager {
+  allow adminAccess
+}
+
+role Owner extends Admin {}
+role System extends Admin {}
+
+// ---------------------------------------------------------------------------
 // U4: Mixin source entities for common infrastructure fields.
 //
 // Entities across the project repeat the same 3-4 infra lines:
 //   key [tenantId, id] + property required id + indexed property required tenantId
 //   (100/102 files) and property deletedAt (74/102).
 //
-// These mixin sources flatten at compile time via `entity Foo mixin ...`:
-// the compiler inlines their properties into the consuming entity (see
-// entity-composition.js expandComposition). Key is "own-only" and must
-// still be declared per-entity.
+// These mixins flatten at compile time — the compiler inlines their properties
+// into the consuming entity (see entity-composition.js expandComposition).
+// Key must still be declared per-entity (it is entity-level metadata).
+//
+// Usage:
+//   entity Foo {
+//     key [tenantId, id]
+//     mixin TenantScoped
+//     mixin SoftDeletable   // optional
+//     ...
+//   }
 // ---------------------------------------------------------------------------
 
 // Provides id + tenantId — the tenant-scoping identity fields.
+// Declared as `entity` (not `mixin` keyword) — the parser resolves mixin targets
+// from the entity index. Apply with: `entity Foo mixin TenantScoped { ... }`
 entity TenantScoped {
   property required id: string
   indexed property required tenantId: string

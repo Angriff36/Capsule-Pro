@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Knowledge Base Domain — Entry Rules
 // Manifest spec for internal knowledge base articles and documentation
 
-entity KnowledgeBaseEntry {
+entity KnowledgeBaseEntry mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required title: string
   property category: string = "general"
   property content: string = ""

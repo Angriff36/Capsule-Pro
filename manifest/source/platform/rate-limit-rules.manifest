@@ -2,11 +2,9 @@ use "../_base.manifest"
 // Administration - Rate Limit Rules
 // Manifest spec for rate limit configuration management
 
-entity RateLimitConfig {
+entity RateLimitConfig mixin TenantScoped, SoftDeletable {
   // No relationships: endpointPattern is a URL pattern, no entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string = ""
   property required endpointPattern: string = ""
   property required windowMs: int = 60000
@@ -15,7 +13,6 @@ entity RateLimitConfig {
   property required priority: int = 0
   property required isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   constraint requireName: self.name != "" "Rate limit name is required"
   constraint requireEndpointPattern: self.endpointPattern != "" "Endpoint pattern is required"

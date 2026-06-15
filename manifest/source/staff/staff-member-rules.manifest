@@ -4,11 +4,9 @@ use "../_base.manifest"
 // Distinct from `User` (auth/employee lifecycle): StaffMember is the domain entity
 // that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
 
-entity StaffMember {
+entity StaffMember mixin TenantScoped, SoftDeletable {
   // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required displayName: string = "Unnamed"
   encrypted property email: string = ""
   encrypted property phone: string = ""
@@ -16,7 +14,6 @@ entity StaffMember {
   indexed property required status: string = "active"
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   // Populates StaffMemberCreated.staffMemberId for reactions (entity uses `id`).

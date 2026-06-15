@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events & Catering - Event Budget Rules
 // Manifest spec for event budget management and line item tracking
 
-entity EventBudget {
+entity EventBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property version: int = 1
   indexed property status: string = "draft"
@@ -15,7 +13,6 @@ entity EventBudget {
   computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount) cache request
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"
@@ -137,10 +134,8 @@ entity EventBudget {
   store EventBudget in durable
 }
 
-entity BudgetLineItem {
+entity BudgetLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required budgetId: string
   property required category: string
   searchable property required name: string
@@ -151,7 +146,6 @@ entity BudgetLineItem {
   property sortOrder: int = 0
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isOverBudget: boolean = self.actualAmount > self.budgetedAmount
   computed hasVariance: boolean = self.varianceAmount != 0

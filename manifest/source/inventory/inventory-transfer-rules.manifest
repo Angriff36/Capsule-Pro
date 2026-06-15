@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Inventory Transfer Rules
 // Manifest spec for inter-location inventory movements
 
-entity InventoryTransfer {
+entity InventoryTransfer mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property fromLocationId: string = ""
   property toLocationId: string = ""
   indexed property status: string = "draft"

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // AI Copilot - Event Setup Rules
 // Manifest spec for AI-driven natural language event creation
 
-entity AiEventSetupSession {
+entity AiEventSetupSession mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required userId: string
   property originalInput: string = ""
   property parsedTitle: string = ""

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events & Catering - Catering Order Rules
 // Manifest spec for catering order lifecycle and delivery management
 
-entity CateringOrder {
+entity CateringOrder mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property required orderNumber: string
   property customerId: string = ""
   property eventId: string = ""
@@ -40,7 +38,6 @@ entity CateringOrder {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.orderStatus == "draft"
   computed isConfirmed: boolean = self.orderStatus == "confirmed"

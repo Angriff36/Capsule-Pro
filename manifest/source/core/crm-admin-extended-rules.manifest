@@ -7,10 +7,8 @@ use "../_base.manifest"
 // ProposalTemplate — reusable catering-proposal template
 // ---------------------------------------------------------------------------
 
-entity ProposalTemplate {
+entity ProposalTemplate mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   searchable property description: string = ""
   property eventType: string = ""
@@ -27,7 +25,6 @@ entity ProposalTemplate {
   property accentColor: string = ""
   property fontFamily: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 
@@ -117,10 +114,8 @@ entity ProposalTemplate {
 // InteractionAttachment — file attached to a CRM client interaction
 // ---------------------------------------------------------------------------
 
-entity InteractionAttachment {
+entity InteractionAttachment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property interactionId: string = ""
   property fileName: string = ""
   property fileUrl: string = ""
@@ -128,7 +123,6 @@ entity InteractionAttachment {
   property fileSize: int = 0
   property uploadedBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
 
@@ -180,10 +174,8 @@ entity InteractionAttachment {
 // CrmScoringRule — lead-scoring rule
 // ---------------------------------------------------------------------------
 
-entity CrmScoringRule {
+entity CrmScoringRule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property ruleName: string = ""
   property field: string = ""
   property condition: string = ""
@@ -192,7 +184,6 @@ entity CrmScoringRule {
   property isActive: boolean = true
   property priority: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 
@@ -276,10 +267,8 @@ entity CrmScoringRule {
 // Report — saved report definition
 // ---------------------------------------------------------------------------
 
-entity Report {
+entity Report mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   property reportType: string = ""
   property queryConfig: string = "{}"
@@ -287,7 +276,6 @@ entity Report {
   property isShared: boolean = false
   property createdBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isPrivate: boolean = self.isShared == false
@@ -347,10 +335,8 @@ entity Report {
 // Document — generic uploaded/parsed document
 // ---------------------------------------------------------------------------
 
-entity Document {
+entity Document mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   property documentType: string = ""
   property fileUrl: string = ""
@@ -360,7 +346,6 @@ entity Document {
   property entityId: string = ""
   property uploadedBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isParsed: boolean = self.status == "parsed"
@@ -435,17 +420,14 @@ entity Document {
 // AdminChatThread — internal messaging thread
 // ---------------------------------------------------------------------------
 
-entity AdminChatThread {
+entity AdminChatThread mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property threadType: string = "direct"
   unique property slug: string = ""
   property directKey: string = ""
   property createdBy: string = ""
   property lastMessageAt: datetime
   timestamps
-  property deletedAt: datetime
 
   default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
   command create(threadType: string, slug: string, directKey: string, createdBy: string) {
@@ -481,16 +463,13 @@ entity AdminChatThread {
 // AdminChatMessage — a message within an AdminChatThread
 // ---------------------------------------------------------------------------
 
-entity AdminChatMessage {
+entity AdminChatMessage mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property threadId: string = ""
   property authorId: string = ""
   property authorName: string = ""
   property text: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
 

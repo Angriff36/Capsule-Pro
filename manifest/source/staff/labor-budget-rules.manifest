@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Staff Domain - Labor Budget Rules
 // Manifest spec for labor budgets and budget alerts
 
-entity LaborBudget {
+entity LaborBudget mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property locationId: string = ""
   property periodStart: string = ""
   property periodEnd: string = ""
@@ -17,7 +15,6 @@ entity LaborBudget {
   property approvedBy: string = ""
   property approvedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isApproved: boolean = self.status == "approved"
@@ -121,10 +118,8 @@ entity LaborBudget {
   store LaborBudget in durable
 }
 
-entity BudgetAlert {
+entity BudgetAlert mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property budgetId: string = ""
   property alertType: string = ""
   property utilization: decimal = 0

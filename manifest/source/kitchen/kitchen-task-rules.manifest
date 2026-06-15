@@ -3,11 +3,20 @@ use "../_base.manifest"
 // Manifest spec for general kitchen task operations with constraints, guards, and events
 // Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)
 
+// U7: Closed-vocabulary status enum for KitchenTask lifecycle.
+// Values: pending -> in_progress -> done (terminal) or cancelled (terminal).
+enum KitchenTaskStatus {
+  pending
+  in_progress
+  done
+  cancelled
+}
+
 entity KitchenTask mixin TenantScoped {
   key [tenantId, id]
   searchable property required title: string
   property required summary: string
-  indexed property required status: string = "pending"
+  indexed property required status: KitchenTaskStatus = pending
   property priority: int = 5
   property complexity: int = 5
   property tags: string = ""
@@ -26,6 +35,8 @@ entity KitchenTask mixin TenantScoped {
 
   relationship hasMany claims: KitchenTaskClaim
   relationship hasMany progress: KitchenTaskProgress
+  // Back-relations (U11): additional inverse hasMany for children that belongTo KitchenTask
+  relationship hasMany taskBundleItems: TaskBundleItem
 
   // State transitions
   transition status from "pending" to ["in_progress", "done", "cancelled"]

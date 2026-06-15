@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for event guest management, dietary tracking, RSVP, and day-of check-in.
 // RSVP drives the final headcount the kitchen cooks for; check-in tracks actual attendance.
 
-entity EventGuest {
+entity EventGuest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property guestName: string = ""
   property guestEmail: string = ""
@@ -26,7 +24,6 @@ entity EventGuest {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed hasDietaryRestrictions: boolean = length(self.dietaryRestrictions) > 0
   computed hasAllergenRestrictions: boolean = length(self.allergenRestrictions) > 0

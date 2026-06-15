@@ -2,19 +2,16 @@ use "../_base.manifest"
 // Administrative Domain - Admin Task File Reference Rules
 // Manifest spec for linking existing files to admin tasks without duplicating storage
 
-entity AdminTaskFileRef {
+entity AdminTaskFileRef mixin TenantScoped, SoftDeletable {
   // No relationships: taskId/refId are loose keys by design (refId is
   // polymorphic via refType); AdminTask declares no child relationships.
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property taskId: string = ""
   property refType: string = ""
   property refId: string = ""
   searchable property refLabel: string = ""
   property linkedBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

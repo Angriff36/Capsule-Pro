@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Workforce AI - Rules
 // Manifest spec for AI-powered workforce optimization features
 
-entity WorkforceOptimization {
+entity WorkforceOptimization mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property locationId: string = ""
   property optimizationType: string = "" // "schedule", "assignment", "performance"
   indexed property status: string = "pending" // "pending", "in_progress", "completed", "failed"
@@ -63,10 +61,8 @@ entity WorkforceOptimization {
   store WorkforceOptimization in durable
 }
 
-entity PerformancePrediction {
+entity PerformancePrediction mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property employeeId: string = ""
   property predictionType: string = "" // "productivity", "attendance", "overtime_risk", "skill_match"
   property predictionHorizon: int = 0 // days

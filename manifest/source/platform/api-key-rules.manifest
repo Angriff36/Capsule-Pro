@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for API key lifecycle management
 // SECURITY: All commands require admin/manager role. Keys are hashed before storage.
 
-entity ApiKey {
+entity ApiKey mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string = ""
   readonly property required keyPrefix: string = ""
   readonly property required hashedKey: string = ""
@@ -16,7 +14,6 @@ entity ApiKey {
   property revokedAt: datetime
   property required createdByUserId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isRevoked: boolean = self.revokedAt != null
   computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request

@@ -439,25 +439,25 @@
       ]
     },
     {
-      "level": "FAIL",
+      "level": "WARN",
       "id": "entity-writes.offender",
-      "message": "AdminTask is changed outside the approved Manifest store path",
+      "message": "EventDish is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/administrative/kanban/actions.ts:144: // prisma.adminTask.create (constitution §3/§9). The creator self-assigns (assignedTo",
+        "apps/app/app/(authenticated)/events/actions/event-dishes.ts:490: await database.eventDish.updateMany({",
         "kind=prisma_write",
-        "model=adminTask",
-        "method=create"
+        "model=eventDish",
+        "method=update"
       ]
     },
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
-      "message": "AdminTask is changed outside the approved Manifest store path",
+      "message": "Lead is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/administrative/kanban/actions.ts:206: // direct prisma.adminTask.update (constitution §3/§9). The destination column",
+        "apps/app/app/(authenticated)/marketing/leads/actions.ts:95: // prisma.lead.create (constitution §3/§9). The command auto-sets status=\"new\"",
         "kind=prisma_write",
-        "model=adminTask",
-        "method=update"
+        "model=lead",
+        "method=create"
       ]
     },
     {
@@ -494,25 +494,25 @@
       ]
     },
     {
-      "level": "WARN",
+      "level": "FAIL",
       "id": "entity-writes.offender",
-      "message": "EventDish is changed outside the approved Manifest store path",
+      "message": "AdminTask is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/events/actions/event-dishes.ts:490: await database.eventDish.updateMany({",
+        "apps/app/app/(authenticated)/administrative/kanban/actions.ts:144: // prisma.adminTask.create (constitution §3/§9). The creator self-assigns (assignedTo",
         "kind=prisma_write",
-        "model=eventDish",
-        "method=update"
+        "model=adminTask",
+        "method=create"
       ]
     },
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
-      "message": "Lead is changed outside the approved Manifest store path",
+      "message": "AdminTask is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/marketing/leads/actions.ts:95: // prisma.lead.create (constitution §3/§9). The command auto-sets status=\"new\"",
+        "apps/app/app/(authenticated)/administrative/kanban/actions.ts:206: // direct prisma.adminTask.update (constitution §3/§9). The destination column",
         "kind=prisma_write",
-        "model=lead",
-        "method=create"
+        "model=adminTask",
+        "method=update"
       ]
     },
     {
@@ -546,39 +546,6 @@
         "kind=prisma_write",
         "model=eventDish",
         "method=update"
-      ]
-    },
-    {
-      "level": "INFO",
-      "id": "entity-writes.offender",
-      "message": "InventoryTransfer is changed outside the approved Manifest store path",
-      "details": [
-        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:188: const updated = await this.prisma.inventoryTransfer.update({",
-        "kind=prisma_write",
-        "model=inventoryTransfer",
-        "method=update"
-      ]
-    },
-    {
-      "level": "INFO",
-      "id": "entity-writes.offender",
-      "message": "InventoryTransfer is changed outside the approved Manifest store path",
-      "details": [
-        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:202: await this.prisma.inventoryTransfer.update({",
-        "kind=prisma_write",
-        "model=inventoryTransfer",
-        "method=update"
-      ]
-    },
-    {
-      "level": "INFO",
-      "id": "entity-writes.offender",
-      "message": "InventoryTransfer is changed outside the approved Manifest store path",
-      "details": [
-        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:214: await this.prisma.inventoryTransfer.deleteMany({",
-        "kind=prisma_write",
-        "model=inventoryTransfer",
-        "method=delete"
       ]
     },
     {
@@ -663,7 +630,7 @@
       "id": "entity-writes.offender",
       "message": "Station is changed outside the approved Manifest store path",
       "details": [
-        "manifest/runtime/src/prisma-store.ts:839: const station = await this.prisma.station.create({",
+        "manifest/runtime/src/prisma-store.ts:879: const station = await this.prisma.station.create({",
         "kind=prisma_write",
         "model=station",
         "method=create"
@@ -674,7 +641,7 @@
       "id": "entity-writes.offender",
       "message": "Station is changed outside the approved Manifest store path",
       "details": [
-        "manifest/runtime/src/prisma-store.ts:862: const updated = await this.prisma.station.update({",
+        "manifest/runtime/src/prisma-store.ts:902: const updated = await this.prisma.station.update({",
         "kind=prisma_write",
         "model=station",
         "method=update"
@@ -685,7 +652,7 @@
       "id": "entity-writes.offender",
       "message": "Station is changed outside the approved Manifest store path",
       "details": [
-        "manifest/runtime/src/prisma-store.ts:886: await this.prisma.station.update({",
+        "manifest/runtime/src/prisma-store.ts:926: await this.prisma.station.update({",
         "kind=prisma_write",
         "model=station",
         "method=update"
@@ -696,10 +663,43 @@
       "id": "entity-writes.offender",
       "message": "Station is changed outside the approved Manifest store path",
       "details": [
-        "manifest/runtime/src/prisma-store.ts:898: await this.prisma.station.updateMany({",
+        "manifest/runtime/src/prisma-store.ts:938: await this.prisma.station.updateMany({",
         "kind=prisma_write",
         "model=station",
         "method=update"
+      ]
+    },
+    {
+      "level": "INFO",
+      "id": "entity-writes.offender",
+      "message": "InventoryTransfer is changed outside the approved Manifest store path",
+      "details": [
+        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:188: const updated = await this.prisma.inventoryTransfer.update({",
+        "kind=prisma_write",
+        "model=inventoryTransfer",
+        "method=update"
+      ]
+    },
+    {
+      "level": "INFO",
+      "id": "entity-writes.offender",
+      "message": "InventoryTransfer is changed outside the approved Manifest store path",
+      "details": [
+        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:202: await this.prisma.inventoryTransfer.update({",
+        "kind=prisma_write",
+        "model=inventoryTransfer",
+        "method=update"
+      ]
+    },
+    {
+      "level": "INFO",
+      "id": "entity-writes.offender",
+      "message": "InventoryTransfer is changed outside the approved Manifest store path",
+      "details": [
+        "manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts:214: await this.prisma.inventoryTransfer.deleteMany({",
+        "kind=prisma_write",
+        "model=inventoryTransfer",
+        "method=delete"
       ]
     },
     {
@@ -712,155 +712,11 @@
       ]
     },
     {
-      "level": "INFO",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/test/mocks/@repo/database.ts:62: $executeRaw: vi.fn(),",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:160: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:238: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:275: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:310: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:353: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:525: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:566: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:616: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:959: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:976: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:1249: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "WARN",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/importer.ts:1311: await database.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
       "level": "WARN",
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
         "apps/app/app/(authenticated)/events/actions/event-summary.ts:366: await database.$executeRaw`",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:288: await database.$executeRawUnsafe(updateQuery, ...values);",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:304: await database.$executeRawUnsafe(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
-        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:576: await database.$executeRawUnsafe(",
         "kind=raw_sql_write"
       ]
     },
@@ -919,6 +775,15 @@
       ]
     },
     {
+      "level": "INFO",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/test/mocks/@repo/database.ts:62: $executeRaw: vi.fn(),",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
       "level": "WARN",
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
@@ -933,6 +798,69 @@
       "message": "Raw SQL executor found outside approved store files",
       "details": [
         "apps/app/app/(authenticated)/kitchen/prep-lists/actions.ts:832: await database.$executeRaw`",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:288: await database.$executeRawUnsafe(updateQuery, ...values);",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:304: await database.$executeRawUnsafe(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:576: await database.$executeRawUnsafe(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:127: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:194: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:211: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:220: await database.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },
@@ -1094,7 +1022,7 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
-        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:127: await database.$executeRaw(",
+        "apps/app/app/(authenticated)/events/importer.ts:160: await database.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },
@@ -1103,7 +1031,7 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
-        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:194: await database.$executeRaw(",
+        "apps/app/app/(authenticated)/events/importer.ts:238: await database.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },
@@ -1112,7 +1040,7 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
-        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:211: await database.$executeRaw(",
+        "apps/app/app/(authenticated)/events/importer.ts:275: await database.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },
@@ -1121,7 +1049,79 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
-        "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts:220: await database.$executeRaw(",
+        "apps/app/app/(authenticated)/events/importer.ts:310: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:353: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:525: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:566: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:616: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:959: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:976: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:1249: await database.$executeRaw(",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:1311: await database.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },
@@ -1211,15 +1211,6 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files",
       "details": [
-        "apps/api/app/api/kitchen/dishes/commands/create/route.ts:153: await tx.$executeRaw(",
-        "kind=raw_sql_write"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "raw-sql.executor-review",
-      "message": "Raw SQL executor found outside approved store files",
-      "details": [
         "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts:173: await tx.$executeRaw(",
         "kind=raw_sql_write"
       ]
@@ -1248,6 +1239,15 @@
       "message": "Raw SQL executor found outside approved store files",
       "details": [
         "apps/api/app/api/kitchen/prep-lists/generate/route.ts:878: await database.$executeRaw`",
+        "kind=raw_sql_write"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files",
+      "details": [
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts:153: await tx.$executeRaw(",
         "kind=raw_sql_write"
       ]
     },

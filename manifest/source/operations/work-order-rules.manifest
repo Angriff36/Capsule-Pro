@@ -3,16 +3,23 @@ use "../_base.manifest"
 // Manifest spec for equipment maintenance work orders
 // Lifecycle: open -> assigned -> in_progress -> completed (or cancelled from any non-terminal state)
 
-entity WorkOrder {
+// U7: Closed-vocabulary status enum for WorkOrder lifecycle.
+enum WorkOrderStatus {
+  open
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+entity WorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required equipmentId: string
   property equipmentName: string = ""
   searchable property required title: string
   property type: string = "repair"
   property priority: string = "medium"
-  indexed property status: string = "open"
+  indexed property status: WorkOrderStatus = open
   searchable property description: string = ""
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime

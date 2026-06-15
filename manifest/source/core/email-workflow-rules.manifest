@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Collaboration Domain - Email Workflow Rules
 // Manifest spec for email workflow CRUD
 
-entity EmailWorkflow {
+entity EmailWorkflow mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = ""
   property triggerType: string = "custom"
   property triggerConfig: string = "{}"
@@ -15,7 +13,6 @@ entity EmailWorkflow {
   property isActive: boolean = true
   property lastTriggeredAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Kitchen Ops - Inventory Rules
 // Manifest spec for inventory operations with constraints, guards, and events
 
-entity InventoryItem {
+entity InventoryItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required item_number: string
   searchable property required name: string
   searchable property description: string = ""
@@ -25,7 +23,6 @@ entity InventoryItem {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
   computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level
@@ -43,6 +40,13 @@ entity InventoryItem {
   relationship hasMany reorderSuggestions: ReorderSuggestion
   relationship hasMany transferItems: InventoryTransferItem
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo InventoryItem
+  relationship hasMany ingredients: Ingredient
+  relationship hasMany cycleCountRecords: CycleCountRecord
+  relationship hasMany varianceReports: VarianceReport
+  relationship hasMany shipmentItems: ShipmentItem
+  relationship hasMany purchaseOrderItems: PurchaseOrderItem
 
   constraint warnBelowPar:warn (self.parLevel > 0 and self.quantityOnHand < self.parLevel) {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"

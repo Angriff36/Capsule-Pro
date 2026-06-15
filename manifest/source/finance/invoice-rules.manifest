@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Invoice Rules Manifest
 // Defines invoice creation, management, and payment tracking
 
-entity Invoice {
+entity Invoice mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
 
   // Invoice details
   unique property required invoiceNumber: string = ""
@@ -58,6 +56,9 @@ entity Invoice {
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship hasMany payments: Payment
+  // Back-relations (U11): inverse hasMany for children that belongTo Invoice
+  relationship hasMany revenueLines: RevenueRecognitionLine
+  relationship hasMany collectionCases: CollectionCase
   // Constraints
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
 

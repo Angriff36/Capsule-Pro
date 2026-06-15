@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events & Catering - Event Rules
 // Manifest spec for event lifecycle, profitability tracking, and summary management
 
-entity Event {
+entity Event mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property clientId: string = ""
   unique property eventNumber: string = ""
   searchable property required title: string = "Untitled Event"
@@ -31,7 +29,6 @@ entity Event {
   versionProperty version: number
   versionAtProperty versionAt: number
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isConfirmed: boolean = self.status == "confirmed"
@@ -57,6 +54,15 @@ entity Event {
   relationship hasMany eventReports: EventReport
   relationship hasMany eventProfitabilities: EventProfitability
   relationship hasMany eventSummaries: EventSummary
+  // Back-relations (U11): additional inverse hasMany for children that belongTo Event
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepLists: PrepList
+  relationship hasMany allergenWarnings: AllergenWarning
+  relationship hasMany wasteEntries: WasteEntry
+  relationship hasMany shipments: Shipment
+  relationship hasMany revenueLines: RevenueRecognitionLine
+  relationship hasMany collectionCases: CollectionCase
+  relationship hasMany prepTaskPlans: PrepTaskPlanWorkflow
 
   constraint validTitle: self.title != null and self.title != "" "Event title is required"
   constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"
@@ -270,10 +276,8 @@ entity Event {
   store Event in durable
 }
 
-entity EventProfitability {
+entity EventProfitability mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property budgetedRevenue: money = 0
   property budgetedFoodCost: money = 0
@@ -298,7 +302,6 @@ entity EventProfitability {
   property calculationMethod: string = "auto"
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isProfitable: boolean = self.actualGrossMargin > 0
   computed hasVariance: boolean = self.totalCostVariance != 0 or self.revenueVariance != 0
@@ -385,10 +388,8 @@ entity EventProfitability {
   store EventProfitability in durable
 }
 
-entity EventSummary {
+entity EventSummary mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property highlights: string = "[]"
   property issues: string = "[]"
@@ -399,7 +400,6 @@ entity EventSummary {
   property generatedAt: datetime
   property generationDurationMs: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
   computed hasIssues: boolean = self.issues != "[]" and self.issues != ""

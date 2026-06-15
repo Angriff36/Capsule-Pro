@@ -4,10 +4,16 @@ use "../_base.manifest"
 // Menu lifecycle: draft -> published -> archived
 // MenuDish is a junction row (menu <-> dish) with course/sort metadata.
 
-entity Menu {
+// U7: Closed-vocabulary status enum for Menu lifecycle.
+// Values: draft -> published -> archived (each can revert to draft).
+enum MenuStatus {
+  draft
+  published
+  archived
+}
+
+entity Menu mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   searchable property description: string = ""
   property category: string = ""
@@ -21,7 +27,7 @@ entity Menu {
   property seasonLabel: string = ""
   property seasonYear: int = 0
   // Publication workflow: menus are drafted then published for client selection.
-  indexed property status: string = "draft"
+  indexed property status: MenuStatus = draft
   property publishedAt: datetime
   property archivedAt: datetime
   timestamps
@@ -207,10 +213,8 @@ entity Menu {
   store Menu in durable
 }
 
-entity MenuDish {
+entity MenuDish mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required menuId: string
   property required dishId: string
   property course: string = ""
@@ -218,7 +222,6 @@ entity MenuDish {
   property isOptional: boolean = false
   property priceOverride: money = 0
   timestamps
-  property deletedAt: datetime
 
   computed hasPriceOverride: boolean = self.priceOverride > 0
 

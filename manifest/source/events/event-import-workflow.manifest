@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Implements the workflow pattern from spec: parse → extract → validate → propose tasks → reserve inventory → activate
 // Each step is idempotent with clear state transitions
 
-entity EventImportWorkflow {
+entity EventImportWorkflow mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property idempotencyKey: string = ""
   indexed property status: string = "created"

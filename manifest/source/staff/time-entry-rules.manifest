@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Staff - Time Entry Rules
 // Manifest spec for time tracking and timecard edit requests
 
-entity TimeEntry {
+entity TimeEntry mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   property locationId: string = ""
   property shiftId: string = ""
@@ -16,7 +14,6 @@ entity TimeEntry {
   property approvedBy: string = ""
   property approvedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isClockedIn: boolean = self.clockIn != null and self.clockOut == null
   computed isCompleted: boolean = self.clockIn != null and self.clockOut != null
@@ -28,7 +25,7 @@ entity TimeEntry {
   relationship belongsTo employee: User with employeeId
   relationship belongsTo location: Facility with locationId
 
-  default policy TimeEntryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
+  default policy TimeEntryDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
@@ -132,10 +129,8 @@ entity TimeEntry {
   store TimeEntry in durable
 }
 
-entity TimecardEditRequest {
+entity TimecardEditRequest mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required timeEntryId: string
   property required employeeId: string
   property requestedClockIn: datetime
@@ -158,7 +153,7 @@ entity TimecardEditRequest {
   // State transitions
   transition status from "pending" to ["approved", "rejected"]
 
-  default policy TimecardEditRequestDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
+  default policy TimecardEditRequestDefaultAccess execute: roleAllows(user.role, "manageAccess") "Time entry management"
   command create(timeEntryId: string, employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -211,11 +206,16 @@ entity TimecardEditRequest {
   store TimecardEditRequest in durable
 }
 
-policy StaffCanClockInOut execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can clock in and out"
-policy ManagersCanAddEntries execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can add manual time entries"
-policy ManagersCanDeleteEntries execute: user.role in ["manager", "admin"] "Only managers can delete time entries"
-policy StaffCanRequestEdit execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can request timecard edits"
-policy ManagersCanApproveEdits execute: user.role in ["manager", "admin"] "Only managers can approve timecard edits"
+// U1: Role hierarchy migration — policies now use roleAllows() instead of
+// inline role arrays. Permission tiers declared in _base.manifest.
+//   staffAccess: Staff (all employees incl. KitchenStaff, KitchenLead, Manager, Admin)
+//   leadAccess: KitchenLead, Manager+
+//   manageAccess: Manager+ (incl. HRAdmin, PayrollAdmin, all specialized managers)
+policy StaffCanClockInOut execute: roleAllows(user.role, "staffAccess") "All staff can clock in and out"
+policy ManagersCanAddEntries execute: roleAllows(user.role, "leadAccess") "Leads and managers can add manual time entries"
+policy ManagersCanDeleteEntries execute: roleAllows(user.role, "manageAccess") "Only managers can delete time entries"
+policy StaffCanRequestEdit execute: roleAllows(user.role, "staffAccess") "All staff can request timecard edits"
+policy ManagersCanApproveEdits execute: roleAllows(user.role, "manageAccess") "Only managers can approve timecard edits"
 
 event TimeEntryClockedIn: "staff.timeentry.clocked_in" {
   timeEntryId: string

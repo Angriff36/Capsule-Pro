@@ -3,13 +3,29 @@ use "../_base.manifest"
 // Implements the workflow pattern from spec: generate → review → approve → instantiate tasks → schedule windows
 // Provides structured workflow for AI-assisted task generation with human review
 
-entity PrepTaskPlanWorkflow {
+// U7: Closed-vocabulary status enum for PrepTaskPlanWorkflow lifecycle.
+// Multi-step workflow: created -> generating -> awaiting_review -> reviewing
+//   -> awaiting_approval -> approving -> instantiating -> scheduling -> completed.
+// Branch: failed (retryable), cancelled (terminal).
+enum PrepTaskPlanWorkflowStatus {
+  created
+  generating
+  awaiting_review
+  reviewing
+  awaiting_approval
+  approving
+  instantiating
+  scheduling
+  completed
+  failed
+  cancelled
+}
+
+entity PrepTaskPlanWorkflow mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property idempotencyKey: string = ""
-  indexed property status: string = "created"
+  indexed property status: PrepTaskPlanWorkflowStatus = created
   property currentStep: int = 0
   property totalSteps: int = 5
   property generationOptions: string = "{}"

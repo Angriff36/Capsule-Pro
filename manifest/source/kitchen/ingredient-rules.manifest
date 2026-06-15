@@ -33,6 +33,10 @@ entity Ingredient mixin TenantScoped, SoftDeletable {
 
   relationship belongsTo inventoryItem: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo Ingredient
+  relationship hasMany recipeIngredients: RecipeIngredient
+  relationship hasMany prepListItems: PrepListItem
+
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
   constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"
   constraint warnNoInventoryItem:warn self.inventoryItemId == "" {

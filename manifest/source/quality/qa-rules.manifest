@@ -1,14 +1,19 @@
 use "../_base.manifest"
 // Kitchen QA Rules — Quality Checks, Corrective Actions, Temperature Logs
 
-entity QACheck {
+// U7: Closed-vocabulary status enum for QACheck lifecycle.
+enum QACheckStatus {
+  pending
+  completed
+  reinspection_required
+}
+
+entity QACheck mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property location: string = ""
   property required checkType: string
   property result: string = "pass"
-  indexed property status: string = "pending"
+  indexed property status: QACheckStatus = pending
   property inspector: string = ""
   searchable property notes: string = ""
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
@@ -99,10 +104,8 @@ entity QACheck {
   store QACheck in durable
 }
 
-entity QACorrectiveAction {
+entity QACorrectiveAction mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   // relatedCheckId: nullable Uuid column (related_check_id) — standalone actions have no check; "" maps to null
   property relatedCheckId: string = ""
   searchable property required description: string
@@ -197,10 +200,8 @@ entity QACorrectiveAction {
   store QACorrectiveAction in durable
 }
 
-entity QATemperatureLog {
+entity QATemperatureLog mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   // logType: where/in what context the temperature was taken (enumerated per column comment)
   property required logType: string
   property required temperature: decimal

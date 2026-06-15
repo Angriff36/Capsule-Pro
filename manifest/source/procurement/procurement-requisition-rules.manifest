@@ -7,9 +7,7 @@ use "../_base.manifest"
 // They must be approved before converting to purchase orders, ensuring
 // proper budget validation and authorization.
 
-entity PurchaseRequisition {
-  property required id: string
-  indexed property required tenantId: string
+entity PurchaseRequisition mixin TenantScoped, SoftDeletable {
   unique property required requisitionNumber: string
   property required requestedBy: string = ""
   property required requestDate: datetime = now()
@@ -36,7 +34,6 @@ entity PurchaseRequisition {
   property itemCategory: string = ""
   property required priority: string = "normal"
   timestamps
-  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -215,9 +212,7 @@ entity PurchaseRequisition {
   store PurchaseRequisition in durable
 }
 
-entity PurchaseRequisitionItem {
-  property required id: string
-  indexed property required tenantId: string
+entity PurchaseRequisitionItem mixin TenantScoped, SoftDeletable {
   property required requisitionId: string
   property required itemId: string
   property itemName: string = ""
@@ -230,7 +225,6 @@ entity PurchaseRequisitionItem {
   property specifications: string = ""
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   key [tenantId, id]
 
@@ -412,28 +406,7 @@ event PurchaseRequisitionItemRemoved: "procurement.requisition.item.removed" {
 // ─────────────────────────────────────────────────────────────────────────────
 // SAGA: Requisition-to-Purchase-Order conversion
 // ─────────────────────────────────────────────────────────────────────────────
-// Orchestrates the multi-step workflow of approving a requisition, creating
-// the purchase order, and marking the requisition as converted. If any step
-// fails, the compensation chain rolls back in reverse order.
-//
-// COMPENSATE GOTCHA: the runtime passes empty input for compensate commands,
-// so compensates use commands that only need the instanceId tracked by the
-// saga — status reverts that operate on the saga-managed entity instances.
-
-saga RequisitionToPurchaseOrder {
-  step approve {
-    command: PurchaseRequisition.approveManager
-    compensate: PurchaseRequisition.cancel
-  }
-
-  step createPurchaseOrder {
-    command: PurchaseOrder.create
-    compensate: PurchaseOrder.cancel
-  }
-
-  step convertRequisition {
-    command: PurchaseRequisition.convertToPo
-  }
-
-  on_failure: compensate
-}
+// REMOVED: saga RequisitionToPurchaseOrder — was vestigial; no code caller
+// (runManifestSaga / runSaga) ever invoked it. The requisition → PO workflow
+// is handled by direct command dispatch (approveManager → create → convertToPo)
+// through the governed runtime, so this saga was dead IR with no runtime path.

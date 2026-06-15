@@ -4,14 +4,20 @@ use "../_base.manifest"
 // Lifecycle: draft -> approved -> published -> closed
 // ScheduleShift: can offer/swap shifts after publish
 
-entity Schedule {
+// U7: Closed-vocabulary status enum for Schedule lifecycle.
+enum ScheduleStatus {
+  draft
+  approved
+  published
+  closed
+}
+
+entity Schedule mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property locationId: string = ""
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
-  indexed property status: string = "draft"
+  indexed property status: ScheduleStatus = draft
   property publishedAt: datetime
   property publishedBy: string = ""
   property approvedBy: string = ""
@@ -19,7 +25,6 @@ entity Schedule {
   searchable property notes: string = ""
   property shiftCount: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"
@@ -128,10 +133,8 @@ entity Schedule {
   store Schedule in durable
 }
 
-entity ScheduleShift {
+entity ScheduleShift mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required scheduleId: string
   property required employeeId: string
   property required locationId: string
@@ -148,7 +151,6 @@ entity ScheduleShift {
   versionAtProperty versionAt: number
   property inheritedContext: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed durationHours: number = self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0 cache request
   computed isAssigned: boolean = self.employeeId != ""

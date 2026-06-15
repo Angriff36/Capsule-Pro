@@ -4,10 +4,8 @@ use "../_base.manifest"
 // Lifecycle: PENDING -> APPROVED | REJECTED | CANCELLED
 //            REJECTED -> PENDING (via reconsider, for manager re-review)
 
-entity TimeOffRequest {
+entity TimeOffRequest mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property employeeId: string = ""
   property startDate: string = ""
   property endDate: string = ""
@@ -22,7 +20,6 @@ entity TimeOffRequest {
   property balanceSnapshot: decimal = 0
   property balanceUnit: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isPending: boolean = self.status == "PENDING"

@@ -6,10 +6,8 @@ use "../_base.manifest"
 // ---------------------------------------------------------------------------
 // TemperatureProbe — physical IoT sensor mounted in a fridge / freezer
 // ---------------------------------------------------------------------------
-entity TemperatureProbe {
+entity TemperatureProbe mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required probeId: string
   property locationId: string = ""
@@ -25,6 +23,10 @@ entity TemperatureProbe {
 
   constraint thresholdOrder: self.minTemp < self.maxTemp "minTemp must be less than maxTemp"
   constraint requireName: self.name != "" "Probe name is required"
+
+  // Back-relations (U11): inverse hasMany for children that belongTo TemperatureProbe
+  relationship hasMany readings: TemperatureReading
+  relationship hasMany alerts: IoTAlert
 
   default policy TemperatureProbeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(name: string, probeId: string, optional locationId: string, minTemp: number, maxTemp: number) {
@@ -75,10 +77,8 @@ entity TemperatureProbe {
 // ---------------------------------------------------------------------------
 // TemperatureLog — manual HACCP temperature entry by staff
 // ---------------------------------------------------------------------------
-entity TemperatureLog {
+entity TemperatureLog mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required equipmentId: string
   property required logNumber: string
   property required logType: string
@@ -128,10 +128,8 @@ entity TemperatureLog {
 // ---------------------------------------------------------------------------
 // TemperatureReading — automated timeseries reading from an IoT probe
 // ---------------------------------------------------------------------------
-entity TemperatureReading {
+entity TemperatureReading mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required probeId: string
   property required temperature: decimal
   property required loggedAt: datetime = now()
@@ -168,10 +166,8 @@ entity TemperatureReading {
 // ---------------------------------------------------------------------------
 // IotAlertRule — configuration for when to fire an alert on a probe/equipment
 // ---------------------------------------------------------------------------
-entity IotAlertRule {
+entity IotAlertRule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required equipmentId: string
   property required sensorType: string
@@ -191,6 +187,9 @@ entity IotAlertRule {
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
 
   relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo IotAlertRule
+  relationship hasMany alerts: IoTAlert
 
   constraint validCondition: self.condition in ["above", "below", "outside_range"] "Invalid condition"
   constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
@@ -242,10 +241,8 @@ entity IotAlertRule {
 // ---------------------------------------------------------------------------
 // IoTAlert — a fired alert from a probe breaching a rule
 // ---------------------------------------------------------------------------
-entity IoTAlert {
+entity IoTAlert mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required probeId: string
   property ruleId: string = ""
   property required severity: string
@@ -322,10 +319,8 @@ entity IoTAlert {
 // ---------------------------------------------------------------------------
 // CorrectiveAction — food-safety corrective action after a quality/temp failure
 // ---------------------------------------------------------------------------
-entity CorrectiveAction {
+entity CorrectiveAction mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required actionNumber: string
   property required title: string
   property required sourceType: string
@@ -400,10 +395,8 @@ entity CorrectiveAction {
 // ---------------------------------------------------------------------------
 // QualityCheck — a food-safety quality check (receiving, cooling, etc.)
 // ---------------------------------------------------------------------------
-entity QualityCheck {
+entity QualityCheck mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required checkNumber: string
   property required title: string
   property required checkType: string
@@ -480,10 +473,8 @@ entity QualityCheck {
 // ---------------------------------------------------------------------------
 // QualityCheckItem — an individual criterion within a QualityCheck
 // ---------------------------------------------------------------------------
-entity QualityCheckItem {
+entity QualityCheckItem mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required checkId: string
   property required itemName: string
   property required criterion: string
@@ -530,10 +521,8 @@ entity QualityCheckItem {
 // ---------------------------------------------------------------------------
 // KitchenTaskClaim — an employee claiming a kitchen task
 // ---------------------------------------------------------------------------
-entity KitchenTaskClaim {
+entity KitchenTaskClaim mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required taskId: string
   property required employeeId: string
   property required claimedAt: datetime
@@ -584,10 +573,8 @@ entity KitchenTaskClaim {
 // ---------------------------------------------------------------------------
 // KitchenTaskProgress — a progress / status update snapshot on a kitchen task
 // ---------------------------------------------------------------------------
-entity KitchenTaskProgress {
+entity KitchenTaskProgress mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required taskId: string
   property required employeeId: string
   property required progressType: string
@@ -629,10 +616,8 @@ entity KitchenTaskProgress {
 // ---------------------------------------------------------------------------
 // TaskBundle — a named grouping of kitchen tasks, optionally event-scoped
 // ---------------------------------------------------------------------------
-entity TaskBundle {
+entity TaskBundle mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property eventId: string = ""
   searchable property description: string = ""
@@ -685,10 +670,8 @@ entity TaskBundle {
 // ---------------------------------------------------------------------------
 // TaskBundleItem — a kitchen task within a bundle
 // ---------------------------------------------------------------------------
-entity TaskBundleItem {
+entity TaskBundleItem mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required taskBundleId: string
   property required kitchenTaskId: string
   property sortOrder: int = 0
@@ -727,10 +710,8 @@ entity TaskBundleItem {
 // ---------------------------------------------------------------------------
 // BulkCombineRule — rule to auto-combine similar prep tasks into a single job
 // ---------------------------------------------------------------------------
-entity BulkCombineRule {
+entity BulkCombineRule mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required matchCriteria: string
   property isActive: boolean = true
@@ -776,10 +757,8 @@ entity BulkCombineRule {
 // ---------------------------------------------------------------------------
 // MethodVideo — instructional video attached to a prep method
 // ---------------------------------------------------------------------------
-entity MethodVideo {
+entity MethodVideo mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required prepMethodId: string
   searchable property required title: string
   property required url: string
@@ -834,10 +813,8 @@ entity MethodVideo {
 // ---------------------------------------------------------------------------
 // PrepListImport — provenance record for an imported prep list
 // ---------------------------------------------------------------------------
-entity PrepListImport {
+entity PrepListImport mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required source: string
   property required fileName: string
   indexed property required status: string = "pending"

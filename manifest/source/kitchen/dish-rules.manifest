@@ -43,6 +43,12 @@ entity Dish mixin TenantScoped, SoftDeletable {
   relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
   relationship belongsTo defaultContainer: Container fields [tenantId, defaultContainerId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo Dish
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepListItems: PrepListItem
+  relationship hasMany menuDishes: MenuDish
+  relationship hasMany allergenWarnings: AllergenWarning
+
   constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
   constraint positiveCost: self.costPerPerson >= 0 "Cost per person cannot be negative"

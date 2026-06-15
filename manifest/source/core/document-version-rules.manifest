@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Document Version Control Rules
 // Manifest spec for document versioning, approval, and publish lifecycle
 
-entity DocumentVersion {
+entity DocumentVersion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required documentId: string
   unique property required versionNumber: int
   property required content: string

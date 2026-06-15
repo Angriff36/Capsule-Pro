@@ -541,8 +541,8 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
  *
  * Field mapping: every manifest property is stored 1:1 (same name) in the
  * dedicated table; JSON-shaped properties (generatedTasks, scheduledWindows,
- * errors, etc.) are typed as `string` in the manifest and stored as TEXT in
- * Postgres holding serialized JSON payloads (e.g. `"[]"`, `"{}"`).
+ * errors, etc.) are stored natively as Prisma `Json` columns — objects and
+ * arrays pass through directly without manual serialization.
  */
 export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
   constructor(
@@ -576,16 +576,16 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
         status: (data.status as string) ?? "created",
         currentStep: (data.currentStep as number) ?? 0,
         totalSteps: (data.totalSteps as number) ?? 5,
-        generationOptions: (data.generationOptions as string) ?? "{}",
-        generatedTasks: (data.generatedTasks as string) ?? "[]",
-        reviewedTasks: (data.reviewedTasks as string) ?? "[]",
-        approvedTaskIds: (data.approvedTaskIds as string) ?? "[]",
-        rejectedTaskIds: (data.rejectedTaskIds as string) ?? "[]",
-        instantiatedTaskIds: (data.instantiatedTaskIds as string) ?? "[]",
-        scheduledWindows: (data.scheduledWindows as string) ?? "{}",
-        constraintOutcomes: (data.constraintOutcomes as string) ?? "[]",
-        errors: (data.errors as string) ?? "[]",
-        warnings: (data.warnings as string) ?? "[]",
+        generationOptions: toJsonValue(data.generationOptions, {}),
+        generatedTasks: toJsonValue(data.generatedTasks, []),
+        reviewedTasks: toJsonValue(data.reviewedTasks, []),
+        approvedTaskIds: toJsonValue(data.approvedTaskIds, []),
+        rejectedTaskIds: toJsonValue(data.rejectedTaskIds, []),
+        instantiatedTaskIds: toJsonValue(data.instantiatedTaskIds, []),
+        scheduledWindows: toJsonValue(data.scheduledWindows, {}),
+        constraintOutcomes: toJsonValue(data.constraintOutcomes, []),
+        errors: toJsonValue(data.errors, []),
+        warnings: toJsonValue(data.warnings, []),
         generatedCount: (data.generatedCount as number) ?? 0,
         approvedCount: (data.approvedCount as number) ?? 0,
         instantiatedCount: (data.instantiatedCount as number) ?? 0,
@@ -616,16 +616,6 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
         "eventId",
         "idempotencyKey",
         "status",
-        "generationOptions",
-        "generatedTasks",
-        "reviewedTasks",
-        "approvedTaskIds",
-        "rejectedTaskIds",
-        "instantiatedTaskIds",
-        "scheduledWindows",
-        "constraintOutcomes",
-        "errors",
-        "warnings",
         "reviewedBy",
         "approvedBy",
       ] as const;
@@ -637,6 +627,30 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
           } else {
             updateData[f] = data[f] as string;
           }
+        }
+      }
+      // JSON fields: normalize string-encoded JSON → parsed objects/arrays,
+      // then pass directly to Prisma (native Json columns).
+      const jsonFields = [
+        "generationOptions",
+        "generatedTasks",
+        "reviewedTasks",
+        "approvedTaskIds",
+        "rejectedTaskIds",
+        "instantiatedTaskIds",
+        "scheduledWindows",
+        "constraintOutcomes",
+        "errors",
+        "warnings",
+      ] as const;
+      for (const f of jsonFields) {
+        if (data[f] !== undefined) {
+          updateData[f] = toJsonValue(
+            data[f],
+            f === "generationOptions" || f === "scheduledWindows"
+              ? {}
+              : []
+          );
         }
       }
       const numberFields = [
@@ -710,16 +724,16 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       status: w.status ?? "created",
       currentStep: w.currentStep ?? 0,
       totalSteps: w.totalSteps ?? 5,
-      generationOptions: w.generationOptions ?? "{}",
-      generatedTasks: w.generatedTasks ?? "[]",
-      reviewedTasks: w.reviewedTasks ?? "[]",
-      approvedTaskIds: w.approvedTaskIds ?? "[]",
-      rejectedTaskIds: w.rejectedTaskIds ?? "[]",
-      instantiatedTaskIds: w.instantiatedTaskIds ?? "[]",
-      scheduledWindows: w.scheduledWindows ?? "{}",
-      constraintOutcomes: w.constraintOutcomes ?? "[]",
-      errors: w.errors ?? "[]",
-      warnings: w.warnings ?? "[]",
+      generationOptions: w.generationOptions ?? {},
+      generatedTasks: w.generatedTasks ?? [],
+      reviewedTasks: w.reviewedTasks ?? [],
+      approvedTaskIds: w.approvedTaskIds ?? [],
+      rejectedTaskIds: w.rejectedTaskIds ?? [],
+      instantiatedTaskIds: w.instantiatedTaskIds ?? [],
+      scheduledWindows: w.scheduledWindows ?? {},
+      constraintOutcomes: w.constraintOutcomes ?? [],
+      errors: w.errors ?? [],
+      warnings: w.warnings ?? [],
       generatedCount: w.generatedCount ?? 0,
       approvedCount: w.approvedCount ?? 0,
       instantiatedCount: w.instantiatedCount ?? 0,
@@ -734,6 +748,32 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       isDeleted: w.status === "deleted",
     };
   }
+}
+
+/**
+ * Normalize a manifest entity value to a Prisma Json-compatible input.
+ *
+ * Accepts:
+ * - Already-parsed objects/arrays (preferred path for Json columns)
+ * - String-encoded JSON (backward compat with callers that still serialize)
+ *
+ * Returns the `fallback` for null/undefined/empty-string.
+ */
+function toJsonValue(
+  value: unknown,
+  fallback: Prisma.InputJsonValue
+): Prisma.InputJsonValue {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as Prisma.InputJsonValue;
+    } catch {
+      return fallback;
+    }
+  }
+  return value as Prisma.InputJsonValue;
 }
 
 /**
@@ -795,8 +835,6 @@ export function createPrismaStoreProvider(
         return new PrepTaskPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
-      case "PrepTaskPlanWorkflow":
-        return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
       case "Station":
         return new StationPrismaStore(prisma, tenantId);
       case "InventoryTransfer":

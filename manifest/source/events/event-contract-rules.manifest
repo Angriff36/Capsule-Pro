@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events & Catering - Event Contract Rules
 // Manifest spec for event contract management and signature tracking
 
-entity EventContract {
+entity EventContract mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property required clientId: string
   unique property contractNumber: string = ""
@@ -21,7 +19,6 @@ entity EventContract {
   property signedAt: datetime
   timestamps
   property canceledBy: string = ""
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -129,10 +126,8 @@ entity EventContract {
   store EventContract in durable
 }
 
-entity ContractSignature {
+entity ContractSignature mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required contractId: string
   // Bug fix: signedAt is a lifecycle datetime — no default
   property signedAt: datetime
@@ -146,7 +141,6 @@ entity ContractSignature {
   property invalidationReason: string = ""
   property isValid: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed hasEmail: boolean = self.signerEmail != ""
   computed hasIpAddress: boolean = self.ipAddress != ""

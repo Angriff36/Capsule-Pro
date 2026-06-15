@@ -2,13 +2,23 @@ use "../_base.manifest"
 // Kitchen Ops - Prep Task Rules
 // Manifest spec for prep task operations with constraints, guards, and events
 
+// U7: Closed-vocabulary status enum for PrepTask lifecycle.
+// Values: open -> pending -> in_progress -> done (terminal) or canceled (terminal).
+enum PrepTaskStatus {
+  open
+  pending
+  in_progress
+  done
+  canceled
+}
+
 entity PrepTask mixin TenantScoped {
   key [tenantId, id]
   property required eventId: string
   property prepListId: string = ""
   searchable property required name: string
   property required taskType: string = "prep"
-  indexed property required status: string = "open"
+  indexed property required status: PrepTaskStatus = open
   property stationId: string = ""
   property claimedBy: string = ""
   property claimedAt: datetime
@@ -38,6 +48,9 @@ entity PrepTask mixin TenantScoped {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo PrepTask
+  relationship hasMany comments: PrepComment
 
   // State transitions enforce valid status flows at runtime
   transition status from "open" to ["in_progress", "canceled"]

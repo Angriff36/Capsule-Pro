@@ -3,16 +3,22 @@ use "../_base.manifest"
 // Manifest spec for deal pipeline management.
 // A deal is a qualified sales opportunity moving through stages toward won/lost.
 
-entity Deal {
+// U7: Closed-vocabulary status enum for Deal lifecycle.
+enum DealStatus {
+  open
+  won
+  lost
+  abandoned
+}
+
+entity Deal mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required leadId: string
   searchable property required title: string
   property value: decimal = 0
   property currency: string = "USD"
   property stage: string = "new"
-  indexed property status: string = "open"
+  indexed property status: DealStatus = open
   property probability: decimal = 0
   property expectedCloseDate: datetime
   property actualCloseDate: datetime

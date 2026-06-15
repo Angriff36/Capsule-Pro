@@ -4,10 +4,15 @@ use "../_base.manifest"
 // Lifecycle: Recipe is a catalog header. RecipeVersion moves draft -> published (->approved).
 // RecipeIngredient and RecipeStep are line-item detail rows — simple CRUD.
 
-entity Recipe {
+// U7: Closed-vocabulary status enum for RecipeVersion lifecycle.
+// Values: draft -> published (with approved flag on top of published).
+enum RecipeVersionStatus {
+  draft
+  published
+}
+
+entity Recipe mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property category: string = ""
   property cuisineType: string = ""
@@ -20,6 +25,9 @@ entity Recipe {
   computed tagCount: int = count(self.tags) cache request
 
   relationship hasMany versions: RecipeVersion
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Recipe
+  relationship hasMany dishes: Dish
 
   constraint validName: self.name != null and self.name != "" "Recipe name is required"
 
@@ -76,11 +84,9 @@ entity Recipe {
   store Recipe in durable
 }
 
-entity RecipeVersion {
+entity RecipeVersion mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
   property required recipeId: string
-  indexed property required tenantId: string
   searchable property required name: string
   property required versionNumber: int
   property category: string = ""
@@ -99,7 +105,7 @@ entity RecipeVersion {
   property totalCost: money = 0
   property costPerYield: money = 0
   // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
-  indexed property status: string = "draft"
+  indexed property status: RecipeVersionStatus = draft
   property publishedAt: datetime
   property approvedAt: datetime
   property approvedBy: string = ""
@@ -115,6 +121,9 @@ entity RecipeVersion {
   relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
   relationship hasMany ingredients: RecipeIngredient
   relationship hasMany steps: RecipeStep
+
+  // Back-relations (U11): inverse hasMany for children that belongTo RecipeVersion
+  relationship hasMany prepListItems: PrepListItem
 
   transition status from "draft" to ["published"]
   transition status from "published" to ["draft"]
@@ -240,10 +249,8 @@ entity RecipeVersion {
   store RecipeVersion in durable
 }
 
-entity RecipeIngredient {
+entity RecipeIngredient mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required recipeVersionId: string
   property required ingredientId: string
   property required quantity: decimal
@@ -253,7 +260,6 @@ entity RecipeIngredient {
   property isOptional: boolean = false
   property wasteFactor: decimal = 1.0
   timestamps
-  property deletedAt: datetime
 
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
   relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
@@ -323,10 +329,8 @@ entity RecipeIngredient {
   store RecipeIngredient in durable
 }
 
-entity RecipeStep {
+entity RecipeStep mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required recipeVersionId: string
   property required stepNumber: int
   property required instruction: string
@@ -338,7 +342,6 @@ entity RecipeStep {
   property videoUrl: string = ""
   property imageUrl: string = ""
   timestamps
-  property deletedAt: datetime
 
   relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
 

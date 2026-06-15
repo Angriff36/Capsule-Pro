@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for preparation method catalog, duration estimates, and certification requirements
 // PrepMethod is a simple config catalog — enriched with reactivate command.
 
-entity PrepMethod {
+entity PrepMethod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string
   property category: string = ""
   searchable property description: string = ""
@@ -14,7 +12,6 @@ entity PrepMethod {
   property requiresCertification: string[] = []
   property isActive: boolean = true
   timestamps
-  property deletedAt: datetime
 
   computed hasDuration: boolean = self.estimatedDurationMinutes > 0
   computed hasCertification: boolean = count(self.requiresCertification) > 0

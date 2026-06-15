@@ -13,12 +13,10 @@ use "../_base.manifest"
 // - The seed/clear operations emit events for projections to react to
 // - Policies ensure only authorized users can manage sample data
 
-entity SampleData {
+entity SampleData mixin TenantScoped {
   // No relationships: purely operational entity for seed/clear, no entity FKs
   key [tenantId, id]
-  property required id: string
   // The tenant this sample data belongs to
-  indexed property required tenantId: string
   
   // Timestamps for tracking
   property seededAt: datetime = now()

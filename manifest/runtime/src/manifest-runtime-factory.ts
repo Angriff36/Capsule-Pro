@@ -292,7 +292,6 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   // other logic that GenericPrismaStore cannot express.
   "PrepTask",
   "KitchenTask",
-  "PrepTaskPlanWorkflow",
   "Station",
   "InventoryTransfer",
 

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Administrative Domain - Board Config Rules
 // Manifest spec for managing kanban board configuration per tenant
 
-entity BoardConfig {
+entity BoardConfig mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property name: string = "Default Board"
   // columns/settings: JSON-as-string payloads (Manifest IR grammar has no
   // object/array<object> kind; same pattern as CommandBoard.metadata).
@@ -13,7 +11,6 @@ entity BoardConfig {
   property settings: string = "{}"
   property createdBy: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

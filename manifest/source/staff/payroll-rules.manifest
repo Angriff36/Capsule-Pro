@@ -3,15 +3,28 @@ use "../_base.manifest"
 // Manifest spec for payroll periods, deductions, approvals, and runs.
 // A PayrollRun moves pending -> processing -> approved -> paid (or rejected).
 
-entity PayrollPeriod {
+// U7: Closed-vocabulary status enum for PayrollPeriod lifecycle.
+enum PayrollPeriodStatus {
+  open
+  closed
+  locked
+}
+
+// U7: Closed-vocabulary status enum for PayrollRun lifecycle.
+enum PayrollRunStatus {
+  pending
+  processing
+  approved
+  paid
+  rejected
+}
+
+entity PayrollPeriod mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property periodStart: string = ""
   property periodEnd: string = ""
-  indexed property status: string = "open"
+  indexed property status: PayrollPeriodStatus = open
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isOpen: boolean = self.status == "open"
@@ -63,10 +76,8 @@ entity PayrollPeriod {
   store PayrollPeriod in durable
 }
 
-entity EmployeeDeduction {
+entity EmployeeDeduction mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property employeeId: string = ""
   property type: string = ""
   searchable property name: string = ""
@@ -77,7 +88,6 @@ entity EmployeeDeduction {
   property endDate: string = ""
   property maxAnnualAmount: money = 0
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isActive: boolean = self.deletedAt == null
@@ -135,10 +145,8 @@ entity EmployeeDeduction {
   store EmployeeDeduction in durable
 }
 
-entity PayrollApprovalHistory {
+entity PayrollApprovalHistory mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property payrollRunId: string = ""
   property action: string = ""
   property previousStatus: string = ""
@@ -168,13 +176,11 @@ entity PayrollApprovalHistory {
   store PayrollApprovalHistory in durable
 }
 
-entity PayrollRun {
+entity PayrollRun mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property payrollPeriodId: string = ""
   property runDate: string = ""
-  indexed property status: string = "pending"
+  indexed property status: PayrollRunStatus = pending
   property totalGross: money = 0
   property totalDeductions: money = 0
   property totalNet: money = 0
@@ -184,7 +190,6 @@ entity PayrollRun {
   readonly property paidAt: datetime
   property rejectReason: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isPending: boolean = self.status == "pending"
@@ -259,7 +264,13 @@ entity PayrollRun {
   store PayrollRun in durable
 }
 
-policy PayrollManagement execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll"
+// U1: Role hierarchy migration — uses roleAllows() from _base.manifest.
+//   manageAccess: Manager+ (incl. PayrollAdmin, HRAdmin)
+policy PayrollManagement execute: roleAllows(user.role, "manageAccess") "Managers can manage payroll"
+// NOTE: PayrollApproval still uses inline check — it's a narrower gate
+// (admin + payroll_admin only, not all managers). To fully migrate, add
+// `allow payrollApprove` to PayrollAdmin and Admin in _base.manifest, then:
+//   policy PayrollApproval execute: roleAllows(user.role, "payrollApprove")
 policy PayrollApproval execute: user.role in ["admin", "payroll_admin"] "Only payroll admins can approve/pay payroll runs"
 
 event PayrollPeriodCreated: "payroll.period.created" {

@@ -1,10 +1,16 @@
 // Capsule domain routing for Manifest nextjs route generation.
 //
-// WHY THIS FILE STILL EXISTS (Manifest CLI does NOT replace it):
+// WHY THIS FILE STILL EXISTS (Manifest CLI does NOT replace it yet):
 //   The upstream nextjs projection emits FLAT paths (`event/list/route.ts`).
 //   Capsule uses DOMAIN paths (`events/event/list/route.ts`). generate.mjs
-//   post-processes CLI output using ENTITY_DOMAIN_MAP — there is no official
-//   Manifest config key for per-entity App Router folder layout.
+//   post-processes CLI output using ENTITY_DOMAIN_MAP.
+//
+//   D24 REMEDIATION: The native `routeSegments` option (available since 2.4.2)
+//   accepts per-entity path segment overrides — slashes produce nested folders.
+//   Moving this map into `manifest.config.yaml projections.nextjs.options.routeSegments`
+//   would eliminate the staging-remap pipeline in generate.mjs.
+//   See manifest/docs/upstream-client-options.md for the full remediation plan.
+//   Until then, this file is the canonical source consumed by generate.mjs.
 //
 // Accessor naming is NOT here — see manifest.config.yaml + accessor-resolution.mjs.
 

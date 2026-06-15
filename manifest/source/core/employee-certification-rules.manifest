@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Staff Domain - Employee Certification Rules
 // Manifest spec for managing employee certifications and credentials
 
-entity EmployeeCertification {
+entity EmployeeCertification mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property employeeId: string = ""
   property certificationType: string = ""
   property certificationName: string = ""
@@ -14,7 +12,6 @@ entity EmployeeCertification {
   property documentUrl: string = ""
   indexed property status: string = "active"
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isActive: boolean = self.status == "active"

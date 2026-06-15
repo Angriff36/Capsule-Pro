@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -903,46 +902,55 @@ export const saveAsTemplate = async (menuId: string): Promise<string> => {
     `
   );
 
-  const templateId = randomUUID();
+  const user = await requireCurrentUser();
 
-  await database.$transaction(async (tx) => {
-    // Create template menu
-    await tx.menu.create({
-      data: {
-        tenantId,
-        id: templateId,
-        name: `${originalMenu.name} (Template)`,
-        description: originalMenu.description,
-        category: originalMenu.category,
-        isActive: true,
-        isTemplate: true,
-      },
-    });
+  // D1: Route through governed Menu.create command instead of direct
+  // tx.menu.create + tx.outboxEvent.create. The command emits MenuCreated.
+  // TODO(manifest-divergence): Menu entity lacks an isTemplate property in
+  // the IR, so the template flag is not set via the governed command.
+  const createResult = await runManifestCommand({
+    entity: "Menu",
+    command: "create",
+    body: {
+      name: `${originalMenu.name} (Template)`,
+      description: originalMenu.description ?? "",
+      category: originalMenu.category ?? "",
+      basePrice: 0,
+      pricePerPerson: 0,
+      minGuests: 0,
+      maxGuests: 0,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 
-    // Copy dishes to template
-    await tx.menuDish.createMany({
-      data: menuDishes.map((md) => ({
-        tenantId,
-        id: randomUUID(),
+  if (!createResult.ok) {
+    throw new Error(createResult.message || "Failed to create template menu");
+  }
+
+  const templateId = (createResult.result as { id?: string } | null)?.id;
+  if (!templateId) {
+    throw new Error("Menu.create did not return an id");
+  }
+
+  // D1: Copy dishes via governed MenuDish.create commands.
+  for (const md of menuDishes) {
+    const dishResult = await runManifestCommand({
+      entity: "MenuDish",
+      command: "create",
+      body: {
         menuId: templateId,
         dishId: md.dish_id,
-        course: md.course,
+        course: md.course || "",
         sortOrder: md.sort_order,
         isOptional: md.is_optional,
-      })),
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: templateId,
-        eventType: "menu.template_created",
-        payload: { templateId, sourceMenuId: menuId },
-        status: "pending" as const,
-      },
-    });
-  });
+    if (!dishResult.ok) {
+      throw new Error(dishResult.message || "Failed to copy dish to template");
+    }
+  }
 
   revalidatePath("/kitchen/recipes/menus");
 
@@ -998,46 +1006,55 @@ export const createFromTemplate = async (
     `
   );
 
-  const menuId = randomUUID();
+  const user = await requireCurrentUser();
 
-  await database.$transaction(async (tx) => {
-    // Create new menu from template
-    await tx.menu.create({
-      data: {
-        tenantId,
-        id: menuId,
-        name: name.trim(),
-        description: template.description,
-        category: template.category,
-        isActive: true,
-        isTemplate: false,
-      },
-    });
+  // D1: Route through governed Menu.create command instead of direct
+  // tx.menu.create + tx.outboxEvent.create. The command emits MenuCreated.
+  const createResult = await runManifestCommand({
+    entity: "Menu",
+    command: "create",
+    body: {
+      name: name.trim(),
+      description: template.description ?? "",
+      category: template.category ?? "",
+      basePrice: 0,
+      pricePerPerson: 0,
+      minGuests: 0,
+      maxGuests: 0,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 
-    // Copy dishes to new menu
-    await tx.menuDish.createMany({
-      data: templateDishes.map((td) => ({
-        tenantId,
-        id: randomUUID(),
+  if (!createResult.ok) {
+    throw new Error(
+      createResult.message || "Failed to create menu from template"
+    );
+  }
+
+  const menuId = (createResult.result as { id?: string } | null)?.id;
+  if (!menuId) {
+    throw new Error("Menu.create did not return an id");
+  }
+
+  // D1: Copy dishes via governed MenuDish.create commands.
+  for (const td of templateDishes) {
+    const dishResult = await runManifestCommand({
+      entity: "MenuDish",
+      command: "create",
+      body: {
         menuId,
         dishId: td.dish_id,
-        course: td.course,
+        course: td.course || "",
         sortOrder: td.sort_order,
         isOptional: td.is_optional,
-      })),
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.created_from_template",
-        payload: { menuId, templateId },
-        status: "pending" as const,
-      },
-    });
-  });
+    if (!dishResult.ok) {
+      throw new Error(dishResult.message || "Failed to copy dish to menu");
+    }
+  }
 
   revalidatePath("/kitchen/recipes/menus");
 
@@ -1075,37 +1092,55 @@ export const updateMenuDishes = async (
     throw new Error("Menu not found.");
   }
 
-  await database.$transaction(async (tx) => {
-    // Remove existing dishes (soft delete)
-    await tx.menuDish.updateMany({
-      where: { tenantId, menuId, deletedAt: null },
-      data: { deletedAt: new Date() },
+  const user = await requireCurrentUser();
+
+  // D1: Fetch existing menu dish IDs for governed removal.
+  const existingMenuDishes = await database.$queryRaw<{ id: string }[]>(
+    Prisma.sql`
+      SELECT id
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+    `
+  );
+
+  // D1: Remove existing dishes via governed MenuDish.remove commands.
+  for (const md of existingMenuDishes) {
+    const removeResult = await runManifestCommand({
+      entity: "MenuDish",
+      command: "remove",
+      instanceId: md.id,
+      body: { userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    // Insert new dishes
-    await tx.menuDish.createMany({
-      data: dishes.map((dish) => ({
-        tenantId,
-        id: randomUUID(),
+    if (!removeResult.ok) {
+      throw new Error(
+        removeResult.message || "Failed to remove existing menu dishes"
+      );
+    }
+  }
+
+  // D1: Insert new dishes via governed MenuDish.create commands.
+  for (const dish of dishes) {
+    const createResult = await runManifestCommand({
+      entity: "MenuDish",
+      command: "create",
+      body: {
         menuId,
         dishId: dish.dishId,
-        course: dish.course,
+        course: dish.course || "",
         sortOrder: dish.sortOrder,
         isOptional: dish.isOptional,
-      })),
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "menu",
-        aggregateId: menuId,
-        eventType: "menu.dishes_updated",
-        payload: { menuId, dishCount: dishes.length },
-        status: "pending" as const,
-      },
-    });
-  });
+    if (!createResult.ok) {
+      throw new Error(createResult.message || "Failed to add menu dish");
+    }
+  }
 
   revalidatePath("/kitchen/recipes/menus");
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);

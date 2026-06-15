@@ -10,6 +10,10 @@ entity Station mixin TenantScoped {
   // (relationship added below for parent-context resolution)
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
+  // Back-relations (U11): inverse hasMany for children that belongTo Station
+  relationship hasMany prepTasks: PrepTask
+  relationship hasMany prepListItems: PrepListItem
+
   key [tenantId, id]
   property required locationId: string
   searchable property required name: string

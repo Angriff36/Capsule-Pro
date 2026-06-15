@@ -3,10 +3,8 @@ use "../_base.manifest"
 // Manifest spec for vendor catalog management
 // Version: @angriff36/manifest v0.3.35
 
-entity VendorCatalog {
+entity VendorCatalog mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required supplierId: string
   unique property required itemNumber: string = ""
   searchable searchable property required itemName: string = ""
@@ -28,7 +26,6 @@ entity VendorCatalog {
   property required tags: array<string>
   property lastCostUpdate: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now()) cache request

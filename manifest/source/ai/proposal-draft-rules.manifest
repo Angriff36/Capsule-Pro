@@ -2,10 +2,8 @@ use "../_base.manifest"
 // AI Call Planner - Proposal Draft Rules
 // Manifest spec for proposal draft lifecycle
 
-entity ProposalDraft {
+entity ProposalDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property draftId: string = ""
   property userId: string = ""
   indexed property status: string = "draft"
@@ -41,7 +39,6 @@ entity ProposalDraft {
   property depositPaid: boolean = false
   property htmlContent: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"

@@ -2,11 +2,9 @@ use "../_base.manifest"
 // Alerts - Alerts Config Rules
 // Manifest spec for alert configuration channels and destinations
 
-entity AlertsConfig {
+entity AlertsConfig mixin TenantScoped {
   // No relationships: channel/destination are value strings, no entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property channel: string = ""
   property destination: string = ""
 

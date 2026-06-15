@@ -2,10 +2,19 @@ use "../_base.manifest"
 // CRM & Sales - Proposal Rules
 // Manifest spec for proposal lifecycle and line item management
 
-entity Proposal {
+// U7: Closed-vocabulary status enum for Proposal lifecycle.
+enum ProposalStatus {
+  draft
+  sent
+  viewed
+  accepted
+  rejected
+  withdrawn
+  expired
+}
+
+entity Proposal mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property proposalNumber: string = ""
   property clientId: string = ""
   property leadId: string = ""
@@ -21,7 +30,7 @@ entity Proposal {
   property taxAmount: money = 0
   property discountAmount: money = 0
   property total: money = 0
-  indexed property status: string = "draft"
+  indexed property status: ProposalStatus = draft
   property validUntil: datetime
   property sentAt: datetime
   property viewedAt: datetime
@@ -32,7 +41,6 @@ entity Proposal {
   property lineItemCount: int = 0
   property publicToken: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent" or self.status == "viewed"
@@ -51,6 +59,10 @@ entity Proposal {
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Proposal
+  relationship hasMany lineItems: ProposalLineItem
+
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
@@ -299,10 +311,8 @@ entity Proposal {
   store Proposal in durable
 }
 
-entity ProposalLineItem {
+entity ProposalLineItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required proposalId: string
   property itemType: string = ""
   property category: string = ""
@@ -315,7 +325,6 @@ entity ProposalLineItem {
   property sortOrder: int = 0
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
 

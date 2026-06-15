@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Equipment Maintenance Scheduler - Equipment Rules
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 
-entity Equipment {
+entity Equipment mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required locationId: string
   searchable property required name: string
   property required type: string = "general"
@@ -32,6 +30,11 @@ entity Equipment {
   computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Equipment
+  relationship hasMany kitchenTasks: KitchenTask
+  relationship hasMany temperatureLogs: TemperatureLog
+  relationship hasMany workOrders: MaintenanceWorkOrder
 
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
   constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
@@ -210,10 +213,8 @@ entity Equipment {
   store Equipment in durable
 }
 
-entity MaintenanceWorkOrder {
+entity MaintenanceWorkOrder mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property workOrderNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // CRM & Sales - Lead Rules
 // Manifest spec for lead tracking, qualification, and conversion
 
-entity Lead {
+entity Lead mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property source: string = ""
   searchable property companyName: string = ""
   searchable property contactName: string = ""
@@ -21,7 +19,6 @@ entity Lead {
   property convertedToClientId: string = ""
   property convertedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null
   computed isHighValue: boolean = self.estimatedValue >= 10000
@@ -57,6 +54,11 @@ entity Lead {
   }
 
   relationship belongsTo convertedToClient: Client with convertedToClientId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Lead
+  relationship hasMany deals: Deal
+  relationship hasMany interactions: ClientInteraction
+  relationship hasMany proposals: Proposal
 
   default policy LeadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Lead management"
   command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: money, assignedTo: string, notes: string) {

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // AI Call Planner - Event Planning Draft Rules
 // Manifest spec for event planning draft lifecycle
 
-entity EventPlanningDraft {
+entity EventPlanningDraft mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   indexed property required sessionId: string
   property required userId: string
   indexed property status: string = "active"
@@ -38,7 +36,6 @@ entity EventPlanningDraft {
   property proposalId: string = ""
   property expiresAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   computed isReview: boolean = self.status == "review"

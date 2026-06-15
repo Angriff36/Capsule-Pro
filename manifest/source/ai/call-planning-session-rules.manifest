@@ -2,10 +2,8 @@ use "../_base.manifest"
 // AI Call Planner - Call Planning Session Rules
 // Manifest spec for call planning session lifecycle
 
-entity CallPlanningSession {
+entity CallPlanningSession mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required userId: string
   indexed property status: string = "active"
   property sourceType: string = "manual"
@@ -16,7 +14,6 @@ entity CallPlanningSession {
   property startedAt: datetime
   property endedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   computed isFinalizing: boolean = self.status == "finalizing"

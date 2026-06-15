@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events Extended - Venue, assignments, timeline, tasks, import, followup, board projections, annotations, notes
 // Business-logic entities for the catering-company Events cluster.
 
-entity Venue {
+entity Venue mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required name: string = ""
   // Columns reconciled with the real `venues` table (packages/database/prisma/
   // schema.prisma) so the governed create/update commands carry the FULL field
@@ -33,7 +31,6 @@ entity Venue {
   // command surface and default to NULL in the DB — exactly matching the prior
   // `Prisma.JsonNull` behavior, with zero JSON object/string double-encoding risk.
   timestamps
-  property deletedAt: datetime
 
   computed isLargeVenue: boolean = self.capacity > 500
 
@@ -158,10 +155,8 @@ event VenueDeleted: "events.venue.deleted" {
   deletedAt: datetime
 }
 
-entity EventTimeline {
+entity EventTimeline mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   searchable property required description: string = ""
   // Bug fix: lifecycle datetime — no default
@@ -170,7 +165,6 @@ entity EventTimeline {
   searchable property notes: string = ""
   property sortOrder: int = 0
   timestamps
-  property deletedAt: datetime
 
   computed isShortEntry: boolean = self.durationMinutes > 0 and self.durationMinutes < 15
 
@@ -246,10 +240,8 @@ event EventTimelineRemoved: "events.timeline.removed" {
   removedAt: datetime
 }
 
-entity TimelineTask {
+entity TimelineTask mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   searchable property required title: string = ""
   property required category: string = ""
@@ -262,7 +254,6 @@ entity TimelineTask {
   property sortOrder: int = 0
   property completedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -398,10 +389,8 @@ event TimelineTaskRemoved: "events.timeline_task.removed" {
   removedAt: datetime
 }
 
-entity EventImport {
+entity EventImport mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required fileType: string = ""
   property required fileName: string = ""
   property required mimeType: string = ""
@@ -412,7 +401,6 @@ entity EventImport {
   property parseErrors: array<string> = []
   timestamps
   property parsedAt: datetime
-  property deletedAt: datetime
 
   computed isPending: boolean = self.parseStatus == "pending"
   computed isProcessing: boolean = self.parseStatus == "parsing"
@@ -514,10 +502,8 @@ event EventImportRetried: "events.import.retried" {
   retriedAt: datetime
 }
 
-entity EventFollowup {
+entity EventFollowup mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required eventId: string
   property required taskType: string = ""
   property required description: string = ""
@@ -528,7 +514,6 @@ entity EventFollowup {
   searchable property notes: string = ""
   property completedAt: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isDone: boolean = self.status == "done"
@@ -613,10 +598,8 @@ event EventFollowupCancelled: "events.followup.cancelled" {
   cancelledAt: datetime
 }
 
-entity BoardProjection {
+entity BoardProjection mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   property required entityType: string = ""
   property required entityId: string = ""
@@ -625,7 +608,6 @@ entity BoardProjection {
   property width: int = 280
   property height: int = 180
   timestamps
-  property deletedAt: datetime
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
   constraint requireEntityType: self.entityType != "" "Entity type is required"
@@ -706,17 +688,14 @@ event BoardProjectionRemoved: "board.projection.removed" {
   removedAt: datetime
 }
 
-entity BoardAnnotation {
+entity BoardAnnotation mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required boardId: string
   property label: string = ""
   property positionX: int = 0
   property positionY: int = 0
   property color: string = ""
   timestamps
-  property deletedAt: datetime
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
 
@@ -769,10 +748,8 @@ event BoardAnnotationRemoved: "board.annotation.removed" {
   removedAt: datetime
 }
 
-entity Note {
+entity Note mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property required title: string = ""
   property content: string = ""
   property color: string = ""
@@ -781,7 +758,6 @@ entity Note {
   property entityType: string = ""
   property entityId: string = ""
   timestamps
-  property deletedAt: datetime
 
   constraint requireTitle: self.title != "" "Note title is required"
 

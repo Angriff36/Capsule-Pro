@@ -2,9 +2,7 @@ use "../_base.manifest"
 // Purchasing - Purchase Order Rules
 // Manifest spec for purchase order lifecycle and line item management
 
-entity PurchaseOrder {
-  property required id: string
-  indexed property required tenantId: string
+entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   unique property required poNumber: string
   property required vendorId: string
   property required locationId: string
@@ -22,7 +20,6 @@ entity PurchaseOrder {
   property receivedBy: string = ""
   property receivedAt: datetime
   timestamps
-  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -30,6 +27,9 @@ entity PurchaseOrder {
   hasMany items: PurchaseOrderItem
   belongsTo vendor: Vendor with vendorId
   belongsTo location: Facility with locationId
+
+  // Back-relations (U11): inverse hasMany for children that belongTo PurchaseOrder
+  hasMany requisitions: PurchaseRequisition
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"
@@ -188,9 +188,7 @@ entity PurchaseOrder {
   store PurchaseOrder in durable
 }
 
-entity PurchaseOrderItem {
-  property required id: string
-  indexed property required tenantId: string
+entity PurchaseOrderItem mixin TenantScoped, SoftDeletable {
   property required purchaseOrderId: string
   property required itemId: string
   property required quantityOrdered: decimal = 0
@@ -203,7 +201,6 @@ entity PurchaseOrderItem {
   property discrepancyAmount: money = 0
   searchable property notes: string = ""
   timestamps
-  property deletedAt: datetime
 
   key [tenantId, id]
 

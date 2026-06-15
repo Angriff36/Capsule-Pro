@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Payroll Bank Account Rules
 // Manifest spec for payroll banking destinations
 
-entity BankAccount {
+entity BankAccount mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required employeeId: string
   encrypted required property accountHolderName: string
   encrypted required property accountNumber: string

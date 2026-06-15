@@ -4,12 +4,21 @@ use "../_base.manifest"
 // locationId is never a caller param: inherited from Event when eventId is set
 // (parent-context-resolver). Standalone shipments leave locationId empty.
 
-entity Shipment {
+// U7: Closed-vocabulary status enum for Shipment lifecycle.
+enum ShipmentStatus {
+  draft
+  scheduled
+  preparing
+  in_transit
+  delivered
+  returned
+  cancelled
+}
+
+entity Shipment mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   unique property required shipmentNumber: string
-  indexed property status: string = "draft"
+  indexed property status: ShipmentStatus = draft
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
@@ -30,7 +39,6 @@ entity Shipment {
   property internalNotes: string = ""
   property reference: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isScheduled: boolean = self.status == "scheduled"
@@ -43,6 +51,9 @@ entity Shipment {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
+  // Back-relations (U11): inverse hasMany for children that belongTo Shipment
+  relationship hasMany items: ShipmentItem
 
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
@@ -165,10 +176,8 @@ entity Shipment {
   store Shipment in durable
 }
 
-entity ShipmentItem {
+entity ShipmentItem mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required shipmentId: string
   property required itemId: string
   property quantityShipped: decimal = 0
@@ -182,7 +191,6 @@ entity ShipmentItem {
   property lotNumber: string = ""
   property expirationDate: datetime
   timestamps
-  property deletedAt: datetime
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
   computed hasDamage: boolean = self.quantityDamaged > 0

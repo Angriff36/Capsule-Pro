@@ -2,14 +2,21 @@ use "../_base.manifest"
 // Administrative Domain - Admin Task Rules
 // Manifest spec for managing administrative tasks with status state machine
 
-entity AdminTask {
+// U7: Closed-vocabulary status enum for AdminTask lifecycle (Kanban-style columns).
+enum AdminTaskStatus {
+  backlog
+  in_progress
+  review
+  done
+  cancelled
+}
+
+entity AdminTask mixin TenantScoped, SoftDeletable {
   // No relationships: assignedTo/createdBy are user identifier strings, not entity FKs
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   searchable property title: string = ""
   searchable property description: string = ""
-  indexed property status: string = "backlog"
+  indexed property status: AdminTaskStatus = backlog
   property priority: string = "medium"
   property category: string = ""
   property position: int = 0
@@ -21,7 +28,6 @@ entity AdminTask {
   property sourceType: string = ""
   property sourceId: string = ""
   timestamps
-  property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 

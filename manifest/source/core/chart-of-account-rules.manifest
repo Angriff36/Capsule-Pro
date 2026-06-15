@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Accounting Domain - Chart of Account Rules
 // Manifest spec for managing chart of accounts (general ledger account definitions)
 
-entity ChartOfAccount {
+entity ChartOfAccount mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property accountNumber: string = ""
   property accountName: string = ""
   property accountType: string = ""

@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Collections Rules Manifest
 // Defines collections workflows, aging, and dunning management
 
-entity CollectionCase {
+entity CollectionCase mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
 
   // Reference information
   property required invoiceId: string = ""
@@ -247,10 +245,8 @@ entity CollectionCase {
   store CollectionCase in durable
 }
 
-entity CollectionAction {
+entity CollectionAction mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required collectionCaseId: string = ""
 
   // Action details
@@ -324,10 +320,8 @@ entity CollectionAction {
 }
 
 // Payment plan entity for installment arrangements
-entity CollectionPaymentPlan {
+entity CollectionPaymentPlan mixin TenantScoped {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property required collectionCaseId: string = ""
 
   // Plan details

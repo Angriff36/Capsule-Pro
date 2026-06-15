@@ -2,10 +2,8 @@ use "../_base.manifest"
 // Events & Catering - Battle Board Rules
 // Manifest spec for battle board dish competition and voting management
 
-entity BattleBoard {
+entity BattleBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
-  property required id: string
-  indexed property required tenantId: string
   property eventId: string = ""
   property boardName: string = ""
   property boardType: string = "event-specific"
@@ -20,7 +18,6 @@ entity BattleBoard {
   searchable property notes: string = ""
   property tags: array<string> = []
   timestamps
-  property deletedAt: datetime
 
   // Parent-context snapshot (inherited from the linked Event at create time).
   // These are NOT create-command parameters: they can only be populated by
