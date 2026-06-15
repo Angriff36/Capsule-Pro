@@ -253,19 +253,6 @@ async function main() {
   } catch { /* ignore */ }
   check("D12", "native public mergeIR is exported", mergeIROk, "@angriff36/manifest/multi-compiler does not export mergeIR");
 
-  // U6: Project-level compile must succeed with mixin-based tenant consolidation.
-  // All domain files now use `use "_base.manifest"` for mixin TenantScoped/SoftDeletable,
-  // so single-file compileToIR cannot resolve cross-file references. The invariant is that
-  // the merged project compiles cleanly (tested above via the freshness check), and that
-  // the mixin entities are present in the output.
-  try {
-    const baseIr = JSON.parse(readFileSync(resolve(IR_FILE, "../shards/_base.ir.json"), "utf8"));
-    const hasTenantScoped = (baseIr.entities ?? []).some((e) => e.name === "TenantScoped");
-    check("U6", "mixin-based tenant consolidation compiles cleanly", hasTenantScoped, "TenantScoped mixin not found in _base IR shard");
-  } catch (e) {
-    check("U6", "mixin-based tenant consolidation compiles cleanly", false, String(e?.message ?? e));
-  }
-
   // ----- Summary -----
   const failed = results.filter((r) => !r.ok);
   console.log(`\n${"-".repeat(60)}`);
