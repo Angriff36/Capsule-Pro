@@ -142,6 +142,11 @@ export {
   type MaintenanceEquipmentStatusDiagnostic,
 } from "./maintenance-created-equipment-status-middleware";
 export {
+  createMaintenanceScheduleCompletedWorkOrderCreateMiddleware,
+  type MaintenanceScheduleCompletedWorkOrderCreateMiddlewareOptions,
+  type MaintenanceScheduleWorkOrderDiagnostic,
+} from "./maintenance-schedule-completed-work-order-create-middleware";
+export {
   createPaymentProcessedInvoiceApplyMiddleware,
   type PaymentInvoiceApplyDiagnostic,
   type PaymentProcessedInvoiceApplyMiddlewareOptions,

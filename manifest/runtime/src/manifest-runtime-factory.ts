@@ -62,6 +62,7 @@ import {
   createLeadConvertedDealCreateMiddleware,
   createMaintenanceCompletedEquipmentRecordMiddleware,
   createMaintenanceCreatedEquipmentStatusMiddleware,
+  createMaintenanceScheduleCompletedWorkOrderCreateMiddleware,
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
@@ -931,6 +932,20 @@ export async function createManifestRuntime(
     // (equipmentId IS a create param, so a reaction was technically possible here; we
     // choose middleware deliberately). Pure runtime addition, no IR/source change.
     createMaintenanceCreatedEquipmentStatusMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Preventive maintenance: MaintenanceScheduleCompleted -> MaintenanceWorkOrder.create.
+    // Closes the recurrence loop: completing a PreventiveMaintenanceSchedule rolls its
+    // nextDueAt forward but had ZERO consumers, so the NEXT work order was never opened
+    // and preventive maintenance silently stopped. Middleware (not a reaction) because
+    // the work order's fields (equipmentId/areaId/title/...) are the schedule's OWN
+    // fields, NOT `complete` params, and declared event fields are never auto-populated
+    // from self.*; it loads the schedule via _subject.id and dispatches the governed,
+    // explicit MaintenanceWorkOrder.create scheduled for the schedule's new nextDueAt
+    // (deduped per asset + due date so a re-emit cannot double-open the cycle).
+    createMaintenanceScheduleCompletedWorkOrderCreateMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
