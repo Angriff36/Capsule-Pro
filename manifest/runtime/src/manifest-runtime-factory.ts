@@ -63,6 +63,7 @@ import {
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   createPaymentProcessedInvoiceApplyMiddleware,
   createPaymentRefundedInvoiceRecordMiddleware,
+  createPayrollRunPaidPeriodLockMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
@@ -1106,6 +1107,20 @@ export async function createManifestRuntime(
     // a real time; idempotent per request). No double-apply (the non-governed bulk
     // route never writes corrected clock values back).
     createTimecardEditApprovedTimeEntryApplyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Payroll: PayrollRunPaid -> PayrollPeriod.lock. Middleware (not a reaction)
+    // because PayrollRun.markPaid() takes NO params, so the PayrollRunPaid payload
+    // {...commandInput, result} carries only a paidAt scalar — the period to lock is
+    // PayrollRun.payrollPeriodId, the run's OWN field, never auto-populated onto the
+    // event. PayrollRunPaid had ZERO consumers, so a paid period stayed editable
+    // (reopen / retroactive time-entry edits) and paid payroll could be altered after
+    // the fact. Loads the run via _subject.id, reads self.payrollPeriodId, and
+    // dispatches the governed PayrollPeriod.lock (guard-safe: only locks a "closed"
+    // period — already-locked / still-open periods are skipped; idempotent per period).
+    createPayrollRunPaidPeriodLockMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

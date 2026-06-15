@@ -147,6 +147,11 @@ export {
   type PaymentRefundedInvoiceRecordMiddlewareOptions,
 } from "./payment-refunded-invoice-record-middleware";
 export {
+  createPayrollRunPaidPeriodLockMiddleware,
+  type PayrollRunPaidPeriodLockDiagnostic,
+  type PayrollRunPaidPeriodLockMiddlewareOptions,
+} from "./payroll-run-paid-period-lock-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,
