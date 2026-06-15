@@ -57,7 +57,7 @@ Only delete after confirming the projection output covers the real usage.
 |---|---|---|
 | Hand-written Zod input schemas for manifest entities | `projections/zod` | BLOCKED (Phase 5 eval) |
 | Hand-written React Query hooks for manifest entities | `projections/react-query` | BLOCKED (Phase 5 eval) |
-| Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | BLOCKED (Phase 5 eval) |
+| Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | **DONE (2026-06-15)** — `projections/openapi` is wired (`pnpm manifest:openapi` → committed `manifest/api-docs/openapi.json`, served at `/api-docs`, consumed by MCP). No hand-written OpenAPI spec existed to retire; the generated spec is now CI drift-gated (`pnpm manifest:openapi:check` in `manifest:ci`), satisfying exit-criterion #3 for this projection. |
 | `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | DONE (2026-06-15) |
 
 **ENTITY_DOMAIN_MAP consolidation status (corrected):** the "3 files" claim is stale.
