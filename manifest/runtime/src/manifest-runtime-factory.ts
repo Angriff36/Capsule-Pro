@@ -51,6 +51,7 @@ import {
   createEventUpdatedBoardSyncMiddleware,
   createFacilityWorkOrderAssetStatusMiddleware,
   createIdentityMiddleware,
+  createIngredientRecalledQuarantineInventoryMiddleware,
   createInventoryMovementTransactionMiddleware,
   createInventoryStockSyncItemMiddleware,
   createInventoryTransferReceivedStockMovementMiddleware,
@@ -660,6 +661,18 @@ export async function createManifestRuntime(
     // restore-on-reinstate provenance, so blanket irreversible pruning would strip
     // the dish from future events for a same-day stockout (deferred — see plan).
     createDishDeactivatedPruneMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Kitchen/inventory: IngredientRecallFlagged -> pull the linked InventoryItem.
+    // When a supplier recall flags an ingredient (flagRecall), the ingredient row
+    // is deactivated but its physical inventory stock stayed live/visible. This
+    // loads the recalled Ingredient (the inventoryItemId FK is its OWN field, not a
+    // flagRecall param, and is never auto-populated onto the event -> middleware,
+    // not a reaction) and dispatches the governed InventoryItem.softDelete to pull
+    // the stock from inventory. Guard-safe (skips already-deleted / unlinked items).
+    createIngredientRecalledQuarantineInventoryMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

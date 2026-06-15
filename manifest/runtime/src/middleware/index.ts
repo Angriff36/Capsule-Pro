@@ -87,6 +87,11 @@ export {
   type IdentityMiddlewareOptions,
 } from "./identity-middleware";
 export {
+  createIngredientRecalledQuarantineInventoryMiddleware,
+  type IngredientRecalledQuarantineDiagnostic,
+  type IngredientRecalledQuarantineInventoryMiddlewareOptions,
+} from "./ingredient-recalled-quarantine-inventory-middleware";
+export {
   createInventoryMovementTransactionMiddleware,
   type InventoryLedgerDiagnostic,
   type InventoryMovementTransactionMiddlewareOptions,
