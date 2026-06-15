@@ -8,6 +8,11 @@
  */
 
 export {
+  type ClientInteractionEscalatedNotifyDiagnostic,
+  type ClientInteractionEscalatedNotifyMiddlewareOptions,
+  createClientInteractionEscalatedNotifyMiddleware,
+} from "./client-interaction-escalated-notify-middleware";
+export {
   type ClientInteractionOverdueNotifyDiagnostic,
   type ClientInteractionOverdueNotifyMiddlewareOptions,
   createClientInteractionOverdueNotifyMiddleware,

@@ -35,6 +35,7 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createClientInteractionEscalatedNotifyMiddleware,
   createClientInteractionOverdueNotifyMiddleware,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
@@ -701,6 +702,16 @@ export async function createManifestRuntime(
     // are the interaction's OWN fields and must be LOADED from the store. The event
     // was an orphan (no consumer), so overdue follow-ups generated zero signal.
     createClientInteractionOverdueNotifyMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // CRM: ClientInteractionEscalated -> Notification.create for the escalation
+    // TARGET (escalatedTo), the sibling of the overdue leg. Middleware because the
+    // notification needs the interaction's OWN subject/tenantId (never auto-populated
+    // onto the event payload) — loaded from the store. The event was an orphan, so
+    // escalations produced zero in-app signal for the person they were handed to.
+    createClientInteractionEscalatedNotifyMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
