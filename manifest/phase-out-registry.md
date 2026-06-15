@@ -112,6 +112,11 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 |---|---|---|
 | `app/api/crm/scoring/route.ts` | CrmScoringRule | POST create → Manifest (`runManifestCommand("CrmScoringRule","create")`); was a direct `database.crmScoringRule.create` bypass (constitution §9). snake_case→camelCase param mapping + coercion preserved; input validation (required fields + condition/field enums) retained pre-dispatch; GET `$queryRaw` read unchanged (§10). Live frontend create already used the dispatcher (`crmScoringRuleCreate`), so no consumer contract changed. Conformance test: `apps/api/__tests__/crm/scoring-post-governed.test.ts` (4). Drops governed direct-write violations 7→6. |
 
+### Resolved (1 route, 2026-06-15) — direct-write governance cleanup (Known Blocker #22, v0.12.310)
+| Route | Entity | Notes |
+|---|---|---|
+| `apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts` | AdminChatThread | **DELETED a redundant `database.adminChatThread.update({lastMessageAt})` bypass** (constitution §9), NOT a re-route — the manual thread-activity bump was already covered by the live governed reaction `AdminChatMessageSent → AdminChatThread.recordLastMessage` (resolves `payload.threadId` → `recordLastMessage()` mutates `lastMessageAt = now()`), which fires during the `runManifestCommand("AdminChatMessage","create")` dispatch earlier in the same handler. So the direct write was both a §9 governed-entity bypass AND a double-write. No IR/source/artifact change (the reaction + command already existed). `message.createdAt` stays used (SSE publish + response). Regression protection: the existing reaction conformance test (`manifest/runtime/src/__tests__/admin-chat-message-thread-activity-reaction.test.ts`, 4 tests, proves the propagation against the real IR via `RuntimeEngine.runCommand`) + the direct-write baseline gate (`manifest:audit-direct-writes:baseline`, now 8→7 triples). Governed direct-write violations drop 6→5 files. api typecheck green. |
+
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
 - All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`

@@ -394,23 +394,13 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Update thread's lastMessageAt timestamp (infrastructure side-effect)
-    try {
-      await database.adminChatThread.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: threadId,
-          },
-        },
-        data: {
-          lastMessageAt: message.createdAt,
-        },
-      });
-    } catch (threadUpdateError) {
-      log.error("Failed to update thread lastMessageAt:", threadUpdateError);
-    }
-
+    // Thread activity timestamp (lastMessageAt) is bumped by the governed
+    // `AdminChatMessageSent → AdminChatThread.recordLastMessage` reaction, which
+    // fired during the `AdminChatMessage.create` dispatch above (the reaction
+    // resolves payload.threadId → recordLastMessage mutates lastMessageAt = now()).
+    // A direct `database.adminChatThread.update` here would be a constitution §9
+    // governed-entity bypass AND redundant — the runtime already recorded it.
+    // Proven by manifest/runtime/src/__tests__/admin-chat-message-thread-activity-reaction.test.ts.
     const channelName = channelNameForThread(
       tenantId,
       threadId,
