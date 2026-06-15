@@ -181,6 +181,7 @@ import type {
   Shipment,
   ShipmentItem,
   SmsAutomationRule,
+  SoftDeletable,
   StaffMember,
   StaffPerformance,
   StaffTrainingSignal,
@@ -191,6 +192,7 @@ import type {
   TemperatureLog,
   TemperatureProbe,
   TemperatureReading,
+  TenantScoped,
   TimecardApproval,
   TimecardEditRequest,
   TimeEntry,
@@ -1094,6 +1096,11 @@ export const queryKeys = {
     lists: () => [...queryKeys.smsAutomationRule.all, "list"] as const,
     detail: (id: string) => [...queryKeys.smsAutomationRule.all, "detail", id] as const,
   },
+  softDeletable: {
+    all: ["softDeletable"] as const,
+    lists: () => [...queryKeys.softDeletable.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.softDeletable.all, "detail", id] as const,
+  },
   staffMember: {
     all: ["staffMember"] as const,
     lists: () => [...queryKeys.staffMember.all, "list"] as const,
@@ -1143,6 +1150,11 @@ export const queryKeys = {
     all: ["temperatureReading"] as const,
     lists: () => [...queryKeys.temperatureReading.all, "list"] as const,
     detail: (id: string) => [...queryKeys.temperatureReading.all, "detail", id] as const,
+  },
+  tenantScoped: {
+    all: ["tenantScoped"] as const,
+    lists: () => [...queryKeys.tenantScoped.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.tenantScoped.all, "detail", id] as const,
   },
   timecardApproval: {
     all: ["timecardApproval"] as const,
@@ -19318,9 +19330,9 @@ export function useWorkOrderRescheduleMutation(
 // ============================================================
 // Summary
 // ============================================================
-// Entities: 210
-// List hooks: 171 (skipped 39: AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, ApiKey, BoardConfig, CallPlanningSession, Dish, EmployeeAvailability, EventDish, EventPlanningDraft, EventProfitability, EventSummary, EventWaitlistEntry, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, ProposalDraft, RolePolicy, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, StaffTrainingSignal, TimeEntry, TrainingAttempt, TrainingQuestion, VersionedEntity, WasteEntry)
-// Detail hooks: 188 (skipped 22: AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, BoardConfig, CallPlanningSession, EventPlanningDraft, ProposalDraft, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, StaffTrainingSignal, TrainingAttempt, TrainingQuestion)
+// Entities: 212
+// List hooks: 171 (skipped 41: AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, ApiKey, BoardConfig, CallPlanningSession, Dish, EmployeeAvailability, EventDish, EventPlanningDraft, EventProfitability, EventSummary, EventWaitlistEntry, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, ProposalDraft, RolePolicy, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, SoftDeletable, StaffTrainingSignal, TenantScoped, TimeEntry, TrainingAttempt, TrainingQuestion, VersionedEntity, WasteEntry)
+// Detail hooks: 188 (skipped 24: AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, BoardConfig, CallPlanningSession, EventPlanningDraft, ProposalDraft, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, SoftDeletable, StaffTrainingSignal, TenantScoped, TrainingAttempt, TrainingQuestion)
 // Command mutation hooks: 1054
 // Total exports: 1413
-// Skipped list hooks (no list fn in client): AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, ApiKey, BoardConfig, CallPlanningSession, Dish, EmployeeAvailability, EventDish, EventPlanningDraft, EventProfitability, EventSummary, EventWaitlistEntry, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, ProposalDraft, RolePolicy, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, StaffTrainingSignal, TimeEntry, TrainingAttempt, TrainingQuestion, VersionedEntity, WasteEntry
+// Skipped list hooks (no list fn in client): AdminTaskAttachment, AdminTaskComment, AdminTaskDevMeta, AdminTaskFileRef, ApiKey, BoardConfig, CallPlanningSession, Dish, EmployeeAvailability, EventDish, EventPlanningDraft, EventProfitability, EventSummary, EventWaitlistEntry, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, ProposalDraft, RolePolicy, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, SoftDeletable, StaffTrainingSignal, TenantScoped, TimeEntry, TrainingAttempt, TrainingQuestion, VersionedEntity, WasteEntry

@@ -25,10 +25,10 @@
  *
  * WHAT IT CHECKS:
  *   Regenerates BOTH committed generated artifacts via the production scripts
- *   (`derive-prisma-options.mjs` + `generate-full-schema.mjs` -- no logic is
+ *   (`generate-full-schema.mjs` -- no logic is
  *   duplicated, so the gate can never diverge from the generator), then compares
  *   byte-for-byte against the committed copies:
- *     - manifest/scripts/prisma-options.generated.json  (derived options bag)
+ *     - manifest/prisma-options.config.json (hand-curated, not regenerated)  (derived options bag)
  *     - manifest/ir/generated-schema.prisma             (projected schema)
  *   The generators write in place, so the committed files are backed up first and
  *   ALWAYS restored in a `finally` -- the working tree is left exactly as found,
@@ -51,16 +51,11 @@ const PROJECT_ROOT = resolve(__dirname, "../..");
 
 const ARTIFACTS = [
   {
-    label: "prisma-options.generated.json",
-    path: resolve(__dirname, "prisma-options.generated.json"),
-  },
-  {
     label: "generated-schema.prisma",
     path: resolve(PROJECT_ROOT, "manifest/ir/generated-schema.prisma"),
   },
 ];
 
-const DERIVE_SCRIPT = resolve(__dirname, "derive-prisma-options.mjs");
 const GENERATE_SCRIPT = resolve(__dirname, "generate-full-schema.mjs");
 
 // ---------------------------------------------------------------------------
@@ -173,11 +168,7 @@ function runGate() {
   try {
     // Regenerate via the production scripts (they write the artifacts in place).
     // execFileSync throws on non-zero exit -> caught below and treated as failure.
-    execFileSync(process.execPath, [DERIVE_SCRIPT], {
-      cwd: PROJECT_ROOT,
-      stdio: ["ignore", "ignore", "inherit"],
-    });
-    execFileSync(process.execPath, [GENERATE_SCRIPT], {
+execFileSync(process.execPath, [GENERATE_SCRIPT], {
       cwd: PROJECT_ROOT,
       stdio: ["ignore", "ignore", "inherit"],
     });
@@ -217,7 +208,7 @@ function runGate() {
     console.error(
       "Fix: run `pnpm manifest:schema:full` and commit the regenerated files:"
     );
-    console.error("  - manifest/scripts/prisma-options.generated.json");
+    console.error("  - manifest/prisma-options.config.json (hand-curated, not regenerated)");
     console.error("  - manifest/ir/generated-schema.prisma");
     process.exit(1);
   }

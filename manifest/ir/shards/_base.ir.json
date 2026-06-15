@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "d2c7b40d343ea65769c10e0e1ed00e59df02a1236593c7bcc17f11ce8335da21",
-    "irHash": "3ce33d70a99b9ec2f081b19f859a067231568b7f8092b0ff73a65d03dc01c065",
-    "compilerVersion": "2.5.1",
+    "contentHash": "983a4fb191ade84638b6b3e9e75df409e60df65fc3c77d6e50202dc10140e81f",
+    "irHash": "b569bdc46b40c0a39aa8779800edfe1e0757cba6a35ff2128c69f8bdc6131eae",
+    "compilerVersion": "2.7.0",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-15T06:50:48.390Z"
+    "compiledAt": "2026-06-15T11:25:18.552Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -17,11 +17,639 @@
   },
   "modules": [],
   "values": [],
-  "entities": [],
+  "entities": [
+    {
+      "name": "TenantScoped",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [],
+      "constraints": [],
+      "policies": []
+    },
+    {
+      "name": "SoftDeletable",
+      "properties": [
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [],
+      "constraints": [],
+      "policies": []
+    }
+  ],
   "enums": [],
   "stores": [],
   "events": [],
   "commands": [],
   "policies": [],
-  "reactions": []
+  "reactions": [],
+  "roles": [
+    {
+      "name": "Admin",
+      "parent": "Manager",
+      "allow": [
+        {
+          "action": "adminAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "adminAccess"
+        },
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Analyst",
+      "parent": "Staff",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "BillingAdmin",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "CateringManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Driver",
+      "parent": "Staff",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Editor",
+      "parent": "Staff",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "EventCoordinator",
+      "parent": "Staff",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "EventManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "FacilitiesManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "FacilityManager",
+      "parent": "FacilitiesManager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Finance",
+      "parent": "Staff",
+      "allow": [
+        {
+          "action": "financeAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "FinanceManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "HRAdmin",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "InventoryManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "KitchenLead",
+      "parent": "KitchenStaff",
+      "allow": [
+        {
+          "action": "leadAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "KitchenManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "KitchenStaff",
+      "parent": "Staff",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Lead",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "LogisticsManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Manager",
+      "parent": "Staff",
+      "allow": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Owner",
+      "parent": "Admin",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "adminAccess"
+        },
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "PayrollAdmin",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "ProcurementManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "parent": "Staff",
+      "allow": [
+        {
+          "action": "salesAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "SalesManager",
+      "parent": "Manager",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "SalesRep",
+      "parent": "Sales",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "allow": [
+        {
+          "action": "staffAccess"
+        }
+      ],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "staffAccess"
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "parent": "Admin",
+      "allow": [],
+      "deny": [],
+      "effectivePermissions": [
+        {
+          "action": "adminAccess"
+        },
+        {
+          "action": "financeAccess"
+        },
+        {
+          "action": "leadAccess"
+        },
+        {
+          "action": "manageAccess"
+        },
+        {
+          "action": "salesAccess"
+        },
+        {
+          "action": "staffAccess"
+        }
+      ]
+    }
+  ]
 }

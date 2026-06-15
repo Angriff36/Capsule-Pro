@@ -12,7 +12,7 @@ datasource db {
   schemas = ["core", "platform", "public", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_facilities", "tenant_inventory", "tenant_kitchen", "tenant_logistics", "tenant_staff"]
 }
 
-// ===== ENUMS (from committed schema) =====
+// ===== INFRA-ONLY ENUMS (from committed schema, not in manifest IR) =====
 
 enum sms_status {
   pending
