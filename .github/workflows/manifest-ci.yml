@@ -69,6 +69,15 @@ jobs:
 
           echo "All manifest files validated successfully"
 
+      # Hard regression gate for the native-Manifest migrations: U6 tenant
+      # consolidation (single shared _base.manifest + use), native
+      # compileProjectToIR build (D11), no silent saga/reaction drop (D9),
+      # command ownership (D14), committed-IR integrity + irHash, and the
+      # 2.5.1 Prisma enum emission capability (D22) / public mergeIR (D12).
+      # See manifest/MANIFEST-DIVERGENCES.md.
+      - name: Verify Manifest invariants (U6 / native compile / 2.5.1 enum emission)
+        run: pnpm manifest:verify-invariants
+
       - name: Validate IR schema + AI score + doctor
         run: pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor
 
