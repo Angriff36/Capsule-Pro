@@ -1,3 +1,4 @@
+import { listCallPlanningSessions, listEventPlanningDrafts } from "@/app/lib/manifest-client.generated";
 /**
  * @module CallPlannerPage
  * @intent Server component for AI Call Planner landing page
@@ -6,7 +7,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { CallPlannerClient } from "./call-planner-client";
@@ -19,35 +19,12 @@ export default async function CallPlannerPage() {
   if (!tenantId) redirect("/");
 
   // Fetch recent drafts
-  const drafts = await database.eventPlanningDraft.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    select: {
-      id: true,
-      sessionId: true,
-      status: true,
-      clientName: true,
-      eventType: true,
-      eventDate: true,
-      guestCount: true,
-      overallConfidence: true,
-      proposalId: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  const drafts = (await listEventPlanningDrafts()).data;
 
   // No FK relations in this schema (flat keys) — resolve sessions separately.
   const sessionIds = Array.from(new Set(drafts.map((d) => d.sessionId)));
   const sessions = sessionIds.length
-    ? await database.callPlanningSession.findMany({
-        where: { tenantId, id: { in: sessionIds } },
-        select: { id: true, status: true, startedAt: true },
-      })
+    ? (await listCallPlanningSessions()).data
     : [];
   const sessionMap = new Map(sessions.map((s) => [s.id, s]));
 

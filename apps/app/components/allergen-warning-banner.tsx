@@ -9,7 +9,6 @@
 
 "use client";
 
-import type { AllergenWarning } from "@repo/database";
 import {
   Alert,
   AlertDescription,

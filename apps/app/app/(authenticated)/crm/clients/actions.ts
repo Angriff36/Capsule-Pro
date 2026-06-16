@@ -1,4 +1,5 @@
 "use server";
+import { listCateringOrders, listClientContacts, listClientInteractions, listClientPreferences, listClients } from "@/app/lib/manifest-client.generated";
 
 /**
  * Client CRUD Server Actions
@@ -128,12 +129,7 @@ export async function getClients(
 
   const offset = (page - 1) * limit;
 
-  const clients = await database.client.findMany({
-    where: whereClause,
-    orderBy: [{ createdAt: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const clients = (await listClients()).data;
 
   const totalCount = await database.client.count({
     where: whereClause,
@@ -180,12 +176,7 @@ export async function getAvailableTags(): Promise<
   const tenantId = await requireCurrentUser().then((u) => u.tenantId);
 
   // Get all clients with tags
-  const clients = await database.client.findMany({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-    select: { tags: true },
-  });
+  const clients = (await listClients()).data;
 
   // Count occurrences of each tag
   const tagCounts = new Map<string, number>();
@@ -214,37 +205,7 @@ export async function deleteTagGlobally(tag: string) {
 
   const trimmedTag = tag.trim();
 
-  const clients = await database.client.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      tags: {
-        has: trimmedTag,
-      },
-    },
-    select: {
-      id: true,
-      tags: true,
-      company_name: true,
-      first_name: true,
-      last_name: true,
-      email: true,
-      phone: true,
-      website: true,
-      addressLine1: true,
-      addressLine2: true,
-      city: true,
-      stateProvince: true,
-      postalCode: true,
-      countryCode: true,
-      defaultPaymentTerms: true,
-      taxExempt: true,
-      taxId: true,
-      notes: true,
-      source: true,
-      assignedTo: true,
-    },
-  });
+  const clients = (await listClients()).data;
 
   // Govern each client's tag update through the Client.update command.
   // Client.update has full-replace semantics, so we merge existing values.
@@ -309,20 +270,10 @@ export async function getClientById(id: string) {
   invariant(client, "Client not found");
 
   // Get contacts
-  const contacts = await database.clientContact.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-    orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-  });
+  const contacts = (await listClientContacts()).data;
 
   // Get preferences
-  const preferences = await database.clientPreference.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-    orderBy: [{ preferenceType: "asc" }, { preferenceKey: "asc" }],
-  });
+  const preferences = (await listClientPreferences()).data;
 
   // Get interaction count
   const interactionCount = await database.clientInteraction.count({
@@ -558,12 +509,7 @@ export async function getClientContacts(clientId: string) {
   const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(clientId, "Client ID is required");
 
-  const contacts = await database.clientContact.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId }, { deletedAt: null }],
-    },
-    orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-  });
+  const contacts = (await listClientContacts()).data;
 
   return contacts as ClientContact[];
 }
@@ -806,12 +752,7 @@ export async function getClientInteractions(
     });
   }
 
-  const interactions = await database.clientInteraction.findMany({
-    where: { AND: andConditions },
-    orderBy: [{ interactionDate: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const interactions = (await listClientInteractions()).data;
 
   const totalCount = await database.clientInteraction.count({
     where: { AND: andConditions },
@@ -1084,14 +1025,7 @@ export async function getClientEventHistory(
   const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(clientId, "Client ID is required");
 
-  const events = await database.cateringOrder.findMany({
-    where: {
-      AND: [{ tenantId }, { customer_id: clientId }, { deletedAt: null }],
-    },
-    orderBy: [{ createdAt: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const events = (await listCateringOrders()).data;
 
   const totalCount = await database.cateringOrder.count({
     where: {

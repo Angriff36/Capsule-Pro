@@ -1,5 +1,5 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,27 +17,7 @@ const KitchenDashboardPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const events = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      status: true,
-      eventType: true,
-      eventDate: true,
-      guestCount: true,
-      venueName: true,
-      venueAddress: true,
-      notes: true,
-      tags: true,
-      createdAt: true,
-    },
-    orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
-  });
+  const events = (await listEvents()).data;
 
   const serializedEvents: KitchenEvent[] = events.map((event) => ({
     id: event.id,

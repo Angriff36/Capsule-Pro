@@ -1,3 +1,4 @@
+import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -132,17 +133,7 @@ async function fetchBudgetAlerts(tenantId: string) {
 }
 
 async function fetchExecutiveTasks(tenantId: string) {
-  return database.adminTask.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      status: {
-        in: ["review", "in_progress"],
-      },
-    },
-    orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
-    take: 3,
-  });
+  return (await listAdminTasks()).data;
 }
 
 async function fetchOverdueTasks(tenantId: string) {
@@ -228,16 +219,7 @@ async function fetchActiveTeams(tenantId: string, sevenDaysAgo: Date) {
 }
 
 async function fetchEmployees(tenantId: string) {
-  return database.user.findMany({
-    where: {
-      tenantId,
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
+  return (await listUsers()).data;
 }
 
 async function fetchAllDashboardData(

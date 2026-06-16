@@ -1,3 +1,4 @@
+import { listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -99,38 +100,7 @@ export default async function PaymentsPage() {
       where: { tenantId, deletedAt: null },
       _sum: { amount: true },
     }),
-    database.payment.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
-      take: 25,
-      select: {
-        id: true,
-        amount: true,
-        currency: true,
-        status: true,
-        methodType: true,
-        processor: true,
-        createdAt: true,
-        completedAt: true,
-        invoice: {
-          select: {
-            invoiceNumber: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-      },
-    }),
+    (await listPayments()).data,
   ]);
 
   const recordedTotal = Number(paymentTotals._sum.amount ?? 0);

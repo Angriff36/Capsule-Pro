@@ -30,7 +30,6 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
     "@angriff36/manifest": "2.8.0",
-    "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.57.0",
     "hono": "^4.12.25",

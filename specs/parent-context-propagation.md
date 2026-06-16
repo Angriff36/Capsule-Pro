@@ -128,7 +128,7 @@ unallowlisted violation and is the CI backpressure for this invariant.
 (`eventDate`, `clientId`, `guestCount`, `venueName`, `venueAddress`, `locationId`,
 `inheritedContext`) as properties that are **not** create parameters, plus
 `relationship belongsTo event: Event`. Creating a board with only `{ boardName, boardType,
-eventId }` inherits the full Event snapshot server-side. The matching Prisma columns on
+eventId }` inherits the full Event snapshot server-side. The matching Convex document fields on
 `battle_boards` are plain text (no `@db.Uuid`) so denormalized values never fail uuid coercion.
 
 ### 8a. Second adopter: Proposal
@@ -162,7 +162,7 @@ inheritance fails loudly:
 1. In the child's `.manifest` source, declare the parent-owned fields as **properties that are
    not create parameters**, and add `relationship belongsTo <parent>: <Parent> fields [...]
    references [...]`.
-2. Add matching Prisma columns (plain text for denormalized ids — no `@db.Uuid`); migrate via
+2. Add matching Convex schema fields (via Manifest IR + projection); regenerate with `pnpm manifest:generate`
    `pnpm db:dev --create-only`.
 3. Recompile the IR (`pnpm manifest:compile`) so the runtime sees the new relationship and
    properties.

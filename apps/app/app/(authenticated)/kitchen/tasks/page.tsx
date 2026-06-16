@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -21,9 +20,8 @@ import {
 import { format } from "date-fns";
 import { Calendar, Clock, User } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
-import { getKitchenTasks, getMyActiveClaims } from "./actions";
+import { loadKitchenTasksPageData } from "@/app/lib/convex/kitchen-task-loaders";
 
 const priorityLabels: Record<number, string> = {
   1: "Urgent",
@@ -55,23 +53,7 @@ const KitchenTasksPage = async () => {
     return notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Get current user
-  const currentUser = clerkId
-    ? await database.user.findFirst({
-        where: {
-          tenantId,
-          authUserId: clerkId,
-        },
-      })
-    : null;
-
-  // Fetch tasks
-  const tasks = await getKitchenTasks();
-
-  // Fetch user's active claims
-  const myClaims = currentUser ? await getMyActiveClaims(currentUser.id) : [];
+  const { tasks, myClaims } = await loadKitchenTasksPageData(clerkId ?? null);
 
   // Build task map with claims
   const myClaimedTaskIds = new Set(myClaims.map((c) => c.taskId));
@@ -188,14 +170,14 @@ const KitchenTasksPage = async () => {
                           <TableCell>
                             <Badge
                               variant={
-                                priorityColors[task.priority] as
+                                priorityColors[task.priority ?? 10] as
                                   | "destructive"
                                   | "default"
                                   | "secondary"
                                   | "outline"
                               }
                             >
-                              {priorityLabels[task.priority] || task.priority}
+                              {priorityLabels[task.priority ?? 10] || task.priority}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -231,7 +213,7 @@ const KitchenTasksPage = async () => {
                           <TableCell>
                             <div className="flex items-center gap-1 text-muted-foreground text-sm">
                               <Clock className="size-3" />
-                              {format(new Date(task.createdAt), "MMM d")}
+                              {task.createdAt ? format(new Date(task.createdAt), "MMM d") : "-"}
                             </div>
                           </TableCell>
                           <TableCell />

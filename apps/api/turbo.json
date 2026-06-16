@@ -1,4 +1,0 @@
-{
-  "extends": ["//"],
-  "tags": ["layer:app", "app:api", "runtime:server"]
-}

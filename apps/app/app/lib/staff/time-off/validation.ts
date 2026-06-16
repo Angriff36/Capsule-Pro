@@ -1,4 +1,9 @@
-import { database } from "@repo/database";
+import { listTimeOffRequests } from "@/app/lib/manifest-client.generated";
+import {
+  getTimeOffRequestById,
+  loadUsers,
+} from "@/app/lib/scheduling/server-reads";
+import { isDeleted } from "@/app/lib/scheduling/shift-utils";
 import { NextResponse } from "next/server";
 
 import type { TimeOffStatus } from "./types";
@@ -74,18 +79,15 @@ export async function checkOverlappingTimeOffRequests(
     status: string;
   }>;
 }> {
-  const requests = await database.timeOffRequest.findMany({
-    where: {
-      tenantId,
-      employeeId,
-      ...(excludeRequestId ? { id: { not: excludeRequestId } } : {}),
-      deletedAt: null,
-      status: { in: ["PENDING", "APPROVED"] },
-      startDate: { lte: endDate },
-      endDate: { gte: startDate },
-    },
-    select: { id: true, startDate: true, endDate: true, status: true },
-  });
+  const requests = (await listTimeOffRequests()).data.filter(
+    (request) =>
+      request.employeeId === employeeId &&
+      !request.deletedAt &&
+      ["PENDING", "APPROVED"].includes(request.status) &&
+      new Date(request.startDate) <= endDate &&
+      new Date(request.endDate) >= startDate &&
+      (!excludeRequestId || request.id !== excludeRequestId),
+  );
   const overlappingRequests = requests.map((request) => ({
     id: request.id,
     start_date: request.startDate,
@@ -106,10 +108,10 @@ export async function verifyEmployee(
   employee: { id: string; role: string; is_active: boolean } | null;
   error: NextResponse | null;
 }> {
-  const employee = await database.user.findFirst({
-    where: { tenantId, id: employeeId, deletedAt: null },
-    select: { id: true, role: true, isActive: true },
-  });
+  const employee = (await loadUsers()).find(
+    (user) =>
+      user.id === employeeId && !isDeleted(user.deletedAt),
+  );
 
   if (!employee) {
     return {
@@ -134,7 +136,7 @@ export async function verifyEmployee(
   return {
     employee: {
       id: employee.id,
-      role: employee.role,
+      role: employee.role ?? "",
       is_active: employee.isActive,
     },
     error: null,
@@ -154,16 +156,16 @@ export async function verifyTimeOffRequest(
   } | null;
   error: NextResponse | null;
 }> {
-  const request = await database.timeOffRequest.findFirst({
-    where: { tenantId, id: requestId, deletedAt: null },
-    select: {
-      id: true,
-      employeeId: true,
-      status: true,
-      startDate: true,
-      endDate: true,
-    },
-  });
+  const request = await getTimeOffRequestById(requestId);
+  if (request && isDeleted(request.deletedAt)) {
+    return {
+      request: null,
+      error: NextResponse.json(
+        { message: "Time-off request not found" },
+        { status: 404 }
+      ),
+    };
+  }
 
   if (!request) {
     return {

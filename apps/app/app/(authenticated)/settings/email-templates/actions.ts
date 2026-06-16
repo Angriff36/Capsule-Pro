@@ -1,4 +1,5 @@
 "use server";
+import { listEmailTemplates } from "@/app/lib/manifest-client.generated";
 
 /**
  * Email Template CRUD Server Actions
@@ -86,12 +87,7 @@ export async function getEmailTemplates(
 
   const offset = (page - 1) * limit;
 
-  const templates = await database.emailTemplate.findMany({
-    where: whereClause,
-    orderBy: [{ createdAt: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const templates = (await listEmailTemplates()).data;
 
   const totalCount = await database.emailTemplate.count({
     where: whereClause,
@@ -194,23 +190,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
   // (constitution §9). The update command mutates ALL fields, so existing
   // values must be carried forward.
   if (input.isDefault) {
-    const otherDefaults = await database.emailTemplate.findMany({
-      where: {
-        tenantId,
-        templateType: input.templateType,
-        isDefault: true,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        templateType: true,
-        subject: true,
-        body: true,
-        mergeFields: true,
-        isActive: true,
-      },
-    });
+    const otherDefaults = (await listEmailTemplates()).data;
 
     for (const tpl of otherDefaults) {
       await runManifestCommand({
@@ -301,24 +281,7 @@ export async function updateEmailTemplate(
   // (constitution §9). The update command mutates ALL fields, so existing
   // values must be carried forward.
   if (input.isDefault) {
-    const otherDefaults = await database.emailTemplate.findMany({
-      where: {
-        tenantId,
-        templateType: input.templateType ?? existing.templateType,
-        isDefault: true,
-        id: { not: id },
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        templateType: true,
-        subject: true,
-        body: true,
-        mergeFields: true,
-        isActive: true,
-      },
-    });
+    const otherDefaults = (await listEmailTemplates()).data;
 
     for (const tpl of otherDefaults) {
       await runManifestCommand({

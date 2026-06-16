@@ -1,3 +1,4 @@
+import { listUsers } from "@/app/lib/manifest-client.generated";
 /**
  * @module SettingsTeamPage
  * @intent Server component that fetches team members and renders the interactive client component
@@ -8,7 +9,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -38,24 +38,7 @@ const SettingsTeamPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const dbMembers = await database.user.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-    },
-  });
+  const dbMembers = (await listUsers()).data;
 
   const members: TeamMemberRow[] = dbMembers.map((m) => ({
     ...m,

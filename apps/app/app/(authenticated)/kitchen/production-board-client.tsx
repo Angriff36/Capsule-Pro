@@ -1,10 +1,5 @@
 "use client";
 
-import type {
-  User as DbUser,
-  KitchenTask,
-  KitchenTaskClaim,
-} from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {

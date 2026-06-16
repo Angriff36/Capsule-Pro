@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,7 +31,8 @@ import {
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../lib/tenant";
+import { loadEventsListPageData } from "@/app/lib/convex/domain-loaders";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { EventsList } from "./components/events-list";
 import { EventsPageWithSuggestions } from "./components/events-suggestions";
 import { EventsPageClient } from "./events-page-client";
@@ -45,28 +45,7 @@ const EventsPage = async () => {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-
-  const events = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    select: {
-      tenantId: true,
-      id: true,
-      title: true,
-      eventNumber: true,
-      status: true,
-      eventType: true,
-      eventDate: true,
-      guestCount: true,
-      venueName: true,
-      tags: true,
-      createdAt: true,
-      clientId: true,
-    },
-    orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
-  });
+  const events = await loadEventsListPageData();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -14,7 +14,7 @@ Use this lightweight checklist for governance/doc/code review passes. It is not 
 - [ ] Agent SDK, MCP, and automation write paths invoke Manifest runtime commands for governed mutations.
 - [ ] Read-only tools remain read-only and do not synthesize command semantics.
 - [ ] Tool availability is not used as proof of bypass approval.
-- [ ] Runtime policy/guard failures are not retried through direct Prisma or raw SQL writes.
+- [ ] Runtime policy/guard failures are not retried through direct Convex mutations or raw SQL writes.
 
 ## Projection dispatcher alignment
 
@@ -25,7 +25,7 @@ Use this lightweight checklist for governance/doc/code review passes. It is not 
 
 ## Migration boundary misuse
 
-- [ ] Migrations and Prisma schema changes are not cited as command semantics.
+- [ ] Convex schema changes are not cited as command semantics.
 - [ ] Persistence additions needed by runtime adapters do not create new out-of-runtime write paths.
 - [ ] Migration repair scripts do not mutate governed state unless bypass-approved.
 - [ ] `.manifest` source/IR/runtime/conformance evidence exists before claiming governed behavior is covered.

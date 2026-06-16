@@ -1,3 +1,4 @@
+import { listClients, listLeads } from "@/app/lib/manifest-client.generated";
 /**
  * @module marketing/leads
  * @intent Marketing leads listing — server component that fetches leads and
@@ -68,11 +69,7 @@ export default async function MarketingLeadsPage() {
 
   // Parallel data fetch: leads + aggregate metrics
   const [leads, statusCounts, valueAggregate] = await Promise.all([
-    database.lead.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
+    (await listLeads()).data,
     database.lead.groupBy({
       by: ["status"],
       where: { tenantId, deletedAt: null },
@@ -117,21 +114,8 @@ export default async function MarketingLeadsPage() {
   let leadEmailCounts = new Map<string, number>();
   if (leadEmails.length > 0) {
     const [matchingClients, matchingLeads] = await Promise.all([
-      database.client.findMany({
-        where: {
-          tenantId,
-          email: { in: leadEmails, mode: "insensitive" },
-        },
-        select: { email: true },
-      }),
-      database.lead.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-          contactEmail: { in: leadEmails, mode: "insensitive" },
-        },
-        select: { contactEmail: true },
-      }),
+      (await listClients()).data,
+      (await listLeads()).data,
     ]);
     clientEmailSet = new Set(
       matchingClients

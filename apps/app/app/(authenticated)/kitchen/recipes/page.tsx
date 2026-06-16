@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { loadKitchenRecipeCatalog } from "@/app/lib/convex/kitchen-recipe-catalog-loaders";
 import {
   CommandBand,
   CommandBandBody,
@@ -43,8 +43,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DietaryBadges } from "@/components/dietary-badges";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { DietaryBadges } from "@/components/dietary-badges";
 import { Header } from "../../components/header";
 import { SingleDeleteButton } from "./components/bulk-actions-bar";
 import {
@@ -130,10 +130,6 @@ const formatMinutes = (minutes?: number | null) =>
 const formatPercent = (value: number | null) =>
   value === null ? "-" : `${Math.round(value)}%`;
 
-const buildConditions = (base: Prisma.Sql[], extra: Prisma.Sql[]) => {
-  const conditions = [...base, ...extra].filter(Boolean);
-  return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
-};
 
 const parseSearchParams = async (
   searchParams?: RecipesPageProps["searchParams"]
@@ -157,25 +153,6 @@ const parseSearchParams = async (
   };
 };
 
-const getStatusCondition = (status: string | undefined, column: Prisma.Sql) => {
-  if (status === "active") {
-    return Prisma.sql`${column} = true`;
-  }
-  if (status === "inactive") {
-    return Prisma.sql`${column} = false`;
-  }
-  return Prisma.sql`TRUE`;
-};
-
-const getDietaryCondition = (
-  dietary: string | undefined,
-  column: Prisma.Sql
-) => {
-  if (!dietary) {
-    return Prisma.sql`TRUE`;
-  }
-  return Prisma.sql`${column} @> ARRAY[${dietary}]::text[]`;
-};
 
 const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
   const {
@@ -196,204 +173,27 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const [recipeTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
+  const catalog = await loadKitchenRecipeCatalog({
+    activeTab,
+    query,
+    category,
+    dietary,
+    status,
+  });
 
-  const [dishTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.dishes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const [ingredientTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.ingredients
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const [menuTotals] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_kitchen.menus
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  const recipeConditions = buildConditions(
-    [Prisma.sql`r.tenant_id = ${tenantId}`, Prisma.sql`r.deleted_at IS NULL`],
-    [
-      queryPattern
-        ? Prisma.sql`r.name ILIKE ${queryPattern}`
-        : Prisma.sql`TRUE`,
-      categoryLower
-        ? Prisma.sql`lower(r.category) = ${categoryLower}`
-        : Prisma.sql`TRUE`,
-      getDietaryCondition(dietary, Prisma.sql`r.tags`),
-      getStatusCondition(status, Prisma.sql`r.is_active`),
-    ]
-  );
-
-  const dishConditions = buildConditions(
-    [Prisma.sql`d.tenant_id = ${tenantId}`, Prisma.sql`d.deleted_at IS NULL`],
-    [
-      queryPattern
-        ? Prisma.sql`d.name ILIKE ${queryPattern}`
-        : Prisma.sql`TRUE`,
-      categoryLower
-        ? Prisma.sql`lower(d.category) = ${categoryLower}`
-        : Prisma.sql`TRUE`,
-      getDietaryCondition(dietary, Prisma.sql`d.dietary_tags`),
-      getStatusCondition(status, Prisma.sql`d.is_active`),
-    ]
-  );
-
-  const ingredientConditions = buildConditions(
-    [Prisma.sql`i.tenant_id = ${tenantId}`, Prisma.sql`i.deleted_at IS NULL`],
-    [
-      queryPattern
-        ? Prisma.sql`i.name ILIKE ${queryPattern}`
-        : Prisma.sql`TRUE`,
-      categoryLower
-        ? Prisma.sql`lower(i.category) = ${categoryLower}`
-        : Prisma.sql`TRUE`,
-      getDietaryCondition(dietary, Prisma.sql`i.allergens`),
-      getStatusCondition(status, Prisma.sql`i.is_active`),
-    ]
-  );
+  const recipeTotals = { count: catalog.totals.recipes };
+  const dishTotals = { count: catalog.totals.dishes };
+  const ingredientTotals = { count: catalog.totals.ingredients };
+  const menuTotals = { count: catalog.totals.menus };
 
   const showRecipes = activeTab === "recipes";
   const showDishes = activeTab === "dishes" || activeTab === "costing";
   const showIngredients = activeTab === "ingredients";
   const showMenus = activeTab === "menus";
 
-  const recipes = showRecipes
-    ? await database.$queryRaw<RecipeRow[]>(
-        Prisma.sql`
-          SELECT
-            r.id,
-            r.name,
-            r.description,
-            r.category,
-            r.tags,
-            r.is_active,
-            rv.yield_quantity,
-            u.code AS yield_unit,
-            rv.prep_time_minutes,
-            rv.cook_time_minutes,
-            rv.rest_time_minutes,
-            COALESCE(ingredients.count, 0) AS ingredient_count,
-            COALESCE(dishes.count, 0) AS dish_count,
-            image.image_url
-          FROM tenant_kitchen.recipes r
-          LEFT JOIN LATERAL (
-            SELECT rv.*
-            FROM tenant_kitchen.recipe_versions rv
-            WHERE rv.tenant_id = r.tenant_id
-              AND rv.recipe_id = r.id
-              AND rv.deleted_at IS NULL
-            ORDER BY rv.version_number DESC
-            LIMIT 1
-          ) rv ON true
-          LEFT JOIN core.units u ON u.id = rv.yield_unit_id
-          LEFT JOIN LATERAL (
-            SELECT COUNT(*)::int AS count
-            FROM tenant_kitchen.recipe_ingredients ri
-            WHERE ri.tenant_id = r.tenant_id
-              AND ri.recipe_version_id = rv.id
-              AND ri.deleted_at IS NULL
-          ) ingredients ON true
-          LEFT JOIN LATERAL (
-            SELECT COUNT(*)::int AS count
-            FROM tenant_kitchen.dishes d
-            WHERE d.tenant_id = r.tenant_id
-              AND d.recipe_id = r.id
-              AND d.deleted_at IS NULL
-          ) dishes ON true
-          LEFT JOIN LATERAL (
-            SELECT image_url
-            FROM tenant_kitchen.recipe_steps rs
-            WHERE rs.tenant_id = r.tenant_id
-              AND rs.recipe_version_id = rv.id
-              AND rs.deleted_at IS NULL
-              AND rs.image_url IS NOT NULL
-            ORDER BY rs.step_number ASC
-            LIMIT 1
-          ) image ON true
-          ${recipeConditions}
-          ORDER BY r.name ASC
-        `
-      )
-    : [];
-
-  const dishes = showDishes
-    ? await database.$queryRaw<DishRow[]>(
-        Prisma.sql`
-          SELECT
-            d.id,
-            d.name,
-            d.category,
-            d.dietary_tags,
-            d.price_per_person,
-            d.cost_per_person,
-            d.presentation_image_url,
-            d.is_active,
-            r.name AS recipe_name,
-            COALESCE(prep_tasks.count, 0) AS prep_task_count,
-            COALESCE(event_dishes.count, 0) AS event_count
-          FROM tenant_kitchen.dishes d
-          LEFT JOIN tenant_kitchen.recipes r
-            ON r.tenant_id = d.tenant_id
-            AND r.id = d.recipe_id
-          LEFT JOIN LATERAL (
-            SELECT COUNT(*)::int AS count
-            FROM tenant_kitchen.prep_tasks pt
-            WHERE pt.tenant_id = d.tenant_id
-              AND pt.dish_id = d.id
-              AND pt.deleted_at IS NULL
-          ) prep_tasks ON true
-          LEFT JOIN LATERAL (
-            SELECT COUNT(*)::int AS count
-            FROM tenant_events.event_dishes ed
-            WHERE ed.tenant_id = d.tenant_id
-              AND ed.dish_id = d.id
-              AND ed.deleted_at IS NULL
-          ) event_dishes ON true
-          ${dishConditions}
-          ORDER BY d.name ASC
-        `
-      )
-    : [];
-
-  const ingredients = showIngredients
-    ? await database.$queryRaw<IngredientRow[]>(
-        Prisma.sql`
-          SELECT
-            i.id,
-            i.name,
-            i.category,
-            i.allergens,
-            i.is_active,
-            u.code AS unit_code
-          FROM tenant_kitchen.ingredients i
-          LEFT JOIN core.units u ON u.id = i.default_unit_id
-          ${ingredientConditions}
-          ORDER BY i.name ASC
-        `
-      )
-    : [];
+  const recipes = catalog.recipes;
+  const dishes = catalog.dishes;
+  const ingredients = catalog.ingredients;
 
   const menus = showMenus ? await getMenus() : [];
 

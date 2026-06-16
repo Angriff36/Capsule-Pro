@@ -1,5 +1,5 @@
+import { listClients, listInvoices, listRevenueRecognitionSchedules } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { RevenueRecognitionClient } from "./revenue-recognition-client";
@@ -20,24 +20,9 @@ export default async function RevenueRecognitionPage() {
   }
 
   const [schedules, invoices, clients] = await Promise.all([
-    database.revenueRecognitionSchedule.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-    database.invoice.findMany({
-      where: { tenantId, deletedAt: null },
-      select: { id: true, invoiceNumber: true },
-    }),
-    database.client.findMany({
-      where: { tenantId, deletedAt: null },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-      },
-    }),
+    (await listRevenueRecognitionSchedules()).data,
+    (await listInvoices()).data,
+    (await listClients()).data,
   ]);
 
   const invoiceMap = Object.fromEntries(

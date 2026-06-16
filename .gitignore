@@ -510,11 +510,14 @@ project-docs.zip
 
 # === Removed from tracking: local tool state, generated artifacts, scratch files ===
 
-# Local tool/IDE state
+# Local tool/IDE state — keep hooks shareable
 .autolab/
 .specify/
 .idea/
-.cursor/
+.cursor/*
+!.cursor/hooks.json
+!.cursor/hooks/
+!.cursor/hooks/**
 .neon/
 .git-commit-msg
 

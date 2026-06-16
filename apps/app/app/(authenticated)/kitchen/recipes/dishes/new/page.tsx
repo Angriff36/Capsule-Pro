@@ -1,5 +1,5 @@
+import { listRecipes } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,11 +20,7 @@ const NewDishPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const recipes: RecipeOption[] = await database.recipe.findMany({
-    where: { tenantId, deletedAt: null },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const recipes: RecipeOption[] = (await listRecipes()).data;
 
   return (
     <>

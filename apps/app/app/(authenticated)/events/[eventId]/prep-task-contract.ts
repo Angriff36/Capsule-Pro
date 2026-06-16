@@ -1,5 +1,3 @@
-import type { PrepTask } from "@repo/database";
-
 export type PrepTaskSummary = Pick<
   PrepTask,
   | "id"

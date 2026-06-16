@@ -33,9 +33,9 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-// NOTE: Keeping apiFetch for barcode lookup and stock adjustment custom endpoints
 import { apiFetch } from "@/app/lib/api";
 import type { InventoryItemWithStatus } from "@/app/lib/inventory";
+import { listInventoryItems } from "@/app/lib/inventory";
 import { BarcodeScanner } from "../components/barcode-scanner";
 
 type ScanMode = "lookup" | "stock_count";
@@ -78,18 +78,9 @@ export default function ScannerPage() {
       setLookupLoading(true);
       setLookupResult(null);
       try {
-        const response = await apiFetch(
-          `/api/inventory/items?barcode=${encodeURIComponent(barcode)}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch item");
-        }
-        const data = await response.json();
-        const items: InventoryItemWithStatus[] = data.data ?? [];
-        const found = items.find(
-          (item: InventoryItemWithStatus) => item.barcode === barcode
-        );
-        setLookupResult(found ?? null);
+        const result = await listInventoryItems({ barcode });
+        const found = result.data[0] ?? null;
+        setLookupResult(found);
         addToHistory(barcode, !!found);
         if (!found) {
           toast.warning("No item found for this barcode");
@@ -183,18 +174,10 @@ export default function ScannerPage() {
           let itemId = scannedItem.item?.id;
 
           if (!itemId) {
-            const lookupResponse = await apiFetch(
-              `/api/inventory/items?barcode=${encodeURIComponent(scannedItem.barcode)}`
-            );
-            if (!lookupResponse.ok) {
-              throw new Error("Item lookup failed");
-            }
-            const lookupData = await lookupResponse.json();
-            const items: InventoryItemWithStatus[] = lookupData.data ?? [];
-            const foundItem = items.find(
-              (item: InventoryItemWithStatus) =>
-                item.barcode === scannedItem.barcode
-            );
+            const lookupResult = await listInventoryItems({
+              barcode: scannedItem.barcode,
+            });
+            const foundItem = lookupResult.data[0];
 
             if (!foundItem) {
               errors.push(`${scannedItem.barcode}: Item not found`);

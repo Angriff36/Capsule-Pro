@@ -57,7 +57,7 @@ A read-side endpoint (`apps/app` server action or API GET) takes `eventId` + the
 - **Food cost:** dishes × guest count × per-portion cost.
 - **Conflicts:** staff double-booked (other `EventStaff`/`ScheduleShift` on the same date), vehicle/equipment double-allocated to other events that day.
 
-Pure Prisma reads — allowed to bypass the runtime per constitution §10. It defines **no domain semantics**: it renders information, never blocks or mutates. Recomputed on every draft change (React Query, debounced).
+Pure Convex queries — allowed to bypass the runtime per constitution §10. It defines **no domain semantics**: it renders information, never blocks or mutates. Recomputed on every draft change (Convex reactive query / React, debounced).
 
 ### Commit (governed, atomic)
 
@@ -67,7 +67,7 @@ Pure Prisma reads — allowed to bypass the runtime per constitution §10. It de
 - `add-dish` → `EventDish.create` (verify the command contract carries all params per §14 before wiring)
 - `assign-vehicle` / `assign-equipment` → commands on a **new** `EventResourceAssignment` entity (see below)
 
-Commit is a **dedicated server action / API route** (not N HTTP dispatcher calls): it opens one `$transaction`, threads the transaction client into the runtime via `prismaOverride` (the pattern proven by the payroll governed write path, `apps/api/lib/payroll/manifest-payroll-data-source.ts`), and invokes `runManifestCommand` core once per draft. The card flips (`metadata.draftState: draft → committed`, `committedRecordId` set, via governed `CommandBoardCard` update) execute **inside the same transaction**, so domain writes and card state can never diverge. Any failure → the whole transaction rolls back, nothing flips, and the failing card shows the runtime's structured error (kept client-side until retried).
+Commit is a **dedicated server action / API route** (not N HTTP dispatcher calls): it invokes `runManifestCommand` core once per draft inside a single Convex transaction boundary via the store adapter. The card flips (`metadata.draftState: draft → committed`, `committedRecordId` set, via governed `CommandBoardCard` update) execute **inside the same transaction**, so domain writes and card state can never diverge. Any failure → the whole transaction rolls back, nothing flips, and the failing card shows the runtime's structured error (kept client-side until retried).
 
 Removing a committed token = the corresponding governed unassign/remove command (immediate, with confirm dialog) — v1 does not stage removals as drafts.
 

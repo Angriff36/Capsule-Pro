@@ -1,3 +1,4 @@
+import { listCommandBoardCards, listCommandBoardConnections, listCommandBoardGroups } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -49,45 +50,9 @@ const BoardDetailPage = async ({ params }: PageProps) => {
   }
 
   const [cards, connections, groups] = await Promise.all([
-    database.commandBoardCard.findMany({
-      where: { tenantId, boardId: id, deletedAt: null },
-      select: {
-        id: true,
-        title: true,
-        cardType: true,
-        status: true,
-        positionX: true,
-        positionY: true,
-        width: true,
-        height: true,
-        color: true,
-        groupId: true,
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-    database.commandBoardConnection.findMany({
-      where: { tenantId, boardId: id, deletedAt: null, visible: true },
-      select: {
-        id: true,
-        fromCardId: true,
-        toCardId: true,
-        relationshipType: true,
-        label: true,
-      },
-    }),
-    database.commandBoardGroup.findMany({
-      where: { tenantId, boardId: id, deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        color: true,
-        collapsed: true,
-        positionX: true,
-        positionY: true,
-        width: true,
-        height: true,
-      },
-    }),
+    (await listCommandBoardCards()).data,
+    (await listCommandBoardConnections()).data,
+    (await listCommandBoardGroups()).data,
   ]);
 
   return (

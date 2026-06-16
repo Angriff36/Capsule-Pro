@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { fonts } from "@/lib/fonts";
 import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
+import { ConvexClientProvider } from "@/app/lib/convex/provider";
 import { QueryProvider } from "./query-provider";
 
 interface RootLayoutProperties {
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 const RootLayout = async ({ children }: RootLayoutProperties) => {
   // Only load feature flags toolbar in development to reduce bundle size
   const Toolbar =
-    process.env.NODE_ENV === "development"
+    process.env.NODE_ENV === "development" && process.env.VERCEL === "1"
       ? (await import("@repo/feature-flags/components/toolbar")).Toolbar
       : null;
 
@@ -45,12 +46,14 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
           ).toString()}
         >
           <ClerkProviderClient>
-            <QueryProvider>
-              <AuthHeader />
-              <AnalyticsProvider>{children}</AnalyticsProvider>
-              {Toolbar && <Toolbar />}
-              <Toaster />
-            </QueryProvider>
+            <ConvexClientProvider>
+              <QueryProvider>
+                <AuthHeader />
+                <AnalyticsProvider>{children}</AnalyticsProvider>
+                {Toolbar && <Toolbar />}
+                <Toaster />
+              </QueryProvider>
+            </ConvexClientProvider>
           </ClerkProviderClient>
         </DesignSystemProvider>
         {process.env.NODE_ENV === "production" && <VercelAnalytics />}

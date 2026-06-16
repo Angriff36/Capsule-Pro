@@ -1,0 +1,1451 @@
+{
+  "version": 1,
+  "note": "Baseline of compile-to-Convex architecture violations. CI blocks NEW (file, ruleId) pairs. Regenerate with --save-baseline only after intentional migration.",
+  "entries": [
+    {
+      "file": "apps/api/__tests__/activity-feed/activity-feed.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/admin/admin-extended.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/administrative/admin-tasks.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/ai/suggestions.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/analytics/analytics.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/board-annotations.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/board-connections.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/board-crud.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/collaboration.integration.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/simulations.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/command-board/smoke-board-health.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/communications/communications.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/communications/sms-automation-activate.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/conflicts/detect-route.stabilization.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/email-templates/templates.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/events/catering-order-lifecycle.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/events/event-lifecycle.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/facilities/facilities-commands.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/inventory/forecasting.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/inventory/inventory-item-crud.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/inventory/purchase-orders/purchase-order-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/__snapshots__/preptask-claim-command.snapshot.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/__snapshots__/universal-dispatcher.snapshot.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/event-confirm-prep-seed-runtime.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/kitchen-task-query-shape.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-all-phases-compilation.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-constraint-severity.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-event-preplist-seed-runtime.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-preptask-claim-conformance.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-preptask-runtime.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-recipe-ingredient-logic.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-role-policy-admin-only.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/prep-list-autogeneration.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/prep-list-inventory-demand-runtime.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/property-based-entity-invariants.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/recipes/recipe-ingredients-query.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/recipes/recipes.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/kitchen/update-with-version-route.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/logistics/logistics.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/logistics/shipments/shipment-commands.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/logistics/shipments/shipment-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/manifest-generic-read-routes.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/manifest/flip-durable-smoke.integration.test.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/__tests__/manifest/flip-durable-smoke.integration.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/misc/misc-domains-part2.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/outbox/publish.integration.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/payroll/manifest-payroll-data-source.test.ts",
+      "ruleId": "prisma-override",
+      "message": "prismaOverride is legacy Prisma transaction bridging."
+    },
+    {
+      "file": "apps/api/__tests__/payroll/payroll-deductions.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/payroll/payroll-periods.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/payroll/payroll-runs.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/procurement/purchase-orders/purchase-orders.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/procurement/requisitions/requisition-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/procurement/vendor-contracts/vendor-contract-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/procurement/vendors/vendors.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/public/contracts-proposals.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/rate-limiting/rate-limiter.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/realtime/outbox-e2e.integration.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/search/search.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/settings/settings.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/staff/auto-assignment.test.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/__tests__/staff/auto-assignment.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/staff/availability-validation.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/staff/employee-availability-lifecycle.test.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/staff/schedules/schedule-end-to-end.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/staff/shifts-validation.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/__tests__/test-helpers.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "apps/api/__tests__/training/training.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/activity-feed-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/audit-writer.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-event-sync-service.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-event-sync-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-inventory-sync-service.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-inventory-sync-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-invoice-sync-service.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/app/lib/goodshuffle-invoice-sync-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/inventory-forecasting.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/nowsta-sync-service.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/app/lib/nowsta-sync-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/recipe-costing.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/app/lib/recipe-costing.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/tenant.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/lib/webhook-dispatch.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/outbox/publish/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/webhooks/payments/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/app/webhooks/sentry/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/database.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/http-idempotency.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/manifest-runtime.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/manifest-runtime.ts",
+      "ruleId": "prisma-override",
+      "message": "prismaOverride is legacy Prisma transaction bridging."
+    },
+    {
+      "file": "apps/api/lib/manifest-runtime.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/manifest/execute-command.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/manifest/execute-saga.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/manifest/telemetry.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/payroll/manifest-payroll-data-source.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/payroll/manifest-payroll-data-source.ts",
+      "ruleId": "prisma-override",
+      "message": "prismaOverride is legacy Prisma transaction bridging."
+    },
+    {
+      "file": "apps/api/lib/payroll/manifest-payroll-data-source.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/prisma-utils.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/staff/auto-assignment.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/staff/auto-assignment.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/staff/labor-budget.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "apps/api/lib/staff/labor-budget.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/lib/staff/workforce-ai-optimizer.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/middleware/api-key-auth.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/middleware/rate-limiter.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/api/test-scripts/validate-outbox-e2e.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/administrative/admin-task-create-action.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/administrative/admin-task-status-action.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/events/date-picker-form.test.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/facilities/create-facility-action.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/kitchen/kitchen-page-query-shape.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/kitchen/recipes/recipe-detail-page.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/__tests__/marketing/leads-create-action.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/bank-reconciliation/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/chart-of-accounts/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/collections/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/financial-reporting/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/invoices/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/payment-methods/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/payments/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/accounting/revenue-recognition/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/chat/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/kanban/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/kanban/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/overview-boards/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/clients/actions/get-client-ltv.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/events/actions/get-event-profitability.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/events/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/executive/actions/get-executive-kpis.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/kitchen/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/multi-location/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/sales/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/staff/actions/get-employee-performance.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/analytics/staff/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/calendar/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/call-planner/drafts/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/call-planner/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/call-planner/proposals/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/contracts/[contractId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/contracts/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/communications/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/pipeline/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/[id]/edit/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/components/proposal-form.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/segmentation/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/venues/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/venues/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/battle-board/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/board/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/budget/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/contracts/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-details-client/event-overview-card.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-details-client/event-record-card.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-details-client/index.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-details-data.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-mutation-actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/guests/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/prep-task-contract.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/staff/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/timeline/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/event-dishes.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/event-saga-actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/event-summary.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/generate-proposal.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/setup-event-completely.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/task-breakdown.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/battle-boards/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/battle-boards/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/budgets/[budgetId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/catering/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/components/event-form.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/components/guest-management.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/contracts/[contractId]/contract-detail-client.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/contracts/[contractId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/contracts/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/importer.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/kitchen-dashboard/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/profitability/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/reports/[reportId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/reports/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/facilities/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/inventory/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/inventory/items/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/inventory/pricing-tiers/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/inventory/variance-reports/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/containers/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/inventory/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/prep-lists/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/prep-lists/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/prep-task-plan-workflows/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/production-board-client.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/quality-assurance/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/quality-assurance/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/cleanup/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/costing-actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/dishes/[dishId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/dishes/new/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/ingredients/new/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/menus/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/new/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/stations/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/task-card.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/tasks/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/tasks/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/analytics/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/email-workflows/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/leads/[leadId]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/leads/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/leads/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/sms-rules/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/notifications/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/payroll/overview/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/procurement/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/procurement/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/availability/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/leaderboard/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/requests/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/shifts/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/time-off/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/alerts/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-templates/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-templates/utils.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-workflows/constants.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/team/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/my-training/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/team/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/training/[id]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/training/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/warehouse/inventory/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/warehouse/pick-pack/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/warehouse/putaway/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(authenticated)/warehouse/receiving/reports/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(unauthenticated)/sign/contract/[token]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/(unauthenticated)/view/proposal/[token]/page.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/api/command-board/chat/tool-registry.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/api/ingredients/search/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/api/inventory/import/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/api/recipes/calculate-cost/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/api/search/route.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/battle-boards/resolve-event-board-href.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/command-board/manifest-plans.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/data/db.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/recipe-costing.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/staff/time-off/validation.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/app/lib/tenant.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/components/allergen-warning-banner.examples.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/components/allergen-warning-banner.tsx",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "apps/app/prisma/seed-recipe-ingredients.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/mcp-server/src/lib/runtime-factory.ts",
+      "ruleId": "create-manifest-runtime",
+      "message": "createManifestRuntime is runtime-interpreter path — call generated Convex mutations."
+    },
+    {
+      "file": "packages/mcp-server/src/lib/upstream-manifest-mcp.ts",
+      "ruleId": "store-provider",
+      "message": "storeProvider is runtime-interpreter path — not used in compile-to-Convex."
+    },
+    {
+      "file": "packages/mcp-server/src/plugins/governance-scanners.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/__tests__/outbound-webhook-service.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/email-notification-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/email-workflow-triggers.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/outbound-webhook-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/sms-automation-engine.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/notifications/sms-notification-service.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/realtime/src/outbox/create.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    },
+    {
+      "file": "packages/sentry-integration/__tests__/fixer-real.test.ts",
+      "ruleId": "repo-database-import",
+      "message": "Do not import @repo/database — use Convex client/queries."
+    }
+  ]
+}

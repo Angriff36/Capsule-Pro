@@ -1,4 +1,5 @@
 "use server";
+import { listProposalTemplates } from "@/app/lib/manifest-client.generated";
 
 /**
  * Proposal Template CRUD Server Actions
@@ -106,10 +107,7 @@ export async function getProposalTemplates(
     });
   }
 
-  const templates = await database.proposalTemplate.findMany({
-    where: whereClause,
-    orderBy: [{ isDefault: "desc" }, { name: "asc" }],
-  });
+  const templates = (await listProposalTemplates()).data;
 
   return templates.map(serializeDecimals) as ProposalTemplate[];
 }

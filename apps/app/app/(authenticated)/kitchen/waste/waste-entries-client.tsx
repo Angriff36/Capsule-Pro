@@ -24,6 +24,7 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { listInventoryItems } from "@/app/lib/inventory";
 import { apiFetch } from "@/app/lib/api";
 import { wasteEntryCreate } from "@/app/lib/manifest-client.generated";
 
@@ -124,17 +125,11 @@ export function WasteEntriesClient() {
 
     setIsSearching(async () => {
       try {
-        const response = await apiFetch(
-          `/api/inventory/items?search=${encodeURIComponent(query)}&limit=20`,
-          { credentials: "include" }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setFilteredItems(data.data || []);
-        } else {
-          setFilteredItems([]);
-        }
+        const result = await listInventoryItems({
+          search: query,
+          limit: 20,
+        });
+        setFilteredItems(result.data);
       } catch (error) {
         captureException(error);
         setFilteredItems([]);

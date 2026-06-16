@@ -1,5 +1,5 @@
+import { listClientInteractions, listEventStaffs, listKitchenTaskProgresses, listTimeEntries, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -72,79 +72,11 @@ const AnalyticsStaffPage = async () => {
     clientInteractions,
     taskProgress,
   ] = await Promise.all([
-    database.user.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [
-        { isActive: "desc" },
-        { firstName: "asc" },
-        { lastName: "asc" },
-      ],
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        employmentType: true,
-        isActive: true,
-        hireDate: true,
-      },
-    }),
-    database.timeEntry.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        clockIn: {
-          gte: ninetyDaysAgo,
-        },
-      },
-      select: {
-        employeeId: true,
-        clockIn: true,
-        clockOut: true,
-        breakMinutes: true,
-      },
-    }),
-    database.eventStaff.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        createdAt: { gte: ninetyDaysAgo },
-      },
-      select: {
-        staffMemberId: true,
-        shiftStart: true,
-        createdAt: true,
-      },
-    }),
-    database.clientInteraction.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        interactionDate: {
-          gte: ninetyDaysAgo,
-        },
-      },
-      select: {
-        employeeId: true,
-        interactionDate: true,
-      },
-    }),
-    database.kitchenTaskProgress.findMany({
-      where: {
-        tenantId,
-        createdAt: {
-          gte: ninetyDaysAgo,
-        },
-      },
-      select: {
-        employeeId: true,
-        createdAt: true,
-      },
-    }),
+    (await listUsers()).data,
+    (await listTimeEntries()).data,
+    (await listEventStaffs()).data,
+    (await listClientInteractions()).data,
+    (await listKitchenTaskProgresses()).data,
   ]);
 
   const metricsByEmployee = new Map<

@@ -1,5 +1,3 @@
-import type { email_trigger_type } from "@repo/database";
-
 export type EmailTriggerType = email_trigger_type;
 
 export const TRIGGER_TYPE_LABELS: Record<EmailTriggerType, string> = {

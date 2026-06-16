@@ -1,18 +1,17 @@
 /**
- * Scheduling domain queries.
+ * Scheduling domain queries — Convex-backed (no Prisma raw SQL).
  *
  * All functions wrapped with React cache() for per-request deduplication.
- * Every function scoped to a single tenant — no cross-tenant leakage.
- *
- * 12 raw SQL queries → 4 domain functions.
+ * Tenant scope comes from auth via read-bridge-server, not SQL tenant_id.
  */
 
 import { cache } from "react";
-import { Prisma, timedQueryRaw } from "../data/db";
-
-// ============================================================================
-// Types
-// ============================================================================
+import { fetchConvexList } from "../convex/read-bridge-server";
+import type {
+  OpenShift,
+  ScheduleShift,
+  User,
+} from "../manifest-types.generated";
 
 export interface StaffCount {
   count: number;
@@ -69,327 +68,297 @@ export interface SchedulingMetrics {
   previousStaff: StaffCount;
 }
 
-// ============================================================================
-// Metric queries — all 8 current/previous comparisons
-// ============================================================================
+type ShiftLike = ScheduleShift | OpenShift;
 
-/**
- * All 8 scheduling metrics for the current and previous week.
- * Half-open intervals [start, end) — no BETWEEN timestamp anti-patterns.
- */
+function isDeleted(deletedAt: unknown): boolean {
+  return deletedAt != null && deletedAt !== "";
+}
+
+function toDate(value: unknown): Date | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+  if (typeof value === "string" && value.length > 0) return new Date(value);
+  return null;
+}
+
+function shiftStart(shift: ShiftLike): Date | null {
+  const raw =
+    (shift as Record<string, unknown>).shift_start ??
+    (shift as Record<string, unknown>).shiftStart;
+  return toDate(raw);
+}
+
+function shiftEnd(shift: ShiftLike): Date | null {
+  const raw =
+    (shift as Record<string, unknown>).shift_end ??
+    (shift as Record<string, unknown>).shiftEnd;
+  return toDate(raw);
+}
+
+function shiftHours(shift: ShiftLike): number {
+  const start = shiftStart(shift);
+  const end = shiftEnd(shift);
+  if (!start || !end) return 0;
+  return Math.max(0, (end.getTime() - start.getTime()) / 3_600_000);
+}
+
+function inHalfOpenRange(value: Date, start: Date, end: Date): boolean {
+  return value >= start && value < end;
+}
+
+function startOfDay(value: Date): Date {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function hourlyRate(user: User): number {
+  if (user.hourlyRate != null) return Number(user.hourlyRate);
+  if (user.salaryAnnual != null) return Number(user.salaryAnnual) / 2080;
+  return 0;
+}
+
+function activeUsers(users: User[]): User[] {
+  return users.filter((user) => !isDeleted(user.deletedAt) && user.isActive);
+}
+
+function activeShifts(shifts: ScheduleShift[]): ScheduleShift[] {
+  return shifts.filter((shift) => !isDeleted(shift.deletedAt));
+}
+
+function openShiftsInWeek(
+  shifts: OpenShift[],
+  weekStart: Date,
+  weekEnd: Date
+): OpenShift[] {
+  return shifts.filter((shift) => {
+    if (shift.status !== "open") return false;
+    const start = shiftStart(shift);
+    return start != null && inHalfOpenRange(start, weekStart, weekEnd);
+  });
+}
+
+const loadSchedulingData = cache(async () => {
+  const [users, shifts, openShifts] = await Promise.all([
+    fetchConvexList("User") as Promise<User[]>,
+    fetchConvexList("ScheduleShift") as Promise<ScheduleShift[]>,
+    fetchConvexList("OpenShift") as Promise<OpenShift[]>,
+  ]);
+  return { users, shifts, openShifts };
+});
+
 export const getSchedulingMetrics = cache(
   async (
-    tenantId: string,
+    _tenantId: string,
     weekStart: Date,
     weekEnd: Date,
     previousWeekStart: Date
   ): Promise<SchedulingMetrics> => {
-    const [
-      currentStaffRows,
-      previousStaffRows,
-      currentHoursRows,
-      previousHoursRows,
-      openShiftRows,
-      previousOpenShiftRows,
-      currentCostRows,
-      previousCostRows,
-    ] = await Promise.all([
-      timedQueryRaw<StaffCount[]>(
-        Prisma.sql`
-          SELECT COUNT(*)::int AS count
-          FROM tenant_staff.employees
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND is_active = true
-        `,
-        "scheduling.staffCount.current"
-      ),
-      timedQueryRaw<StaffCount[]>(
-        Prisma.sql`
-          SELECT COUNT(*)::int AS count
-          FROM tenant_staff.employees
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND is_active = true
-            AND created_at < ${weekStart}
-        `,
-        "scheduling.staffCount.previous"
-      ),
-      timedQueryRaw<HoursTotal[]>(
-        Prisma.sql`
-          SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
-          FROM tenant_staff.schedule_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND shift_start >= ${weekStart}
-            AND shift_start < ${weekEnd}
-        `,
-        "scheduling.hours.current"
-      ),
-      timedQueryRaw<HoursTotal[]>(
-        Prisma.sql`
-          SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
-          FROM tenant_staff.schedule_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND shift_start >= ${previousWeekStart}
-            AND shift_start < ${weekStart}
-        `,
-        "scheduling.hours.previous"
-      ),
-      timedQueryRaw<OpenShiftCount[]>(
-        Prisma.sql`
-          SELECT COUNT(*)::int AS count
-          FROM tenant_staff.open_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND status = 'open'
-            AND shift_start >= ${weekStart}
-            AND shift_start < ${weekEnd}
-        `,
-        "scheduling.openShifts.current"
-      ),
-      timedQueryRaw<OpenShiftCount[]>(
-        Prisma.sql`
-          SELECT COUNT(*)::int AS count
-          FROM tenant_staff.open_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND status = 'open'
-            AND shift_start >= ${previousWeekStart}
-            AND shift_start < ${weekStart}
-        `,
-        "scheduling.openShifts.previous"
-      ),
-      timedQueryRaw<LaborCost[]>(
-        Prisma.sql`
-          SELECT COALESCE(
-            SUM(
-              EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
-              CASE
-                WHEN e.hourly_rate IS NOT NULL THEN e.hourly_rate
-                WHEN e.salary_annual IS NOT NULL THEN e.salary_annual / 2080
-                ELSE 0
-              END
-            ),
-            0
-          ) AS cost
-          FROM tenant_staff.schedule_shifts s
-          JOIN tenant_staff.employees e
-            ON e.tenant_id = s.tenant_id
-           AND e.id = s.employee_id
-          WHERE s.tenant_id = ${tenantId}
-            AND s.deleted_at IS NULL
-            AND s.shift_start >= ${weekStart}
-            AND s.shift_start < ${weekEnd}
-        `,
-        "scheduling.cost.current"
-      ),
-      timedQueryRaw<LaborCost[]>(
-        Prisma.sql`
-          SELECT COALESCE(
-            SUM(
-              EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
-              CASE
-                WHEN e.hourly_rate IS NOT NULL THEN e.hourly_rate
-                WHEN e.salary_annual IS NOT NULL THEN e.salary_annual / 2080
-                ELSE 0
-              END
-            ),
-            0
-          ) AS cost
-          FROM tenant_staff.schedule_shifts s
-          JOIN tenant_staff.employees e
-            ON e.tenant_id = s.tenant_id
-           AND e.id = s.employee_id
-          WHERE s.tenant_id = ${tenantId}
-            AND s.deleted_at IS NULL
-            AND s.shift_start >= ${previousWeekStart}
-            AND s.shift_start < ${weekStart}
-        `,
-        "scheduling.cost.previous"
-      ),
-    ]);
+    const { users, shifts, openShifts } = await loadSchedulingData();
+    const employees = activeUsers(users);
+    const scheduled = activeShifts(shifts);
+
+    const currentStaff = employees.length;
+    const previousStaff = employees.filter((user) => {
+      const created = toDate(user.createdAt);
+      return created != null && created < weekStart;
+    }).length;
+
+    const sumHours = (start: Date, end: Date) =>
+      scheduled.reduce((total, shift) => {
+        const shiftStartDate = shiftStart(shift);
+        if (!shiftStartDate || !inHalfOpenRange(shiftStartDate, start, end)) {
+          return total;
+        }
+        return total + shiftHours(shift);
+      }, 0);
+
+    const countOpen = (start: Date, end: Date) =>
+      openShiftsInWeek(openShifts, start, end).length;
+
+    const usersById = new Map(employees.map((user) => [user.id, user]));
+
+    const sumCost = (start: Date, end: Date) =>
+      scheduled.reduce((total, shift) => {
+        const shiftStartDate = shiftStart(shift);
+        if (!shiftStartDate || !inHalfOpenRange(shiftStartDate, start, end)) {
+          return total;
+        }
+        const employee = usersById.get(shift.employeeId);
+        return total + shiftHours(shift) * (employee ? hourlyRate(employee) : 0);
+      }, 0);
 
     return {
-      currentStaff: currentStaffRows[0] ?? { count: 0 },
-      previousStaff: previousStaffRows[0] ?? { count: 0 },
-      currentHours: currentHoursRows[0] ?? { hours: 0 },
-      previousHours: previousHoursRows[0] ?? { hours: 0 },
-      openShifts: openShiftRows[0] ?? { count: 0 },
-      previousOpenShifts: previousOpenShiftRows[0] ?? { count: 0 },
-      currentCost: currentCostRows[0] ?? { cost: 0 },
-      previousCost: previousCostRows[0] ?? { cost: 0 },
+      currentStaff: { count: currentStaff },
+      previousStaff: { count: previousStaff },
+      currentHours: { hours: sumHours(weekStart, weekEnd) },
+      previousHours: { hours: sumHours(previousWeekStart, weekStart) },
+      openShifts: { count: countOpen(weekStart, weekEnd) },
+      previousOpenShifts: { count: countOpen(previousWeekStart, weekStart) },
+      currentCost: { cost: sumCost(weekStart, weekEnd) },
+      previousCost: { cost: sumCost(previousWeekStart, weekStart) },
     };
   }
 );
 
-// ============================================================================
-// Schedule cadence — day-by-day shift summary + week totals
-// ============================================================================
-
 export const getScheduleCadence = cache(
   async (
-    tenantId: string,
+    _tenantId: string,
     weekStart: Date,
     weekEnd: Date
   ): Promise<{
     shiftSummary: ScheduleSummaryRow[];
     shiftTotals: ShiftTotals;
   }> => {
-    const [shiftSummary, totals] = await Promise.all([
-      timedQueryRaw<ScheduleSummaryRow[]>(
-        Prisma.sql`
-          WITH scheduled AS (
-            SELECT
-              date_trunc('day', shift_start) AS shift_date,
-              COUNT(*)::int AS shift_count,
-              COUNT(DISTINCT employee_id)::int AS staff_count
-            FROM tenant_staff.schedule_shifts
-            WHERE tenant_id = ${tenantId}
-              AND deleted_at IS NULL
-              AND shift_start >= ${weekStart}
-              AND shift_start < ${weekEnd}
-            GROUP BY shift_date
-          ),
-          open AS (
-            SELECT
-              date_trunc('day', shift_start) AS shift_date,
-              COUNT(*)::int AS open_count
-            FROM tenant_staff.open_shifts
-            WHERE tenant_id = ${tenantId}
-              AND deleted_at IS NULL
-              AND status = 'open'
-              AND shift_start >= ${weekStart}
-              AND shift_start < ${weekEnd}
-            GROUP BY shift_date
-          )
-          SELECT
-            COALESCE(s.shift_date, o.shift_date) AS shift_date,
-            COALESCE(s.shift_count, 0) + COALESCE(o.open_count, 0) AS shift_count,
-            COALESCE(s.staff_count, 0) AS staff_count,
-            COALESCE(o.open_count, 0) AS open_count
-          FROM scheduled s
-          FULL OUTER JOIN open o ON o.shift_date = s.shift_date
-        `,
-        "scheduling.shiftSummary"
-      ),
-      timedQueryRaw<ShiftTotals[]>(
-        Prisma.sql`
-          SELECT
-            (
-              SELECT COUNT(*)::int
-              FROM tenant_staff.schedule_shifts
-              WHERE tenant_id = ${tenantId}
-                AND deleted_at IS NULL
-                AND shift_start >= ${weekStart}
-                AND shift_start < ${weekEnd}
-            ) +
-            (
-              SELECT COUNT(*)::int
-              FROM tenant_staff.open_shifts
-              WHERE tenant_id = ${tenantId}
-                AND deleted_at IS NULL
-                AND status = 'open'
-                AND shift_start >= ${weekStart}
-                AND shift_start < ${weekEnd}
-            ) AS shift_count,
-            (
-              SELECT COUNT(DISTINCT employee_id)::int
-              FROM tenant_staff.schedule_shifts
-              WHERE tenant_id = ${tenantId}
-                AND deleted_at IS NULL
-                AND shift_start >= ${weekStart}
-                AND shift_start < ${weekEnd}
-            ) AS staff_count
-        `,
-        "scheduling.shiftTotals"
-      ),
-    ]);
+    const { shifts, openShifts } = await loadSchedulingData();
+    const scheduled = activeShifts(shifts);
+    const byDay = new Map<
+      string,
+      { shift_count: number; staff_count: Set<string>; open_count: number }
+    >();
+
+    for (const shift of scheduled) {
+      const start = shiftStart(shift);
+      if (!start || !inHalfOpenRange(start, weekStart, weekEnd)) continue;
+      const key = startOfDay(start).toISOString();
+      const row = byDay.get(key) ?? {
+        shift_count: 0,
+        staff_count: new Set<string>(),
+        open_count: 0,
+      };
+      row.shift_count += 1;
+      row.staff_count.add(shift.employeeId);
+      byDay.set(key, row);
+    }
+
+    for (const shift of openShiftsInWeek(openShifts, weekStart, weekEnd)) {
+      const start = shiftStart(shift);
+      if (!start) continue;
+      const key = startOfDay(start).toISOString();
+      const row = byDay.get(key) ?? {
+        shift_count: 0,
+        staff_count: new Set<string>(),
+        open_count: 0,
+      };
+      row.open_count += 1;
+      row.shift_count += 1;
+      byDay.set(key, row);
+    }
+
+    const shiftSummary: ScheduleSummaryRow[] = [...byDay.entries()]
+      .map(([iso, row]) => ({
+        shift_date: new Date(iso),
+        shift_count: row.shift_count,
+        staff_count: row.staff_count.size,
+        open_count: row.open_count,
+      }))
+      .sort((a, b) => a.shift_date.getTime() - b.shift_date.getTime());
+
+    const weekScheduled = scheduled.filter((shift) => {
+      const start = shiftStart(shift);
+      return start != null && inHalfOpenRange(start, weekStart, weekEnd);
+    });
 
     return {
       shiftSummary,
-      shiftTotals: totals[0] ?? { shift_count: 0, staff_count: 0 },
+      shiftTotals: {
+        shift_count:
+          weekScheduled.length +
+          openShiftsInWeek(openShifts, weekStart, weekEnd).length,
+        staff_count: new Set(weekScheduled.map((shift) => shift.employeeId))
+          .size,
+      },
     };
   }
 );
 
-// ============================================================================
-// Live view — shifts happening today (scheduled + open, max 6)
-// ============================================================================
-
 export const getHappeningToday = cache(
   async (
-    tenantId: string,
+    _tenantId: string,
     startOfToday: Date,
     endOfToday: Date
-  ): Promise<HappeningShiftRow[]> =>
-    timedQueryRaw<HappeningShiftRow[]>(
-      Prisma.sql`
-        SELECT
-          s.shift_start,
-          s.shift_end,
-          e.first_name,
-          e.last_name,
-          e.role
-        FROM tenant_staff.schedule_shifts s
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = s.tenant_id
-         AND e.id = s.employee_id
-        WHERE s.tenant_id = ${tenantId}
-          AND s.deleted_at IS NULL
-          AND s.shift_start >= ${startOfToday}
-          AND s.shift_start < ${endOfToday}
-        UNION ALL
-        SELECT
-          o.shift_start,
-          o.shift_end,
-          NULL::text AS first_name,
-          NULL::text AS last_name,
-          o.role_during_shift AS role
-        FROM tenant_staff.open_shifts o
-        WHERE o.tenant_id = ${tenantId}
-          AND o.deleted_at IS NULL
-          AND o.status = 'open'
-          AND o.shift_start >= ${startOfToday}
-          AND o.shift_start < ${endOfToday}
-        ORDER BY shift_start
-        LIMIT 6
-      `,
-      "scheduling.happeningToday"
-    )
-);
+  ): Promise<HappeningShiftRow[]> => {
+    const { users, shifts, openShifts } = await loadSchedulingData();
+    const usersById = new Map(activeUsers(users).map((user) => [user.id, user]));
+    const rows: HappeningShiftRow[] = [];
 
-// ============================================================================
-// Leaderboard — top 3 shift-claimers this week
-// ============================================================================
+    for (const shift of activeShifts(shifts)) {
+      const start = shiftStart(shift);
+      const end = shiftEnd(shift);
+      if (!start || !end || !inHalfOpenRange(start, startOfToday, endOfToday)) {
+        continue;
+      }
+      const employee = usersById.get(shift.employeeId);
+      rows.push({
+        shift_start: start,
+        shift_end: end,
+        first_name: employee?.firstName ?? null,
+        last_name: employee?.lastName ?? null,
+        role: employee?.role ?? null,
+      });
+    }
+
+    for (const shift of openShifts) {
+      if (shift.status !== "open") continue;
+      const start = shiftStart(shift);
+      const end = shiftEnd(shift);
+      if (!start || !end || !inHalfOpenRange(start, startOfToday, endOfToday)) {
+        continue;
+      }
+      rows.push({
+        shift_start: start,
+        shift_end: end,
+        first_name: null,
+        last_name: null,
+        role:
+          ((shift as Record<string, unknown>).role_during_shift as
+            | string
+            | undefined) ??
+          shift.role ??
+          null,
+      });
+    }
+
+    return rows
+      .sort((a, b) => a.shift_start.getTime() - b.shift_start.getTime())
+      .slice(0, 6);
+  }
+);
 
 export const getLeaderboard = cache(
   async (
-    tenantId: string,
+    _tenantId: string,
     weekStart: Date,
     weekEnd: Date
-  ): Promise<LeaderboardRow[]> =>
-    timedQueryRaw<LeaderboardRow[]>(
-      Prisma.sql`
-        SELECT
-          s.employee_id AS "employeeId",
-          e.first_name,
-          e.last_name,
-          e.role,
-          COUNT(*)::int AS shift_count
-        FROM tenant_staff.schedule_shifts s
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = s.tenant_id
-         AND e.id = s.employee_id
-        WHERE s.tenant_id = ${tenantId}
-          AND s.deleted_at IS NULL
-          AND s.shift_start >= ${weekStart}
-          AND s.shift_start < ${weekEnd}
-        GROUP BY s.employee_id, e.first_name, e.last_name, e.role
-        ORDER BY shift_count DESC, e.last_name ASC
-        LIMIT 3
-      `,
-      "scheduling.leaderboard"
-    )
+  ): Promise<LeaderboardRow[]> => {
+    const { users, shifts } = await loadSchedulingData();
+    const usersById = new Map(activeUsers(users).map((user) => [user.id, user]));
+    const counts = new Map<string, number>();
+
+    for (const shift of activeShifts(shifts)) {
+      const start = shiftStart(shift);
+      if (!start || !inHalfOpenRange(start, weekStart, weekEnd)) continue;
+      counts.set(shift.employeeId, (counts.get(shift.employeeId) ?? 0) + 1);
+    }
+
+    return [...counts.entries()]
+      .map(([employeeId, shift_count]) => {
+        const employee = usersById.get(employeeId);
+        return {
+          employeeId,
+          shift_count,
+          first_name: employee?.firstName ?? null,
+          last_name: employee?.lastName ?? null,
+          role: employee?.role ?? null,
+        };
+      })
+      .sort((a, b) => {
+        if (b.shift_count !== a.shift_count) {
+          return b.shift_count - a.shift_count;
+        }
+        return (a.last_name ?? "").localeCompare(b.last_name ?? "");
+      })
+      .slice(0, 3);
+  }
 );

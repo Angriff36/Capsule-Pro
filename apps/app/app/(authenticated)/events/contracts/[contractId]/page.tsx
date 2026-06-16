@@ -1,3 +1,4 @@
+import { listContractSignatures } from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractDetailPage
  * @intent Display full contract details with signatures, document viewer, and actions
@@ -107,16 +108,7 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
     ReturnType<typeof database.contractSignature.findMany>
   >;
   try {
-    signatures = await database.contractSignature.findMany({
-      where: {
-        tenantId,
-        contractId: id,
-        deletedAt: null,
-      },
-      orderBy: {
-        signedAt: "desc",
-      },
-    });
+    signatures = (await listContractSignatures()).data;
   } catch {
     signatures = [];
   }

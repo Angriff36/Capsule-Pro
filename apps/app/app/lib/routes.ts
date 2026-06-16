@@ -169,13 +169,6 @@ export const eventsExportCsv = (eventId: string): string =>
 // Inventory
 // ---------------------------------------------------------------------------
 
-/** GET /api/inventory/items */
-export const inventoryItems = (): string => "/api/inventory/items";
-
-/** GET /api/inventory/items/:id */
-export const inventoryItemById = (id: string): string =>
-  `/api/inventory/items/${encodeURIComponent(id)}`;
-
 /** POST /api/inventory/stock-levels/adjust */
 export const inventoryStockLevelsAdjust = (): string =>
   "/api/inventory/stock-levels/adjust";

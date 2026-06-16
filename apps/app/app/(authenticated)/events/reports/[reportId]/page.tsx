@@ -1,3 +1,4 @@
+import { getEventReport } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { notFound } from "next/navigation";
@@ -21,13 +22,7 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
 
   let report;
   try {
-    report = await database.eventReport.findFirst({
-      where: {
-        id: reportId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
+    report = await getEventReport(reportId);
   } catch {
     notFound();
   }

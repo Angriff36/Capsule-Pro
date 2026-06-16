@@ -1,9 +1,22 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import { loadEventRecord } from "@/app/lib/convex/domain-loaders";
+import { loadEventDishesSummary } from "@/app/lib/convex/event-domain-loaders";
+import {
+  loadRecipeIngredientsForVersions,
+  loadRecipeVersionsForRecipes,
+} from "@/app/lib/convex/event-recipe-loaders";
+import {
+  activeTenantRows,
+  convexDocId,
+  msToDate,
+  serverListEntity,
+} from "@/app/lib/convex/server-reads";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 interface StationMapping {
   color: string;
@@ -136,79 +149,42 @@ export async function generatePrepList(
   const tenantId = await getTenantIdForOrg(orgId);
   const batchMultiplier = input.batchMultiplier ?? 1;
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: input.eventId,
-    },
-  });
-
-  if (!event) {
+  const eventDoc = await loadEventRecord(tenantId, input.eventId);
+  if (!eventDoc) {
     throw new Error("Event not found");
   }
 
-  const eventDishes = await database.$queryRaw<
-    Array<{
-      dishId: string;
-      dishName: string;
-      recipeId: string | null;
-      recipe_name: string | null;
-      recipeVersionId: string | null;
-      yield_quantity: number | null;
-      yield_unit: string | null;
-      prep_time_minutes: number | null;
-      cook_time_minutes: number | null;
-      recipe_category: string | null;
-      recipe_tags: string[];
-      min_prep_lead_days: number;
-      dietary_tags: string[];
-      course: string | null;
-      quantity_servings: number;
-      presentation_image_url: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT 
-        ed.dish_id AS "dishId",
-        d.name AS dishName,
-        d.recipe_id AS "recipeId",
-        r.name AS recipe_name,
-        rv.id AS recipeVersionId,
-        rv.yield_quantity,
-        u.code AS yield_unit,
-        rv.prep_time_minutes,
-        rv.cook_time_minutes,
-        r.category AS recipe_category,
-        r.tags AS recipe_tags,
-        d.min_prep_lead_days,
-        d.dietary_tags,
-        ed.course,
-        ed.quantity_servings,
-        d.presentation_image_url
-      FROM tenant_events.event_dishes ed
-      JOIN tenant_kitchen.dishes d 
-        ON d.tenant_id = ed.tenant_id 
-        AND d.id = ed.dish_id 
-        AND d.deleted_at IS NULL
-      LEFT JOIN tenant_kitchen.recipes r
-        ON r.tenant_id = d.tenant_id
-        AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
-      LEFT JOIN LATERAL (
-        SELECT rv.*
-        FROM tenant_kitchen.recipe_versions rv
-        WHERE rv.tenant_id = r.tenant_id
-          AND rv.recipe_id = r.id
-          AND rv.deleted_at IS NULL
-        ORDER BY rv.version_number DESC
-        LIMIT 1
-      ) rv ON true
-      LEFT JOIN core.units u ON u.id = rv.yield_unit_id
-      WHERE ed.tenant_id = ${tenantId}
-        AND ed.event_id = ${input.eventId}
-        AND ed.deleted_at IS NULL
-      ORDER BY ed.course ASC, d.name ASC
-    `
+  const event = {
+    id: convexDocId(eventDoc),
+    title: String(eventDoc.title ?? ""),
+    eventDate: msToDate(eventDoc.eventDate) ?? new Date(),
+    guestCount: Number(eventDoc.guestCount ?? 0),
+  };
+
+  const eventDishes = await loadEventDishesSummary(tenantId, input.eventId);
+  const dishById = new Map(
+    activeTenantRows(await serverListEntity("Dish")).map((dish) => [
+      convexDocId(dish),
+      dish,
+    ])
+  );
+  const recipeById = new Map(
+    activeTenantRows(await serverListEntity("Recipe")).map((recipe) => [
+      convexDocId(recipe),
+      recipe,
+    ])
+  );
+
+  const recipeIds = [
+    ...new Set(
+      eventDishes
+        .map((row) => row.recipeId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const versionRows = await loadRecipeVersionsForRecipes(tenantId, recipeIds);
+  const versionByRecipeId = new Map(
+    versionRows.map((row) => [row.recipeId, row])
   );
 
   if (eventDishes.length === 0) {
@@ -232,38 +208,41 @@ export async function generatePrepList(
     };
   }
 
-  const dishes: DishInfo[] = eventDishes.map((dish): DishInfo => {
-    const recipeInfo = dish.recipeVersionId
+  const dishes: DishInfo[] = eventDishes.map((row): DishInfo => {
+    const dishDoc = dishById.get(row.dishId);
+    const recipeDoc = row.recipeId ? recipeById.get(row.recipeId) : undefined;
+    const version = row.recipeId ? versionByRecipeId.get(row.recipeId) : undefined;
+
+    const recipeInfo = version
       ? {
-          id: dish.recipeId ?? "",
-          name: dish.recipe_name ?? "",
-          versionId: dish.recipeVersionId,
-          yieldQuantity: dish.yield_quantity ?? 1,
-          yieldUnit: dish.yield_unit ?? "portion",
-          prepTimeMinutes: dish.prep_time_minutes,
-          cookTimeMinutes: dish.cook_time_minutes,
-          category: dish.recipe_category,
-          tags: dish.recipe_tags ?? [],
+          id: row.recipeId ?? "",
+          name: row.recipeName ?? String(recipeDoc?.name ?? ""),
+          versionId: version.versionId,
+          yieldQuantity: version.yieldQuantity,
+          yieldUnit: version.yieldUnitCode ?? "portion",
+          prepTimeMinutes: version.prepTimeMinutes,
+          cookTimeMinutes: version.cookTimeMinutes,
+          category: (recipeDoc?.category as string | null) ?? null,
+          tags: Array.isArray(recipeDoc?.tags)
+            ? (recipeDoc.tags as string[])
+            : [],
         }
       : null;
 
     return {
-      id: dish.dishId,
-      name: dish.dishName,
-      recipeId: dish.recipeId,
+      id: row.dishId,
+      name: row.name,
+      recipeId: row.recipeId,
       recipeInfo,
-      minPrepLeadDays: dish.min_prep_lead_days,
-      dietaryTags: dish.dietary_tags ?? [],
+      minPrepLeadDays: Number(dishDoc?.minPrepLeadDays ?? 0),
+      dietaryTags: row.dietaryTags ?? [],
       servingPortion: 1,
-      course: dish.course,
-      quantityServings: dish.quantity_servings,
+      course: row.course,
+      quantityServings: row.quantityServings,
     };
   });
 
-  const allIngredients = await getAllRecipeIngredients(
-    tenantId,
-    dishes.filter((d) => d.recipeInfo !== null)
-  );
+  const allIngredients = await getAllRecipeIngredients(tenantId, dishes.filter((d) => d.recipeInfo !== null));
 
   const stationLists = groupIngredientsByStation(
     allIngredients,
@@ -298,7 +277,7 @@ export async function generatePrepList(
 }
 
 async function getAllRecipeIngredients(
-  _tenantId: string,
+  tenantId: string,
   dishesWithRecipes: DishInfo[]
 ): Promise<
   Array<{
@@ -326,80 +305,43 @@ async function getAllRecipeIngredients(
     return d.recipeInfo.versionId;
   });
 
-  const results = await database.$queryRaw<
-    Array<{
-      dishId: string;
-      dishName: string;
-      recipeVersionId: string;
-      ingredient_id: string;
-      ingredient_name: string;
-      quantity: number;
-      unit_code: string;
-      category: string | null;
-      is_optional: boolean;
-      preparation_notes: string | null;
-      allergens: string[];
-    }>
-  >(
-    Prisma.sql`
-      SELECT 
-        d.id AS "dishId",
-        d.name AS "dishName",
-        ri.recipe_version_id AS "recipeVersionId",
-        ri.ingredient_id,
-        i.name AS ingredient_name,
-        ri.quantity,
-        u.code AS unit_code,
-        i.category,
-        ri.is_optional,
-        ri.preparation_notes,
-        i.allergens
-      FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id
-      JOIN tenant_kitchen.recipe_ingredients ri 
-        ON ri.recipe_version_id = rv_id 
-        AND ri.deleted_at IS NULL
-      JOIN tenant_kitchen.ingredients i 
-        ON i.tenant_id = ri.tenant_id 
-        AND i.id = ri.ingredient_id 
-        AND i.deleted_at IS NULL
-      LEFT JOIN core.units u ON u.id = ri.unit_id
-      CROSS JOIN LATERAL (
-        SELECT d.id, d.name, d.recipe_id AS "recipeId"
-        FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id_inner
-        JOIN tenant_kitchen.recipe_versions rv 
-          ON rv.id = rv_id_inner 
-          AND rv.deleted_at IS NULL
-        JOIN tenant_kitchen.dishes d 
-          ON d.tenant_id = rv.tenant_id 
-          AND d.recipe_id = rv.recipe_id 
-          AND d.deleted_at IS NULL
-        WHERE d.recipe_id IN (
-          SELECT r.id 
-          FROM tenant_kitchen.recipes r 
-          WHERE r.id IN (
-            SELECT rv.recipe_id 
-            FROM tenant_kitchen.recipe_versions rv 
-            WHERE rv.id = rv_id
-          )
-        )
-        LIMIT 1
-      ) d ON true
-    `
+  const ingredientRows = await loadRecipeIngredientsForVersions(
+    tenantId,
+    recipeVersionIds
   );
 
-  return results.map((row) => ({
-    dishId: row.dishId,
-    dishName: row.dishName,
-    recipeVersionId: row.recipeVersionId,
-    ingredientId: row.ingredient_id,
-    ingredientName: row.ingredient_name,
-    quantity: row.quantity,
-    unitCode: row.unit_code,
-    category: row.category,
-    isOptional: row.is_optional,
-    preparationNotes: row.preparation_notes,
-    allergens: row.allergens,
-  }));
+  const dishByVersionId = new Map(
+    dishesWithRecipes.map((d) => [d.recipeInfo!.versionId, d])
+  );
+
+  const ingredientDocs = new Map(
+    activeTenantRows(await serverListEntity("Ingredient")).map((ing) => [
+      convexDocId(ing),
+      ing,
+    ])
+  );
+
+  return ingredientRows.map((row) => {
+    const dish = dishByVersionId.get(row.recipeVersionId);
+    const ingredientDoc = ingredientDocs.get(row.ingredientId);
+    const allergens = Array.isArray(ingredientDoc?.allergens)
+      ? (ingredientDoc.allergens as string[])
+      : [];
+
+    return {
+      dishId: dish?.id ?? "",
+      dishName: dish?.name ?? "",
+      recipeVersionId: row.recipeVersionId,
+      ingredientId: row.ingredientId,
+      ingredientName: row.ingredientName,
+      quantity: row.quantity,
+      unitCode: row.unitCode ?? "",
+      category: (ingredientDoc?.category as string | null) ?? null,
+      isOptional: row.isOptional,
+      preparationNotes: row.preparationNotes,
+      allergens,
+    };
+  });
 }
 
 function groupIngredientsByStation(
@@ -692,40 +634,39 @@ export async function savePrepListToProductionBoard(
 ): Promise<{ success: boolean; taskId?: string; error?: string }> {
   const { orgId, userId } = await auth();
 
-  const orgIdMissing = !orgId;
-  const userIdMissing = !userId;
-
-  if (orgIdMissing || userIdMissing) {
+  if (!(orgId && userId)) {
     return { success: false, error: "Unauthorized" };
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
 
   try {
+    const existingTasks = activeTenantRows(await serverListEntity("PrepTask")).filter(
+      (task) => String(task.eventId) === eventId
+    );
+
     for (const station of prepList.stationLists) {
       if (station.ingredients.length === 0) {
         continue;
       }
 
       for (const task of station.tasks) {
-        const existingTask = await database.$queryRaw<Array<{ id: string }>>(
-          Prisma.sql`
-            SELECT id
-            FROM tenant_kitchen.prep_tasks
-            WHERE tenant_id = ${tenantId}
-              AND event_id = ${eventId}
-              AND name = ${task.name}
-              AND status = 'pending'
-              AND deleted_at IS NULL
-            LIMIT 1
-          `
+        const duplicate = existingTasks.some(
+          (row) =>
+            String(row.name ?? "") === task.name &&
+            String(row.status ?? "") === "pending"
         );
-
-        if (existingTask.length > 0) {
+        if (duplicate) {
           continue;
         }
 
-        const ingredientsJson = JSON.stringify(
+        const dueMs = new Date(task.dueDate).getTime();
+        const quantityTotal = station.ingredients.reduce(
+          (sum, ing) => sum + ing.scaledQuantity,
+          0
+        );
+        const notes = JSON.stringify(
           station.ingredients.map((ing) => ({
             name: ing.ingredientName,
             quantity: ing.scaledQuantity,
@@ -734,41 +675,31 @@ export async function savePrepListToProductionBoard(
           }))
         );
 
-        await database.$executeRaw`
-          INSERT INTO tenant_kitchen.prep_tasks (
-            tenant_id,
-            event_id,
-            task_type,
-            name,
-            quantity_total,
-            quantity_unit_id,
-            quantity_completed,
-            servings_total,
-            start_by_date,
-            due_by_date,
-            status,
-            priority,
+        const result = await runManifestCommand({
+          entity: "PrepTask",
+          command: "create",
+          body: {
+            name: task.name,
+            eventId,
+            prepListId: "",
+            taskType: "prep",
+            priority: task.priority,
+            quantityTotal,
+            quantityUnitId: 0,
+            servingsTotal: prepList.guestCount,
+            startByDate: dueMs,
+            dueByDate: dueMs,
             notes,
-            created_at,
-            updated_at
-          ) VALUES (
-            ${tenantId},
-            ${eventId},
-            'prep',
-            ${task.name},
-            ${station.ingredients.reduce((sum, ing) => sum + ing.scaledQuantity, 0)},
-            1,
-            0,
-            ${prepList.guestCount},
-            ${new Date(task.dueDate).toISOString().split("T")[0]},
-            ${new Date(task.dueDate).toISOString().split("T")[0]},
-            'pending',
-            ${task.priority},
-            ${ingredientsJson},
-            ${new Date()},
-            ${new Date()}
-          )
-        `;
+          },
+          user: { id: user.id, tenantId, role: user.role },
+        });
+
+        if (!result.ok) {
+          return {
+            success: false,
+            error: result.message ?? "Failed to create prep task",
+          };
+        }
       }
     }
 
@@ -779,9 +710,6 @@ export async function savePrepListToProductionBoard(
   }
 }
 
-/**
- * Save a generated prep list to the database for later viewing/editing
- */
 export async function savePrepListToDatabase(
   eventId: string,
   prepList: PrepListGenerationResult,
@@ -794,85 +722,76 @@ export async function savePrepListToDatabase(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
 
   try {
-    // Calculate total estimated time
-    const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60); // Convert to minutes
+    const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60);
+    const prepListName = name || `${prepList.eventTitle} - Prep List`;
 
-    // Create the prep list
-    const result = await database.$queryRaw<Array<{ id: string }>>`
-      INSERT INTO tenant_kitchen.prep_lists (
-        tenant_id,
-        event_id,
-        name,
-        batch_multiplier,
-        dietary_restrictions,
-        status,
-        total_items,
-        total_estimated_time
-      ) VALUES (
-        ${tenantId},
-        ${eventId},
-        ${name || `${prepList.eventTitle} - Prep List`},
-        ${prepList.batchMultiplier},
-        ${prepList.dietaryRestrictions || []},
-        'draft',
-        ${prepList.totalIngredients},
-        ${totalEstimatedTime}
-      )
-      RETURNING id
-    `;
+    const createResult = await runManifestCommand({
+      entity: "PrepList",
+      command: "create",
+      body: {
+        eventId,
+        name: prepListName,
+        batchMultiplier: prepList.batchMultiplier,
+        dietaryRestrictions: prepList.dietaryRestrictions ?? [],
+        totalItems: prepList.totalIngredients,
+        totalEstimatedTime,
+        notes: "",
+      },
+      user: { id: user.id, tenantId, role: user.role },
+    });
 
-    const prepListId = result[0].id;
+    if (!createResult.ok) {
+      return {
+        success: false,
+        error: createResult.message ?? "Failed to create prep list",
+      };
+    }
 
-    // Create all prep list items
+    const prepListId = (createResult.result as { id?: string } | null)?.id;
+    if (!prepListId) {
+      return { success: false, error: "PrepList.create did not return an id" };
+    }
+
     let sortOrder = 0;
     for (const station of prepList.stationLists) {
       for (const ingredient of station.ingredients) {
-        await database.$executeRaw`
-          INSERT INTO tenant_kitchen.prep_list_items (
-            tenant_id,
-            prep_list_id,
-            station_id,
-            station_name,
-            ingredient_id,
-            ingredient_name,
-            category,
-            base_quantity,
-            base_unit,
-            scaled_quantity,
-            scaled_unit,
-            is_optional,
-            preparation_notes,
-            allergens,
-            dietary_substitutions,
-            dishId,
-            dishName,
-            recipeVersionId,
-            sort_order
-          ) VALUES (
-            ${tenantId},
-            ${prepListId},
-            ${station.stationId},
-            ${station.stationName},
-            ${ingredient.ingredientId},
-            ${ingredient.ingredientName},
-            ${ingredient.category},
-            ${ingredient.baseQuantity},
-            ${ingredient.baseUnit},
-            ${ingredient.scaledQuantity},
-            ${ingredient.scaledUnit},
-            ${ingredient.isOptional},
-            ${ingredient.preparationNotes},
-            ${ingredient.allergens},
-            ${ingredient.dietarySubstitutions},
-            NULL,
-            NULL,
-            NULL,
-            ${sortOrder}
-          )
-        `;
-        sortOrder++;
+        const itemResult = await runManifestCommand({
+          entity: "PrepListItem",
+          command: "create",
+          body: {
+            prepListId,
+            stationId: station.stationId,
+            stationName: station.stationName,
+            ingredientId: ingredient.ingredientId,
+            ingredientName: ingredient.ingredientName,
+            category: ingredient.category ?? "",
+            baseQuantity: ingredient.baseQuantity,
+            baseUnit: ingredient.baseUnit,
+            scaledQuantity: ingredient.scaledQuantity,
+            scaledUnit: ingredient.scaledUnit,
+            isOptional: ingredient.isOptional,
+            preparationNotes: ingredient.preparationNotes ?? "",
+            allergens: ingredient.allergens,
+            dietarySubstitutions: ingredient.dietarySubstitutions,
+            dishId: "",
+            dishName: "",
+            recipeVersionId: "",
+            sortOrder,
+          },
+          user: { id: user.id, tenantId, role: user.role },
+        });
+
+        if (!itemResult.ok) {
+          return {
+            success: false,
+            error: itemResult.message ?? "Failed to create prep list item",
+          };
+        }
+
+        sortOrder += 1;
       }
     }
 

@@ -1,5 +1,5 @@
+import { listTimeOffRequests, listTimecardEditRequests, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { RequestsClient } from "./requests-client";
@@ -63,19 +63,11 @@ export default async function SchedulingRequestsPage() {
   let loadError: string | null = null;
 
   try {
-    const rows = await database.timeOffRequest.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { submittedAt: "desc" },
-      take: 50,
-    });
-    const employees = await database.user.findMany({
-      where: {
-        tenantId,
-        id: { in: rows.map((row) => row.employeeId) },
-        deletedAt: null,
-      },
-      select: { id: true, firstName: true, lastName: true, role: true },
-    });
+    const rows = (await listTimeOffRequests()).data;
+    const employeeIds = rows.map((row) => row.employeeId);
+    const employees = (await listUsers()).data.filter(
+      (employee) => !employee.deletedAt && employeeIds.includes(employee.id),
+    );
     const employeesById = new Map(
       employees.map((employee) => [employee.id, employee])
     );
@@ -101,19 +93,11 @@ export default async function SchedulingRequestsPage() {
   }
 
   try {
-    const rows = await database.timecardEditRequest.findMany({
-      where: { tenantId },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
-    const employees = await database.user.findMany({
-      where: {
-        tenantId,
-        id: { in: rows.map((row) => row.employeeId) },
-        deletedAt: null,
-      },
-      select: { id: true, firstName: true, lastName: true, role: true },
-    });
+    const rows = (await listTimecardEditRequests()).data;
+    const employeeIds = rows.map((row) => row.employeeId);
+    const employees = (await listUsers()).data.filter(
+      (employee) => !employee.deletedAt && employeeIds.includes(employee.id),
+    );
     const employeesById = new Map(
       employees.map((employee) => [employee.id, employee])
     );

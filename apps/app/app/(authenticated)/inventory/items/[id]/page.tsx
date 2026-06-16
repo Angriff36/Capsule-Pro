@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -19,7 +18,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { loadInventoryItemDetail } from "@/app/lib/convex/domain-loaders";
 import { ItemDetailClient } from "./item-detail-client";
 
 interface ItemDetailPageProps {
@@ -33,31 +32,20 @@ const ItemDetailPage = async ({ params }: ItemDetailPageProps) => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
+  const loaded = await loadInventoryItemDetail(id);
 
-  const item = await database.inventoryItem.findFirst({
-    where: { id, tenantId, deletedAt: null },
-    include: { supplier: { select: { id: true, name: true } } },
-  });
-
-  if (!item) {
+  if (!loaded) {
     notFound();
   }
 
-  const quantityOnHand = item.quantityOnHand.toNumber();
-  const reorderLevel = item.reorder_level.toNumber();
-  const unitCost = item.unitCost.toNumber();
-  const parLevel = item.parLevel.toNumber();
-
-  const stockStatus =
-    quantityOnHand <= 0
-      ? "out_of_stock"
-      : quantityOnHand <= reorderLevel
-        ? "low_stock"
-        : "in_stock";
-
-  const totalValue = quantityOnHand * unitCost;
+  const { item, supplierName } = loaded;
+  const quantityOnHand = item.quantity_on_hand;
+  const reorderLevel = item.reorder_level;
+  const unitCost = item.unit_cost;
+  const parLevel = item.par_level;
+  const stockStatus = item.stock_status;
+  const totalValue = item.total_value;
 
   const serializedItem = {
     id: item.id,
@@ -65,12 +53,12 @@ const ItemDetailPage = async ({ params }: ItemDetailPageProps) => {
     name: item.name,
     description: item.description,
     category: item.category,
-    unitOfMeasure: item.unitOfMeasure,
+    unitOfMeasure: item.unit_of_measure,
     unit_cost: unitCost,
     quantity_on_hand: quantityOnHand,
     par_level: parLevel,
     reorder_level: reorderLevel,
-    supplierId: item.supplierId,
+    supplierId: item.supplier_id,
     tags: item.tags,
     fsa_status: item.fsa_status,
     fsa_temp_logged: item.fsa_temp_logged,
@@ -78,9 +66,9 @@ const ItemDetailPage = async ({ params }: ItemDetailPageProps) => {
     fsa_traceable: item.fsa_traceable,
     total_value: totalValue,
     stock_status: stockStatus,
-    supplier: item.supplier,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
+    supplier: supplierName ? { id: item.supplier_id!, name: supplierName } : null,
+    createdAt: item.created_at.toISOString(),
+    updatedAt: item.updated_at.toISOString(),
   };
 
   return (

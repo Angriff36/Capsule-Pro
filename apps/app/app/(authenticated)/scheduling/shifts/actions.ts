@@ -1,17 +1,32 @@
 "use server";
 
+import { listClients, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import {
+  activeUsers,
+  countShiftsForSchedule,
+  getScheduleShiftById,
+  loadScheduleShifts,
+  loadSchedules,
+  loadUsers,
+  loadVenues,
+  venuesByIds,
+} from "@/app/lib/scheduling/server-reads";
+import {
+  activeShifts,
+  countOverlappingShifts,
+  isDeleted,
+  shiftEndDate,
+  shiftStartDate,
+  toDate,
+} from "@/app/lib/scheduling/shift-utils";
+import type { ScheduleShift } from "@/app/lib/manifest-types.generated";
 import {
   type RunManifestCommandResult,
   runManifestCommand,
 } from "@/lib/manifest-command";
-
-// ---------------------------------------------------------------------------
-// Shared helpers for manifest-wired mutations
-// ---------------------------------------------------------------------------
 
 async function resolveScheduleContext() {
   const user = await requireCurrentUser();
@@ -37,10 +52,6 @@ function formatManifestFailure(
   return `Failed to ${action} shift: ${detail}`;
 }
 
-// ---------------------------------------------------------------------------
-// Read / get helpers (unchanged — these are query-only)
-// ---------------------------------------------------------------------------
-
 type ShiftDisplayRow = {
   id: string;
   schedule_id: string;
@@ -59,55 +70,26 @@ type ShiftDisplayRow = {
   updated_at: Date;
 };
 
-async function mapShiftRows(
-  tenantId: string,
-  shifts: Array<{
-    id: string;
-    scheduleId: string;
-    employeeId: string;
-    locationId: string;
-    shift_start: Date;
-    shift_end: Date;
-    role_during_shift: string | null;
-    notes: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }>
-): Promise<ShiftDisplayRow[]> {
-  const [employees, locations] = await Promise.all([
-    database.user.findMany({
-      where: {
-        tenantId,
-        id: { in: shifts.map((shift) => shift.employeeId) },
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-      },
-    }),
-    database.location.findMany({
-      where: {
-        tenantId,
-        id: { in: shifts.map((shift) => shift.locationId) },
-        deletedAt: null,
-      },
-      select: { id: true, name: true },
-    }),
+function roleDuringShift(shift: ScheduleShift): string | null {
+  return (
+    shift.roleDuringShift ??
+    ((shift as unknown as Record<string, unknown>).role_during_shift as string | null) ??
+    null
+  );
+}
+
+async function mapShiftRows(shifts: ScheduleShift[]): Promise<ShiftDisplayRow[]> {
+  const [employees, venues] = await Promise.all([
+    loadUsers(),
+    venuesByIds(shifts.map((shift) => shift.locationId)),
   ]);
-  const employeesById = new Map(
-    employees.map((employee) => [employee.id, employee])
-  );
-  const locationsById = new Map(
-    locations.map((location) => [location.id, location])
-  );
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
 
   return shifts.map((shift) => {
     const employee = employeesById.get(shift.employeeId);
-    const location = locationsById.get(shift.locationId);
+    const location = venues.get(shift.locationId);
+    const shiftStart = shiftStartDate(shift);
+    const shiftEnd = shiftEndDate(shift);
     return {
       id: shift.id,
       schedule_id: shift.scheduleId,
@@ -118,19 +100,45 @@ async function mapShiftRows(
       employeeRole: employee?.role ?? "staff",
       location_id: shift.locationId,
       location_name: location?.name ?? "",
-      shift_start: shift.shift_start,
-      shift_end: shift.shift_end,
-      role_during_shift: shift.role_during_shift,
-      notes: shift.notes,
-      created_at: shift.createdAt,
-      updated_at: shift.updatedAt,
+      shift_start: shiftStart ?? new Date(),
+      shift_end: shiftEnd ?? new Date(),
+      role_during_shift: roleDuringShift(shift),
+      notes: shift.notes ?? null,
+      created_at: toDate(shift.createdAt) ?? new Date(),
+      updated_at: toDate(shift.updatedAt) ?? new Date(),
     };
   });
 }
 
-/**
- * Get all shifts with optional filters
- */
+function matchesShiftFilters(
+  shift: ScheduleShift,
+  params: {
+    startDate?: string;
+    endDate?: string;
+    employeeId?: string;
+    locationId?: string;
+    role?: string;
+  }
+): boolean {
+  if (isDeleted(shift.deletedAt)) return false;
+
+  const start = shiftStartDate(shift);
+  const end = shiftEndDate(shift);
+
+  if (params.startDate) {
+    const filterStart = new Date(params.startDate);
+    if (!start || start < filterStart) return false;
+  }
+  if (params.endDate) {
+    const filterEnd = new Date(params.endDate);
+    if (!end || end > filterEnd) return false;
+  }
+  if (params.employeeId && shift.employeeId !== params.employeeId) return false;
+  if (params.locationId && shift.locationId !== params.locationId) return false;
+  if (params.role && roleDuringShift(shift) !== params.role) return false;
+  return true;
+}
+
 export async function getShifts(params: {
   startDate?: string;
   endDate?: string;
@@ -141,41 +149,25 @@ export async function getShifts(params: {
   limit?: number;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
   const limit = params.limit ?? 50;
   const page = params.page ?? 1;
   const offset = (page - 1) * limit;
 
-  const where: Prisma.ScheduleShiftWhereInput = {
-    tenantId,
-    deletedAt: null,
-    ...(params.startDate
-      ? { shift_start: { gte: new Date(params.startDate) } }
-      : {}),
-    ...(params.endDate ? { shift_end: { lte: new Date(params.endDate) } } : {}),
-    ...(params.employeeId ? { employeeId: params.employeeId } : {}),
-    ...(params.locationId ? { locationId: params.locationId } : {}),
-    ...(params.role ? { role_during_shift: params.role } : {}),
-  };
+  const filtered = (await loadScheduleShifts())
+    .filter((shift) => matchesShiftFilters(shift, params))
+    .sort((a, b) => {
+      const aStart = shiftStartDate(a)?.getTime() ?? 0;
+      const bStart = shiftStartDate(b)?.getTime() ?? 0;
+      return bStart - aStart;
+    });
 
-  // Fetch shifts and count
-  const [shiftRecords, totalCount] = await Promise.all([
-    database.scheduleShift.findMany({
-      where,
-      orderBy: { shift_start: "asc" },
-      take: limit,
-      skip: offset,
-    }),
-    database.scheduleShift.count({ where }),
-  ]);
-  const shifts = await mapShiftRows(tenantId, shiftRecords);
+  const totalCount = filtered.length;
+  const pageRecords = filtered.slice(offset, offset + limit);
+  const shifts = await mapShiftRows(pageRecords);
 
   return {
     shifts,
@@ -188,34 +180,19 @@ export async function getShifts(params: {
   };
 }
 
-/**
- * Get a single shift by ID
- */
 export async function getShift(shiftId: string) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const shiftRecord = await database.scheduleShift.findFirst({
-    where: { tenantId, id: shiftId, deletedAt: null },
-  });
+  const shiftRecord = await getScheduleShiftById(shiftId);
+  if (!shiftRecord) throw new Error("Shift not found");
 
-  if (!shiftRecord) {
-    throw new Error("Shift not found");
-  }
-
-  const [shift] = await mapShiftRows(tenantId, [shiftRecord]);
+  const [shift] = await mapShiftRows([shiftRecord]);
   return { shift };
 }
 
-/**
- * Get available employees for a shift time slot
- */
 export async function getAvailableEmployees(params: {
   shiftStart: string;
   shiftEnd: string;
@@ -224,76 +201,60 @@ export async function getAvailableEmployees(params: {
   requiredRole?: string;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
   const startDate = new Date(params.shiftStart);
   const endDate = new Date(params.shiftEnd);
+  const allShifts = await loadScheduleShifts();
 
-  const employees = await database.user.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      isActive: true,
-      ...(params.requiredRole ? { role: params.requiredRole } : {}),
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      isActive: true,
-    },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-  });
+  const employees = activeUsers(await loadUsers())
+    .filter(
+      (emp) => !params.requiredRole || emp.role === params.requiredRole
+    )
+    .sort((a, b) => {
+      const last = (a.lastName ?? "").localeCompare(b.lastName ?? "");
+      return last !== 0 ? last : (a.firstName ?? "").localeCompare(b.firstName ?? "");
+    });
 
-  // For employees with conflicts, get their conflicting shifts
   const employeesWithConflicts = await Promise.all(
     employees.map(async (emp) => {
-      const conflictingShiftRecords = await database.scheduleShift.findMany({
-        where: {
-          tenantId,
-          employeeId: emp.id,
-          deletedAt: null,
-          shift_start: { lt: endDate },
-          shift_end: { gt: startDate },
-          ...(params.excludeShiftId
-            ? { id: { not: params.excludeShiftId } }
-            : {}),
-        },
-        orderBy: { shift_start: "asc" },
-      });
-      const locations = await database.location.findMany({
-        where: {
-          tenantId,
-          id: { in: conflictingShiftRecords.map((shift) => shift.locationId) },
-          deletedAt: null,
-        },
-        select: { id: true, name: true },
-      });
-      const locationsById = new Map(
-        locations.map((location) => [location.id, location])
+      const conflictingShiftRecords = activeShifts(allShifts)
+        .filter((shift) => {
+          if (shift.employeeId !== emp.id) return false;
+          const shiftStart = shiftStartDate(shift);
+          const shiftEnd = shiftEndDate(shift);
+          if (!shiftStart || !shiftEnd) return false;
+          return (
+            shiftStart < endDate &&
+            shiftEnd > startDate &&
+            (!params.excludeShiftId || shift.id !== params.excludeShiftId)
+          );
+        })
+        .sort((a, b) => {
+          const aStart = shiftStartDate(a)?.getTime() ?? 0;
+          const bStart = shiftStartDate(b)?.getTime() ?? 0;
+          return aStart - bStart;
+        });
+
+      const locations = await venuesByIds(
+        conflictingShiftRecords.map((shift) => shift.locationId)
       );
 
       return {
         id: emp.id,
-        first_name: emp.firstName,
-        last_name: emp.lastName,
+        first_name: emp.firstName ?? null,
+        last_name: emp.lastName ?? null,
         email: emp.email,
-        role: emp.role,
-        is_active: emp.isActive,
+        role: emp.role ?? "staff",
+        is_active: emp.isActive ?? true,
         hasConflictingShift: conflictingShiftRecords.length > 0,
         conflictingShifts: conflictingShiftRecords.map((shift) => ({
           id: shift.id,
-          shiftStart: shift.shift_start,
-          shiftEnd: shift.shift_end,
-          locationName: locationsById.get(shift.locationId)?.name ?? "",
+          shiftStart: shiftStartDate(shift) ?? new Date(),
+          shiftEnd: shiftEndDate(shift) ?? new Date(),
+          locationName: locations.get(shift.locationId)?.name ?? "",
         })),
       };
     })
@@ -302,17 +263,6 @@ export async function getAvailableEmployees(params: {
   return { employees: employeesWithConflicts };
 }
 
-// ---------------------------------------------------------------------------
-// Mutation actions — wired through manifest runtime for guard/policy enforcement
-// ---------------------------------------------------------------------------
-
-/**
- * Create a new shift via manifest runtime.
- *
- * Business-rule validation (historical check, overlap detection) remains as
- * pre-checks before the manifest call. The manifest runtime enforces its own
- * guards (non-null scheduleId, employeeId) and policies.
- */
 export async function createShift(formData: FormData) {
   const { tenantId, user } = await resolveScheduleContext();
 
@@ -320,13 +270,11 @@ export async function createShift(formData: FormData) {
   const employeeId = formData.get("employeeId") as string;
   const shiftStart = formData.get("shiftStart") as string;
   const shiftEnd = formData.get("shiftEnd") as string;
-  const roleDuringShift = formData.get("roleDuringShift") as string | null;
+  const roleDuringShiftValue = formData.get("roleDuringShift") as string | null;
   const notes = formData.get("notes") as string | null;
   const allowHistorical = formData.get("allowHistorical") === "true";
   const allowOverlap = formData.get("allowOverlap") === "true";
 
-  // Basic required-field guard (fast-fail before hitting the DB)
-  // Note: locationId is auto-inherited from parent Schedule via parent-context propagation
   if (!(scheduleId && employeeId && shiftStart && shiftEnd)) {
     throw new Error("Schedule, employee, and times are required");
   }
@@ -334,41 +282,33 @@ export async function createShift(formData: FormData) {
   const startDate = new Date(shiftStart);
   const endDate = new Date(shiftEnd);
 
-  // Time-order validation
   if (endDate <= startDate) {
     throw new Error("End time must be after start time");
   }
 
-  // No-past-shift rule (business policy, not enforced by manifest today)
   if (!allowHistorical && endDate < new Date()) {
     throw new Error("Cannot create shifts in the past");
   }
 
-  // Overlap detection (business policy — keep as pre-check until manifest
-  // gets an overlap constraint)
   if (!allowOverlap) {
-    const overlapCount = await database.scheduleShift.count({
-      where: {
-        tenantId,
-        employeeId,
-        deletedAt: null,
-        shift_start: { lt: endDate },
-        shift_end: { gt: startDate },
-      },
-    });
+    const overlapCount = countOverlappingShifts(
+      await loadScheduleShifts(),
+      employeeId,
+      startDate,
+      endDate
+    );
 
     if (overlapCount > 0) {
       throw new Error("Employee has overlapping shifts");
     }
   }
 
-  // --- Manifest runtime write ---
   const body = {
     scheduleId,
     employeeId,
     shiftStart: startDate.getTime(),
     shiftEnd: endDate.getTime(),
-    roleDuringShift: roleDuringShift || "",
+    roleDuringShift: roleDuringShiftValue || "",
     notes: notes || "",
   };
 
@@ -387,19 +327,14 @@ export async function createShift(formData: FormData) {
   return { shift: result.result };
 }
 
-/**
- * Update an existing shift via manifest runtime.
- */
 export async function updateShift(shiftId: string, formData: FormData) {
-  const { tenantId, user } = await resolveScheduleContext();
+  const { user } = await resolveScheduleContext();
 
-  // The manifest update command does NOT accept scheduleId —
-  // a shift's parent schedule is immutable.
   const employeeId = formData.get("employeeId") as string;
   const locationId = formData.get("locationId") as string;
   const shiftStart = formData.get("shiftStart") as string;
   const shiftEnd = formData.get("shiftEnd") as string;
-  const roleDuringShift = formData.get("roleDuringShift") as string | null;
+  const roleDuringShiftValue = formData.get("roleDuringShift") as string | null;
   const notes = formData.get("notes") as string | null;
   const allowOverlap = formData.get("allowOverlap") === "true";
 
@@ -414,31 +349,26 @@ export async function updateShift(shiftId: string, formData: FormData) {
     throw new Error("End time must be after start time");
   }
 
-  // Overlap detection (excluding current shift)
   if (!allowOverlap) {
-    const overlapCount = await database.scheduleShift.count({
-      where: {
-        tenantId,
-        employeeId,
-        id: { not: shiftId },
-        deletedAt: null,
-        shift_start: { lt: endDate },
-        shift_end: { gt: startDate },
-      },
-    });
+    const overlapCount = countOverlappingShifts(
+      await loadScheduleShifts(),
+      employeeId,
+      startDate,
+      endDate,
+      shiftId
+    );
 
     if (overlapCount > 0) {
       throw new Error("Employee has overlapping shifts");
     }
   }
 
-  // --- Manifest runtime write ---
   const body = {
     employeeId,
     locationId,
     shiftStart: startDate.getTime(),
     shiftEnd: endDate.getTime(),
-    roleDuringShift: roleDuringShift || "",
+    roleDuringShift: roleDuringShiftValue || "",
     notes: notes || "",
   };
 
@@ -458,9 +388,6 @@ export async function updateShift(shiftId: string, formData: FormData) {
   return { shift: result.result };
 }
 
-/**
- * Soft-delete a shift via manifest runtime's remove command.
- */
 export async function deleteShift(shiftId: string) {
   const { user, userId } = await resolveScheduleContext();
 
@@ -480,13 +407,6 @@ export async function deleteShift(shiftId: string) {
   return { success: true };
 }
 
-// ---------------------------------------------------------------------------
-// Dropdown / lookup helpers (unchanged)
-// ---------------------------------------------------------------------------
-
-/**
- * Get all employees for dropdown
- */
 export async function getEmployees(params?: {
   search?: string;
   locationId?: string;
@@ -494,256 +414,186 @@ export async function getEmployees(params?: {
   activeOnly?: boolean;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const employeeWhere: Prisma.UserWhereInput = {
-    tenantId,
-    deletedAt: null,
-    ...(params?.activeOnly === false ? {} : { isActive: true }),
-    ...(params?.role ? { role: params.role } : {}),
-    ...(params?.search
-      ? {
-          OR: [
-            { firstName: { contains: params.search, mode: "insensitive" } },
-            { lastName: { contains: params.search, mode: "insensitive" } },
-            { email: { contains: params.search, mode: "insensitive" } },
-          ],
-        }
-      : {}),
-  };
-  const employeeRecords = await database.user.findMany({
-    where: employeeWhere,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      isActive: true,
-      phone: true,
-    },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-    take: 50,
-  });
-  const employees = employeeRecords.map((employee) => ({
-    id: employee.id,
-    first_name: employee.firstName,
-    last_name: employee.lastName,
-    email: employee.email,
-    role: employee.role,
-    is_active: employee.isActive,
-    phone: employee.phone,
-  }));
+  const search = params?.search?.toLowerCase();
+  const employees = activeUsers(await loadUsers())
+    .filter((employee) => {
+      if (params?.activeOnly === false) return true;
+      return employee.isActive;
+    })
+    .filter((employee) => !params?.role || employee.role === params.role)
+    .filter((employee) => {
+      if (!search) return true;
+      return [employee.firstName, employee.lastName, employee.email]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(search));
+    })
+    .map((employee) => ({
+      id: employee.id,
+      first_name: employee.firstName ?? null,
+      last_name: employee.lastName ?? null,
+      email: employee.email,
+      role: employee.role ?? "staff",
+      is_active: employee.isActive ?? true,
+      phone: employee.phone,
+    }));
 
   return { employees };
 }
 
-/**
- * Get all locations for dropdown
- */
 export async function getLocations(params?: {
   search?: string;
   activeOnly?: boolean;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const locationRecords = await database.location.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(params?.activeOnly === false ? {} : { isActive: true }),
-      ...(params?.search
-        ? { name: { contains: params.search, mode: "insensitive" } }
-        : {}),
-    },
-    select: {
-      id: true,
-      name: true,
-      addressLine1: true,
-      isActive: true,
-    },
-    orderBy: { name: "asc" },
-    take: 50,
-  });
-  const locations = locationRecords.map((location) => ({
-    id: location.id,
-    name: location.name,
-    address: location.addressLine1,
-    is_active: location.isActive,
-  }));
+  const search = params?.search?.toLowerCase();
+  const locations = (await loadVenues())
+    .filter((venue) => !isDeleted(venue.deletedAt))
+    .filter((venue) => params?.activeOnly === false || venue.isActive !== false)
+    .filter((venue) => !search || (venue.name ?? "").toLowerCase().includes(search))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+    .slice(0, 50)
+    .map((venue) => ({
+      id: venue.id,
+      name: venue.name ?? "",
+      address: venue.addressLine1 ?? "",
+      is_active: venue.isActive ?? true,
+    }));
 
   return { locations };
 }
 
-/**
- * Get all schedules for dropdown
- */
 export async function getSchedules(params?: {
   search?: string;
   status?: string;
   locationId?: string;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const matchingLocations = params?.search
-    ? await database.location.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-          name: { contains: params.search, mode: "insensitive" },
-        },
-        select: { id: true, name: true },
-      })
-    : [];
+  const [allSchedules, allShifts, allVenues] = await Promise.all([
+    loadSchedules(),
+    loadScheduleShifts(),
+    loadVenues(),
+  ]);
+
+  const venuesByName = allVenues.filter(
+    (venue) =>
+      !isDeleted(venue.deletedAt) &&
+      (!params?.search ||
+        (venue.name ?? "").toLowerCase().includes(params.search.toLowerCase()))
+  );
+
   const locationIds = params?.locationId
     ? [params.locationId]
     : params?.search
-      ? matchingLocations.map((location) => location.id)
+      ? venuesByName.map((venue) => venue.id)
       : undefined;
+
   const scheduleRecords =
     params?.search && locationIds?.length === 0
       ? []
-      : await database.schedule.findMany({
-          where: {
-            tenantId,
-            deletedAt: null,
-            ...(params?.status ? { status: params.status } : {}),
-            ...(locationIds ? { locationId: { in: locationIds } } : {}),
-          },
-          orderBy: { schedule_date: "desc" },
-          take: 50,
-        });
-  const [scheduleLocations, shiftCounts] = await Promise.all([
-    database.location.findMany({
-      where: {
-        tenantId,
-        id: {
-          in: scheduleRecords
-            .map((schedule) => schedule.locationId)
-            .filter((id): id is string => Boolean(id)),
-        },
-      },
-      select: { id: true, name: true },
-    }),
-    Promise.all(
-      scheduleRecords.map((schedule) =>
-        database.scheduleShift.count({
-          where: { tenantId, scheduleId: schedule.id, deletedAt: null },
-        })
-      )
-    ),
-  ]);
-  const scheduleLocationsById = new Map(
-    scheduleLocations.map((location) => [location.id, location])
+      : allSchedules
+          .filter((schedule) => !isDeleted(schedule.deletedAt))
+          .filter(
+            (schedule) => !params?.status || schedule.status === params.status
+          )
+          .filter(
+            (schedule) =>
+              !locationIds ||
+              (schedule.locationId && locationIds.includes(schedule.locationId))
+          )
+          .sort((a, b) => {
+            const aDate = toDate(a.scheduleDate)?.getTime() ?? 0;
+            const bDate = toDate(b.scheduleDate)?.getTime() ?? 0;
+            return bDate - aDate;
+          })
+          .slice(0, 50);
+
+  const scheduleLocations = await venuesByIds(
+    scheduleRecords
+      .map((schedule) => schedule.locationId ?? "")
+      .filter(Boolean)
   );
-  const schedules = scheduleRecords.map((schedule, index) => ({
-    id: schedule.id,
-    schedule_date: schedule.schedule_date,
-    status: schedule.status,
-    location_id: schedule.locationId ?? "",
-    location_name: schedule.locationId
-      ? (scheduleLocationsById.get(schedule.locationId)?.name ?? "")
-      : "",
-    shift_count: BigInt(shiftCounts[index] ?? 0),
-  }));
+
+  const schedules = scheduleRecords.map((schedule) => {
+    const scheduleDate = toDate(schedule.scheduleDate) ?? new Date();
+    return {
+      id: schedule.id,
+      schedule_date: scheduleDate,
+      status: schedule.status ?? "",
+      location_id: schedule.locationId ?? "",
+      location_name: schedule.locationId
+        ? (scheduleLocations.get(schedule.locationId)?.name ?? "")
+        : "",
+      shift_count: BigInt(countShiftsForSchedule(allShifts, schedule.id)),
+    };
+  });
 
   return { schedules };
 }
 
-/**
- * Get events for shift creation context
- */
 export async function getEvents(params?: {
   search?: string;
   dateFrom?: string;
   dateTo?: string;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const eventRecords = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(params?.dateFrom
-        ? { eventDate: { gte: new Date(params.dateFrom) } }
-        : {}),
-      ...(params?.dateTo
-        ? { eventDate: { lte: new Date(params.dateTo) } }
-        : {}),
-      ...(params?.search
-        ? { title: { contains: params.search, mode: "insensitive" } }
-        : {}),
-    },
-    orderBy: { eventDate: "desc" },
-    take: 50,
-  });
+  let eventRecords = (await listEvents()).data;
+  if (params?.dateFrom) {
+    const fromMs = new Date(params.dateFrom).getTime();
+    eventRecords = eventRecords.filter(
+      (event) => new Date(String(event.eventDate)).getTime() >= fromMs
+    );
+  }
+  if (params?.dateTo) {
+    const toMs = new Date(params.dateTo).getTime();
+    eventRecords = eventRecords.filter(
+      (event) => new Date(String(event.eventDate)).getTime() <= toMs
+    );
+  }
+  if (params?.search) {
+    const q = params.search.toLowerCase();
+    eventRecords = eventRecords.filter((event) =>
+      String(event.title ?? "").toLowerCase().includes(q)
+    );
+  }
+  eventRecords = [...eventRecords]
+    .sort(
+      (a, b) =>
+        new Date(String(b.eventDate)).getTime() -
+        new Date(String(a.eventDate)).getTime()
+    )
+    .slice(0, 50);
+
   const [clients, eventLocations] = await Promise.all([
-    database.client.findMany({
-      where: {
-        tenantId,
-        id: {
-          in: eventRecords
-            .map((event) => event.clientId)
-            .filter((id): id is string => Boolean(id)),
-        },
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-      },
-    }),
-    database.location.findMany({
-      where: {
-        tenantId,
-        id: {
-          in: eventRecords
-            .map((event) => event.locationId)
-            .filter((id): id is string => Boolean(id)),
-        },
-        deletedAt: null,
-      },
-      select: { id: true, name: true },
-    }),
+    (await listClients()).data,
+    venuesByIds(
+      eventRecords
+        .map((event) => event.locationId ?? "")
+        .filter((id): id is string => Boolean(id))
+    ),
   ]);
+
   const clientsById = new Map(clients.map((client) => [client.id, client]));
-  const eventLocationsById = new Map(
-    eventLocations.map((location) => [location.id, location])
-  );
   const events = eventRecords.map((event) => {
     const client = event.clientId ? clientsById.get(event.clientId) : undefined;
     const clientName =
-      client?.company_name ||
-      [client?.first_name, client?.last_name].filter(Boolean).join(" ");
+      client?.companyName ||
+      [client?.firstName, client?.lastName].filter(Boolean).join(" ");
     return {
       id: event.id,
       name: event.title,
@@ -753,22 +603,22 @@ export async function getEvents(params?: {
       client_name: clientName,
       location_id: event.locationId ?? "",
       location_name: event.locationId
-        ? (eventLocationsById.get(event.locationId)?.name ?? "")
+        ? (eventLocations.get(event.locationId)?.name ?? "")
         : "",
     };
   });
 
   return {
-    events: events.map((e) => ({
-      id: e.id,
-      title: e.name,
-      eventDate: e.event_date,
+    events: events.map((event) => ({
+      id: event.id,
+      title: event.name,
+      eventDate: event.event_date,
       eventType: "event",
-      status: e.status,
-      clientId: e.client_id,
-      clientName: e.client_name,
-      locationId: e.location_id,
-      locationName: e.location_name,
+      status: event.status,
+      clientId: event.client_id,
+      clientName: event.client_name,
+      locationId: event.location_id,
+      locationName: event.location_name,
     })),
   };
 }

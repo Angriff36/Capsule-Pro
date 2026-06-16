@@ -1,3 +1,4 @@
+import { listPayrollPeriods, listPayrollRuns, listTimecardApprovals, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -81,24 +82,12 @@ const fetchPayrollData = async (tenantId: string) => {
     approvalRecords,
     missingRateCount,
   ] = await Promise.all([
-    database.payrollPeriod.findMany({
-      where: { tenantId, deletedAt: null, status: "open" },
-      orderBy: { periodEnd: "asc" },
-      take: 1,
-    }),
-    database.payrollRun.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { runDate: "desc" },
-      take: 1,
-    }),
+    (await listPayrollPeriods()).data,
+    (await listPayrollRuns()).data,
     database.user.count({
       where: { tenantId, deletedAt: null, isActive: true },
     }),
-    database.timecardApproval.findMany({
-      where: { tenantId, deletedAt: null, status: "pending" },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
+    (await listTimecardApprovals()).data,
     database.user.count({
       where: {
         tenantId,
@@ -109,14 +98,17 @@ const fetchPayrollData = async (tenantId: string) => {
     }),
   ]);
 
-  const approvalEmployees = await database.user.findMany({
-    where: {
-      tenantId,
-      id: { in: approvalRecords.map((approval) => approval.employeeId) },
-      deletedAt: null,
-    },
-    select: { id: true, firstName: true, lastName: true },
-  });
+  const approvalEmployeeIds = [
+    ...new Set(
+      approvalRecords
+        .map((approval) => approval.employeeId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const approvalEmployees = (await listUsers()).data.filter(
+    (employee) =>
+      !employee.deletedAt && approvalEmployeeIds.includes(employee.id),
+  );
   const employeesById = new Map(
     approvalEmployees.map((employee) => [employee.id, employee])
   );

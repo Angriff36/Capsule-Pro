@@ -50,7 +50,7 @@ pnpm test __tests__/kitchen/ -- --run
 Verifies that generated code is up-to-date with manifest definitions.
 
 **Steps:**
-- Runs `pnpm run analyze` (includes Prisma code generation)
+- Runs `pnpm run analyze` (includes Manifest codegen and Convex projection)
 - Checks git diff for any uncommitted changes
 - Fails if generated files have changed
 
@@ -214,7 +214,7 @@ git commit -m "test: update manifest snapshots"
 **Solution:**
 1. Check that runtime factories are exported in `apps/api/lib/manifest-runtime.ts`
 2. Verify import paths match your app structure
-3. Ensure Prisma client is generated (`pnpm run analyze`)
+3. Ensure Convex schema/functions are generated (`pnpm manifest:generate`)
 4. Check for missing type definitions
 
 ### Integration tests failing

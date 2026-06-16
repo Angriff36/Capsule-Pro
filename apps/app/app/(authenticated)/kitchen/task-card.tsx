@@ -1,10 +1,5 @@
 "use client";
 
-import type {
-  User as DbUser,
-  KitchenTask,
-  KitchenTaskClaim,
-} from "@repo/database";
 import {
   Avatar,
   AvatarFallback,

@@ -1,4 +1,5 @@
 "use server";
+import { listCycleCountRecords, listVarianceReports } from "@/app/lib/manifest-client.generated";
 
 import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -19,13 +20,7 @@ export async function generateVarianceReports(
   const tenantId = await requireTenantId();
   const user = await requireCurrentUser();
 
-  const records = await database.cycleCountRecord.findMany({
-    where: {
-      tenantId,
-      sessionId,
-      deletedAt: null,
-    },
-  });
+  const records = (await listCycleCountRecords()).data;
 
   const reports: VarianceReport[] = [];
 
@@ -127,13 +122,7 @@ export async function finalizeCycleCountSession(input: {
     }
 
     // Fetch records separately since there's no relation
-    const records = await database.cycleCountRecord.findMany({
-      where: {
-        tenantId,
-        sessionId: input.sessionId,
-        deletedAt: null,
-      },
-    });
+    const records = (await listCycleCountRecords()).data;
 
     let totalVariance = 0;
     let totalExpected = 0;
@@ -249,15 +238,7 @@ export async function finalizeCycleCountSession(input: {
         // The manifest requires status transitions: pending -> reviewed -> approved.
         // The current direct Prisma write skipped "reviewed" and went straight to
         // "approved". We now follow the proper state machine.
-        const pendingReports = await database.varianceReport.findMany({
-          where: {
-            tenantId,
-            sessionId: input.sessionId,
-            itemId: record.itemId,
-            deletedAt: null,
-          },
-          select: { id: true, status: true },
-        });
+        const pendingReports = (await listVarianceReports()).data;
 
         const adjustmentType =
           variance > 0 ? "increase" : variance < 0 ? "decrease" : "none";

@@ -1,3 +1,4 @@
+import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { invariant } from "@/app/lib/invariant";
@@ -13,18 +14,12 @@ import type {
 
 async function getBoardData(tenantId: string) {
   const [tasks, configRow, employees] = await Promise.all([
-    database.adminTask.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: [{ position: "asc" }, { createdAt: "desc" }],
-    }),
+    (await listAdminTasks()).data,
     database.boardConfig.findFirst({
       where: { tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
     }),
-    database.user.findMany({
-      where: { tenantId },
-      select: { id: true, firstName: true, lastName: true },
-    }),
+    (await listUsers()).data,
   ]);
 
   const employeeMap = new Map(

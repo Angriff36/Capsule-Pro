@@ -15,11 +15,27 @@
  * All functions are wrapped with React.cache() for automatic deduplication.
  */
 
-import { database, Prisma } from "@repo/database";
 import { cache } from "react";
+import { countEventGuests, loadEventRecord } from "@/app/lib/convex/domain-loaders";
+import {
+  countEventStaff,
+  eventHasBudget,
+  eventHasContract,
+  loadEventDishesSummary,
+  loadEventPrepLists,
+  loadPrepTasksForEvent,
+  loadRelatedEvents,
+  loadRelatedGuestCounts,
+} from "@/app/lib/convex/event-domain-loaders";
+import {
+  loadInventoryItemsForIngredients,
+  loadInventoryStockForItems,
+  loadRecipeIngredientsForVersions,
+  loadRecipeStepsForVersions,
+  loadRecipeVersionsForRecipes,
+} from "@/app/lib/convex/event-recipe-loaders";
 import { serializeDecimals } from "@/app/lib/decimal";
 import type {
-  EventDishSummary,
   InventoryCoverageItem,
   RecipeDetailSummary,
   RelatedEventSummary,
@@ -34,339 +50,60 @@ import type {
  * @tier 1 (Independent)
  */
 export const getEvent = cache(async (tenantId: string, eventId: string) => {
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-      deletedAt: null,
-    },
+  const event = await loadEventRecord(tenantId, eventId);
+  if (!event) {
+    return null;
+  }
+  return serializeDecimals({
+    ...event,
+    id: String(event._id),
+    tenantId: String(event.tenantId),
+    eventDate: new Date(Number(event.eventDate)),
+    createdAt: event.createdAt ? new Date(Number(event.createdAt)) : new Date(),
+    updatedAt: event.updatedAt ? new Date(Number(event.updatedAt)) : new Date(),
+    deletedAt: event.deletedAt ? new Date(Number(event.deletedAt)) : null,
   });
-  return event ? serializeDecimals(event) : null;
 });
 
-/**
- * Counts total RSVPs for the event.
- * @tier 1 (Independent)
- */
 export const getRsvpCount = cache(async (tenantId: string, eventId: string) =>
-  database.eventGuest.count({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-  })
+  countEventGuests(tenantId, eventId)
 );
-
-interface EventDishRow {
-  category: string | null;
-  costPerPerson: Prisma.Decimal | null;
-  course: string | null;
-  dietaryTags: string[] | null;
-  dishId: string;
-  linkId: string;
-  name: string;
-  presentationImageUrl: string | null;
-  pricePerPerson: Prisma.Decimal | null;
-  quantityServings: number;
-  recipeId: string | null;
-  recipeName: string | null;
-}
 
 /**
  * Counts assigned staff for the event.
  * @tier 1 (Independent)
  */
-export const getEventStaffCount = cache(
-  async (tenantId: string, eventId: string) =>
-    database.eventStaff.count({
-      where: {
-        tenantId,
-        eventId,
-        deletedAt: null,
-      },
-    })
-);
+export const getEventStaffCount = cache(countEventStaff);
 
-/**
- * Checks if event has any contracts (for setup checklist).
- * @tier 1 (Independent)
- */
-export const getEventHasContract = cache(
-  async (tenantId: string, eventId: string) => {
-    const count = await database.eventContract.count({
-      where: {
-        tenantId,
-        eventId,
-        deletedAt: null,
-      },
-    });
-    return count > 0;
-  }
-);
+export const getEventHasContract = cache(eventHasContract);
 
-/**
- * Checks if event has any budgets (for setup checklist).
- * @tier 1 (Independent)
- */
-export const getEventHasBudget = cache(
-  async (tenantId: string, eventId: string) => {
-    const count = await database.eventBudget.count({
-      where: {
-        tenantId,
-        eventId,
-        deletedAt: null,
-      },
-    });
-    return count > 0;
-  }
-);
+export const getEventHasBudget = cache(eventHasBudget);
 
-/**
- * Fetches all dishes associated with the event.
- * @tier 1 (Independent)
- */
-export const getEventDishes = cache(
-  async (tenantId: string, eventId: string): Promise<EventDishSummary[]> => {
-    const rawEventDishes = await database.$queryRaw<EventDishRow[]>(
-      Prisma.sql`
-        SELECT
-          ed.id AS "linkId",
-          d.id AS "dishId",
-          d.name,
-          d.category,
-          d.recipe_id AS "recipeId",
-          r.name AS "recipeName",
-          ed.course,
-          ed.quantity_servings AS "quantityServings",
-          d.dietary_tags AS "dietaryTags",
-          d.presentation_image_url AS "presentationImageUrl",
-          d.price_per_person AS "pricePerPerson",
-          d.cost_per_person AS "costPerPerson"
-        FROM tenant_events.event_dishes ed
-        JOIN tenant_kitchen.dishes d
-          ON d.tenant_id = ed.tenant_id
-          AND d.id = ed.dish_id
-          AND d.deleted_at IS NULL
-        LEFT JOIN tenant_kitchen.recipes r
-          ON r.tenant_id = d.tenant_id
-          AND r.id = d.recipe_id
-          AND r.deleted_at IS NULL
-        WHERE ed.tenant_id = ${tenantId}
-          AND ed.event_id = ${eventId}
-          AND ed.deleted_at IS NULL
-        ORDER BY ed.course ASC, d.name ASC
-      `
-    );
+export const getEventDishes = cache(loadEventDishesSummary);
 
-    return rawEventDishes.map((row) => ({
-      linkId: row.linkId,
-      dishId: row.dishId,
-      name: row.name,
-      category: row.category,
-      recipeId: row.recipeId,
-      recipeName: row.recipeName,
-      course: row.course,
-      quantityServings: row.quantityServings,
-      dietaryTags: row.dietaryTags ?? [],
-      presentationImageUrl: row.presentationImageUrl,
-      pricePerPerson: row.pricePerPerson ? Number(row.pricePerPerson) : null,
-      costPerPerson: row.costPerPerson ? Number(row.costPerPerson) : null,
-    }));
-  }
-);
+export const getPrepTasksRaw = cache(loadPrepTasksForEvent);
 
-interface PrepTaskRow {
-  dueByDate: unknown;
-  id: string;
-  isEventFinish: unknown;
-  name: string;
-  quantityTotal: number;
-  servingsTotal: number | null;
-  status: string;
-}
+export const getEventPrepLists = cache(loadEventPrepLists);
 
-/**
- * Fetches all prep tasks for the event.
- * @tier 1 (Independent)
- */
-export const getPrepTasksRaw = cache(
-  async (tenantId: string, eventId: string): Promise<PrepTaskRow[]> => {
-    const prepTasks = await database.$queryRaw<
-      (Omit<PrepTaskRow, "quantityTotal" | "servingsTotal"> & {
-        quantityTotal: Prisma.Decimal;
-        servingsTotal: number | null;
-      })[]
-    >(
-      Prisma.sql`
-        SELECT id,
-               name,
-               status,
-               quantity_total AS "quantityTotal",
-               servings_total AS "servingsTotal",
-               due_by_date AS "dueByDate",
-               is_event_finish AS "isEventFinish"
-        FROM tenant_kitchen.prep_tasks
-        WHERE tenant_id = ${tenantId}
-          AND event_id = ${eventId}
-          AND deleted_at IS NULL
-        ORDER BY due_by_date ASC, created_at ASC
-      `
-    );
-
-    return prepTasks.map((task) => ({
-      ...task,
-      quantityTotal: Number(task.quantityTotal),
-    }));
-  }
-);
-
-interface PrepListRow {
-  batchMultiplier: Prisma.Decimal;
-  finalizedAt: Date | null;
-  generatedAt: Date;
-  id: string;
-  name: string;
-  status: string;
-  totalItems: number;
-}
-
-/**
- * Fetches all prep lists for the event.
- * @tier 1 (Independent)
- */
-export const getEventPrepLists = cache(
-  async (tenantId: string, eventId: string) => {
-    const prepLists = await database.$queryRaw<PrepListRow[]>(
-      Prisma.sql`
-        SELECT id,
-               name,
-               status,
-               total_items AS "totalItems",
-               batch_multiplier AS "batchMultiplier",
-               generated_at AS "generatedAt",
-               finalized_at AS "finalizedAt"
-        FROM tenant_kitchen.prep_lists
-        WHERE tenant_id = ${tenantId}
-          AND event_id = ${eventId}
-          AND deleted_at IS NULL
-        ORDER BY generated_at DESC
-      `
-    );
-
-    return prepLists.map((prepList) => ({
-      ...prepList,
-      batchMultiplier: Number(prepList.batchMultiplier),
-      isActive: true,
-    }));
-  }
-);
-
-/**
- * Fetches related events (excluding current event).
- * @tier 1 (Independent)
- */
-export const getRelatedEvents = cache(
-  async (tenantId: string, eventId: string) =>
-    database.event.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        NOT: { id: eventId },
-      },
-      orderBy: [{ eventDate: "asc" }, { createdAt: "desc" }],
-      take: 50,
-      select: {
-        id: true,
-        title: true,
-        eventType: true,
-        eventDate: true,
-        guestCount: true,
-        status: true,
-        venueName: true,
-        venueAddress: true,
-        ticketPrice: true,
-        ticketTier: true,
-        eventFormat: true,
-        accessibilityOptions: true,
-        featuredMediaUrl: true,
-        tags: true,
-      },
-    })
-);
+export const getRelatedEvents = cache(loadRelatedEvents);
 
 // ============================================================================
 // Tier 2: Queries Dependent on Tier 1 Results
 // ============================================================================
 
-interface RecipeVersionRow {
-  cookTimeMinutes: number | null;
-  instructions: string | null;
-  prepTimeMinutes: number | null;
-  recipeId: string;
-  recipeName: string;
-  restTimeMinutes: number | null;
-  versionId: string;
-  yieldQuantity: Prisma.Decimal;
-  yieldUnitCode: string | null;
-}
+export const getRecipeVersions = cache(loadRecipeVersionsForRecipes);
 
-/**
- * Fetches recipe versions for given recipe IDs.
- * @tier 2 (Depends on: eventDishes)
- */
-export const getRecipeVersions = cache(
-  async (tenantId: string, recipeIds: string[]) => {
-    if (recipeIds.length === 0) {
-      return [];
-    }
-
-    return database.$queryRaw<RecipeVersionRow[]>(
-      Prisma.sql`
-        SELECT DISTINCT ON (rv.recipe_id)
-          rv.recipe_id AS "recipeId",
-          r.name AS "recipeName",
-          rv.id AS "versionId",
-          rv.yield_quantity AS "yieldQuantity",
-          u.code AS "yieldUnitCode",
-          rv.instructions AS "instructions",
-          rv.prep_time_minutes AS "prepTimeMinutes",
-          rv.cook_time_minutes AS "cookTimeMinutes",
-          rv.rest_time_minutes AS "restTimeMinutes"
-        FROM tenant_kitchen.recipe_versions rv
-        JOIN tenant_kitchen.recipes r
-          ON r.tenant_id = rv.tenant_id
-          AND r.id = rv.recipe_id
-          AND r.deleted_at IS NULL
-        LEFT JOIN core.units u ON u.id = rv.yield_unit_id
-        WHERE rv.tenant_id = ${tenantId}
-          AND rv.recipe_id IN (${Prisma.join(recipeIds)})
-          AND rv.deleted_at IS NULL
-        ORDER BY rv.recipe_id, rv.version_number DESC
-      `
-    );
-  }
-);
-
-/**
- * Fetches guest counts for related events.
- * @tier 2 (Depends on: relatedEvents)
- */
 export const getRelatedGuestCounts = cache(
   async (tenantId: string, relatedEventIds: string[]) => {
     if (relatedEventIds.length === 0) {
       return [];
     }
 
-    return database.eventGuest.groupBy({
-      by: ["eventId"],
-      where: {
-        tenantId,
-        deletedAt: null,
-        eventId: { in: relatedEventIds },
-      },
-      _count: { _all: true },
-    });
+    const counts = await loadRelatedGuestCounts(tenantId, relatedEventIds);
+    return relatedEventIds.map((eventId) => ({
+      eventId,
+      _count: { _all: counts.get(eventId) ?? 0 },
+    }));
   }
 );
 
@@ -374,169 +111,21 @@ export const getRelatedGuestCounts = cache(
 // Tier 3: Queries Dependent on Tier 2 Results
 // ============================================================================
 
-interface RecipeIngredientRow {
-  ingredientId: string;
-  ingredientName: string;
-  isOptional: boolean;
-  preparationNotes: string | null;
-  quantity: Prisma.Decimal;
-  recipeVersionId: string;
-  unitCode: string | null;
-}
+export const getRecipeIngredients = cache(loadRecipeIngredientsForVersions);
 
-/**
- * Fetches ingredients for recipe versions.
- * @tier 3 (Depends on: recipeVersions)
- */
-export const getRecipeIngredients = cache(
-  async (tenantId: string, recipeVersionIds: string[]) => {
-    if (recipeVersionIds.length === 0) {
-      return [];
-    }
-
-    return database.$queryRaw<RecipeIngredientRow[]>(
-      Prisma.sql`
-        SELECT
-          ri.recipe_version_id AS "recipeVersionId",
-          i.id AS "ingredientId",
-          i.name AS "ingredientName",
-          ri.quantity AS "quantity",
-          u.code AS "unitCode",
-          ri.preparation_notes AS "preparationNotes",
-          ri.is_optional AS "isOptional"
-        FROM tenant_kitchen.recipe_ingredients ri
-        JOIN tenant_kitchen.ingredients i
-          ON i.tenant_id = ri.tenant_id
-          AND i.id = ri.ingredient_id
-          AND i.deleted_at IS NULL
-        LEFT JOIN core.units u ON u.id = ri.unit_id
-        WHERE ri.tenant_id = ${tenantId}
-          AND ri.recipe_version_id IN (${Prisma.join(recipeVersionIds)})
-          AND ri.deleted_at IS NULL
-        ORDER BY ri.sort_order ASC, i.name ASC
-      `
-    );
-  }
-);
-
-interface RecipeStepRow {
-  durationMinutes: number | null;
-  equipmentNeeded: string[];
-  instruction: string;
-  recipeVersionId: string;
-  stepNumber: number;
-  temperatureUnit: string | null;
-  temperatureValue: Prisma.Decimal | null;
-  tips: string | null;
-}
-
-/**
- * Fetches steps for recipe versions.
- * @tier 3 (Depends on: recipeVersions)
- */
-export const getRecipeSteps = cache(
-  async (tenantId: string, recipeVersionIds: string[]) => {
-    if (recipeVersionIds.length === 0) {
-      return [];
-    }
-
-    return database.$queryRaw<RecipeStepRow[]>(
-      Prisma.sql`
-        SELECT
-          rs.recipe_version_id AS "recipeVersionId",
-          rs.step_number AS "stepNumber",
-          rs.instruction AS "instruction",
-          rs.duration_minutes AS "durationMinutes",
-          rs.temperature_value AS "temperatureValue",
-          rs.temperature_unit AS "temperatureUnit",
-          rs.equipment_needed AS "equipmentNeeded",
-          rs.tips AS "tips"
-        FROM tenant_kitchen.recipe_steps rs
-        WHERE rs.tenant_id = ${tenantId}
-          AND rs.recipe_version_id IN (${Prisma.join(recipeVersionIds)})
-          AND rs.deleted_at IS NULL
-        ORDER BY rs.step_number ASC
-      `
-    );
-  }
-);
+export const getRecipeSteps = cache(loadRecipeStepsForVersions);
 
 // ============================================================================
 // Tier 4: Queries Dependent on Tier 3 Results
 // ============================================================================
 
-interface InventoryItemRow {
-  ingredientId: string;
-  inventoryItemId: string;
-  itemName: string;
-  parLevel: Prisma.Decimal | null;
-}
-
-/**
- * Fetches inventory items for given ingredients.
- * @tier 4 (Depends on: recipeIngredients)
- */
-export const getInventoryItems = cache(
-  async (tenantId: string, ingredientIds: string[]) => {
-    if (ingredientIds.length === 0) {
-      return [];
-    }
-
-    return database.$queryRaw<InventoryItemRow[]>(
-      Prisma.sql`
-        SELECT
-          ii.id AS "inventoryItemId",
-          i.id AS "ingredientId",
-          ii.name AS "itemName",
-          ii.reorder_level AS "parLevel"
-        FROM tenant_inventory.inventory_items ii
-        JOIN tenant_kitchen.ingredients i
-          ON i.tenant_id = ii.tenant_id
-          AND i.name = ii.name
-          AND i.deleted_at IS NULL
-        WHERE ii.tenant_id = ${tenantId}
-          AND i.id IN (${Prisma.join(ingredientIds)})
-          AND ii.deleted_at IS NULL
-      `
-    );
-  }
-);
+export const getInventoryItems = cache(loadInventoryItemsForIngredients);
 
 // ============================================================================
 // Tier 5: Queries Dependent on Tier 4 Results
 // ============================================================================
 
-interface InventoryStockRow {
-  itemId: string;
-  onHand: Prisma.Decimal;
-  unitCode: string | null;
-}
-
-/**
- * Fetches stock levels for inventory items.
- * @tier 5 (Depends on: inventoryItems)
- */
-export const getInventoryStock = cache(
-  async (tenantId: string, inventoryItemIds: string[]) => {
-    if (inventoryItemIds.length === 0) {
-      return [];
-    }
-
-    return database.$queryRaw<InventoryStockRow[]>(
-      Prisma.sql`
-        SELECT
-          s.item_id AS "itemId",
-          SUM(s.quantity_on_hand) AS "onHand",
-          u.code AS "unitCode"
-        FROM tenant_inventory.inventory_stock s
-        LEFT JOIN core.units u ON u.id = s.unit_id
-        WHERE s.tenant_id = ${tenantId}
-          AND s.item_id IN (${Prisma.join(inventoryItemIds)})
-        GROUP BY s.item_id, u.code
-      `
-    );
-  }
-);
+export const getInventoryStock = cache(loadInventoryStockForItems);
 
 // ============================================================================
 // Orchestration Function - Main Entry Point

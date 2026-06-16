@@ -23,23 +23,19 @@ RULES:
 Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`.
 Your training data is outdated — the docs are the source of truth.
 
-## GraphRAG rule
+## Docs lookup (non-blocking)
 
-**Enforced by `.cursor/hooks.json`** — on architecture/debug prompts, Grep/Read/SemanticSearch/Glob/Task are blocked until GraphRAG runs.
+For **library/framework APIs** (Next.js, Convex, Clerk, React, etc.), use **Context7 MCP**:
+`resolve-library-id` → `query-docs`.
 
-For architecture/debugging tasks, run:
+For **this repo's architecture** (Manifest → Convex migration), read `constitution.md`
+when making architectural changes. `manifest/AGENTS.md` and `manifest/task_plan.md` are
+helpful but optional — do not block work if optional planning files are missing.
 
-`powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/graphrag.ps1 "<task question>"`
-
-Use the output to pick likely files, but prefer implementation files over package.json, generated files, and broad domain matches.
-
+Project hooks live in `.cursor/hooks.json` (session context only; **no write gate**).
 <!-- END:nextjs-agent-rules -->
 
-You must also read the constitution.md and the planning with files documentation at "C:\Projects\capsule-pro\manifest\IMPLEMENTATION_PROMPT.md"
-"C:\Projects\capsule-pro\manifest\notes.md"
-"C:\Projects\capsule-pro\manifest\phase-out-registry.md"
-"C:\Projects\capsule-pro\manifest\task_plan.md"
-"C:\Projects\capsule-pro\manifest\AGENTS.md"
+You must also read `constitution.md`, `manifest/task_plan.md`, and `manifest/AGENTS.md` before Manifest or architectural work.
 
 ## Capsule Pro Dev Server
 
@@ -96,14 +92,23 @@ cd /home/oc/projects/capsule-pro
 source .env  # for INFISICAL_TOKEN
 infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=/apps/capsule-pro/app -- pnpm --filter app dev
 ```
+# Convex and Capsule-Pro’s domain layer, the desired end state is:
+
+.manifest source → compiled IR → Convex projection → Convex backend
+
+not:
+
+.manifest source → IR → generated Convex backend → Next route.ts wrapper → frontend
+see CONVEX-CONSTITUTION.md for more details
 
 ## Capsule Pro-Specific Rules
 
-- **Constitution**: `constitution.md` is the binding Manifest Integration Charter. All governed writes go through Manifest runtime. Reads bypass runtime. Read it before any architectural work.
-- All governed domain mutations execute via `RuntimeEngine.runCommand()` — never direct Prisma writes
-- The command dispatcher is at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` — singular dynamic entry point
-- Auth: Clerk (`auth().protect()`) on all protected routes
-- Prisma: no foreign keys, use flat keys, Decimal fields must be cast with `.toFixed(2)`
+- **Constitution**: `constitution.md` v5 — **compile-to-Convex** (this clone only). No store adapter. No RuntimeEngine in request path.
+- **Governed writes**: only via **generated Convex mutations** in `convex/mutations.ts` — not `runCommand()` at runtime, not direct `ctx.db` in hand-written code
+- **Reactions**: inline transactional fan-out inside the emitting mutation — not schedulers/triggers
+- **Auth**: Clerk = session boundary only; not the domain backend
+- **Persistence**: `convex/schema.ts` + generated functions — **never Prisma**
+- **Workflow**: `pnpm manifest:compile` → `pnpm manifest:generate-convex` → commit IR + convex/
 - No `.js` extensions in imports — use `.ts`/`.tsx` only
-- Port 2221 for app, 2223 for API server
-- Test via Tailscale HTTPS URL, not localhost
+- Port 2221 for app; Convex dev via `npx convex dev`
+- Registry: `manifest/convex-phase-out-registry.json`

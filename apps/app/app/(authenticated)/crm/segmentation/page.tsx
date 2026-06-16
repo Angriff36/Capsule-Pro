@@ -1,5 +1,5 @@
+import { listClients } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -201,10 +201,7 @@ const ClientSegmentationPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const clients = await database.client.findMany({
-    where: { tenantId, deletedAt: null },
-    select: { tags: true, clientType: true, source: true },
-  });
+  const clients = (await listClients()).data;
 
   const totalClients = clients.length;
   const tagSegments = buildTagSegments(clients, totalClients);

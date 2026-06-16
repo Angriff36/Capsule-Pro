@@ -1,28 +1,36 @@
 "use server";
 
-import {
-  database,
-  type KitchenTask,
-  type KitchenTaskClaim,
-  type KitchenTaskProgress,
-  type KitchenTaskStatus,
-} from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import {
+  loadActiveKitchenTaskClaim,
+  loadKitchenTaskById,
+  loadKitchenTaskClaimById,
+  loadKitchenTaskClaimsForTask,
+  loadKitchenTaskProgressById,
+  loadKitchenTaskProgressLog,
+  loadKitchenTasks,
+  loadMyActiveKitchenTaskClaims,
+  loadUrgentKitchenTasks,
+  type KitchenTaskClaimRow,
+  type KitchenTaskProgressRow,
+  type KitchenTaskRow,
+} from "@/app/lib/convex/kitchen-task-loaders";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
+export type KitchenTaskStatus =
+  | "open"
+  | "in_progress"
+  | "done"
+  | "canceled"
+  | "pending";
 
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
-
   if (typeof value !== "string") {
     return;
   }
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 };
@@ -32,11 +40,9 @@ const getOptionalString = (
   key: string
 ): string | null | undefined => {
   const value = formData.get(key);
-
   if (typeof value !== "string") {
     return;
   }
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
@@ -50,82 +56,25 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
   return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
 };
 
-// ============================================================================
-// Query Operations (direct Prisma reads — constitution §10)
-// ============================================================================
-
-/**
- * List all kitchen tasks with optional filters
- */
 export const getKitchenTasks = async (filters?: {
   status?: string;
   priority?: number;
-}): Promise<KitchenTask[]> => {
-  const tenantId = await requireTenantId();
+}): Promise<KitchenTaskRow[]> => loadKitchenTasks(filters);
 
-  return database.kitchenTask.findMany({
-    where: {
-      tenantId,
-      ...(filters?.status && { status: filters.status }),
-      ...(filters?.priority && { priority: filters.priority }),
-    },
-    orderBy: { createdAt: "desc" },
-  });
-};
-
-/**
- * Get a single kitchen task by ID
- */
 export const getKitchenTaskById = async (
   taskId: string
-): Promise<KitchenTask | null> => {
-  const tenantId = await requireTenantId();
+): Promise<KitchenTaskRow | null> => loadKitchenTaskById(taskId);
 
-  return database.kitchenTask.findFirst({
-    where: { tenantId, id: taskId },
-  });
-};
-
-/**
- * Get tasks filtered by status
- */
 export const getKitchenTasksByStatus = async (
   status: string
-): Promise<KitchenTask[]> => getKitchenTasks({ status });
+): Promise<KitchenTaskRow[]> => getKitchenTasks({ status });
 
-/**
- * Get urgent priority tasks that are open or in progress
- */
-export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
-  const tenantId = await requireTenantId();
+export const getUrgentTasks = async (): Promise<KitchenTaskRow[]> =>
+  loadUrgentKitchenTasks();
 
-  return database.kitchenTask.findMany({
-    where: {
-      tenantId,
-      priority: {
-        lte: 2, // Urgent and Critical (1-2)
-      },
-      status: {
-        in: ["pending", "open", "in_progress"],
-      },
-    },
-    orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
-  });
-};
-
-// ============================================================================
-// Create Operation (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Create a new kitchen task.
- *
- * Uses KitchenTask.create. Status defaults to "pending" via property default
- * — not set explicitly. Complexity defaults to 5 (medium).
- */
 export const createKitchenTask = async (
   formData: FormData
-): Promise<KitchenTask> => {
+): Promise<KitchenTaskRow> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -160,9 +109,7 @@ export const createKitchenTask = async (
   const createdId = (result.result as { id?: string } | null)?.id;
   invariant(createdId, "KitchenTask.create did not return an id");
 
-  const task = await database.kitchenTask.findFirst({
-    where: { tenantId, id: createdId },
-  });
+  const task = await loadKitchenTaskById(createdId);
   invariant(task, "Created kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -170,19 +117,9 @@ export const createKitchenTask = async (
   return task;
 };
 
-// ============================================================================
-// Update Operations (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Update kitchen task fields.
- *
- * The IR uses individual commands per field (updateTitle, updateSummary, etc.)
- * instead of a single update command. Only changed fields trigger commands.
- */
 export const updateKitchenTask = async (
   formData: FormData
-): Promise<KitchenTask> => {
+): Promise<KitchenTaskRow> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -197,7 +134,6 @@ export const updateKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  // Execute individual field-update commands for each changed field
   const userCtx = { id: user.id, tenantId, role: user.role };
 
   if (title) {
@@ -248,9 +184,7 @@ export const updateKitchenTask = async (
     }
   }
 
-  const task = await database.kitchenTask.findFirst({
-    where: { tenantId, id: taskId },
-  });
+  const task = await loadKitchenTaskById(taskId);
   invariant(task, "Updated kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -258,19 +192,10 @@ export const updateKitchenTask = async (
   return task;
 };
 
-/**
- * Update only the status of a task.
- *
- * Maps the target status to the appropriate IR transition command:
- * - "in_progress" → KitchenTask.start(userId)
- * - "done" → KitchenTask.complete(userId)
- * - "cancelled" → KitchenTask.cancel(reason, canceledBy)
- * - "pending"/"open" → KitchenTask.release(userId, reason)
- */
 export const updateKitchenTaskStatus = async (
   taskId: string,
   status: KitchenTaskStatus
-): Promise<KitchenTask> => {
+): Promise<KitchenTaskRow> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
   const userCtx = { id: user.id, tenantId, role: user.role };
@@ -279,15 +204,11 @@ export const updateKitchenTaskStatus = async (
     throw new Error("Task id is required.");
   }
 
-  // Fetch current task to determine the right transition command
-  const currentTask = await database.kitchenTask.findFirst({
-    where: { tenantId, id: taskId },
-  });
+  const currentTask = await loadKitchenTaskById(taskId);
   if (!currentTask) {
     throw new Error("Task not found.");
   }
 
-  // Map target status to the correct transition command
   switch (status) {
     case "in_progress": {
       const r = await runManifestCommand({
@@ -349,9 +270,7 @@ export const updateKitchenTaskStatus = async (
       throw new Error(`Unsupported status transition: ${status}`);
   }
 
-  const task = await database.kitchenTask.findFirst({
-    where: { tenantId, id: taskId },
-  });
+  const task = await loadKitchenTaskById(taskId);
   invariant(task, "Updated kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -359,17 +278,6 @@ export const updateKitchenTaskStatus = async (
   return task;
 };
 
-// ============================================================================
-// Delete Operation (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Cancel a kitchen task.
- *
- * No softDelete command exists for KitchenTask — use cancel instead.
- * This preserves the task record (safer than hard delete) while marking
- * it as cancelled.
- */
 export const deleteKitchenTask = async (taskId: string): Promise<void> => {
   const user = await requireCurrentUser();
 
@@ -395,21 +303,10 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
   revalidatePath("/kitchen/tasks");
 };
 
-// ============================================================================
-// Claim Operations (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Claim a task for a user and set status to in_progress.
- *
- * Two governed commands:
- * 1. KitchenTask.claim(userId) — sets status=in_progress, assignedTo
- * 2. KitchenTaskClaim.claim(taskId, employeeId, claimedAt) — creates claim record
- */
 export const claimTask = async (
   taskId: string,
   employeeId: string
-): Promise<KitchenTaskClaim> => {
+): Promise<KitchenTaskClaimRow> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
   const userCtx = { id: user.id, tenantId, role: user.role };
@@ -418,7 +315,6 @@ export const claimTask = async (
     throw new Error("Task id and employee id are required.");
   }
 
-  // 1. Claim the task (sets status=in_progress, assignedTo=userId)
   const claimResult = await runManifestCommand({
     entity: "KitchenTask",
     command: "claim",
@@ -429,7 +325,6 @@ export const claimTask = async (
     throw new Error(claimResult.message || "Failed to claim task");
   }
 
-  // 2. Create the claim record
   const createClaimResult = await runManifestCommand({
     entity: "KitchenTaskClaim",
     command: "claim",
@@ -449,9 +344,7 @@ export const claimTask = async (
   const claimId = (createClaimResult.result as { id?: string } | null)?.id;
   invariant(claimId, "KitchenTaskClaim.claim did not return an id");
 
-  const claim = await database.kitchenTaskClaim.findFirst({
-    where: { tenantId, id: claimId },
-  });
+  const claim = await loadKitchenTaskClaimById(claimId);
   invariant(claim, "Created claim could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -459,17 +352,10 @@ export const claimTask = async (
   return claim;
 };
 
-/**
- * Release a task claim.
- *
- * Two governed commands:
- * 1. KitchenTaskClaim.release(releasedBy, reason) — marks claim as released
- * 2. KitchenTask.release(userId, reason) — sets status=pending, assignedTo=""
- */
 export const releaseTask = async (
   taskId: string,
   reason?: string | null
-): Promise<KitchenTaskClaim | null> => {
+): Promise<KitchenTaskClaimRow | null> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
   const userCtx = { id: user.id, tenantId, role: user.role };
@@ -478,20 +364,12 @@ export const releaseTask = async (
     throw new Error("Task id is required.");
   }
 
-  // Find the active claim
-  const activeClaim = await database.kitchenTaskClaim.findFirst({
-    where: {
-      tenantId,
-      taskId,
-      releasedAt: null,
-    },
-  });
+  const activeClaim = await loadActiveKitchenTaskClaim(taskId);
 
   if (!activeClaim) {
     return null;
   }
 
-  // 1. Release the claim record
   const releaseResult = await runManifestCommand({
     entity: "KitchenTaskClaim",
     command: "release",
@@ -506,7 +384,6 @@ export const releaseTask = async (
     throw new Error(releaseResult.message || "Failed to release claim");
   }
 
-  // 2. Release the task (sets status=pending, assignedTo="")
   const taskReleaseResult = await runManifestCommand({
     entity: "KitchenTask",
     command: "release",
@@ -521,9 +398,7 @@ export const releaseTask = async (
     throw new Error(taskReleaseResult.message || "Failed to release task");
   }
 
-  const updatedClaim = await database.kitchenTaskClaim.findFirst({
-    where: { tenantId, id: activeClaim.id },
-  });
+  const updatedClaim = await loadKitchenTaskClaimById(activeClaim.id);
   invariant(updatedClaim, "Released claim could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -531,59 +406,26 @@ export const releaseTask = async (
   return updatedClaim;
 };
 
-/**
- * Get all claims for a task
- */
 export const getTaskClaims = async (
   taskId: string
-): Promise<KitchenTaskClaim[]> => {
-  const tenantId = await requireTenantId();
-
+): Promise<KitchenTaskClaimRow[]> => {
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  return database.kitchenTaskClaim.findMany({
-    where: { tenantId, taskId },
-    orderBy: { claimedAt: "desc" },
-  });
+  return loadKitchenTaskClaimsForTask(taskId);
 };
 
-/**
- * Get user's active (unreleased) claims
- */
 export const getMyActiveClaims = async (
   employeeId: string
-): Promise<KitchenTaskClaim[]> => {
-  const tenantId = await requireTenantId();
-
+): Promise<KitchenTaskClaimRow[]> => {
   if (!employeeId) {
     throw new Error("Employee id is required.");
   }
 
-  return database.kitchenTaskClaim.findMany({
-    where: {
-      tenantId,
-      employeeId,
-      releasedAt: null,
-    },
-    orderBy: { claimedAt: "desc" },
-  });
+  return loadMyActiveKitchenTaskClaims(employeeId);
 };
 
-// ============================================================================
-// Progress Operations (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Add a progress entry for a task.
- *
- * Uses KitchenTaskProgress.create. Maps:
- * - progressType → progressType
- * - newStatus ?? progressType → newStatus
- * - quantityCompleted → progressPct
- * - notes → notes
- */
 export const addTaskProgress = async (
   taskId: string,
   employeeId: string,
@@ -594,7 +436,7 @@ export const addTaskProgress = async (
     quantityCompleted?: number;
     notes?: string;
   }
-): Promise<KitchenTaskProgress> => {
+): Promise<KitchenTaskProgressRow> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -624,9 +466,7 @@ export const addTaskProgress = async (
   const progressId = (result.result as { id?: string } | null)?.id;
   invariant(progressId, "KitchenTaskProgress.create did not return an id");
 
-  const progress = await database.kitchenTaskProgress.findFirst({
-    where: { tenantId, id: progressId },
-  });
+  const progress = await loadKitchenTaskProgressById(progressId);
   invariant(progress, "Created progress entry could not be loaded");
 
   revalidatePath("/kitchen/tasks");
@@ -634,20 +474,12 @@ export const addTaskProgress = async (
   return progress;
 };
 
-/**
- * Get progress history for a task
- */
 export const getTaskProgressLog = async (
   taskId: string
-): Promise<KitchenTaskProgress[]> => {
-  const tenantId = await requireTenantId();
-
+): Promise<KitchenTaskProgressRow[]> => {
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  return database.kitchenTaskProgress.findMany({
-    where: { tenantId, taskId },
-    orderBy: { createdAt: "desc" },
-  });
+  return loadKitchenTaskProgressLog(taskId);
 };

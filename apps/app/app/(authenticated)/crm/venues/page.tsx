@@ -1,5 +1,5 @@
+import { listVenues } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -36,13 +36,7 @@ export default async function CrmVenuesPage() {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const venues = await database.venue.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: [{ name: "asc" }],
-  });
+  const venues = (await listVenues()).data;
 
   const activeCount = venues.filter((v) => v.isActive).length;
 

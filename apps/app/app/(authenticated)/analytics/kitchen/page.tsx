@@ -1,3 +1,4 @@
+import { listPrepLists, listPrepTasks, listRecipes, listWasteEntries } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -155,83 +156,10 @@ const KitchenAnalyticsPage = async () => {
       },
       _sum: { totalCost: true },
     }),
-    database.prepTask.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [
-        { dueByDate: "asc" },
-        { priority: "asc" },
-        { createdAt: "desc" },
-      ],
-      take: 8,
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        priority: true,
-        dueByDate: true,
-        quantityCompleted: true,
-        quantityTotal: true,
-        locationId: true,
-      },
-    }),
-    database.prepList.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: { generatedAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        totalItems: true,
-        generatedAt: true,
-        finalizedAt: true,
-      },
-    }),
-    database.wasteEntry.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: { loggedAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        loggedAt: true,
-        quantity: true,
-        totalCost: true,
-        inventoryItem: {
-          select: {
-            name: true,
-          },
-        },
-        reason: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    }),
-    database.recipe.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        isActive: true,
-        updatedAt: true,
-      },
-    }),
+    (await listPrepTasks()).data,
+    (await listPrepLists()).data,
+    (await listWasteEntries()).data,
+    (await listRecipes()).data,
   ]);
 
   const locationIds = Array.from(

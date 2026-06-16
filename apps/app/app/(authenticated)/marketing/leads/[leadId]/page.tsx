@@ -1,3 +1,4 @@
+import { getLead, listClientInteractions } from "@/app/lib/manifest-client.generated";
 /**
  * @module marketing/leads/[leadId]
  * @intent Lead detail page — displays full lead information with actions
@@ -54,14 +55,8 @@ export default async function LeadDetailPage({
 
   // Fetch lead with interactions
   const [lead, interactions] = await Promise.all([
-    database.lead.findUnique({
-      where: { id: leadId, tenantId, deletedAt: null },
-    }),
-    database.clientInteraction.findMany({
-      where: { tenantId, leadId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
+    getLead(leadId),
+    (await listClientInteractions()).data,
   ]);
 
   if (!lead) {

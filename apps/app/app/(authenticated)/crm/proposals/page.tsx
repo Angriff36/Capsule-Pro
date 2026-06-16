@@ -1,3 +1,4 @@
+import { listProposals } from "@/app/lib/manifest-client.generated";
 /**
  * @module ProposalsPage
  * @intent Server-rendered proposals list with summary metrics
@@ -56,60 +57,7 @@ export default async function ProposalsPage() {
 
   const [allProposalsRaw, acceptedCount, pendingCount, totalValueAggregate] =
     await Promise.all([
-      database.proposal.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        orderBy: [{ createdAt: "desc" }],
-        select: {
-          id: true,
-          tenantId: true,
-          proposalNumber: true,
-          title: true,
-          status: true,
-          eventDate: true,
-          eventType: true,
-          guestCount: true,
-          venueName: true,
-          total: true,
-          discountAmount: true,
-          subtotal: true,
-          taxRate: true,
-          taxAmount: true,
-          publicToken: true,
-          validUntil: true,
-          sentAt: true,
-          viewedAt: true,
-          acceptedAt: true,
-          rejectedAt: true,
-          notes: true,
-          termsAndConditions: true,
-          createdAt: true,
-          updatedAt: true,
-          deletedAt: true,
-          clientId: true,
-          leadId: true,
-          eventId: true,
-          templateId: true,
-          venueAddress: true,
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-          lead: {
-            select: {
-              id: true,
-              companyName: true,
-              contactName: true,
-            },
-          },
-        },
-      }),
+      (await listProposals()).data,
       database.proposal.count({
         where: {
           tenantId,

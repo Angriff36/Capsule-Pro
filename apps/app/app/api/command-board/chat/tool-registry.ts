@@ -1,3 +1,4 @@
+import { getCommandBoard, getEvent, listBoardProjections, listClients, listEventDishes, listEvents, listInventoryItems, listKitchenTasks, listUsers } from "@/app/lib/manifest-client.generated";
 import { createHash, randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
@@ -437,22 +438,7 @@ async function readBoardStateTool(
     };
   }
 
-  const board = await database.commandBoard.findFirst({
-    where: {
-      id: boardId,
-      tenantId: context.tenantId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      tags: true,
-    },
-  });
+  const board = await getCommandBoard(boardId);
 
   if (!board) {
     const sanitized = sanitizeErrorMessage(
@@ -466,26 +452,7 @@ async function readBoardStateTool(
     };
   }
 
-  const projections = await database.boardProjection.findMany({
-    where: {
-      tenantId: context.tenantId,
-      boardId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      entityType: true,
-      entityId: true,
-      positionX: true,
-      positionY: true,
-      width: true,
-      height: true,
-      groupId: true,
-      pinned: true,
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 300,
-  });
+  const projections = (await listBoardProjections()).data;
 
   const byType = projections.reduce<Record<string, number>>(
     (acc, projection) => {
@@ -767,17 +734,7 @@ async function suggestManifestPlanTool(
   const planInput = parseResult.data;
 
   // Query boardProjection to populate scope.entities from current board state
-  const projections = await database.boardProjection.findMany({
-    where: {
-      tenantId: context.tenantId,
-      boardId,
-      deletedAt: null,
-    },
-    select: {
-      entityType: true,
-      entityId: true,
-    },
-  });
+  const projections = (await listBoardProjections()).data;
 
   // Build entities array from projections
   const entities = projections.map((p) => ({
@@ -1257,19 +1214,7 @@ async function generatePrepListTool(
   }
 
   // Fetch event dishes to generate prep list from
-  const eventDishes = await database.eventDish.findMany({
-    where: {
-      tenantId: context.tenantId,
-      eventId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      dishId: true,
-      course: true,
-      quantityServings: true,
-    },
-  });
+  const eventDishes = (await listEventDishes()).data;
 
   if (eventDishes.length === 0) {
     return {
@@ -1280,19 +1225,7 @@ async function generatePrepListTool(
   }
 
   // Get event details for context
-  const event = await database.event.findFirst({
-    where: {
-      id: eventId,
-      tenantId: context.tenantId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      title: true,
-      guestCount: true,
-      eventDate: true,
-    },
-  });
+  const event = await getEvent(eventId);
 
   if (!event) {
     return {
@@ -2533,21 +2466,7 @@ async function listEventsTool(
       where.eventDate = dateFilter;
     }
 
-    const events = await database.event.findMany({
-      where,
-      orderBy: { eventDate: "asc" },
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        status: true,
-        guestCount: true,
-        venueName: true,
-        eventType: true,
-        notes: true,
-      },
-    });
+    const events = (await listEvents()).data;
 
     return {
       ok: true,
@@ -2580,18 +2499,7 @@ async function listStaffTool(
   try {
     const limit =
       typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
-    const users = await database.user.findMany({
-      where: { tenantId: context.tenantId },
-      take: limit,
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    const users = (await listUsers()).data;
 
     return {
       ok: true,
@@ -2621,21 +2529,7 @@ async function listClientsTool(
   try {
     const limit =
       typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
-    const clients = await database.client.findMany({
-      where: { tenantId: context.tenantId },
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-        email: true,
-        phone: true,
-        clientType: true,
-        createdAt: true,
-      },
-    });
+    const clients = (await listClients()).data;
 
     return {
       ok: true,
@@ -2672,20 +2566,7 @@ async function listInventoryTool(
       typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const where: Record<string, unknown> = { tenantId: context.tenantId };
 
-    const items = await database.inventoryItem.findMany({
-      where,
-      take: limit,
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        quantityOnHand: true,
-        unitOfMeasure: true,
-        reorder_level: true,
-        parLevel: true,
-        category: true,
-      },
-    });
+    const items = (await listInventoryItems()).data;
 
     let result = items;
     if (args.lowStockOnly === true) {
@@ -2730,19 +2611,7 @@ async function listKitchenTasksTool(
       where.status = args.status;
     }
 
-    const tasks = await database.kitchenTask.findMany({
-      where,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        priority: true,
-        dueDate: true,
-        summary: true,
-      },
-    });
+    const tasks = (await listKitchenTasks()).data;
 
     return {
       ok: true,

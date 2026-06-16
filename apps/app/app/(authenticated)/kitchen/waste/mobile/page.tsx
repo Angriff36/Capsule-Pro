@@ -21,6 +21,7 @@ import { captureException } from "@sentry/nextjs";
 import { Trash2, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { listInventoryItems } from "@/app/lib/inventory";
 import { Header } from "../../../components/header";
 
 interface WasteReason {
@@ -78,12 +79,15 @@ export default function WasteLoggingMobilePage() {
 
   const fetchInventoryItems = useCallback(async () => {
     try {
-      // NOTE: Keeping apiFetch — /api/inventory/items is a different endpoint from generated listInventoryItems (/api/kitchen/inventory/list) with different response shape.
-      const response = await apiFetch("/api/inventory/items?limit=100");
-      if (response.ok) {
-        const data = await response.json();
-        setInventoryItems(data.items || []);
-      }
+      const result = await listInventoryItems({ limit: 100 });
+      setInventoryItems(
+        result.data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          unit: item.unit_of_measure,
+          currentStock: item.quantity_on_hand,
+        }))
+      );
     } catch (error) {
       captureException(error);
     }

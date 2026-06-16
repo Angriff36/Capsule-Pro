@@ -4,8 +4,6 @@
  * Client-side utilities for email template operations
  */
 
-import type { EmailTemplate } from "@repo/database";
-
 /**
  * Render a template with merge field values
  * Replaces {{field}} placeholders with actual values

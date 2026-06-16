@@ -1,3 +1,4 @@
+import { listInvoices, listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -152,56 +153,8 @@ export default async function AccountingPage() {
         isActive: true,
       },
     }),
-    database.invoice.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        invoiceNumber: true,
-        status: true,
-        total: true,
-        amountDue: true,
-        dueDate: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    }),
-    database.payment.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
-      take: 5,
-      select: {
-        id: true,
-        amount: true,
-        status: true,
-        methodType: true,
-        completedAt: true,
-        createdAt: true,
-        invoice: {
-          select: {
-            invoiceNumber: true,
-          },
-        },
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-      },
-    }),
+    (await listInvoices()).data,
+    (await listPayments()).data,
   ]);
 
   const invoicedTotal = Number(invoiceTotals._sum.total ?? 0);

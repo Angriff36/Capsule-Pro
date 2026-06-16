@@ -62,7 +62,7 @@ Required response:
 
 ## Migration boundary
 
-Database migrations and Prisma schema changes are persistence changes, not Manifest semantic changes.
+Convex schema changes (via Manifest projection) are persistence changes, not Manifest semantic changes.
 
 A projection must not use migration shape as proof that a governed command exists. A migration can add columns/tables needed by runtime adapters, but command meaning still comes from Manifest source, compiled IR, runtime adapters, and conformance evidence.
 

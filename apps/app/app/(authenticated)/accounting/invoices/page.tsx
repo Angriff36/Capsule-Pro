@@ -1,3 +1,4 @@
+import { listInvoices } from "@/app/lib/manifest-client.generated";
 /**
  * @module InvoicesPage
  * @intent Server component for Invoices listing page
@@ -6,7 +7,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { InvoicesClient } from "./invoices-client";
@@ -22,11 +22,7 @@ export default async function InvoicesPage() {
     redirect("/");
   }
 
-  const invoices = await database.invoice.findMany({
-    where: { tenantId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  const invoices = (await listInvoices()).data;
 
   const serialized = invoices.map((inv) => ({
     id: inv.id,

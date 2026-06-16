@@ -1,6 +1,0 @@
-.vercel
-.env*.local
-.manifest/
-
-# Sentry Config File
-.env.sentry-build-plugin

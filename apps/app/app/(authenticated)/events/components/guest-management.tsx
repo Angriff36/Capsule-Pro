@@ -9,7 +9,6 @@
 
 "use client";
 
-import type { EventGuest } from "@repo/database";
 import {
   AlertDialog,
   AlertDialogAction,

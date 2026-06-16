@@ -1,13 +1,19 @@
 "use client";
 
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
-// NOTE: Keeping apiFetch for batch operations, CSV import, and custom supplier list endpoint
-import { apiFetch } from "@/app/lib/api";
 import {
   inventoryItemCreate,
   inventoryItemSoftDelete,
   inventoryItemUpdate,
+  listInventorySuppliers,
 } from "@/app/lib/manifest-client.generated";
+import { mapConvexInventoryItemToUi } from "@/app/lib/inventory-convex-mapper";
+import {
+  activeTenantRows,
+  type ConvexDoc,
+} from "@/app/lib/convex/doc-utils";
+import { fetchConvexList, fetchConvexRecord } from "@/app/lib/convex/read-bridge";
+import { apiFetch } from "@/app/lib/api";
 import type { InventoryItem as GeneratedInventoryItem } from "@/app/lib/manifest-types.generated";
 // Type definitions matching the API response
 export const FSA_STATUSES = [
@@ -142,6 +148,7 @@ export interface UpdateInventoryItemRequest {
 // List inventory items with pagination and filters
 export async function listInventoryItems(params: {
   search?: string;
+  barcode?: string;
   category?: string;
   supplierId?: string;
   stockStatus?: StockStatus;
@@ -150,57 +157,66 @@ export async function listInventoryItems(params: {
   page?: number;
   limit?: number;
 }): Promise<InventoryItemListResponse> {
-  // NOTE: Keeping apiFetch — /api/inventory/items response shape (snake_case +
-  // computed stock_status/total_value + server-side filters/pagination) differs
-  // from generated listInventoryItems (/api/kitchen/inventory/list raw rows).
-  const searchParams = new URLSearchParams();
+  const rows = (await fetchConvexList("InventoryItem")) as ConvexDoc[];
+  let items = activeTenantRows(rows).map(mapConvexInventoryItemToUi);
+
+  if (params.barcode) {
+    items = items.filter((i) => i.barcode === params.barcode);
+  }
   if (params.search) {
-    searchParams.set("search", params.search);
+    const q = params.search.toLowerCase();
+    items = items.filter(
+      (i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.item_number.toLowerCase().includes(q) ||
+        (i.barcode?.toLowerCase().includes(q) ?? false)
+    );
   }
   if (params.category) {
-    searchParams.set("category", params.category);
+    items = items.filter((i) => i.category === params.category);
   }
   if (params.supplierId) {
-    searchParams.set("supplier_id", params.supplierId);
+    items = items.filter((i) => i.supplier_id === params.supplierId);
   }
   if (params.stockStatus) {
-    searchParams.set("stock_status", params.stockStatus);
+    items = items.filter((i) => i.stock_status === params.stockStatus);
   }
   if (params.fsaStatus) {
-    searchParams.set("fsa_status", params.fsaStatus);
+    items = items.filter((i) => i.fsa_status === params.fsaStatus);
   }
   if (params.tags?.length) {
-    searchParams.set("tags", params.tags.join(","));
-  }
-  if (params.page) {
-    searchParams.set("page", String(params.page));
-  }
-  if (params.limit) {
-    searchParams.set("limit", String(params.limit));
+    items = items.filter((i) =>
+      params.tags!.every((tag) => i.tags.includes(tag))
+    );
   }
 
-  const response = await apiFetch(
-    `/api/inventory/items?${searchParams.toString()}`
-  );
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to list inventory items");
-  }
-  return response.json();
+  const page = params.page ?? 1;
+  const limit = params.limit ?? items.length || 50;
+  const total = items.length;
+  const start = (page - 1) * limit;
+  const data = items.slice(start, start + limit);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  };
 }
 
-// Get a single inventory item by ID
 export async function getInventoryItem(
   itemId: string
 ): Promise<InventoryItemWithStatus> {
-  // NOTE: Keeping apiFetch — /api/inventory/items/[id] returns the computed
-  // InventoryItemWithStatus shape; generated getInventoryItem does not.
-  const response = await apiFetch(`/api/inventory/items/${itemId}`);
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to get inventory item");
+  const doc = (await fetchConvexRecord("InventoryItem", itemId)) as
+    | ConvexDoc
+    | null;
+  if (!doc || doc.deletedAt != null) {
+    throw new Error("Failed to get inventory item");
   }
-  return response.json();
+  return mapConvexInventoryItemToUi(doc);
 }
 
 // Create a new inventory item
@@ -367,21 +383,17 @@ export interface Supplier {
   supplier_number: string;
 }
 
-// NOTE: Keeping apiFetch for custom supplier list endpoint (response shape differs from generated listInventorySuppliers)
 export async function listSuppliers(): Promise<Supplier[]> {
-  const response = await apiFetch("/api/inventory/suppliers/list?limit=500");
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to list suppliers");
-  }
-  const data = await response.json();
-  return (data.inventorySuppliers ?? []).map(
-    (s: { id: string; name: string; supplier_number: string }) => ({
-      id: s.id,
-      name: s.name,
-      supplier_number: s.supplier_number,
-    })
-  );
+  const { data } = await listInventorySuppliers();
+  return data.map((s) => ({
+    id: String(s.id ?? (s as { _id?: string })._id ?? ""),
+    name: String(s.name ?? ""),
+    supplier_number: String(
+      (s as { supplier_number?: string }).supplier_number ??
+        (s as { supplierNumber?: string }).supplierNumber ??
+        ""
+    ),
+  }));
 }
 
 export { formatCurrency };

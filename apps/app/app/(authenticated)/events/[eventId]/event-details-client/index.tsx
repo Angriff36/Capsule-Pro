@@ -1,6 +1,5 @@
 "use client";
 
-import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";

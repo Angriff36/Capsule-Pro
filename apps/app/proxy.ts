@@ -27,6 +27,20 @@ function jsonResponse(message: string, status: number) {
 }
 
 function requestOrigin(req: Request) {
+  const url = new URL(req.url);
+
+  // LAN IP over HTTP breaks Clerk — loopback only in dev.
+  if (process.env.NODE_ENV === "development") {
+    const port = url.port || "2226";
+    if (
+      url.hostname !== "localhost" &&
+      url.hostname !== "127.0.0.1" &&
+      !url.hostname.endsWith(".localhost")
+    ) {
+      return `http://127.0.0.1:${port}`;
+    }
+  }
+
   const forwardedHost = req.headers.get("x-forwarded-host");
   const forwardedProto = req.headers.get("x-forwarded-proto");
 
@@ -34,7 +48,7 @@ function requestOrigin(req: Request) {
     return `${forwardedProto || "https"}://${forwardedHost}`;
   }
 
-  return new URL(req.url).origin;
+  return url.origin;
 }
 
 function redirectToSignIn(req: Request) {

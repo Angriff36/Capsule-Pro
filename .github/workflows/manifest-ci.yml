@@ -81,6 +81,36 @@ jobs:
       - name: Validate IR schema + AI score + doctor
         run: pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor
 
+  manifest-convex-gate:
+    name: Convex Compile-to-Convex Gate (blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
+    # BLOCKING — constitution v5: IR → Convex projection in sync, no new
+    # Prisma/runtime-interpreter patterns, governance registries fresh.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      - name: Run compile-to-Convex CI chain
+        run: pnpm manifest:ci
+
       # Kitchen conformance test run moved to the dedicated `manifest-tests` job
       # below to avoid duplication. That job also excludes DB-dependent tests
       # (prep-tasks.test.ts) since this CI tier has no Postgres service.
@@ -89,7 +119,7 @@ jobs:
     name: Check Generated Code Is Up-to-Date
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.actor != 'dependabot[bot]'
+    if: false # superseded by manifest-convex-gate (compile-to-Convex; no Prisma analyze drift)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -473,7 +503,7 @@ jobs:
 
   manifest-openapi-drift:
     name: OpenAPI Spec Drift Check
-    if: github.actor != 'dependabot[bot]'
+    if: false # legacy Next.js API projection — not used in compile-to-Convex clone
     # BLOCKING — proves the committed manifest/api-docs/openapi.json matches the
     # spec the CURRENT manifest sources would produce. Without this, the OpenAPI
     # spec (consumed by the /api-docs Scalar UI and agent tooling) silently rots
@@ -529,7 +559,7 @@ jobs:
 
   manifest-route-drift:
     name: Route Drift Gate
-    if: github.actor != 'dependabot[bot]'
+    if: false # legacy Next.js route projection — not used in compile-to-Convex clone
     # BLOCKING — proves the committed generated routes match what
     # the current IR would produce. Catches stale route files after
     # manifest source changes that weren't followed by regeneration.
@@ -560,7 +590,7 @@ jobs:
 
   manifest-schema-parity:
     name: IR <-> Prisma Schema Parity Gate
-    if: github.actor != 'dependabot[bot]'
+    if: false # legacy Prisma path — compile-to-Convex uses convex/schema.ts drift gate instead
     # BLOCKING — the two hand-authored masters (compiled IR and the live
     # packages/database/prisma/schema.prisma) are compared field-by-field:
     # required-column create coverage, phantom IR properties (silent
@@ -595,7 +625,7 @@ jobs:
 
   manifest-parent-context:
     name: Parent-Context Inheritance Gate
-    if: github.actor != 'dependabot[bot]'
+    if: false # legacy Prisma create-path audit — governed by generated Convex mutations
     # BLOCKING — proves child entities inherit parent-owned fields server-side
     # (Task 8.9/8.10). Catches regressions where a child create no longer
     # propagates fields like facilityId from its parent Facility.
@@ -776,11 +806,10 @@ jobs:
 
   manifest-direct-writes-baseline:
     name: Direct-Write Audit (Baseline + Block New)
-    if: github.actor != 'dependabot[bot]'
-    # BLOCKING — constitution §2 requires governed-entity writes to go through
-    # RuntimeEngine.runCommand. The upstream `direct-writes` detector only matches
-    # the literal `prisma.X.method` identifier, but Capsule writes via `database.X.method`
-    # (re-exported PrismaClient). This Capsule-local audit closes that blind spot.
+    if: false # legacy Prisma direct-write gate — superseded by convex-architecture baseline during migration
+    # BLOCKING — constitution v5 requires governed writes via generated Convex
+    # mutations only. Legacy Prisma direct-write debt is baseline-gated until
+    # callsites migrate off packages/database.
     #
     # Existing debt is captured in manifest/governance/baselines/direct-writes.json
     # (113 (file, entity) pairs across 76 files at the 2026-05-22 baseline). The

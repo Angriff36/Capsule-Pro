@@ -1,3 +1,4 @@
+import { listAdminTasks, listClientContacts, listClients, listEvents, listInventoryItems, listKitchenTasks, listKnowledgeBaseEntries, listVenues } from "@/app/lib/manifest-client.generated";
 import { analytics } from "@repo/analytics/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
@@ -100,28 +101,7 @@ export async function GET(request: NextRequest) {
       await Promise.all([
         typesToSearch.includes("events")
           ? Promise.all([
-              database.event.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { title: { contains: q, mode: "insensitive" } },
-                    { eventNumber: { contains: q, mode: "insensitive" } },
-                    { venueName: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  title: true,
-                  eventNumber: true,
-                  eventDate: true,
-                  venueName: true,
-                  tenantId: true,
-                },
-                orderBy: { eventDate: "desc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listEvents()).data,
               database.event.count({
                 where: {
                   tenantId,
@@ -141,29 +121,7 @@ export async function GET(request: NextRequest) {
 
         typesToSearch.includes("clients")
           ? Promise.all([
-              database.client.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { company_name: { contains: q, mode: "insensitive" } },
-                    { first_name: { contains: q, mode: "insensitive" } },
-                    { last_name: { contains: q, mode: "insensitive" } },
-                    { email: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  company_name: true,
-                  first_name: true,
-                  last_name: true,
-                  email: true,
-                  tenantId: true,
-                },
-                orderBy: { updatedAt: "desc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listClients()).data,
               database.client.count({
                 where: {
                   tenantId,
@@ -184,31 +142,7 @@ export async function GET(request: NextRequest) {
 
         typesToSearch.includes("contacts")
           ? Promise.all([
-              database.clientContact.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { first_name: { contains: q, mode: "insensitive" } },
-                    { last_name: { contains: q, mode: "insensitive" } },
-                    { email: { contains: q, mode: "insensitive" } },
-                    { title: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  clientId: true,
-                  first_name: true,
-                  last_name: true,
-                  title: true,
-                  email: true,
-                  phone: true,
-                  tenantId: true,
-                },
-                orderBy: { updatedAt: "desc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listClientContacts()).data,
               database.clientContact.count({
                 where: {
                   tenantId,
@@ -229,30 +163,7 @@ export async function GET(request: NextRequest) {
 
         typesToSearch.includes("venues")
           ? Promise.all([
-              database.venue.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  isActive: true,
-                  OR: [
-                    { name: { contains: q, mode: "insensitive" } },
-                    { city: { contains: q, mode: "insensitive" } },
-                    { stateProvince: { contains: q, mode: "insensitive" } },
-                    { venueType: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  name: true,
-                  city: true,
-                  stateProvince: true,
-                  venueType: true,
-                  tenantId: true,
-                },
-                orderBy: { name: "asc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listVenues()).data,
               database.venue.count({
                 where: {
                   tenantId,
@@ -274,28 +185,7 @@ export async function GET(request: NextRequest) {
 
         typesToSearch.includes("inventory")
           ? Promise.all([
-              database.inventoryItem.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { name: { contains: q, mode: "insensitive" } },
-                    { item_number: { contains: q, mode: "insensitive" } },
-                    { category: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  item_number: true,
-                  name: true,
-                  category: true,
-                  unitOfMeasure: true,
-                  tenantId: true,
-                },
-                orderBy: { name: "asc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listInventoryItems()).data,
               database.inventoryItem.count({
                 where: {
                   tenantId,
@@ -315,29 +205,7 @@ export async function GET(request: NextRequest) {
 
         typesToSearch.includes("knowledge")
           ? Promise.all([
-              database.knowledgeBaseEntry.findMany({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  status: "published",
-                  OR: [
-                    { title: { contains: q, mode: "insensitive" } },
-                    { category: { contains: q, mode: "insensitive" } },
-                    { content: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-                select: {
-                  id: true,
-                  slug: true,
-                  title: true,
-                  category: true,
-                  status: true,
-                  tenantId: true,
-                },
-                orderBy: { updatedAt: "desc" },
-                take: ITEMS_PER_GROUP,
-                skip: offset,
-              }),
+              (await listKnowledgeBaseEntries()).data,
               database.knowledgeBaseEntry.count({
                 where: {
                   tenantId,
@@ -360,50 +228,14 @@ export async function GET(request: NextRequest) {
           ? (async () => {
               const [kitchenItems, kitchenCount, adminItems, adminCount] =
                 await Promise.all([
-                  database.kitchenTask.findMany({
-                    where: {
-                      tenantId,
-                      title: { contains: q, mode: "insensitive" },
-                    },
-                    select: {
-                      id: true,
-                      title: true,
-                      summary: true,
-                      status: true,
-                      priority: true,
-                      tenantId: true,
-                    },
-                    orderBy: { updatedAt: "desc" },
-                    take: ITEMS_PER_GROUP,
-                    skip: offset,
-                  }),
+                  (await listKitchenTasks()).data,
                   database.kitchenTask.count({
                     where: {
                       tenantId,
                       title: { contains: q, mode: "insensitive" },
                     },
                   }),
-                  database.adminTask.findMany({
-                    where: {
-                      tenantId,
-                      deletedAt: null,
-                      OR: [
-                        { title: { contains: q, mode: "insensitive" } },
-                        { description: { contains: q, mode: "insensitive" } },
-                      ],
-                    },
-                    select: {
-                      id: true,
-                      title: true,
-                      description: true,
-                      status: true,
-                      priority: true,
-                      tenantId: true,
-                    },
-                    orderBy: { updatedAt: "desc" },
-                    take: ITEMS_PER_GROUP,
-                    skip: offset,
-                  }),
+                  (await listAdminTasks()).data,
                   database.adminTask.count({
                     where: {
                       tenantId,

@@ -1,5 +1,5 @@
+import { listBattleBoards } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -61,14 +61,16 @@ const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const boards = await database.battleBoard.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(filterEventId ? { eventId: filterEventId } : {}),
-    },
-    orderBy: [{ createdAt: "desc" }],
-  });
+  const boards = (await listBattleBoards()).data
+    .filter(
+      (board) =>
+        !board.deletedAt &&
+        (!filterEventId || board.eventId === filterEventId),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
   // Calculate stats
   const draftCount = boards.filter((b) => b.status === "draft").length;

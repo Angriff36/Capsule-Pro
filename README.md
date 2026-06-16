@@ -66,7 +66,7 @@ pnpm dev
 | 2223 | API (`apps/api`) |
 | 2224 | Docs (`apps/docs`) |
 | 2225 | Email preview (`apps/email`) |
-| 2226 | Prisma Studio (`apps/studio`) |
+| 2226 | Convex dashboard (`npx convex dashboard`) |
 
 ## Validation
 
@@ -88,7 +88,7 @@ apps/
   web/          # Marketing/content site
   docs/         # Documentation site
   email/        # Email template preview
-  studio/       # Prisma Studio (DB admin)
+  studio/       # (legacy) was Prisma Studio — deprecated, use Convex dashboard
   storybook/    # Component storybook
 
 packages/       # Shared libraries (41 packages)

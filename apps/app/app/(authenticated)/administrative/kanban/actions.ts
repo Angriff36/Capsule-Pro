@@ -1,4 +1,5 @@
 "use server";
+import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
@@ -61,10 +62,7 @@ export async function listAdminTasks(): Promise<KanbanTask[]> {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const tasks = await database.adminTask.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: [{ position: "asc" }, { createdAt: "desc" }],
-  });
+  const tasks = (await listAdminTasks()).data;
 
   const employeeIds = Array.from(
     new Set(
@@ -75,10 +73,7 @@ export async function listAdminTasks(): Promise<KanbanTask[]> {
   );
 
   const employees = employeeIds.length
-    ? await database.user.findMany({
-        where: { tenantId, id: { in: employeeIds } },
-        select: { id: true, firstName: true, lastName: true },
-      })
+    ? (await listUsers()).data
     : [];
 
   const employeeMap = new Map(

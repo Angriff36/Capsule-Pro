@@ -1,75 +1,32 @@
 import "server-only";
 
-import { auth, currentUser } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { captureException, captureMessage } from "@sentry/nextjs";
+import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { ensureConvexCurrentUser } from "@/app/lib/convex/tenant-bootstrap";
 import { invariant } from "./invariant";
 
-const CONNECTION_ERROR_PATTERN =
-  /connection terminated|connection refused|ECONNREFUSED|ENOTFOUND|connect/i;
-
 // In-memory cache to deduplicate tenant lookups within the same server process.
-// Prevents N+1 queries when many parallel API requests resolve the same org.
 const tenantCache = new Map<string, { id: string; expiresAt: number }>();
-const TENANT_CACHE_TTL_MS = 30_000; // 30 seconds
+const TENANT_CACHE_TTL_MS = 30_000;
 
+/**
+ * Resolve Clerk org → tenantId.
+ * Convex clone uses Clerk orgId as tenantId (no Prisma Account table).
+ */
 export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   invariant(orgId, "orgId must exist to resolve tenant");
 
-  // Check cache first
   const cached = tenantCache.get(orgId);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.id;
   }
 
-  try {
-    let account = await database.account.findFirst({
-      where: { slug: orgId, deletedAt: null },
-    });
+  tenantCache.set(orgId, {
+    id: orgId,
+    expiresAt: Date.now() + TENANT_CACHE_TTL_MS,
+  });
 
-    if (!account) {
-      account = await database.account.create({
-        data: {
-          name: orgId,
-          slug: orgId,
-        },
-      });
-    }
-
-    // Cache the result
-    tenantCache.set(orgId, {
-      id: account.id,
-      expiresAt: Date.now() + TENANT_CACHE_TTL_MS,
-    });
-
-    return account.id;
-  } catch (err) {
-    // Log the real error in the terminal (next dev server) so we see what's actually failing
-    const raw =
-      err instanceof Error
-        ? `${err.name}: ${err.message}${err.cause ? ` (cause: ${String(err.cause)})` : ""}`
-        : String(err);
-    console.error("[getTenantIdForOrg] DB error:", raw);
-    const errWithCode = err as { code?: string };
-    if (err instanceof Error && errWithCode.code) {
-      console.error("[getTenantIdForOrg] code:", errWithCode.code);
-    }
-
-    // Always report DB errors to Sentry — these are infrastructure failures
-    captureException(err instanceof Error ? err : new Error(String(err)), {
-      tags: { source: "getTenantIdForOrg", type: "database" },
-      extra: { orgId, errorCode: errWithCode.code },
-    });
-
-    const msg =
-      err instanceof Error ? err.message : String(err ?? "Unknown error");
-    if (CONNECTION_ERROR_PATTERN.test(msg)) {
-      throw new Error(
-        `Database connection failed (${msg}). See server logs for full error.`
-      );
-    }
-    throw err instanceof Error ? err : new Error(String(err));
-  }
+  return orgId;
 };
 
 export const requireTenantId = async (): Promise<string> => {
@@ -115,165 +72,12 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
   invariant(orgId, "auth.orgId must exist");
   invariant(clerkId, "auth.userId must exist");
 
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // 1. Look up existing active record
-  const existing = await database.user.findFirst({
-    where: { tenantId, authUserId: clerkId, deletedAt: null },
-    select: {
-      id: true,
-      tenantId: true,
-      role: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  // 2. Check for soft-deleted record — restore it
-  const ghostRecord = await database.user.findFirst({
-    where: { tenantId, authUserId: clerkId, deletedAt: { not: null } },
-    select: { id: true },
-  });
-
-  if (ghostRecord) {
-    const clerkUser = await currentUser();
-    const email =
-      clerkUser?.emailAddresses.at(0)?.emailAddress?.toLowerCase() ??
-      "unknown@example.com";
-    const firstName = clerkUser?.firstName ?? "Unknown";
-    const lastName = clerkUser?.lastName ?? "User";
-
-    const restored = await database.user.update({
-      where: { tenantId_id: { tenantId, id: ghostRecord.id } },
-      data: { deletedAt: null, isActive: true, email, firstName, lastName },
-      select: {
-        id: true,
-        tenantId: true,
-        role: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
-
-    console.log("[requireCurrentUser] Restored soft-deleted user", {
-      tenantId,
-      clerkId,
-      userId: restored.id,
-    });
-
-    return restored;
-  }
-
-  // 3. Check if an unlinked employee exists with the same email — link them
-  const clerkUser = await currentUser();
-  const clerkEmail =
-    clerkUser?.emailAddresses.at(0)?.emailAddress?.toLowerCase() ?? null;
-
-  if (clerkEmail) {
-    const byEmail = await database.user.findFirst({
-      where: { tenantId, email: clerkEmail, deletedAt: null, authUserId: null },
-      select: { id: true },
-    });
-
-    if (byEmail) {
-      const linked = await database.user.update({
-        where: { tenantId_id: { tenantId, id: byEmail.id } },
-        data: { authUserId: clerkId },
-        select: {
-          id: true,
-          tenantId: true,
-          role: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-        },
-      });
-
-      console.log("[requireCurrentUser] Linked existing employee by email", {
-        tenantId,
-        clerkId,
-        userId: linked.id,
-        email: clerkEmail,
-      });
-
-      return linked;
-    }
-  }
-
-  // 4. No record at all — auto-provision a new employee
-  const email = clerkEmail ?? "unknown@example.com";
-  const firstName = clerkUser?.firstName ?? "Unknown";
-  const lastName = clerkUser?.lastName ?? "User";
-
-  captureMessage("Auto-provisioning user in new tenant", {
-    level: "info",
-    tags: { route: "requireCurrentUser", tenantId, authUserId: clerkId },
-    extra: { email, orgId },
-  });
-
-  console.log("[requireCurrentUser] Auto-provisioning new user", {
-    tenantId,
-    clerkId,
-    email,
-    orgId,
-  });
-
   try {
-    const created = await database.user.create({
-      data: {
-        tenantId,
-        email,
-        firstName,
-        lastName,
-        role: "admin",
-        employmentType: "full_time",
-        authUserId: clerkId,
-      },
-      select: {
-        id: true,
-        tenantId: true,
-        role: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
+    return await ensureConvexCurrentUser();
+  } catch (err) {
+    captureException(err instanceof Error ? err : new Error(String(err)), {
+      tags: { route: "requireCurrentUser", orgId, authUserId: clerkId },
     });
-
-    return created;
-  } catch (provisionErr) {
-    // Unique constraint race condition — another request provisioned between our check and create
-    const retried = await database.user.findFirst({
-      where: { tenantId, authUserId: clerkId, deletedAt: null },
-      select: {
-        id: true,
-        tenantId: true,
-        role: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
-
-    if (retried) {
-      return retried;
-    }
-
-    // Genuinely failed
-    captureException(provisionErr, {
-      tags: { route: "requireCurrentUser", tenantId, authUserId: clerkId },
-      extra: { email, orgId },
-    });
-
-    console.error(
-      "[requireCurrentUser] Failed to provision user:",
-      provisionErr
-    );
     throw new Error(
       `Unable to provision your account in this organization. Please contact support. (org: ${orgId})`
     );

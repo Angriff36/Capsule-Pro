@@ -1,3 +1,4 @@
+import { listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -141,19 +142,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
 
   const employees =
     employeeIds.length > 0
-      ? await database.user.findMany({
-          where: {
-            tenantId,
-            id: { in: employeeIds },
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        })
+      ? (await listUsers()).data
       : [];
   const employeesById = new Map(
     employees.map((employee) => [employee.id, employee])

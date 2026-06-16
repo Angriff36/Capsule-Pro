@@ -2,7 +2,6 @@
   "name": "@repo/payroll-engine",
   "version": "0.0.1",
   "dependencies": {
-    "@repo/database": "workspace:*",
     "decimal.js": "^10.6.0",
     "zod": "^4.4.3"
   },

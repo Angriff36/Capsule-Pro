@@ -1,4 +1,5 @@
 "use server";
+import { listFacilities, listFacilityAssets, listPreventiveMaintenanceSchedules } from "@/app/lib/manifest-client.generated";
 
 /**
  * Facilities Server Actions
@@ -21,10 +22,7 @@ export async function getFacilities() {
   invariant(orgId, "Unauthorized");
   const tenantId = await getTenantId();
 
-  return database.facility.findMany({
-    where: { tenantId },
-    orderBy: { name: "asc" },
-  });
+  return (await listFacilities()).data;
 }
 
 export async function createFacility(formData: FormData) {
@@ -333,10 +331,7 @@ export async function getSchedules() {
   invariant(orgId, "Unauthorized");
   const tenantId = await getTenantId();
 
-  return database.preventiveMaintenanceSchedule.findMany({
-    where: { tenantId },
-    orderBy: { nextDueAt: "asc" },
-  });
+  return (await listPreventiveMaintenanceSchedules()).data;
 }
 
 export async function getFacilityAssets() {
@@ -344,10 +339,7 @@ export async function getFacilityAssets() {
   invariant(orgId, "Unauthorized");
   const tenantId = await getTenantId();
 
-  return database.facilityAsset.findMany({
-    where: { tenantId, status: "active" },
-    orderBy: { name: "asc" },
-  });
+  return (await listFacilityAssets()).data;
 }
 
 export async function completeSchedule(scheduleId: string) {

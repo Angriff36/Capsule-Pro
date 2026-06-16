@@ -85,7 +85,7 @@ SLACK_CHANNEL_ID=C1234567890
 
 ### 4. Run Database Migration
 
-After adding the `SentryFixJob` model to your Prisma schema:
+After adding the `SentryFixJob` entity to Manifest IR, regenerate the Convex schema.
 
 ```bash
 pnpm db:migrate

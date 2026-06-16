@@ -1,6 +1,5 @@
 "use client";
 
-import type { Event } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";

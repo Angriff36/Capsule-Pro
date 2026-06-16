@@ -1,5 +1,5 @@
+import { listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -71,25 +71,7 @@ const StaffTeamPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const employees = await database.user.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true,
-      employmentType: true,
-      createdAt: true,
-    },
-  });
+  const employees = (await listUsers()).data;
 
   const activeCount = employees.filter((e) => e.isActive).length;
   const inactiveCount = employees.length - activeCount;

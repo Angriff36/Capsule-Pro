@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import type {
   AvailabilityFilters,
@@ -9,179 +8,168 @@ import type {
 } from "@/app/lib/staff/availability/types";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import {
+  activeUsers,
+  getEmployeeAvailabilityById,
+  loadEmployeeAvailabilities,
+  loadTimeOffRequests,
+  loadUsers,
+} from "@/app/lib/scheduling/server-reads";
+import { isDeleted, toDate } from "@/app/lib/scheduling/shift-utils";
+import type { EmployeeAvailability, User } from "@/app/lib/manifest-types.generated";
 
-/**
- * Get all availability records with optional filters
- */
+type AvailabilityRow = {
+  id: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  effectiveFrom: Date;
+  effectiveUntil: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function formatTimeValue(value: unknown): string {
+  const date = toDate(value);
+  if (!date) return String(value ?? "");
+  const hours = date.getUTCHours().toString().padStart(2, "0");
+  const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function isEffectiveOnDate(record: EmployeeAvailability, date: Date): boolean {
+  const effectiveFrom = toDate(record.effectiveFrom) ?? date;
+  const effectiveUntil = toDate(record.effectiveUntil) ?? date;
+  return date >= effectiveFrom && date <= effectiveUntil;
+}
+
+function mapAvailabilityRow(
+  record: EmployeeAvailability,
+  user?: User
+): AvailabilityRow {
+  return {
+    id: record.id,
+    employeeId: record.employeeId ?? "",
+    employeeFirstName: user?.firstName ?? null,
+    employeeLastName: user?.lastName ?? null,
+    employeeEmail: user?.email ?? "",
+    employeeRole: user?.role ?? "staff",
+    dayOfWeek: record.dayOfWeek ?? 0,
+    startTime: formatTimeValue(record.startTime),
+    endTime: formatTimeValue(record.endTime),
+    isAvailable: record.isAvailable ?? true,
+    effectiveFrom: toDate(record.effectiveFrom) ?? new Date(),
+    effectiveUntil: toDate(record.effectiveUntil),
+    createdAt: toDate(record.createdAt) ?? new Date(),
+    updatedAt: toDate(record.updatedAt) ?? new Date(),
+  };
+}
+
+function filterAvailabilityRecords(
+  records: EmployeeAvailability[],
+  params: AvailabilityFilters
+): EmployeeAvailability[] {
+  const effectiveDate = params.effectiveDate
+    ? new Date(params.effectiveDate)
+    : params.isActive
+      ? new Date()
+      : null;
+
+  return records.filter((record) => {
+    if (isDeleted(record.deletedAt)) return false;
+    if (params.employeeId && record.employeeId !== params.employeeId) {
+      return false;
+    }
+    if (
+      params.dayOfWeek !== undefined &&
+      params.dayOfWeek !== null &&
+      record.dayOfWeek !== params.dayOfWeek
+    ) {
+      return false;
+    }
+    if (effectiveDate && !isEffectiveOnDate(record, effectiveDate)) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function sortAvailabilityRows(
+  rows: AvailabilityRow[]
+): AvailabilityRow[] {
+  return [...rows].sort((a, b) => {
+    const last = (a.employeeLastName ?? "").localeCompare(b.employeeLastName ?? "");
+    if (last !== 0) return last;
+    const first = (a.employeeFirstName ?? "").localeCompare(
+      b.employeeFirstName ?? ""
+    );
+    if (first !== 0) return first;
+    if (a.dayOfWeek !== b.dayOfWeek) return a.dayOfWeek - b.dayOfWeek;
+    return a.startTime.localeCompare(b.startTime);
+  });
+}
+
+async function buildAvailabilityRows(
+  records: EmployeeAvailability[]
+): Promise<AvailabilityRow[]> {
+  const users = await loadUsers();
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  return sortAvailabilityRows(
+    records.map((record) =>
+      mapAvailabilityRow(record, usersById.get(record.employeeId ?? ""))
+    )
+  );
+}
+
 export async function getAvailability(params: AvailabilityFilters = {}) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
   const limit = params.limit ?? 50;
   const page = params.page ?? 1;
   const offset = (page - 1) * limit;
 
-  // Build filters
-  const hasEmployeeId = Boolean(params.employeeId);
-  const hasDayOfWeek =
-    params.dayOfWeek !== undefined && params.dayOfWeek !== null;
-  const hasEffectiveDate = Boolean(params.effectiveDate);
-  const hasIsActive = params.isActive !== undefined && params.isActive !== null;
-
-  // Fetch availability and count
-  const [availability, totalCount] = await Promise.all([
-    database.$queryRaw<
-      Array<{
-        id: string;
-        employeeId: string;
-        employeeFirstName: string | null;
-        employeeLastName: string | null;
-        employeeEmail: string;
-        employeeRole: string;
-        dayOfWeek: number;
-        startTime: string;
-        endTime: string;
-        isAvailable: boolean;
-        effectiveFrom: Date;
-        effectiveUntil: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          ea.id,
-          ea.employee_id,
-          e.first_name AS employee_first_name,
-          e.last_name AS employee_last_name,
-          e.email AS employee_email,
-          e.role AS employee_role,
-          ea.day_of_week,
-          ea.start_time,
-          ea.end_time,
-          ea.is_available,
-          ea.effective_from,
-          ea.effective_until,
-          ea.created_at,
-          ea.updated_at
-        FROM tenant_staff.employee_availability ea
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = ea.tenant_id
-         AND e.id = ea.employee_id
-        WHERE ea.tenant_id = ${tenantId}
-          AND ea.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-        ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
-        LIMIT ${limit}
-        OFFSET ${offset}
-      `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.employee_availability ea
-        WHERE ea.tenant_id = ${tenantId}
-          AND ea.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-      `
-    ),
-  ]);
+  const filtered = filterAvailabilityRecords(
+    await loadEmployeeAvailabilities(),
+    params
+  );
+  const rows = await buildAvailabilityRows(filtered);
+  const total = rows.length;
 
   return {
-    availability,
+    availability: rows.slice(offset, offset + limit),
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total,
+      totalPages: Math.ceil(total / limit),
     },
   };
 }
 
-/**
- * Get a single availability record by ID
- */
 export async function getAvailabilityById(availabilityId: string) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const [availability] = await database.$queryRaw<
-    Array<{
-      id: string;
-      employeeId: string;
-      employeeFirstName: string | null;
-      employeeLastName: string | null;
-      employeeEmail: string;
-      employeeRole: string;
-      dayOfWeek: number;
-      startTime: string;
-      endTime: string;
-      isAvailable: boolean;
-      effectiveFrom: Date;
-      effectiveUntil: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ea.id,
-        ea.employee_id,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        ea.day_of_week,
-        ea.start_time,
-        ea.end_time,
-        ea.is_available,
-        ea.effective_from,
-        ea.effective_until,
-        ea.created_at,
-        ea.updated_at
-      FROM tenant_staff.employee_availability ea
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ea.tenant_id
-       AND e.id = ea.employee_id
-      WHERE ea.tenant_id = ${tenantId}
-        AND ea.id = ${availabilityId}
-        AND ea.deleted_at IS NULL
-    `
-  );
+  const record = await getEmployeeAvailabilityById(availabilityId);
+  if (!record) throw new Error("Availability record not found");
 
-  if (!availability) {
-    throw new Error("Availability record not found");
-  }
-
-  return { availability };
+  const users = await loadUsers();
+  const user = users.find((entry) => entry.id === record.employeeId);
+  return { availability: mapAvailabilityRow(record, user) };
 }
 
-/**
- * Create a new availability record
- */
 export async function createAvailability(formData: FormData) {
-  // Governed write: EmployeeAvailability.create runs through the Manifest runtime
-  // (constitution §9) — no direct database.employeeAvailability.create.
-  // requireCurrentUser supplies the actor + tenant the command needs for its
-  // access policy (hr_admin/payroll_admin/manager/admin) and audit context (§19).
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -194,25 +182,20 @@ export async function createAvailability(formData: FormData) {
   const effectiveFrom = formData.get("effectiveFrom") as string;
   const effectiveUntil = formData.get("effectiveUntil") as string | null;
 
-  // Validate required fields
   if (!(employeeId && !Number.isNaN(dayOfWeek) && startTime && endTime)) {
     throw new Error(
       "Employee, day of week, start time, and end time are required"
     );
   }
 
-  const createEffectiveFrom = effectiveFrom
-    ? new Date(effectiveFrom)
-    : new Date();
+  const createEffectiveFrom = effectiveFrom ? new Date(effectiveFrom) : new Date();
   const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
 
-  // Parse time strings into Date objects for Prisma Time fields
   const [startH, startM] = startTime.split(":").map(Number);
   const [endH, endM] = endTime.split(":").map(Number);
   const startTimeDate = new Date(1970, 0, 1, startH, startM);
   const endTimeDate = new Date(1970, 0, 1, endH, endM);
 
-  // Validate time format and range
   const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
   if (!(timeRegex.test(startTime) && timeRegex.test(endTime))) {
     throw new Error("Time must be in HH:MM format (24-hour)");
@@ -222,7 +205,6 @@ export async function createAvailability(formData: FormData) {
     throw new Error("End time must be after start time");
   }
 
-  // Validate effective dates
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const createEffectiveFrom2 = new Date(createEffectiveFrom);
@@ -238,28 +220,18 @@ export async function createAvailability(formData: FormData) {
     );
   }
 
-  // Check for existing active availability
-  const [existingActive] = await database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint
-      FROM tenant_staff.employee_availability
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        AND day_of_week = ${dayOfWeek}
-        AND deleted_at IS NULL
-        AND effective_until IS NULL
-    `
+  const existingActive = (await loadEmployeeAvailabilities()).filter(
+    (record) =>
+      !isDeleted(record.deletedAt) &&
+      record.employeeId === employeeId &&
+      record.dayOfWeek === dayOfWeek &&
+      !record.effectiveUntil
   );
 
-  if (Number(existingActive.count) > 0) {
+  if (existingActive.length > 0) {
     throw new Error("Employee already has active availability for this day");
   }
 
-  // Governed create. startTime/endTime are @db.Time(6) and effectiveFrom/
-  // effectiveUntil are @db.Date columns; the GenericPrismaStore coerces the
-  // command's string params via `new Date(value)`, so we pass ISO strings built
-  // from the already-validated Date objects (a bare "HH:MM" would parse to an
-  // invalid Date and NULL the NOT NULL Time column).
   const result = await runManifestCommand({
     entity: "EmployeeAvailability",
     command: "create",
@@ -270,9 +242,7 @@ export async function createAvailability(formData: FormData) {
       endTime: endTimeDate.toISOString(),
       isAvailable,
       effectiveFrom: createEffectiveFrom2.toISOString(),
-      effectiveUntil: effectiveUntilDate
-        ? effectiveUntilDate.toISOString()
-        : "",
+      effectiveUntil: effectiveUntilDate ? effectiveUntilDate.toISOString() : "",
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
@@ -286,28 +256,16 @@ export async function createAvailability(formData: FormData) {
     throw new Error("EmployeeAvailability.create did not return an id");
   }
 
-  // Read back the persisted row to preserve the prior return shape.
-  const availability = await database.employeeAvailability.findFirst({
-    where: { tenantId, id: createdId },
-  });
-
+  const availability = await getEmployeeAvailabilityById(createdId);
   revalidatePath("/scheduling/availability");
   return { availability };
 }
 
-/**
- * Update an existing availability record
- */
 export async function updateAvailability(
   availabilityId: string,
   formData: FormData
 ) {
-  // Governed write: EmployeeAvailability.update runs through the Manifest runtime
-  // (constitution §9) — no direct database.employeeAvailability.update.
-  // The Manifest `update` command requires all fields (full-field mutate pattern),
-  // so we load the existing row, merge caller-supplied changes, and dispatch.
   const user = await requireCurrentUser();
-  const tenantId = user.tenantId;
 
   const dayOfWeekRaw = formData.get("dayOfWeek") as string | undefined;
   const startTimeRaw = formData.get("startTime") as string | undefined;
@@ -319,59 +277,29 @@ export async function updateAvailability(
     | null
     | undefined;
 
-  // Load existing record (constitution §10 — reads bypass Manifest).
-  // We need all current fields to merge with caller-supplied overrides
-  // because the Manifest `update` command mutates every field.
-  const [existing] = await database.$queryRaw<
-    Array<{
-      employee_id: string;
-      day_of_week: number;
-      start_time: Date;
-      end_time: Date;
-      is_available: boolean;
-      effective_from: Date | null;
-      effective_until: Date | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT employee_id, day_of_week, start_time, end_time,
-             is_available, effective_from, effective_until
-      FROM tenant_staff.employee_availability
-      WHERE tenant_id = ${tenantId}
-        AND id = ${availabilityId}
-        AND deleted_at IS NULL
-    `
-  );
+  const existing = await getEmployeeAvailabilityById(availabilityId);
+  if (!existing) throw new Error("Availability record not found");
 
-  if (!existing) {
-    throw new Error("Availability record not found");
-  }
-
-  // Merge: caller values override existing values.
   const dayOfWeek =
     dayOfWeekRaw === undefined
-      ? existing.day_of_week
+      ? (existing.dayOfWeek ?? 0)
       : Number.parseInt(dayOfWeekRaw, 10);
-  const startTime = startTimeRaw ?? String(existing.start_time);
-  const endTime = endTimeRaw ?? String(existing.end_time);
+  const startTime =
+    startTimeRaw ?? formatTimeValue(existing.startTime);
+  const endTime = endTimeRaw ?? formatTimeValue(existing.endTime);
   const isAvailable =
     isAvailableRaw === undefined
-      ? existing.is_available
+      ? (existing.isAvailable ?? true)
       : isAvailableRaw !== "false";
   const effectiveFrom =
     effectiveFromRaw === undefined
-      ? existing.effective_from
-        ? existing.effective_from.toISOString()
-        : ""
+      ? existing.effectiveFrom ?? ""
       : effectiveFromRaw;
   const effectiveUntil =
     effectiveUntilRaw === undefined
-      ? existing.effective_until
-        ? existing.effective_until.toISOString()
-        : ""
-      : effectiveUntilRaw;
+      ? existing.effectiveUntil ?? ""
+      : effectiveUntilRaw ?? "";
 
-  // Validate time format and range
   const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
   if (!(timeRegex.test(startTime) && timeRegex.test(endTime))) {
     throw new Error("Time must be in HH:MM format (24-hour)");
@@ -381,15 +309,11 @@ export async function updateAvailability(
     throw new Error("End time must be after start time");
   }
 
-  // Convert HH:MM → ISO datetime for @db.Time(6) columns (GenericPrismaStore
-  // coerces string params via `new Date(value)` — bare "HH:MM" produces invalid
-  // Date → NULL → NOT-NULL violation).
   const [startH, startM] = startTime.split(":").map(Number);
   const [endH, endM] = endTime.split(":").map(Number);
   const startTimeDate = new Date(1970, 0, 1, startH, startM);
   const endTimeDate = new Date(1970, 0, 1, endH, endM);
 
-  // Validate effective dates
   const effectiveFromDate = effectiveFrom ? new Date(effectiveFrom) : null;
   const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
 
@@ -408,7 +332,6 @@ export async function updateAvailability(
     }
   }
 
-  // Governed update — dispatches through Manifest runtime with RBAC, audit, events.
   const result = await runManifestCommand({
     entity: "EmployeeAvailability",
     command: "update",
@@ -430,41 +353,12 @@ export async function updateAvailability(
     throw new Error(result.message || "Failed to update availability");
   }
 
-  // Read back the updated record (constitution §10 — reads bypass Manifest).
-  const [updated] = await database.$queryRaw<
-    Array<{
-      id: string;
-      employee_id: string;
-      day_of_week: number;
-      start_time: Date;
-      end_time: Date;
-      is_available: boolean;
-      effective_from: Date | null;
-      effective_until: Date | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, employee_id, day_of_week, start_time, end_time,
-             is_available, effective_from, effective_until
-      FROM tenant_staff.employee_availability
-      WHERE tenant_id = ${tenantId}
-        AND id = ${availabilityId}
-        AND deleted_at IS NULL
-    `
-  );
-
+  const updated = await getEmployeeAvailabilityById(availabilityId);
   revalidatePath("/scheduling/availability");
   return { availability: updated };
 }
 
-/**
- * Delete (soft delete) an availability record
- */
 export async function deleteAvailability(availabilityId: string) {
-  // Governed soft delete via the Manifest runtime (constitution §9) — sets
-  // deletedAt + emits EmployeeAvailabilityDeleted, no direct
-  // database.employeeAvailability.update. softDelete only patches deletedAt, so
-  // the @db.Time/@db.Date columns are left untouched.
   const user = await requireCurrentUser();
 
   const result = await runManifestCommand({
@@ -482,15 +376,8 @@ export async function deleteAvailability(availabilityId: string) {
   return { success: true };
 }
 
-/**
- * Create batch availability records (recurring weekly patterns)
- */
 export async function createBatchAvailability(formData: FormData) {
-  // Governed batch create — each pattern routes through EmployeeAvailability.create
-  // on the Manifest runtime (constitution §9). requireCurrentUser supplies the
-  // actor + tenant for the access policy + audit context.
   const user = await requireCurrentUser();
-  const tenantId = user.tenantId;
 
   const employeeId = formData.get("employeeId") as string;
   const patternsJson = formData.get("patterns") as string;
@@ -503,18 +390,14 @@ export async function createBatchAvailability(formData: FormData) {
     endTime: string;
     isAvailable?: boolean;
   }>;
-  const createEffectiveFrom = effectiveFrom
-    ? new Date(effectiveFrom)
-    : new Date();
+  const createEffectiveFrom = effectiveFrom ? new Date(effectiveFrom) : new Date();
   const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
 
-  // Validate batch input
   if (!patterns || patterns.length === 0) {
     throw new Error("At least one availability pattern must be provided");
   }
 
-  // Check for duplicate days
-  const days = patterns.map((p) => p.dayOfWeek);
+  const days = patterns.map((pattern) => pattern.dayOfWeek);
   const uniqueDays = new Set(days);
   if (days.length !== uniqueDays.size) {
     throw new Error(
@@ -522,20 +405,17 @@ export async function createBatchAvailability(formData: FormData) {
     );
   }
 
-  // Validate each pattern
   for (const pattern of patterns) {
     const dayOfWeek = pattern.dayOfWeek as DayOfWeek;
     const startTime = pattern.startTime as string;
     const endTime = pattern.endTime as string;
 
-    // Validate day of week
     if (dayOfWeek < 0 || dayOfWeek > 6 || !Number.isInteger(dayOfWeek)) {
       throw new Error(
         `Invalid day of week: ${dayOfWeek}. Must be 0-6 (0=Sunday, 6=Saturday)`
       );
     }
 
-    // Validate time format and range
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!(timeRegex.test(startTime) && timeRegex.test(endTime))) {
       throw new Error("Time must be in HH:MM format (24-hour)");
@@ -546,7 +426,6 @@ export async function createBatchAvailability(formData: FormData) {
     }
   }
 
-  // Validate effective dates
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const createEffectiveFrom2 = new Date(createEffectiveFrom);
@@ -562,31 +441,20 @@ export async function createBatchAvailability(formData: FormData) {
     );
   }
 
-  // Check for existing active availability for any of the days
-  const daysArray = Array.from(uniqueDays);
-  const [existingActive] = await database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint
-      FROM tenant_staff.employee_availability
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        AND day_of_week IN (${Prisma.join(daysArray)})
-        AND deleted_at IS NULL
-        AND effective_until IS NULL
-    `
+  const existingActive = (await loadEmployeeAvailabilities()).filter(
+    (record) =>
+      !isDeleted(record.deletedAt) &&
+      record.employeeId === employeeId &&
+      record.dayOfWeek != null && uniqueDays.has(record.dayOfWeek as DayOfWeek) &&
+      !record.effectiveUntil
   );
 
-  if (Number(existingActive.count) > 0) {
+  if (existingActive.length > 0) {
     throw new Error(
       "Employee already has active availability for one or more of these days"
     );
   }
 
-  // Govern each pattern through EmployeeAvailability.create. Time/date params are
-  // passed as ISO strings the GenericPrismaStore can coerce to the @db.Time(6) /
-  // @db.Date columns — converting the "HH:MM" pattern times to a 1970-epoch ISO
-  // datetime. (The prior direct write passed the raw "HH:MM" string straight to a
-  // DateTime column, which Prisma rejects — this path also fixes that latent bug.)
   const effectiveFromIso = createEffectiveFrom2.toISOString();
   const effectiveUntilIso = effectiveUntilDate
     ? effectiveUntilDate.toISOString()
@@ -619,21 +487,11 @@ export async function createBatchAvailability(formData: FormData) {
     }
   }
 
-  const createdIds = results
-    .map((r) => (r.ok ? (r.result as { id?: string } | null)?.id : undefined))
-    .filter((id): id is string => Boolean(id));
-
-  const createdAvailability = await database.employeeAvailability.findMany({
-    where: { tenantId, id: { in: createdIds } },
-  });
-
+  const createdAvailability = await loadEmployeeAvailabilities();
   revalidatePath("/scheduling/availability");
   return { availability: createdAvailability };
 }
 
-/**
- * Get employee availability for scheduling (date range with time-off integration)
- */
 export async function getEmployeeAvailability(params: {
   employeeIds?: string[];
   startDate: string;
@@ -641,62 +499,58 @@ export async function getEmployeeAvailability(params: {
   includeTimeOff?: boolean;
 }) {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
   const startDate = new Date(params.startDate);
   const endDate = new Date(params.endDate);
 
-  // Get all employees if not specified
-  const employeesQuery =
-    params.employeeIds && params.employeeIds.length > 0
-      ? Prisma.sql`AND e.id IN (${Prisma.join(params.employeeIds)})`
-      : Prisma.empty;
+  const [availabilityRecords, users] = await Promise.all([
+    loadEmployeeAvailabilities(),
+    loadUsers(),
+  ]);
+  const usersById = new Map(users.map((user) => [user.id, user]));
 
-  // Get availability for the date range
-  const availability = await database.$queryRaw<
-    Array<{
-      employeeId: string;
-      employeeFirstName: string | null;
-      employeeLastName: string | null;
-      employeeEmail: string;
-      employeeRole: string;
-      isAvailable: boolean;
-      dayOfWeek: number;
-      startTime: string;
-      endTime: string;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ea.employee_id,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        ea.is_available,
-        ea.day_of_week,
-        ea.start_time,
-        ea.end_time
-      FROM tenant_staff.employee_availability ea
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ea.tenant_id
-       AND e.id = ea.employee_id
-      WHERE ea.tenant_id = ${tenantId}
-        AND ea.deleted_at IS NULL
-        AND ${startDate} <= COALESCE(ea.effective_until, ${endDate})
-        AND ${endDate} >= COALESCE(ea.effective_from, ${startDate})
-        ${employeesQuery}
-      ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
-    `
-  );
+  const availability = availabilityRecords
+    .filter((record) => {
+      if (isDeleted(record.deletedAt)) return false;
+      if (
+        params.employeeIds &&
+        params.employeeIds.length > 0 &&
+        !params.employeeIds.includes(record.employeeId ?? "")
+      ) {
+        return false;
+      }
+      const effectiveFrom = toDate(record.effectiveFrom) ?? startDate;
+      const effectiveUntil = toDate(record.effectiveUntil) ?? endDate;
+      return startDate <= effectiveUntil && endDate >= effectiveFrom;
+    })
+    .map((record) => {
+      const user = usersById.get(record.employeeId ?? "");
+      return {
+        employeeId: record.employeeId ?? "",
+        employeeFirstName: user?.firstName ?? null,
+        employeeLastName: user?.lastName ?? null,
+        employeeEmail: user?.email ?? "",
+        employeeRole: user?.role ?? "staff",
+        isAvailable: record.isAvailable ?? true,
+        dayOfWeek: record.dayOfWeek ?? 0,
+        startTime: formatTimeValue(record.startTime),
+        endTime: formatTimeValue(record.endTime),
+      };
+    })
+    .sort((a, b) => {
+      const last = (a.employeeLastName ?? "").localeCompare(b.employeeLastName ?? "");
+      if (last !== 0) return last;
+      const first = (a.employeeFirstName ?? "").localeCompare(
+        b.employeeFirstName ?? ""
+      );
+      if (first !== 0) return first;
+      if (a.dayOfWeek !== b.dayOfWeek) return a.dayOfWeek - b.dayOfWeek;
+      return a.startTime.localeCompare(b.startTime);
+    });
 
-  // Group availability by employee
   const availabilityByEmployee = availability.reduce(
     (acc, avail) => {
       const employeeId = avail.employeeId;
@@ -736,7 +590,6 @@ export async function getEmployeeAvailability(params: {
     >
   );
 
-  // Get time-off requests if requested
   let timeOffRequests: Array<{
     id: string;
     employeeId: string;
@@ -744,39 +597,44 @@ export async function getEmployeeAvailability(params: {
     endDate: Date;
     status: string;
   }> = [];
+
   if (params.includeTimeOff) {
-    timeOffRequests = await database.$queryRaw<
-      Array<{
-        id: string;
-        employeeId: string;
-        startDate: Date;
-        endDate: Date;
-        status: string;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          tor.id,
-          tor.employee_id,
-          tor.start_date,
-          tor.end_date,
-          tor.status
-        FROM tenant_staff.time_off_requests tor
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          AND tor.status IN ('approved', 'pending')
-          AND (${startDate} <= tor.end_date AND ${endDate} >= tor.start_date)
-          ${employeesQuery}
-        ORDER BY tor.start_date ASC
-      `
-    );
+    timeOffRequests = (await loadTimeOffRequests())
+      .filter((request) => {
+        if (isDeleted(request.deletedAt)) return false;
+        if (!["approved", "pending", "APPROVED", "PENDING"].includes(
+          request.status ?? ""
+        )) {
+          return false;
+        }
+        if (
+          params.employeeIds &&
+          params.employeeIds.length > 0 &&
+          !params.employeeIds.includes(request.employeeId ?? "")
+        ) {
+          return false;
+        }
+        const requestStart = toDate(request.startDate);
+        const requestEnd = toDate(request.endDate);
+        if (!requestStart || !requestEnd) return false;
+        return startDate <= requestEnd && endDate >= requestStart;
+      })
+      .map((request) => ({
+        id: request.id,
+        employeeId: request.employeeId ?? "",
+        startDate: toDate(request.startDate) ?? new Date(),
+        endDate: toDate(request.endDate) ?? new Date(),
+        status: request.status ?? "",
+      }))
+      .sort(
+        (a, b) => a.startDate.getTime() - b.startDate.getTime()
+      );
   }
 
-  // Combine availability with time-off
   const employeesWithAvailability = Object.values(availabilityByEmployee).map(
     (employee) => {
       const employeeTimeOff = timeOffRequests.filter(
-        (to) => to.employeeId === employee.employeeId
+        (entry) => entry.employeeId === employee.employeeId
       );
 
       return {
@@ -795,44 +653,25 @@ export async function getEmployeeAvailability(params: {
   return { employees: employeesWithAvailability };
 }
 
-/**
- * Get all active employees for dropdown
- */
 export async function getEmployees() {
   const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
+  if (!orgId) throw new Error("Not authenticated");
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  if (!tenantId) throw new Error("No tenant found");
 
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      email: string;
-      first_name: string | null;
-      last_name: string | null;
-      role: string;
-      isActive: boolean;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        email,
-        first_name,
-        last_name,
-        role,
-        is_active
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY last_name ASC, first_name ASC
-    `
-  );
+  const employees = activeUsers(await loadUsers())
+    .map((employee) => ({
+      id: employee.id,
+      email: employee.email,
+      first_name: employee.firstName ?? null,
+      last_name: employee.lastName ?? null,
+      role: employee.role ?? "staff",
+      isActive: employee.isActive ?? true,
+    }))
+    .sort((a, b) => {
+      const last = (a.last_name ?? "").localeCompare(b.last_name ?? "");
+      return last !== 0 ? last : (a.first_name ?? "").localeCompare(b.first_name ?? "");
+    });
 
   return { employees };
 }

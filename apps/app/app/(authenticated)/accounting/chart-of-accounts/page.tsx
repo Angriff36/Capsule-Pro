@@ -1,3 +1,4 @@
+import { listChartOfAccounts } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -50,20 +51,7 @@ export default async function ChartOfAccountsPage() {
     redirect("/");
   }
 
-  const accounts = await database.chartOfAccount.findMany({
-    where: { tenantId },
-    orderBy: [{ accountNumber: "asc" }],
-    select: {
-      id: true,
-      accountNumber: true,
-      accountName: true,
-      accountType: true,
-      parentId: true,
-      isActive: true,
-      description: true,
-      updatedAt: true,
-    },
-  });
+  const accounts = (await listChartOfAccounts()).data;
 
   const parentNames = new Map(
     accounts.map((account) => [account.id, account.accountName])

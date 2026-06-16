@@ -1,4 +1,5 @@
 "use server";
+import { listEmailTemplates } from "@/app/lib/manifest-client.generated";
 
 import { auth } from "@repo/auth/server";
 import type { email_trigger_type } from "@repo/database";
@@ -127,11 +128,7 @@ export async function getAvailableTemplates() {
 
   const tenantId = await getTenantId();
 
-  return database.emailTemplate.findMany({
-    where: { tenantId, deletedAt: null, isActive: true },
-    select: { id: true, name: true, templateType: true, subject: true },
-    orderBy: { name: "asc" },
-  });
+  return (await listEmailTemplates()).data;
 }
 
 export async function createEmailWorkflow(input: CreateEmailWorkflowInput) {

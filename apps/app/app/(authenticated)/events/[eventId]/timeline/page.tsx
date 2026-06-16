@@ -1,3 +1,4 @@
+import { listEventTimelineItems } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -68,24 +69,7 @@ const EventTimelinePage = async ({ params }: EventTimelinePageProps) => {
     notFound();
   }
 
-  const items = await database.eventTimeline.findMany({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: [
-      { sortOrder: "asc" },
-      { timelineTime: "asc" },
-      { createdAt: "asc" },
-    ],
-    select: {
-      id: true,
-      timelineTime: true,
-      description: true,
-      responsibleRole: true,
-      isCompleted: true,
-      completedAt: true,
-      notes: true,
-      sortOrder: true,
-    },
-  });
+  const items = (await listEventTimelineItems()).data;
 
   const eventLabel = event.eventNumber
     ? `${event.eventNumber} — ${event.title}`

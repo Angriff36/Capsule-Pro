@@ -1,3 +1,4 @@
+import { listEventContracts, listVendorContracts } from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractsPage
  * @intent Unified contract listing aggregating EventContract + VendorContract
@@ -47,44 +48,8 @@ export default async function ContractsPage() {
   const tenantId = await getTenantIdForOrg(orgId);
 
   const [eventContracts, vendorContracts] = await Promise.all([
-    database.eventContract.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        contractNumber: true,
-        title: true,
-        status: true,
-        expiresAt: true,
-        createdAt: true,
-        event: {
-          select: { id: true, title: true },
-        },
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-      },
-    }),
-    database.vendorContract.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        contractNumber: true,
-        vendorName: true,
-        contractType: true,
-        status: true,
-        endDate: true,
-        complianceScore: true,
-        autoRenew: true,
-        createdAt: true,
-      },
-    }),
+    (await listEventContracts()).data,
+    (await listVendorContracts()).data,
   ]);
 
   // Build unified list with serializable primitives

@@ -1,5 +1,5 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -95,64 +95,7 @@ const AnalyticsEventsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const events = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
-    take: 12,
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      eventDate: true,
-      guestCount: true,
-      status: true,
-      budget: true,
-      client: {
-        select: {
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-      budgets: {
-        where: { deletedAt: null },
-        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-        take: 1,
-        select: {
-          status: true,
-          totalBudgetAmount: true,
-          totalActualAmount: true,
-          varianceAmount: true,
-        },
-      },
-      reports: {
-        where: { deletedAt: null },
-        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-        take: 1,
-        select: {
-          status: true,
-          completion: true,
-        },
-      },
-      invoices: {
-        where: { deletedAt: null },
-        select: {
-          total: true,
-          status: true,
-        },
-      },
-      payments: {
-        where: { deletedAt: null },
-        select: {
-          amount: true,
-          status: true,
-        },
-      },
-    },
-  });
+  const events = (await listEvents()).data;
 
   const summary = events.reduce(
     (acc, event) => {

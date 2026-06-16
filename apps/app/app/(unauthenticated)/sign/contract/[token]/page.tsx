@@ -1,3 +1,4 @@
+import { listContractSignatures } from "@/app/lib/manifest-client.generated";
 /**
  * @module PublicContractSigningPage
  * @intent Public page for clients to view and sign contracts without authentication
@@ -109,22 +110,7 @@ const PublicContractSigningPage = async ({
     signedAt: Date;
   }>;
   try {
-    signatures = await database.contractSignature.findMany({
-      where: {
-        contractId: contract.id,
-        tenantId: contract.tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        signerName: true,
-        signerEmail: true,
-        signedAt: true,
-      },
-      orderBy: {
-        signedAt: "desc",
-      },
-    });
+    signatures = (await listContractSignatures()).data;
   } catch {
     signatures = [];
   }

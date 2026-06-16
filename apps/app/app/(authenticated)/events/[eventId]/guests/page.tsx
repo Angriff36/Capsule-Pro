@@ -1,3 +1,4 @@
+import { listEventGuests } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -60,25 +61,7 @@ const EventGuestsPage = async ({ params }: EventGuestsPageProps) => {
         maxCapacity: true,
       },
     }),
-    database.eventGuest.findMany({
-      where: { tenantId, eventId, deletedAt: null },
-      orderBy: { guestName: "asc" },
-      select: {
-        id: true,
-        guestName: true,
-        guestEmail: true,
-        guestPhone: true,
-        rsvpStatus: true,
-        dietaryRestrictions: true,
-        specialMealRequired: true,
-        specialMealNotes: true,
-        tableAssignment: true,
-        mealPreference: true,
-        waitlistPosition: true,
-        notes: true,
-        createdAt: true,
-      },
-    }),
+    (await listEventGuests()).data,
   ]);
 
   if (!event) {

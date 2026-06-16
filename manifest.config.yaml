@@ -17,10 +17,18 @@ src: manifest/source/**/*.manifest
 # Compiled merged IR output dir. The canonical merged IR is manifest/ir/kitchen.ir.json.
 output: manifest/ir/
 
-# Prisma schema used for validation / accessor cross-checks.
-prismaSchema: packages/database/prisma/schema.prisma
+# LEGACY (Prisma clone — do not extend): packages/database/prisma/schema.prisma
+# Persistence for this clone is convex/schema.ts via the Convex projection.
+# prismaSchema: packages/database/prisma/schema.prisma
 
 projections:
+  convex:
+    output: convex/
+    options:
+      referenceMode: stringId
+      emitEventsTable: true
+      eventsTable: manifestEvents
+      policyMode: enforce
   nextjs:
     # Generated read routes land under apps/api/app/api/ (after generate.mjs domain remap).
     output: apps/api/app/api/
@@ -70,56 +78,6 @@ projections:
     options:
       # Base path prefix prepended to every route entry.
       basePath: /api
-  prisma:
-    options:
-      provider: postgresql
-      naming: snake_case
-      # Multi-schema placement is driven by manifest/schema-placement.rules.json
-      # (the policy engine) + entity-to-schema overrides in scripts.
-      # The CLI's config schema (v2.2.0) does not yet validate multiSchema under
-      # prisma.options — see prisma-projection.schema.json for the full spec.
-      # When the CLI catches up, add multiSchema here to centralize placement.
-  # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
-  # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
-  # Options bag: manifest/scripts/prisma-store-options.generated.json (built from THIS config).
-  prisma-store:
-    output: manifest/generated/runtime/
-    options:
-      provider: postgresql
-      naming: snake_case
-      metadataOutput: manifest-prisma-store-metadata.generated.ts
-      registryOutput: prisma-store-registry.generated.ts
-      # IR entity → Prisma model (when model name differs from IR entity name).
-      entityToPrismaModel:
-        EventImportWorkflow: EventImport
-        BankAccount: EmployeeBankAccount
-        LogisticsRoute: DeliveryRoute
-        Document: documents
-        SmsAutomationRule: sms_automation_rules
-        EventTimelineItem: EventTimeline
-        StorageLocation: storage_locations
-        BulkCombineRule: bulk_combine_rules
-        MethodVideo: method_videos
-        PrepListImport: prep_list_imports
-        QACorrectiveAction: CorrectiveAction
-        QATemperatureLog: TemperatureLog
-        TaskBundleItem: task_bundle_items
-        TaskBundle: task_bundles
-        OpenShift: open_shifts
-      # IR entity → Prisma client delegate (must match live schema; validated in CI).
-      accessorNames:
-        EventImportWorkflow: eventImport
-        BankAccount: employeeBankAccount
-        LogisticsRoute: deliveryRoute
-        Document: documents
-        SmsAutomationRule: sms_automation_rules
-        EventTimelineItem: eventTimeline
-        StorageLocation: storage_locations
-        BulkCombineRule: bulk_combine_rules
-        MethodVideo: method_videos
-        PrepListImport: prep_list_imports
-        QACorrectiveAction: correctiveAction
-        QATemperatureLog: temperatureLog
-        TaskBundleItem: task_bundle_items
-        TaskBundle: task_bundles
-        OpenShift: open_shifts
+  # LEGACY — Prisma projection/store. Superseded by projections.convex in this clone.
+  # prisma:
+  # prisma-store:

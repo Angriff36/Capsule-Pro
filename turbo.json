@@ -2,7 +2,10 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "envMode": "loose",
-  "globalDependencies": ["**/.env.*local", "**/tsconfig*.json"],
+  "globalDependencies": [
+    "**/.env.*local",
+    "**/tsconfig*.json"
+  ],
   "globalEnv": [
     "NEXT_PUBLIC_*",
     "ANALYZE",
@@ -85,12 +88,16 @@
     "tags": {
       "layer:app": {
         "dependencies": {
-          "deny": ["layer:app"]
+          "deny": [
+            "layer:app"
+          ]
         }
       },
       "layer:package": {
         "dependencies": {
-          "deny": ["layer:app"]
+          "deny": [
+            "layer:app"
+          ]
         }
       },
       "scope:config": {
@@ -108,34 +115,46 @@
       },
       "scope:ui": {
         "dependencies": {
-          "deny": ["layer:app", "scope:data"]
+          "deny": [
+            "layer:app",
+            "scope:data"
+          ]
         }
       },
       "scope:data": {
         "dependents": {
-          "deny": ["scope:docs", "scope:tooling", "scope:ui"]
+          "deny": [
+            "scope:docs",
+            "scope:tooling",
+            "scope:ui"
+          ]
         }
       },
       "scope:tooling": {
         "dependencies": {
-          "deny": ["scope:data"]
+          "deny": [
+            "scope:data"
+          ]
         }
       },
       "app:client": {
         "dependencies": {
-          "deny": ["app:api"]
+          "deny": [
+            "app:api"
+          ]
         }
       }
     }
   },
-  "ui": "tui",
   "remoteCache": {
     "enabled": true,
     "signature": true
   },
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
@@ -145,13 +164,17 @@
         "!**/*.spec.ts",
         "!**/*.spec.tsx"
       ],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**"
+      ]
     },
     "generate": {
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^typecheck", "@repo/database#generate"],
+      "dependsOn": [
+        "^typecheck"
+      ],
       "inputs": [
         "**/*.ts",
         "**/*.tsx",
@@ -162,15 +185,19 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["@repo/database#generate"],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build", "^test"],
+      "dependsOn": [
+        "^build",
+        "^test"
+      ],
       "outputs": []
     },
     "test:integration": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false
     },
     "test:watch": {
@@ -189,7 +216,9 @@
       "cache": false
     },
     "analyze": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false
     },
     "clean": {
@@ -199,7 +228,9 @@
       "cache": false
     },
     "app#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
@@ -209,23 +240,15 @@
         "!**/*.spec.ts",
         "!**/*.spec.tsx"
       ],
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "api#build": {
-      "dependsOn": ["^build"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "!**/*.md",
-        "!**/__tests__/**",
-        "!**/*.test.ts",
-        "!**/*.test.tsx",
-        "!**/*.spec.ts",
-        "!**/*.spec.tsx"
-      ],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "web#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
@@ -235,10 +258,15 @@
         "!**/*.spec.ts",
         "!**/*.spec.tsx"
       ],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "docs#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
@@ -248,30 +276,34 @@
         "!**/*.spec.ts",
         "!**/*.spec.tsx"
       ],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "@repo/storybook#build": {
-      "dependsOn": ["^build"],
-      "outputs": ["storybook-static/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "storybook-static/**"
+      ]
     },
     "email#build": {
-      "dependsOn": ["^build"],
-      "outputs": [".react-email/**"]
-    },
-    "@repo/database#build": {
-      "outputs": ["generated/**"],
-      "inputs": ["prisma/**", "package.json"]
-    },
-    "@repo/database#generate": {
-      "outputs": ["generated/**"],
-      "inputs": ["prisma/**", "package.json"]
-    },
-    "@repo/database#typecheck": {
-      "dependsOn": ["@repo/database#generate", "^typecheck"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".react-email/**"
+      ]
     },
     "@repo/cms#build": {
-      "outputs": ["basehub-types.d.ts"],
-      "env": ["BASEHUB_TOKEN"]
+      "outputs": [
+        "basehub-types.d.ts"
+      ],
+      "env": [
+        "BASEHUB_TOKEN"
+      ]
     },
     "@repo/internationalization#translate": {
       "cache": false

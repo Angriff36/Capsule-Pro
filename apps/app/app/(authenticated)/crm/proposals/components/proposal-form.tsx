@@ -6,7 +6,6 @@
  * Reusable form for creating and editing proposals
  */
 
-import type { Proposal } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {

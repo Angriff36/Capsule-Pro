@@ -47,6 +47,9 @@ export const config: NextConfig = {
 
   // Security headers (applied to all apps using this shared config)
   async headers() {
+    if (process.env.NODE_ENV !== "production") {
+      return [];
+    }
     return [
       {
         source: "/(.*)",

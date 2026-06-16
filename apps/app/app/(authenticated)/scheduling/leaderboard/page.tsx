@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -20,6 +19,12 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { SparklesIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  activeUsers,
+  loadScheduleShifts,
+  loadUsers,
+} from "@/app/lib/scheduling/server-reads";
+import { groupShiftCountsByEmployee } from "@/app/lib/scheduling/shift-utils";
 
 interface LeaderboardRow {
   employeeId: string;
@@ -57,27 +62,16 @@ export default async function LeaderboardPage() {
   }
 
   const { start, end } = getCurrentWeekRange();
-  const shiftCounts = await database.scheduleShift.groupBy({
-    by: ["employeeId"],
-    where: {
-      tenantId,
-      deletedAt: null,
-      shift_start: { gte: start, lt: end },
-    },
-    _count: { _all: true },
-    orderBy: { _count: { employeeId: "desc" } },
-  });
-  const employees = await database.user.findMany({
-    where: {
-      tenantId,
-      id: { in: shiftCounts.map((row) => row.employeeId) },
-      deletedAt: null,
-    },
-    select: { id: true, firstName: true, lastName: true, role: true },
-  });
+  const [shifts, users] = await Promise.all([
+    loadScheduleShifts(),
+    loadUsers(),
+  ]);
+
+  const shiftCounts = groupShiftCountsByEmployee(shifts, start, end);
   const employeesById = new Map(
-    employees.map((employee) => [employee.id, employee])
+    activeUsers(users).map((employee) => [employee.id, employee])
   );
+
   const leaderboard: LeaderboardRow[] = shiftCounts
     .map((row) => {
       const employee = employeesById.get(row.employeeId);
@@ -86,7 +80,7 @@ export default async function LeaderboardPage() {
         first_name: employee?.firstName ?? null,
         last_name: employee?.lastName ?? null,
         role: employee?.role ?? null,
-        shift_count: row._count._all,
+        shift_count: row.shift_count,
       };
     })
     .sort(

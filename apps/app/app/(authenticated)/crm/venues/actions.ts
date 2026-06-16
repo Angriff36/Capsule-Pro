@@ -1,4 +1,5 @@
 "use server";
+import { listEvents, listVenues } from "@/app/lib/manifest-client.generated";
 
 /**
  * Venue CRUD Server Actions
@@ -121,12 +122,7 @@ export async function getVenues(
 
   const offset = (page - 1) * limit;
 
-  const venues = await database.venue.findMany({
-    where: whereClause,
-    orderBy: [{ createdAt: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const venues = (await listVenues()).data;
 
   const totalCount = await database.venue.count({
     where: whereClause,
@@ -205,12 +201,7 @@ export async function getVenueEvents(
     (whereClause.AND as Record<string, unknown>[]).push({ status });
   }
 
-  const events = await database.event.findMany({
-    where: whereClause,
-    orderBy: [{ eventDate: "desc" }],
-    take: limit,
-    skip: offset,
-  });
+  const events = (await listEvents()).data;
 
   return events as Event[];
 }

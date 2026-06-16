@@ -239,4 +239,4 @@ Full dark mode support is automatic. Component uses `dark:` prefixes throughout.
 1. Check the full README: `ALLERGEN_WARNING_BANNER_README.md`
 2. Review examples: `allergen-warning-banner.examples.tsx`
 3. Visit test page: `/kitchen/allergen-warning-test`
-4. Check database schema: `packages/database/prisma/schema.prisma`
+4. Check database schema: `convex/schema.ts` (generated from Manifest IR)

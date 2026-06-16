@@ -1,0 +1,121 @@
+{
+  "$comment": "Delete by ownership, not filename. Prisma/runtime-route artifacts are legacy in this Convex clone unless listed under keep or shim. Machine-readable companion to manifest/task_plan.md.",
+  "keep": {
+    "convex": [
+      "convex/schema.ts",
+      "convex/queries.ts",
+      "convex/mutations.ts",
+      "convex/crons.ts",
+      "convex/http.ts",
+      "convex/sagas.ts",
+      "convex/_generated/**"
+    ],
+    "manifest": [
+      "manifest/source/**",
+      "manifest/ir/**",
+      "manifest/scripts/compile.mjs",
+      "manifest/scripts/build.mjs",
+      "manifest/scripts/generate-convex.mjs",
+      "manifest/scripts/emit-registries.mjs",
+      "manifest/scripts/verify-invariants.mjs"
+    ],
+    "frontend": [
+      "apps/app/**"
+    ],
+    "auth_boundary": [
+      "packages/auth/**",
+      "Clerk session/middleware in apps/app — identity only, not domain backend"
+    ]
+  },
+  "shim_temporary": {
+    "description": "Remove after apps/app callsites migrate to Convex client/hooks.",
+    "paths": [
+      "apps/app/app/lib/api.ts",
+      "apps/app/app/lib/api-server.ts",
+      "apps/app/app/lib/manifest-client.ts",
+      "apps/app/app/lib/manifest-client.generated.ts",
+      "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts"
+    ]
+  },
+  "port_to_convex": {
+    "description": "Useful behavior — reimplement via generated Convex mutations/queries, not Prisma.",
+    "items": [
+      {
+        "id": "sentry-job-store",
+        "paths": ["packages/sentry-integration/src/prisma-store.ts"]
+      },
+      {
+        "id": "supplier-sync",
+        "paths": ["packages/supplier-connectors/src/sync-service.ts"]
+      },
+      {
+        "id": "payroll-data-source",
+        "paths": ["packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts"]
+      },
+      {
+        "id": "mcp-identity",
+        "paths": ["packages/mcp-server/**"]
+      },
+      {
+        "id": "command-board-commit",
+        "paths": ["apps/api/app/api/command-board/**"]
+      },
+      {
+        "id": "recipe-composite-actions",
+        "paths": ["apps/app/app/(authenticated)/kitchen/recipes/**"]
+      },
+      {
+        "id": "inventory-allergen-bulk",
+        "paths": [
+          "apps/app/app/(authenticated)/inventory/**",
+          "apps/app/components/allergen-warning-banner.tsx"
+        ]
+      }
+    ]
+  },
+  "delete_when_callsites_gone": {
+    "description": "Legacy Prisma/API backend — delete only after runtime + frontend no longer import these.",
+    "paths": [
+      "packages/database/**",
+      "manifest/runtime/src/prisma-store.ts",
+      "manifest/runtime/src/prisma-json-store.ts",
+      "manifest/runtime/src/prisma-idempotency-store.ts",
+      "manifest/runtime/src/prisma-stores/**",
+      "manifest/generated/runtime/*prisma*",
+      "manifest/generated/runtime/entity-to-prisma-model.generated.ts",
+      "manifest/generated/runtime/entity-accessor.generated.ts",
+      "manifest/ir/generated-schema.prisma",
+      "manifest/scripts/try-prisma.mjs",
+      "manifest/scripts/generate-prisma-*.mjs",
+      "manifest/scripts/build-prisma-store-options.mjs",
+      "manifest/scripts/lint-schema.mjs",
+      "manifest/scripts/check-schema-drift.mjs",
+      "manifest/scripts/audit-schema-drift.mjs",
+      "manifest/scripts/classify-prisma-manifest-ownership.mjs",
+      "manifest/scripts/generate-full-schema.mjs",
+      "apps/api/app/api/**/route.ts"
+    ],
+    "exceptions": [
+      "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts — shim until Convex command path wired in app"
+    ],
+    "package_deps": [
+      "@prisma/client",
+      "@prisma/adapter-neon",
+      "prisma"
+    ],
+    "package_scripts": [
+      "db:dev",
+      "db:deploy",
+      "db:check",
+      "migrate",
+      "migrate:deploy",
+      "migrate:resolve",
+      "migrate:status",
+      "prisma:format",
+      "prisma:check",
+      "manifest:try-prisma",
+      "manifest:generate-metadata",
+      "manifest:generate-schema"
+    ]
+  }
+}

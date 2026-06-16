@@ -1,4 +1,5 @@
 "use server";
+import { listCycleCountSessions } from "@/app/lib/manifest-client.generated";
 
 import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -17,15 +18,7 @@ function toNumber(value: { toNumber: () => number }): number {
 export async function listCycleCountSessions(): Promise<CycleCountSession[]> {
   const tenantId = await requireTenantId();
 
-  const sessions = await database.cycleCountSession.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const sessions = (await listCycleCountSessions()).data;
 
   return sessions.map((session) => ({
     id: session.id,

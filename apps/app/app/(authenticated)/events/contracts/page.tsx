@@ -1,3 +1,4 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractsListPage
  * @intent Display all contracts with filters, search, and expiring alerts
@@ -124,19 +125,7 @@ const ContractsPage = async () => {
   );
 
   // Fetch events for the contract creation dropdown
-  const events = await database.event.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-    },
-    orderBy: { eventDate: "desc" },
-    take: 100,
-  });
+  const events = (await listEvents()).data;
 
   // Fetch clients for the contract creation dropdown
   const rawClients = await database.$queryRaw<

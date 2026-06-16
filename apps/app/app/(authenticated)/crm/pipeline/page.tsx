@@ -1,5 +1,5 @@
+import { listProposals } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -127,36 +127,7 @@ export default async function PipelinePage() {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const proposals = await database.proposal.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: [{ updatedAt: "desc" }],
-    select: {
-      id: true,
-      proposalNumber: true,
-      title: true,
-      status: true,
-      total: true,
-      eventDate: true,
-      eventId: true,
-      guestCount: true,
-      client: {
-        select: {
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-      lead: {
-        select: {
-          companyName: true,
-          contactName: true,
-        },
-      },
-    },
-  });
+  const proposals = (await listProposals()).data;
 
   const deals = proposals.map((proposal) => ({
     ...proposal,

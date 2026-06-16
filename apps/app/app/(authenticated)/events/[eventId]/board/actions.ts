@@ -1,4 +1,5 @@
 "use server";
+import { listBattleBoards, listCommandBoardCards, listDishes, listEventDishes, listEventStaffs, listEvents, listUsers } from "@/app/lib/manifest-client.generated";
 
 import { database } from "@repo/database";
 import { apiPostJsonServer } from "@/app/lib/api-server";
@@ -171,28 +172,13 @@ export async function getEventBoardData(
         venueName: true,
       },
     }),
-    database.eventStaff.findMany({
-      where: {
-        tenantId,
-        eventId,
-        status: { in: COMMITTED_STAFF_STATUSES },
-        deletedAt: null,
-      },
-      select: { id: true, staffMemberId: true, role: true },
-    }),
-    database.eventDish.findMany({
-      where: { tenantId, eventId, deletedAt: null },
-      select: { id: true, dishId: true, course: true, quantityServings: true },
-    }),
+    (await listEventStaffs()).data,
+    (await listEventDishes()).data,
     database.deliveryRoute.count({
       where: { tenantId, eventId, deletedAt: null },
     }),
     // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
-    database.battleBoard.findMany({
-      where: { tenantId, eventId, deletedAt: null },
-      orderBy: { createdAt: "asc" },
-      select: { id: true, board_name: true },
-    }),
+    (await listBattleBoards()).data,
     database.commandBoard.findFirst({
       where: { tenantId, eventId, deletedAt: null },
       orderBy: { createdAt: "asc" },
@@ -211,27 +197,13 @@ export async function getEventBoardData(
   // --- Batch 2: queries that depend on batch 1 results ---
   const [staffUsers, dishRows, cardRows] = await Promise.all([
     staffIds.length > 0
-      ? database.user.findMany({
-          where: { tenantId, id: { in: staffIds } },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-          },
-        })
+      ? (await listUsers()).data
       : Promise.resolve([]),
     dishIds.length > 0
-      ? database.dish.findMany({
-          where: { tenantId, id: { in: dishIds } },
-          select: { id: true, name: true },
-        })
+      ? (await listDishes()).data
       : Promise.resolve([]),
     boardId
-      ? database.commandBoardCard.findMany({
-          where: { tenantId, boardId, deletedAt: null },
-          select: { id: true, title: true, metadata: true },
-        })
+      ? (await listCommandBoardCards()).data
       : Promise.resolve([]),
   ]);
 
@@ -305,19 +277,7 @@ export async function getStaffPalette(): Promise<PaletteStaff[]> {
   const { tenantId } = user;
 
   // TODO: replace with server-side search once user counts grow past 200
-  const users = await database.user.findMany({
-    where: { tenantId, isActive: true, deletedAt: null },
-    orderBy: { firstName: "asc" },
-    take: 200,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      avatarUrl: true,
-      hourlyRate: true,
-    },
-  });
+  const users = (await listUsers()).data;
 
   return users.map((u) => ({
     id: u.id,
@@ -337,12 +297,7 @@ export async function getDishPalette(): Promise<PaletteDish[]> {
   const { tenantId } = user;
 
   // TODO: replace with server-side search once dish counts grow past 200
-  const dishes = await database.dish.findMany({
-    where: { tenantId, isActive: true, deletedAt: null },
-    orderBy: { name: "asc" },
-    take: 200,
-    select: { id: true, name: true, category: true, pricePerPerson: true },
-  });
+  const dishes = (await listDishes()).data;
 
   return dishes.map((d) => ({
     id: d.id,
@@ -369,15 +324,7 @@ export async function createStaffDraftCard(input: {
   // Duplicate guard: if this staff member already has a live assign-staff
   // card on the board (draft or committed), reuse it instead of creating a
   // second one. A "failed" card may be re-drafted.
-  const existingCards = await database.commandBoardCard.findMany({
-    where: {
-      tenantId: user.tenantId,
-      boardId: input.boardId,
-      cardType: "entity",
-      deletedAt: null,
-    },
-    select: { metadata: true },
-  });
+  const existingCards = (await listCommandBoardCards()).data;
   for (const card of existingCards) {
     const existing = parseDraftEnvelope(card.metadata);
     if (
@@ -535,10 +482,7 @@ export async function getDraftImpact(
   const { tenantId } = user;
 
   // Read draft cards and extract assign-staff envelopes
-  const cards = await database.commandBoardCard.findMany({
-    where: { tenantId, boardId, deletedAt: null },
-    select: { id: true, metadata: true },
-  });
+  const cards = (await listCommandBoardCards()).data;
 
   const drafts: StaffDraftInput[] = [];
   for (const card of cards) {
@@ -563,10 +507,7 @@ export async function getDraftImpact(
   const staffIds = [...new Set(drafts.map((d) => d.staffMemberId))];
 
   // --- Hourly rates ---
-  const staffUsers = await database.user.findMany({
-    where: { tenantId, id: { in: staffIds } },
-    select: { id: true, hourlyRate: true },
-  });
+  const staffUsers = (await listUsers()).data;
   const rates: Record<string, string> = {};
   for (const u of staffUsers) {
     if (u.hourlyRate != null) {
@@ -575,32 +516,13 @@ export async function getDraftImpact(
   }
 
   // --- Busy intervals from other events ---
-  const otherAssignments = await database.eventStaff.findMany({
-    where: {
-      tenantId,
-      staffMemberId: { in: staffIds },
-      eventId: { not: eventId },
-      status: { in: COMMITTED_STAFF_STATUSES },
-      deletedAt: null,
-      shiftStart: { not: null },
-      shiftEnd: { not: null },
-    },
-    select: {
-      staffMemberId: true,
-      shiftStart: true,
-      shiftEnd: true,
-      eventId: true,
-    },
-  });
+  const otherAssignments = (await listEventStaffs()).data;
 
   // Batch-fetch labels for the other events
   const otherEventIds = [...new Set(otherAssignments.map((a) => a.eventId))];
   const otherEvents =
     otherEventIds.length > 0
-      ? await database.event.findMany({
-          where: { tenantId, id: { in: otherEventIds } },
-          select: { id: true, title: true },
-        })
+      ? (await listEvents()).data
       : [];
   const eventTitleMap = new Map(otherEvents.map((e) => [e.id, e.title]));
 

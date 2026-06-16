@@ -16,9 +16,7 @@
     }
   },
   "main": "./dist/index.js",
-  "peerDependencies": {
-    "@repo/database": "workspace:*"
-  },
+  "peerDependencies": {},
   "peerDependenciesMeta": {
     "@repo/database": {
       "optional": true

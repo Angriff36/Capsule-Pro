@@ -1,5 +1,5 @@
+import { listCommandBoards } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -57,21 +57,7 @@ const CommandBoardPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const boards = await database.commandBoard.findMany({
-    where: { tenantId, deletedAt: null },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      status: true,
-      isTemplate: true,
-      tags: true,
-      createdAt: true,
-      updatedAt: true,
-      _count: { select: { cards: true, connections: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+  const boards = (await listCommandBoards()).data;
 
   const activeCount = boards.filter((b) => b.status === "active").length;
   const draftCount = boards.filter((b) => b.status === "draft").length;

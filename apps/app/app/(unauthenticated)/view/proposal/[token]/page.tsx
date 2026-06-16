@@ -1,3 +1,4 @@
+import { listProposalLineItems } from "@/app/lib/manifest-client.generated";
 /**
  * @module PublicProposalViewPage
  * @intent Public page for clients to view and respond to proposals without authentication
@@ -85,27 +86,7 @@ const PublicProposalViewPage = async ({
     sortOrder: number | null;
   }>;
   try {
-    lineItems = await database.proposalLineItem.findMany({
-      where: {
-        proposalId: proposal.id,
-        tenantId: proposal.tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        itemType: true,
-        category: true,
-        description: true,
-        quantity: true,
-        unitOfMeasure: true,
-        unitPrice: true,
-        totalPrice: true,
-        sortOrder: true,
-      },
-      orderBy: {
-        sortOrder: "asc",
-      },
-    });
+    lineItems = (await listProposalLineItems()).data;
   } catch {
     lineItems = [];
   }

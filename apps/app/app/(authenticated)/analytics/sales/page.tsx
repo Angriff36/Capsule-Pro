@@ -1,3 +1,4 @@
+import { listInvoices, listProposals } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -157,70 +158,8 @@ const AnalyticsSalesPage = async () => {
         amount: true,
       },
     }),
-    database.proposal.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        proposalNumber: true,
-        title: true,
-        status: true,
-        eventDate: true,
-        total: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        lead: {
-          select: {
-            companyName: true,
-            contactName: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    }),
-    database.invoice.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [{ issuedAt: "desc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        invoiceNumber: true,
-        invoiceType: true,
-        status: true,
-        dueDate: true,
-        issuedAt: true,
-        total: true,
-        amountDue: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    }),
+    (await listProposals()).data,
+    (await listInvoices()).data,
   ]);
 
   const leadCount = leadSummary._count;

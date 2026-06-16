@@ -1,3 +1,4 @@
+import { listQACorrectiveActions, listTemperatureLogs } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -31,17 +32,9 @@ const QualityAssurancePage = async () => {
     include: { items: true },
   });
 
-  const temperatureLogsRaw = await database.temperatureLog.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { loggedAt: "desc" },
-    take: 10,
-  });
+  const temperatureLogsRaw = (await listTemperatureLogs()).data;
 
-  const correctiveActionsRaw = await database.correctiveAction.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const correctiveActionsRaw = (await listQACorrectiveActions()).data;
 
   const qualityChecks = qualityChecksRaw.map((qc) => ({
     id: qc.id,

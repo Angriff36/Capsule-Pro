@@ -1,5 +1,5 @@
+import { listIngredients } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
@@ -22,17 +22,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ingredients = await database.ingredient.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-        isActive: true,
-        name: { contains: query.trim(), mode: "insensitive" },
-      },
-      select: { name: true },
-      orderBy: { name: "asc" },
-      take: 20,
-    });
+    const q = query.trim().toLowerCase();
+    const ingredients = (await listIngredients()).data
+      .filter(
+        (ing) =>
+          !ing.deletedAt &&
+          ing.isActive &&
+          ing.name?.toLowerCase().includes(q),
+      )
+      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+      .slice(0, 20);
 
     return NextResponse.json({
       ingredients: ingredients.map((ing) => ing.name),

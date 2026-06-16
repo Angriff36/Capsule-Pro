@@ -2,7 +2,6 @@
  * @vitest-environment node
  */
 
-import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RecipeDetailPage from "../../../app/(authenticated)/kitchen/recipes/[recipeId]/page";
 

@@ -1,4 +1,5 @@
 "use server";
+import { listCycleCountRecords } from "@/app/lib/manifest-client.generated";
 
 /**
  * Cycle Count Record Server Actions
@@ -29,16 +30,7 @@ export async function listCycleCountRecords(
 ): Promise<CycleCountRecord[]> {
   const tenantId = await requireTenantId();
 
-  const records = await database.cycleCountRecord.findMany({
-    where: {
-      tenantId,
-      sessionId,
-      deletedAt: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const records = (await listCycleCountRecords()).data;
 
   return records.map((record) => ({
     id: record.id,

@@ -1,5 +1,5 @@
+import { listClientInteractions, listClients } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -106,23 +106,24 @@ const CrmCommunicationsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const interactionRecords = await database.clientInteraction.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { interactionDate: "desc" },
-    take: 50,
-  });
-  const clients = await database.client.findMany({
-    where: {
-      tenantId,
-      id: {
-        in: interactionRecords
-          .map((interaction) => interaction.clientId)
-          .filter((clientId): clientId is string => Boolean(clientId)),
-      },
-      deletedAt: null,
-    },
-    select: { id: true, company_name: true, first_name: true, last_name: true },
-  });
+  const interactionRecords = (await listClientInteractions()).data
+    .filter((interaction) => !interaction.deletedAt)
+    .sort(
+      (a, b) =>
+        new Date(b.interactionDate).getTime() -
+        new Date(a.interactionDate).getTime(),
+    )
+    .slice(0, 50);
+  const clientIds = [
+    ...new Set(
+      interactionRecords
+        .map((interaction) => interaction.clientId)
+        .filter((clientId): clientId is string => Boolean(clientId)),
+    ),
+  ];
+  const clients = (await listClients()).data.filter(
+    (client) => !client.deletedAt && clientIds.includes(client.id),
+  );
   const clientsById = new Map(clients.map((client) => [client.id, client]));
   const interactions: InteractionRow[] = interactionRecords.map(
     (interaction) => {

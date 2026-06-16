@@ -1,4 +1,3 @@
-import type { Event } from "@repo/database";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

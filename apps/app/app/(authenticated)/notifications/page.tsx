@@ -1,5 +1,5 @@
+import { listNotifications } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -26,11 +26,7 @@ export default async function NotificationsPage() {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const rawNotifications = await database.notification.findMany({
-    where: { tenantId },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  const rawNotifications = (await listNotifications()).data;
 
   const notifications = rawNotifications.map((n) => ({
     tenantId: n.tenantId,

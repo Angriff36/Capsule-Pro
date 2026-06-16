@@ -1,3 +1,4 @@
+import { listInventoryItems } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -43,22 +44,7 @@ const WarehouseInventoryPage = async () => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch active inventory items ordered by name
-  const items = await database.inventoryItem.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-      quantityOnHand: true,
-      reorder_level: true,
-      unitOfMeasure: true,
-    },
-  });
+  const items = (await listInventoryItems()).data;
 
   // Compute daily usage from transactions in the last 7 days.
   // Uses raw SQL to aggregate transaction quantities grouped by item.

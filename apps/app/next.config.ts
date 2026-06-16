@@ -24,6 +24,7 @@ const apiBaseUrl = (
       "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
+const useConvexBackend = !!process.env.NEXT_PUBLIC_CONVEX_URL;
 
 const rewrites: NextConfig["rewrites"] = async () => {
   const baseRewritesResult =
@@ -35,6 +36,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
         ...(baseRewritesResult.afterFiles ?? []),
         ...(baseRewritesResult.fallback ?? []),
       ];
+
+  if (useConvexBackend) {
+    return [...baseRewrites];
+  }
 
   return [
     ...baseRewrites,
@@ -234,15 +239,15 @@ const baseConfig: NextConfig = withToolbar(
     //   - The Vercel Toolbar companion (25002).
     // https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
     allowedDevOrigins: [
-      // App port — covers browser → Next dev server cross-origin warnings
       "localhost:2221",
       "127.0.0.1:2221",
-      // API server — server actions call it directly in dev
+      "localhost:2226",
+      "127.0.0.1:2226",
       "localhost:2223",
       "127.0.0.1:2223",
-      // Vercel Toolbar companion
       "localhost:25002",
       "127.0.0.1:25002",
+      "pop-os.tail78dd9e.ts.net",
     ],
     // Turbopack aliases — replaces webpack resolve.alias for Next.js 16
     // canvas is a Node-native module unavailable in browser/server bundles
@@ -351,6 +356,11 @@ const baseConfig: NextConfig = withToolbar(
     ],
     rewrites,
     async headers() {
+      // Dev: no COOP/CSP/HSTS — they break Clerk OAuth on http://127.0.0.1
+      if (process.env.NODE_ENV !== "production") {
+        return [];
+      }
+
       return [
         {
           source: "/(.*)",
@@ -369,23 +379,14 @@ const baseConfig: NextConfig = withToolbar(
               key: "Strict-Transport-Security",
               value: "max-age=63072000; includeSubDomains; preload",
             },
-            {
-              key: "X-DNS-Prefetch-Control",
-              value: "on",
-            },
-            {
-              key: "Cross-Origin-Opener-Policy",
-              value: "same-origin",
-            },
-            {
-              key: "Cross-Origin-Resource-Policy",
-              value: "same-origin",
-            },
+            { key: "X-DNS-Prefetch-Control", value: "on" },
+            { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+            { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
             {
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "production" ? "" : "'unsafe-eval' "}https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:`,
+                "script-src 'self' 'unsafe-inline' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:",
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",

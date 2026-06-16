@@ -1,4 +1,5 @@
 "use server";
+import { listEvents } from "@/app/lib/manifest-client.generated";
 
 /**
  * Proposal CRUD Server Actions
@@ -813,20 +814,7 @@ export async function getEventsForDropdown() {
 
   const tenantId = await getTenantId();
 
-  const events = await database.event.findMany({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-      eventType: true,
-      status: true,
-    },
-    orderBy: [{ eventDate: "desc" }],
-    take: 100,
-  });
+  const events = (await listEvents()).data;
 
   return events;
 }

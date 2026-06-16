@@ -1,5 +1,5 @@
+import { listEventReports, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -55,29 +55,11 @@ const EventReportsPage = async () => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch reports
-  const reports = await database.eventReport.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: [{ createdAt: "desc" }],
-  });
+  const reports = (await listEventReports()).data;
 
   // Fetch events for reports
   const eventIds = reports.map((report) => report.eventId);
-  const events = await database.event.findMany({
-    where: {
-      tenantId,
-      id: { in: eventIds },
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      eventNumber: true,
-      title: true,
-      eventDate: true,
-    },
-  });
+  const events = (await listEvents()).data;
 
   // Create a map for quick lookup
   const eventMap = new Map(events.map((e) => [e.id, e]));

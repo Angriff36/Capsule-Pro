@@ -1,4 +1,5 @@
 "use server";
+import { getEvent, listDishes, listEventDishes } from "@/app/lib/manifest-client.generated";
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
@@ -20,40 +21,20 @@ export async function generateProposalFromEvent(
     const tenantId = user.tenantId;
 
     // Fetch event with client relation (read — direct Prisma per constitution §10)
-    const event = await database.event.findFirst({
-      where: { id: eventId, tenantId, deletedAt: null },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        eventType: true,
-        guestCount: true,
-        venueName: true,
-        venueAddress: true,
-        clientId: true,
-        client: {
-          select: { id: true },
-        },
-      },
-    });
+    const event = await getEvent(eventId);
 
     if (!event) {
       return { success: false, error: "Event not found" };
     }
 
     // Fetch event-dish links
-    const eventDishLinks = await database.eventDish.findMany({
-      where: { eventId, tenantId, deletedAt: null },
-    });
+    const eventDishLinks = (await listEventDishes()).data;
 
     // Fetch dish details for line items
     const dishIds = eventDishLinks.map((ed) => ed.dishId);
     const dishes =
       dishIds.length > 0
-        ? await database.dish.findMany({
-            where: { id: { in: dishIds }, tenantId, deletedAt: null },
-            select: { id: true, name: true, description: true },
-          })
+        ? (await listDishes()).data
         : [];
     const dishById = new Map(dishes.map((d) => [d.id, d]));
 

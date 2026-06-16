@@ -1,7 +1,7 @@
 "use server";
+import { getBattleBoard, getEvent } from "@/app/lib/manifest-client.generated";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -158,9 +158,7 @@ export async function getBoardFull(boardId: string): Promise<BattleBoardFull> {
   }
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const board = await database.battleBoard.findFirst({
-    where: { id: boardId, tenantId, deletedAt: null },
-  });
+  const board = await getBattleBoard(boardId);
   if (!board) {
     notFound();
   }
@@ -171,17 +169,7 @@ export async function getBoardFull(boardId: string): Promise<BattleBoardFull> {
   // (no eventId) fall back to their own boardData snapshot.
   let event: LinkedEvent | null = null;
   if (board.eventId) {
-    const e = await database.event.findFirst({
-      where: { id: board.eventId, tenantId, deletedAt: null },
-      select: {
-        title: true,
-        eventNumber: true,
-        eventDate: true,
-        guestCount: true,
-        venueName: true,
-        venueAddress: true,
-      },
-    });
+    const e = await getEvent(board.eventId);
     if (e) {
       event = {
         title: e.title ?? "",
@@ -235,10 +223,7 @@ export async function recordImportAction(
   const user = await requireCurrentUser();
 
   // Read current boardData to append the import entry (constitution §10: reads bypass runtime).
-  const board = await database.battleBoard.findFirst({
-    where: { id: boardId, tenantId: user.tenantId, deletedAt: null },
-    select: { boardData: true },
-  });
+  const board = await getBattleBoard(boardId);
   if (!board) {
     return;
   }

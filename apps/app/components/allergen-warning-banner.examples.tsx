@@ -9,7 +9,6 @@
 
 "use client";
 
-import type { AllergenWarning } from "@repo/database";
 import {
   Card,
   CardContent,
@@ -411,8 +410,6 @@ export default function AllergenWarningBannerExamples() {
           <CardContent>
             <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-slate-50 text-sm">
               {`import { AllergenWarningBanner } from "@/components/allergen-warning-banner";
-import type { AllergenWarning } from "@repo/database";
-
 function MyComponent() {
   const warning: AllergenWarning & { dishName?: string } = {
     // ... warning data from database

@@ -1,3 +1,4 @@
+import { listProcurementBudgets, listPurchaseOrders, listPurchaseRequisitions, listVendorContracts } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -103,81 +104,10 @@ const ProcurementPage = async () => {
         status: "active",
       },
     }),
-    database.purchaseRequisition.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 5,
-      select: {
-        id: true,
-        requisitionNumber: true,
-        status: true,
-        department: true,
-        requestDate: true,
-        estimatedTotal: true,
-      },
-    }),
-    database.purchaseOrder.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 5,
-      select: {
-        id: true,
-        poNumber: true,
-        status: true,
-        orderDate: true,
-        total: true,
-      },
-    }),
-    database.vendorContract.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [
-        {
-          endDate: "asc",
-        },
-        {
-          createdAt: "desc",
-        },
-      ],
-      take: 5,
-      select: {
-        id: true,
-        contractNumber: true,
-        vendorName: true,
-        status: true,
-        endDate: true,
-      },
-    }),
-    database.procurementBudget.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: 5,
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        fiscalYear: true,
-        budgetAmount: true,
-        spentAmount: true,
-      },
-    }),
+    (await listPurchaseRequisitions()).data,
+    (await listPurchaseOrders()).data,
+    (await listVendorContracts()).data,
+    (await listProcurementBudgets()).data,
   ]);
 
   return (

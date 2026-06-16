@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -20,7 +19,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { loadPrepTaskPlanWorkflowStats } from "@/app/lib/convex/kitchen-recipe-catalog-loaders";
 import { WorkflowsClient } from "./workflows-client";
 
 export default async function PrepTaskPlanWorkflowsPage() {
@@ -29,14 +28,7 @@ export default async function PrepTaskPlanWorkflowsPage() {
     redirect("/sign-in");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    redirect("/");
-  }
-
-  const baseWhere = { tenantId, deletedAt: null };
-
-  const [
+  const {
     total,
     created,
     generating,
@@ -46,47 +38,10 @@ export default async function PrepTaskPlanWorkflowsPage() {
     completed,
     failed,
     cancelled,
-    avgGenerated,
-  ] = await Promise.all([
-    database.prepTaskPlanWorkflow.count({ where: baseWhere }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "created" },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: {
-        ...baseWhere,
-        status: { in: ["generating", "generation_completed"] },
-      },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: {
-        ...baseWhere,
-        status: { in: ["reviewing", "review_completed"] },
-      },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "approving" },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "approved" },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "completed" },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "failed" },
-    }),
-    database.prepTaskPlanWorkflow.count({
-      where: { ...baseWhere, status: "cancelled" },
-    }),
-    database.prepTaskPlanWorkflow.aggregate({
-      where: baseWhere,
-      _avg: { generatedCount: true },
-    }),
-  ]);
+    avgTasks,
+  } = await loadPrepTaskPlanWorkflowStats();
 
   const activeCount = created + generating + reviewing + approving;
-  const avgTasks = Math.round(avgGenerated._avg.generatedCount ?? 0);
 
   return (
     <PageCanvas>

@@ -1,7 +1,6 @@
 import { keys as analytics } from "@repo/analytics/keys";
 import { keys as auth } from "@repo/auth/keys";
 import { keys as collaboration } from "@repo/collaboration/keys";
-import { keys as database } from "@repo/database/keys";
 import { keys as email } from "@repo/email/keys";
 import { keys as flags } from "@repo/feature-flags/keys";
 import { keys as core } from "@repo/next-config/keys";
@@ -21,7 +20,6 @@ export const env = createEnv({
     analytics(),
     collaboration(),
     core(),
-    database(),
     email(),
     flags(),
     notifications(),
@@ -35,7 +33,9 @@ export const env = createEnv({
     PLASMIC_PROJECT_ID: z.string().optional(),
     PLASMIC_API_TOKEN: z.string().optional(),
   },
-  client: {},
+  client: {
+    NEXT_PUBLIC_CONVEX_URL: z.string().url().optional(),
+  },
   // When skipValidation is true, t3-env returns runtimeEnv directly without
   // merging extends presets. Pass process.env so all vars are still accessible.
   runtimeEnv: skip
@@ -45,11 +45,13 @@ export const env = createEnv({
         COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
         PLASMIC_PROJECT_ID: process.env.PLASMIC_PROJECT_ID,
         PLASMIC_API_TOKEN: process.env.PLASMIC_API_TOKEN,
+        NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
       }
     : {
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
         PLASMIC_PROJECT_ID: process.env.PLASMIC_PROJECT_ID,
         PLASMIC_API_TOKEN: process.env.PLASMIC_API_TOKEN,
+        NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
       },
 });

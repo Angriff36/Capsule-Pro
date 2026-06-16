@@ -72,7 +72,7 @@ if (result.success) {
 # Set your credentials
 export OUTBOX_PUBLISH_TOKEN="your-test-token"
 
-# Create a test outbox event via SQL/Prisma first, then:
+# Create a test outbox event via Convex mutation first, then:
 curl -X POST http://localhost:2223/api/outbox/publish \
   -H "Authorization: Bearer $OUTBOX_PUBLISH_TOKEN" \
   -H "Content-Type: application/json" \

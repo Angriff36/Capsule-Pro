@@ -4,7 +4,6 @@
  * Form for editing an existing proposal
  */
 
-import type { Proposal } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,

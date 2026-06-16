@@ -1,22 +1,22 @@
 "use server";
 
-import { database, type InventoryItem } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import {
+  loadInventoryItemDetail,
+  loadInventoryItemsForClient,
+} from "@/app/lib/convex/domain-loaders";
+import type { InventoryItemWithStatus } from "@/app/lib/inventory";
 import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
+import { serverGetEntity } from "@/app/lib/convex/server-reads";
+import { mapConvexInventoryItemToUi } from "@/app/lib/inventory-convex-mapper";
 
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
-
   if (typeof value !== "string") {
     return;
   }
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 };
@@ -26,11 +26,9 @@ const getOptionalString = (
   key: string
 ): string | null | undefined => {
   const value = formData.get(key);
-
   if (typeof value !== "string") {
     return;
   }
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
@@ -63,58 +61,42 @@ const getBoolean = (formData: FormData, key: string): boolean | undefined => {
   return value === "true" || value === "1" || value === "on";
 };
 
-// ============================================================================
-// Query Operations (direct Prisma reads — constitution §10)
-// ============================================================================
+async function loadItemById(itemId: string): Promise<InventoryItemWithStatus | null> {
+  const loaded = await loadInventoryItemDetail(itemId);
+  return loaded?.item ?? null;
+}
 
-/**
- * List all inventory items with optional filters
- */
 export const getInventoryItems = async (filters?: {
   category?: string;
   search?: string;
-}): Promise<InventoryItem[]> => {
-  const tenantId = await requireTenantId();
+}): Promise<InventoryItemWithStatus[]> => {
+  await requireTenantId();
+  let items = await loadInventoryItemsForClient();
 
-  return database.inventoryItem.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(filters?.category && { category: filters.category }),
-      ...(filters?.search && {
-        OR: [
-          { name: { contains: filters.search, mode: "insensitive" } },
-          { item_number: { contains: filters.search, mode: "insensitive" } },
-        ],
-      }),
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  if (filters?.category) {
+    items = items.filter((i) => i.category === filters.category);
+  }
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    items = items.filter(
+      (i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.item_number.toLowerCase().includes(q)
+    );
+  }
+
+  return items.sort(
+    (a, b) => b.created_at.getTime() - a.created_at.getTime()
+  );
 };
 
-/**
- * Get a single inventory item by ID
- */
 export const getInventoryItemById = async (
   itemId: string
-): Promise<InventoryItem | null> => {
-  const tenantId = await requireTenantId();
+): Promise<InventoryItemWithStatus | null> => loadItemById(itemId);
 
-  return database.inventoryItem.findFirst({
-    where: { tenantId, id: itemId, deletedAt: null },
-  });
-};
-
-// ============================================================================
-// Create Operation (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Create a new inventory item
- */
 export const createInventoryItem = async (
   formData: FormData
-): Promise<InventoryItem> => {
+): Promise<InventoryItemWithStatus> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -173,29 +155,21 @@ export const createInventoryItem = async (
     throw new Error(result.message || "Failed to create inventory item");
   }
 
-  const createdId = (result.result as { id?: string } | null)?.id;
+  const createdId =
+    (result.result as { id?: string; _id?: string } | null)?.id ??
+    (result.result as { _id?: string } | null)?._id;
   invariant(createdId, "InventoryItem.create did not return an id");
 
-  const item = await database.inventoryItem.findFirst({
-    where: { tenantId, id: createdId },
-  });
-  invariant(item, "Created inventory item could not be loaded");
+  const doc = await serverGetEntity("InventoryItem", String(createdId));
+  invariant(doc, "Created inventory item could not be loaded");
 
   revalidatePath("/inventory");
-
-  return item;
+  return mapConvexInventoryItemToUi(doc);
 };
 
-// ============================================================================
-// Update Operation (governed via Manifest runtime)
-// ============================================================================
-
-/**
- * Update an inventory item
- */
 export const updateInventoryItem = async (
   formData: FormData
-): Promise<InventoryItem> => {
+): Promise<InventoryItemWithStatus> => {
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
 
@@ -204,10 +178,7 @@ export const updateInventoryItem = async (
     throw new Error("Item ID is required.");
   }
 
-  // Read existing for merge (update command is full-field mutation)
-  const existing = await database.inventoryItem.findFirst({
-    where: { tenantId, id: itemId, deletedAt: null },
-  });
+  const existing = await loadItemById(itemId);
   invariant(existing, "Inventory item not found");
 
   const name = getString(formData, "name");
@@ -233,16 +204,16 @@ export const updateInventoryItem = async (
           ? (existing.description ?? "")
           : (description ?? ""),
       category: category ?? existing.category,
-      unitOfMeasure: unitOfMeasure ?? existing.unitOfMeasure,
-      unitCost: unitCost ?? Number(existing.unitCost),
-      quantityOnHand: quantityOnHand ?? Number(existing.quantityOnHand),
-      parLevel: parLevel ?? Number(existing.parLevel),
-      reorder_level: reorder_level ?? Number(existing.reorder_level),
+      unitOfMeasure: unitOfMeasure ?? existing.unit_of_measure,
+      unitCost: unitCost ?? existing.unit_cost,
+      quantityOnHand: quantityOnHand ?? existing.quantity_on_hand,
+      parLevel: parLevel ?? existing.par_level,
+      reorder_level: reorder_level ?? existing.reorder_level,
       supplierId:
         supplierId === undefined
-          ? (existing.supplierId ?? "")
+          ? (existing.supplier_id ?? "")
           : (supplierId ?? ""),
-      tags: tags.length > 0 ? tags : (existing.tags ?? []),
+      tags: tags.length > 0 ? tags : existing.tags,
       fsa_status:
         fsa_status === undefined
           ? (existing.fsa_status ?? "")
@@ -258,23 +229,13 @@ export const updateInventoryItem = async (
     throw new Error(result.message || "Failed to update inventory item");
   }
 
-  const item = await database.inventoryItem.findFirst({
-    where: { tenantId, id: itemId },
-  });
-  invariant(item, "Updated inventory item could not be loaded");
+  const updated = await loadItemById(itemId);
+  invariant(updated, "Updated inventory item could not be loaded");
 
   revalidatePath("/inventory");
-
-  return item;
+  return updated;
 };
 
-// ============================================================================
-// Delete Operation (governed via Manifest runtime — soft delete)
-// ============================================================================
-
-/**
- * Soft delete an inventory item
- */
 export const deleteInventoryItem = async (itemId: string): Promise<void> => {
   const user = await requireCurrentUser();
 

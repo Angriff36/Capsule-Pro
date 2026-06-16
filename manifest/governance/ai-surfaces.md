@@ -35,7 +35,7 @@ Any AI path that writes governed state outside this chain is a bypass.
 
 AI surfaces must not:
 
-- Directly call Prisma writes for governed entities.
+- Directly call Convex mutations for governed entities outside the Manifest runtime.
 - Execute raw SQL mutations for governed state.
 - Use generated concrete command routes as semantic authority.
 - Invent commands because a route name, UI label, or old doc suggests one exists.

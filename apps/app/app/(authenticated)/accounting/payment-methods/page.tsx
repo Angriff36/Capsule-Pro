@@ -1,3 +1,4 @@
+import { listPaymentMethods } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -100,28 +101,7 @@ export default async function PaymentMethodsPage() {
       database.paymentMethod.count({
         where: { tenantId, deletedAt: null, status: "FLAGGED" },
       }),
-      database.paymentMethod.findMany({
-        where: { tenantId, deletedAt: null },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-        select: {
-          id: true,
-          type: true,
-          cardLastFour: true,
-          cardNetwork: true,
-          isDefault: true,
-          status: true,
-          clientId: true,
-          createdAt: true,
-          client: {
-            select: {
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-        },
-      }),
+      (await listPaymentMethods()).data,
     ]);
 
   const serializedMethods = paymentMethods.map((pm) => ({

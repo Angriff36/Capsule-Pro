@@ -10,7 +10,7 @@ note: >-
 
 **Why this file:** Governance allowlists/baselines: tighten from namespace prefixes to specific route paths, unify the two drift audits on one allowlist+bypass source, and prefer native scan/audit-governance/enforce-surface where possible.
 
-**Relevant divergences:** D4, D5 — see `manifest/MANIFEST-DIVERGENCES.md` for the full remediation detail.
+**Relevant divergences:** See `manifest/task_plan.md` for Convex migration status.
 
 **How to use:** These are COMPLETE Manifest documentation pages. Not every section applies to this directory. Read the embedded page(s) and follow the parts relevant to the change you are making here. Do not treat unrelated sections as required work.
 

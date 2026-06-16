@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import Link from "next/link";
