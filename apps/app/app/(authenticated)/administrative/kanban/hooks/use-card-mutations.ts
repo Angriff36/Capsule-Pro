@@ -2,12 +2,31 @@
 
 import { apiFetch } from "@/app/lib/api";
 import * as routes from "@/app/lib/routes";
+import {
+  adminTaskAttachmentSoftDelete,
+  adminTaskCommentCreate,
+  adminTaskCommentSoftDelete,
+  adminTaskCreate,
+  adminTaskDevMetaCreate,
+  adminTaskDevMetaUpdate,
+  adminTaskFileRefCreate,
+  adminTaskFileRefSoftDelete,
+  adminTaskSoftDelete,
+  adminTaskUpdate,
+  listAdminTaskDevMetas,
+} from "@/app/lib/manifest-client.generated";
+import {
+  mapAdminComment,
+  mapAdminDevMeta,
+  mapAdminFileRef,
+  mapAdminTaskToKanban,
+} from "../lib/admin-task-mappers";
 import type {
-  KanbanTask,
-  TaskComment,
-  TaskAttachment,
-  TaskFileRef,
   DevBugMeta,
+  KanbanTask,
+  TaskAttachment,
+  TaskComment,
+  TaskFileRef,
 } from "../lib/board-types";
 
 export interface MutationResponse<T> {
@@ -21,19 +40,27 @@ export function useCardMutations() {
     data: Partial<KanbanTask>
   ): Promise<MutationResponse<KanbanTask>> => {
     try {
-      const response = await apiFetch(routes.adminTasks(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const result = await adminTaskCreate({
+        title: data.title,
+        description: data.description ?? undefined,
+        status: data.status,
+        priority: data.priority,
+        category: data.category ?? undefined,
+        assignedTo: data.assignedTo ?? undefined,
+        dueDate: data.dueDate ?? undefined,
+        createdBy: data.createdBy ?? undefined,
+        sourceType: data.sourceType ?? undefined,
+        sourceId: data.sourceId ?? undefined,
+        position: data.position,
+        labels: data.labels,
+        estimatedHours: data.estimatedHours ?? undefined,
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      if (!result) {
+        return { success: false, error: "Failed to create task" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      return { success: true, data: mapAdminTaskToKanban(result) };
     } catch (error) {
       return {
         success: false,
@@ -47,19 +74,25 @@ export function useCardMutations() {
     data: Partial<KanbanTask>
   ): Promise<MutationResponse<KanbanTask>> => {
     try {
-      const response = await apiFetch(routes.adminTask(id), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const result = await adminTaskUpdate({
+        id,
+        title: data.title,
+        description: data.description ?? undefined,
+        status: data.status,
+        priority: data.priority,
+        category: data.category ?? undefined,
+        assignedTo: data.assignedTo ?? undefined,
+        dueDate: data.dueDate ?? undefined,
+        position: data.position,
+        labels: data.labels,
+        estimatedHours: data.estimatedHours ?? undefined,
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      if (!result) {
+        return { success: false, error: "Failed to update task" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      return { success: true, data: mapAdminTaskToKanban(result) };
     } catch (error) {
       return {
         success: false,
@@ -70,15 +103,10 @@ export function useCardMutations() {
 
   const deleteTask = async (id: string): Promise<MutationResponse<void>> => {
     try {
-      const response = await apiFetch(routes.adminTask(id), {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      const result = await adminTaskSoftDelete({ id });
+      if (!result) {
+        return { success: false, error: "Failed to delete task" };
       }
-
       return { success: true };
     } catch (error) {
       return {
@@ -93,19 +121,17 @@ export function useCardMutations() {
     text: string
   ): Promise<MutationResponse<TaskComment>> => {
     try {
-      const response = await apiFetch(routes.adminTaskComments(taskId), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+      const result = await adminTaskCommentCreate({
+        taskId,
+        text,
+        authorName: "User",
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      if (!result) {
+        return { success: false, error: "Failed to add comment" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      return { success: true, data: mapAdminComment(result) };
     } catch (error) {
       return {
         success: false,
@@ -115,22 +141,14 @@ export function useCardMutations() {
   };
 
   const deleteComment = async (
-    taskId: string,
+    _taskId: string,
     commentId: string
   ): Promise<MutationResponse<void>> => {
     try {
-      const response = await apiFetch(
-        routes.adminTaskComment(taskId, commentId),
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      const result = await adminTaskCommentSoftDelete({ id: commentId });
+      if (!result) {
+        return { success: false, error: "Failed to delete comment" };
       }
-
       return { success: true };
     } catch (error) {
       return {
@@ -140,6 +158,7 @@ export function useCardMutations() {
     }
   };
 
+  // NOTE: File upload still requires the REST route for blob storage handling.
   const addAttachment = async (
     taskId: string,
     data: FormData
@@ -166,22 +185,14 @@ export function useCardMutations() {
   };
 
   const deleteAttachment = async (
-    taskId: string,
+    _taskId: string,
     attachmentId: string
   ): Promise<MutationResponse<void>> => {
     try {
-      const response = await apiFetch(
-        routes.adminTaskAttachment(taskId, attachmentId),
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      const result = await adminTaskAttachmentSoftDelete({ id: attachmentId });
+      if (!result) {
+        return { success: false, error: "Failed to delete attachment" };
       }
-
       return { success: true };
     } catch (error) {
       return {
@@ -200,19 +211,18 @@ export function useCardMutations() {
     }
   ): Promise<MutationResponse<TaskFileRef>> => {
     try {
-      const response = await apiFetch(routes.adminTaskFileRefs(taskId), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const result = await adminTaskFileRefCreate({
+        taskId,
+        refType: data.refType,
+        refId: data.refId,
+        refLabel: data.refLabel,
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      if (!result) {
+        return { success: false, error: "Failed to add file reference" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      return { success: true, data: mapAdminFileRef(result) };
     } catch (error) {
       return {
         success: false,
@@ -222,22 +232,14 @@ export function useCardMutations() {
   };
 
   const deleteFileRef = async (
-    taskId: string,
+    _taskId: string,
     refId: string
   ): Promise<MutationResponse<void>> => {
     try {
-      const response = await apiFetch(
-        routes.adminTaskFileRef(taskId, refId),
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      const result = await adminTaskFileRefSoftDelete({ id: refId });
+      if (!result) {
+        return { success: false, error: "Failed to delete file reference" };
       }
-
       return { success: true };
     } catch (error) {
       return {
@@ -252,19 +254,20 @@ export function useCardMutations() {
     data: Partial<DevBugMeta>
   ): Promise<MutationResponse<DevBugMeta>> => {
     try {
-      const response = await apiFetch(routes.adminTaskDevMeta(taskId), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const result = await adminTaskDevMetaCreate({
+        taskId,
+        severity: data.severity ?? "",
+        environment: data.environment ?? "",
+        stepsToRepro: data.stepsToRepro ?? "",
+        expectedResult: data.expectedResult ?? "",
+        actualResult: data.actualResult ?? "",
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      if (!result) {
+        return { success: false, error: "Failed to create dev meta" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      return { success: true, data: mapAdminDevMeta(result) };
     } catch (error) {
       return {
         success: false,
@@ -278,19 +281,27 @@ export function useCardMutations() {
     data: Partial<DevBugMeta>
   ): Promise<MutationResponse<DevBugMeta>> => {
     try {
-      const response = await apiFetch(routes.adminTaskDevMeta(taskId), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        return { success: false, error };
+      const existing = (await listAdminTaskDevMetas()).data.find(
+        (meta) => meta.taskId === taskId
+      );
+      if (!existing) {
+        return { success: false, error: "Dev meta not found for task" };
       }
 
-      const result = await response.json();
-      return { success: true, data: result };
+      const result = await adminTaskDevMetaUpdate({
+        id: existing.id,
+        severity: data.severity,
+        environment: data.environment ?? undefined,
+        stepsToRepro: data.stepsToRepro ?? undefined,
+        expectedResult: data.expectedResult ?? undefined,
+        actualResult: data.actualResult ?? undefined,
+      });
+
+      if (!result) {
+        return { success: false, error: "Failed to update dev meta" };
+      }
+
+      return { success: true, data: mapAdminDevMeta(result) };
     } catch (error) {
       return {
         success: false,
