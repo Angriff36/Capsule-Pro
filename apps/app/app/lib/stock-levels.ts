@@ -1,9 +1,10 @@
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
-import { apiFetch } from "@/app/lib/api";
-// NOTE: Keeping apiFetch for all stock-levels calls — generated client targets different
-// API routes (/api/inventory/stock/list, /api/inventory/transactions/list, /api/inventory/storage-locations/list)
-// while these functions hit custom stock-levels aggregation endpoints with computed fields
-// (reorderStatus, parStatus, stockOutRisk, totalValue) not present in the generated types.
+import {
+  createAdjustmentFromConvex,
+  listLocationsFromConvex,
+  listStockLevelsFromConvex,
+  listTransactionsFromConvex,
+} from "@/app/lib/stock-levels-convex";
 /**
  * Stock Levels Client API Functions
  *
@@ -192,43 +193,7 @@ export interface LocationListResponse {
 export async function listStockLevels(
   filters: StockLevelFilters = {}
 ): Promise<StockLevelListResponse> {
-  const params = new URLSearchParams();
-
-  if (filters.search) {
-    params.set("search", filters.search);
-  }
-  if (filters.category) {
-    params.set("category", filters.category);
-  }
-  if (filters.locationId) {
-    params.set("locationId", filters.locationId);
-  }
-  if (filters.reorderStatus) {
-    params.set("reorderStatus", filters.reorderStatus);
-  }
-  if (filters.lowStock) {
-    params.set("lowStock", "true");
-  }
-  if (filters.outOfStock) {
-    params.set("outOfStock", "true");
-  }
-  if (filters.page) {
-    params.set("page", filters.page.toString());
-  }
-  if (filters.limit) {
-    params.set("limit", filters.limit.toString());
-  }
-
-  const response = await apiFetch(
-    `/api/inventory/stock-levels?${params.toString()}`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch stock levels");
-  }
-
-  return response.json();
+  return listStockLevelsFromConvex(filters);
 }
 
 /**
@@ -237,20 +202,7 @@ export async function listStockLevels(
 export async function createAdjustment(
   request: CreateAdjustmentRequest
 ): Promise<CreateAdjustmentResponse> {
-  const response = await apiFetch("/api/inventory/stock-levels/adjust", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create adjustment");
-  }
-
-  return response.json();
+  return createAdjustmentFromConvex(request);
 }
 
 // ============================================================================
@@ -263,40 +215,7 @@ export async function createAdjustment(
 export async function listTransactions(
   filters: TransactionFilters = {}
 ): Promise<TransactionListResponse> {
-  const params = new URLSearchParams();
-
-  if (filters.inventoryItemId) {
-    params.set("inventoryItemId", filters.inventoryItemId);
-  }
-  if (filters.transactionType) {
-    params.set("transactionType", filters.transactionType);
-  }
-  if (filters.locationId) {
-    params.set("locationId", filters.locationId);
-  }
-  if (filters.startDate) {
-    params.set("startDate", filters.startDate);
-  }
-  if (filters.endDate) {
-    params.set("endDate", filters.endDate);
-  }
-  if (filters.page) {
-    params.set("page", filters.page.toString());
-  }
-  if (filters.limit) {
-    params.set("limit", filters.limit.toString());
-  }
-
-  const response = await apiFetch(
-    `/api/inventory/stock-levels/transactions?${params.toString()}`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch transactions");
-  }
-
-  return response.json();
+  return listTransactionsFromConvex(filters);
 }
 
 // ============================================================================
@@ -307,14 +226,7 @@ export async function listTransactions(
  * List storage locations
  */
 export async function listLocations(): Promise<LocationListResponse> {
-  const response = await apiFetch("/api/inventory/stock-levels/locations");
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch locations");
-  }
-
-  return response.json();
+  return listLocationsFromConvex();
 }
 
 // ============================================================================
