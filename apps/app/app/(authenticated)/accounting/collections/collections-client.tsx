@@ -40,15 +40,16 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   collectionCaseClose,
+  collectionCaseCreate,
   collectionCaseEscalateDunning,
   collectionCaseEscalateToLegalWithDetails,
   collectionCaseMarkDisputed,
   collectionCaseRecordPayment,
   collectionCaseSetPriority,
   collectionCaseWriteOff,
+  type CollectionCaseCreateInput,
   listCollectionCases,
 } from "@/app/lib/manifest-client.generated";
 
@@ -453,27 +454,20 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       return;
     }
     try {
-      // NOTE: No generated collectionCaseCreate function exists yet. Keeping apiFetch for case creation.
-      const res = await apiFetch("/api/accounting/collections/cases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          invoiceId: createInvoiceId,
-          invoiceNumber: createInvoiceNumber,
-          eventId: createEventId,
-          clientId: createClientId,
-          clientName: createClientName,
-          originalAmount: Number.parseFloat(createOriginalAmount) || 0,
-          outstandingAmount: Number.parseFloat(createOutstandingAmount) || 0,
-          priority: createPriority,
-          notes: createNotes || undefined,
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to create case");
-      }
+      // invoiceNumber/eventId/clientId/priority/notes are not declared params of
+      // CollectionCase.create but persist via the runtime instance-seed (the body
+      // wins over parent-context). See collections-rules.manifest `command create`.
+      await collectionCaseCreate({
+        invoiceId: createInvoiceId,
+        invoiceNumber: createInvoiceNumber,
+        eventId: createEventId,
+        clientId: createClientId,
+        clientName: createClientName,
+        originalAmount: Number.parseFloat(createOriginalAmount) || 0,
+        outstandingAmount: Number.parseFloat(createOutstandingAmount) || 0,
+        priority: createPriority,
+        notes: createNotes || undefined,
+      } as CollectionCaseCreateInput);
 
       toast.success("Collection case created");
       setCreateDialogOpen(false);
