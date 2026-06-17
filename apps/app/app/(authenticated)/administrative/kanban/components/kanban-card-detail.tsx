@@ -23,6 +23,11 @@ import type {
 import { SEVERITY_OPTIONS, ENVIRONMENT_OPTIONS } from "../lib/board-defaults";
 import { apiFetch } from "@/app/lib/api";
 import * as routes from "@/app/lib/routes";
+import {
+  fetchTaskAttachments,
+  fetchTaskComments,
+  fetchTaskDevMeta,
+} from "../lib/kanban-data-loaders";
 import type { useCardMutations } from "../hooks/use-card-mutations";
 
 type TabKey = "details" | "comments" | "attachments" | "activity";
@@ -61,30 +66,15 @@ export function KanbanCardDetail({
   useEffect(() => {
     if (!open) return;
     if (activeTab === "comments") {
-      apiFetch(routes.adminTaskComments(task.id))
-        .then((res) => {
-          if (res.ok) {
-            return res
-              .json()
-              .then((data: { data?: TaskComment[] }) =>
-                setComments(data.data ?? [])
-              );
-          }
-        })
+      fetchTaskComments(task.id)
+        .then(setComments)
         .catch(() => {});
     } else if (activeTab === "attachments") {
-      apiFetch(routes.adminTaskAttachments(task.id))
-        .then((res) => {
-          if (res.ok) {
-            return res
-              .json()
-              .then((data: { data?: TaskAttachment[] }) =>
-                setAttachments(data.data ?? [])
-              );
-          }
-        })
+      fetchTaskAttachments(task.id)
+        .then(setAttachments)
         .catch(() => {});
     } else if (activeTab === "activity") {
+      // NOTE: Activity feed has no generated list query — keep REST for audit timeline.
       apiFetch(routes.adminTaskActivity(task.id))
         .then((res) => {
           if (res.ok) {
@@ -97,18 +87,9 @@ export function KanbanCardDetail({
         })
         .catch(() => {});
     }
-    // Load dev meta for bug tasks
     if (task.sourceType === "dev_bug") {
-      apiFetch(routes.adminTaskDevMeta(task.id))
-        .then((res) => {
-          if (res.ok) {
-            return res
-              .json()
-              .then((data: { data?: DevBugMeta | null }) =>
-                setDevMeta(data.data ?? null)
-              );
-          }
-        })
+      fetchTaskDevMeta(task.id)
+        .then(setDevMeta)
         .catch(() => {});
     }
   }, [open, activeTab, task.id, task.sourceType]);
@@ -129,18 +110,7 @@ export function KanbanCardDetail({
     const result = await mutations.addComment(task.id, commentText);
     if (result.success) {
       setCommentText("");
-      // Refresh comments
-      apiFetch(routes.adminTaskComments(task.id))
-        .then((res) => {
-          if (res.ok) {
-            return res
-              .json()
-              .then((data: { data?: TaskComment[] }) =>
-                setComments(data.data ?? [])
-              );
-          }
-        })
-        .catch(() => {});
+      fetchTaskComments(task.id).then(setComments).catch(() => {});
     }
   }, [mutations, task.id, commentText]);
 

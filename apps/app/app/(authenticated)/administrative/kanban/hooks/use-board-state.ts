@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import * as routes from "@/app/lib/routes";
+import { adminTaskMoveCard } from "@/app/lib/manifest-client.generated";
 import type { KanbanTask } from "../lib/board-types";
+import { fetchKanbanTasks } from "../lib/kanban-data-loaders";
 
 interface BoardStateParams {
   initialTasks: KanbanTask[];
@@ -35,7 +35,6 @@ export function useBoardState({
     Record<string, Partial<KanbanTask>>
   >({});
 
-  // Filter tasks based on dev mode
   const filteredTasks = useMemo(() => {
     if (!isDevMode) {
       return tasks;
@@ -43,7 +42,6 @@ export function useBoardState({
     return tasks.filter((task) => task.sourceType === "dev_bug");
   }, [tasks, isDevMode]);
 
-  // Group tasks by column and sort by position
   const tasksByColumn = useMemo(() => {
     const grouped: Record<string, KanbanTask[]> = {};
 
@@ -57,7 +55,6 @@ export function useBoardState({
       }
     });
 
-    // Sort each column by position
     Object.keys(grouped).forEach((status) => {
       grouped[status].sort((a, b) => a.position - b.position);
     });
@@ -70,7 +67,6 @@ export function useBoardState({
       const sourceTask = tasks.find((t) => t.id === activeId);
       if (!sourceTask) return;
 
-      // Find position in target column
       const targetColumnTasks = tasksByColumn[overColumnStatus] || [];
       const targetIndex = targetColumnTasks.findIndex((t) => t.id === overId);
       const newPosition =
@@ -78,7 +74,6 @@ export function useBoardState({
           ? targetColumnTasks[targetIndex].position
           : targetColumnTasks.length;
 
-      // Optimistic update
       const updatedTask: KanbanTask = {
         ...sourceTask,
         status: overColumnStatus,
@@ -94,28 +89,17 @@ export function useBoardState({
         prev.map((t) => (t.id === activeId ? updatedTask : t))
       );
 
-      // Call API
       try {
-        const response = await apiFetch(routes.adminTaskMove(activeId), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: overColumnStatus, position: newPosition }),
+        const result = await adminTaskMoveCard({
+          id: activeId,
+          status: overColumnStatus,
+          position: newPosition,
         });
 
-        if (!response.ok) {
-          // Rollback on failure
-          setTasks((prev) =>
-            prev.map((t) => (t.id === activeId ? sourceTask : t))
-          );
-          setOptimisticUpdates((prev) => {
-            const updated = { ...prev };
-            delete updated[activeId];
-            return updated;
-          });
-          throw new Error(`Failed to move task: ${response.statusText}`);
+        if (!result) {
+          throw new Error("Failed to move task");
         }
 
-        // Clear optimistic update on success
         setOptimisticUpdates((prev) => {
           const updated = { ...prev };
           delete updated[activeId];
@@ -123,7 +107,6 @@ export function useBoardState({
         });
       } catch (error) {
         console.error("Error moving task:", error);
-        // Rollback on error
         setTasks((prev) =>
           prev.map((t) => (t.id === activeId ? sourceTask : t))
         );
@@ -139,14 +122,8 @@ export function useBoardState({
 
   const refreshTasks = useCallback(async () => {
     try {
-      const response = await apiFetch(routes.adminTasks(), {
-        method: "GET",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTasks(data.tasks || []);
-      }
+      const nextTasks = await fetchKanbanTasks();
+      setTasks(nextTasks);
     } catch (error) {
       console.error("Error refreshing tasks:", error);
     }

@@ -14,9 +14,12 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { apiFetch } from "@/app/lib/api";
-import * as routes from "@/app/lib/routes";
+import {
+  adminTaskCreate,
+  adminTaskDevMetaCreate,
+} from "@/app/lib/manifest-client.generated";
 import { ENVIRONMENT_OPTIONS, SEVERITY_OPTIONS } from "../lib/board-defaults";
+import { mapAdminTaskToKanban } from "../lib/admin-task-mappers";
 import type { Employee, KanbanTask } from "../lib/board-types";
 
 const priorities = [
@@ -47,52 +50,51 @@ export function AdminTaskDialog({
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    const body: Record<string, unknown> = {
-      title: data.get("title"),
-      description: data.get("description") || undefined,
-      category: data.get("category") || undefined,
-      priority: data.get("priority") || "medium",
-      status: "backlog",
-      assignedTo: data.get("assignedTo") || undefined,
-    };
-
-    if (isDevMode) {
-      body.sourceType = "dev_bug";
-    }
+    const title = String(data.get("title") ?? "").trim();
+    const description = String(data.get("description") ?? "").trim();
+    const category = String(data.get("category") ?? "").trim();
+    const priority = String(data.get("priority") ?? "medium");
+    const assignedTo = String(data.get("assignedTo") ?? "").trim();
 
     try {
-      const res = await apiFetch(routes.adminTasks(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+      const result = await adminTaskCreate({
+        title,
+        description: description || undefined,
+        category: category || undefined,
+        priority,
+        status: "backlog",
+        assignedTo: assignedTo || undefined,
+        sourceType: isDevMode ? "dev_bug" : undefined,
+        position: 0,
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Failed to create task");
+      if (!result) {
+        throw new Error("Failed to create task");
       }
 
-      const result = await res.json();
-      const created = result.data ?? result;
+      if (isDevMode) {
+        const severity = String(data.get("severity") ?? "medium");
+        const environment = String(data.get("environment") ?? "");
+        await adminTaskDevMetaCreate({
+          taskId: result.id,
+          severity,
+          environment,
+          stepsToRepro: description,
+          expectedResult: "",
+          actualResult: "",
+        });
+      }
+
+      const mapped = mapAdminTaskToKanban(result);
+      const assignee = assignedTo
+        ? employees.find((employee) => employee.id === assignedTo)
+        : undefined;
 
       onCreated({
-        id: created.id,
-        title: created.title ?? (body.title as string),
-        description: (created.description ?? body.description ?? null) as
-          | string
-          | null,
-        status: created.status ?? "backlog",
-        priority: created.priority ?? "medium",
-        category: (created.category ?? body.category ?? null) as string | null,
-        position: created.position ?? 0,
-        labels: created.labels ?? [],
-        estimatedHours: created.estimatedHours ?? null,
-        dueDate: created.dueDate ?? null,
-        assignedTo: created.assignedTo ?? null,
-        createdBy: created.createdBy ?? null,
-        sourceType: created.sourceType ?? null,
-        sourceId: created.sourceId ?? null,
-        ownerName: "You",
+        ...mapped,
+        ownerName: assignee
+          ? `${assignee.firstName} ${assignee.lastName}`.trim()
+          : "You",
       });
 
       setOpen(false);
