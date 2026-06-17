@@ -183,3 +183,42 @@ so sessions can't re-derive conflicting state from them. Archived set included:
 (not plans): `REPOINT-MAP.md` (repoint targets), `manifest/convex-phase-out-registry.json` (delete/keep registry).
 
 The canonical, proven reference implementation lives at `C:/Projects/convex-example`.
+
+---
+
+## 7. Script audit — resolving the half-and-half toward Convex (2026-06-17)
+
+Full read of all root `package.json` scripts. The repo is mid-migration, so governance is
+split between the legacy Prisma+Next dispatcher runtime and the compile-to-Convex path.
+Decision: **everything resolves toward Convex** — switch what's safe now, delete the rest
+*with* the runtime they guard.
+
+### ✅ Switched now
+- **`manifest:verify-invariants`** — removed the D22 **Prisma**-projection enum invariant (it
+  was validating Prisma codegen inside the Convex `manifest:ci` gate). 19/19 invariants still
+  pass. Convex output stays gated by `check-convex-drift` + `enforce-convex-architecture`.
+
+### ❌ DELETE with the runtime (Phase 7 — they REQUIRE/POLICE the live Prisma+Next runtime)
+Do not delete these in isolation: they guard code that is still load-bearing. They die in the
+same change that removes `apps/api` dispatcher + `manifest/runtime` Prisma stores.
+- **`check:manifest:structure`** (`tools/manifest-structure-audit.mjs`) — hard-requires
+  `prisma-store.ts`, `prisma-json-store.ts`, `prisma-idempotency-store.ts`, `@repo/database`
+  import, `PrismaJsonStore`, and the Next dispatcher route.
+- **`check:manifest:domain`** (`tools/manifest-domain-drift-audit.mjs`) — approved-write-path
+  is the Prisma stores; polices Prisma/SQL writes.
+- **`manifest:check`** (`check.mjs`) — requires `apps/api/lib/manifest-runtime.ts` + the Next
+  route generator `manifest/scripts/generate.mjs`.
+- **`check:staged-write-routes`** + **`governance:verify-routes`** — police Next.js
+  `apps/api/**/route.ts` handlers; in pure Convex, mutations ARE the API (no such routes).
+
+### ⚠️ Switch to real CLI (cosmetic glue, no runtime risk — low priority)
+- **`manifest:mermaid`** (`generate-mermaid.mjs`) → `manifest diagram`.
+- **`manifest:build`** (`build.mjs`) → `manifest build` for the compile+generate half.
+
+### Kill order (so nothing breaks the live app)
+1. Finish **Track B** (92 `apiFetch` files → generated client) so nothing calls the `apps/api`
+   dispatcher / Prisma runtime.
+2. Delete `apps/api` dispatcher + `manifest/runtime` Prisma stores + the Prisma runtime factory.
+3. Delete the four "DELETE with the runtime" scripts above.
+4. Drop `packages/database/`, `apps/api/app/api/`, `manifest/runtime/` from the
+   `enforce-convex-architecture` legacy allowlist — baseline should then be 0.

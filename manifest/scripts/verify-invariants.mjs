@@ -14,9 +14,12 @@
  *   D14  — every command carries an entity (no command-ownership repair needed).
  *   —    — the freshly-compiled IR is single-tenant, error-free, and the COMMITTED
  *          kitchen.ir.json matches it (not stale) with a valid provenance.irHash.
- *   D22  — the installed Manifest (>= 2.5.1) Prisma projection emits `enum` blocks
- *          and types enum-valued columns as the enum.
  *   D12  — the native public mergeIR is available.
+ *
+ * NOTE: the former D22 invariant validated the *Prisma* projection's enum
+ * emission. This repo is compile-to-Convex — it does not ship Prisma codegen —
+ * so that check was removed (2026-06-17). Convex output is gated by
+ * manifest:check-convex-drift + manifest:enforce-convex-architecture.
  *
  * Exits non-zero (failing CI) if ANY invariant is violated.
  */
@@ -28,7 +31,6 @@ import { createHash } from "node:crypto";
 import { join, resolve, relative } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { compileProjectToIR } from "@angriff36/manifest/multi-compiler";
-import { PrismaProjection } from "@angriff36/manifest/projections/prisma";
 import { getConfigPaths } from "./read-config.mjs";
 
 const require = createRequire(import.meta.url);
@@ -208,8 +210,8 @@ async function main() {
     check("ir", "committed kitchen.ir.json exists", existsSync(IR_FILE), `missing ${IR_FILE}`);
   }
 
-  // ----- GROUP E: installed capability (D22 enum emission, D12 mergeIR) -----
-  console.log("E. Installed Manifest capability (D22 / D12)");
+  // ----- GROUP E: installed capability (D12 mergeIR) -----
+  console.log("E. Installed Manifest capability (D12)");
   const installedVersion = require("@angriff36/manifest/package.json").version;
   check(
     "dep",
@@ -218,32 +220,9 @@ async function main() {
     `installed ${installedVersion}`,
   );
 
-  // D22: the Prisma projection must emit enum blocks + type enum columns.
-  const enumIR = {
-    version: "1.0",
-    provenance: { contentHash: "t", compilerVersion: "t", schemaVersion: "1.0", compiledAt: "2025-01-01T00:00:00.000Z" },
-    modules: [], values: [], enums: [{ name: "Stage", values: [{ name: "lead" }, { name: "won" }] }],
-    entities: [{
-      name: "Deal",
-      properties: [
-        { name: "id", type: { name: "string", nullable: false }, modifiers: ["required"] },
-        { name: "stage", type: { name: "Stage", nullable: false }, modifiers: ["required"], defaultValue: { kind: "string", value: "lead" } },
-      ],
-      computedProperties: [], relationships: [], commands: [], constraints: [], policies: [],
-    }],
-    stores: [{ entity: "Deal", target: "durable", config: {} }],
-    events: [], commands: [], policies: [],
-  };
-  let enumCode = "";
-  try {
-    const out = new PrismaProjection().generate(enumIR, { surface: "prisma.schema" });
-    enumCode = out.artifacts?.[0]?.code ?? "";
-  } catch (e) {
-    enumCode = `__THREW__ ${e?.message ?? e}`;
-  }
-  check("D22", "Prisma projection emits `enum` blocks", /enum\s+Stage\s*\{/.test(enumCode), `projection output had no enum block (installed ${installedVersion}). Output head: ${enumCode.slice(0, 120)}`);
-  check("D22", "enum-valued column typed as the enum (not String)", /\bstage\s+Stage\b/.test(enumCode), "stage column not typed as the Stage enum");
-  check("D22", "enum default emitted bare (not quoted)", /@default\(lead\)/.test(enumCode) && !/@default\("lead"\)/.test(enumCode), "enum default not bare");
+  // (D22 Prisma-projection enum invariant removed 2026-06-17 — compile-to-Convex
+  // repo ships no Prisma codegen. Convex output gated by check-convex-drift +
+  // enforce-convex-architecture.)
 
   // D12: public mergeIR is available (single-file compile then native merge).
   let mergeIROk = false;
