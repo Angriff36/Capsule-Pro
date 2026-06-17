@@ -45,8 +45,10 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { usePostHog } from "posthog-js/react";
-import { apiFetch } from "@/app/lib/api";
-import * as routes from "@/app/lib/routes";
+import {
+  proposalDraftRefreshToken,
+  proposalDraftSend,
+} from "@/app/lib/manifest-client.generated";
 
 interface ProposalAction {
   id: string;
@@ -173,16 +175,13 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
   const handleSendProposal = useCallback(async () => {
     setIsSending(true);
     try {
-      const response = await apiFetch(routes.callPlannerProposalSend(proposal.id), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          deliveryMethod,
-          expiresInDays: 30,
-        }),
+      // Governed write: ProposalDraft.send (draft -> sent transition; appends
+      // deliveryMethod to sentVia and extends the magic-token expiry).
+      await proposalDraftSend({
+        id: proposal.id,
+        deliveryMethod,
+        expiresInDays: 30,
       });
-
-      if (!response.ok) throw new Error("Failed to send proposal");
 
       toast.success("Proposal sent successfully");
       setSendDialogOpen(false);
@@ -196,14 +195,9 @@ export function ProposalDetailClient({ proposal }: ProposalDetailClientProps) {
 
   const handleRefreshToken = useCallback(async () => {
     try {
-      const response = await apiFetch(
-        routes.callPlannerProposalRefreshToken(proposal.id),
-        {
-          method: "POST",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to refresh token");
+      // Governed write: ProposalDraft.refreshToken (new magic token + reset
+      // expiry; guard allows only draft or sent proposals to refresh).
+      await proposalDraftRefreshToken({ id: proposal.id });
 
       toast.success("Magic link refreshed");
       router.refresh();

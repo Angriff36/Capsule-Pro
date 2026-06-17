@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { payrollRunMarkPaid } from "@/app/lib/manifest-client.generated";
 import ApprovalHistoryTimeline from "./components/approval-history-timeline";
 import ApprovalWorkflowPanel from "./components/approval-workflow-panel";
 import PayrollLineItemsTable from "./components/payroll-line-items-table";
@@ -157,6 +158,10 @@ export default function PayrollRunDetailClient({
   const fetchRunDetails = useCallback(async () => {
     setLoading(true);
     try {
+      // TODO(convex): composite/custom — joins PayrollRun + lineItems + approvalHistory
+      // with employee/period/performer fields (employeeCount, periodStart/End, employeeEmail,
+      // employeeFirstName/LastName/Role, deductions, performerFirstName/LastName) not on the
+      // generated PayrollRun/PayrollLineItem types; no generated joined query.
       const response = await apiFetch(`/api/payroll/runs/${runId}`);
 
       if (!response.ok) {
@@ -193,6 +198,8 @@ export default function PayrollRunDetailClient({
   const handleApprove = async () => {
     setActionLoading(true);
     try {
+      // TODO(convex): PayrollRun.approve requires an approvedBy actor param (guarded +
+      // written) that must be server-injected from auth; keep apiFetch until Phase-5.
       const response = await apiFetch(`/api/payroll/runs/${runId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -223,6 +230,8 @@ export default function PayrollRunDetailClient({
 
     setActionLoading(true);
     try {
+      // TODO(convex): PayrollRun.reject requires a rejectedBy actor param that must be
+      // server-injected from auth; keep apiFetch until Phase-5.
       const response = await apiFetch(`/api/payroll/runs/${runId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -251,17 +260,7 @@ export default function PayrollRunDetailClient({
   const handleFinalize = async () => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/payroll/runs/${runId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "paid",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to finalize payroll run");
-      }
+      await payrollRunMarkPaid({ id: runId });
 
       toast.success("Payroll run finalized successfully");
       fetchRunDetails();
@@ -279,6 +278,7 @@ export default function PayrollRunDetailClient({
         format: "csv",
       });
 
+      // TODO(convex): composite/custom — report file (CSV) generation/blob download, no generated fn.
       const response = await apiFetch(
         `/api/payroll/reports/${runId}?${params.toString()}`
       );

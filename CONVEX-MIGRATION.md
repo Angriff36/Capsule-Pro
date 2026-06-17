@@ -4,7 +4,16 @@
 > If any other doc in this repo disagrees with this file, **this file wins.** When you
 > change migration state, update THIS file in the same commit. Do not start a new plan doc.
 >
-> Last verified: 2026-06-17 · Branch: `feat/convex-compile-path-a` · Last commit at write time: `0b3971976`
+> Last verified: 2026-06-17 (re-verified end-to-end this session) · Branch: `feat/convex-compile-path-a` · Last commit at write time: `e801fb67f`
+>
+> **2026-06-17 verification result:** `pnpm manifest:ci` is **GREEN** (compile, invariants, validate,
+> generate, drift, architecture `4 baselined/0 new`, registries `1060 commands / 212 entities`).
+> Track A (Prisma reads) is **complete** (codemod 0 sites, dead-import helper 0 files). Track B was
+> re-measured against the tooling + a 12-agent classification sweep of all 92 `apiFetch` files: the
+> **mechanical repoints are already done**; the 90 files / 237 calls that remain are the hard residue
+> (custom aggregates, AI, integrations/sync, imports/exports/blob, composite writes, and lossy reads)
+> — see the corrected §2 and §5. They are **not** mechanical swaps and need Phase 4–6 work + a live
+> Convex backend to verify. Do not re-assume "92 files = mechanical."
 
 ---
 
@@ -95,11 +104,66 @@ generated from IR — reads go through a Convex read-bridge, writes through `exe
 Numbers below are from the tools, not grep (grep over-counted earlier):
 - **`enforce-convex-architecture`: 4 actionable violations** ("4 baselined, 0 new"). This is the
   objective "work remaining" meter for forbidden Prisma/runtime patterns. Target: 0.
-- **codemod dry-run: 0 `database.*` call sites** in `apps/app`/`apps/api` → **Track A (Prisma reads)
-  is effectively complete.** Lingering `@repo/database`/`PrismaClient` imports are mostly dead/type
-  imports (clean with `remove-dead-database-imports.mjs`), not live calls.
-- **`apiFetch` shim usages in `apps/app`: 92 files (grep).** ← the real remaining queue (Track B).
-  Per-endpoint repoint targets enumerated in **`REPOINT-MAP.md`** (REPOINT / CUSTOM / REVIEW).
+- ~~**codemod dry-run: 0 `database.*` call sites**~~ → **Track A (Prisma reads) is COMPLETE** (re-verified
+  2026-06-17: codemod reports 0 sites; `remove-dead-database-imports.mjs` reports 0 files to clean).
+- **`apiFetch` shim usages in `apps/app`: 92 files** (90 invoke it; `lib/api.ts`/`api-server.ts` just
+  *define* the shim). A 12-agent classification sweep of all 92 (verified against the generated client
+  + entity types) gives the **real** Track B shape — NOT the optimistic "mechanical repoint" framing:
+  - **REPOINT (clean, fully migratable now): effectively 0.** The straightforward `list*/get*/<entityCmd>`
+    repoints were already done by prior sessions; that's *why* the files still contain `apiFetch` — only
+    their hard calls are left. (Classifier said `REPOINT:8`, but on inspection those 8 are already-migrated
+    files whose residual `apiFetch` is a custom/blob/aggregate call, e.g. `use-card-mutations.ts` = only a
+    FormData blob upload remains.)
+  - **CUSTOM: 64 files** — endpoint is a hand-written Convex action / non-CRUD aggregate with **no generated
+    fn** (`invoiceCreate`, `paymentCreate`, `financialReportGenerate`, etc. confirmed absent). Needs a new
+    Convex query/action ported from `main`.
+  - **MIXED: 12 / REVIEW: 3 / TEST: 2 / INFRA: 3.**
+  - **~237 residual call sites** categorize as: integration/sync ~41, custom aggregate/query ~34,
+    composite-or-command writes ~26, AI ~15, analytics aggregate ~14, import/export/blob ~12, forecast ~4,
+    plus lossy reads. **Three structural blockers make these non-mechanical:**
+    1. **Wrong-entity / lossy-entity traps** — you must map each read to the entity whose generated TYPE
+       actually carries every field the UI shows, then check completeness. Two real examples found this session:
+       (a) `/api/staff/employees` does **NOT** map to the minimal `StaffMember`
+       (`{displayName,email,phone,role,status,notes}`) — it maps to the **`User`** entity, whose type is
+       field-complete (`firstName,lastName,hourlyRate,hireDate,employmentType,isActive,avatarUrl,…`), so
+       `listUsers()` **is** a faithful read (a win the classifier mislabeled as `listEmployees`/`StaffMember`).
+       (b) Where the right entity is genuinely missing fields, faithful migration needs IR enrichment →
+       regenerate, not a swap. Verify per file; don't trust the classifier's entity guess.
+    2. **No filtered reads** — the generated read-bridge only does `list-all-by-tenant` + `getById`.
+       Per-user / filtered / aggregated reads (e.g. a notifications *inbox* scoped to the recipient) have
+       **no** generated query (`convex/queries.ts` has `listNotification`, `getNotification`,
+       `listNotificationByTenantId` — no `…ByRecipient`). Repointing such a read to `listNotifications()`
+       would **leak all tenant rows to every user**. Needs a new IR-defined query (+index) → regenerate.
+    3. **Actor/audit params required by generated writes (the biggest write blocker).** Many generated
+       mutations take the *actor* identity (and audit fields) as **required client args**, not server-injected
+       from auth — the same governance hazard as tenant (CONSTITUTION §6). The validator rejects calls that
+       omit them, and the wrapper input types mark them optional so **tsc, drift, and `manifest:ci` all stay
+       green while the call fails at runtime.** Verified this session in `convex/mutations.ts`:
+       `PayrollRun.approve` requires `approvedBy` (guarded non-empty **and written to the row**),
+       `PayrollRun.reject` `rejectedBy`, `ApiKey.revoke` `reason`+`revokedBy`, `ApiKey.softDelete`
+       `reason`+`deletedBy`, `Notification.markRead`/`InteractionAttachment.remove`/`User.deactivate`/
+       `User.updateRole` a required `userId` (+`reason` for deactivate). Also: the bridge resolves the
+       subject **only from `body.id`** (`buildMutationArgs` maps `id`→`docId`), so a write that passes
+       `{userId}` instead of `{id}` never locates the record. Supplying these from the client is either
+       spoofable (real actor) or a band-aid (`""`) — **defer all such writes to Phase 5 actor-injection**
+       (derive actor from `resolveMutationAuth`, make the params server-side). Only writes whose every
+       required param is a legitimate UI/domain value are migratable now (e.g. `proposalDraftSend`,
+       `proposalDraftRefreshToken`, `payrollRunMarkPaid`).
+  - `REPOINT-MAP.md`'s per-endpoint "targets" are an auto-generated first-6-mutations fallback for most
+    rows (the same `actionMilestone…` list repeats) — **treat as a hint, not authoritative.**
+
+### Session 2026-06-17 — Track B work actually landed
+Migrated the genuinely-safe calls (gated: 0 NEW `apps/app` tsc errors, `pnpm manifest:ci` green, `pnpm test`
+unchanged at 13 pre-existing fails). **Reads → generated client (7 files):** `dev-console/users` & admin-chat
+employee roster → `listUsers` (User entity is field-complete — classifier had wrongly said `StaffMember`);
+`crm/.../communications-tab` → `listInteractionAttachments`; `events/.../allergen-section` → `listAllergenWarnings`;
+`kitchen/schedule` → `listTimeOffRequests`; `payroll/runs` → `listPayrollRuns`; `dev-console/api-keys` →
+`listApiKeies` (all tenant-level surfaces, not per-user → no leak). **Writes → generated client (3, no actor param):**
+`proposal-detail` `proposalDraftSend`/`proposalDraftRefreshToken`; `payroll/runs/[runId]` `payrollRunMarkPaid`.
+**Reverted as unsafe** (actor-param blocker #3, kept on `apiFetch` with TODO): `payrollRunApprove`/`reject`,
+`apiKeyRevoke`/`softDelete`, `interactionAttachmentRemove`, `notificationMarkRead`, `userUpdateRole`/`userDeactivate`.
+Net: a few files fully off `apiFetch`; most reads repointed while their custom/aggregate/blob/actor-write calls
+stay. The 64 CUSTOM files were left untouched (correctly) — they need new Convex actions (buckets above).
 
 ### Proof slices already on Convex 📄 (per `CONVEX_APP_MIGRATION_STATUS.md`, 2026-06-15)
 Events list/detail, Inventory items list/detail, Kitchen production board, Kitchen tasks,
@@ -117,16 +181,18 @@ Anchored to `C:/Projects/convex-example/migration-guide.md`.
 | 0 | Prereqs: manifest 2.10.7, Convex CLI, local backend | ✅ done |
 | 1 | IR authoring fixes (reaction param types) | ✅ done (per reference) |
 | 2 | Add Convex projection + scripts to capsule-pro | ✅ done (`manifest:generate-convex`, `convex/` populated) |
-| **3a** | **Prisma `database.*` reads → generated client** (codemod-assisted, Track A in §5) | **✅ effectively complete — codemod reports 0 `database.*` call sites; residual dead `@repo/database` imports + 4 architecture-baseline items remain** |
-| **3b** | **`apiFetch` endpoints → generated client** (mapped in `REPOINT-MAP.md`, Track B in §5) | **▶ IN PROGRESS — 92 files in `apps/app`** ← real remaining work |
+| ~~**3a**~~ | ~~**Prisma `database.*` reads → generated client**~~ | **✅ DONE** (2026-06-17: codemod 0 sites, dead-import helper 0 files) |
+| **3b** | **`apiFetch` endpoints → generated client** (Track B) | **▶ blocked on Phase 4–6.** Mechanical repoints DONE; the 90 residual files all carry custom/lossy/aggregate/blob calls that need new Convex queries/actions (§5). Not mechanical. |
 | 4 | Convex loaders/hooks for reactive reads where wanted | partial (loaders used; hooks selective) |
 | 5 | Auth: Clerk→Convex | **largely done ✅ — `policyMode: "enforce"` already set; generated mutations patched with `resolveMutationAuth` (Clerk JWT). Remaining: end-to-end verification** |
 | 6 | Data migration Postgres → Convex | not started |
 | 7 | Remove Prisma: delete `packages/database/prisma`, domain API routes, prisma projection; empty the architecture baseline | not started |
 
-**Current focus = Phase 3 (two mechanical tracks, see §5).** Don't hand-grind: Track A (Prisma
-`database.*`) is codemod-assisted; Track B (`apiFetch`) is enumerated in `REPOINT-MAP.md`. The
-`enforce-convex-architecture` baseline is the objective progress meter — it shrinks as files migrate.
+**Current focus = Track B residue (see §5), which is really Phase 4–6 work.** Track A is DONE. Track B is
+NOT mechanical: each remaining `apiFetch` file needs a new Convex query/action, IR enrichment, or a filtered
+query (+ a live backend to verify) — grouped by bucket in §5. `REPOINT-MAP.md` per-endpoint targets are an
+auto-generated fallback (hint only). The `enforce-convex-architecture` baseline (4) shrinks only as the
+legacy `apps/api`/`packages` runtime is deleted in Phase 7, not as `apiFetch` files migrate.
 
 ---
 
@@ -142,28 +208,56 @@ Anchored to `C:/Projects/convex-example/migration-guide.md`.
 - Data migrated (Phase 6); Prisma package + domain API routes deleted (Phase 7).
 - App still deploys on Vercel (`capsule-pro-app`) at each phase boundary.
 
+**Known gate gap (2026-06-17):** `pnpm check` (full turbo typecheck) is **NOT** green — independent of
+Track B. `@repo/notifications` fails typecheck (`sms-automation-engine.ts` / `sms-notification-service.ts`
+still call `database.sms_automation_rules.*` with no `database` in scope — dead Prisma refs). It's a
+Phase-7 legacy package (architecture allowlist); it must be ported off Prisma to make `pnpm check` green.
+A raw `tsc` over `apps/app` also reports ~561 pre-existing normalized errors (test files importing the
+removed `@repo/database`, plus accumulated type debt from earlier partial migrations). Neither blocks
+`pnpm manifest:ci` (the encoded DoD), which is green. The verification gate for Track B edits is therefore:
+no NEW `apps/app` tsc errors vs baseline **+** `pnpm manifest:ci` green **+** `pnpm test`.
+
 ---
 
-## 5. Next concrete action — USE THE TOOLING, don't hand-grind
+## 5. Next concrete action — what Track B ACTUALLY needs (corrected 2026-06-17)
 
-Two mechanical tracks. Both target the IR-generated client `apps/app/app/lib/manifest-client.generated.ts`
-(regenerate it with `pnpm manifest:client` whenever IR changes).
+~~**Track A — Prisma `database.*` reads (codemod-assisted)**~~ — **DONE** (0 sites, 0 dead imports).
 
-**Track A — Prisma `database.*` reads (codemod-assisted):**
-1. Dry run (reports buckets, changes nothing): `node manifest/scripts/codemod-prisma-to-manifest-client.mjs`
-2. Apply the safe ones: add `--apply`. It auto-rewrites `database.X.findMany(...)` →
-   `(await listX()).data` and `findUnique/findFirst` by id → `getX(id)`, idempotently (≤10 passes).
-3. Handle the tail in `manifest/scripts/prisma-tail-sites.txt` by hand: writes
-   (create/update/delete), aggregates (count/aggregate/groupBy), and `include` joins — the codemod
-   intentionally refuses to auto-convert these. Port to commands/queries.
+**Track B is NOT a mechanical repoint.** The easy `list*/get*/<entityCmd>` swaps are already committed.
+Each of the 90 remaining `apiFetch` files keeps `apiFetch` precisely because its leftover call(s) fall
+into one of these buckets — each needs real backend work (IR-first + a running Convex backend to verify),
+**not** a one-line client swap. Tackle by bucket, not file-by-file:
 
-**Track B — `apiFetch` endpoints (mapped in `REPOINT-MAP.md`):**
-1. Pick an endpoint. **REPOINT** → swap to the listed `manifest-client.generated` fn;
-   **CUSTOM** → port the Convex action that existed on `main`; **REVIEW** → decide keep-shim vs. new query.
+1. **Wrong-entity / lossy-entity reads** — map each read to the entity whose generated TYPE carries every
+   field the UI shows. Some are faithful wins the classifier mislabeled (`/api/staff/employees` → **`User`**
+   `listUsers()`, NOT `StaffMember`). Where the right entity is genuinely missing fields, **enrich the
+   `.manifest` entity** → `pnpm manifest:compile && generate-convex && client`, then repoint. Don't repoint a
+   lossy entity (silent data loss).
+2. **Call-site bugs in already-migrated writes** — e.g. `dev-console/users` `userUpdateRole({id})` never
+   passes `newRole` even though `UserUpdateRoleInput` = `{id, newRole, userId}`. Fix the call to pass the
+   real fields; the command itself is correctly specified in `.manifest` (`updateRole(newRole, userId)`).
+3. **Filtered / per-user / paginated reads** (notifications inbox, my-tasks, available-tasks, activity-feed
+   list) — no generated query exists; the read-bridge is list-all-by-tenant. **Add an IR query (+index)**
+   → regenerate → consume via `convex/react useQuery(api.queries.…)` (real-time) or extend the async client.
+   Repointing to the unfiltered `list*()` is a **tenant-wide data leak** — do not.
+4. **Aggregates / analytics** (`/api/analytics/*`, profitability, bottlenecks, menu-engineering, finance,
+   staff/kitchen analytics, activity-feed stats) — port the hand-written Convex action from `main`
+   (Convex `query`/`action` in `convex/` glue or a `*-loaders.ts`), then call it. ~48 sites.
+5. **AI endpoints** (`/api/ai/*`, summaries, suggestions, transcripts, generate-proposal, bulk-tasks,
+   nutrition-labels/generate) — port the Convex action from `main`. ~15 sites.
+6. **Integrations / sync** (calendar sync, webhooks + DLQ, goodshuffle, nowsta, quickbooks) — port the
+   integration actions; these are also gated by the `apps/api` connector kill-order (§7). ~41 sites.
+7. **Imports / exports / blob & file** (inventory/kitchen import, events export, document parse, task
+   attachments, interaction attachments, contract document/history) — need Convex **file storage** actions
+   (`ctx.storage`). ~12 sites.
+8. **Composite writes** (`POST /api/accounting/invoices` with line items, `payments` create+process,
+   `contracts/:id/send` = sign+document+email, `trash/restore` generic-by-entityType) — multi-step; express
+   as a **Convex action/saga**, not a single governed mutation. ~26 sites.
 
-**After either track:** if IR changed, `pnpm manifest:compile && pnpm manifest:generate-convex && pnpm manifest:client`.
-Then gate everything with `pnpm manifest:ci` and watch the `enforce-convex-architecture` count drop. Commit small.
-Never hand-edit `convex/` generated files — the drift gate will fail.
+**Always IR-first:** edit `manifest/source/*.manifest` → `pnpm manifest:compile && pnpm manifest:generate-convex
+&& pnpm manifest:client` → gate with `pnpm manifest:ci`. Never hand-edit `convex/` or `*.generated.ts`.
+A full machine-readable ledger of every file → call → bucket was produced this session (12-agent sweep);
+regenerate it any time by re-running that classification over the `apiFetch` file list.
 
 ---
 

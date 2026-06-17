@@ -57,9 +57,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { listPayrollRuns } from "@/app/lib/manifest-client.generated";
 
-// NOTE: Keeping apiFetch for all calls — /api/payroll/runs returns enriched data with Date objects
-// and joins; generated listPayrollRuns hits /api/payroll/runs/list which returns raw entity strings.
 // Generate and report export are custom actions with no generated client.
 
 interface PayrollRun {
@@ -158,24 +157,21 @@ export default function PayrollRunsPage() {
   const fetchRuns = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-      });
+      // listPayrollRuns is tenant-scoped and returns the full (unpaginated) set;
+      // status filtering and pagination are applied client-side (status is not a
+      // per-user privacy scope, so the full tenant list is safe to fetch).
+      const result = await listPayrollRuns();
+      const all = (result.data as unknown as PayrollRun[]).filter((run) =>
+        statusFilter === "all" ? true : run.status === statusFilter
+      );
 
-      if (statusFilter !== "all") {
-        params.set("status", statusFilter);
-      }
+      const total = all.length;
+      const totalPages = Math.max(1, Math.ceil(total / pagination.limit));
+      const offset = (pagination.page - 1) * pagination.limit;
+      const pageRuns = all.slice(offset, offset + pagination.limit);
 
-      const response = await apiFetch(`/api/payroll/runs?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch payroll runs");
-      }
-
-      const data = await response.json();
-      setRuns(data.data || []);
-      setPagination((previous) => data.pagination ?? previous);
+      setRuns(pageRuns);
+      setPagination((previous) => ({ ...previous, total, totalPages }));
     } catch (error) {
       console.error("Error fetching payroll runs:", error);
       toast.error("Failed to load payroll runs");
@@ -191,6 +187,8 @@ export default function PayrollRunsPage() {
   const handleGeneratePayroll = async () => {
     setActionLoading(true);
     try {
+      // TODO(convex): composite/custom — payroll generation runs the payroll engine
+      // (computes totals + creates many line items across entities), no single governed command.
       const response = await apiFetch("/api/payroll/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -223,6 +221,8 @@ export default function PayrollRunsPage() {
 
     setActionLoading(true);
     try {
+      // TODO(convex): PayrollRun.approve requires an approvedBy actor param (guarded +
+      // written to the record) that must be server-injected from auth; keep apiFetch until Phase-5.
       const response = await apiFetch(`/api/payroll/runs/${selectedRun.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -258,6 +258,7 @@ export default function PayrollRunsPage() {
         format: "csv",
       });
 
+      // TODO(convex): composite/custom — report file (CSV) generation/blob download, no generated fn.
       const response = await apiFetch(
         `/api/payroll/reports/${runId}?${params.toString()}`
       );

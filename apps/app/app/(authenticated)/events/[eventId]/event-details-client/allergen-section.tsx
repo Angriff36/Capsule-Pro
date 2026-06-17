@@ -10,7 +10,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { allergenWarningAcknowledge } from "@/app/lib/manifest-client.generated";
+import {
+  allergenWarningAcknowledge,
+  listAllergenWarnings,
+} from "@/app/lib/manifest-client.generated";
 
 interface AllergenConflict {
   allergens: string[];
@@ -61,12 +64,27 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
 
   const fetchWarnings = useCallback(async () => {
     try {
-      // NOTE: No generated list function for event-specific warnings aggregate — keeping apiFetch.
-      const res = await apiFetch(`/api/events/${eventId}/warnings`);
-      if (res.ok) {
-        const data = await res.json();
-        setWarnings(Array.isArray(data) ? data : (data.warnings ?? []));
-      }
+      // Convex: list the tenant-scoped warnings once, then filter by eventId
+      // client-side (warnings are tenant-scoped, not per-user → no scope leak).
+      const { data } = await listAllergenWarnings();
+      setWarnings(
+        data
+          .filter((w) => w.eventId === eventId)
+          .map((w) => ({
+            id: w.id,
+            eventId: w.eventId ?? eventId,
+            dishId: w.dishId ?? null,
+            warningType: w.warningType ?? "",
+            allergens: (w.allergens ?? []).map((a) => String(a)),
+            affectedGuests: (w.affectedGuests ?? []).map((g) => String(g)),
+            severity: w.severity ?? "",
+            isAcknowledged: w.isAcknowledged ?? false,
+            acknowledgedBy: w.acknowledgedBy ?? null,
+            acknowledgedAt: w.acknowledgedAt ?? null,
+            resolvedAt: w.resolvedAt ?? null,
+            createdAt: w.createdAt,
+          }))
+      );
     } catch {
       // Warnings fetch is best-effort
     }

@@ -44,8 +44,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-// NOTE: Keeping apiFetch for attachment file upload/delete operations (FormData, binary)
 import { apiFetch } from "@/app/lib/api";
+import { listInteractionAttachments } from "@/app/lib/manifest-client.generated";
 import {
   createClientInteraction,
   deleteClientInteraction,
@@ -137,23 +137,32 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const fetchAttachments = useCallback(async (interactionIds: string[]) => {
     const results: Record<string, Attachment[]> = {};
-    await Promise.all(
-      interactionIds.map(async (id) => {
-        try {
-          const response = await apiFetch(
-            `/api/crm/clients/interactions/attachments?interactionId=${id}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            results[id] = data.attachments || [];
-          } else {
-            results[id] = [];
-          }
-        } catch {
-          results[id] = [];
+    try {
+      // Convex: list the full tenant-scoped set once, then filter by interactionId
+      // client-side (no per-interaction generated query exists; attachments are
+      // tenant-scoped so this is not a privacy/scope leak).
+      const { data } = await listInteractionAttachments();
+      const wanted = new Set(interactionIds);
+      for (const id of interactionIds) {
+        results[id] = [];
+      }
+      for (const att of data) {
+        if (att.interactionId && wanted.has(att.interactionId)) {
+          results[att.interactionId].push({
+            id: att.id,
+            fileName: att.fileName ?? "",
+            fileSize: att.fileSize ?? 0,
+            fileType: att.fileType ?? "",
+            fileUrl: att.fileUrl ?? "",
+            createdAt: att.createdAt,
+          });
         }
-      })
-    );
+      }
+    } catch {
+      for (const id of interactionIds) {
+        results[id] = [];
+      }
+    }
     setInteractionAttachments((prev) => ({ ...prev, ...results }));
   }, []);
 
@@ -177,6 +186,8 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   }, [interactions, fetchAttachments]);
 
   const uploadAttachments = async (interactionId: string, files: File[]) => {
+    // TODO(convex): composite/custom — multipart file upload to blob storage;
+    // interactionAttachmentCreate only stores metadata, not the uploaded blob.
     const form = new FormData();
     form.append("interactionId", interactionId);
     for (const file of files) {
@@ -194,6 +205,8 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const handleDeleteAttachment = async (attachment: Attachment) => {
     try {
+      // TODO(convex): InteractionAttachment.remove requires an actor (userId) param
+      // that must be server-injected from auth; keep apiFetch until Phase-5 actor injection.
       const response = await apiFetch(
         `/api/crm/clients/interactions/attachments?attachmentId=${attachment.id}`,
         { method: "DELETE" }

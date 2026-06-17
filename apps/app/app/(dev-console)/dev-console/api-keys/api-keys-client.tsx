@@ -23,8 +23,9 @@ import {
 } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-// NOTE: Keeping apiFetch for API key management custom endpoints (create/revoke/delete/rotate)
 import { apiFetch } from "@/app/lib/api";
+import { listApiKeies } from "@/app/lib/manifest-client.generated";
+import type { ApiKey as GeneratedApiKey } from "@/app/lib/manifest-types.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,13 +42,6 @@ interface ApiKey {
   revokedAt: string | null;
   scopes: string[];
   updatedAt: string;
-}
-
-interface ApiKeyListResponse {
-  apiKeys?: ApiKey[];
-  keys?: ApiKey[];
-  result?: { apiKeys: ApiKey[] };
-  success: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,6 +349,9 @@ function CreateKeyDialog({
 
     setLoading(true);
     try {
+      // TODO(convex): composite/custom — generates the secret, hashes it
+      // server-side, and returns a one-time plainKey. apiKeyCreate requires
+      // caller-supplied keyPrefix/hashedKey and returns no plainKey.
       const res = await apiFetch("/api/settings/api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -652,14 +649,19 @@ export const ApiKeysClient = () => {
     setError(null);
 
     try {
-      const res = await apiFetch("/api/settings/api-keys");
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Failed to fetch API keys");
-      }
-      const data: ApiKeyListResponse = await res.json();
-      // Handle both response shapes (manifest-wrapped and direct)
-      const keys = data.result?.apiKeys ?? data.apiKeys ?? data.keys ?? [];
+      const result = await listApiKeies();
+      const keys: ApiKey[] = (result.data ?? []).map((k: GeneratedApiKey) => ({
+        createdAt: k.createdAt,
+        createdByUserId: k.createdByUserId ?? null,
+        expiresAt: k.expiresAt || null,
+        id: k.id,
+        keyPrefix: k.keyPrefix ?? "",
+        lastUsedAt: k.lastUsedAt || null,
+        name: k.name ?? "",
+        revokedAt: k.revokedAt || null,
+        scopes: (k.scopes ?? []) as string[],
+        updatedAt: k.updatedAt,
+      }));
       setApiKeys(keys);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -686,6 +688,8 @@ export const ApiKeysClient = () => {
     }
     setActionLoading(true);
     try {
+      // TODO(convex): ApiKey.revoke requires reason/revokedBy actor params that must be
+      // server-injected from auth; keep apiFetch until Phase-5 actor injection.
       const res = await apiFetch(
         `/api/settings/api-keys/${confirmAction.key.id}/revoke`,
         { method: "POST" }
@@ -710,6 +714,8 @@ export const ApiKeysClient = () => {
     }
     setActionLoading(true);
     try {
+      // TODO(convex): ApiKey.softDelete requires reason/deletedBy actor params that must be
+      // server-injected from auth; keep apiFetch until Phase-5 actor injection.
       const res = await apiFetch(
         `/api/settings/api-keys/${confirmAction.key.id}`,
         { method: "DELETE" }
@@ -735,6 +741,9 @@ export const ApiKeysClient = () => {
     }
     setActionLoading(true);
     try {
+      // TODO(convex): composite/custom — generates a new secret, hashes it
+      // server-side, and returns a one-time new plainKey. apiKeyRotate requires
+      // caller-supplied keyPrefix/hashedKey and returns no plainKey.
       const res = await apiFetch(`/api/settings/api-keys/${key.id}/rotate`, {
         method: "POST",
       });

@@ -21,12 +21,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listUsers,
   userDeactivate,
   userTerminate,
   userUpdateRole,
 } from "@/app/lib/manifest-client.generated";
+import type { User } from "@/app/lib/manifest-types.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -425,22 +426,25 @@ export const UsersClient = () => {
       setError(null);
 
       try {
-        const params = new URLSearchParams();
-        if (filterActive === "active") {
-          params.set("isActive", "true");
-        }
-        // Note: inactive filtering handled client-side since API only supports
-        // isActive=true filter
-
-        const res = await apiFetch(
-          `/api/staff/employees${params.toString() ? `?${params}` : ""}`
-        );
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Failed to fetch employees");
-        }
-        const data = await res.json();
-        setEmployees(data.employees ?? []);
+        // Note: active/inactive filtering handled client-side below; the
+        // generated read returns the full tenant user list.
+        const result = await listUsers();
+        const mapped: Employee[] = (result.data ?? []).map((u: User) => ({
+          avatar_url: u.avatarUrl ?? null,
+          created_at: u.createdAt,
+          email: u.email,
+          employment_type: u.employmentType ?? "",
+          first_name: u.firstName ?? null,
+          hire_date: u.hireDate,
+          hourly_rate: u.hourlyRate ?? null,
+          id: u.id,
+          is_active: u.isActive ?? false,
+          last_name: u.lastName ?? null,
+          phone: u.phone ?? null,
+          role: u.role ?? "",
+          updated_at: u.updatedAt,
+        }));
+        setEmployees(mapped);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
         setEmployees([]);
@@ -449,7 +453,7 @@ export const UsersClient = () => {
         setRefreshing(false);
       }
     },
-    [filterActive]
+    []
   );
 
   useEffect(() => {

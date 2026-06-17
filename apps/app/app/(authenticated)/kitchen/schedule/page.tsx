@@ -13,6 +13,7 @@ import { Calendar, Clock, ExternalLink, Loader2, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { listTimeOffRequests } from "@/app/lib/manifest-client.generated";
 
 interface TodayStats {
   active_employees: number;
@@ -26,14 +27,6 @@ interface CoverageResponse {
   today: TodayStats | null;
 }
 
-interface TimeOffPagination {
-  total: number;
-}
-
-interface TimeOffResponse {
-  pagination: TimeOffPagination;
-}
-
 const KitchenSchedulePage = () => {
   const [todayShifts, setTodayShifts] = useState<number | null>(null);
   const [staffOnDuty, setStaffOnDuty] = useState<number | null>(null);
@@ -44,11 +37,11 @@ const KitchenSchedulePage = () => {
   useEffect(() => {
     async function fetchStats() {
       try {
-        // No generated client function for staffing coverage endpoint
-        // NOTE: Keeping apiFetch — staffing/coverage and staff/time-off are custom aggregate endpoints with no generated client equivalent.
+        // No generated client function for staffing coverage endpoint (aggregate)
         const [coverageRes, timeOffRes] = await Promise.allSettled([
           apiFetch("/api/staffing/coverage?period=today"),
-          apiFetch("/api/staff/time-off/requests?status=PENDING&limit=1"),
+          // Convex: read full tenant list, count PENDING (legacy filtered status=PENDING)
+          listTimeOffRequests(),
         ]);
 
         if (coverageRes.status === "fulfilled" && coverageRes.value.ok) {
@@ -60,9 +53,11 @@ const KitchenSchedulePage = () => {
           }
         }
 
-        if (timeOffRes.status === "fulfilled" && timeOffRes.value.ok) {
-          const data: TimeOffResponse = await timeOffRes.value.json();
-          setPendingRequests(data.pagination.total);
+        if (timeOffRes.status === "fulfilled") {
+          const pendingCount = timeOffRes.value.data.filter(
+            (req) => req.status === "PENDING" && !req.deletedAt
+          ).length;
+          setPendingRequests(pendingCount);
         }
       } finally {
         setLoading(false);

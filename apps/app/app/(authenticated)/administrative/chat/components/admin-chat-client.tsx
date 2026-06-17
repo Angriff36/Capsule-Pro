@@ -40,8 +40,8 @@ import {
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useCallback, useEffect, useMemo, useState } from "react";
-// NOTE: Keeping apiFetch for chat endpoints (/api/administrative/chat/*, /api/staff/employees) — no generated client for chat operations
 import { apiFetch } from "@/app/lib/api";
+import { listUsers } from "@/app/lib/manifest-client.generated";
 import {
   type RealtimeEventMessage,
   useRealtimeChannel,
@@ -115,14 +115,6 @@ interface ApiMessage {
   createdAt: string;
   id: string;
   text: string;
-}
-
-interface EmployeeApiRecord {
-  avatar_url: string | null;
-  email: string;
-  first_name: string | null;
-  id: string;
-  last_name: string | null;
 }
 
 interface EmployeeOption {
@@ -385,6 +377,11 @@ export function AdministrativeChatClient({
       setError(null);
 
       try {
+        // TODO(convex): composite/scoped — the chat thread + message endpoints
+        // compose participant/lastMessage summaries, filter by the current user's
+        // membership, paginate (before/hasMore/nextBefore), and fan out via SSE.
+        // No generated filtered/paginated query exists; listAdminChatThreads() is
+        // unfiltered and would leak other users' threads. Keep REST.
         const response = await apiFetch("/api/administrative/chat/threads");
         if (!response.ok) {
           const message = await readErrorMessage(
@@ -423,22 +420,22 @@ export function AdministrativeChatClient({
 
     const loadEmployees = async () => {
       try {
-        const response = await apiFetch("/api/staff/employees?isActive=true");
-        if (!response.ok) {
-          return;
-        }
-        const payload = (await response.json()) as {
-          employees: EmployeeApiRecord[];
-        };
-        const mapped = payload.employees
-          .map((employee) => ({
-            id: employee.id,
-            firstName: employee.first_name ?? "",
-            lastName: employee.last_name ?? "",
-            email: employee.email,
-            avatarUrl: employee.avatar_url ?? null,
-          }))
-          .filter((employee) => employee.id !== employeeId);
+        // The legacy "/api/staff/employees" maps to the User entity (which carries
+        // firstName/lastName/email/avatarUrl/isActive). The generated listUsers()
+        // returns the full tenant roster, so the legacy `?isActive=true` filter and
+        // soft-delete exclusion are applied client-side here.
+        const { data } = await listUsers();
+        const mapped = data
+          .filter(
+            (user) => user.isActive !== false && !user.deletedAt && user.id !== employeeId
+          )
+          .map((user) => ({
+            id: user.id,
+            firstName: user.firstName ?? "",
+            lastName: user.lastName ?? "",
+            email: user.email,
+            avatarUrl: user.avatarUrl ?? null,
+          }));
 
         if (!isMounted) {
           return;
