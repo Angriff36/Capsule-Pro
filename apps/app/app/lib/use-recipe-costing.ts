@@ -123,25 +123,6 @@ export interface UpdateWasteFactorRequest {
   wasteFactor: number;
 }
 
-interface ManifestResponse<T> {
-  data?: T;
-  message?: string;
-  success: boolean;
-}
-
-function unwrapManifestResponse<T>(payload: T | ManifestResponse<T>): T {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "success" in payload &&
-    "data" in payload
-  ) {
-    return (payload as ManifestResponse<T>).data as T;
-  }
-
-  return payload as T;
-}
-
 // ============================================================================
 // Recipes API
 // ============================================================================
@@ -191,16 +172,28 @@ export async function listRecipes(
 export async function getRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await apiFetch(
-    `/api/kitchen/recipes/${recipeVersionId}/cost`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch recipe cost");
+  const core = await calculateRecipeCostBreakdown(recipeVersionId);
+  if (!core) {
+    throw new Error("Recipe version not found");
   }
 
-  return unwrapManifestResponse<RecipeCostBreakdown>(await response.json());
+  const version = (await listRecipeVersions()).data.find(
+    (entry) => entry.id === recipeVersionId
+  );
+
+  return {
+    ...core,
+    lastCalculated: version?.updatedAt ? new Date(version.updatedAt) : null,
+    recipe: {
+      id: version?.recipeId ?? recipeVersionId,
+      name: version?.name ?? "Recipe",
+      description: version?.description ?? null,
+      yieldQuantity: version?.yieldQuantity ?? null,
+      yieldUnit: version?.yieldUnitId != null ? String(version.yieldUnitId) : null,
+      portionSize: null,
+      portionUnit: null,
+    },
+  };
 }
 
 /**
@@ -209,19 +202,13 @@ export async function getRecipeCost(
 export async function recalculateRecipeCost(
   recipeVersionId: string
 ): Promise<RecipeCostBreakdown> {
-  const response = await apiFetch(
-    `/api/kitchen/recipes/${recipeVersionId}/cost`,
-    {
-      method: "POST",
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to recalculate recipe cost");
+  const core = await calculateRecipeCostBreakdown(recipeVersionId, {
+    persist: true,
+  });
+  if (!core) {
+    throw new Error("Recipe version not found");
   }
-
-  return unwrapManifestResponse<RecipeCostBreakdown>(await response.json());
+  return getRecipeCost(recipeVersionId);
 }
 
 /**
@@ -231,23 +218,11 @@ export async function scaleRecipe(
   recipeVersionId: string,
   request: ScaleRecipeRequest
 ): Promise<ScaledRecipeCost> {
-  const response = await apiFetch(
-    `/api/kitchen/recipes/${recipeVersionId}/scale`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    }
+  return scaleRecipeCostBreakdown(
+    recipeVersionId,
+    request.targetPortions,
+    request.currentYield
   );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to scale recipe");
-  }
-
-  return unwrapManifestResponse<ScaledRecipeCost>(await response.json());
 }
 
 /**
@@ -257,25 +232,17 @@ export async function updateWasteFactor(
   recipeVersionId: string,
   request: UpdateWasteFactorRequest
 ): Promise<{ success: boolean; message: string }> {
-  const response = await apiFetch(
-    `/api/kitchen/recipes/${recipeVersionId}/scale`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update waste factor");
+  if (request.wasteFactor <= 0) {
+    throw new Error("Waste factor must be greater than 0");
   }
 
-  return unwrapManifestResponse<{ success: boolean; message: string }>(
-    await response.json()
-  );
+  await recipeIngredientUpdateWasteFactor({
+    id: request.recipeIngredientId,
+    newWasteFactor: request.wasteFactor,
+  });
+  await calculateRecipeCostBreakdown(recipeVersionId, { persist: true });
+
+  return { success: true, message: "Waste factor updated" };
 }
 
 /**
@@ -284,19 +251,43 @@ export async function updateWasteFactor(
 export async function updateEventBudgets(
   recipeVersionId: string
 ): Promise<{ success: boolean; message: string; affectedEvents: number }> {
-  const response = await apiFetch(
-    `/api/kitchen/recipes/${recipeVersionId}/update-budgets`,
-    {
-      method: "POST",
-    }
-  );
+  const [prepTasks, recipeVersions, events] = await Promise.all([
+    listPrepTasks(),
+    listRecipeVersions(),
+    listEvents(),
+  ]);
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update event budgets");
+  const version = recipeVersions.data.find((entry) => entry.id === recipeVersionId);
+  if (!version) {
+    throw new Error("Recipe version not found");
   }
 
-  return response.json();
+  const impactedEventIds = new Set(
+    prepTasks.data
+      .filter(
+        (task) =>
+          task.recipeVersionId === recipeVersionId && task.eventId && !task.deletedAt
+      )
+      .map((task) => task.eventId as string)
+  );
+
+  let affectedEvents = 0;
+  for (const event of events.data) {
+    if (!impactedEventIds.has(event.id)) {
+      continue;
+    }
+    await eventUpdateBudget({
+      id: event.id,
+      newBudget: (event.budget ?? 0) + (version.totalCost ?? 0),
+    });
+    affectedEvents += 1;
+  }
+
+  return {
+    success: true,
+    message: `Updated ${affectedEvents} event budget(s)`,
+    affectedEvents,
+  };
 }
 
 // ============================================================================
@@ -304,9 +295,18 @@ export async function updateEventBudgets(
 // ============================================================================
 
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-// NOTE: Keeping apiFetch for getRecipeCost, recalculateRecipeCost, scaleRecipe, updateWasteFactor, updateEventBudgets (no generated equivalents for custom sub-endpoints)
-import { listRecipes as generatedListRecipes } from "@/app/lib/manifest-client.generated";
+import {
+  eventUpdateBudget,
+  listEvents,
+  listPrepTasks,
+  listRecipeVersions,
+  listRecipes as generatedListRecipes,
+  recipeIngredientUpdateWasteFactor,
+} from "@/app/lib/manifest-client.generated";
+import {
+  calculateRecipeCostBreakdown,
+  scaleRecipeCostBreakdown,
+} from "@/app/lib/recipe-costing-calculator";
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;
