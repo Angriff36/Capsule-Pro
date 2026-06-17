@@ -1,6 +1,5 @@
-import { listInvoices, listPayments } from "@/app/lib/manifest-client.generated";
+import { listChartOfAccounts, listInvoices, listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -102,64 +101,43 @@ export default async function AccountingPage() {
 
   const now = new Date();
 
-  const [
-    invoiceCount,
-    outstandingInvoiceCount,
-    overdueInvoiceCount,
-    invoiceTotals,
-    paymentCount,
-    completedPaymentTotals,
-    activeAccountCount,
-    recentInvoices,
-    recentPayments,
-  ] = await Promise.all([
-    database.invoice.count({ where: { tenantId, deletedAt: null } }),
-    database.invoice.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        amountDue: { gt: 0 },
-      },
-    }),
-    database.invoice.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        amountDue: { gt: 0 },
-        dueDate: { lt: now },
-      },
-    }),
-    database.invoice.aggregate({
-      where: { tenantId, deletedAt: null },
-      _sum: {
-        total: true,
-        amountDue: true,
-      },
-    }),
-    database.payment.count({ where: { tenantId, deletedAt: null } }),
-    database.payment.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "COMPLETED",
-      },
-      _sum: {
-        amount: true,
-      },
-    }),
-    database.chartOfAccount.count({
-      where: {
-        tenantId,
-        isActive: true,
-      },
-    }),
+  const [invoices, payments, accounts] = await Promise.all([
     (await listInvoices()).data,
     (await listPayments()).data,
+    (await listChartOfAccounts()).data,
   ]);
 
-  const invoicedTotal = Number(invoiceTotals._sum.total ?? 0);
-  const outstandingTotal = Number(invoiceTotals._sum.amountDue ?? 0);
-  const collectedTotal = Number(completedPaymentTotals._sum.amount ?? 0);
+  const invoiceCount = invoices.length;
+  const outstandingInvoiceCount = invoices.filter(
+    (invoice) =>
+      Number(invoice.amountDue ?? 0) > 0 &&
+      !["VOID", "PAID"].includes(String(invoice.status))
+  ).length;
+  const overdueInvoiceCount = invoices.filter(
+    (invoice) =>
+      Number(invoice.amountDue ?? 0) > 0 &&
+      invoice.dueDate < now &&
+      !["VOID", "PAID"].includes(String(invoice.status))
+  ).length;
+  const invoicedTotal = invoices.reduce(
+    (sum, invoice) => sum + Number(invoice.total ?? 0),
+    0
+  );
+  const outstandingTotal = invoices.reduce(
+    (sum, invoice) => sum + Number(invoice.amountDue ?? 0),
+    0
+  );
+  const paymentCount = payments.length;
+  const collectedTotal = payments
+    .filter((payment) => String(payment.status) === "COMPLETED")
+    .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+  const activeAccountCount = accounts.filter((account) => account.isActive).length;
+  const recentInvoices = [...invoices]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 8);
+  const recentPayments = [...payments]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 9);
 
   return (
     <PageCanvas>

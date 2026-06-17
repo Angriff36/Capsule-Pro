@@ -159,6 +159,14 @@ entity BattleBoard mixin TenantScoped, SoftDeletable {
     emit BattleBoardImportRecorded
   }
 
+  command softDelete() {
+    guard self.deletedAt == null "Battle board is already deleted"
+
+    mutate deletedAt = now()
+
+    emit BattleBoardDeleted
+  }
+
   store BattleBoard in durable
 }
 
@@ -250,4 +258,11 @@ event BattleBoardImportRecorded: "events.battle_board.import_recorded" {
   boardName: string
   userId: string
   recordedAt: datetime
+}
+
+event BattleBoardDeleted: "events.battle_board.deleted" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  deletedAt: datetime
 }

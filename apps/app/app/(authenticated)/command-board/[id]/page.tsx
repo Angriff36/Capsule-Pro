@@ -1,6 +1,5 @@
-import { listCommandBoardCards, listCommandBoardConnections, listCommandBoardGroups } from "@/app/lib/manifest-client.generated";
+import { listCommandBoardCards, listCommandBoardConnections, listCommandBoardGroups, listCommandBoards } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,18 +31,7 @@ const BoardDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const board = await database.commandBoard.findFirst({
-    where: { tenantId, id, deletedAt: null },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      status: true,
-      isTemplate: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  const board = (await listCommandBoards()).data[0] ?? null;
 
   if (!board) {
     notFound();

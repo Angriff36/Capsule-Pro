@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { listInventoryItems } from "@/app/lib/manifest-client.generated";
 import { runManifestCommand } from "@/lib/manifest-command";
 
 interface ImportRow {
@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
       name: string;
       category: string;
       unitOfMeasure: string;
-      unitCost: Prisma.Decimal;
-      quantityOnHand: Prisma.Decimal;
+      unitCost: number;
+      quantityOnHand: number;
       tags: string[];
       createdAt: Date;
       updatedAt: Date;
@@ -140,8 +140,8 @@ export async function POST(request: NextRequest) {
         name: name || productId,
         category,
         unitOfMeasure: "each",
-        unitCost: new Prisma.Decimal(flatFee || 0),
-        quantityOnHand: new Prisma.Decimal(inStock || 0),
+        unitCost: flatFee || 0,
+        quantityOnHand: inStock || 0,
         tags,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -161,17 +161,14 @@ export async function POST(request: NextRequest) {
     let errors = 0;
 
     const user = await requireCurrentUser();
+    const existingItems = (await listInventoryItems()).data;
+    const existingByItemNumber = new Map(
+      existingItems.map((item) => [item.item_number, item])
+    );
 
     for (const item of items) {
       try {
-        // Check if item with this item_number exists
-        const existing = await database.$queryRaw<{ id: string }[]>`
-          SELECT id FROM tenant_inventory.inventory_items
-          WHERE tenant_id = ${item.tenantId}
-            AND item_number = ${item.item_number}
-            AND deleted_at IS NULL
-          LIMIT 1
-        `;
+        const existing = existingByItemNumber.get(item.item_number) ?? null;
 
         const userCtx = {
           id: user.id,
@@ -179,11 +176,11 @@ export async function POST(request: NextRequest) {
           role: user.role,
         };
 
-        if (existing.length > 0) {
+        if (existing) {
           const result = await runManifestCommand({
             entity: "InventoryItem",
             command: "update",
-            instanceId: existing[0].id,
+            instanceId: existing.id,
             body: {
               name: item.name,
               category: item.category,
@@ -204,7 +201,6 @@ export async function POST(request: NextRequest) {
             entity: "InventoryItem",
             command: "create",
             body: {
-              tenantId: item.tenantId,
               item_number: item.item_number,
               name: item.name,
               category: item.category,

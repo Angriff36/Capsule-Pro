@@ -1,6 +1,5 @@
-import { listProcurementBudgets, listPurchaseOrders, listPurchaseRequisitions, listVendorContracts } from "@/app/lib/manifest-client.generated";
+import { listInventorySuppliers, listProcurementBudgets, listPurchaseOrders, listPurchaseRequisitions, listVendorContracts } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -71,39 +70,11 @@ const ProcurementPage = async () => {
     recentContracts,
     recentBudgets,
   ] = await Promise.all([
-    database.purchaseRequisition.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-    }),
-    database.purchaseRequisition.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["pending_manager", "pending_finance"] },
-      },
-    }),
-    database.purchaseOrder.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "draft",
-      },
-    }),
-    database.inventorySupplier.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-    }),
-    database.procurementBudget.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "active",
-      },
-    }),
+    (await listPurchaseRequisitions()).data.length,
+    (await listPurchaseRequisitions()).data.length,
+    (await listPurchaseOrders()).data.length,
+    (await listInventorySuppliers()).data.length,
+    (await listProcurementBudgets()).data.length,
     (await listPurchaseRequisitions()).data,
     (await listPurchaseOrders()).data,
     (await listVendorContracts()).data,

@@ -1,12 +1,16 @@
 "use server";
+import { getEvent, listEvents } from "@/app/lib/manifest-client.generated";
 
 import { openai } from "@ai-sdk/openai";
-import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
+import { loadEventDishesSummary } from "@/app/lib/convex/event-domain-loaders";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser } from "../../../lib/tenant";
 
 const AI_MODEL = "gpt-4o-mini";
+const JSON_CODE_BLOCK_REGEX = /```(?:json)?\s*(\{[\s\S]*\})\s*```/;
+const JSON_OBJECT_REGEX = /\{[\s\S]*\}/;
+const FIRST_NUMBER_REGEX = /\d+/;
 
 export type TaskSection = "prep" | "setup" | "cleanup";
 
@@ -51,74 +55,44 @@ export async function generateTaskBreakdown({
   eventId,
   customInstructions,
 }: GenerateTaskBreakdownParams): Promise<TaskBreakdown> {
-  const tenantId = await requireTenantId();
-
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-    },
-  });
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const event = await getEvent(eventId);
 
   if (!event) {
     throw new Error("Event not found");
   }
 
-  const similarEvents = await database.$queryRaw<
-    { id: string; title: string; event_date: Date; guest_count: number }[]
-  >(
-    Prisma.sql`
-      SELECT id, title, event_date, guest_count
-      FROM tenant_events.events
-      WHERE tenant_id = ${tenantId}
-        AND id != ${eventId}
-        AND deleted_at IS NULL
-        AND event_type = ${event.eventType}
-        AND ABS(guest_count - ${event.guestCount}) <= 10
-      ORDER BY event_date DESC
-      LIMIT 5
-    `
-  );
+  const similarEvents = (await listEvents()).data
+    .filter(
+      (row) =>
+        row.tenantId === tenantId &&
+        row.id !== eventId &&
+        !row.deletedAt &&
+        row.eventType === event.eventType &&
+        Math.abs((row.guestCount ?? 0) - (event.guestCount ?? 0)) <= 10
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+    )
+    .slice(0, 5)
+    .map((row) => ({
+      id: row.id,
+      title: row.title ?? "",
+      event_date: new Date(row.eventDate),
+      guest_count: row.guestCount ?? 0,
+    }));
 
-  // Fetch event dishes/menu items for AI analysis
-  const eventDishesResult = await database.$queryRaw<
-    Array<{
-      id: string;
-      dish_id: string;
-      name: string;
-      category: string | null;
-      course: string | null;
-      quantity_servings: number;
-      dietary_tags: string[] | null;
-      allergens: string[] | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ed.id,
-        ed.dish_id,
-        d.name,
-        d.category,
-        ed.course,
-        ed.quantity_servings,
-        COALESCE(d.dietary_tags, ARRAY[]::text[]) as dietary_tags,
-        COALESCE(d.allergens, ARRAY[]::text[]) as allergens
-      FROM tenant_events.event_dishes ed
-      JOIN tenant_kitchen.dishes d ON ed.dish_id = d.id AND ed.tenant_id = d.tenant_id
-      WHERE ed.tenant_id = ${tenantId}
-        AND ed.event_id = ${eventId}
-        AND ed.deleted_at IS NULL
-      ORDER BY ed.created_at
-    `
-  );
+  const eventDishesResult = await loadEventDishesSummary(tenantId, eventId);
 
   const dishesData = eventDishesResult.map((d) => ({
     name: d.name,
     category: d.category,
     course: d.course,
-    servings: d.quantity_servings,
-    dietaryTags: d.dietary_tags,
-    allergens: d.allergens,
+    servings: d.quantityServings,
+    dietaryTags: d.dietaryTags,
+    allergens: [],
   }));
 
   const tasks = await generateTasksFromAI(
@@ -322,8 +296,8 @@ Please generate a complete task breakdown following the system prompt guidelines
     try {
       // Extract JSON from response (handle potential markdown code blocks)
       const jsonMatch =
-        result.text.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
-        result.text.match(/\{[\s\S]*\}/);
+        result.text.match(JSON_CODE_BLOCK_REGEX) ||
+        result.text.match(JSON_OBJECT_REGEX);
 
       if (jsonMatch) {
         const jsonText = jsonMatch[1] || jsonMatch[0];
@@ -545,7 +519,6 @@ export async function saveTaskBreakdown(
   breakdown: TaskBreakdown
 ): Promise<void> {
   const user = await requireCurrentUser();
-  const tenantId = user.tenantId;
 
   const allTasks = [
     ...breakdown.prep.map((t) => ({ ...t, taskType: "prep" as const })),
@@ -553,17 +526,8 @@ export async function saveTaskBreakdown(
     ...breakdown.cleanup.map((t) => ({ ...t, taskType: "cleanup" as const })),
   ];
 
-  // Read: location lookup stays as direct Prisma (constitution §10)
-  const locationResult = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-      LIMIT 1
-    `
-  );
-
-  const locationId =
-    locationResult[0]?.id ?? "00000000-0000-0000-0000-000000000000";
+  const event = await getEvent(eventId);
+  const locationId = event?.locationId ?? "";
 
   for (const task of allTasks) {
     const eventDate = new Date(breakdown.eventDate);
@@ -572,7 +536,7 @@ export async function saveTaskBreakdown(
 
     if (task.relativeTime?.includes("hours before")) {
       const hoursBefore = Number.parseInt(
-        task.relativeTime.match(/\d+/)?.[0] || "0",
+        task.relativeTime.match(FIRST_NUMBER_REGEX)?.[0] || "0",
         10
       );
       dueByDate.setHours(dueByDate.getHours() - hoursBefore);

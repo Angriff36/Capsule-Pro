@@ -1,4 +1,3 @@
-import { apiFetch } from "@/app/lib/api";
 import {
   getShipment as _getShipment,
   listShipmentItems as _listShipmentItems,
@@ -11,6 +10,7 @@ import {
   shipmentMarkDelivered,
   shipmentSchedule,
   shipmentShip,
+  shipmentSoftDelete,
   shipmentStartPreparing,
   shipmentUpdate,
 } from "@/app/lib/manifest-client.generated";
@@ -410,16 +410,11 @@ export async function updateShipment(
 
 /**
  * Delete a shipment (soft delete)
- * NOTE: Keeping apiFetch — no generated shipmentSoftDelete command; cancel is a status transition, not delete
  */
 export async function deleteShipment(shipmentId: string): Promise<void> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete shipment");
+  const result = await shipmentSoftDelete({ id: shipmentId, userId: "" });
+  if (!result) {
+    throw new Error("Failed to delete shipment");
   }
 }
 

@@ -155,6 +155,14 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
     emit PurchaseOrderOrdered
   }
 
+  command markPartiallyReceived(userId: string) {
+    guard self.status == "ordered" or self.status == "partially_received" "Can only mark partially received on ordered orders"
+
+    mutate status = "partially_received"
+
+    emit PurchaseOrderPartiallyReceived
+  }
+
   command markReceived(userId: string) {
     guard self.status == "ordered" or self.status == "partially_received" "Can only receive ordered or partially received orders"
 
@@ -246,6 +254,26 @@ entity PurchaseOrderItem mixin TenantScoped, SoftDeletable {
     emit PurchaseOrderItemUpdated
   }
 
+  command recordQuantityReceived(quantityReceived: decimal) {
+    guard quantityReceived != null and quantityReceived >= 0 "Quantity received cannot be negative"
+    guard quantityReceived <= self.quantityOrdered "Cannot receive more than ordered"
+
+    mutate quantityReceived = quantityReceived
+
+    emit PurchaseOrderItemQuantityRecorded
+  }
+
+  command updateQualityStatus(qualityStatus: string, discrepancyType: string, discrepancyAmount: money, notes: string) {
+    guard qualityStatus in ["pending", "approved", "rejected", "needs_inspection"] "Invalid quality status"
+
+    mutate qualityStatus = qualityStatus
+    mutate discrepancyType = discrepancyType
+    mutate discrepancyAmount = discrepancyAmount
+    mutate notes = notes
+
+    emit PurchaseOrderItemQualityUpdated
+  }
+
   command remove(userId: string) {
     guard self.quantityReceived == 0 "Cannot remove item that has been partially received"
 
@@ -317,6 +345,14 @@ event PurchaseOrderOrdered: "purchasing.po.ordered" {
   orderedAt: datetime
 }
 
+event PurchaseOrderPartiallyReceived: "purchasing.po.partially_received" {
+  purchaseOrderId: string
+  poNumber: string
+  vendorId: string
+  userId: string
+  receivedAt: datetime
+}
+
 event PurchaseOrderReceived: "purchasing.po.received" {
   purchaseOrderId: string
   poNumber: string
@@ -352,6 +388,21 @@ event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
   quantityOrdered: number
   unitCost: money
   totalCost: money
+  updatedAt: datetime
+}
+
+event PurchaseOrderItemQuantityRecorded: "purchasing.po.item.quantity_recorded" {
+  purchaseOrderItemId: string
+  purchaseOrderId: string
+  quantityReceived: number
+  recordedAt: datetime
+}
+
+event PurchaseOrderItemQualityUpdated: "purchasing.po.item.quality_updated" {
+  purchaseOrderItemId: string
+  purchaseOrderId: string
+  qualityStatus: string
+  discrepancyType: string
   updatedAt: datetime
 }
 

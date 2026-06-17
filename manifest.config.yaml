@@ -4,10 +4,7 @@
 # Scripts consume this via manifest/scripts/read-config.mjs — do NOT duplicate maps in .mjs.
 #
 # Consumed by: compile.mjs (paths), generate.mjs (paths/dispatcher/readRoutes),
-#   entity-domain-map.mjs (entityToPrismaModel + accessorNames), build-prisma-store-options.mjs,
-#   check-accessor-config.mjs (CI gate).
-#
-# CI: pnpm manifest:check-accessor-config:strict
+#   entity-domain-map.mjs (entity naming maps).
 
 $schema: https://manifest.dev/config.schema.json
 
@@ -46,7 +43,7 @@ projections:
       # fail typecheck. Setting it explicitly keeps generated reads on the repo wrapper
       # and the regen drift gate at zero. See generator.js:144-148.
       authImportPath: "@repo/auth/server"
-      # App-local DB + runtime + response import paths used by generated routes.
+      # LEGACY: generated Next.js read routes (Path B). Prefer Convex queries in apps/app.
       databaseImportPath: "@repo/database"
       # App Router base directory. generate.mjs derives its staged-route prefix from this
       # instead of hardcoding "apps/api/app/api/".

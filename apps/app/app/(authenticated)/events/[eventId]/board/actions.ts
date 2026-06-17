@@ -1,7 +1,6 @@
 "use server";
-import { listBattleBoards, listCommandBoardCards, listDishes, listEventDishes, listEventStaffs, listEvents, listUsers } from "@/app/lib/manifest-client.generated";
+import { listBattleBoards, listCommandBoardCards, listCommandBoards, listDeliveryRoutes, listDishes, listEventDishes, listEventStaffs, listEvents, listUsers } from "@/app/lib/manifest-client.generated";
 
-import { database } from "@repo/database";
 import { apiPostJsonServer } from "@/app/lib/api-server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -84,20 +83,13 @@ export async function getOrCreateEventBoard(
   const { tenantId } = user;
 
   // Oldest board wins for duplicate-race resolution
-  const existing = await database.commandBoard.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
+  const existing = (await listCommandBoards()).data[0] ?? null;
   if (existing) {
     return { boardId: existing.id };
   }
 
   // Fetch event title for the board name
-  const event = await database.event.findFirst({
-    where: { tenantId, id: eventId, deletedAt: null },
-    select: { title: true },
-  });
+  const event = (await listEvents()).data[0] ?? null;
   if (!event) {
     throw new Error("Event not found");
   }
@@ -125,11 +117,7 @@ export async function getOrCreateEventBoard(
   // inserted another board between our findFirst and create. Re-query with
   // the same oldest-wins ordering so every racer returns the SAME board; the
   // loser's row stays orphaned but unused.
-  const winner = await database.commandBoard.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
+  const winner = (await listCommandBoards()).data[0] ?? null;
   if (winner) {
     return { boardId: winner.id };
   }
@@ -161,29 +149,13 @@ export async function getEventBoardData(
     battleBoardRows,
     board,
   ] = await Promise.all([
-    database.event.findFirst({
-      where: { tenantId, id: eventId, deletedAt: null },
-      select: {
-        id: true,
-        title: true,
-        eventType: true,
-        eventDate: true,
-        guestCount: true,
-        venueName: true,
-      },
-    }),
+    (await listEvents()).data[0] ?? null,
     (await listEventStaffs()).data,
     (await listEventDishes()).data,
-    database.deliveryRoute.count({
-      where: { tenantId, eventId, deletedAt: null },
-    }),
+    (await listDeliveryRoutes()).data.length,
     // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
     (await listBattleBoards()).data,
-    database.commandBoard.findFirst({
-      where: { tenantId, eventId, deletedAt: null },
-      orderBy: { createdAt: "asc" },
-      select: { id: true },
-    }),
+    (await listCommandBoards()).data[0] ?? null,
   ]);
 
   if (!event) {

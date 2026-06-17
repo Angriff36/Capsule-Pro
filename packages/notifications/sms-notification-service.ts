@@ -8,7 +8,7 @@
  * - Multiple recipient support
  */
 
-import type { PrismaClient } from "@repo/database";
+import type { NotificationDatabase } from "./notification-database-port";
 import { keys } from "./keys";
 import {
   renderSmsTemplate,
@@ -87,7 +87,7 @@ function normalizePhoneNumber(phoneNumber: string): string {
  * Checks if an employee has opted in to SMS notifications for a specific type
  */
 async function _checkOptInStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string,
   notificationType: string
@@ -110,7 +110,7 @@ async function _checkOptInStatus(
  * Creates a log entry for an SMS message
  */
 async function createSmsLog(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string | undefined,
   phoneNumber: string,
@@ -136,7 +136,7 @@ async function createSmsLog(
  * Updates an SMS log entry with delivery status
  */
 async function updateSmsLog(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   logId: string,
   updates: {
@@ -214,7 +214,7 @@ async function sendSingleSms(
  * Batch-check opt-in status for all SMS recipients in a single query.
  */
 async function batchCheckSmsOptInStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   recipients: SmsRecipient[],
   notificationType: string
@@ -245,7 +245,7 @@ async function batchCheckSmsOptInStatus(
  * Main function to send SMS notifications
  */
 export async function sendSmsNotification(
-  database: PrismaClient,
+  database: NotificationDatabase,
   options: SendSmsOptions
 ): Promise<SendSmsResult[]> {
   const {
@@ -368,7 +368,7 @@ export async function sendSmsNotification(
  * Updates SMS delivery status from Twilio webhook callback
  */
 export async function updateDeliveryStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   twilioSid: string,
   newStatus: "delivered" | "failed",
@@ -411,7 +411,7 @@ export async function updateDeliveryStatus(
  * Gets SMS logs for a tenant with optional filtering
  */
 export async function getSmsLogs(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   options?: {
     employeeId?: string;
@@ -458,7 +458,7 @@ export async function getSmsLogs(
  * Sets SMS notification preference for an employee
  */
 export async function setSmsPreference(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string,
   notificationType: string,
@@ -491,7 +491,7 @@ export async function setSmsPreference(
  * Gets SMS notification preferences for an employee
  */
 export async function getSmsPreferences(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string
 ): Promise<

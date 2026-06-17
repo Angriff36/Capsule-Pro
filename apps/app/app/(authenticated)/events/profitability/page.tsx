@@ -7,8 +7,11 @@
  * @canonical true
  */
 
+import {
+  listEventProfitabilities,
+  listEvents,
+} from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -56,48 +59,52 @@ const EventProfitabilityPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch profitability records joined with event titles via raw SQL
-  // (no Prisma relation exists between EventProfitability and Event)
-  const rows = await database.$queryRaw<ProfitabilityRow[]>`
-    SELECT
-      ep.id,
-      ep.tenant_id,
-      ep.event_id,
-      ep.budgeted_revenue,
-      ep.budgeted_food_cost,
-      ep.budgeted_labor_cost,
-      ep.budgeted_overhead,
-      ep.budgeted_total_cost,
-      ep.budgeted_gross_margin,
-      ep.budgeted_gross_margin_pct,
-      ep.actual_revenue,
-      ep.actual_food_cost,
-      ep.actual_labor_cost,
-      ep.actual_overhead,
-      ep.actual_total_cost,
-      ep.actual_gross_margin,
-      ep.actual_gross_margin_pct,
-      ep.revenue_variance,
-      ep.food_cost_variance,
-      ep.labor_cost_variance,
-      ep.total_cost_variance,
-      ep.margin_variance_pct,
-      ep.calculated_at,
-      ep.calculation_method,
-      ep.notes,
-      ep.created_at,
-      ep.updated_at,
-      e.title AS event_title,
-      e.event_date
-    FROM tenant_events.event_profitability ep
-    LEFT JOIN tenant_events.events e
-      ON e.tenant_id = ep.tenant_id
-      AND e.id = ep.event_id
-      AND e.deleted_at IS NULL
-    WHERE ep.tenant_id = ${tenantId}
-      AND ep.deleted_at IS NULL
-    ORDER BY ep.created_at DESC
-  `;
+  const [profitabilityRaw, eventsRaw] = await Promise.all([
+    listEventProfitabilities(),
+    listEvents(),
+  ]);
+  const eventById = new Map(
+    eventsRaw.data
+      .filter((event) => event.tenantId === tenantId && !event.deletedAt)
+      .map((event) => [event.id, event])
+  );
+  const rows: ProfitabilityRow[] = profitabilityRaw.data
+    .filter((row) => row.tenantId === tenantId && !row.deletedAt)
+    .map((row) => {
+      const event = eventById.get(row.eventId);
+      return {
+        id: row.id,
+        tenant_id: row.tenantId,
+        event_id: row.eventId,
+        budgeted_revenue: row.budgetedRevenue ?? 0,
+        budgeted_food_cost: row.budgetedFoodCost ?? 0,
+        budgeted_labor_cost: row.budgetedLaborCost ?? 0,
+        budgeted_overhead: row.budgetedOverhead ?? 0,
+        budgeted_total_cost: row.budgetedTotalCost ?? 0,
+        budgeted_gross_margin: row.budgetedGrossMargin ?? 0,
+        budgeted_gross_margin_pct: row.budgetedGrossMarginPct ?? 0,
+        actual_revenue: row.actualRevenue ?? 0,
+        actual_food_cost: row.actualFoodCost ?? 0,
+        actual_labor_cost: row.actualLaborCost ?? 0,
+        actual_overhead: row.actualOverhead ?? 0,
+        actual_total_cost: row.actualTotalCost ?? 0,
+        actual_gross_margin: row.actualGrossMargin ?? 0,
+        actual_gross_margin_pct: row.actualGrossMarginPct ?? 0,
+        revenue_variance: row.revenueVariance ?? 0,
+        food_cost_variance: row.foodCostVariance ?? 0,
+        labor_cost_variance: row.laborCostVariance ?? 0,
+        total_cost_variance: row.totalCostVariance ?? 0,
+        margin_variance_pct: row.marginVariancePct ?? 0,
+        calculated_at: new Date(row.calculatedAt || Date.now()),
+        calculation_method: row.calculationMethod ?? "",
+        notes: row.notes ?? null,
+        created_at: new Date(row.createdAt || Date.now()),
+        updated_at: new Date(row.updatedAt || Date.now()),
+        event_title: event?.title ?? null,
+        event_date: event?.eventDate ? new Date(event.eventDate) : null,
+      };
+    })
+    .sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
 
   // Serialize for the client component — convert Decimal / Date to primitives
   const serializedRecords = rows.map((row) => ({

@@ -7,7 +7,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "2.9.0",
+    "@angriff36/manifest": "2.10.7",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.4.15",
@@ -77,8 +77,8 @@
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:registries": "node manifest/scripts/emit-registries.mjs",
     "manifest:ci": "pnpm manifest:compile && pnpm manifest:verify-invariants && pnpm manifest:validate && pnpm manifest:generate-convex && pnpm manifest:check-convex-drift && pnpm manifest:enforce-convex-architecture && pnpm manifest:registries && git diff --exit-code manifest/governance/commands.json manifest/governance/entities.json",
-    "manifest:fmt": "manifest fmt manifest/source/**/*.manifest --write",
-    "manifest:fmt:check": "manifest fmt manifest/source/**/*.manifest --check",
+    "manifest:fmt": "manifest fmt manifest/source --write",
+    "manifest:fmt:check": "manifest fmt manifest/source --check",
     "manifest:mcp": "manifest-mcp",
     "manifest:client": "node manifest/scripts/generate-convex-client.mjs",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",

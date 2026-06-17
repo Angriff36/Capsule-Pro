@@ -58,9 +58,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   battleBoardCreate,
+  battleBoardSoftDelete,
   battleBoardUpdate,
   getBattleBoard,
   listBattleBoards,
@@ -870,12 +870,9 @@ export function BattleboardsClient() {
     }
     setDeleting(true);
     try {
-      const res = await apiFetch(`/api/command-board/${deleteTarget.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.message ?? "Failed to delete board");
+      const result = await battleBoardSoftDelete({ id: deleteTarget.id });
+      if (!result) {
+        throw new Error("Failed to delete board");
       }
       toast.success(`Board "${deleteTarget.name}" deleted.`);
       setDeleteOpen(false);

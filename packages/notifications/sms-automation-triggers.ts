@@ -4,12 +4,16 @@
  * Integration points for triggering SMS automation rules from business events.
  * Import and call these functions from the relevant business logic handlers.
  */
+import type { NotificationDatabase } from "./notification-database-port";
 import { evaluateAndExecuteRules } from "./sms-automation-engine";
+
+type TriggerOptions = { database: NotificationDatabase };
 
 /**
  * Trigger SMS automation when a task is assigned to an employee
  */
-export async function triggerTaskAssignedSms(options: {
+export async function triggerTaskAssignedSms(
+  options: TriggerOptions & {
   tenantId: string;
   taskId: string;
   taskName: string;
@@ -19,7 +23,7 @@ export async function triggerTaskAssignedSms(options: {
   dueDate?: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "task_assigned",
     triggerData: {
@@ -44,7 +48,8 @@ export async function triggerTaskAssignedSms(options: {
 /**
  * Trigger SMS automation when a task is completed
  */
-export async function triggerTaskCompletedSms(options: {
+export async function triggerTaskCompletedSms(
+  options: TriggerOptions & {
   tenantId: string;
   taskId: string;
   taskName: string;
@@ -52,7 +57,7 @@ export async function triggerTaskCompletedSms(options: {
   completedByName: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "task_completed",
     triggerData: {
@@ -75,7 +80,8 @@ export async function triggerTaskCompletedSms(options: {
 /**
  * Trigger SMS automation when a task becomes overdue
  */
-export async function triggerTaskOverdueSms(options: {
+export async function triggerTaskOverdueSms(
+  options: TriggerOptions & {
   tenantId: string;
   taskId: string;
   taskName: string;
@@ -85,7 +91,7 @@ export async function triggerTaskOverdueSms(options: {
   hoursOverdue: number;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "task_overdue",
     triggerData: {
@@ -110,7 +116,8 @@ export async function triggerTaskOverdueSms(options: {
 /**
  * Trigger SMS automation when a shift is assigned
  */
-export async function triggerShiftAssignedSms(options: {
+export async function triggerShiftAssignedSms(
+  options: TriggerOptions & {
   tenantId: string;
   shiftId: string;
   shiftDate: string;
@@ -122,7 +129,7 @@ export async function triggerShiftAssignedSms(options: {
   stationName?: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "shift_assigned",
     triggerData: {
@@ -151,7 +158,8 @@ export async function triggerShiftAssignedSms(options: {
 /**
  * Trigger SMS automation for shift reminder
  */
-export async function triggerShiftReminderSms(options: {
+export async function triggerShiftReminderSms(
+  options: TriggerOptions & {
   tenantId: string;
   shiftId: string;
   shiftDate: string;
@@ -162,7 +170,7 @@ export async function triggerShiftReminderSms(options: {
   employeeName: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "shift_reminder",
     triggerData: {
@@ -189,7 +197,8 @@ export async function triggerShiftReminderSms(options: {
 /**
  * Trigger SMS automation when a shift is changed
  */
-export async function triggerShiftChangedSms(options: {
+export async function triggerShiftChangedSms(
+  options: TriggerOptions & {
   tenantId: string;
   shiftId: string;
   shiftDate: string;
@@ -199,7 +208,7 @@ export async function triggerShiftChangedSms(options: {
   employeeName: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "shift_changed",
     triggerData: {
@@ -224,7 +233,8 @@ export async function triggerShiftChangedSms(options: {
 /**
  * Trigger SMS automation for prep list published
  */
-export async function triggerPrepListPublishedSms(options: {
+export async function triggerPrepListPublishedSms(
+  options: TriggerOptions & {
   tenantId: string;
   prepListId: string;
   prepListName: string;
@@ -232,7 +242,7 @@ export async function triggerPrepListPublishedSms(options: {
   publishedByName: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "prep_list_published",
     triggerData: {
@@ -254,7 +264,8 @@ export async function triggerPrepListPublishedSms(options: {
 /**
  * Trigger SMS automation for inventory low
  */
-export async function triggerInventoryLowSms(options: {
+export async function triggerInventoryLowSms(
+  options: TriggerOptions & {
   tenantId: string;
   itemId: string;
   itemName: string;
@@ -263,7 +274,7 @@ export async function triggerInventoryLowSms(options: {
   reorderPoint: number;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "inventory_low",
     triggerData: {
@@ -286,7 +297,8 @@ export async function triggerInventoryLowSms(options: {
 /**
  * Trigger SMS automation for custom event
  */
-export async function triggerCustomEventSms(options: {
+export async function triggerCustomEventSms(
+  options: TriggerOptions & {
   tenantId: string;
   eventName: string;
   message: string;
@@ -294,7 +306,7 @@ export async function triggerCustomEventSms(options: {
   recipientPhone?: string;
   additionalData?: Record<string, unknown>;
 }): Promise<void> {
-  await evaluateAndExecuteRules({
+  await evaluateAndExecuteRules(options.database, {
     tenantId: options.tenantId,
     triggerType: "custom_event",
     triggerData: {

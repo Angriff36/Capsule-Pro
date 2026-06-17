@@ -28,10 +28,6 @@
       "types": "./dist/slack.d.ts",
       "import": "./dist/slack.js"
     },
-    "./prisma-store": {
-      "types": "./dist/prisma-store.d.ts",
-      "import": "./dist/prisma-store.js"
-    },
     "./fixer": {
       "types": "./dist/fixer.d.ts",
       "import": "./dist/fixer.js"

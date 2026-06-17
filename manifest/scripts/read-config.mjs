@@ -145,8 +145,6 @@ export function getConfigPaths() {
   // Config values (with sensible defaults matching current hardcoded values)
   const srcGlob = cfg.src || "manifest/source/**/*.manifest";
   const outputDir = cfg.output || "manifest/ir/";
-  const prismaSchema =
-    cfg.prismaSchema || "packages/database/prisma/schema.prisma";
 
   // Derive source directory from glob (strip the glob portion)
   const srcDir = srcGlob.replace(/\/?\*\*\/\*\.manifest$/, "");
@@ -200,7 +198,6 @@ export function getConfigPaths() {
     repoRoot,
     srcDir: resolve(repoRoot, srcDir),
     outputDir: resolve(repoRoot, outputDir),
-    prismaSchema: resolve(repoRoot, prismaSchema),
     irPath: resolve(repoRoot, irFile),
     commandsPath: resolve(repoRoot, commandsFile),
     registryDir: resolve(repoRoot, registryDir),

@@ -12,7 +12,7 @@
 //   See manifest/docs/upstream-client-options.md for the full remediation plan.
 //   Until then, this file is the canonical source consumed by generate.mjs.
 //
-// Accessor naming is NOT here — see manifest.config.yaml + accessor-resolution.mjs.
+// Accessor naming: manifest.config.yaml via accessor-resolution.mjs.
 
 export {
   applyFieldOverrides,

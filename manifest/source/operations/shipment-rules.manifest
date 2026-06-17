@@ -168,6 +168,14 @@ entity Shipment mixin TenantScoped, SoftDeletable {
     emit ShipmentCancelled
   }
 
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Shipment is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ShipmentDeleted
+  }
+
   transition status from "draft" to ["scheduled", "cancelled"]
   transition status from "scheduled" to ["preparing", "cancelled"]
   transition status from "preparing" to ["in_transit", "cancelled"]
@@ -315,6 +323,13 @@ event ShipmentCancelled: "purchasing.shipment.cancelled" {
   userId: string
   reason: string
   cancelledAt: datetime
+}
+
+event ShipmentDeleted: "purchasing.shipment.deleted" {
+  shipmentId: string
+  tenantId: string
+  shipmentNumber: string
+  deletedAt: datetime
 }
 
 event ShipmentScheduled: "purchasing.shipment.scheduled" {

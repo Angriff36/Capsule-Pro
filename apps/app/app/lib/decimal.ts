@@ -1,3 +1,4 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 /**
  * Decimal Serialization Utilities
  *
@@ -59,7 +60,7 @@ export function serializeDecimal(value: unknown): number | null | undefined {
  *
  * @example
  * ```ts
- * const event = await database.event.findFirst({ ... });
+ * const event = (await listEvents()).data[0] ?? null;
  * const safe = serializeDecimals(event); // All Decimal fields → numbers
  * return safe; // Safe to pass to client component
  * ```

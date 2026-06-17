@@ -1,5 +1,5 @@
+import { listTrainingModules } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -56,18 +56,7 @@ const StaffTrainingPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const moduleRecords = await database.trainingModule.findMany({
-    where: { tenantId, deletedAt: null },
-    include: {
-      _count: {
-        select: {
-          assignments: { where: { deletedAt: null } },
-          completions: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const moduleRecords = (await listTrainingModules()).data;
   const modules: TrainingModuleRow[] = moduleRecords.map((module) => ({
     id: module.id,
     title: module.title,

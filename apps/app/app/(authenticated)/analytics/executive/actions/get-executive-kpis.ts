@@ -2,8 +2,13 @@
 
 import "server-only";
 
+import {
+  listCateringOrders,
+  listEvents,
+  listEventProfitabilities,
+  listWasteEntries,
+} from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface ExecutiveKPIMetrics {
@@ -85,7 +90,7 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -98,166 +103,108 @@ export async function getExecutiveKPIMetrics(): Promise<ExecutiveKPIMetrics> {
   const lastYearStart = new Date(now.getFullYear() - 1, 0, 1);
   const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);
 
-  const [
-    revenueData,
-    utilizationData,
-    profitabilityData,
-    pipelineData,
-    operationalHealthData,
-  ] = await Promise.all([
-    // Revenue queries
-    database.$queryRawUnsafe<RevenueRow[]>(
-      `
-      WITH months AS (
-        SELECT generate_series(
-          DATE_TRUNC('month', $2::timestamp),
-          DATE_TRUNC('month', $1::timestamp),
-          INTERVAL '1 month'
-        ) as month_start
-      ),
-      revenue_by_month AS (
-        SELECT
-          DATE_TRUNC('month', order_date) as month,
-          COALESCE(SUM(total_amount), 0)::numeric as revenue
-        FROM tenant_events.catering_orders
-        WHERE tenant_id = $3::uuid
-          AND deleted_at IS NULL
-          AND order_date >= $2::timestamp
-          AND order_date <= $1::timestamp
-        GROUP BY DATE_TRUNC('month', order_date)
-      )
-      SELECT
-        TO_CHAR(m.month_start, 'YYYY-MM') as month,
-        COALESCE(rbm.revenue, 0)::numeric as revenue,
-        NULL::numeric as forecast
-      FROM months m
-      LEFT JOIN revenue_by_month rbm ON m.month_start = rbm.month
-      ORDER BY month ASC
-      `,
-      now,
-      twelveMonthsAgo,
-      tenantId
-    ),
-
-    // Utilization queries
-    database.$queryRawUnsafe<UtilizationRow[]>(
-      `
-      SELECT
-        COALESCE(SUM(budgeted_labor_cost), 0)::numeric as budgeted_labor,
-        COALESCE(SUM(actual_labor_cost), 0)::numeric as actual_labor
-      FROM tenant_events.event_profitability
-      WHERE tenant_id = $1::uuid
-        AND deleted_at IS NULL
-        AND calculated_at >= $2::timestamp
-        AND calculated_at <= $3::timestamp
-      `,
-      tenantId,
-      currentMonthStart,
-      now
-    ),
-
-    // Profitability queries
-    database.$queryRawUnsafe<ProfitabilityRow[]>(
-      `
-      WITH months AS (
-        SELECT generate_series(
-          $2::timestamp,
-          $1::timestamp,
-          INTERVAL '1 month'
-        ) as month_start
-      ),
-      margins_by_month AS (
-        SELECT
-          DATE_TRUNC('month', calculated_at) as month,
-          COALESCE(AVG(actual_gross_margin_pct), 0)::numeric as gross_margin_pct
-        FROM tenant_events.event_profitability
-        WHERE tenant_id = $3::uuid
-          AND deleted_at IS NULL
-          AND calculated_at >= $2::timestamp
-          AND calculated_at <= $1::timestamp
-        GROUP BY DATE_TRUNC('month', calculated_at)
-      )
-      SELECT
-        TO_CHAR(m.month_start, 'YYYY-MM') as month,
-        COALESCE(mbm.gross_margin_pct, 0)::numeric as gross_margin_pct
-      FROM months m
-      LEFT JOIN margins_by_month mbm ON m.month_start = mbm.month
-      ORDER BY month ASC
-      `,
-      now,
-      twelveMonthsAgo,
-      tenantId
-    ),
-
-    // Pipeline queries
-    database.$queryRawUnsafe<PipelineRow[]>(
-      `
-      SELECT
-        COALESCE(SUM(e.budget), 0)::numeric as total_value,
-        COUNT(*)::bigint as qualified_count,
-        SUM(CASE WHEN e.status IN ('confirmed', 'tentative') THEN 1 ELSE 0 END)::bigint as proposals_sent,
-        SUM(CASE WHEN e.status = 'confirmed' THEN 1 ELSE 0 END)::bigint as won_count,
-        AVG(CASE
-          WHEN e.status = 'confirmed' AND e.created_at IS NOT NULL
-          THEN EXTRACT(EPOCH FROM (e.created_at - e.created_at)) / 86400
-          ELSE NULL
-        END)::numeric as avg_days_to_close
-      FROM tenant_events.events e
-      WHERE e.tenant_id = $1::uuid
-        AND e.deleted_at IS NULL
-        AND e.created_at >= $2::timestamp
-        AND e.status IN ('lead', 'tentative', 'confirmed')
-      `,
-      tenantId,
-      currentMonthStart
-    ),
-
-    // Operational health queries
-    database.$queryRawUnsafe<OperationalHealthRow[]>(
-      `
-      SELECT
-        COALESCE(
-          SUM(CASE WHEN e.status = 'completed' THEN 1 ELSE 0 END)::numeric / NULLIF(COUNT(*)::numeric, 0) * 100,
-          0
-        ) as on_time_rate,
-        0::numeric as satisfaction_score,
-        COALESCE(
-          SUM(CASE
-            WHEN e.created_at < $2::timestamp
-            THEN 1
-            ELSE 0
-          END)::numeric / NULLIF(COUNT(*)::numeric, 0) * 100,
-          0
-        ) as retention_rate,
-        COALESCE(
-          (SELECT COALESCE(SUM("totalCost"), 0)::numeric
-           FROM tenant_kitchen.waste_entries
-           WHERE tenant_id = $1::uuid
-             AND deleted_at IS NULL
-             AND logged_at >= $2::timestamp
-             AND logged_at <= $3::timestamp) /
-          NULLIF(
-            (SELECT COALESCE(SUM(actual_food_cost), 0)::numeric
-             FROM tenant_events.event_profitability
-             WHERE tenant_id = $1::uuid
-               AND deleted_at IS NULL
-               AND calculated_at >= $2::timestamp
-               AND calculated_at <= $3::timestamp),
-            0
-          ) * 100,
-          0
-        ) as waste_pct
-      FROM tenant_events.events e
-      WHERE e.tenant_id = $1::uuid
-        AND e.deleted_at IS NULL
-        AND e.event_date >= $2::timestamp
-        AND e.event_date <= $3::timestamp
-      `,
-      tenantId,
-      twelveMonthsAgo,
-      now
-    ),
+  const [orders, events, profitabilities, wasteEntries] = await Promise.all([
+    (await listCateringOrders()).data,
+    (await listEvents()).data,
+    (await listEventProfitabilities()).data,
+    (await listWasteEntries()).data,
   ]);
+
+  const revenueByMonthMap = new Map<string, number>();
+  for (const order of orders) {
+    if (order.orderDate < twelveMonthsAgo || order.orderDate > now) continue;
+    const month = order.orderDate.toISOString().slice(0, 7);
+    revenueByMonthMap.set(
+      month,
+      (revenueByMonthMap.get(month) ?? 0) + Number(order.totalAmount ?? 0)
+    );
+  }
+  const revenueData: RevenueRow[] = [];
+  for (let i = 12; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const month = monthDate.toISOString().slice(0, 7);
+    revenueData.push({
+      month,
+      revenue: revenueByMonthMap.get(month) ?? 0,
+      forecast: null,
+    });
+  }
+
+  const currentMonthProfitabilities = profitabilities.filter(
+    (row) => row.calculatedAt >= currentMonthStart && row.calculatedAt <= now
+  );
+  const utilizationData: UtilizationRow[] = [
+    {
+      budgeted_labor: currentMonthProfitabilities.reduce(
+        (sum, row) => sum + Number(row.budgetedLaborCost ?? 0),
+        0
+      ),
+      actual_labor: currentMonthProfitabilities.reduce(
+        (sum, row) => sum + Number(row.actualLaborCost ?? 0),
+        0
+      ),
+    },
+  ];
+
+  const profitabilityByMonthMap = new Map<string, number[]>();
+  for (const row of profitabilities) {
+    if (row.calculatedAt < twelveMonthsAgo || row.calculatedAt > now) continue;
+    const month = row.calculatedAt.toISOString().slice(0, 7);
+    const rows = profitabilityByMonthMap.get(month) ?? [];
+    rows.push(Number(row.actualGrossMarginPct ?? 0));
+    profitabilityByMonthMap.set(month, rows);
+  }
+  const profitabilityData: ProfitabilityRow[] = [];
+  for (let i = 12; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const month = monthDate.toISOString().slice(0, 7);
+    const rows = profitabilityByMonthMap.get(month) ?? [];
+    profitabilityData.push({
+      month,
+      gross_margin_pct:
+        rows.length > 0 ? rows.reduce((sum, value) => sum + value, 0) / rows.length : 0,
+    });
+  }
+
+  const pipelineEvents = events.filter(
+    (event) =>
+      event.createdAt >= currentMonthStart &&
+      ["lead", "tentative", "confirmed"].includes(String(event.status))
+  );
+  const pipelineData: PipelineRow[] = [
+    {
+      total_value: pipelineEvents.reduce((sum, row) => sum + Number(row.budget ?? 0), 0),
+      qualified_count: pipelineEvents.length,
+      proposals_sent: pipelineEvents.filter((row) =>
+        ["confirmed", "tentative"].includes(String(row.status))
+      ).length,
+      won_count: pipelineEvents.filter((row) => String(row.status) === "confirmed").length,
+      avg_days_to_close: 0,
+    },
+  ];
+
+  const opsEvents = events.filter(
+    (event) => event.eventDate >= twelveMonthsAgo && event.eventDate <= now
+  );
+  const wasteTotal = wasteEntries
+    .filter((row) => row.loggedAt >= twelveMonthsAgo && row.loggedAt <= now)
+    .reduce((sum, row) => sum + Number(row.totalCost ?? 0), 0);
+  const foodCostTotal = profitabilities
+    .filter((row) => row.calculatedAt >= twelveMonthsAgo && row.calculatedAt <= now)
+    .reduce((sum, row) => sum + Number(row.actualFoodCost ?? 0), 0);
+  const operationalHealthData: OperationalHealthRow[] = [
+    {
+      on_time_rate:
+        opsEvents.length > 0
+          ? (opsEvents.filter((event) => String(event.status) === "completed").length /
+              opsEvents.length) *
+            100
+          : 0,
+      satisfaction_score: 0,
+      retention_rate: 0,
+      waste_pct: foodCostTotal > 0 ? (wasteTotal / foodCostTotal) * 100 : 0,
+    },
+  ];
 
   // Process revenue data
   const revenueByMonth = revenueData.map((row) => ({

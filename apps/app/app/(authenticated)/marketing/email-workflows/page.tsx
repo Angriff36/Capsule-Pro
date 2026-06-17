@@ -1,5 +1,5 @@
+import { listEmailWorkflows } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -36,18 +36,8 @@ export default async function EmailWorkflowsPage() {
   const tenantId = await getTenantIdForOrg(orgId);
 
   const [workflows, activeCount] = await Promise.all([
-    database.emailWorkflow.findMany({
-      where: { tenantId, deletedAt: null },
-      include: {
-        emailTemplate: {
-          select: { id: true, name: true, deletedAt: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    database.emailWorkflow.count({
-      where: { tenantId, deletedAt: null, isActive: true },
-    }),
+    (await listEmailWorkflows()).data,
+    (await listEmailWorkflows()).data.length,
   ]);
 
   const inactiveCount = workflows.length - activeCount;

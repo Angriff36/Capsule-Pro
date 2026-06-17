@@ -1,10 +1,11 @@
 "use client";
 
 import {
+  chartOfAccountCreate,
+  chartOfAccountDeactivate,
+  chartOfAccountUpdate,
   getChartOfAccount as _getChartOfAccount,
   listChartOfAccounts as _listChartOfAccounts,
-  chartOfAccountCreate,
-  chartOfAccountUpdate,
 } from "@/app/lib/manifest-client.generated";
 import type { ChartOfAccount as GeneratedChartOfAccount } from "@/app/lib/manifest-types.generated";
 
@@ -162,20 +163,13 @@ export async function updateChartOfAccount(
   return result;
 }
 
-// NOTE: Keeping apiFetch for delete — no generated chartOfAccountRemove/softDelete exists
-import { apiFetch } from "@/app/lib/api";
-
 /**
- * Delete a chart of account
+ * Delete a chart of account (deactivate — governed delete)
  */
 export async function deleteChartOfAccount(id: string): Promise<void> {
-  const response = await apiFetch(`/api/accounting/accounts/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete chart of account");
+  const result = await chartOfAccountDeactivate({ id });
+  if (!result) {
+    throw new Error("Failed to delete chart of account");
   }
 }
 

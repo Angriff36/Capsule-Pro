@@ -11,7 +11,6 @@ import { getLead, listClientInteractions } from "@/app/lib/manifest-client.gener
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,

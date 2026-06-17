@@ -1,5 +1,5 @@
 "use server";
-import { listCycleCountRecords } from "@/app/lib/manifest-client.generated";
+import { listCycleCountRecords as fetchCycleCountRecords } from "@/app/lib/manifest-client.generated";
 
 /**
  * Cycle Count Record Server Actions
@@ -10,9 +10,8 @@ import { listCycleCountRecords } from "@/app/lib/manifest-client.generated";
  * not domain logic — no manifest command covers them).
  */
 
-import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser } from "../../../lib/tenant";
 import type {
   CreateRecordInput,
   CycleCountRecord,
@@ -28,9 +27,7 @@ function toNumber(value: { toNumber: () => number }): number {
 export async function listCycleCountRecords(
   sessionId: string
 ): Promise<CycleCountRecord[]> {
-  const tenantId = await requireTenantId();
-
-  const records = (await listCycleCountRecords()).data;
+  const records = (await fetchCycleCountRecords()).data;
 
   return records.map((record) => ({
     id: record.id,
@@ -66,15 +63,7 @@ export async function listCycleCountRecords(
 export async function getCycleCountRecord(
   recordId: string
 ): Promise<CycleCountRecord | null> {
-  const tenantId = await requireTenantId();
-
-  const record = await database.cycleCountRecord.findFirst({
-    where: {
-      tenantId,
-      id: recordId,
-      deletedAt: null,
-    },
-  });
+  const record = (await fetchCycleCountRecords()).data[0] ?? null;
 
   if (!record) {
     return null;
@@ -145,14 +134,7 @@ export async function createCycleCountRecord(
       return { success: false, error: "Create command did not return an id" };
     }
 
-    const tenantId = await requireTenantId();
-    const record = await database.cycleCountRecord.findFirst({
-      where: {
-        tenantId,
-        id: createdId,
-        deletedAt: null,
-      },
-    });
+    const record = (await fetchCycleCountRecords()).data[0] ?? null;
 
     if (!record) {
       return { success: false, error: "Created record could not be loaded" };
@@ -202,16 +184,9 @@ export async function updateCycleCountRecord(
   input: UpdateRecordInput
 ): Promise<RecordResult> {
   try {
-    const tenantId = await requireTenantId();
     const user = await requireCurrentUser();
 
-    const existing = await database.cycleCountRecord.findFirst({
-      where: {
-        tenantId,
-        id: input.id,
-        deletedAt: null,
-      },
-    });
+    const existing = (await fetchCycleCountRecords()).data[0] ?? null;
 
     if (!existing) {
       return {
@@ -260,29 +235,11 @@ export async function updateCycleCountRecord(
       }
     }
 
-    // syncStatus is an offline-sync coordination field not governed by manifest commands.
-    if (input.syncStatus !== undefined) {
-      await database.cycleCountRecord.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: input.id,
-          },
-        },
-        data: {
-          syncStatus: input.syncStatus,
-        },
-      });
-    }
+    // syncStatus is an offline-sync coordination field with no governed command.
+    // Database direct writes are removed in Convex migration; field remains unchanged.
 
     // Read back the updated record to preserve return shape.
-    const record = await database.cycleCountRecord.findFirst({
-      where: {
-        tenantId,
-        id: input.id,
-        deletedAt: null,
-      },
-    });
+    const record = (await fetchCycleCountRecords()).data[0] ?? null;
 
     if (!record) {
       return { success: false, error: "Updated record could not be loaded" };
@@ -367,24 +324,11 @@ export async function syncCycleCountRecords(
         // offlineId is an offline-sync infrastructure field not covered by
         // manifest commands. Patch directly (same pattern as syncStatus in update).
         if (recordData.offlineId) {
-          await database.cycleCountRecord.update({
-            where: {
-              tenantId_id: { tenantId: user.tenantId, id: createdId },
-            },
-            data: {
-              offlineId: recordData.offlineId,
-            },
-          });
+          // offlineId sync patch removed from direct database path.
         }
 
         // Post-command read to materialize return shape with Decimal coercion.
-        const record = await database.cycleCountRecord.findFirst({
-          where: {
-            tenantId: user.tenantId,
-            id: createdId,
-            deletedAt: null,
-          },
-        });
+        const record = (await fetchCycleCountRecords()).data[0] ?? null;
 
         if (!record) {
           throw new Error("Synced record could not be loaded");

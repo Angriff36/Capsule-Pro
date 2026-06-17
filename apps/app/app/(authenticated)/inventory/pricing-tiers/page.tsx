@@ -1,5 +1,5 @@
+import { listPricingTiers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,22 +32,18 @@ export default async function PricingTiersPage() {
     redirect("/");
   }
 
-  const [total, active, inactive] = await Promise.all([
-    database.pricingTier.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.pricingTier.count({
-      where: { tenantId, deletedAt: null, isActive: true },
-    }),
-    database.pricingTier.count({
-      where: { tenantId, deletedAt: null, isActive: false },
-    }),
-  ]);
-
-  const avgUnitCost = await database.pricingTier.aggregate({
-    where: { tenantId, deletedAt: null, isActive: true },
-    _avg: { unitCost: true },
-  });
+  const pricingTiers = (await listPricingTiers()).data.filter(
+    (tier) => tier.tenantId === tenantId && !tier.deletedAt
+  );
+  const total = pricingTiers.length;
+  const activeTiers = pricingTiers.filter((tier) => tier.isActive !== false);
+  const active = activeTiers.length;
+  const inactive = total - active;
+  const avgUnitCost =
+    activeTiers.length > 0
+      ? activeTiers.reduce((sum, tier) => sum + Number(tier.unitCost ?? 0), 0) /
+        activeTiers.length
+      : 0;
 
   return (
     <PageCanvas>
@@ -93,10 +89,10 @@ export default async function PricingTiersPage() {
               <MetricLabel>Avg Unit Cost</MetricLabel>
               <MetricValue>
                 $
-                {Number(avgUnitCost._avg.unitCost ?? 0).toLocaleString(
-                  "en-US",
-                  { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                )}
+                {avgUnitCost.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </MetricValue>
               <p className="text-sm text-white/70">Across active tiers</p>
             </MetricCell>

@@ -1,3 +1,4 @@
+import type { ContractSignature, EventContract } from "@/app/lib/manifest-types.generated";
 /**
  * @module ContractDetailClient
  * @intent Client component for contract detail page with signature capture and actions
@@ -9,7 +10,6 @@
 
 "use client";
 
-import type { ContractSignature, EventContract } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {

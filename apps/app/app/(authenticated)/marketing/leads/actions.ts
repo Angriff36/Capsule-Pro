@@ -1,6 +1,7 @@
 "use server";
+import { listClients, listLeads } from "@/app/lib/manifest-client.generated";
+import type { Lead } from "@/app/lib/manifest-types.generated";
 
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -28,35 +29,24 @@ export interface CreateLeadInput {
 
 export interface CreateLeadResult {
   duplicateReason?: "client_email" | "lead_email";
-  lead: Awaited<ReturnType<typeof database.lead.create>>;
+  lead: Lead;
   // FR-129: when contactEmail matches an existing Client.email or Lead.contactEmail,
   // we create the lead anyway and surface a "POSSIBLE DUPLICATE" annotation.
   possibleDuplicate: boolean;
 }
 
 async function detectEmailDuplicate(
-  tenantId: string,
   contactEmail: string
 ): Promise<CreateLeadResult["duplicateReason"]> {
   const normalized = contactEmail.trim().toLowerCase();
   if (!normalized) {
     return;
   }
-  const clientHit = await database.client.findFirst({
-    where: { tenantId, email: { equals: normalized, mode: "insensitive" } },
-    select: { id: true },
-  });
+  const clientHit = (await listClients()).data[0] ?? null;
   if (clientHit) {
     return "client_email";
   }
-  const leadHit = await database.lead.findFirst({
-    where: {
-      tenantId,
-      deletedAt: null,
-      contactEmail: { equals: normalized, mode: "insensitive" },
-    },
-    select: { id: true },
-  });
+  const leadHit = (await listLeads()).data[0] ?? null;
   if (leadHit) {
     return "lead_email";
   }
@@ -88,7 +78,7 @@ export async function createLead(
   // This read precedes the governed write — reads may use Prisma (constitution §10).
   const contactEmail = input.contactEmail?.trim() || null;
   const duplicateReason = contactEmail
-    ? await detectEmailDuplicate(tenantId, contactEmail)
+    ? await detectEmailDuplicate(contactEmail)
     : undefined;
 
   // Governed write: Lead.create runs through the Manifest runtime — no direct
@@ -124,9 +114,7 @@ export async function createLead(
   invariant(createdId, "Lead.create did not return an id");
 
   // Read back the persisted row to preserve the CreateLeadResult.lead shape.
-  const lead = await database.lead.findFirst({
-    where: { tenantId, id: createdId },
-  });
+  const lead = (await listLeads()).data[0] ?? null;
   invariant(lead, "Created lead could not be loaded");
 
   revalidatePath("/marketing/leads");

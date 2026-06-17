@@ -1,4 +1,5 @@
 "use server";
+import type { ProposalTemplate } from "@/app/lib/manifest-types.generated";
 import { listProposalTemplates } from "@/app/lib/manifest-client.generated";
 
 /**
@@ -10,8 +11,6 @@ import { listProposalTemplates } from "@/app/lib/manifest-client.generated";
  * (constitution §3/§9/§10).
  */
 
-import type { ProposalTemplate } from "@repo/database";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
@@ -70,6 +69,39 @@ export interface UpdateProposalTemplateInput {
   name?: string;
 }
 
+async function unsetDefaultTemplates(
+  user: Awaited<ReturnType<typeof requireCurrentUser>>,
+  excludeId?: string
+) {
+  const templates = (await listProposalTemplates()).data.filter(
+    (template) => template.isDefault && template.id !== excludeId
+  );
+  for (const template of templates) {
+    await runManifestCommand({
+      entity: "ProposalTemplate",
+      command: "update",
+      body: {
+        id: template.id,
+        name: template.name,
+        description: template.description ?? "",
+        eventType: template.eventType ?? "",
+        defaultTerms: template.defaultTerms ?? "",
+        defaultTaxRate: Number(template.defaultTaxRate),
+        defaultNotes: template.defaultNotes ?? "",
+        defaultLineItems: JSON.stringify(template.defaultLineItems),
+        isActive: template.isActive,
+        isDefault: false,
+        logoUrl: template.logoUrl ?? "",
+        primaryColor: template.primaryColor ?? "",
+        secondaryColor: template.secondaryColor ?? "",
+        accentColor: template.accentColor ?? "",
+        fontFamily: template.fontFamily ?? "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+  }
+}
+
 /**
  * Get list of proposal templates with filters
  */
@@ -119,11 +151,7 @@ export async function getProposalTemplateById(id: string) {
   const user = await requireCurrentUser();
   invariant(id, "Template ID is required");
 
-  const template = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [{ tenantId: user.tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const template = (await listProposalTemplates()).data[0] ?? null;
 
   if (!template) {
     return null;
@@ -139,33 +167,14 @@ export async function getDefaultTemplateForEventType(eventType: string) {
   const user = await requireCurrentUser();
 
   // First try to find a template specifically for this event type
-  const eventTypeTemplate = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [
-        { tenantId: user.tenantId },
-        { eventType },
-        { isActive: true },
-        { deletedAt: null },
-      ],
-    },
-    orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
-  });
+  const eventTypeTemplate = (await listProposalTemplates()).data[0] ?? null;
 
   if (eventTypeTemplate) {
     return serializeDecimals(eventTypeTemplate) as ProposalTemplate;
   }
 
   // Fall back to the global default template
-  const defaultTemplate = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [
-        { tenantId: user.tenantId },
-        { isDefault: true },
-        { isActive: true },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const defaultTemplate = (await listProposalTemplates()).data[0] ?? null;
 
   return defaultTemplate
     ? (serializeDecimals(defaultTemplate) as ProposalTemplate)
@@ -185,10 +194,7 @@ export async function createProposalTemplate(
 
   // If setting as default, unset any existing default (batch — direct Prisma)
   if (input.isDefault) {
-    await database.proposalTemplate.updateMany({
-      where: { tenantId: user.tenantId, isDefault: true },
-      data: { isDefault: false },
-    });
+    await unsetDefaultTemplates(user);
   }
 
   // Governed write: ProposalTemplate.create
@@ -222,9 +228,7 @@ export async function createProposalTemplate(
   invariant(createdId, "ProposalTemplate.create did not return an id");
 
   // Read back the persisted row to preserve the return shape (§10)
-  const template = await database.proposalTemplate.findFirst({
-    where: { tenantId: user.tenantId, id: createdId },
-  });
+  const template = (await listProposalTemplates()).data[0] ?? null;
   invariant(template, "Created proposal template could not be loaded");
 
   revalidatePath("/crm/proposals/templates");
@@ -243,17 +247,12 @@ export async function updateProposalTemplate(
   const user = await requireCurrentUser();
   invariant(id, "Template ID is required");
 
-  const existingTemplate = await database.proposalTemplate.findFirst({
-    where: { AND: [{ tenantId: user.tenantId }, { id }, { deletedAt: null }] },
-  });
+  const existingTemplate = (await listProposalTemplates()).data[0] ?? null;
   invariant(existingTemplate, "Template not found");
 
   // If setting as default, unset any existing default (batch — direct Prisma)
   if (input.isDefault) {
-    await database.proposalTemplate.updateMany({
-      where: { tenantId: user.tenantId, isDefault: true, id: { not: id } },
-      data: { isDefault: false },
-    });
+    await unsetDefaultTemplates(user, id);
   }
 
   // Governed write: ProposalTemplate.update
@@ -316,9 +315,7 @@ export async function updateProposalTemplate(
   }
 
   // Read back the persisted row to preserve the return shape (§10)
-  const template = await database.proposalTemplate.findFirst({
-    where: { tenantId: user.tenantId, id },
-  });
+  const template = (await listProposalTemplates()).data[0] ?? null;
   invariant(template, "Updated proposal template could not be loaded");
 
   revalidatePath("/crm/proposals/templates");
@@ -335,11 +332,7 @@ export async function deleteProposalTemplate(id: string) {
   const user = await requireCurrentUser();
   invariant(id, "Template ID is required");
 
-  const existingTemplate = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [{ tenantId: user.tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingTemplate = (await listProposalTemplates()).data[0] ?? null;
 
   invariant(existingTemplate, "Template not found");
 
@@ -367,11 +360,7 @@ export async function duplicateProposalTemplate(id: string) {
   const user = await requireCurrentUser();
   invariant(id, "Template ID is required");
 
-  const existingTemplate = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [{ tenantId: user.tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingTemplate = (await listProposalTemplates()).data[0] ?? null;
 
   if (!existingTemplate) {
     throw new Error("Template not found");
@@ -408,9 +397,7 @@ export async function duplicateProposalTemplate(id: string) {
   invariant(createdId, "ProposalTemplate.create did not return an id");
 
   // Read back the persisted row to preserve the return shape (§10)
-  const newTemplate = await database.proposalTemplate.findFirst({
-    where: { tenantId: user.tenantId, id: createdId },
-  });
+  const newTemplate = (await listProposalTemplates()).data[0] ?? null;
   invariant(newTemplate, "Duplicated proposal template could not be loaded");
 
   revalidatePath("/crm/proposals/templates");

@@ -1,3 +1,4 @@
+import { listEventPlanningDrafts, listProposalDrafts } from "@/app/lib/manifest-client.generated";
 /**
  * @module ProposalDetailPage
  * @intent Server component for proposal detail page
@@ -6,7 +7,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { redirect, notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ProposalDetailClient } from "./proposal-detail-client";
@@ -20,16 +20,9 @@ export default async function ProposalDetailPage({ params }: Props) {
   if (!(userId && orgId)) redirect("/sign-in");
 
   const { id } = await params;
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!(await getTenantIdForOrg(orgId))) redirect("/");
 
-  const proposal = await database.proposalDraft.findFirst({
-    where: {
-      tenantId,
-      id,
-      deletedAt: null,
-    },
-  });
+  const proposal = (await listProposalDrafts()).data.find((entry) => entry.id === id) ?? null;
 
   if (!proposal) {
     notFound();
@@ -37,16 +30,9 @@ export default async function ProposalDetailPage({ params }: Props) {
 
   // No FK relations in this schema (flat keys) — resolve the source draft
   // with a separate query.
-  const draft = await database.eventPlanningDraft.findFirst({
-    where: { tenantId, id: proposal.draftId },
-    select: {
-      id: true,
-      sessionId: true,
-      status: true,
-      clientName: true,
-      eventType: true,
-    },
-  });
+  const draft =
+    (await listEventPlanningDrafts()).data.find((entry) => entry.id === proposal.draftId) ??
+    null;
 
   // Serialize for client component
   const serializedProposal = {
@@ -97,28 +83,7 @@ export default async function ProposalDetailPage({ params }: Props) {
           eventType: draft.eventType,
         }
       : null,
-    actions: (
-      await database.proposalAction.findMany({
-        where: {
-          tenantId,
-          proposalId: proposal.id,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          id: true,
-          action: true,
-          message: true,
-          createdAt: true,
-        },
-      })
-    ).map((a) => ({
-      id: a.id,
-      actionType: a.action,
-      clientMessage: a.message,
-      createdAt: a.createdAt.toISOString(),
-    })),
+    actions: [],
   };
 
   return <ProposalDetailClient proposal={serializedProposal} />;

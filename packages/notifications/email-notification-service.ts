@@ -8,7 +8,7 @@
  * - Multiple recipient support
  */
 
-import type { PrismaClient } from "@repo/database";
+import type { NotificationDatabase } from "./notification-database-port";
 import { renderEmailTemplate, validateTemplateData } from "./email-templates";
 import { keys } from "./keys";
 
@@ -77,7 +77,7 @@ function validateEmail(email: string): boolean {
  * Checks if a recipient has opted in to email notifications for a specific type
  */
 async function _checkOptInStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string | undefined,
   notificationType: string
@@ -105,7 +105,7 @@ async function _checkOptInStatus(
  * Creates a log entry for an email message
  */
 async function createEmailLog(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   recipient: EmailRecipient,
   subject: string,
@@ -141,7 +141,7 @@ async function createEmailLog(
  * Updates an email log entry with delivery status
  */
 async function updateEmailLog(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   logId: string,
   updates: {
@@ -219,7 +219,7 @@ async function sendSingleEmail(
  * Batch-check opt-in status for all employee recipients in a single query.
  */
 async function batchCheckOptInStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   recipients: EmailRecipient[],
   notificationType: string
@@ -250,7 +250,7 @@ async function batchCheckOptInStatus(
  * Main function to send email notifications
  */
 export async function sendEmailNotification(
-  database: PrismaClient,
+  database: NotificationDatabase,
   options: SendEmailOptions
 ): Promise<SendEmailResult[]> {
   const {
@@ -386,7 +386,7 @@ export async function sendEmailNotification(
  * Sends email using a stored email template
  */
 export async function sendEmailFromTemplate(
-  database: PrismaClient,
+  database: NotificationDatabase,
   options: {
     tenantId: string;
     templateId: string;
@@ -442,7 +442,7 @@ export async function sendEmailFromTemplate(
  * Updates email delivery status from Resend webhook callback
  */
 export async function updateEmailDeliveryStatus(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   resendId: string,
   newStatus: EmailStatus,
@@ -500,7 +500,7 @@ export async function updateEmailDeliveryStatus(
  * Gets email logs for a tenant with optional filtering
  */
 export async function getEmailLogs(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   options?: {
     workflowId?: string;
@@ -554,7 +554,7 @@ export async function getEmailLogs(
  * Sets email notification preference for an employee
  */
 export async function setEmailPreference(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string,
   notificationType: string,
@@ -587,7 +587,7 @@ export async function setEmailPreference(
  * Gets email notification preferences for an employee
  */
 export async function getEmailPreferences(
-  database: PrismaClient,
+  database: NotificationDatabase,
   tenantId: string,
   employeeId: string
 ): Promise<

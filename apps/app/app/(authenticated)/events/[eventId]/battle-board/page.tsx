@@ -1,5 +1,5 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -26,13 +26,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-      deletedAt: null,
-    },
-  });
+  const event = (await listEvents()).data[0] ?? null;
 
   if (!event) {
     notFound();

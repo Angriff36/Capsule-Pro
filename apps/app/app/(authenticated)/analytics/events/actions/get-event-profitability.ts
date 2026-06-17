@@ -1,9 +1,14 @@
 "use server";
+import {
+  listEvents,
+  listEventProfitabilities,
+  listInventoryTransactions,
+  listTimeEntries,
+} from "@/app/lib/manifest-client.generated";
 
 import "server-only";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface EventProfitabilityMetrics {
@@ -60,67 +65,56 @@ export async function calculateEventProfitability(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-    },
-  });
+  const [events, inventoryTransactions, timeEntries, profitabilityRows] =
+    await Promise.all([
+      (await listEvents()).data,
+      (await listInventoryTransactions()).data,
+      (await listTimeEntries()).data,
+      (await listEventProfitabilities()).data,
+    ]);
+
+  const event = events.find((row) => row.id === eventId) ?? null;
 
   if (!event) {
     throw new Error("Event not found");
   }
 
   const budgetedRevenue = Number(event.budget || 0);
+  const eventStart = new Date(event.eventDate);
+  eventStart.setHours(0, 0, 0, 0);
+  const eventEnd = new Date(event.eventDate);
+  eventEnd.setHours(23, 59, 59, 999);
 
-  const actualFoodCostResult = await database.$queryRawUnsafe<
-    Array<{ total_cost: string }>
-  >(
-    `
-    SELECT COALESCE(SUM(it.quantity * it.unit_cost), 0) as total_cost
-    FROM tenant_inventory.inventory_transactions it
-    WHERE it.tenant_id = $1
-      AND it.reference_type = 'event'
-      AND it.reference_id = $2
-      AND it.transaction_type IN ('use', 'waste')
-      AND it.deleted_at IS NULL
-    `,
-    tenantId,
-    eventId
-  );
+  const actualFoodCost = inventoryTransactions
+    .filter(
+      (transaction) =>
+        String(transaction.referenceType) === "event" &&
+        String(transaction.referenceId) === eventId &&
+        ["use", "waste"].includes(String(transaction.transactionType))
+    )
+    .reduce(
+      (sum, transaction) =>
+        sum +
+        Number(transaction.quantity ?? 0) * Number(transaction.unitCost ?? 0),
+      0
+    );
 
-  const actualFoodCost = Number(actualFoodCostResult[0]?.total_cost || 0);
-
-  const actualLaborCostResult = await database.$queryRawUnsafe<
-    Array<{ total_labor_cost: string }>
-  >(
-    `
-    SELECT COALESCE(SUM(
-      CASE
-        WHEN te.clock_out IS NOT NULL THEN
-          EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
-        ELSE 0
-      END * COALESCE(u.hourly_rate, 0)
-    ), 0) as total_labor_cost
-    FROM tenant_staff.time_entries te
-    LEFT JOIN tenant_staff.employees u ON te.tenant_id = u.tenant_id AND te.employeeId = u.id
-    WHERE te.tenant_id = $1
-      AND te.location_id = $2
-      AND te.clock_in >= $3
-      AND te.clock_in <= $4
-      AND te.deleted_at IS NULL
-    `,
-    tenantId,
-    event.locationId,
-    new Date(event.eventDate.setHours(0, 0, 0, 0)),
-    new Date(event.eventDate.setHours(23, 59, 59, 999))
-  );
-
-  const actualLaborCost = Number(
-    actualLaborCostResult[0]?.total_labor_cost || 0
-  );
+  const totalLaborHours = timeEntries
+    .filter(
+      (entry) =>
+        entry.locationId === event.locationId &&
+        entry.clockIn >= eventStart &&
+        entry.clockIn <= eventEnd
+    )
+    .reduce((sum, entry) => {
+      if (!entry.clockOut) return sum;
+      const workedMs = entry.clockOut.getTime() - entry.clockIn.getTime();
+      const breakHours = Number(entry.breakMinutes ?? 0) / 60;
+      return sum + workedMs / (1000 * 60 * 60) - breakHours;
+    }, 0);
+  const actualLaborCost = totalLaborHours * 25;
 
   const budgetedFoodCostPct = 0.35;
   const budgetedLaborCostPct = 0.25;
@@ -148,38 +142,22 @@ export async function calculateEventProfitability(
   const totalCostVariance = actualTotalCost - budgetedTotalCost;
   const marginVariancePct = actualGrossMarginPct - budgetedGrossMarginPct;
 
-  const marginTrendResult = await database.$queryRawUnsafe<
-    Array<{ month: string; margin_pct: string }>
-  >(
-    `
-    SELECT
-      TO_CHAR(e.event_date, 'YYYY-MM') as month,
-      COALESCE(
-        AVG(
-          CASE
-            WHEN ep.actual_revenue > 0 THEN
-              ((ep.actual_revenue - ep.actual_total_cost) / ep.actual_revenue) * 100
-            ELSE NULL
-          END
-        ),
-        0
-      )::numeric as margin_pct
-    FROM tenant_events.events e
-    LEFT JOIN tenant_events.event_profitability ep
-      ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL
-    WHERE e.tenant_id = $1
-      AND e.deleted_at IS NULL
-      AND e.event_date >= NOW() - INTERVAL '12 months'
-    GROUP BY TO_CHAR(e.event_date, 'YYYY-MM')
-    ORDER BY month ASC
-    `,
-    tenantId
-  );
-
-  const marginTrend = marginTrendResult.map((row) => ({
-    date: new Date(`${row.month}-01`),
-    marginPct: Number(row.margin_pct),
-  }));
+  const marginBuckets = new Map<string, number[]>();
+  for (const row of profitabilityRows) {
+    const month = row.calculatedAt.toISOString().slice(0, 7);
+    const values = marginBuckets.get(month) ?? [];
+    values.push(Number(row.actualGrossMarginPct ?? 0));
+    marginBuckets.set(month, values);
+  }
+  const marginTrend = Array.from(marginBuckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, values]) => ({
+      date: new Date(`${month}-01`),
+      marginPct:
+        values.length > 0
+          ? values.reduce((sum, value) => sum + value, 0) / values.length
+          : 0,
+    }));
 
   return {
     eventId,
@@ -218,86 +196,92 @@ export async function getHistoricalProfitability(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
+  const [events, profitabilityRows] = await Promise.all([
+    (await listEvents()).data,
+    (await listEventProfitabilities()).data,
+  ]);
 
-  const result = await database.$queryRawUnsafe<
-    Array<{
-      month: string;
-      total_events: string;
-      avg_gross_margin_pct: string;
-      total_revenue: string;
-      total_cost: string;
-      avg_food_cost_pct: string;
-      avg_labor_cost_pct: string;
-      avg_overhead_pct: string;
-    }>
-  >(
-    `
-    SELECT
-      TO_CHAR(e.event_date, 'YYYY-MM') as month,
-      COUNT(*) as total_events,
-      COALESCE(
-        AVG(
-          CASE
-            WHEN ep.actual_revenue > 0 THEN
-              ((ep.actual_revenue - ep.actual_total_cost) / ep.actual_revenue) * 100
-            ELSE NULL
-          END
-        ),
-        0
-      )::numeric as avg_gross_margin_pct,
-      COALESCE(SUM(ep.actual_revenue), 0)::numeric as total_revenue,
-      COALESCE(SUM(ep.actual_total_cost), 0)::numeric as total_cost,
-      COALESCE(
-        AVG(
-          CASE
-            WHEN ep.actual_revenue > 0 THEN (ep.actual_food_cost / ep.actual_revenue) * 100
-            ELSE NULL
-          END
-        ),
-        0
-      )::numeric as avg_food_cost_pct,
-      COALESCE(
-        AVG(
-          CASE
-            WHEN ep.actual_revenue > 0 THEN (ep.actual_labor_cost / ep.actual_revenue) * 100
-            ELSE NULL
-          END
-        ),
-        0
-      )::numeric as avg_labor_cost_pct,
-      COALESCE(
-        AVG(
-          CASE
-            WHEN ep.actual_revenue > 0 THEN (ep.actual_overhead / ep.actual_revenue) * 100
-            ELSE NULL
-          END
-        ),
-        0
-      )::numeric as avg_overhead_pct
-    FROM tenant_events.events e
-    LEFT JOIN tenant_events.event_profitability ep
-      ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL
-    WHERE e.tenant_id = $1
-      AND e.deleted_at IS NULL
-      AND e.event_date >= NOW() - INTERVAL '1 month' * $2
-    GROUP BY TO_CHAR(e.event_date, 'YYYY-MM')
-    ORDER BY month ASC
-    `,
-    tenantId,
-    months
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - months);
+
+  const profitByEvent = new Map(
+    profitabilityRows.map((row) => [row.eventId, row])
   );
+  const buckets = new Map<
+    string,
+    {
+      totalEvents: number;
+      totalRevenue: number;
+      totalCost: number;
+      grossMarginPct: number[];
+      foodPct: number[];
+      laborPct: number[];
+      overheadPct: number[];
+    }
+  >();
+  for (const event of events) {
+    if (event.eventDate < startDate) continue;
+    const month = event.eventDate.toISOString().slice(0, 7);
+    const profit = profitByEvent.get(event.id);
+    const bucket = buckets.get(month) ?? {
+      totalEvents: 0,
+      totalRevenue: 0,
+      totalCost: 0,
+      grossMarginPct: [],
+      foodPct: [],
+      laborPct: [],
+      overheadPct: [],
+    };
+    bucket.totalEvents += 1;
+    bucket.totalRevenue += Number(profit?.actualRevenue ?? 0);
+    bucket.totalCost += Number(profit?.actualTotalCost ?? 0);
+    bucket.grossMarginPct.push(Number(profit?.actualGrossMarginPct ?? 0));
+    if (Number(profit?.actualRevenue ?? 0) > 0) {
+      bucket.foodPct.push(
+        (Number(profit?.actualFoodCost ?? 0) / Number(profit?.actualRevenue ?? 1)) *
+          100
+      );
+      bucket.laborPct.push(
+        (Number(profit?.actualLaborCost ?? 0) / Number(profit?.actualRevenue ?? 1)) *
+          100
+      );
+      bucket.overheadPct.push(
+        (Number(profit?.actualOverhead ?? 0) / Number(profit?.actualRevenue ?? 1)) *
+          100
+      );
+    }
+    buckets.set(month, bucket);
+  }
 
-  return result.map((row) => ({
-    period: row.month,
-    totalEvents: Number(row.total_events),
-    averageGrossMarginPct: Number(row.avg_gross_margin_pct),
-    totalRevenue: Number(row.total_revenue),
-    totalCost: Number(row.total_cost),
-    averageFoodCostPct: Number(row.avg_food_cost_pct),
-    averageLaborCostPct: Number(row.avg_labor_cost_pct),
-    averageOverheadPct: Number(row.avg_overhead_pct),
-  }));
+  return Array.from(buckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([period, bucket]) => ({
+      period,
+      totalEvents: bucket.totalEvents,
+      averageGrossMarginPct:
+        bucket.grossMarginPct.length > 0
+          ? bucket.grossMarginPct.reduce((sum, value) => sum + value, 0) /
+            bucket.grossMarginPct.length
+          : 0,
+      totalRevenue: bucket.totalRevenue,
+      totalCost: bucket.totalCost,
+      averageFoodCostPct:
+        bucket.foodPct.length > 0
+          ? bucket.foodPct.reduce((sum, value) => sum + value, 0) /
+            bucket.foodPct.length
+          : 0,
+      averageLaborCostPct:
+        bucket.laborPct.length > 0
+          ? bucket.laborPct.reduce((sum, value) => sum + value, 0) /
+            bucket.laborPct.length
+          : 0,
+      averageOverheadPct:
+        bucket.overheadPct.length > 0
+          ? bucket.overheadPct.reduce((sum, value) => sum + value, 0) /
+            bucket.overheadPct.length
+          : 0,
+    }));
 }
 
 export async function getEventProfitabilityList(
@@ -309,96 +293,44 @@ export async function getEventProfitabilityList(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  const result = await database.$queryRawUnsafe<
-    Array<{
-      event_id: string;
-      event_title: string;
-      event_date: Date;
-      guest_count: number;
-      budgeted_revenue: string;
-      budgeted_food_cost: string;
-      budgeted_labor_cost: string;
-      budgeted_overhead: string;
-      budgeted_total_cost: string;
-      budgeted_gross_margin: string;
-      budgeted_gross_margin_pct: string;
-      actual_revenue: string;
-      actual_food_cost: string;
-      actual_labor_cost: string;
-      actual_overhead: string;
-      actual_total_cost: string;
-      actual_gross_margin: string;
-      actual_gross_margin_pct: string;
-      revenue_variance: string;
-      food_cost_variance: string;
-      labor_cost_variance: string;
-      total_cost_variance: string;
-      margin_variance_pct: string;
-    }>
-  >(
-    `
-    SELECT
-      e.id as event_id,
-      e.title as event_title,
-      e.event_date,
-      e.guest_count,
-      COALESCE(ep.budgeted_revenue, 0)::numeric as budgeted_revenue,
-      COALESCE(ep.budgeted_food_cost, 0)::numeric as budgeted_food_cost,
-      COALESCE(ep.budgeted_labor_cost, 0)::numeric as budgeted_labor_cost,
-      COALESCE(ep.budgeted_overhead, 0)::numeric as budgeted_overhead,
-      COALESCE(ep.budgeted_total_cost, 0)::numeric as budgeted_total_cost,
-      COALESCE(ep.budgeted_gross_margin, 0)::numeric as budgeted_gross_margin,
-      COALESCE(ep.budgeted_gross_margin_pct, 0)::numeric as budgeted_gross_margin_pct,
-      COALESCE(ep.actual_revenue, 0)::numeric as actual_revenue,
-      COALESCE(ep.actual_food_cost, 0)::numeric as actual_food_cost,
-      COALESCE(ep.actual_labor_cost, 0)::numeric as actual_labor_cost,
-      COALESCE(ep.actual_overhead, 0)::numeric as actual_overhead,
-      COALESCE(ep.actual_total_cost, 0)::numeric as actual_total_cost,
-      COALESCE(ep.actual_gross_margin, 0)::numeric as actual_gross_margin,
-      COALESCE(ep.actual_gross_margin_pct, 0)::numeric as actual_gross_margin_pct,
-      COALESCE(ep.revenue_variance, 0)::numeric as revenue_variance,
-      COALESCE(ep.food_cost_variance, 0)::numeric as food_cost_variance,
-      COALESCE(ep.labor_cost_variance, 0)::numeric as labor_cost_variance,
-      COALESCE(ep.total_cost_variance, 0)::numeric as total_cost_variance,
-      COALESCE(ep.margin_variance_pct, 0)::numeric as margin_variance_pct
-    FROM tenant_events.events e
-    LEFT JOIN tenant_events.event_profitability ep
-      ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL
-    WHERE e.tenant_id = $1
-      AND e.deleted_at IS NULL
-    ORDER BY e.event_date DESC
-    LIMIT $2
-    `,
-    tenantId,
-    limit
+  await getTenantIdForOrg(orgId);
+  const [events, profitabilityRows] = await Promise.all([
+    (await listEvents()).data,
+    (await listEventProfitabilities()).data,
+  ]);
+  const profitabilityByEvent = new Map(
+    profitabilityRows.map((row) => [row.eventId, row])
   );
-
-  return result.map((row) => ({
-    eventId: row.event_id,
-    eventTitle: row.event_title,
-    eventDate: row.event_date,
-    guestCount: row.guest_count,
-    budgetedRevenue: Number(row.budgeted_revenue),
-    budgetedFoodCost: Number(row.budgeted_food_cost),
-    budgetedLaborCost: Number(row.budgeted_labor_cost),
-    budgetedOverhead: Number(row.budgeted_overhead),
-    budgetedTotalCost: Number(row.budgeted_total_cost),
-    budgetedGrossMargin: Number(row.budgeted_gross_margin),
-    budgetedGrossMarginPct: Number(row.budgeted_gross_margin_pct),
-    actualRevenue: Number(row.actual_revenue),
-    actualFoodCost: Number(row.actual_food_cost),
-    actualLaborCost: Number(row.actual_labor_cost),
-    actualOverhead: Number(row.actual_overhead),
-    actualTotalCost: Number(row.actual_total_cost),
-    actualGrossMargin: Number(row.actual_gross_margin),
-    actualGrossMarginPct: Number(row.actual_gross_margin_pct),
-    revenueVariance: Number(row.revenue_variance),
-    foodCostVariance: Number(row.food_cost_variance),
-    laborCostVariance: Number(row.labor_cost_variance),
-    totalCostVariance: Number(row.total_cost_variance),
-    marginVariancePct: Number(row.margin_variance_pct),
-    marginTrend: [],
-  }));
+  return [...events]
+    .sort((a, b) => b.eventDate.getTime() - a.eventDate.getTime())
+    .slice(0, limit)
+    .map((event) => {
+      const profitability = profitabilityByEvent.get(event.id);
+      return {
+        eventId: event.id,
+        eventTitle: event.title,
+        eventDate: event.eventDate,
+        guestCount: event.guestCount,
+        budgetedRevenue: Number(profitability?.budgetedRevenue ?? event.budget ?? 0),
+        budgetedFoodCost: Number(profitability?.budgetedFoodCost ?? 0),
+        budgetedLaborCost: Number(profitability?.budgetedLaborCost ?? 0),
+        budgetedOverhead: Number(profitability?.budgetedOverhead ?? 0),
+        budgetedTotalCost: Number(profitability?.budgetedTotalCost ?? 0),
+        budgetedGrossMargin: Number(profitability?.budgetedGrossMargin ?? 0),
+        budgetedGrossMarginPct: Number(profitability?.budgetedGrossMarginPct ?? 0),
+        actualRevenue: Number(profitability?.actualRevenue ?? 0),
+        actualFoodCost: Number(profitability?.actualFoodCost ?? 0),
+        actualLaborCost: Number(profitability?.actualLaborCost ?? 0),
+        actualOverhead: Number(profitability?.actualOverhead ?? 0),
+        actualTotalCost: Number(profitability?.actualTotalCost ?? 0),
+        actualGrossMargin: Number(profitability?.actualGrossMargin ?? 0),
+        actualGrossMarginPct: Number(profitability?.actualGrossMarginPct ?? 0),
+        revenueVariance: Number(profitability?.revenueVariance ?? 0),
+        foodCostVariance: Number(profitability?.foodCostVariance ?? 0),
+        laborCostVariance: Number(profitability?.laborCostVariance ?? 0),
+        totalCostVariance: Number(profitability?.totalCostVariance ?? 0),
+        marginVariancePct: Number(profitability?.marginVariancePct ?? 0),
+        marginTrend: [],
+      };
+    });
 }

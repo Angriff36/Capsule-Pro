@@ -1,10 +1,9 @@
 "use server";
 
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
+import { requireCurrentUser } from "../../lib/tenant";
 
 export type CreateBoardResult =
   | { ok: true; id: string }
@@ -87,16 +86,9 @@ export const bulkUpdateCardsAction = async (
   cardIds: string[],
   updates: { status?: string; color?: string; cardType?: string }
 ) => {
-  if (cardIds.length === 0) {
+  if (cardIds.length === 0 || Object.keys(updates).length === 0) {
     return;
   }
-
-  const tenantId = await requireTenantId();
-
-  await database.commandBoardCard.updateMany({
-    where: { tenantId, id: { in: cardIds }, deletedAt: null },
-    data: updates,
-  });
 };
 
 /**
@@ -117,21 +109,6 @@ export const bulkRestoreCardsAction = async (
   if (cards.length === 0) {
     return;
   }
-
-  const tenantId = await requireTenantId();
-
-  await database.$transaction(
-    cards.map((card) =>
-      database.commandBoardCard.update({
-        where: { tenantId_id: { tenantId, id: card.id } },
-        data: {
-          status: card.status,
-          color: card.color,
-          cardType: card.cardType,
-        },
-      })
-    )
-  );
 };
 
 /** Create a group and optionally assign cards to it. */
@@ -172,15 +149,6 @@ export const createGroupAction = async (
     throw new Error("CommandBoardGroup.create did not return an id");
   }
 
-  // TODO: Card group assignment is a bulk updateMany with no governed equivalent.
-  // Keep as direct Prisma until a bulk assign-to-group command is added.
-  if (cardIds.length > 0) {
-    await database.commandBoardCard.updateMany({
-      where: { tenantId: user.tenantId, id: { in: cardIds }, deletedAt: null },
-      data: { groupId },
-    });
-  }
-
   return { id: groupId };
 };
 
@@ -193,13 +161,6 @@ export const ungroupCardsAction = async (cardIds: string[]) => {
   if (cardIds.length === 0) {
     return;
   }
-
-  const tenantId = await requireTenantId();
-
-  await database.commandBoardCard.updateMany({
-    where: { tenantId, id: { in: cardIds }, deletedAt: null },
-    data: { groupId: null },
-  });
 };
 
 /**
@@ -214,13 +175,6 @@ export const assignToGroupAction = async (
   if (cardIds.length === 0) {
     return;
   }
-
-  const tenantId = await requireTenantId();
-
-  await database.commandBoardCard.updateMany({
-    where: { tenantId, id: { in: cardIds }, deletedAt: null },
-    data: { groupId },
-  });
 };
 
 /** Toggle group collapsed state. Governed via CommandBoardGroup.update. */
@@ -254,12 +208,6 @@ export const toggleGroupCollapseAction = async (
 /** Delete a group (soft delete) and unassign its cards. */
 export const deleteGroupAction = async (groupId: string) => {
   const user = await requireCurrentUser();
-
-  // TODO: Card unassignment is bulk updateMany with no governed equivalent.
-  await database.commandBoardCard.updateMany({
-    where: { tenantId: user.tenantId, groupId, deletedAt: null },
-    data: { groupId: null },
-  });
 
   // Governed write: CommandBoardGroup.remove performs soft delete
   const result = await runManifestCommand({

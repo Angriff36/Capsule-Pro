@@ -1,6 +1,5 @@
 import { listSmsAutomationRules } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -32,14 +31,10 @@ export default async function SmsRulesPage() {
     redirect("/sign-in");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const [rules, activeCount] = await Promise.all([
-    (await listSmsAutomationRules()).data,
-    database.sms_automation_rules.count({
-      where: { tenant_id: tenantId, deleted_at: null, is_active: true },
-    }),
-  ]);
+  const rules = (await listSmsAutomationRules()).data;
+  const activeCount = rules.filter((rule) => rule.is_active).length;
 
   const inactiveCount = rules.length - activeCount;
 

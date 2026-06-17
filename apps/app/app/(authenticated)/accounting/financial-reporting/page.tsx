@@ -1,5 +1,5 @@
+import { listInvoices, listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -35,64 +35,37 @@ export default async function FinancialReportingPage() {
     redirect("/");
   }
 
-  const [
-    revenueAgg,
-    expenseInvoicesAgg,
-    paidInvoicesCount,
-    overdueInvoicesCount,
-    collectedPaymentsAgg,
-    pendingPaymentsAgg,
-  ] = await Promise.all([
-    database.invoice.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["PAID", "PARTIALLY_PAID", "SENT", "VIEWED"] },
-      },
-      _sum: { total: true },
-    }),
-    database.invoice.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["VOID", "WRITE_OFF"] },
-      },
-      _sum: { discountAmount: true },
-    }),
-    database.invoice.count({
-      where: { tenantId, deletedAt: null, status: "PAID" },
-    }),
-    database.invoice.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        dueDate: { lt: new Date() },
-        status: { in: ["SENT", "VIEWED", "PARTIALLY_PAID", "OVERDUE"] },
-      },
-    }),
-    database.payment.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "COMPLETED",
-      },
-      _sum: { amount: true },
-    }),
-    database.payment.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["PENDING", "PROCESSING"] },
-      },
-      _sum: { amount: true },
-    }),
+  const [invoices, payments] = await Promise.all([
+    (await listInvoices()).data,
+    (await listPayments()).data,
   ]);
 
-  const totalRevenue = Number(revenueAgg._sum.total ?? 0);
-  const totalExpenses = Number(expenseInvoicesAgg._sum.discountAmount ?? 0);
+  const paidInvoicesCount = invoices.filter((invoice) =>
+    ["PAID", "PARTIALLY_PAID"].includes(String(invoice.status))
+  ).length;
+  const overdueInvoicesCount = invoices.filter(
+    (invoice) =>
+      Number(invoice.amountDue ?? 0) > 0 &&
+      invoice.dueDate < new Date() &&
+      !["VOID", "PAID"].includes(String(invoice.status))
+  ).length;
+  const totalRevenue = invoices
+    .filter((invoice) =>
+      ["PAID", "PARTIALLY_PAID", "SENT", "VIEWED"].includes(
+        String(invoice.status)
+      )
+    )
+    .reduce((sum, invoice) => sum + Number(invoice.total ?? 0), 0);
+  const totalExpenses = invoices
+    .filter((invoice) => ["VOID", "WRITE_OFF"].includes(String(invoice.status)))
+    .reduce((sum, invoice) => sum + Number(invoice.discountAmount ?? 0), 0);
   const netIncome = totalRevenue - totalExpenses;
-  const collectedPayments = Number(collectedPaymentsAgg._sum.amount ?? 0);
-  const pendingPayments = Number(pendingPaymentsAgg._sum.amount ?? 0);
+  const collectedPayments = payments
+    .filter((payment) => String(payment.status) === "COMPLETED")
+    .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+  const pendingPayments = payments
+    .filter((payment) => ["PENDING", "PROCESSING"].includes(String(payment.status)))
+    .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
 
   return (
     <PageCanvas>

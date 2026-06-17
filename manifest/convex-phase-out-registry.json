@@ -41,16 +41,8 @@
     "description": "Useful behavior — reimplement via generated Convex mutations/queries, not Prisma.",
     "items": [
       {
-        "id": "sentry-job-store",
-        "paths": ["packages/sentry-integration/src/prisma-store.ts"]
-      },
-      {
         "id": "supplier-sync",
         "paths": ["packages/supplier-connectors/src/sync-service.ts"]
-      },
-      {
-        "id": "payroll-data-source",
-        "paths": ["packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts"]
       },
       {
         "id": "mcp-identity",

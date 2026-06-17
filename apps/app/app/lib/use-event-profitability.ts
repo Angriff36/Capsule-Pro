@@ -11,8 +11,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  eventProfitabilityRecalculate,
   getEventProfitability,
   listEventProfitabilities,
 } from "@/app/lib/manifest-client.generated";
@@ -70,8 +70,6 @@ export interface ProfitabilitySummary {
 // API Functions
 // ---------------------------------------------------------------------------
 
-const API_BASE = "/api/events/profitability";
-
 export async function fetchProfitabilities(): Promise<
   EventProfitabilityRecord[]
 > {
@@ -89,22 +87,14 @@ export async function fetchProfitabilityById(
   return result as unknown as EventProfitabilityRecord;
 }
 
-// NOTE: Keeping apiFetch for recalculate command (no generated equivalent for custom command endpoint)
 export async function recalculateProfitability(
   id: string
 ): Promise<{ success: boolean }> {
-  const response = await apiFetch(`${API_BASE}/commands/recalculate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ instanceId: id }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to recalculate profitability");
+  const result = await eventProfitabilityRecalculate({ id });
+  if (!result) {
+    throw new Error("Failed to recalculate profitability");
   }
-
-  return await response.json();
+  return { success: true };
 }
 
 // ---------------------------------------------------------------------------

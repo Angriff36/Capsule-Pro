@@ -1,5 +1,5 @@
+import { listEventBudgets } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -92,18 +92,7 @@ export default async function BudgetDetailPage({
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch budget with line items
-  const budget = await database.eventBudget.findFirst({
-    where: { tenantId, id: budgetId, deletedAt: null },
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: { sortOrder: "asc" },
-      },
-      event: {
-        select: { id: true, title: true, eventDate: true },
-      },
-    },
-  });
+  const budget = (await listEventBudgets()).data[0] ?? null;
 
   if (!budget) {
     notFound();

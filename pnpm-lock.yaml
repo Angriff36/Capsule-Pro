@@ -23,8 +23,8 @@ importers:
         version: 2.4.5
     devDependencies:
       '@angriff36/manifest':
-        specifier: 2.9.0
-        version: 2.9.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.10.7
+        version: 2.10.7(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@auto-it/first-time-contributor':
         specifier: ^11.3.6
         version: 11.3.6(@types/node@25.9.1)(typescript@6.0.3)
@@ -749,8 +749,8 @@ importers:
         specifier: ^3.0.71
         version: 3.0.71(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 2.8.0
-        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.10.7
+        version: 2.10.7(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)
       '@repo/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
@@ -1236,17 +1236,11 @@ importers:
   packages/mcp-server:
     dependencies:
       '@angriff36/manifest':
-        specifier: 2.8.0
-        version: 2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.10.7
+        version: 2.10.7(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(@cfworker/json-schema@4.1.1)(zod@4.4.3)
-      '@neondatabase/serverless':
-        specifier: ^1.1.0
-        version: 1.1.0
-      '@prisma/adapter-neon':
-        specifier: 7.8.0
-        version: 7.8.0
       '@repo/manifest-runtime':
         specifier: workspace:*
         version: link:../../manifest/runtime
@@ -1256,9 +1250,6 @@ importers:
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
-      ws:
-        specifier: ^8.21.0
-        version: 8.21.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -1757,8 +1748,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@2.8.0':
-    resolution: {integrity: sha512-QW5CNCWTqGtgGMAzdec7oRshNsQFgKu6qrFY0mFQ8+oEpm7WIs+T8jnrObE16tvrpEhYsl3O4H5zubpyfyZBxw==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.8.0/e6e999fc5cf886585adab0c08beb5a1e8a642138}
+  '@angriff36/manifest@2.10.7':
+    resolution: {integrity: sha512-MTi38EraQIbQP1nSSVsoS2YC/08XW+IDmeDmY56TmvY4VUd3g1LBNBvAhvM6h66KTWrZPnUOvQ/90U6DrjVIxQ==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.10.7/253577ef1a9dfc44e6a0042336a8bb619b948b41}
     hasBin: true
     peerDependencies:
       '@assemblyscript/loader': ^0.27
@@ -1766,38 +1757,6 @@ packages:
       '@supabase/supabase-js': ^2
       ioredis: ^5
       mongodb: ^6
-    peerDependenciesMeta:
-      '@assemblyscript/loader':
-        optional: true
-      '@libsql/client':
-        optional: true
-      '@supabase/supabase-js':
-        optional: true
-      ioredis:
-        optional: true
-      mongodb:
-        optional: true
-
-  '@angriff36/manifest@2.9.0':
-    resolution: {integrity: sha512-iEwBFVEPAGUFlBZgq6+iWWAYDx74SBkFkkMNQWrTMSVxNqUh2H+DAB6zgiam7tPM59o1mD0ey8fykTzr2eEFUA==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.9.0/2cfdef92974adf564944098a14b83ea56fdd6656}
-    hasBin: true
-    peerDependencies:
-      '@assemblyscript/loader': ^0.27
-      '@libsql/client': '>=0.14'
-      '@supabase/supabase-js': ^2
-      ioredis: ^5
-      mongodb: ^6
-    peerDependenciesMeta:
-      '@assemblyscript/loader':
-        optional: true
-      '@libsql/client':
-        optional: true
-      '@supabase/supabase-js':
-        optional: true
-      ioredis:
-        optional: true
-      mongodb:
-        optional: true
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
@@ -4508,8 +4467,8 @@ packages:
   '@libsql/client@0.17.3':
     resolution: {integrity: sha512-HXk9wiAoJbKFbyBH4O+aEhN6ir5ERXuXvwE5OD2eR4/5RUa3Pw/8L9zrnVdU+iNJitRvisPWaIwmhkO3bH7giA==}
 
-  '@libsql/core@0.17.3':
-    resolution: {integrity: sha512-2UjK1i7JBkMduJo4WdvvBxMMvVJ31pArBZNONyz/GCJJAH+1UHat2X6vn10S/WpY5fKzIT98WqYFl2vzWRLOfg==}
+  '@libsql/core@0.17.4':
+    resolution: {integrity: sha512-LqF9gIvnJ38nmAH1y/ChizHqDO/MO1wLgA96XrraulEEbqXxLjleSH92YWTolbuJKgPUmGu4aJk9W3UnAcxLOQ==}
 
   '@libsql/darwin-arm64@0.5.29':
     resolution: {integrity: sha512-K+2RIB1OGFPYQbfay48GakLhqf3ArcbHqPFu7EZiaUcRgFcdw8RoltsMyvbj5ix2fY0HV3Q3Ioa/ByvQdaSM0A==}
@@ -4775,10 +4734,6 @@ packages:
 
   '@neon-rs/load@0.0.4':
     resolution: {integrity: sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw==}
-
-  '@neondatabase/serverless@1.1.0':
-    resolution: {integrity: sha512-r3ZZhRjEcfEdKIZnoB1RusNgvHuaBRqfCzV4Gi+5A9yUX0S4HTws/ASWqt13wL4y4I+0rqsWGdA2w7EQXHi3+Q==}
-    engines: {node: '>=19.0.0'}
 
   '@next/bundle-analyzer@16.2.6':
     resolution: {integrity: sha512-amPkVtHCTJAdBwyhhl5+qztHk24O4JlASgrWqh15AmnYi74apfZR46NGC0u4pM6BMAU1mYld4WdzD3cRBP3dOA==}
@@ -5521,15 +5476,6 @@ packages:
     peerDependencies:
       next: '*'
       react: 19.2.7
-
-  '@prisma/adapter-neon@7.8.0':
-    resolution: {integrity: sha512-9MoOjRuY53sQNyji87u1NivsK0tIacoUE3PqTxdG95b7ORn1pzwribH2z83j4Vh3eb9nQ/UC+MTfVW7jCFnXlA==}
-
-  '@prisma/debug@7.8.0':
-    resolution: {integrity: sha512-p+QZReysDUqXC+mk17q9a+Y/qzh4c2KYliDK30buYUyfrGeTGSyfmc0AIrJRhZJrLHhRiJa9Au/J72h3C+szvA==}
-
-  '@prisma/driver-adapter-utils@7.8.0':
-    resolution: {integrity: sha512-/Q13o0ZT0rjc1Xk0Q9KhZYwuq2EW/vSbWUBKfgEKkaCuB/Sg6bqnjmTZqC5cD4d6y1vfFAEwBRzfzoSMIVJ55A==}
 
   '@radix-ui/number@1.1.2':
     resolution: {integrity: sha512-ceTwaxc4I5IOi97DgCotl3pqiyRGvffcc0oOsE2dQYaJOFIDsDt4VWG6xEbg1QePv9QWausCEIppud/tJ1wNig==}
@@ -13850,10 +13796,6 @@ packages:
     resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
     engines: {node: '>=4'}
 
-  postgres-array@3.0.4:
-    resolution: {integrity: sha512-nAUSGfSDGOaOAEGwqsRY27GPOea7CNipJPOA7lPbdEpx5Kg3qzdP0AaWC5MlhTWV9s4hFX39nomVZ+C4tnGOJQ==}
-    engines: {node: '>=12'}
-
   postgres-bytea@1.0.1:
     resolution: {integrity: sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==}
     engines: {node: '>=0.10.0'}
@@ -16514,90 +16456,58 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
+  '@angriff36/manifest@2.10.7(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
     dependencies:
+      '@assemblyscript/loader': 0.27.37
+      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@modelcontextprotocol/sdk': 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       '@msgpack/msgpack': 3.1.3
+      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@types/pg': 8.20.0
       ajv: 8.20.0
       chalk: 5.6.2
       commander: 12.1.0
       glob: 10.5.0
       inquirer: 9.3.8(@types/node@25.9.1)
+      ioredis: 5.11.1
       jiti: 2.7.0
       js-yaml: 4.2.0
+      mongodb: 6.21.0
       ora: 8.2.0
       pg: 8.21.0
       typescript: 5.9.3
       vscode-languageserver: 9.0.1
       vscode-languageserver-textdocument: 1.0.12
       zod: 3.25.76
-    optionalDependencies:
-      '@assemblyscript/loader': 0.27.37
-      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      ioredis: 5.11.1
-      mongodb: 6.21.0
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@types/node'
       - pg-native
       - supports-color
 
-  '@angriff36/manifest@2.8.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)':
+  '@angriff36/manifest@2.10.7(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.3)(ioredis@5.11.1)(mongodb@6.21.0)':
     dependencies:
+      '@assemblyscript/loader': 0.27.37
+      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@modelcontextprotocol/sdk': 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       '@msgpack/msgpack': 3.1.3
+      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@types/pg': 8.20.0
       ajv: 8.20.0
       chalk: 5.6.2
       commander: 12.1.0
       glob: 10.5.0
       inquirer: 9.3.8(@types/node@25.9.3)
+      ioredis: 5.11.1
       jiti: 2.7.0
       js-yaml: 4.2.0
+      mongodb: 6.21.0
       ora: 8.2.0
       pg: 8.21.0
       typescript: 5.9.3
       vscode-languageserver: 9.0.1
       vscode-languageserver-textdocument: 1.0.12
       zod: 3.25.76
-    optionalDependencies:
-      '@assemblyscript/loader': 0.27.37
-      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      ioredis: 5.11.1
-      mongodb: 6.21.0
-    transitivePeerDependencies:
-      - '@cfworker/json-schema'
-      - '@types/node'
-      - pg-native
-      - supports-color
-
-  '@angriff36/manifest@2.9.0(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
-      '@msgpack/msgpack': 3.1.3
-      '@types/pg': 8.20.0
-      ajv: 8.20.0
-      chalk: 5.6.2
-      commander: 12.1.0
-      glob: 10.5.0
-      inquirer: 9.3.8(@types/node@25.9.1)
-      jiti: 2.7.0
-      js-yaml: 4.2.0
-      ora: 8.2.0
-      pg: 8.21.0
-      typescript: 5.9.3
-      vscode-languageserver: 9.0.1
-      vscode-languageserver-textdocument: 1.0.12
-      zod: 3.25.76
-    optionalDependencies:
-      '@assemblyscript/loader': 0.27.37
-      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      ioredis: 5.11.1
-      mongodb: 6.21.0
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@types/node'
@@ -16684,8 +16594,7 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@assemblyscript/loader@0.27.37':
-    optional: true
+  '@assemblyscript/loader@0.27.37': {}
 
   '@auto-it/bot-list@11.3.6': {}
 
@@ -19275,8 +19184,7 @@ snapshots:
     dependencies:
       '@swc/helpers': 0.5.23
 
-  '@ioredis/commands@1.10.0':
-    optional: true
+  '@ioredis/commands@1.10.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -19421,7 +19329,7 @@ snapshots:
 
   '@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
-      '@libsql/core': 0.17.3
+      '@libsql/core': 0.17.4
       '@libsql/hrana-client': 0.10.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       js-base64: 3.7.8
       libsql: 0.5.29
@@ -19429,12 +19337,10 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    optional: true
 
-  '@libsql/core@0.17.3':
+  '@libsql/core@0.17.4':
     dependencies:
       js-base64: 3.7.8
-    optional: true
 
   '@libsql/darwin-arm64@0.5.29':
     optional: true
@@ -19449,7 +19355,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    optional: true
 
   '@libsql/isomorphic-ws@0.1.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
@@ -19458,7 +19363,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    optional: true
 
   '@libsql/linux-arm-gnueabihf@0.5.29':
     optional: true
@@ -19637,7 +19541,6 @@ snapshots:
   '@mongodb-js/saslprep@1.4.11':
     dependencies:
       sparse-bitfield: 3.0.3
-    optional: true
 
   '@msgpack/msgpack@3.1.3': {}
 
@@ -19748,10 +19651,7 @@ snapshots:
 
   '@neoconfetti/react@1.0.0': {}
 
-  '@neon-rs/load@0.0.4':
-    optional: true
-
-  '@neondatabase/serverless@1.1.0': {}
+  '@neon-rs/load@0.0.4': {}
 
   '@next/bundle-analyzer@16.2.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
@@ -20372,18 +20272,6 @@ snapshots:
     dependencies:
       next: 16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
-
-  '@prisma/adapter-neon@7.8.0':
-    dependencies:
-      '@neondatabase/serverless': 1.1.0
-      '@prisma/driver-adapter-utils': 7.8.0
-      postgres-array: 3.0.4
-
-  '@prisma/debug@7.8.0': {}
-
-  '@prisma/driver-adapter-utils@7.8.0':
-    dependencies:
-      '@prisma/debug': 7.8.0
 
   '@radix-ui/number@1.1.2': {}
 
@@ -23107,17 +22995,14 @@ snapshots:
   '@supabase/auth-js@2.97.0':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@supabase/functions-js@2.97.0':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@supabase/postgrest-js@2.97.0':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@supabase/realtime-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
@@ -23128,13 +23013,11 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    optional: true
 
   '@supabase/storage-js@2.97.0':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
-    optional: true
 
   '@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
@@ -23146,7 +23029,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    optional: true
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -23699,7 +23581,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 12.20.55
 
   '@types/cors@2.8.19':
     dependencies:
@@ -23880,7 +23762,7 @@ snapshots:
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 18.19.130
       form-data: 4.0.6
 
   '@types/node@12.20.55': {}
@@ -23911,7 +23793,7 @@ snapshots:
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.3
       pg-protocol: 1.14.0
       pg-types: 2.2.0
 
@@ -23950,17 +23832,15 @@ snapshots:
     dependencies:
       uuid: 14.0.0
 
-  '@types/webidl-conversions@7.0.3':
-    optional: true
+  '@types/webidl-conversions@7.0.3': {}
 
   '@types/whatwg-url@11.0.5':
     dependencies:
       '@types/webidl-conversions': 7.0.3
-    optional: true
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 12.20.55
 
   '@types/ws@8.18.1':
     dependencies:
@@ -24895,8 +24775,7 @@ snapshots:
     dependencies:
       node-int64: 0.4.0
 
-  bson@6.10.4:
-    optional: true
+  bson@6.10.4: {}
 
   buffer-equal-constant-time@1.0.1: {}
 
@@ -25136,8 +25015,7 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  cluster-key-slot@1.1.1:
-    optional: true
+  cluster-key-slot@1.1.1: {}
 
   cmdk@1.1.1(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
@@ -25778,8 +25656,7 @@ snapshots:
 
   delayed-stream@1.0.0: {}
 
-  denque@2.1.0:
-    optional: true
+  denque@2.1.0: {}
 
   depd@1.1.2: {}
 
@@ -25821,8 +25698,7 @@ snapshots:
 
   destroy@1.2.0: {}
 
-  detect-libc@2.0.2:
-    optional: true
+  detect-libc@2.0.2: {}
 
   detect-libc@2.1.2: {}
 
@@ -25922,7 +25798,7 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.6.1
+      dotenv: 16.4.7
 
   dotenv-expand@12.0.3:
     dependencies:
@@ -27614,8 +27490,7 @@ snapshots:
 
   hyphen@1.14.1: {}
 
-  iceberg-js@0.8.1:
-    optional: true
+  iceberg-js@0.8.1: {}
 
   iconv-lite@0.6.3:
     dependencies:
@@ -27772,7 +27647,6 @@ snapshots:
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   ip-address@10.2.0: {}
 
@@ -28090,8 +27964,7 @@ snapshots:
 
   joycon@3.1.1: {}
 
-  js-base64@3.7.8:
-    optional: true
+  js-base64@3.7.8: {}
 
   js-cookie@3.0.7: {}
 
@@ -28271,7 +28144,6 @@ snapshots:
       '@libsql/linux-x64-gnu': 0.5.29
       '@libsql/linux-x64-musl': 0.5.29
       '@libsql/win32-x64-msvc': 0.5.29
-    optional: true
 
   lighthouse-logger@1.4.2:
     dependencies:
@@ -28723,8 +28595,7 @@ snapshots:
 
   memoize-one@5.2.1: {}
 
-  memory-pager@1.5.0:
-    optional: true
+  memory-pager@1.5.0: {}
 
   merge-descriptors@1.0.3: {}
 
@@ -29279,14 +29150,12 @@ snapshots:
     dependencies:
       '@types/whatwg-url': 11.0.5
       whatwg-url: 14.2.0
-    optional: true
 
   mongodb@6.21.0:
     dependencies:
       '@mongodb-js/saslprep': 1.4.11
       bson: 6.10.4
       mongodb-connection-string-url: 3.0.2
-    optional: true
 
   motion-dom@12.40.0:
     dependencies:
@@ -30189,8 +30058,6 @@ snapshots:
 
   postgres-array@2.0.0: {}
 
-  postgres-array@3.0.4: {}
-
   postgres-bytea@1.0.1: {}
 
   postgres-date@1.0.7: {}
@@ -30257,8 +30124,7 @@ snapshots:
 
   progress@2.0.3: {}
 
-  promise-limit@2.7.0:
-    optional: true
+  promise-limit@2.7.0: {}
 
   promise@8.3.0:
     dependencies:
@@ -30781,13 +30647,11 @@ snapshots:
       indent-string: 4.0.0
       strip-indent: 3.0.0
 
-  redis-errors@1.2.0:
-    optional: true
+  redis-errors@1.2.0: {}
 
   redis-parser@3.0.0:
     dependencies:
       redis-errors: 1.2.0
-    optional: true
 
   redux-thunk@3.1.0(redux@5.0.1):
     dependencies:
@@ -31558,7 +31422,6 @@ snapshots:
   sparse-bitfield@3.0.3:
     dependencies:
       memory-pager: 1.5.0
-    optional: true
 
   spdx-correct@3.2.0:
     dependencies:
@@ -31592,8 +31455,7 @@ snapshots:
     dependencies:
       type-fest: 0.7.1
 
-  standard-as-callback@2.1.0:
-    optional: true
+  standard-as-callback@2.1.0: {}
 
   standard-navigation@0.0.7: {}
 
@@ -32062,7 +31924,6 @@ snapshots:
   tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
-    optional: true
 
   tr46@6.0.0:
     dependencies:
@@ -32957,8 +32818,7 @@ snapshots:
 
   webidl-conversions@5.0.0: {}
 
-  webidl-conversions@7.0.0:
-    optional: true
+  webidl-conversions@7.0.0: {}
 
   webidl-conversions@8.0.1: {}
 
@@ -33056,7 +32916,6 @@ snapshots:
     dependencies:
       tr46: 5.1.1
       webidl-conversions: 7.0.0
-    optional: true
 
   whatwg-url@16.0.1(@noble/hashes@1.8.0):
     dependencies:

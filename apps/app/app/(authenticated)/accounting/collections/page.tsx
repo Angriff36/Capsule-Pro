@@ -1,5 +1,5 @@
+import { listCollectionCases } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -34,52 +34,34 @@ export default async function CollectionsPage() {
     redirect("/");
   }
 
-  const [
-    totalCases,
-    activeCases,
-    legalCases,
-    disputedCases,
-    outstandingTotals,
-    collectedTotals,
-    overdueCases,
-    casesByPriority,
-  ] = await Promise.all([
-    database.collectionCase.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.collectionCase.count({
-      where: { tenantId, deletedAt: null, status: "ACTIVE" },
-    }),
-    database.collectionCase.count({
-      where: { tenantId, deletedAt: null, status: "LEGAL" },
-    }),
-    database.collectionCase.count({
-      where: { tenantId, deletedAt: null, isDisputed: true },
-    }),
-    database.collectionCase.aggregate({
-      where: { tenantId, deletedAt: null, status: { in: ["ACTIVE", "LEGAL"] } },
-      _sum: { outstandingAmount: true },
-    }),
-    database.collectionCase.aggregate({
-      where: { tenantId, deletedAt: null },
-      _sum: { collectedAmount: true },
-    }),
-    database.collectionCase.count({
-      where: { tenantId, deletedAt: null, daysOverdue: { gt: 90 } },
-    }),
-    database.collectionCase.groupBy({
-      by: ["priority"],
-      where: { tenantId, deletedAt: null, status: { in: ["ACTIVE", "LEGAL"] } },
-      _count: { id: true },
-    }),
-  ]);
-
-  const outstandingTotal = Number(
-    outstandingTotals._sum.outstandingAmount ?? 0
+  const collectionCases = (await listCollectionCases()).data;
+  const totalCases = collectionCases.length;
+  const activeCases = collectionCases.filter(
+    (entry) => String(entry.status) === "ACTIVE"
+  ).length;
+  const legalCases = collectionCases.filter(
+    (entry) => String(entry.status) === "LEGAL"
+  ).length;
+  const disputedCases = collectionCases.filter(
+    (entry) => String(entry.status) === "DISPUTED"
+  ).length;
+  const outstandingTotal = collectionCases
+    .filter((entry) => ["ACTIVE", "LEGAL"].includes(String(entry.status)))
+    .reduce((sum, entry) => sum + Number(entry.outstandingAmount ?? 0), 0);
+  const collectedTotal = collectionCases.reduce(
+    (sum, entry) => sum + Number(entry.collectedAmount ?? 0),
+    0
   );
-  const collectedTotal = Number(collectedTotals._sum.collectedAmount ?? 0);
-  const urgentCount =
-    casesByPriority.find((p) => p.priority === "URGENT")?._count.id ?? 0;
+  const overdueCases = collectionCases.filter(
+    (entry) =>
+      String(entry.status) !== "RESOLVED" &&
+      Number(entry.outstandingAmount ?? 0) > 0
+  ).length;
+  const urgentCount = collectionCases.filter(
+    (entry) =>
+      ["ACTIVE", "LEGAL"].includes(String(entry.status)) &&
+      String(entry.priority) === "URGENT"
+  ).length;
 
   return (
     <PageCanvas>

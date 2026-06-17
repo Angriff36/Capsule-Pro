@@ -1,5 +1,5 @@
+import { listEmailWorkflows, listLeads, listSmsAutomationRules } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -31,44 +31,29 @@ export default async function MarketingAnalyticsPage() {
     redirect("/sign-in");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const [emailLogStats, leadStats, workflowCount, smsRuleCount] =
-    await Promise.all([
-      database.emailLog.groupBy({
-        by: ["status"],
-        where: { tenantId },
-        _count: { status: true },
-      }),
-      database.lead.groupBy({
-        by: ["status"],
-        where: { tenantId, deletedAt: null },
-        _count: { status: true },
-      }),
-      database.emailWorkflow.count({
-        where: { tenantId, deletedAt: null, isActive: true },
-      }),
-      database.sms_automation_rules.count({
-        where: { tenant_id: tenantId, deleted_at: null, is_active: true },
-      }),
-    ]);
+  const [allLeads, workflowCount, smsRules] = await Promise.all([
+    (await listLeads()).data,
+    (await listEmailWorkflows()).data.length,
+    (await listSmsAutomationRules()).data,
+  ]);
 
   const emailCounts: Record<string, number> = {};
-  for (const row of emailLogStats) {
-    emailCounts[row.status] = row._count.status;
-  }
   const totalSent = Object.values(emailCounts).reduce((a, b) => a + b, 0) || 0;
   const opened = emailCounts.opened || 0;
   const openRate = totalSent > 0 ? Math.round((opened / totalSent) * 100) : 0;
 
   const leadCounts: Record<string, number> = {};
-  for (const row of leadStats) {
-    leadCounts[row.status] = row._count.status;
+  for (const lead of allLeads) {
+    const status = lead.status || "unknown";
+    leadCounts[status] = (leadCounts[status] ?? 0) + 1;
   }
   const totalLeads = Object.values(leadCounts).reduce((a, b) => a + b, 0);
   const convertedLeads = leadCounts.converted || 0;
   const conversionRate =
     totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+  const smsRuleCount = smsRules.filter((rule) => rule.is_active).length;
 
   const initialMetrics = {
     totalSent,

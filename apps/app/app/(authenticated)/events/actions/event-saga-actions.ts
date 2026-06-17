@@ -1,7 +1,7 @@
 "use server";
+import { listEventProfitabilities } from "@/app/lib/manifest-client.generated";
 
 import { randomUUID } from "node:crypto";
-import { database } from "@repo/database";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { runManifestSaga } from "@/lib/manifest-saga";
@@ -19,10 +19,7 @@ export async function finalizeEventWithReporting(
   const tenantId = user.tenantId;
 
   let profitabilityId = (
-    await database.eventProfitability.findFirst({
-      where: { tenantId, eventId, deletedAt: null },
-      select: { id: true },
-    })
+    (await listEventProfitabilities()).data[0] ?? null
   )?.id;
 
   if (!profitabilityId) {

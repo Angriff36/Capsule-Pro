@@ -1,5 +1,5 @@
+import { listAlertsConfigs } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,22 +32,18 @@ export default async function AlertsConfigPage() {
     redirect("/");
   }
 
-  const [total, channels] = await Promise.all([
-    database.alertsConfig.count({ where: { tenantId } }),
-    database.alertsConfig.groupBy({
-      by: ["channel"],
-      where: { tenantId },
-      _count: { channel: true },
-    }),
-  ]);
+  const configs = (await listAlertsConfigs()).data;
+  const total = configs.length;
+  const channelTotals = configs.reduce<Record<string, number>>((acc, config) => {
+    const channel = config.channel || "unknown";
+    acc[channel] = (acc[channel] ?? 0) + 1;
+    return acc;
+  }, {});
 
-  const channelCount = channels.length;
-  const emailConfigs =
-    channels.find((c) => c.channel === "email")?._count.channel ?? 0;
-  const smsConfigs =
-    channels.find((c) => c.channel === "sms")?._count.channel ?? 0;
-  const webhookConfigs =
-    channels.find((c) => c.channel === "webhook")?._count.channel ?? 0;
+  const channelCount = Object.keys(channelTotals).length;
+  const emailConfigs = channelTotals.email ?? 0;
+  const smsConfigs = channelTotals.sms ?? 0;
+  const webhookConfigs = channelTotals.webhook ?? 0;
 
   return (
     <PageCanvas>

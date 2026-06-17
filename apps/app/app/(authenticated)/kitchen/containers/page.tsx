@@ -1,5 +1,5 @@
+import { listContainers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -33,29 +33,23 @@ export default async function ContainersPage() {
     redirect("/");
   }
 
-  const [total, active, inactive, reusable, disposable] = await Promise.all([
-    database.container.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.container.count({
-      where: { tenantId, deletedAt: null, isActive: true },
-    }),
-    database.container.count({
-      where: { tenantId, deletedAt: null, isActive: false },
-    }),
-    database.container.count({
-      where: { tenantId, deletedAt: null, isReusable: true },
-    }),
-    database.container.count({
-      where: { tenantId, deletedAt: null, isReusable: false },
-    }),
-  ]);
-
-  const byType = await database.container.groupBy({
-    by: ["containerType"],
-    where: { tenantId, deletedAt: null },
-    _count: { containerType: true },
-  });
+  const containers = (await listContainers()).data.filter(
+    (container) => container.tenantId === tenantId && !container.deletedAt
+  );
+  const total = containers.length;
+  const active = containers.filter((container) => container.isActive !== false).length;
+  const inactive = total - active;
+  const reusable = containers.filter((container) => container.isReusable === true).length;
+  const disposable = total - reusable;
+  const byTypeMap = new Map<string, number>();
+  for (const container of containers) {
+    const containerType = container.containerType || "unknown";
+    byTypeMap.set(containerType, (byTypeMap.get(containerType) ?? 0) + 1);
+  }
+  const byType = Array.from(byTypeMap.entries()).map(([containerType, count]) => ({
+    containerType,
+    count,
+  }));
 
   return (
     <PageCanvas>
@@ -107,7 +101,7 @@ export default async function ContainersPage() {
               <MetricValue>{byType.length}</MetricValue>
               <p className="text-sm text-white/70">
                 {byType
-                  .map((t) => `${t.containerType} (${t._count.containerType})`)
+                  .map((t) => `${t.containerType} (${t.count})`)
                   .join(", ")}
               </p>
             </MetricCell>
@@ -132,7 +126,7 @@ export default async function ContainersPage() {
               disposable,
               byType: byType.map((t) => ({
                 containerType: t.containerType,
-                count: t._count.containerType,
+                count: t.count,
               })),
             }}
           />

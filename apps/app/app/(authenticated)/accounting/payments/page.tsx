@@ -1,6 +1,5 @@
 import { listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -68,42 +67,24 @@ export default async function PaymentsPage() {
     redirect("/");
   }
 
-  const [
-    paymentCount,
-    completedPaymentCount,
-    pendingPaymentCount,
-    refundedPaymentCount,
-    paymentTotals,
-    recentPayments,
-  ] = await Promise.all([
-    database.payment.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.payment.count({
-      where: { tenantId, deletedAt: null, status: "COMPLETED" },
-    }),
-    database.payment.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["PENDING", "PROCESSING"] },
-      },
-    }),
-    database.payment.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["REFUNDED", "PARTIALLY_REFUNDED"] },
-      },
-    }),
-    database.payment.aggregate({
-      where: { tenantId, deletedAt: null },
-      _sum: { amount: true },
-    }),
-    (await listPayments()).data,
-  ]);
-
-  const recordedTotal = Number(paymentTotals._sum.amount ?? 0);
+  const payments = (await listPayments()).data;
+  const paymentCount = payments.length;
+  const completedPaymentCount = payments.filter(
+    (payment) => String(payment.status) === "COMPLETED"
+  ).length;
+  const pendingPaymentCount = payments.filter((payment) =>
+    ["PENDING", "PROCESSING"].includes(String(payment.status))
+  ).length;
+  const refundedPaymentCount = payments.filter((payment) =>
+    ["REFUNDED", "PARTIALLY_REFUNDED"].includes(String(payment.status))
+  ).length;
+  const recordedTotal = payments.reduce(
+    (sum, payment) => sum + Number(payment.amount ?? 0),
+    0
+  );
+  const recentPayments = [...payments]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 16);
 
   return (
     <PageCanvas>

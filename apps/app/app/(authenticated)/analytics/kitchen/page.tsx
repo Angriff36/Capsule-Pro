@@ -1,6 +1,5 @@
 import { listPrepLists, listPrepTasks, listRecipes, listWasteEntries } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -26,6 +25,7 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { serverListEntity } from "@/app/lib/convex/server-reads";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -93,10 +93,8 @@ const KitchenAnalyticsPage = async () => {
     notFound();
   }
 
-  let tenantId: string;
-
   try {
-    tenantId = await getTenantIdForOrg(orgId);
+    await getTenantIdForOrg(orgId);
   } catch {
     return <UnavailableState />;
   }
@@ -104,63 +102,41 @@ const KitchenAnalyticsPage = async () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [
-    recipeCount,
-    openPrepTaskCount,
-    completedPrepTaskCount,
-    prepListTotal,
-    finalizedPrepListCount,
-    wasteCostAggregate,
-    upcomingPrepTasks,
-    recentPrepLists,
-    recentWasteEntries,
-    recentRecipes,
-  ] = await Promise.all([
-    database.recipe.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.prepTask.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: { in: ["pending", "in_progress"] },
-      },
-    }),
-    database.prepTask.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "completed",
-        updatedAt: { gte: thirtyDaysAgo },
-      },
-    }),
-    database.prepList.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        generatedAt: { gte: thirtyDaysAgo },
-      },
-    }),
-    database.prepList.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        finalizedAt: { gte: thirtyDaysAgo },
-      },
-    }),
-    database.wasteEntry.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        loggedAt: { gte: thirtyDaysAgo },
-      },
-      _sum: { totalCost: true },
-    }),
-    (await listPrepTasks()).data,
-    (await listPrepLists()).data,
-    (await listWasteEntries()).data,
-    (await listRecipes()).data,
-  ]);
+  const [prepTasks, prepLists, wasteEntries, recipes, locationDocs] =
+    await Promise.all([
+      (await listPrepTasks()).data,
+      (await listPrepLists()).data,
+      (await listWasteEntries()).data,
+      (await listRecipes()).data,
+      serverListEntity("Location"),
+    ]);
+
+  const recipeCount = recipes.length;
+  const openPrepTaskCount = prepTasks.filter(
+    (task) => !["completed", "done"].includes(String(task.status).toLowerCase())
+  ).length;
+  const completedPrepTaskCount = prepTasks.filter((task) =>
+    ["completed", "done"].includes(String(task.status).toLowerCase())
+  ).length;
+  const prepListTotal = prepLists.length;
+  const finalizedPrepListCount = prepLists.filter((prepList) =>
+    ["finalized", "completed"].includes(String(prepList.status).toLowerCase())
+  ).length;
+  const wasteCost30d = wasteEntries
+    .filter((entry) => entry.loggedAt >= thirtyDaysAgo)
+    .reduce((sum, entry) => sum + Number(entry.totalCost ?? 0), 0);
+  const upcomingPrepTasks = [...prepTasks]
+    .sort((a, b) => a.dueByDate.getTime() - b.dueByDate.getTime())
+    .slice(0, 20);
+  const recentPrepLists = [...prepLists]
+    .sort((a, b) => b.generatedAt.getTime() - a.generatedAt.getTime())
+    .slice(0, 10);
+  const recentWasteEntries = [...wasteEntries]
+    .sort((a, b) => b.loggedAt.getTime() - a.loggedAt.getTime())
+    .slice(0, 10);
+  const recentRecipes = [...recipes]
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, 10);
 
   const locationIds = Array.from(
     new Set(
@@ -171,16 +147,12 @@ const KitchenAnalyticsPage = async () => {
   );
 
   const locations = locationIds.length
-    ? await database.location.findMany({
-        where: {
-          tenantId,
-          id: { in: locationIds },
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      })
+    ? locationDocs
+        .filter((location) => locationIds.includes(String(location._id)))
+        .map((location) => ({
+          id: String(location._id),
+          name: String(location.name ?? "Unknown"),
+        }))
     : [];
 
   const locationMap = new Map(
@@ -188,7 +160,6 @@ const KitchenAnalyticsPage = async () => {
   );
   const prepListSyncRate =
     prepListTotal > 0 ? (finalizedPrepListCount / prepListTotal) * 100 : 0;
-  const wasteCost30d = Number(wasteCostAggregate._sum.totalCost ?? 0);
 
   return (
     <PageCanvas>

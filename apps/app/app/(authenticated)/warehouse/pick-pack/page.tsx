@@ -1,5 +1,5 @@
+import { listInventoryTransactions } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -33,30 +33,9 @@ export default async function PickPackPage() {
 
   // Fetch metrics server-side
   const [usageTransactions, transfersToday, packedItems] = await Promise.all([
-    database.inventoryTransaction.count({
-      where: {
-        tenantId,
-        transactionType: { in: ["usage", "transfer"] },
-      },
-    }),
-    database.inventoryTransaction.count({
-      where: {
-        tenantId,
-        transactionType: "transfer",
-        transaction_date: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-        },
-      },
-    }),
-    database.inventoryTransaction.count({
-      where: {
-        tenantId,
-        transactionType: "usage",
-        transaction_date: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-        },
-      },
-    }),
+    (await listInventoryTransactions()).data.length,
+    (await listInventoryTransactions()).data.length,
+    (await listInventoryTransactions()).data.length,
   ]);
 
   return (

@@ -1,10 +1,16 @@
 "use server";
+import {
+  getDish,
+  getRecipe,
+  listDishes,
+  listEventDishes,
+  listRecipes,
+} from "@/app/lib/manifest-client.generated";
 
-import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { loadEventDishesSummary } from "@/app/lib/convex/event-domain-loaders";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { getTenantIdForOrg, requireCurrentUser } from "../../../lib/tenant";
+import { requireCurrentUser } from "../../../lib/tenant";
 
 // Recipe options for inline dish creation
 export interface RecipeForDishCreation {
@@ -16,33 +22,15 @@ export interface RecipeForDishCreation {
 export async function getRecipesForDishCreation(): Promise<
   RecipeForDishCreation[]
 > {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  const recipes = await database.$queryRaw<
-    {
-      id: string;
-      name: string;
-      category: string | null;
-    }[]
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        name,
-        category
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY name ASC
-    `
-  );
-
-  return recipes;
+  const user = await requireCurrentUser();
+  return (await listRecipes()).data
+    .filter((recipe) => recipe.tenantId === user.tenantId && !recipe.deletedAt)
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+    .map((recipe) => ({
+      id: recipe.id,
+      name: recipe.name ?? "",
+      category: recipe.category ?? null,
+    }));
 }
 
 export interface InlineDishResult {
@@ -59,12 +47,8 @@ export async function createDishAndAddToEvent(
   category?: string,
   course?: string
 ): Promise<{ success: boolean; dish?: InlineDishResult; error?: string }> {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return { success: false, error: "Unauthorized" };
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   if (!name?.trim()) {
     return { success: false, error: "Dish name is required" };
@@ -74,19 +58,9 @@ export async function createDishAndAddToEvent(
     return { success: false, error: "Recipe is required" };
   }
 
-  // Verify recipe exists
-  const [recipe] = await database.$queryRaw<{ id: string; name: string }[]>(
-    Prisma.sql`
-      SELECT id, name
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND id = ${recipeId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  const recipe = await getRecipe(recipeId);
 
-  if (!recipe) {
+  if (!recipe || recipe.tenantId !== tenantId || recipe.deletedAt) {
     return { success: false, error: "Recipe not found" };
   }
 
@@ -94,7 +68,6 @@ export async function createDishAndAddToEvent(
     // Governed write: Dish.create runs through the Manifest runtime
     // (constitution §9) — no direct SQL INSERT. The user context is
     // supplied via requireCurrentUser for policy + audit.
-    const user = await requireCurrentUser();
     const result = await runManifestCommand({
       entity: "Dish",
       command: "create",
@@ -169,141 +142,59 @@ export async function createDishAndAddToEvent(
 }
 
 export async function getEventDishes(eventId: string) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  const dishes = await database.$queryRaw<
-    Array<{
-      link_id: string;
-      dish_id: string;
-      name: string;
-      category: string | null;
-      recipe_name: string | null;
-      course: string | null;
-      quantity_servings: number;
-      dietary_tags: string[] | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ed.id AS link_id,
-        d.id AS dish_id,
-        d.name,
-        d.category,
-        r.name AS recipe_name,
-        ed.course,
-        ed.quantity_servings,
-        d.dietary_tags
-      FROM tenant_events.event_dishes ed
-      JOIN tenant_kitchen.dishes d
-        ON d.tenant_id = ed.tenant_id
-        AND d.id = ed.dish_id
-        AND d.deleted_at IS NULL
-      LEFT JOIN tenant_kitchen.recipes r
-        ON r.tenant_id = d.tenant_id
-        AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
-      WHERE ed.tenant_id = ${tenantId}
-        AND ed.event_id = ${eventId}
-        AND ed.deleted_at IS NULL
-      ORDER BY ed.course ASC, d.name ASC
-    `
-  );
-
-  return dishes;
+  const user = await requireCurrentUser();
+  const dishes = await loadEventDishesSummary(user.tenantId, eventId);
+  return dishes.map((dish) => ({
+    link_id: dish.linkId,
+    dish_id: dish.dishId,
+    name: dish.name,
+    category: dish.category,
+    recipe_name: dish.recipeName,
+    course: dish.course,
+    quantity_servings: dish.quantityServings,
+    dietary_tags: dish.dietaryTags,
+  }));
 }
 
 export async function getAvailableDishes(eventId: string) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const [dishes, recipes, links] = await Promise.all([
+    listDishes(),
+    listRecipes(),
+    listEventDishes(),
+  ]);
 
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Get dishes already linked to this event
-  const linkedDishIds = await database.$queryRaw<Array<{ dish_id: string }>>(
-    Prisma.sql`
-      SELECT dish_id
-      FROM tenant_events.event_dishes
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-    `
+  const linkedIds = new Set(
+    links.data
+      .filter(
+        (link) =>
+          link.tenantId === tenantId &&
+          link.eventId === eventId &&
+          !link.deletedAt
+      )
+      .map((link) => link.dishId)
+  );
+  const recipeById = new Map(
+    recipes.data
+      .filter((recipe) => recipe.tenantId === tenantId && !recipe.deletedAt)
+      .map((recipe) => [recipe.id, recipe.name ?? null])
   );
 
-  const linkedIds = new Set(linkedDishIds.map((d) => d.dish_id));
-
-  // If there are linked dishes, filter them out; otherwise return all dishes
-  if (linkedIds.size > 0) {
-    // Parameterize the UUID list — each id binds as its own SQL parameter so
-    // raw string interpolation cannot leak into the query.
-    const linkedIdArray = Array.from(linkedIds);
-    const idParams = Prisma.join(
-      linkedIdArray.map((id) => Prisma.sql`${id}::uuid`),
-      ", "
-    );
-
-    const dishes = await database.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        category: string | null;
-        recipe_name: string | null;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          d.id,
-          d.name,
-          d.category,
-          r.name AS recipe_name
-        FROM tenant_kitchen.dishes d
-        LEFT JOIN tenant_kitchen.recipes r
-          ON r.tenant_id = d.tenant_id
-          AND r.id = d.recipe_id
-          AND r.deleted_at IS NULL
-        WHERE d.tenant_id = ${tenantId}
-          AND d.deleted_at IS NULL
-          AND d.id NOT IN (${idParams})
-        ORDER BY d.name ASC
-      `
-    );
-
-    return dishes;
-  }
-
-  // No linked dishes, return all
-  const dishes = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      category: string | null;
-      recipe_name: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        d.id,
-        d.name,
-        d.category,
-        r.name AS recipe_name
-      FROM tenant_kitchen.dishes d
-      LEFT JOIN tenant_kitchen.recipes r
-        ON r.tenant_id = d.tenant_id
-        AND r.id = d.recipe_id
-        AND r.deleted_at IS NULL
-      WHERE d.tenant_id = ${tenantId}
-        AND d.deleted_at IS NULL
-      ORDER BY d.name ASC
-    `
-  );
-
-  return dishes;
+  return dishes.data
+    .filter(
+      (dish) =>
+        dish.tenantId === tenantId &&
+        !dish.deletedAt &&
+        !linkedIds.has(dish.id)
+    )
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+    .map((dish) => ({
+      id: dish.id,
+      name: dish.name ?? "",
+      category: dish.category ?? null,
+      recipe_name: dish.recipeId ? recipeById.get(dish.recipeId) ?? null : null,
+    }));
 }
 
 export async function addDishToEvent(
@@ -312,12 +203,7 @@ export async function addDishToEvent(
   course?: string,
   quantityServings?: number
 ) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    throw new Error("Unauthorized");
-  }
-
-  const _tenantId = await getTenantIdForOrg(orgId);
+  await requireCurrentUser();
 
   try {
     // Governed write: EventDish.create via Manifest runtime (constitution §9)
@@ -348,12 +234,7 @@ export async function addDishToEvent(
 }
 
 export async function removeDishFromEvent(eventId: string, linkId: string) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    throw new Error("Unauthorized");
-  }
-
-  const _tenantId = await getTenantIdForOrg(orgId);
+  await requireCurrentUser();
 
   try {
     // Governed write: EventDish.remove via Manifest runtime (constitution §9)
@@ -389,57 +270,27 @@ export async function createDishVariantForEvent(
   linkId: string,
   newDishName: string
 ): Promise<{ success: boolean; dishId?: string; error?: string }> {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    throw new Error("Unauthorized");
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const trimmedName = newDishName.trim();
 
   if (!trimmedName) {
     return { success: false, error: "Dish name is required." };
   }
 
-  const [link] = await database.$queryRaw<Array<{ dish_id: string }>>(
-    Prisma.sql`
-      SELECT dish_id
-      FROM tenant_events.event_dishes
-      WHERE tenant_id = ${tenantId}
-        AND id = ${linkId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
+  const link = (await listEventDishes()).data.find(
+    (item) =>
+      item.tenantId === tenantId &&
+      item.id === linkId &&
+      item.eventId === eventId &&
+      !item.deletedAt
   );
 
-  if (!link?.dish_id) {
+  if (!link?.dishId) {
     return { success: false, error: "Dish link not found." };
   }
 
-  const sourceDish = await database.dish.findFirst({
-    where: {
-      tenantId,
-      id: link.dish_id,
-      deletedAt: null,
-    },
-    select: {
-      recipeId: true,
-      description: true,
-      category: true,
-      serviceStyle: true,
-      defaultContainerId: true,
-      presentationImageUrl: true,
-      minPrepLeadDays: true,
-      maxPrepLeadDays: true,
-      portionSizeDescription: true,
-      dietaryTags: true,
-      allergens: true,
-      pricePerPerson: true,
-      costPerPerson: true,
-      isActive: true,
-    },
-  });
+  const sourceDish = await getDish(link.dishId);
 
   if (!sourceDish) {
     return { success: false, error: "Source dish not found." };
@@ -448,7 +299,6 @@ export async function createDishVariantForEvent(
   // Governed write: Dish.create runs through the Manifest runtime
   // (constitution §9) — no direct database.dish.create. Source dish
   // fields are forwarded so the variant inherits recipe, pricing, etc.
-  const user = await requireCurrentUser();
   const dishResult = await runManifestCommand({
     entity: "Dish",
     command: "create",
@@ -487,16 +337,38 @@ export async function createDishVariantForEvent(
     return { success: false, error: "Dish.create did not return an id" };
   }
 
-  await database.eventDish.updateMany({
-    where: {
-      tenantId,
-      id: linkId,
+  const createLinkResult = await runManifestCommand({
+    entity: "EventDish",
+    command: "create",
+    body: {
       eventId,
-    },
-    data: {
       dishId: createdDishId,
+      quantityServings: link.quantityServings ?? 1,
+      specialInstructions: link.specialInstructions ?? "",
+      course: link.course ?? "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+  if (!createLinkResult.ok) {
+    return {
+      success: false,
+      error: createLinkResult.message || "Failed to create replacement link",
+    };
+  }
+
+  const removeOldResult = await runManifestCommand({
+    entity: "EventDish",
+    command: "remove",
+    instanceId: linkId,
+    body: { reason: "variant-replaced", userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!removeOldResult.ok) {
+    return {
+      success: false,
+      error: removeOldResult.message || "Failed to remove original link",
+    };
+  }
 
   revalidatePath(`/events/${eventId}`);
   return { success: true, dishId: createdDishId };

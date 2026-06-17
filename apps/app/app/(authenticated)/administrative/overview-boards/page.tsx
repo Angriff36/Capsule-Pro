@@ -1,6 +1,5 @@
-import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
+import { listAdminTasks, listBudgetAlerts, listEvents, listEventStaffs, listKitchenTasks, listOpenShifts, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -53,83 +52,61 @@ async function fetchEventsWithStaff(
   tenantId: string,
   week: { start: Date; end: Date }
 ) {
-  return database.$queryRaw<
-    Array<{
-      id: string;
-      title: string;
-      event_date: Date;
-      guest_count: number;
-      venue_name: string | null;
-      staff_count: bigint;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        e.id,
-        e.title,
-        e.event_date,
-        e.guest_count,
-        e.venue_name,
-        COALESCE(
-          (SELECT COUNT(*)
-           FROM tenant_events.event_staff esa
-           WHERE esa."eventId" = e.id::text
-             AND esa."tenantId" = e.tenant_id::text
-             AND esa."deletedAt" IS NULL
-          ), 0
-        ) as staff_count
-      FROM tenant_events.events e
-      WHERE e.tenant_id = ${tenantId}::uuid
-        AND e.deleted_at IS NULL
-        AND e.event_date >= ${week.start}
-        AND e.event_date <= ${week.end}
-      ORDER BY e.event_date ASC, e.created_at ASC
-    `
-  );
+  const [events, eventStaffs] = await Promise.all([
+    (await listEvents()).data,
+    (await listEventStaffs()).data,
+  ]);
+  const staffCounts = eventStaffs.reduce<Record<string, number>>((acc, staff) => {
+    acc[staff.eventId] = (acc[staff.eventId] ?? 0) + 1;
+    return acc;
+  }, {});
+  return events
+    .filter((event) => {
+      if (!event.eventDate) {
+        return false;
+      }
+      const eventDate = new Date(event.eventDate);
+      return eventDate >= week.start && eventDate <= week.end;
+    })
+    .map((event) => ({
+      id: event.id,
+      title: event.title,
+      event_date: event.eventDate ? new Date(event.eventDate) : new Date(),
+      guest_count: event.guestCount ?? 0,
+      venue_name: event.venueName,
+      staff_count: BigInt(staffCounts[event.id] ?? 0),
+    }));
 }
 
 async function fetchKitchenTasks(
   tenantId: string,
   week: { start: Date; end: Date }
 ) {
-  return database.$queryRaw<
-    Array<{ total_tasks: bigint; completed_tasks: bigint }>
-  >(
-    Prisma.sql`
-      SELECT
-        COUNT(*)::bigint AS total_tasks,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_tasks
-      FROM tenant_kitchen.kitchen_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND created_at >= ${week.start}
-        AND created_at <= ${week.end}
-    `
-  );
+  const tasks = (await listKitchenTasks()).data.filter((task) => {
+    if (!task.createdAt) {
+      return false;
+    }
+    const createdAt = new Date(task.createdAt);
+    return createdAt >= week.start && createdAt <= week.end;
+  });
+  return [
+    {
+      total_tasks: BigInt(tasks.length),
+      completed_tasks: BigInt(tasks.filter((task) => task.status === "completed").length),
+    },
+  ];
 }
 
 async function fetchOpenShifts(tenantId: string) {
-  return database.$queryRaw<Array<{ open_shifts: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS open_shifts
-      FROM tenant_staff.open_shifts
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND status = 'open'
-    `
-  );
+  const openShifts = (await listOpenShifts()).data.filter((shift) => shift.status === "open");
+  return [{ open_shifts: BigInt(openShifts.length) }];
 }
 
 async function fetchBudgetAlerts(tenantId: string) {
-  return database.$queryRaw<Array<{ alerts: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS alerts
-      FROM tenant_staff.budget_alerts
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND resolved = false
-    `
+  const budgetAlerts = (await listBudgetAlerts()).data.filter(
+    (alert) => !alert.resolved
   );
+  return [{ alerts: BigInt(budgetAlerts.length) }];
 }
 
 async function fetchExecutiveTasks(tenantId: string) {
@@ -137,17 +114,14 @@ async function fetchExecutiveTasks(tenantId: string) {
 }
 
 async function fetchOverdueTasks(tenantId: string) {
-  return database.$queryRaw<Array<{ overdue: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS overdue
-      FROM tenant_admin.admin_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND status != 'done'
-        AND due_date IS NOT NULL
-        AND due_date < CURRENT_DATE
-    `
-  );
+  const now = new Date();
+  const overdue = (await listAdminTasks()).data.filter(
+    (task) =>
+      task.status !== "done" &&
+      task.dueDate &&
+      new Date(task.dueDate).getTime() < now.getTime()
+  ).length;
+  return [{ overdue: BigInt(overdue) }];
 }
 
 async function fetchUpcomingOpenShifts(
@@ -155,67 +129,62 @@ async function fetchUpcomingOpenShifts(
   now: Date,
   threeDaysFromNow: Date
 ) {
-  return database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS count
-      FROM tenant_staff.open_shifts
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND status = 'open'
-        AND shift_start >= ${now}
-        AND shift_start < ${threeDaysFromNow}
-    `
-  );
+  const upcomingCount = (await listOpenShifts()).data.filter((shift) => {
+    if (shift.status !== "open" || !shift.shift_start) {
+      return false;
+    }
+    const shiftStart = new Date(shift.shift_start);
+    return shiftStart >= now && shiftStart < threeDaysFromNow;
+  }).length;
+  return [{ count: BigInt(upcomingCount) }];
 }
 
 async function fetchTasksUpdatedToday(tenantId: string, startOfToday: Date) {
-  return database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS count
-      FROM tenant_admin.admin_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND updated_at >= ${startOfToday}
-    `
-  );
+  const count = (await listAdminTasks()).data.filter((task) => {
+    if (!task.updatedAt) {
+      return false;
+    }
+    return new Date(task.updatedAt) >= startOfToday;
+  }).length;
+  return [{ count: BigInt(count) }];
 }
 
 async function fetchTasksCreatedToday(tenantId: string, startOfToday: Date) {
-  return database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint AS count
-      FROM tenant_admin.admin_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND created_at >= ${startOfToday}
-    `
-  );
+  const count = (await listAdminTasks()).data.filter((task) => {
+    if (!task.createdAt) {
+      return false;
+    }
+    return new Date(task.createdAt) >= startOfToday;
+  }).length;
+  return [{ count: BigInt(count) }];
 }
 
 async function fetchAvgResponseTime(tenantId: string, fourteenDaysAgo: Date) {
-  return database.$queryRaw<Array<{ avg_minutes: string | null }>>(
-    Prisma.sql`
-      SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 60), 0)::numeric AS avg_minutes
-      FROM tenant_admin.admin_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND status = 'done'
-        AND updated_at >= ${fourteenDaysAgo}
-    `
+  const doneTasks = (await listAdminTasks()).data.filter(
+    (task) =>
+      task.status === "done" &&
+      task.updatedAt &&
+      task.createdAt &&
+      new Date(task.updatedAt) >= fourteenDaysAgo
   );
+  const avgMinutes =
+    doneTasks.length > 0
+      ? doneTasks.reduce((sum, task) => {
+          const updatedAt = new Date(task.updatedAt as Date).getTime();
+          const createdAt = new Date(task.createdAt as Date).getTime();
+          return sum + (updatedAt - createdAt) / (1000 * 60);
+        }, 0) / doneTasks.length
+      : 0;
+  return [{ avg_minutes: String(avgMinutes) }];
 }
 
 async function fetchActiveTeams(tenantId: string, sevenDaysAgo: Date) {
-  return database.$queryRaw<Array<{ count: bigint }>>(
-    Prisma.sql`
-      SELECT COUNT(DISTINCT assigned_to)::bigint AS count
-      FROM tenant_admin.admin_tasks
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND assigned_to IS NOT NULL
-        AND updated_at >= ${sevenDaysAgo}
-    `
+  const assignedUsers = new Set(
+    (await listAdminTasks()).data
+      .filter((task) => task.assignedTo && task.updatedAt && new Date(task.updatedAt) >= sevenDaysAgo)
+      .map((task) => task.assignedTo as string)
   );
+  return [{ count: BigInt(assignedUsers.size) }];
 }
 
 async function fetchEmployees(tenantId: string) {

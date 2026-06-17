@@ -1,5 +1,14 @@
+import {
+  listCateringOrders,
+  listEvents,
+  listEventProfitabilities,
+  listInventoryItems,
+  listInventoryStocks,
+  listStorageLocations,
+  listWasteEntries,
+} from "@/app/lib/manifest-client.generated";
+import { serverListEntity } from "@/app/lib/convex/server-reads";
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { MultiLocationDashboardClient } from "./multi-location-dashboard-client";
@@ -65,6 +74,13 @@ interface PageProps {
   }>;
 }
 
+function toDateRange(period: "7d" | "30d" | "90d" | "12m") {
+  return getDateRange(period);
+}
+
+const inRange = (value: Date, start: Date, end: Date) =>
+  value >= start && value <= end;
+
 const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
   const { orgId } = await auth();
 
@@ -72,9 +88,8 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
     notFound();
   }
 
-  let tenantId: string;
   try {
-    tenantId = await getTenantIdForOrg(orgId);
+    await getTenantIdForOrg(orgId);
   } catch {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
@@ -89,30 +104,51 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const period = params.period || "30d";
   const { startDate, endDate, previousStartDate, previousEndDate } =
-    getDateRange(period);
+    toDateRange(period);
 
   const effectiveStartDate = params.startDate
     ? new Date(params.startDate)
     : startDate;
   const effectiveEndDate = params.endDate ? new Date(params.endDate) : endDate;
 
-  const locations = await database.location.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      isActive: true,
-      ...(params.locationIds && {
-        id: { in: params.locationIds.split(",") },
-      }),
-    },
-    select: {
-      id: true,
-      name: true,
-      isPrimary: true,
-      timezone: true,
-    },
-    orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
-  });
+  const requestedLocationIds = params.locationIds?.split(",").filter(Boolean) ?? [];
+
+  const [
+    locationDocs,
+    employeeLocationDocs,
+    cateringOrders,
+    eventProfitabilities,
+    events,
+    wasteEntries,
+    inventoryStocks,
+    inventoryItems,
+    storageLocations,
+  ] = await Promise.all([
+    serverListEntity("Location"),
+    serverListEntity("EmployeeLocation"),
+    (await listCateringOrders()).data,
+    (await listEventProfitabilities()).data,
+    (await listEvents()).data,
+    (await listWasteEntries()).data,
+    (await listInventoryStocks()).data,
+    (await listInventoryItems()).data,
+    (await listStorageLocations()).data,
+  ]);
+
+  const locations = locationDocs
+    .filter((location) => location.deletedAt == null && Boolean(location.isActive))
+    .filter((location) =>
+      requestedLocationIds.length === 0
+        ? true
+        : requestedLocationIds.includes(String(location._id))
+    )
+    .map((location) => ({
+      id: String(location._id),
+      name: String(location.name ?? "Unknown"),
+      isPrimary: Boolean(location.isPrimary),
+      timezone: String(location.timezone ?? "UTC"),
+    }))
+    .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.name.localeCompare(b.name));
 
   if (locations.length === 0) {
     return (
@@ -126,187 +162,107 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
     );
   }
 
-  const [
-    currentRevenueRows,
-    laborUtilizationRows,
-    wasteCostRows,
-    marginRows,
-    eventCompletionRows,
-    inventoryValueRows,
-    staffingRows,
-  ] = await Promise.all([
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ total_revenue: string | null }>
-        >(
-          Prisma.sql`
-          SELECT COALESCE(SUM(co.total_amount), 0)::numeric AS total_revenue
-          FROM tenant_events.catering_orders co
-          INNER JOIN tenant_events.events ev
-            ON ev.tenant_id = co.tenant_id
-            AND ev.id = co.event_id
-          WHERE co.tenant_id = ${tenantId}::uuid
-            AND co.deleted_at IS NULL
-            AND ev.deleted_at IS NULL
-            AND ev.location_id = ${location.id}::uuid
-            AND co.order_date >= ${effectiveStartDate}
-            AND co.order_date < ${effectiveEndDate}
-        `
-        );
-        return {
-          locationId: location.id,
-          locationName: location.name,
-          revenue: Number(result[0]?.total_revenue ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ budgeted_labor: string | null; actual_labor: string | null }>
-        >(
-          Prisma.sql`
-          SELECT
-            COALESCE(SUM(ep.budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-            COALESCE(SUM(ep.actual_labor_cost), 0)::numeric AS actual_labor
-          FROM tenant_events.event_profitability ep
-          INNER JOIN tenant_events.events ev
-            ON ev.tenant_id = ep.tenant_id
-            AND ev.id = ep.event_id
-          WHERE ep.tenant_id = ${tenantId}::uuid
-            AND ep.deleted_at IS NULL
-            AND ev.deleted_at IS NULL
-            AND ev.location_id = ${location.id}::uuid
-            AND ep.calculated_at >= ${effectiveStartDate}
-            AND ep.calculated_at < ${effectiveEndDate}
-        `
-        );
-        return {
-          locationId: location.id,
-          budgetedLabor: Number(result[0]?.budgeted_labor ?? 0),
-          actualLabor: Number(result[0]?.actual_labor ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ waste_cost: string | null }>
-        >(
-          Prisma.sql`
-          SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
-          FROM tenant_kitchen.waste_entries
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
-            AND logged_at >= ${effectiveStartDate}
-            AND logged_at < ${effectiveEndDate}
-        `
-        );
-        return {
-          locationId: location.id,
-          wasteCost: Number(result[0]?.waste_cost ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ avg_margin: string | null; total_revenue: string | null }>
-        >(
-          Prisma.sql`
-          SELECT
-            COALESCE(AVG(ep.actual_gross_margin_pct), 0)::numeric AS avg_margin,
-            COALESCE(SUM(ep.actual_revenue), 0)::numeric AS total_revenue
-          FROM tenant_events.event_profitability ep
-          INNER JOIN tenant_events.events ev
-            ON ev.tenant_id = ep.tenant_id
-            AND ev.id = ep.event_id
-          WHERE ep.tenant_id = ${tenantId}::uuid
-            AND ep.deleted_at IS NULL
-            AND ev.deleted_at IS NULL
-            AND ev.location_id = ${location.id}::uuid
-            AND ep.calculated_at >= ${effectiveStartDate}
-            AND ep.calculated_at < ${effectiveEndDate}
-        `
-        );
-        return {
-          locationId: location.id,
-          avgMargin: Number(result[0]?.avg_margin ?? 0),
-          totalRevenue: Number(result[0]?.total_revenue ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ event_count: bigint; completed_count: bigint }>
-        >(
-          Prisma.sql`
-          SELECT
-            COUNT(*)::bigint AS event_count,
-            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_count
-          FROM tenant_events.events
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
-            AND event_date >= ${effectiveStartDate}
-            AND event_date <= ${effectiveEndDate}
-        `
-        );
-        return {
-          locationId: location.id,
-          eventCount: Number(result[0]?.event_count ?? 0),
-          completedCount: Number(result[0]?.completed_count ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const result = await database.$queryRaw<
-          Array<{ inventory_value: string | null; item_count: bigint }>
-        >(
-          Prisma.sql`
-          SELECT
-            COALESCE(SUM(st.quantity_on_hand * ii.unit_cost), 0)::numeric AS inventory_value,
-            COUNT(DISTINCT ii.id)::bigint AS item_count
-          FROM tenant_inventory.inventory_items ii
-          INNER JOIN tenant_inventory.inventory_stock st
-            ON st.tenant_id = ii.tenant_id
-            AND st.item_id = ii.id
-          INNER JOIN tenant_inventory.storage_locations sl
-            ON sl.tenant_id = st.tenant_id
-            AND sl.id = st.storage_location_id
-          WHERE ii.tenant_id = ${tenantId}::uuid
-            AND ii.deleted_at IS NULL
-            AND sl.deleted_at IS NULL
-            AND sl.location_id = ${location.id}::uuid
-        `
-        );
-        return {
-          locationId: location.id,
-          inventoryValue: Number(result[0]?.inventory_value ?? 0),
-          itemCount: Number(result[0]?.item_count ?? 0),
-        };
-      })
-    ),
-    Promise.all(
-      locations.map(async (location) => {
-        const count = await database.employeeLocation.count({
-          where: {
-            tenantId,
-            locationId: location.id,
-            deleted_at: null,
-          },
-        });
-        return {
-          locationId: location.id,
-          staffCount: count,
-        };
-      })
-    ),
-  ]);
+  const eventsById = new Map(events.map((event) => [event.id, event]));
+  const inventoryItemById = new Map(
+    inventoryItems.map((item) => [item.id, item])
+  );
+  const storageLocationById = new Map(
+    storageLocations.map((storage) => [storage.id, storage])
+  );
+
+  const currentRevenueRows = locations.map((location) => ({
+    locationId: location.id,
+    locationName: location.name,
+    revenue: cateringOrders
+      .filter((order) => inRange(order.orderDate, effectiveStartDate, effectiveEndDate))
+      .filter((order) => eventsById.get(order.eventId)?.locationId === location.id)
+      .reduce((sum, order) => sum + Number(order.totalAmount ?? 0), 0),
+  }));
+  const laborUtilizationRows = locations.map((location) => {
+    const rows = eventProfitabilities
+      .filter((profitability) =>
+        inRange(profitability.calculatedAt, effectiveStartDate, effectiveEndDate)
+      )
+      .filter(
+        (profitability) =>
+          eventsById.get(profitability.eventId)?.locationId === location.id
+      );
+    return {
+      locationId: location.id,
+      budgetedLabor: rows.reduce(
+        (sum, row) => sum + Number(row.budgetedLaborCost ?? 0),
+        0
+      ),
+      actualLabor: rows.reduce(
+        (sum, row) => sum + Number(row.actualLaborCost ?? 0),
+        0
+      ),
+    };
+  });
+  const wasteCostRows = locations.map((location) => ({
+    locationId: location.id,
+    wasteCost: wasteEntries
+      .filter((entry) => inRange(entry.loggedAt, effectiveStartDate, effectiveEndDate))
+      .filter((entry) => entry.locationId === location.id)
+      .reduce((sum, entry) => sum + Number(entry.totalCost ?? 0), 0),
+  }));
+  const marginRows = locations.map((location) => {
+    const rows = eventProfitabilities.filter(
+      (profitability) =>
+        inRange(profitability.calculatedAt, effectiveStartDate, effectiveEndDate) &&
+        eventsById.get(profitability.eventId)?.locationId === location.id
+    );
+    const totalRevenue = rows.reduce(
+      (sum, row) => sum + Number(row.actualRevenue ?? 0),
+      0
+    );
+    const totalMarginPct = rows.reduce(
+      (sum, row) => sum + Number(row.actualGrossMarginPct ?? 0),
+      0
+    );
+    return {
+      locationId: location.id,
+      avgMargin: rows.length > 0 ? totalMarginPct / rows.length : 0,
+      totalRevenue,
+    };
+  });
+  const eventCompletionRows = locations.map((location) => {
+    const rows = events.filter(
+      (event) =>
+        event.locationId === location.id &&
+        inRange(event.eventDate, effectiveStartDate, effectiveEndDate)
+    );
+    return {
+      locationId: location.id,
+      eventCount: rows.length,
+      completedCount: rows.filter((event) => event.status === "completed").length,
+    };
+  });
+  const inventoryValueRows = locations.map((location) => {
+    const stocksForLocation = inventoryStocks.filter((stock) => {
+      const storageLocation = storageLocationById.get(stock.storageLocationId);
+      return storageLocation?.locationId === location.id;
+    });
+    const uniqueItemIds = new Set(stocksForLocation.map((stock) => stock.itemId));
+    const inventoryValue = stocksForLocation.reduce((sum, stock) => {
+      const item = inventoryItemById.get(stock.itemId);
+      return (
+        sum +
+        Number(stock.quantityOnHand ?? 0) * Number(item?.unitCost ?? 0)
+      );
+    }, 0);
+    return {
+      locationId: location.id,
+      inventoryValue,
+      itemCount: uniqueItemIds.size,
+    };
+  });
+  const staffingRows = locations.map((location) => ({
+    locationId: location.id,
+    staffCount: employeeLocationDocs.filter(
+      (row) => String(row.locationId) === location.id && row.deletedAt == null
+    ).length,
+  }));
 
   const locationMetrics = new Map<
     string,

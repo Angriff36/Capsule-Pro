@@ -1,5 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import {
+  listInventoryAlerts,
+  listInventoryItems,
+} from "@/app/lib/manifest-client.generated";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -60,6 +63,16 @@ const formatQuantity = (qty: number) => {
   });
 };
 
+const renderInventoryStatusBadge = (isOut: boolean, isLow: boolean) => {
+  if (isOut) {
+    return <Badge variant="destructive">Out of Stock</Badge>;
+  }
+  if (isLow) {
+    return <Badge className="bg-amber-500">Low Stock</Badge>;
+  }
+  return <Badge variant="secondary">In Stock</Badge>;
+};
+
 const KitchenInventoryPage = async () => {
   const { orgId } = await auth();
 
@@ -69,48 +82,42 @@ const KitchenInventoryPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch inventory items
-  const inventoryItems = await database.$queryRaw<InventoryItemRow[]>(
-    Prisma.sql`
-      SELECT
-        id,
-        item_number,
-        name,
-        category,
-        quantity_on_hand,
-        unit_cost,
-        reorder_level,
-        tags
-      FROM tenant_inventory.inventory_items
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY category ASC, name ASC
-      LIMIT 100
-    `
-  );
-
-  // Fetch low stock alerts
-  const lowStockAlerts = await database.$queryRaw<InventoryAlertRow[]>(
-    Prisma.sql`
-      SELECT
-        a.id,
-        a.item_id,
-        a.alert_type,
-        a.threshold_value,
-        a.triggered_at,
-        i.name AS item_name
-      FROM tenant_inventory.inventory_alerts a
-      JOIN tenant_inventory.inventory_items i
-        ON i.tenant_id = a.tenant_id
-        AND i.id = a.item_id
-      WHERE a.tenant_id = ${tenantId}
-        AND a.deleted_at IS NULL
-        AND a.resolved_at IS NULL
-        AND a.alert_type = 'low_stock'
-      ORDER BY a.triggered_at DESC
-      LIMIT 20
-    `
-  );
+  const inventoryItems = (await listInventoryItems()).data
+    .filter((item) => item.tenantId === tenantId && !item.deletedAt)
+    .map<InventoryItemRow>((item) => ({
+      id: item.id,
+      item_number: item.item_number || "",
+      name: item.name,
+      category: item.category ?? null,
+      quantity_on_hand: Number(item.quantityOnHand ?? 0),
+      unit_cost: Number(item.unitCost ?? 0),
+      reorder_level: Number(item.reorder_level ?? 0),
+      tags: Array.isArray(item.tags) ? (item.tags as string[]) : [],
+    }))
+    .sort((a, b) => {
+      const byCategory = (a.category ?? "").localeCompare(b.category ?? "");
+      if (byCategory !== 0) return byCategory;
+      return a.name.localeCompare(b.name);
+    })
+    .slice(0, 100);
+  const itemNameById = new Map(inventoryItems.map((item) => [item.id, item.name]));
+  const lowStockAlerts = (await listInventoryAlerts()).data
+    .filter(
+      (alert) =>
+        alert.tenantId === tenantId &&
+        !alert.resolvedAt &&
+        alert.alertType === "low_stock"
+    )
+    .map<InventoryAlertRow>((alert) => ({
+      id: alert.id,
+      item_id: alert.itemId,
+      alert_type: alert.alertType,
+      threshold_value: Number(alert.thresholdValue ?? 0),
+      triggered_at: new Date(alert.triggeredAt),
+      item_name: itemNameById.get(alert.itemId) ?? "Unknown item",
+    }))
+    .sort((a, b) => b.triggered_at.getTime() - a.triggered_at.getTime())
+    .slice(0, 20);
 
   // Calculate summary stats
   const totalValue = inventoryItems.reduce(
@@ -288,13 +295,7 @@ const KitchenInventoryPage = async () => {
                             {currencyFormatter.format(item.unit_cost)}
                           </TableCell>
                           <TableCell>
-                            {isOut ? (
-                              <Badge variant="destructive">Out of Stock</Badge>
-                            ) : isLow ? (
-                              <Badge className="bg-amber-500">Low Stock</Badge>
-                            ) : (
-                              <Badge variant="secondary">In Stock</Badge>
-                            )}
+                            {renderInventoryStatusBadge(isOut, isLow)}
                           </TableCell>
                         </TableRow>
                       );

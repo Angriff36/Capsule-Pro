@@ -1,10 +1,15 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { database, Prisma } from "@repo/database";
+import {
+  listDishes,
+  listIngredients,
+  listInventoryItems,
+  listRecipes,
+} from "@/app/lib/manifest-client.generated";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireTenantId } from "../../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
 
 interface CandidateRow {
   id: string;
@@ -98,151 +103,143 @@ const classifyCandidate = (name: string) => {
   return { action: "skip", category: "menu" };
 };
 
-const findInventoryItemId = async (tenantId: string, name: string) => {
-  const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_inventory.inventory_items
-      WHERE tenant_id = ${tenantId}
-        AND name = ${name}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-  return row?.id;
-};
-
 const insertInventoryItem = async (
   tenantId: string,
+  user: { id: string; tenantId: string; role: string },
   name: string,
   category: string
 ) => {
-  const existingId = await findInventoryItemId(tenantId, name);
-  if (existingId) {
-    return existingId;
+  const existing = (await listInventoryItems()).data.find(
+    (item) =>
+      item.tenantId === tenantId &&
+      !item.deletedAt &&
+      item.name.toLowerCase() === name.toLowerCase()
+  );
+  if (existing) {
+    return existing.id;
   }
-
-  const id = randomUUID();
-  const itemNumber = `INV-${id.slice(0, 8).toUpperCase()}`;
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_inventory.inventory_items (
-        tenant_id,
-        id,
-        item_number,
-        name,
-        category,
-        unit_cost,
-        quantity_on_hand,
-        reorder_level,
-        tags
-      )
-      VALUES (
-        ${tenantId},
-        ${id},
-        ${itemNumber},
-        ${name},
-        ${category},
-        ${0},
-        ${0},
-        ${0},
-        ${["cleanup"]}
-      )
-    `
-  );
-  return id;
-};
-
-const findIngredientId = async (tenantId: string, name: string) => {
-  const [row] = await database.$queryRaw<{ id: string }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_kitchen.ingredients
-      WHERE tenant_id = ${tenantId}
-        AND name = ${name}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
-  return row?.id;
+  const itemNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
+  const created = await runManifestCommand({
+    entity: "InventoryItem",
+    command: "create",
+    body: {
+      item_number: itemNumber,
+      name,
+      category,
+      description: "Created by cleanup",
+      unitOfMeasure: "unit",
+      unitCost: 0,
+      quantityOnHand: 0,
+      parLevel: 0,
+      reorder_level: 0,
+      supplierId: "",
+      tags: ["cleanup"],
+      fsa_status: "",
+      fsa_temp_logged: false,
+      fsa_allergen_info: false,
+      fsa_traceable: false,
+    },
+    user,
+  });
+  if (!created.ok) {
+    throw new Error(created.message || "Failed to create inventory item");
+  }
+  return (created.result as { id?: string } | null)?.id ?? null;
 };
 
 const getFallbackUnitId = async () => {
-  const [row] = await database.$queryRaw<{ id: number }[]>(
-    Prisma.sql`
-      SELECT id
-      FROM core.units
-      ORDER BY id ASC
-      LIMIT 1
-    `
-  );
-  return row?.id;
+  const unitIds = (await listIngredients()).data
+    .map((ingredient) => ingredient.defaultUnitId)
+    .filter((unitId): unitId is number => typeof unitId === "number")
+    .sort((a, b) => a - b);
+  return unitIds[0];
 };
 
 const insertIngredient = async (
   tenantId: string,
+  user: { id: string; tenantId: string; role: string },
   name: string,
   defaultUnitId: number,
   category: string
 ) => {
-  const existingId = await findIngredientId(tenantId, name);
-  if (existingId) {
-    return existingId;
-  }
-
-  const id = randomUUID();
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.ingredients (
-        tenant_id,
-        id,
-        name,
-        category,
-        default_unit_id,
-        is_active
-      )
-      VALUES (${tenantId}, ${id}, ${name}, ${category}, ${defaultUnitId}, true)
-    `
+  const existing = (await listIngredients()).data.find(
+    (ingredient) =>
+      ingredient.tenantId === tenantId &&
+      !ingredient.deletedAt &&
+      ingredient.name.toLowerCase() === name.toLowerCase()
   );
-  return id;
+  if (existing) {
+    return existing.id;
+  }
+  const created = await runManifestCommand({
+    entity: "Ingredient",
+    command: "create",
+    body: {
+      name,
+      category,
+      defaultUnitId,
+      densityGPerMl: 1,
+      shelfLifeDays: 0,
+      storageInstructions: "",
+      allergens: [],
+    },
+    user,
+  });
+  if (!created.ok) {
+    throw new Error(created.message || "Failed to create ingredient");
+  }
+  return (created.result as { id?: string } | null)?.id ?? null;
 };
 
-const deactivateRecipeAndDish = async (tenantId: string, recipeId: string) => {
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipes
-      SET is_active = false
-      WHERE tenant_id = ${tenantId}
-        AND id = ${recipeId}
-    `
-  );
+const deactivateRecipeAndDish = async (
+  tenantId: string,
+  user: { id: string; tenantId: string; role: string },
+  recipeId: string
+) => {
+  const recipeResult = await runManifestCommand({
+    entity: "Recipe",
+    command: "deactivate",
+    instanceId: recipeId,
+    body: { reason: "Cleanup imported item" },
+    user,
+  });
+  if (!recipeResult.ok) {
+    throw new Error(recipeResult.message || "Failed to deactivate recipe");
+  }
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.dishes
-      SET is_active = false
-      WHERE tenant_id = ${tenantId}
-        AND recipe_id = ${recipeId}
-    `
+  const dishes = (await listDishes()).data.filter(
+    (dish) => dish.tenantId === tenantId && !dish.deletedAt && dish.recipeId === recipeId
   );
+  for (const dish of dishes) {
+    const dishResult = await runManifestCommand({
+      entity: "Dish",
+      command: "deactivate",
+      instanceId: dish.id,
+      body: { reason: "Cleanup imported item", userId: user.id },
+      user,
+    });
+    if (!dishResult.ok) {
+      throw new Error(dishResult.message || "Failed to deactivate dish");
+    }
+  }
 };
 
 export const cleanupImportedItems = async (formData: FormData) => {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   const recipeIds = formData.getAll("recipeIds").map(String);
   if (recipeIds.length === 0) {
     redirect("/kitchen/recipes");
   }
 
-  const candidates = await database.$queryRaw<CandidateRow[]>(
-    Prisma.sql`
-      SELECT id, name
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND id IN (${Prisma.join(recipeIds)})
-        AND deleted_at IS NULL
-    `
-  );
+  const candidates: CandidateRow[] = (await listRecipes()).data
+    .filter(
+      (recipe) =>
+        recipe.tenantId === tenantId &&
+        !recipe.deletedAt &&
+        recipeIds.includes(recipe.id)
+    )
+    .map((recipe) => ({ id: recipe.id, name: recipe.name }));
 
   const fallbackUnitId = await getFallbackUnitId();
   if (!fallbackUnitId) {
@@ -254,21 +251,23 @@ export const cleanupImportedItems = async (formData: FormData) => {
     if (classification.action === "inventory") {
       await insertInventoryItem(
         tenantId,
+        user,
         candidate.name,
         classification.category
       );
-      await deactivateRecipeAndDish(tenantId, candidate.id);
+      await deactivateRecipeAndDish(tenantId, user, candidate.id);
       continue;
     }
 
     if (classification.action === "ingredient") {
       await insertIngredient(
         tenantId,
+        user,
         candidate.name,
         fallbackUnitId,
         classification.category
       );
-      await deactivateRecipeAndDish(tenantId, candidate.id);
+      await deactivateRecipeAndDish(tenantId, user, candidate.id);
     }
   }
 

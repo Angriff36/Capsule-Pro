@@ -190,14 +190,6 @@ export {
   OVERRIDE_REASON_CODES,
 } from "./kitchen/constraint-outcomes";
 
-// ============ Prisma Store Exports ============
-
-export {
-  createPrismaStoreProvider,
-  PrepTaskPrismaStore,
-  StationPrismaStore,
-} from "./prisma-store";
-
 // ============ Prep List Auto-Generation Exports ============
 
 export type {

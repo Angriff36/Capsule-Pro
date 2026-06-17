@@ -1,6 +1,6 @@
 {
   "strategy": "native-compileProjectToIR",
-  "compilerVersion": "2.9.0",
+  "compilerVersion": "2.10.7",
   "sources": [
     "_base.manifest",
     "ai/ai-event-setup-rules.manifest",
@@ -108,8 +108,8 @@
   ],
   "counts": {
     "entities": 212,
-    "commands": 1054,
-    "events": 1029,
+    "commands": 1060,
+    "events": 1035,
     "sagas": 2,
     "reactions": 10
   },

@@ -11,7 +11,6 @@ import { listClients, listLeads } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -68,23 +67,13 @@ export default async function MarketingLeadsPage() {
   }
 
   // Parallel data fetch: leads + aggregate metrics
-  const [leads, statusCounts, valueAggregate] = await Promise.all([
-    (await listLeads()).data,
-    database.lead.groupBy({
-      by: ["status"],
-      where: { tenantId, deletedAt: null },
-      _count: { status: true },
-    }),
-    database.lead.aggregate({
-      where: { tenantId, deletedAt: null },
-      _sum: { estimatedValue: true },
-    }),
-  ]);
+  const leads = (await listLeads()).data;
 
   // Build summary from grouped counts
   const countByStatus: Record<string, number> = {};
-  for (const row of statusCounts) {
-    countByStatus[row.status] = row._count.status;
+  for (const lead of leads) {
+    const status = lead.status || "unknown";
+    countByStatus[status] = (countByStatus[status] ?? 0) + 1;
   }
 
   const summary = {
@@ -94,9 +83,10 @@ export default async function MarketingLeadsPage() {
     qualifiedCount: countByStatus.qualified ?? 0,
     convertedCount: countByStatus.converted ?? 0,
     disqualifiedCount: countByStatus.disqualified ?? 0,
-    totalEstimatedValue: valueAggregate._sum.estimatedValue
-      ? Number(valueAggregate._sum.estimatedValue)
-      : 0,
+    totalEstimatedValue: leads.reduce(
+      (sum, lead) => sum + Number(lead.estimatedValue ?? 0),
+      0
+    ),
   };
 
   // Spec FR-129: annotate leads whose contactEmail matches an existing Client

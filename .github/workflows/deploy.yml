@@ -3,19 +3,10 @@ name: Deploy
 # Production only. Triggered manually via Actions → Deploy → Run workflow.
 # Git pushes do not deploy (vercel.json ignoreCommand skips Vercel Git builds).
 #
-# Deploy through Vercel's remote builder. Runtime secrets (DATABASE_URL,
-# CLERK_*, etc.) live in Vercel project settings, not GitHub Actions env.
+# Deploy through Vercel's remote builder. Runtime secrets live in Vercel project settings.
 
 on:
   workflow_dispatch:
-    inputs:
-      resolve_migration:
-        description: >-
-          Optional: name of a FAILED migration to mark rolled-back
-          (prisma migrate resolve --rolled-back) before applying. Use only to
-          recover a deploy that failed mid-migration. Leave blank normally.
-        required: false
-        default: ""
 
 concurrency:
   group: deploy-production-manual
@@ -33,87 +24,9 @@ env:
   NPM_TOKEN: ${{ github.token }}
 
 jobs:
-  # Apply pending Prisma migrations BEFORE shipping code that depends on them.
-  # Prod fell 13 migrations behind because this step never existed (notes §49).
-  # The production DATABASE_URL lives in Vercel project env — pulled via the
-  # existing Vercel credentials, no extra GitHub secret required.
-  migrate-database:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@53.1.0
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ github.token }}
-
-      - name: Pull production env from Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-
-      # Snapshot production BEFORE migrating. A Neon branch is an instant
-      # copy-on-write restore point. Fail-closed: if this errors, the job stops
-      # here and `prisma migrate deploy` never runs, so prod stays untouched.
-      - name: Create pre-deploy Neon snapshot (prod restore point)
-        env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          SNAPSHOT_TAG: ${{ github.run_id }}
-        run: node scripts/neon-snapshot-branch.mjs
-
-      - name: Apply migrations (prisma migrate deploy)
-        env:
-          # Vercel marks DATABASE_URL as sensitive (write-only — `vercel pull`
-          # cannot retrieve it), so the migrate connection comes from this
-          # GitHub secret. The pulled env file remains a fallback for
-          # non-sensitive setups.
-          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          RESOLVE_MIGRATION: ${{ inputs.resolve_migration }}
-        run: |
-          ENV_FILE=".vercel/.env.production.local"
-          getvar() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
-          DATABASE_URL="${PRODUCTION_DATABASE_URL:-$(getvar DATABASE_URL)}"
-          DIRECT_URL="$(getvar DIRECT_URL)"
-          if [ -z "$DATABASE_URL" ]; then
-            echo "::error::No database URL: set the PRODUCTION_DATABASE_URL GitHub secret (Vercel marks DATABASE_URL sensitive, so it cannot be pulled)"
-            exit 1
-          fi
-          # prisma migrate needs a direct (non-pooled) connection; derive it
-          # from Neon's -pooler host when DIRECT_URL is not set explicitly.
-          if [ -z "$DIRECT_URL" ]; then
-            DIRECT_URL="${DATABASE_URL/-pooler./.}"
-          fi
-          export DATABASE_URL DIRECT_URL
-          # Recovery: mark a previously-FAILED migration rolled-back so it can be
-          # re-applied (e.g. after fixing it to be idempotent). Opt-in via input.
-          if [ -n "$RESOLVE_MIGRATION" ]; then
-            echo "Marking migration '$RESOLVE_MIGRATION' as rolled-back before deploy…"
-            pnpm --filter @repo/database exec prisma migrate resolve --rolled-back "$RESOLVE_MIGRATION"
-          fi
-          pnpm db:deploy
-          pnpm migrate:status
-
   deploy-app:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: migrate-database
     env:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
     steps:
@@ -154,7 +67,6 @@ jobs:
   deploy-api:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: migrate-database
     env:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
     steps:

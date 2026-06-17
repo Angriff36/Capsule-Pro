@@ -9,6 +9,7 @@ const envSchema = z.object({
   MCP_SERVER_MODE: z.enum(["tenant", "admin"]).default("tenant"),
   MCP_SERVICE_ACCOUNT_ID: z.string().optional(),
   MCP_SERVICE_TENANT_ID: z.string().optional(),
+  MCP_SERVICE_ACCOUNT_ROLE: z.string().optional(),
   DATABASE_URL: z.string().optional(),
   MCP_PROJECT_ROOT: z.string().optional(),
   MCP_ALLOW_DB: z.string().optional(),

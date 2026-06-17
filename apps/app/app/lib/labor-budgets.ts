@@ -1,15 +1,19 @@
 "use client";
 
-// NOTE: Keeping apiFetch for budget alerts endpoint (custom response shape) and alert acknowledge/resolve actions
-import { apiFetch } from "@/app/lib/api";
 import {
+  budgetAlertAcknowledge,
+  budgetAlertMarkResolved,
   getLaborBudget as _getLaborBudget,
+  listBudgetAlerts as _listBudgetAlerts,
   listLaborBudgets as _listLaborBudgets,
   laborBudgetCreate,
   laborBudgetSoftDelete,
   laborBudgetUpdate,
 } from "@/app/lib/manifest-client.generated";
-import type { LaborBudget as GeneratedLaborBudget } from "@/app/lib/manifest-types.generated";
+import type {
+  BudgetAlert as GeneratedBudgetAlert,
+  LaborBudget as GeneratedLaborBudget,
+} from "@/app/lib/manifest-types.generated";
 
 // Type definitions and API client functions for Labor Budget Management
 
@@ -117,7 +121,6 @@ export interface AlertFilters {
 }
 
 // API Client Functions
-const API_BASE = "/api/staff/budgets";
 
 /**
  * Get all labor budgets with optional filters
@@ -201,70 +204,68 @@ export async function deleteBudget(id: string): Promise<{ success: boolean }> {
   return { success: true };
 }
 
-// NOTE: Keeping apiFetch for budget alerts — custom endpoint with non-standard response shape
+function mapBudgetAlert(row: GeneratedBudgetAlert): BudgetAlert {
+  return {
+    id: row.id,
+    tenant_id: row.tenantId,
+    budget_id: row.budgetId ?? "",
+    alert_type: (row.alertType ?? "threshold_80") as AlertType,
+    utilization: row.utilization ?? 0,
+    message: row.message ?? "",
+    is_acknowledged: row.isAcknowledged ?? false,
+    acknowledged_by: row.acknowledgedBy ?? null,
+    acknowledged_at: row.acknowledgedAt ? new Date(row.acknowledgedAt) : null,
+    is_resolved: row.resolved ?? false,
+    resolved_at: row.resolvedAt ? new Date(row.resolvedAt) : null,
+    created_at: new Date(row.createdAt),
+  };
+}
+
 /**
  * Get budget alerts with optional filters
  */
 export async function getBudgetAlerts(
   filters?: AlertFilters
 ): Promise<BudgetAlert[]> {
-  const params = new URLSearchParams();
+  const result = await _listBudgetAlerts();
+  let alerts = result.data.map(mapBudgetAlert);
+
   if (filters?.budgetId) {
-    params.set("budgetId", filters.budgetId);
+    alerts = alerts.filter((a) => a.budget_id === filters.budgetId);
   }
   if (filters?.isAcknowledged !== undefined) {
-    params.set("isAcknowledged", filters.isAcknowledged.toString());
+    alerts = alerts.filter((a) => a.is_acknowledged === filters.isAcknowledged);
   }
   if (filters?.alertType) {
-    params.set("alertType", filters.alertType);
+    alerts = alerts.filter((a) => a.alert_type === filters.alertType);
   }
 
-  const response = await apiFetch(`${API_BASE}/alerts?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch alerts: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.alerts;
+  return alerts;
 }
 
-// NOTE: Keeping apiFetch for alert acknowledge — custom action endpoint
 /**
  * Acknowledge a budget alert
  */
 export async function acknowledgeAlert(
   alertId: string
 ): Promise<{ success: boolean }> {
-  const response = await apiFetch(`${API_BASE}/alerts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ alertId, action: "acknowledge" }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to acknowledge alert: ${response.statusText}`);
+  const result = await budgetAlertAcknowledge({ id: alertId });
+  if (!result) {
+    throw new Error("Failed to acknowledge alert");
   }
-
   return { success: true };
 }
 
-// NOTE: Keeping apiFetch for alert resolve — custom action endpoint
 /**
  * Resolve a budget alert
  */
 export async function resolveAlert(
   alertId: string
 ): Promise<{ success: boolean }> {
-  const response = await apiFetch(`${API_BASE}/alerts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ alertId, action: "resolve" }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to resolve alert: ${response.statusText}`);
+  const result = await budgetAlertMarkResolved({ id: alertId });
+  if (!result) {
+    throw new Error("Failed to resolve alert");
   }
-
   return { success: true };
 }
 

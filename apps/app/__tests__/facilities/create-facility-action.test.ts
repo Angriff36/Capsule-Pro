@@ -28,13 +28,8 @@ vi.mock("@/lib/manifest-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 
-vi.mock("@repo/database", () => ({
-  database: {
-    facility: { create: vi.fn(), findMany: vi.fn() },
-  },
-}));
+vi.mock("@/app/lib/manifest-client.generated", () => ({}));
 
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -43,7 +38,6 @@ import { createFacility } from "../../app/(authenticated)/facilities/actions";
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
 const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
-const facilityCreate = database.facility.create as ReturnType<typeof vi.fn>;
 
 const TENANT_ID = "tenant-1";
 const USER_ID = "user-1";
@@ -86,7 +80,6 @@ describe("createFacility server action — governance migration", () => {
 
   it("routes the write through the governed Facility.create command (constitution §9)", async () => {
     await createFacility(form(FULL));
-    expect(facilityCreate).not.toHaveBeenCalled();
     expect(runCommand).toHaveBeenCalledTimes(1);
     expect(runCommand).toHaveBeenCalledWith(
       expect.objectContaining({

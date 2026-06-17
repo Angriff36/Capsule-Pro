@@ -1,6 +1,6 @@
 {
-  "irHash": "3dc56de61e32352d1492fe790555d7fd082bcdb019238cbcc48277d57ad12e09",
-  "compilerVersion": "2.10.5",
+  "irHash": "14b771dd16ff1ac758270b3e4e6f8e9af1a52d762914cb62356f2061dbf7da80",
+  "compilerVersion": "2.10.7",
   "commands": [
     {
       "entity": "ActionMilestone",
@@ -1174,6 +1174,22 @@
       ],
       "effects": [
         "compute"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "softDelete",
+      "commandId": "BattleBoard.softDelete",
+      "policies": [
+        "BattleBoardDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "BattleBoardDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
       ]
     },
     {
@@ -5030,6 +5046,22 @@
       "guardCount": 1,
       "emits": [
         "EventBudgetFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventBudget",
+      "command": "softDelete",
+      "commandId": "EventBudget.softDelete",
+      "policies": [
+        "EventBudgetDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "EventBudgetDeleted"
       ],
       "effects": [
         "compute",
@@ -11817,6 +11849,22 @@
     },
     {
       "entity": "PurchaseOrder",
+      "command": "markPartiallyReceived",
+      "commandId": "PurchaseOrder.markPartiallyReceived",
+      "policies": [
+        "PurchaseOrderDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderPartiallyReceived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
       "command": "markReceived",
       "commandId": "PurchaseOrder.markReceived",
       "policies": [
@@ -11897,6 +11945,22 @@
     },
     {
       "entity": "PurchaseOrderItem",
+      "command": "recordQuantityReceived",
+      "commandId": "PurchaseOrderItem.recordQuantityReceived",
+      "policies": [
+        "PurchaseOrderItemDefaultAccess"
+      ],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseOrderItemQuantityRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrderItem",
       "command": "remove",
       "commandId": "PurchaseOrderItem.remove",
       "policies": [
@@ -11921,6 +11985,22 @@
       "guardCount": 2,
       "emits": [
         "PurchaseOrderItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrderItem",
+      "command": "updateQualityStatus",
+      "commandId": "PurchaseOrderItem.updateQualityStatus",
+      "policies": [
+        "PurchaseOrderItemDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderItemQualityUpdated"
       ],
       "effects": [
         "compute",
@@ -13770,6 +13850,22 @@
       "guardCount": 1,
       "emits": [
         "ShipmentShipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "softDelete",
+      "commandId": "Shipment.softDelete",
+      "policies": [
+        "ShipmentDefaultAccess"
+      ],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentDeleted"
       ],
       "effects": [
         "compute",

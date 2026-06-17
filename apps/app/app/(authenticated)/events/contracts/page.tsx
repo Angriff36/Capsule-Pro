@@ -1,4 +1,8 @@
-import { listEvents } from "@/app/lib/manifest-client.generated";
+import {
+  listClients,
+  listEventContracts,
+  listEvents,
+} from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractsListPage
  * @intent Display all contracts with filters, search, and expiring alerts
@@ -9,7 +13,6 @@ import { listEvents } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   Alert,
   AlertDescription,
@@ -56,38 +59,59 @@ const ContractsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch all contracts with related event and client data
-  const contracts = await database.$queryRaw<ContractWithRelations[]>`
-    SELECT
-      ec.id,
-      ec.tenant_id,
-      ec.event_id,
-      ec.client_id,
-      ec.contract_number,
-      ec.title,
-      ec.status,
-      ec.document_url,
-      ec.document_type,
-      ec.notes,
-      ec.expires_at,
-      ec.created_at,
-      ec.updated_at,
-      jsonb_build_object(
-        'id', e.id,
-        'title', e.title,
-        'eventDate', e.event_date
-      ) as event,
-      jsonb_build_object(
-        'id', c.id,
-        'name', COALESCE(c.company_name, NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), 'Unknown')
-      ) as client
-    FROM tenant_events.event_contracts ec
-    LEFT JOIN tenant_events.events e ON e.tenant_id = ec.tenant_id AND e.id = ec.event_id
-    LEFT JOIN tenant_crm.clients c ON c.tenant_id = ec.tenant_id AND c.id = ec.client_id
-    WHERE ec.tenant_id = ${tenantId}
-      AND ec.deleted_at IS NULL
-    ORDER BY ec.created_at DESC
-  `;
+  const [contractsRaw, eventsRaw, clientsRaw] = await Promise.all([
+    listEventContracts(),
+    listEvents(),
+    listClients(),
+  ]);
+  const eventById = new Map(
+    eventsRaw.data
+      .filter((event) => event.tenantId === tenantId && !event.deletedAt)
+      .map((event) => [event.id, event])
+  );
+  const clientById = new Map(
+    clientsRaw.data
+      .filter((client) => client.tenantId === tenantId && !client.deletedAt)
+      .map((client) => [client.id, client])
+  );
+  const contracts: ContractWithRelations[] = contractsRaw.data
+    .filter((contract) => contract.tenantId === tenantId && !contract.deletedAt)
+    .map((contract) => {
+      const event = eventById.get(contract.eventId);
+      const client = clientById.get(contract.clientId);
+      return {
+        id: contract.id,
+        tenantId: contract.tenantId,
+        eventId: contract.eventId,
+        clientId: contract.clientId,
+        contractNumber: contract.contractNumber ?? null,
+        title: contract.title ?? "",
+        status: contract.status ?? "draft",
+        documentUrl: contract.documentUrl ?? null,
+        documentType: contract.documentType ?? null,
+        notes: contract.notes ?? null,
+        expiresAt: contract.expiresAt ? new Date(contract.expiresAt) : null,
+        createdAt: new Date(contract.createdAt),
+        updatedAt: new Date(contract.updatedAt),
+        event: event
+          ? {
+              id: event.id,
+              title: event.title ?? "",
+              eventDate: new Date(event.eventDate),
+            }
+          : null,
+        client: client
+          ? {
+              id: client.id,
+              name:
+                client.companyName ||
+                `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() ||
+                "Unknown",
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   // Calculate expiring contracts (within 30 days)
   const today = new Date();
@@ -125,20 +149,22 @@ const ContractsPage = async () => {
   );
 
   // Fetch events for the contract creation dropdown
-  const events = (await listEvents()).data;
+  const events = eventsRaw.data.filter(
+    (event) => event.tenantId === tenantId && !event.deletedAt
+  );
 
   // Fetch clients for the contract creation dropdown
-  const rawClients = await database.$queryRaw<
-    Array<{ id: string; name: string }>
-  >`
-    SELECT c.id,
-           COALESCE(c.company_name, NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), 'Unknown') as name
-    FROM tenant_crm.clients c
-    WHERE c.tenant_id = ${tenantId}
-      AND c.deleted_at IS NULL
-    ORDER BY name
-    LIMIT 100
-  `;
+  const rawClients = clientsRaw.data
+    .filter((client) => client.tenantId === tenantId && !client.deletedAt)
+    .map((client) => ({
+      id: client.id,
+      name:
+        client.companyName ||
+        `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() ||
+        "Unknown",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, 100);
 
   // Serialize dates for client component
   const serializedEvents = events.map((e) => ({

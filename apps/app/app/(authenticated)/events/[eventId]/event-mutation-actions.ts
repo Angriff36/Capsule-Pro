@@ -1,6 +1,9 @@
 "use server";
+import {
+  getEvent,
+  listEventDishes,
+} from "@/app/lib/manifest-client.generated";
 
-import { database, Prisma } from "@repo/database";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { type EventStatus, eventStatuses } from "../constants";
@@ -147,17 +150,14 @@ export async function updateEventForMutation(
   }
 
   // Check menu items — read query per constitution §10
-  const [menuRow] = await database.$queryRaw<Array<{ count: number }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_events.event_dishes
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-    `
-  );
+  const menuCount = (await listEventDishes()).data.filter(
+    (row) =>
+      row.tenantId === tenantId &&
+      row.eventId === eventId &&
+      !row.deletedAt
+  ).length;
 
-  if (!menuRow?.count) {
+  if (menuCount === 0) {
     missing.push("menuItems");
   }
 
@@ -172,10 +172,7 @@ export async function updateEventForMutation(
   // The Event.update command requires clientId and eventNumber params (guards
   // check != null). The form may not always send these, so read the existing
   // event and use its values as fallbacks.
-  const existing = await database.event.findFirst({
-    where: { tenantId, id: eventId, deletedAt: null },
-    select: { clientId: true, eventNumber: true },
-  });
+  const existing = await getEvent(eventId);
 
   if (!existing) {
     throw new Error("Event not found.");
@@ -196,7 +193,7 @@ export async function updateEventForMutation(
       eventNumber: eventNumberInput,
       title,
       eventType,
-      eventDate: eventDate.toISOString(),
+      eventDate: eventDate.getTime(),
       guestCount,
       venueName: getOptionalString(formData, "venueName") ?? "",
       venueAddress: getOptionalString(formData, "venueAddress") ?? "",

@@ -4,7 +4,7 @@
  * Service for evaluating and executing SMS automation rules based on business events.
  * Integrates with the existing SMS notification service.
  */
-import { database } from "@repo/database";
+import type { NotificationDatabase } from "./notification-database-port";
 import { sendSmsNotification } from "./sms-notification-service";
 import type { SmsTemplateData } from "./sms-templates";
 
@@ -71,6 +71,7 @@ export interface RuleEvaluationResult {
  * Evaluate and execute all active SMS automation rules for a given trigger
  */
 export async function evaluateAndExecuteRules(
+  database: NotificationDatabase,
   context: RuleEvaluationContext
 ): Promise<RuleEvaluationResult[]> {
   const results: RuleEvaluationResult[] = [];

@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { listIngredients } from "@/app/lib/manifest-client.generated";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -18,15 +18,23 @@ const NewRecipePage = async () => {
     notFound();
   }
 
-  // Fetch units and prioritize yield-appropriate units (servings, each, portions, etc.)
-  // Temperature units like celsius should not be defaults for recipe yield
-  const allUnits = await database.$queryRaw<UnitRow[]>(
-    Prisma.sql`
-      SELECT id, code, name
-      FROM core.units
-      ORDER BY code ASC
-    `
-  );
+  const inferredUnits = Array.from(
+    new Set(
+      (await listIngredients()).data
+        .map((ingredient) => ingredient.defaultUnitId)
+        .filter((unitId): unitId is number => typeof unitId === "number")
+    )
+  )
+    .sort((a, b) => a - b)
+    .map<UnitRow>((unitId) => ({
+      id: unitId,
+      code: `unit-${unitId}`,
+      name: `Unit ${unitId}`,
+    }));
+  const allUnits =
+    inferredUnits.length > 0
+      ? inferredUnits
+      : [{ id: 1, code: "unit-1", name: "Unit 1" }];
 
   // Yield-appropriate units in priority order
   const yieldUnitPriority = [

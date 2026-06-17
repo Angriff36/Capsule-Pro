@@ -1,7 +1,6 @@
 import { listAdminTasks, listClientContacts, listClients, listEvents, listInventoryItems, listKitchenTasks, listKnowledgeBaseEntries, listVenues } from "@/app/lib/manifest-client.generated";
 import { analytics } from "@repo/analytics/server";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
@@ -102,17 +101,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("events")
           ? Promise.all([
               (await listEvents()).data,
-              database.event.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { title: { contains: q, mode: "insensitive" } },
-                    { eventNumber: { contains: q, mode: "insensitive" } },
-                    { venueName: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listEvents()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -122,18 +111,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("clients")
           ? Promise.all([
               (await listClients()).data,
-              database.client.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { company_name: { contains: q, mode: "insensitive" } },
-                    { first_name: { contains: q, mode: "insensitive" } },
-                    { last_name: { contains: q, mode: "insensitive" } },
-                    { email: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listClients()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -143,18 +121,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("contacts")
           ? Promise.all([
               (await listClientContacts()).data,
-              database.clientContact.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { first_name: { contains: q, mode: "insensitive" } },
-                    { last_name: { contains: q, mode: "insensitive" } },
-                    { email: { contains: q, mode: "insensitive" } },
-                    { title: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listClientContacts()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -164,19 +131,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("venues")
           ? Promise.all([
               (await listVenues()).data,
-              database.venue.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  isActive: true,
-                  OR: [
-                    { name: { contains: q, mode: "insensitive" } },
-                    { city: { contains: q, mode: "insensitive" } },
-                    { stateProvince: { contains: q, mode: "insensitive" } },
-                    { venueType: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listVenues()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -186,17 +141,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("inventory")
           ? Promise.all([
               (await listInventoryItems()).data,
-              database.inventoryItem.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  OR: [
-                    { name: { contains: q, mode: "insensitive" } },
-                    { item_number: { contains: q, mode: "insensitive" } },
-                    { category: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listInventoryItems()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -206,18 +151,7 @@ export async function GET(request: NextRequest) {
         typesToSearch.includes("knowledge")
           ? Promise.all([
               (await listKnowledgeBaseEntries()).data,
-              database.knowledgeBaseEntry.count({
-                where: {
-                  tenantId,
-                  deletedAt: null,
-                  status: "published",
-                  OR: [
-                    { title: { contains: q, mode: "insensitive" } },
-                    { category: { contains: q, mode: "insensitive" } },
-                    { content: { contains: q, mode: "insensitive" } },
-                  ],
-                },
-              }),
+              (await listKnowledgeBaseEntries()).data.length,
             ]).then(([items, total]) => ({ items, total }))
           : Promise.resolve({
               items: [] as Record<string, unknown>[],
@@ -229,23 +163,9 @@ export async function GET(request: NextRequest) {
               const [kitchenItems, kitchenCount, adminItems, adminCount] =
                 await Promise.all([
                   (await listKitchenTasks()).data,
-                  database.kitchenTask.count({
-                    where: {
-                      tenantId,
-                      title: { contains: q, mode: "insensitive" },
-                    },
-                  }),
+                  (await listKitchenTasks()).data.length,
                   (await listAdminTasks()).data,
-                  database.adminTask.count({
-                    where: {
-                      tenantId,
-                      deletedAt: null,
-                      OR: [
-                        { title: { contains: q, mode: "insensitive" } },
-                        { description: { contains: q, mode: "insensitive" } },
-                      ],
-                    },
-                  }),
+                  (await listAdminTasks()).data.length,
                 ]);
 
               // Tag items with task_type for frontend routing

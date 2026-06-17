@@ -430,7 +430,18 @@ export interface BatchDeleteResponse {
 
 export type BatchResponse = BatchUpdateResponse | BatchDeleteResponse;
 
-// NOTE: Keeping apiFetch for batch update — no generated batch operation exists
+function batchUpdatesToCommandInput(
+  updates: BatchUpdateRequest
+): Parameters<typeof inventoryItemUpdate>[0] {
+  return {
+    category: updates.category,
+    fsa_status: updates.fsa_status,
+    reorder_level: updates.reorder_level,
+    tags: updates.tags,
+    unitCost: updates.unit_cost,
+  };
+}
+
 /**
  * Batch update inventory items (category, fsa_status, tags, unit_cost, reorder_level)
  */
@@ -438,39 +449,42 @@ export async function batchUpdateItems(
   ids: string[],
   updates: BatchUpdateRequest
 ): Promise<BatchUpdateResponse> {
-  const response = await apiFetch("/api/inventory/batch", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "update", ids, updates }),
-  });
+  const payload = batchUpdatesToCommandInput(updates);
+  let updated = 0;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to batch update inventory items");
+  for (const id of ids) {
+    const result = await inventoryItemUpdate({ id, ...payload });
+    if (result) {
+      updated += 1;
+    }
   }
 
-  return response.json();
+  return {
+    action: "update",
+    success: updated > 0,
+    updated,
+    updates,
+  };
 }
 
-// NOTE: Keeping apiFetch for batch delete — no generated batch operation exists
 /**
  * Batch delete inventory items (soft delete)
  */
 export async function batchDeleteItems(
   ids: string[]
 ): Promise<BatchDeleteResponse> {
-  const response = await apiFetch("/api/inventory/batch", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "delete", ids }),
-  });
+  let deleted = 0;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to batch delete inventory items");
+  for (const id of ids) {
+    await inventoryItemSoftDelete({ id });
+    deleted += 1;
   }
 
-  return response.json();
+  return {
+    action: "delete",
+    deleted,
+    success: deleted > 0,
+  };
 }
 
 export interface ImportError {

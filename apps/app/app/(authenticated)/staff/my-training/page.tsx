@@ -1,4 +1,4 @@
-import { database } from "@repo/database";
+import { listTrainingAssignments } from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandBody,
@@ -45,21 +45,7 @@ export default async function MyTrainingPage() {
 
   const { id: employeeId, tenantId } = currentUser;
 
-  const assignments = await database.trainingAssignment.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      OR: [{ employeeId }, { assignedToAll: true }],
-      module: { deletedAt: null },
-    },
-    include: {
-      module: true,
-      completions: {
-        where: { tenantId, employeeId },
-        take: 1,
-      },
-    },
-  });
+  const assignments = (await listTrainingAssignments()).data;
 
   const rows: TrainingRow[] = assignments
     .map((assignment) => {

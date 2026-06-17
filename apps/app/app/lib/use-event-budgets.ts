@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
-  getEventBudget as _getEventBudget,
-  listBudgetLineItems as _listBudgetLineItems,
-  listEventBudgets as _listEventBudgets,
   budgetLineItemCreate,
   budgetLineItemRemove,
   budgetLineItemUpdate,
   eventBudgetCreate,
+  eventBudgetSoftDelete,
   eventBudgetUpdate,
+  getEventBudget as _getEventBudget,
+  listBudgetLineItems as _listBudgetLineItems,
+  listEventBudgets as _listEventBudgets,
 } from "@/app/lib/manifest-client.generated";
 
 // Types
@@ -110,9 +110,6 @@ export interface EventBudgetListResponse {
   total: number;
   totalPages: number;
 }
-
-// API Base URL
-const API_BASE = "/api/events/budgets";
 
 // Helper functions
 export function getStatusColor(status: EventBudgetStatus): string {
@@ -231,16 +228,11 @@ export async function updateBudget(
   }
 }
 
-// NOTE: Keeping apiFetch — no generated eventBudgetDelete/eventBudgetSoftDelete command
 export async function deleteBudget(budgetId: string): Promise<void> {
   try {
-    const response = await apiFetch(`${API_BASE}/${budgetId}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to delete budget");
+    const result = await eventBudgetSoftDelete({ id: budgetId });
+    if (!result) {
+      throw new Error("Failed to delete budget");
     }
   } catch (error) {
     console.error("Error deleting budget:", error);

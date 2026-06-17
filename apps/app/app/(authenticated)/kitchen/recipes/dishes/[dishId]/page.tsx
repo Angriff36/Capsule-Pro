@@ -1,5 +1,10 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import {
+  listDishes,
+  listEventDishes,
+  listPrepTasks,
+  listRecipes,
+} from "@/app/lib/manifest-client.generated";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -65,50 +70,68 @@ export default async function DishDetailPage({
   const tenantId = await getTenantIdForOrg(orgId);
   const { dishId } = await params;
 
-  const dishes = await database.$queryRaw<DishDetailRow[]>(
-    Prisma.sql`
-      SELECT
-        d.id,
-        d.name,
-        d.description,
-        d.category,
-        d.service_style,
-        d.presentation_image_url,
-        d.dietary_tags,
-        d.allergens,
-        d.price_per_person,
-        d.cost_per_person,
-        d.portion_size_description,
-        d.min_prep_lead_days,
-        d.max_prep_lead_days,
-        d.is_active,
-        d.recipe_id,
-        r.name AS recipe_name,
-        COALESCE(events.count, 0) AS event_count,
-        COALESCE(prep.count, 0) AS prep_task_count
-      FROM tenant_kitchen.dishes d
-      LEFT JOIN tenant_kitchen.recipes r
-        ON r.tenant_id = d.tenant_id AND r.id = d.recipe_id
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS count
-        FROM tenant_events.event_dishes ed
-        WHERE ed.tenant_id = d.tenant_id AND ed.dish_id = d.id AND ed.deleted_at IS NULL
-      ) events ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS count
-        FROM tenant_kitchen.prep_tasks pt
-        WHERE pt.tenant_id = d.tenant_id AND pt.dish_id = d.id AND pt.deleted_at IS NULL
-      ) prep ON true
-      WHERE d.tenant_id = ${tenantId}
-        AND d.id = ${dishId}::uuid
-        AND d.deleted_at IS NULL
-    `
-  );
+  const [dishes, recipes, eventDishes, prepTasks] = await Promise.all([
+    (await listDishes()).data.filter(
+      (dish) => dish.tenantId === tenantId && !dish.deletedAt && dish.id === dishId
+    ),
+    (await listRecipes()).data.filter(
+      (recipe) => recipe.tenantId === tenantId && !recipe.deletedAt
+    ),
+    (await listEventDishes()).data.filter(
+      (eventDish) => eventDish.tenantId === tenantId && !eventDish.deletedAt
+    ),
+    (await listPrepTasks()).data.filter(
+      (task) => task.tenantId === tenantId && !task.deletedAt
+    ),
+  ]);
 
   if (dishes.length === 0) {
     return notFound();
   }
-  const dish = dishes[0];
+  const recipeNameById = new Map(recipes.map((recipe) => [recipe.id, recipe.name]));
+  const eventCountByDishId = new Map<string, number>();
+  for (const eventDish of eventDishes) {
+    eventCountByDishId.set(
+      eventDish.dishId,
+      (eventCountByDishId.get(eventDish.dishId) ?? 0) + 1
+    );
+  }
+  const prepTaskCountByDishId = new Map<string, number>();
+  for (const prepTask of prepTasks) {
+    if (!prepTask.dishId) continue;
+    prepTaskCountByDishId.set(
+      prepTask.dishId,
+      (prepTaskCountByDishId.get(prepTask.dishId) ?? 0) + 1
+    );
+  }
+  const sourceDish = dishes[0];
+  const dish: DishDetailRow = {
+    id: sourceDish.id,
+    name: sourceDish.name,
+    description: sourceDish.description ?? null,
+    category: sourceDish.category ?? null,
+    service_style: sourceDish.serviceStyle ?? null,
+    presentation_image_url: sourceDish.presentationImageUrl ?? null,
+    dietary_tags: Array.isArray(sourceDish.dietaryTags)
+      ? (sourceDish.dietaryTags as string[])
+      : null,
+    allergens: Array.isArray(sourceDish.allergens)
+      ? (sourceDish.allergens as string[])
+      : null,
+    price_per_person:
+      sourceDish.pricePerPerson == null ? null : Number(sourceDish.pricePerPerson),
+    cost_per_person:
+      sourceDish.costPerPerson == null ? null : Number(sourceDish.costPerPerson),
+    portion_size_description: sourceDish.portionSizeDescription ?? null,
+    min_prep_lead_days: Number(sourceDish.minPrepLeadDays ?? 0),
+    max_prep_lead_days:
+      sourceDish.maxPrepLeadDays == null ? null : Number(sourceDish.maxPrepLeadDays),
+    is_active: sourceDish.isActive !== false,
+    recipe_id: sourceDish.recipeId,
+    recipe_name: recipeNameById.get(sourceDish.recipeId) ?? null,
+    event_count: eventCountByDishId.get(sourceDish.id) ?? 0,
+    prep_task_count: prepTaskCountByDishId.get(sourceDish.id) ?? 0,
+  };
 
   const margin =
     dish.price_per_person && dish.cost_per_person

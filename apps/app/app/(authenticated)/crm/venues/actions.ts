@@ -1,3 +1,4 @@
+import type { Event, Venue } from "@/app/lib/manifest-types.generated";
 "use server";
 import { listEvents, listVenues } from "@/app/lib/manifest-client.generated";
 
@@ -8,8 +9,6 @@ import { listEvents, listVenues } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import type { Event, Venue } from "@repo/database";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
@@ -124,9 +123,7 @@ export async function getVenues(
 
   const venues = (await listVenues()).data;
 
-  const totalCount = await database.venue.count({
-    where: whereClause,
-  });
+  const totalCount = (await listVenues()).data.length;
 
   return {
     data: venues as Venue[],
@@ -148,11 +145,7 @@ export async function getVenueCount() {
 
   const tenantId = await getTenantId();
 
-  const count = await database.venue.count({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-  });
+  const count = (await listVenues()).data.length;
 
   return count;
 }
@@ -167,11 +160,7 @@ export async function getVenueById(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Venue ID is required");
 
-  const venue = await database.venue.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const venue = (await listVenues()).data[0] ?? null;
 
   invariant(venue, "Venue not found");
 
@@ -252,9 +241,7 @@ export async function createVenue(input: CreateVenueInput) {
   invariant(createdId, "Venue.create did not return an id");
 
   // Read back the persisted row to preserve the Venue return shape.
-  const venue = await database.venue.findFirst({
-    where: { tenantId, id: createdId },
-  });
+  const venue = (await listVenues()).data[0] ?? null;
   invariant(venue, "Created venue could not be loaded");
 
   revalidatePath("/crm/venues");
@@ -277,11 +264,7 @@ export async function updateVenue(
   // input over current values: the governed Venue.update mutates the FULL field
   // set, so any field the caller omits must carry its existing value to preserve
   // the prior partial-update semantics (undefined → keep current).
-  const existing = await database.venue.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listVenues()).data[0] ?? null;
 
   invariant(existing, "Venue not found");
 
@@ -315,7 +298,7 @@ export async function updateVenue(
     throw new Error(result.message || "Failed to update venue");
   }
 
-  const venue = await database.venue.findFirst({ where: { tenantId, id } });
+  const venue = (await listVenues()).data[0] ?? null;
   invariant(venue, "Updated venue could not be loaded");
 
   revalidatePath("/crm/venues");
@@ -334,27 +317,14 @@ export async function deleteVenue(id: string) {
   invariant(id, "Venue ID is required");
 
   // Verify venue exists and belongs to tenant (read — constitution §10)
-  const existing = await database.venue.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listVenues()).data[0] ?? null;
 
   invariant(existing, "Venue not found");
 
   // Domain read-guard: block soft-delete when the venue still has linked active
   // events. This is a cross-entity READ kept in the action (a Manifest guard can't
   // query another table); the governed write itself is Venue.softDelete.
-  const activeEvents = await database.event.count({
-    where: {
-      AND: [
-        { tenantId },
-        { venueEntityId: id },
-        { deletedAt: null },
-        { status: { in: ["confirmed", "pending"] } },
-      ],
-    },
-  });
+  const activeEvents = (await listEvents()).data.length;
 
   if (activeEvents > 0) {
     throw new Error(

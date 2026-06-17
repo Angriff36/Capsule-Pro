@@ -1,6 +1,5 @@
 import { getCommandBoard, getEvent, listBoardProjections, listClients, listEventDishes, listEvents, listInventoryItems, listKitchenTasks, listUsers } from "@/app/lib/manifest-client.generated";
 import { createHash, randomUUID } from "node:crypto";
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 // Use the shared helper: server-side → direct API URL; client-side → "" (rewrite proxy)
@@ -2645,25 +2644,10 @@ async function getDashboardSummaryTool(
 
     const [upcomingEvents, totalClients, pendingTasks, inventoryItems] =
       await Promise.all([
-        database.event.count({
-          where: {
-            tenantId: context.tenantId,
-            eventDate: { gte: now, lte: weekFromNow },
-            status: { notIn: ["cancelled", "completed"] },
-          },
-        }),
-        database.client.count({
-          where: { tenantId: context.tenantId },
-        }),
-        database.kitchenTask.count({
-          where: {
-            tenantId: context.tenantId,
-            status: { in: ["pending", "in-progress"] },
-          },
-        }),
-        database.inventoryItem.count({
-          where: { tenantId: context.tenantId },
-        }),
+        (await listEvents()).data.length,
+        (await listClients()).data.length,
+        (await listKitchenTasks()).data.length,
+        (await listInventoryItems()).data.length,
       ]);
 
     return {

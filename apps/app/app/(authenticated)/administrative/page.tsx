@@ -1,5 +1,5 @@
+import { listDocuments, listEvents, listEventStaffs } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -59,7 +59,7 @@ const AdminDashboardPage = async ({
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
   const params = searchParams ? await searchParams : {};
   const weekOffset = parseWeekOffset(params.week);
@@ -69,55 +69,46 @@ const AdminDashboardPage = async ({
     weekNumber,
   } = getWeekDateRange(weekOffset);
 
-  const eventsWithStaff = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      event_number: string | null;
-      title: string;
-      event_type: string;
-      event_date: Date;
-      guest_count: number;
-      status: string;
-      venue_name: string | null;
-      venue_address: string | null;
-      notes: string | null;
-      tags: string[] | null;
-      created_at: Date;
-      staff_count: bigint;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        e.id,
-        e.tenant_id,
-        e.event_number,
-        e.title,
-        e.event_type,
-        e.event_date,
-        e.guest_count,
-        e.status,
-        e.venue_name,
-        e.venue_address,
-        e.notes,
-        e.tags,
-        e.created_at,
-        COALESCE(
-          (SELECT COUNT(*)
-           FROM tenant_events.event_staff esa
-           WHERE esa."eventId" = e.id::text
-             AND esa."tenantId" = e.tenant_id::text
-             AND esa."deletedAt" IS NULL
-          ), 0
-        ) as staff_count
-      FROM tenant_events.events e
-      WHERE e.tenant_id = ${tenantId}::uuid
-        AND e.deleted_at IS NULL
-        AND e.event_date >= ${weekStart}
-        AND e.event_date <= ${weekEnd}
-      ORDER BY e.event_date ASC, e.created_at ASC
-    `
+  const [allEvents, allEventStaffs] = await Promise.all([
+    (await listEvents()).data,
+    (await listEventStaffs()).data,
+  ]);
+  const staffCountsByEventId = allEventStaffs.reduce<Record<string, number>>(
+    (acc, staff) => {
+      acc[staff.eventId] = (acc[staff.eventId] ?? 0) + 1;
+      return acc;
+    },
+    {}
   );
+  const eventsWithStaff = allEvents
+    .filter((event) => {
+      if (!event.eventDate) {
+        return false;
+      }
+      const eventDate = new Date(event.eventDate);
+      return eventDate >= weekStart && eventDate <= weekEnd;
+    })
+    .sort((a, b) => {
+      const left = a.eventDate ? new Date(a.eventDate).getTime() : 0;
+      const right = b.eventDate ? new Date(b.eventDate).getTime() : 0;
+      return left - right;
+    })
+    .map((event) => ({
+      id: event.id,
+      tenant_id: event.tenantId,
+      event_number: event.eventNumber,
+      title: event.title,
+      event_type: event.eventType,
+      event_date: event.eventDate ? new Date(event.eventDate) : new Date(),
+      guest_count: event.guestCount ?? 0,
+      status: event.status,
+      venue_name: event.venueName,
+      venue_address: event.venueAddress,
+      notes: event.notes,
+      tags: event.tags,
+      created_at: event.createdAt ? new Date(event.createdAt) : new Date(),
+      staff_count: BigInt(staffCountsByEventId[event.id] ?? 0),
+    }));
 
   const events = eventsWithStaff.map((e) => ({
     id: e.id,
@@ -173,23 +164,23 @@ const AdminDashboardPage = async ({
 
   let recentDocuments: DocumentRow[] = [];
   try {
-    recentDocuments = await database.$queryRaw<DocumentRow[]>(
-      Prisma.sql`
-        SELECT
-          id,
-          file_name,
-          file_type,
-          parse_status,
-          parse_error,
-          created_at,
-          event_id
-        FROM tenant.documents
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-        ORDER BY created_at DESC
-        LIMIT 5
-      `
-    );
+    recentDocuments = (await listDocuments()).data
+      .slice()
+      .sort((a, b) => {
+        const left = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const right = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return right - left;
+      })
+      .slice(0, 5)
+      .map((document) => ({
+        id: document.id,
+        file_name: document.fileName,
+        file_type: document.fileType,
+        parse_status: document.parseStatus,
+        parse_error: document.parseError,
+        created_at: document.createdAt ? new Date(document.createdAt) : new Date(),
+        event_id: document.eventId,
+      }));
   } catch {
     recentDocuments = [];
   }
@@ -199,18 +190,13 @@ const AdminDashboardPage = async ({
   const lastWeekEnd = new Date(weekEnd);
   lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
 
-  const lastWeekEvents = await database.$queryRaw<[{ count: bigint }]>(
-    Prisma.sql`
-      SELECT COUNT(*) as count
-      FROM tenant_events.events
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        AND event_date >= ${lastWeekStart}
-        AND event_date <= ${lastWeekEnd}
-    `
-  );
-
-  const lastWeekCount = Number(lastWeekEvents[0]?.count ?? 0);
+  const lastWeekCount = allEvents.filter((event) => {
+    if (!event.eventDate) {
+      return false;
+    }
+    const eventDate = new Date(event.eventDate);
+    return eventDate >= lastWeekStart && eventDate <= lastWeekEnd;
+  }).length;
   const eventDiff = totalEvents - lastWeekCount;
 
   return (

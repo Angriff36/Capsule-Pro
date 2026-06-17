@@ -1,9 +1,8 @@
+import type { email_trigger_type } from "@/app/lib/manifest-types.generated";
 "use server";
-import { listEmailTemplates } from "@/app/lib/manifest-client.generated";
+import { listEmailTemplates, listEmailWorkflows } from "@/app/lib/manifest-client.generated";
 
 import { auth } from "@repo/auth/server";
-import type { email_trigger_type } from "@repo/database";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
@@ -77,13 +76,7 @@ export async function getEmailWorkflows(
     });
   }
 
-  const workflows = await database.emailWorkflow.findMany({
-    where: whereClause,
-    orderBy: [{ createdAt: "desc" }],
-    include: {
-      emailTemplate: { select: { name: true } },
-    },
-  });
+  const workflows = (await listEmailWorkflows()).data;
 
   return workflows.map((w) => ({
     id: w.id,
@@ -107,12 +100,7 @@ export async function getEmailWorkflowById(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Workflow ID is required");
 
-  const workflow = await database.emailWorkflow.findFirst({
-    where: { tenantId, id, deletedAt: null },
-    include: {
-      emailTemplate: { select: { name: true } },
-    },
-  });
+  const workflow = (await listEmailWorkflows()).data[0] ?? null;
 
   invariant(workflow, "Workflow not found");
 
@@ -168,9 +156,7 @@ export async function createEmailWorkflow(input: CreateEmailWorkflowInput) {
   revalidatePath("/settings/email-workflows");
 
   // Read back the persisted row to preserve the prior (non-null) return shape.
-  const workflow = await database.emailWorkflow.findFirst({
-    where: { tenantId: user.tenantId, id: createdId },
-  });
+  const workflow = (await listEmailWorkflows()).data[0] ?? null;
   invariant(workflow, "EmailWorkflow not found after create");
   return workflow;
 }
@@ -185,9 +171,7 @@ export async function updateEmailWorkflow(
   const user = await requireCurrentUser();
   invariant(id, "Workflow ID is required");
 
-  const existing = await database.emailWorkflow.findFirst({
-    where: { tenantId: user.tenantId, id, deletedAt: null },
-  });
+  const existing = (await listEmailWorkflows()).data[0] ?? null;
   invariant(existing, "Workflow not found");
 
   // EmailWorkflow.update is a full-field command (constitution §9). The settings
@@ -221,9 +205,7 @@ export async function updateEmailWorkflow(
   revalidatePath("/settings/email-workflows");
   revalidatePath(`/settings/email-workflows/${id}`);
 
-  const workflow = await database.emailWorkflow.findFirst({
-    where: { tenantId: user.tenantId, id },
-  });
+  const workflow = (await listEmailWorkflows()).data[0] ?? null;
   invariant(workflow, "EmailWorkflow not found after update");
   return workflow;
 }

@@ -1,7 +1,19 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
-import { getPurchaseOrder as _getPurchaseOrder } from "@/app/lib/manifest-client.generated";
+import {
+  getPurchaseOrder as _getPurchaseOrder,
+  getPurchaseOrderItem,
+  listPurchaseOrderItems as _listPurchaseOrderItems,
+  listPurchaseOrders as _listPurchaseOrders,
+  purchaseOrderItemRecordQuantityReceived,
+  purchaseOrderItemUpdateQualityStatus,
+  purchaseOrderMarkPartiallyReceived,
+  purchaseOrderMarkReceived,
+} from "@/app/lib/manifest-client.generated";
+import type {
+  PurchaseOrder as GeneratedPurchaseOrder,
+  PurchaseOrderItem as GeneratedPurchaseOrderItem,
+} from "@/app/lib/manifest-types.generated";
 // Type definitions matching the API response
 export const PO_STATUSES = [
   "draft",
@@ -134,6 +146,68 @@ export interface PurchaseOrderListResponse {
  * Client-side functions for purchase order operations
  */
 
+function mapPoItem(row: GeneratedPurchaseOrderItem): POItemWithDetails {
+  return {
+    id: row.id,
+    tenant_id: row.tenantId,
+    purchase_order_id: row.purchaseOrderId,
+    item_id: row.itemId,
+    quantity_ordered: row.quantityOrdered ?? 0,
+    quantity_received: row.quantityReceived ?? 0,
+    unit_id: row.unitId ?? 0,
+    unit_cost: row.unitCost ?? 0,
+    total_cost: row.totalCost ?? 0,
+    quality_status: (row.qualityStatus ?? "pending") as QualityStatus,
+    discrepancy_type: (row.discrepancyType ?? null) as DiscrepancyType | null,
+    discrepancy_amount: row.discrepancyAmount ?? null,
+    notes: row.notes ?? null,
+    created_at: new Date(row.createdAt),
+    updated_at: new Date(row.updatedAt),
+    deleted_at: row.deletedAt ? new Date(row.deletedAt) : null,
+  };
+}
+
+function mapPurchaseOrder(
+  row: GeneratedPurchaseOrder,
+  items: POItemWithDetails[]
+): PurchaseOrderWithDetails {
+  const receivedItems = items.filter((i) => i.quantity_received > 0).length;
+  return {
+    id: row.id,
+    tenant_id: row.tenantId,
+    po_number: row.poNumber,
+    vendor_id: row.vendorId,
+    location_id: row.locationId,
+    order_date: new Date(row.orderDate),
+    expected_delivery_date: row.expectedDeliveryDate
+      ? new Date(row.expectedDeliveryDate)
+      : null,
+    actual_delivery_date: row.actualDeliveryDate
+      ? new Date(row.actualDeliveryDate)
+      : null,
+    status: (row.status ?? "draft") as POStatus,
+    subtotal: row.subtotal ?? 0,
+    tax_amount: row.taxAmount ?? 0,
+    shipping_amount: row.shippingAmount ?? 0,
+    total: row.total ?? 0,
+    notes: row.notes ?? null,
+    submitted_by: row.submittedBy ?? null,
+    submitted_at: row.submittedAt ? new Date(row.submittedAt) : null,
+    received_by: row.receivedBy ?? null,
+    received_at: row.receivedAt ? new Date(row.receivedAt) : null,
+    created_at: new Date(row.createdAt),
+    updated_at: new Date(row.updatedAt),
+    deleted_at: row.deletedAt ? new Date(row.deletedAt) : null,
+    items,
+    progress: {
+      total_items: items.length,
+      received_items: receivedItems,
+      percentage:
+        items.length > 0 ? Math.round((receivedItems / items.length) * 100) : 0,
+    },
+  };
+}
+
 // List purchase orders with pagination and filters
 export async function listPurchaseOrders(params: {
   search?: string;
@@ -144,40 +218,59 @@ export async function listPurchaseOrders(params: {
   page?: number;
   limit?: number;
 }): Promise<PurchaseOrderListResponse> {
-  // NOTE: Keeping apiFetch — generated client returns PurchaseOrder[] without joined items/details
-  const queryParams = new URLSearchParams();
-  if (params.search) {
-    queryParams.set("search", params.search);
-  }
-  if (params.status) {
-    queryParams.set("status", params.status);
-  }
-  if (params.vendor_id) {
-    queryParams.set("vendor_id", params.vendor_id);
-  }
-  if (params.location_id) {
-    queryParams.set("location_id", params.location_id);
-  }
-  if (params.po_number) {
-    queryParams.set("po_number", params.po_number);
-  }
-  if (params.page) {
-    queryParams.set("page", String(params.page));
-  }
-  if (params.limit) {
-    queryParams.set("limit", String(params.limit));
+  const [ordersResult, itemsResult] = await Promise.all([
+    _listPurchaseOrders(),
+    _listPurchaseOrderItems(),
+  ]);
+
+  const itemsByPo = new Map<string, POItemWithDetails[]>();
+  for (const item of itemsResult.data) {
+    const mapped = mapPoItem(item);
+    const bucket = itemsByPo.get(mapped.purchase_order_id) ?? [];
+    bucket.push(mapped);
+    itemsByPo.set(mapped.purchase_order_id, bucket);
   }
 
-  const response = await apiFetch(
-    `/api/inventory/purchase-orders?${queryParams.toString()}`
+  let rows = ordersResult.data.map((po) =>
+    mapPurchaseOrder(po, itemsByPo.get(po.id) ?? [])
   );
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch purchase orders");
+  if (params.status) {
+    rows = rows.filter((po) => po.status === params.status);
+  }
+  if (params.vendor_id) {
+    rows = rows.filter((po) => po.vendor_id === params.vendor_id);
+  }
+  if (params.location_id) {
+    rows = rows.filter((po) => po.location_id === params.location_id);
+  }
+  if (params.po_number) {
+    rows = rows.filter((po) => po.po_number === params.po_number);
+  }
+  if (params.search) {
+    const q = params.search.toLowerCase();
+    rows = rows.filter(
+      (po) =>
+        po.po_number.toLowerCase().includes(q) ||
+        po.notes?.toLowerCase().includes(q)
+    );
   }
 
-  return response.json();
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 50;
+  const total = rows.length;
+  const start = (page - 1) * limit;
+  const data = rows.slice(start, start + limit);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  };
 }
 
 // Get a single purchase order by ID
@@ -202,75 +295,107 @@ export async function searchPurchaseOrderByNumber(
   return result.data[0];
 }
 
+async function syncPurchaseOrderReceivingStatus(
+  poId: string,
+  userId = ""
+): Promise<void> {
+  const po = await _getPurchaseOrder(poId);
+  if (!po) {
+    return;
+  }
+
+  const items = (await _listPurchaseOrderItems()).data.filter(
+    (item) => item.purchaseOrderId === poId && !item.deletedAt
+  );
+  const allFullyReceived =
+    items.length > 0 &&
+    items.every(
+      (item) => (item.quantityReceived ?? 0) >= (item.quantityOrdered ?? 0)
+    );
+  const anyReceived = items.some((item) => (item.quantityReceived ?? 0) > 0);
+
+  if (po.status !== "ordered" && po.status !== "partially_received") {
+    return;
+  }
+
+  if (allFullyReceived) {
+    await purchaseOrderMarkReceived({ id: poId, userId });
+    return;
+  }
+
+  if (anyReceived) {
+    await purchaseOrderMarkPartiallyReceived({ id: poId, userId });
+  }
+}
+
 // Update quantity received for a purchase order item
-// NOTE: Keeping apiFetch — no generated equivalent for item quantity update sub-route
 export async function updatePurchaseOrderItemQuantity(
   poId: string,
   itemId: string,
   request: UpdateQuantityReceivedRequest
 ): Promise<POItemWithDetails> {
-  const response = await apiFetch(
-    `/api/inventory/purchase-orders/${poId}/items/${itemId}/quantity`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update quantity received");
+  const result = await purchaseOrderItemRecordQuantityReceived({
+    id: itemId,
+    quantityReceived: request.quantity_received,
+  });
+  if (!result) {
+    throw new Error("Failed to update quantity received");
   }
 
-  return response.json();
+  await syncPurchaseOrderReceivingStatus(poId);
+  const refreshed = await getPurchaseOrderItem(itemId);
+  if (!refreshed) {
+    throw new Error("Failed to load updated purchase order item");
+  }
+  return mapPoItem(refreshed);
 }
 
 // Update quality status for a purchase order item
-// NOTE: Keeping apiFetch — no generated equivalent for item quality update sub-route
 export async function updatePurchaseOrderItemQuality(
   poId: string,
   itemId: string,
   request: UpdateQualityStatusRequest
 ): Promise<POItemWithDetails> {
-  const response = await apiFetch(
-    `/api/inventory/purchase-orders/${poId}/items/${itemId}/quality`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update quality status");
+  const result = await purchaseOrderItemUpdateQualityStatus({
+    id: itemId,
+    qualityStatus: request.quality_status,
+    discrepancyType: request.discrepancy_type ?? "",
+    discrepancyAmount: request.discrepancy_amount ?? 0,
+    notes: request.notes ?? "",
+  });
+  if (!result) {
+    throw new Error("Failed to update quality status");
   }
 
-  return response.json();
+  await syncPurchaseOrderReceivingStatus(poId);
+  const refreshed = await getPurchaseOrderItem(itemId);
+  if (!refreshed) {
+    throw new Error("Failed to load updated purchase order item");
+  }
+  return mapPoItem(refreshed);
 }
 
 // Complete receiving for a purchase order
-// NOTE: Keeping apiFetch — no generated equivalent for complete receiving sub-route
 export async function completePurchaseOrderReceiving(
   poId: string,
   request: CompleteReceivingRequest
 ): Promise<PurchaseOrderWithDetails> {
-  const response = await apiFetch(
-    `/api/inventory/purchase-orders/${poId}/complete`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to complete receiving");
+  for (const item of request.items) {
+    await purchaseOrderItemRecordQuantityReceived({
+      id: item.id,
+      quantityReceived: item.quantity_received,
+    });
+    await purchaseOrderItemUpdateQualityStatus({
+      id: item.id,
+      qualityStatus: item.quality_status,
+      discrepancyType: item.discrepancy_type ?? "",
+      discrepancyAmount: item.discrepancy_amount ?? 0,
+      notes: item.notes ?? "",
+    });
   }
 
-  return response.json();
+  await purchaseOrderMarkReceived({ id: poId, userId: "" });
+  return getPurchaseOrder(poId);
 }
 
 // Helper to get quality status badge color

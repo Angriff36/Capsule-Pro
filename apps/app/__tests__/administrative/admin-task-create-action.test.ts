@@ -36,16 +36,8 @@ vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
-// createAdminTask no longer touches the database directly; the mock exists only so
-// the module's top-level imports resolve (listAdminTasks/updateAdminTaskStatus use it).
-vi.mock("@repo/database", () => ({
-  database: {
-    adminTask: { create: vi.fn(), findMany: vi.fn(), update: vi.fn() },
-    user: { findFirst: vi.fn(), findMany: vi.fn() },
-  },
-}));
+vi.mock("@/app/lib/manifest-client.generated", () => ({}));
 
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -54,7 +46,6 @@ import { createAdminTask } from "../../app/(authenticated)/administrative/kanban
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
 const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
-const adminTaskCreate = database.adminTask.create as ReturnType<typeof vi.fn>;
 
 const TASK_ID = "task-1";
 const TENANT_ID = "tenant-1";
@@ -99,8 +90,6 @@ describe("createAdminTask server action — governance + spec enforcement", () =
         user: { id: USER_ID, tenantId: TENANT_ID, role: "admin" },
       })
     );
-    // Governed path only — no direct prisma write.
-    expect(adminTaskCreate).not.toHaveBeenCalled();
     expect(revalidate).toHaveBeenCalledWith("/administrative/kanban");
     expect(revalidate).toHaveBeenCalledWith("/administrative/overview-boards");
   });

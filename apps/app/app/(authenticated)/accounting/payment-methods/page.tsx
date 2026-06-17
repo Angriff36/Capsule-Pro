@@ -1,6 +1,5 @@
 import { listPaymentMethods } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -89,18 +88,10 @@ export default async function PaymentMethodsPage() {
 
   const [totalCount, activeCount, verifiedCount, flaggedCount, paymentMethods] =
     await Promise.all([
-      database.paymentMethod.count({
-        where: { tenantId, deletedAt: null },
-      }),
-      database.paymentMethod.count({
-        where: { tenantId, deletedAt: null, status: "ACTIVE" },
-      }),
-      database.paymentMethod.count({
-        where: { tenantId, deletedAt: null, status: "VERIFIED" },
-      }),
-      database.paymentMethod.count({
-        where: { tenantId, deletedAt: null, status: "FLAGGED" },
-      }),
+      (await listPaymentMethods()).data.length,
+      (await listPaymentMethods()).data.length,
+      (await listPaymentMethods()).data.length,
+      (await listPaymentMethods()).data.length,
       (await listPaymentMethods()).data,
     ]);
 

@@ -1,4 +1,9 @@
-import { listContractSignatures } from "@/app/lib/manifest-client.generated";
+import {
+  listClients,
+  listContractSignatures,
+  listEventContracts,
+  listEvents,
+} from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractDetailPage
  * @intent Display full contract details with signatures, document viewer, and actions
@@ -9,7 +14,6 @@ import { listContractSignatures } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
@@ -32,14 +36,12 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch contract with related event and client data
-  let contract;
+  let contract: Awaited<ReturnType<typeof listEventContracts>>["data"][number] | null = null;
   try {
-    contract = await database.eventContract.findFirst({
-      where: {
-        tenantId,
-        id,
-      },
-    });
+    contract =
+      (await listEventContracts()).data.find(
+        (row) => row.id === id && !row.deletedAt
+      ) ?? null;
   } catch {
     notFound();
   }
@@ -49,66 +51,43 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   }
 
   // Fetch related event
-  let event;
+  let event: Awaited<ReturnType<typeof listEvents>>["data"][number] | null = null;
   try {
-    event = await database.event.findFirst({
-      where: {
-        tenantId,
-        id: contract.eventId,
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        eventNumber: true,
-        venueName: true,
-      },
-    });
+    event =
+      (await listEvents()).data.find(
+        (row) => row.id === contract.eventId && !row.deletedAt
+      ) ?? null;
   } catch {
     event = null;
   }
 
   // Fetch related client
-  let client: Array<{
+  let client: {
     id: string;
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
+    companyName: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string | null;
     phone: string | null;
-  }>;
+  } | null;
   try {
-    client = await database.$queryRaw<
-      Array<{
-        id: string;
-        company_name: string | null;
-        first_name: string | null;
-        last_name: string | null;
-        email: string | null;
-        phone: string | null;
-      }>
-    >`
-    SELECT c.id,
-           c.company_name,
-           c.first_name,
-           c.last_name,
-           c.email,
-           c.phone
-    FROM tenant_crm.clients AS c
-    WHERE c.tenant_id = ${tenantId}
-      AND c.id = ${contract.clientId}
-      AND c.deleted_at IS NULL
-  `;
+    client =
+      (await listClients()).data.find(
+        (row) =>
+          row.id === contract.clientId &&
+          row.tenantId === tenantId &&
+          !row.deletedAt
+      ) ?? null;
   } catch {
-    client = [];
+    client = null;
   }
 
   // Fetch signatures for this contract
-  let signatures: Awaited<
-    ReturnType<typeof database.contractSignature.findMany>
-  >;
+  let signatures: Awaited<ReturnType<typeof listContractSignatures>>["data"];
   try {
-    signatures = (await listContractSignatures()).data;
+    signatures = (await listContractSignatures()).data.filter(
+      (row) => row.contractId === id && !row.deletedAt
+    );
   } catch {
     signatures = [];
   }
@@ -138,7 +117,7 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
         </div>
       </Header>
       <ContractDetailClient
-        client={client[0] || null}
+        client={client}
         contract={contract}
         event={event}
         signatures={signatures}

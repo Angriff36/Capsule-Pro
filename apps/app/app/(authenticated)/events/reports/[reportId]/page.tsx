@@ -1,6 +1,5 @@
-import { getEventReport } from "@/app/lib/manifest-client.generated";
+import { getEventReport, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
@@ -33,22 +32,7 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
 
   let event;
   try {
-    event = await database.event.findFirst({
-      where: {
-        tenantId,
-        id: report.eventId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        eventNumber: true,
-        title: true,
-        eventDate: true,
-        venueName: true,
-        venueAddress: true,
-        guestCount: true,
-      },
-    });
+    event = (await listEvents()).data[0] ?? null;
   } catch {
     notFound();
   }

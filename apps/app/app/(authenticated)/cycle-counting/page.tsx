@@ -1,4 +1,4 @@
-import { database } from "@repo/database";
+import { listStorageLocations } from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandHeader,
@@ -30,7 +30,6 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { redirect } from "next/navigation";
-import { requireTenantId } from "../../lib/tenant";
 import {
   createCycleCountSession,
   listCycleCountSessions,
@@ -52,16 +51,15 @@ const statusLabelMap: Record<string, string> = {
 };
 
 export default async function CycleCountingPage() {
-  const [sessions, tenantId] = await Promise.all([
+  const [sessions, storageLocations] = await Promise.all([
     listCycleCountSessions(),
-    requireTenantId(),
+    (await listStorageLocations()).data,
   ]);
 
-  const locations = await database.location.findMany({
-    where: { tenantId, deletedAt: null },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const locations = storageLocations
+    .filter((location) => location.is_active)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((location) => ({ id: location.id, name: location.name }));
 
   return (
     <PageCanvas>

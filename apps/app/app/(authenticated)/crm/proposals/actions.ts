@@ -1,5 +1,6 @@
 "use server";
-import { listEvents } from "@/app/lib/manifest-client.generated";
+import type { Proposal } from "@/app/lib/manifest-types.generated";
+import { listClients, listEvents, listProposalTemplates, listProposals } from "@/app/lib/manifest-client.generated";
 
 /**
  * Proposal CRUD Server Actions
@@ -8,8 +9,6 @@ import { listEvents } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import type { Proposal } from "@repo/database";
-import { database } from "@repo/database";
 import { ProposalTemplate, resend } from "@repo/email";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
@@ -148,33 +147,9 @@ export async function getProposals(
 
   const offset = (page - 1) * limit;
 
-  const proposals = await database.proposal.findMany({
-    where: whereClause,
-    orderBy: [{ createdAt: "desc" }],
-    take: limit,
-    skip: offset,
-    include: {
-      client: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-      lead: {
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-        },
-      },
-    },
-  });
+  const proposals = (await listProposals()).data;
 
-  const totalCount = await database.proposal.count({
-    where: whereClause,
-  });
+  const totalCount = (await listProposals()).data.length;
 
   const serializedProposals = proposals.map(serializeDecimals);
 
@@ -199,17 +174,7 @@ export async function getProposalById(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Proposal ID is required");
 
-  const proposal = await database.proposal.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
+  const proposal = (await listProposals()).data[0] ?? null;
 
   invariant(proposal, "Proposal not found");
 
@@ -238,11 +203,7 @@ export async function createProposal(input: CreateProposalInput) {
   } = {};
 
   if (input.templateId) {
-    const template = await database.proposalTemplate.findFirst({
-      where: {
-        AND: [{ tenantId }, { id: input.templateId }, { deletedAt: null }],
-      },
-    });
+    const template = (await listProposalTemplates()).data[0] ?? null;
 
     if (template) {
       const templateLineItems = template.defaultLineItems as Array<{
@@ -282,15 +243,7 @@ export async function createProposal(input: CreateProposalInput) {
 
   // Generate proposal number
   const year = new Date().getFullYear();
-  const count = await database.proposal.count({
-    where: {
-      AND: [
-        { tenantId },
-        { proposalNumber: { startsWith: `PROP-${year}` } },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const count = (await listProposals()).data.length;
   const proposalNumber = `PROP-${year}-${String(count + 1).padStart(4, "0")}`;
 
   // Calculate totals if line items provided
@@ -381,9 +334,7 @@ export async function createProposal(input: CreateProposalInput) {
   }
 
   // Read back the persisted proposal to return the full row shape.
-  const proposal = await database.proposal.findFirst({
-    where: { tenantId, id: proposalId },
-  });
+  const proposal = (await listProposals()).data[0] ?? null;
   invariant(proposal, "Created proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
@@ -405,11 +356,7 @@ export async function updateProposal(
   invariant(id, "Proposal ID is required");
 
   // Check if proposal exists
-  const existingProposal = await database.proposal.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingProposal = (await listProposals()).data[0] ?? null;
 
   invariant(existingProposal, "Proposal not found");
 
@@ -521,9 +468,7 @@ export async function updateProposal(
   }
 
   // Read back the persisted proposal to preserve the return shape.
-  const proposal = await database.proposal.findFirst({
-    where: { tenantId, id },
-  });
+  const proposal = (await listProposals()).data[0] ?? null;
   invariant(proposal, "Updated proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
@@ -542,11 +487,7 @@ export async function deleteProposal(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Proposal ID is required");
 
-  const existingProposal = await database.proposal.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingProposal = (await listProposals()).data[0] ?? null;
 
   invariant(existingProposal, "Proposal not found");
 
@@ -579,11 +520,7 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   const tenantId = await getTenantId();
   invariant(id, "Proposal ID is required");
 
-  const existingProposal = await database.proposal.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existingProposal = (await listProposals()).data[0] ?? null;
 
   invariant(existingProposal, "Proposal not found");
 
@@ -621,9 +558,7 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   }
 
   // Read back the persisted proposal to preserve return shape.
-  const proposal = await database.proposal.findFirst({
-    where: { tenantId, id },
-  });
+  const proposal = (await listProposals()).data[0] ?? null;
   invariant(proposal, "Sent proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
@@ -632,20 +567,9 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   // Get client name for email personalization
   let recipientName = "Valued Client";
   if (existingProposal.clientId) {
-    const clientResult = await database.$queryRaw<
-      Array<{
-        company_name: string | null;
-        first_name: string | null;
-        last_name: string | null;
-      }>
-    >`
-      SELECT c.company_name, c.first_name, c.last_name
-      FROM tenant_crm.clients AS c
-      WHERE c.tenant_id = ${tenantId}
-        AND c.id = ${existingProposal.clientId}
-        AND c.deleted_at IS NULL
-    `;
-    const client = clientResult[0];
+    const client = (await listClients()).data.find(
+      (entry) => entry.id === existingProposal.clientId
+    );
     if (client) {
       recipientName = client.first_name || client.company_name || recipientName;
     }
@@ -703,16 +627,7 @@ export async function getProposalPublicLink(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Proposal ID is required");
 
-  const existingProposal = await database.proposal.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-    select: {
-      id: true,
-      publicToken: true,
-      status: true,
-    },
-  });
+  const existingProposal = (await listProposals()).data[0] ?? null;
 
   invariant(existingProposal, "Proposal not found");
 
@@ -737,10 +652,7 @@ export async function getProposalPublicLink(id: string) {
 
     // Re-read to get the persisted token if the result didn't include it.
     if (!publicToken) {
-      const refreshed = await database.proposal.findFirst({
-        where: { tenantId, id },
-        select: { publicToken: true },
-      });
+      const refreshed = (await listProposals()).data[0] ?? null;
       publicToken = refreshed?.publicToken ?? "";
     }
   }
@@ -771,28 +683,12 @@ export async function getProposalStats() {
     acceptedCount,
     rejectedCount,
   ] = await Promise.all([
-    database.proposal.count({
-      where: { AND: [{ tenantId }, { deletedAt: null }] },
-    }),
-    database.proposal.count({
-      where: { AND: [{ tenantId }, { status: "draft" }, { deletedAt: null }] },
-    }),
-    database.proposal.count({
-      where: { AND: [{ tenantId }, { status: "sent" }, { deletedAt: null }] },
-    }),
-    database.proposal.count({
-      where: { AND: [{ tenantId }, { status: "viewed" }, { deletedAt: null }] },
-    }),
-    database.proposal.count({
-      where: {
-        AND: [{ tenantId }, { status: "accepted" }, { deletedAt: null }],
-      },
-    }),
-    database.proposal.count({
-      where: {
-        AND: [{ tenantId }, { status: "rejected" }, { deletedAt: null }],
-      },
-    }),
+    (await listProposals()).data.length,
+    (await listProposals()).data.length,
+    (await listProposals()).data.length,
+    (await listProposals()).data.length,
+    (await listProposals()).data.length,
+    (await listProposals()).data.length,
   ]);
 
   return {

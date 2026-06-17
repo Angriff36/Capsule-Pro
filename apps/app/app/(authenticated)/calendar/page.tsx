@@ -1,5 +1,5 @@
+import { listEvents, listScheduleShifts, listTimeOffRequests } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -55,72 +55,11 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
 
   // Fetch all three data sources in parallel
   const [dbEvents, shiftsResult, timeOffResult] = await Promise.all([
-    database.event
-      .findMany({
-        where: {
-          tenantId,
-          eventDate: {
-            gte: startUtc,
-            lte: endUtc,
-          },
-          deletedAt: null,
-          status: { not: "cancelled" },
-        },
-        select: {
-          id: true,
-          title: true,
-          eventDate: true,
-          eventType: true,
-          status: true,
-          venueName: true,
-          guestCount: true,
-        },
-        orderBy: { eventDate: "asc" },
-      })
+    (await listEvents()).data
       .catch(() => []),
-    database.scheduleShift
-      .findMany({
-        where: {
-          tenantId,
-          OR: [
-            { shift_start: { gte: start, lte: end } },
-            { shift_start: { lt: start }, shift_end: { gt: start } },
-          ],
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          shift_start: true,
-          shift_end: true,
-          role_during_shift: true,
-          employeeId: true,
-        },
-        orderBy: { shift_start: "asc" },
-        take: 100,
-      })
+    (await listScheduleShifts()).data
       .catch(() => []),
-    database.timeOffRequest
-      .findMany({
-        where: {
-          tenantId,
-          startDate: {
-            gte: startUtc,
-            lte: endUtc,
-          },
-          deletedAt: null,
-          status: "approved",
-        },
-        select: {
-          id: true,
-          startDate: true,
-          endDate: true,
-          reason: true,
-          status: true,
-          requestType: true,
-        },
-        orderBy: { startDate: "asc" },
-        take: 50,
-      })
+    (await listTimeOffRequests()).data
       .catch(() => []),
   ]);
 

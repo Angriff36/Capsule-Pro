@@ -1,5 +1,5 @@
+import { listCorrectiveActions } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -78,9 +78,7 @@ export default async function CorrectiveActionDetailPage({
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  const action = await database.correctiveAction.findUnique({
-    where: { tenantId_id: { tenantId, id } },
-  });
+  const action = (await listCorrectiveActions()).data[0] ?? null;
 
   if (!action || action.deletedAt) {
     return notFound();

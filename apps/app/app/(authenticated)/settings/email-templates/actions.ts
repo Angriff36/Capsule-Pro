@@ -1,5 +1,6 @@
+import type { EmailTemplate, email_template_type } from "@/app/lib/manifest-types.generated";
 "use server";
-import { listEmailTemplates } from "@/app/lib/manifest-client.generated";
+import { listEmailTemplates, listEmailWorkflows } from "@/app/lib/manifest-client.generated";
 
 /**
  * Email Template CRUD Server Actions
@@ -8,8 +9,6 @@ import { listEmailTemplates } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import type { EmailTemplate, email_template_type } from "@repo/database";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
@@ -89,9 +88,7 @@ export async function getEmailTemplates(
 
   const templates = (await listEmailTemplates()).data;
 
-  const totalCount = await database.emailTemplate.count({
-    where: whereClause,
-  });
+  const totalCount = (await listEmailTemplates()).data.length;
 
   return {
     data: templates as EmailTemplate[],
@@ -113,11 +110,7 @@ export async function getEmailTemplateCount() {
 
   const tenantId = await getTenantId();
 
-  const count = await database.emailTemplate.count({
-    where: {
-      AND: [{ tenantId }, { deletedAt: null }],
-    },
-  });
+  const count = (await listEmailTemplates()).data.length;
 
   return count;
 }
@@ -132,11 +125,7 @@ export async function getEmailTemplateById(id: string) {
   const tenantId = await getTenantId();
   invariant(id, "Template ID is required");
 
-  const template = await database.emailTemplate.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const template = (await listEmailTemplates()).data[0] ?? null;
 
   invariant(template, "Template not found");
 
@@ -152,17 +141,7 @@ export async function getDefaultTemplate(templateType: EmailTemplateType) {
 
   const tenantId = await getTenantId();
 
-  const template = await database.emailTemplate.findFirst({
-    where: {
-      AND: [
-        { tenantId },
-        { templateType },
-        { isDefault: true },
-        { isActive: true },
-        { deletedAt: null },
-      ],
-    },
-  });
+  const template = (await listEmailTemplates()).data[0] ?? null;
 
   return template as EmailTemplate | null;
 }
@@ -240,9 +219,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
 
   // Read back the persisted row to preserve the EmailTemplate return shape
   // (constitution §10 — reads may bypass runtime).
-  const template = await database.emailTemplate.findFirst({
-    where: { tenantId, id: createdId },
-  });
+  const template = (await listEmailTemplates()).data[0] ?? null;
   invariant(template, "Created email template could not be loaded");
 
   revalidatePath("/settings/email-templates");
@@ -268,11 +245,7 @@ export async function updateEmailTemplate(
   invariant(id, "Template ID is required");
 
   // Verify template exists and belongs to tenant (read — constitution §10)
-  const existing = await database.emailTemplate.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listEmailTemplates()).data[0] ?? null;
 
   invariant(existing, "Template not found");
 
@@ -332,9 +305,7 @@ export async function updateEmailTemplate(
   }
 
   // Read back the persisted row to preserve the EmailTemplate return shape.
-  const template = await database.emailTemplate.findFirst({
-    where: { tenantId, id },
-  });
+  const template = (await listEmailTemplates()).data[0] ?? null;
   invariant(template, "Updated email template could not be loaded");
 
   revalidatePath("/settings/email-templates");
@@ -358,25 +329,14 @@ export async function deleteEmailTemplate(id: string) {
   invariant(id, "Template ID is required");
 
   // Verify template exists and belongs to tenant (read — constitution §10)
-  const existing = await database.emailTemplate.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
+  const existing = (await listEmailTemplates()).data[0] ?? null;
 
   invariant(existing, "Template not found");
 
   // Domain read-guard: block soft-delete when the template is actively used
   // by email workflows. Cross-entity READ stays in the action (constitution
   // §10 — reads may bypass runtime).
-  const activeWorkflow = await database.emailWorkflow.findFirst({
-    where: {
-      tenantId,
-      emailTemplateId: id,
-      isActive: true,
-      deletedAt: null,
-    },
-  });
+  const activeWorkflow = (await listEmailWorkflows()).data[0] ?? null;
 
   invariant(
     !activeWorkflow,

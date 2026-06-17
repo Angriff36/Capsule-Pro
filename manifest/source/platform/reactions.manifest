@@ -178,6 +178,7 @@ on ProposalAccepted run Event.create
     ticketPrice: 0
     ticketTier: ""
     eventFormat: ""
+    accessibilityOptions: []
   }
 
 // ── Events: Event hub → BattleBoard propagation ─────────────────────────────
@@ -218,7 +219,7 @@ on EventConfirmed run PrepList.create
     eventId: payload._subject.id
     name: "Prep List (seeding from confirmed event)"
     batchMultiplier: 1
-    dietaryRestrictions: ""
+    dietaryRestrictions: []
     totalItems: 0
     totalEstimatedTime: 0
     notes: "[auto-seed:event-confirmed]"

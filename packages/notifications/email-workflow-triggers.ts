@@ -5,7 +5,7 @@
  * This service is called by event handlers (event status changes, task assignments, etc.)
  */
 
-import type { PrismaClient } from "@repo/database";
+import type { NotificationDatabase } from "./notification-database-port";
 import {
   type EmailRecipient,
   sendEmailFromTemplate,
@@ -53,7 +53,7 @@ export type UpdateLastTriggeredFn = (params: {
  *   Callers MUST pass a wrapper around `runManifestCommandCore`.
  */
 export async function triggerEmailWorkflows(
-  database: PrismaClient,
+  database: NotificationDatabase,
   context: WorkflowTriggerContext,
   updateLastTriggered: UpdateLastTriggeredFn
 ): Promise<{

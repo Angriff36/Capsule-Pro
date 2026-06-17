@@ -1789,6 +1789,10 @@ export async function battleBoardRemoveDish(input: BattleBoardRemoveDishInput = 
   const r = await executeCommand<BattleBoard>("BattleBoard", "removeDish", input as Record<string, unknown>);
   return r.result;
 }
+export async function battleBoardSoftDelete(input: BattleBoardSoftDeleteInput = {}): Promise<BattleBoard | undefined> {
+  const r = await executeCommand<BattleBoard>("BattleBoard", "softDelete", input as Record<string, unknown>);
+  return r.result;
+}
 export async function battleBoardStartVoting(input: BattleBoardStartVotingInput = {}): Promise<BattleBoard | undefined> {
   const r = await executeCommand<BattleBoard>("BattleBoard", "startVoting", input as Record<string, unknown>);
   return r.result;
@@ -2759,6 +2763,10 @@ export async function eventBudgetCreate(input: EventBudgetCreateInput = {}): Pro
 }
 export async function eventBudgetFinalize(input: EventBudgetFinalizeInput = {}): Promise<EventBudget | undefined> {
   const r = await executeCommand<EventBudget>("EventBudget", "finalize", input as Record<string, unknown>);
+  return r.result;
+}
+export async function eventBudgetSoftDelete(input: EventBudgetSoftDeleteInput = {}): Promise<EventBudget | undefined> {
+  const r = await executeCommand<EventBudget>("EventBudget", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventBudgetUpdate(input: EventBudgetUpdateInput = {}): Promise<EventBudget | undefined> {
@@ -4477,6 +4485,10 @@ export async function purchaseOrderMarkOrdered(input: PurchaseOrderMarkOrderedIn
   const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markOrdered", input as Record<string, unknown>);
   return r.result;
 }
+export async function purchaseOrderMarkPartiallyReceived(input: PurchaseOrderMarkPartiallyReceivedInput = {}): Promise<PurchaseOrder | undefined> {
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markPartiallyReceived", input as Record<string, unknown>);
+  return r.result;
+}
 export async function purchaseOrderMarkReceived(input: PurchaseOrderMarkReceivedInput = {}): Promise<PurchaseOrder | undefined> {
   const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markReceived", input as Record<string, unknown>);
   return r.result;
@@ -4497,12 +4509,20 @@ export async function purchaseOrderItemCreate(input: PurchaseOrderItemCreateInpu
   const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "create", input as Record<string, unknown>);
   return r.result;
 }
+export async function purchaseOrderItemRecordQuantityReceived(input: PurchaseOrderItemRecordQuantityReceivedInput = {}): Promise<PurchaseOrderItem | undefined> {
+  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "recordQuantityReceived", input as Record<string, unknown>);
+  return r.result;
+}
 export async function purchaseOrderItemRemove(input: PurchaseOrderItemRemoveInput = {}): Promise<PurchaseOrderItem | undefined> {
   const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderItemUpdate(input: PurchaseOrderItemUpdateInput = {}): Promise<PurchaseOrderItem | undefined> {
   const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "update", input as Record<string, unknown>);
+  return r.result;
+}
+export async function purchaseOrderItemUpdateQualityStatus(input: PurchaseOrderItemUpdateQualityStatusInput = {}): Promise<PurchaseOrderItem | undefined> {
+  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "updateQualityStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionApproveFinance(input: PurchaseRequisitionApproveFinanceInput = {}): Promise<PurchaseRequisition | undefined> {
@@ -4975,6 +4995,10 @@ export async function shipmentSchedule(input: ShipmentScheduleInput = {}): Promi
 }
 export async function shipmentShip(input: ShipmentShipInput = {}): Promise<Shipment | undefined> {
   const r = await executeCommand<Shipment>("Shipment", "ship", input as Record<string, unknown>);
+  return r.result;
+}
+export async function shipmentSoftDelete(input: ShipmentSoftDeleteInput = {}): Promise<Shipment | undefined> {
+  const r = await executeCommand<Shipment>("Shipment", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentStartPreparing(input: ShipmentStartPreparingInput = {}): Promise<Shipment | undefined> {
@@ -6152,6 +6176,10 @@ export interface BattleBoardRemoveDishInput {
   id?: string;
   dishId?: string;
   userId?: string;
+}
+
+export interface BattleBoardSoftDeleteInput {
+  id?: string;
 }
 
 export interface BattleBoardStartVotingInput {
@@ -7825,6 +7853,10 @@ export interface EventBudgetCreateInput {
 export interface EventBudgetFinalizeInput {
   id?: string;
   userId?: string;
+}
+
+export interface EventBudgetSoftDeleteInput {
+  id?: string;
 }
 
 export interface EventBudgetUpdateInput {
@@ -10619,6 +10651,11 @@ export interface PurchaseOrderMarkOrderedInput {
   userId?: string;
 }
 
+export interface PurchaseOrderMarkPartiallyReceivedInput {
+  id?: string;
+  userId?: string;
+}
+
 export interface PurchaseOrderMarkReceivedInput {
   id?: string;
   userId?: string;
@@ -10652,6 +10689,11 @@ export interface PurchaseOrderItemCreateInput {
   notes?: string;
 }
 
+export interface PurchaseOrderItemRecordQuantityReceivedInput {
+  id?: string;
+  quantityReceived?: number;
+}
+
 export interface PurchaseOrderItemRemoveInput {
   id?: string;
   userId?: string;
@@ -10661,6 +10703,14 @@ export interface PurchaseOrderItemUpdateInput {
   id?: string;
   quantityOrdered?: number;
   unitCost?: number;
+  notes?: string;
+}
+
+export interface PurchaseOrderItemUpdateQualityStatusInput {
+  id?: string;
+  qualityStatus?: string;
+  discrepancyType?: string;
+  discrepancyAmount?: number;
   notes?: string;
 }
 
@@ -11343,6 +11393,11 @@ export interface ShipmentShipInput {
   id?: string;
   userId?: string;
   trackingNumber?: string;
+}
+
+export interface ShipmentSoftDeleteInput {
+  id?: string;
+  userId?: string;
 }
 
 export interface ShipmentStartPreparingInput {

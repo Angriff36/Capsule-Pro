@@ -1,6 +1,5 @@
-import { listInventoryItems } from "@/app/lib/manifest-client.generated";
+import { listInventoryItems, listInventoryStocks, listInventoryTransactions, listStorageLocations } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -41,7 +40,7 @@ const WarehouseInventoryPage = async () => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
   // Fetch active inventory items ordered by name
   const items = (await listInventoryItems()).data;
@@ -51,40 +50,47 @@ const WarehouseInventoryPage = async () => {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const usageRows = await database.$queryRaw<
-    { item_id: string; total_qty: Prisma.Decimal }[]
-  >`
-    SELECT item_id, COALESCE(SUM(ABS(quantity)), 0) AS total_qty
-    FROM tenant_inventory.inventory_transactions
-    WHERE tenant_id = ${tenantId}::uuid
-      AND transaction_date >= ${sevenDaysAgo}
-    GROUP BY item_id
-  `;
-
   const usageByItem = new Map<string, number>();
-  for (const row of usageRows) {
-    usageByItem.set(row.item_id, Number(row.total_qty) / 7);
+  const transactions = (await listInventoryTransactions()).data;
+  for (const transaction of transactions) {
+    if (!transaction.transactionDate) {
+      continue;
+    }
+    if (new Date(transaction.transactionDate) < sevenDaysAgo) {
+      continue;
+    }
+    const quantity = Math.abs(Number(transaction.quantity ?? 0));
+    usageByItem.set(
+      transaction.itemId,
+      (usageByItem.get(transaction.itemId) ?? 0) + quantity / 7
+    );
   }
 
-  // Get primary storage location name for each item via raw SQL join.
-  // Picks the stock row with the highest quantity_on_hand per item.
-  const locationRows = await database.$queryRaw<
-    { item_id: string; location_name: string }[]
-  >`
-    SELECT DISTINCT ON (s.item_id)
-      s.item_id,
-      sl.name AS location_name
-    FROM tenant_inventory.inventory_stock s
-    JOIN tenant_inventory.storage_locations sl
-      ON sl.tenant_id = s.tenant_id AND sl.id = s.storage_location_id
-    WHERE s.tenant_id = ${tenantId}::uuid
-      AND sl.is_active = true
-    ORDER BY s.item_id, s.quantity_on_hand DESC
-  `;
-
+  const stocks = (await listInventoryStocks()).data;
+  const storageLocations = (await listStorageLocations()).data;
+  const locationNameById = new Map(
+    storageLocations.map((location) => [location.id, location.name])
+  );
+  const primaryStockByItem = new Map<
+    string,
+    { storageLocationId: string; quantityOnHand: number }
+  >();
+  for (const stock of stocks) {
+    const quantityOnHand = Number(stock.quantity_on_hand ?? 0);
+    const existing = primaryStockByItem.get(stock.itemId);
+    if (!existing || quantityOnHand > existing.quantityOnHand) {
+      primaryStockByItem.set(stock.itemId, {
+        storageLocationId: stock.storageLocationId,
+        quantityOnHand,
+      });
+    }
+  }
   const locationByItem = new Map<string, string>();
-  for (const row of locationRows) {
-    locationByItem.set(row.item_id, row.location_name);
+  for (const [itemId, stock] of primaryStockByItem.entries()) {
+    locationByItem.set(
+      itemId,
+      locationNameById.get(stock.storageLocationId) ?? "Unassigned"
+    );
   }
 
   // Build display rows

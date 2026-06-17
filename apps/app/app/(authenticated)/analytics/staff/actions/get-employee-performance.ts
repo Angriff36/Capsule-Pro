@@ -1,9 +1,17 @@
 "use server";
+import {
+  listClientInteractions,
+  listEventStaffs,
+  listKitchenTaskProgresses,
+  listPrepTasks,
+  listScheduleShifts,
+  listTimeEntries,
+  listUsers,
+} from "@/app/lib/manifest-client.generated";
 
 import "server-only";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface EmployeePerformanceMetrics {
@@ -67,6 +75,120 @@ export interface EmployeePerformanceSummary {
   totalEmployees: number;
 }
 
+function calculateMetrics(input: {
+  userId: string;
+  prepTasks: Awaited<ReturnType<typeof listPrepTasks>>["data"];
+  taskProgress: Awaited<ReturnType<typeof listKitchenTaskProgresses>>["data"];
+  timeEntries: Awaited<ReturnType<typeof listTimeEntries>>["data"];
+  scheduleShifts: Awaited<ReturnType<typeof listScheduleShifts>>["data"];
+  clientInteractions: Awaited<ReturnType<typeof listClientInteractions>>["data"];
+  eventStaff: Awaited<ReturnType<typeof listEventStaffs>>["data"];
+  since: Date;
+}) {
+  const userTaskProgress = input.taskProgress.filter(
+    (row) => row.employeeId === input.userId && row.createdAt >= input.since
+  );
+  const taskIds = new Set(userTaskProgress.map((row) => row.taskId));
+  const tasks = input.prepTasks.filter((row) => taskIds.has(row.id));
+  const completedTasks = tasks.filter(
+    (row) => String(row.status).toLowerCase() === "completed"
+  );
+  const onTimeTasks = completedTasks.filter((task) => {
+    if (!task.completedAt) {
+      return false;
+    }
+    if (!task.dueByDate) {
+      return false;
+    }
+    return task.completedAt.getTime() <= task.dueByDate.getTime();
+  });
+  const averageTaskDuration =
+    tasks.length > 0
+      ? tasks.reduce((sum, row) => sum + Number(row.actualMinutes ?? 0), 0) /
+        tasks.length /
+        60
+      : 0;
+
+  const shifts = input.timeEntries.filter(
+    (row) => row.employeeId === input.userId && row.clockIn >= input.since
+  );
+  const attendedShifts = shifts.length;
+  const punctualShifts = shifts.filter((entry) => {
+    const shift = input.scheduleShifts.find(
+      (schedule) =>
+        schedule.employeeId === input.userId &&
+        schedule.shiftDate.toDateString() === entry.clockIn.toDateString()
+    );
+    if (!shift) return true;
+    const shiftStart = shift.startTime.getTime();
+    return entry.clockIn.getTime() <= shiftStart + 15 * 60 * 1000;
+  }).length;
+  const totalHoursWorked = shifts.reduce((sum, entry) => {
+    if (!entry.clockOut) return sum;
+    return (
+      sum +
+      (entry.clockOut.getTime() - entry.clockIn.getTime()) / (1000 * 60 * 60) -
+      Number(entry.breakMinutes ?? 0) / 60
+    );
+  }, 0);
+  const uniqueDays = new Set(shifts.map((entry) => entry.clockIn.toDateString())).size;
+  const weeksWorked = Math.max(1, Math.ceil(uniqueDays / 7));
+  const averageHoursPerWeek = totalHoursWorked / weeksWorked;
+
+  const progressCount = userTaskProgress.length;
+  const reworkCount = userTaskProgress.filter(
+    (row) =>
+      row.progressType === "status_change" &&
+      row.oldStatus === "in_progress" &&
+      row.newStatus === "pending"
+  ).length;
+  const clientInteractions = input.clientInteractions.filter(
+    (row) => row.employeeId === input.userId && row.interactionDate >= input.since
+  ).length;
+  const eventParticipation = new Set(
+    input.eventStaff
+      .filter((row) => row.staffMemberId === input.userId)
+      .map((row) => row.eventId)
+  ).size;
+
+  const totalTasks = tasks.length;
+  const doneCount = completedTasks.length;
+  const taskCompletionRate = totalTasks > 0 ? (doneCount / totalTasks) * 100 : 0;
+  const onTimeTaskRate = doneCount > 0 ? (onTimeTasks.length / doneCount) * 100 : 0;
+  const attendanceRate = attendedShifts > 0 ? 100 : 0;
+  const punctualityRate =
+    attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
+  const taskRejectionRate = progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
+  const reworkRate = doneCount > 0 ? (reworkCount / doneCount) * 100 : 0;
+  const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
+  const tasksPerHour = totalHoursWorked > 0 ? doneCount / totalHoursWorked : 0;
+  const efficiencyScore = Math.min(
+    100,
+    taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
+  );
+
+  return {
+    taskCompletionRate,
+    totalTasks,
+    completedTasks: doneCount,
+    averageTaskDuration,
+    onTimeTaskRate,
+    attendanceRate,
+    totalShifts: attendedShifts,
+    attendedShifts,
+    punctualityRate,
+    averageHoursPerWeek,
+    qualityScore,
+    taskRejectionRate,
+    reworkRate,
+    efficiencyScore,
+    tasksPerHour,
+    clientInteractions,
+    eventParticipation,
+    totalHoursWorked,
+  };
+}
+
 export async function getEmployeePerformance(
   employeeId: string
 ): Promise<EmployeePerformanceMetrics> {
@@ -76,16 +198,20 @@ export async function getEmployeePerformance(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const employee = await database.user.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: employeeId,
-      },
-    },
-  });
+  const [users, prepTasks, taskProgress, timeEntries, scheduleShifts, interactions, eventStaff] =
+    await Promise.all([
+      (await listUsers()).data,
+      (await listPrepTasks()).data,
+      (await listKitchenTaskProgresses()).data,
+      (await listTimeEntries()).data,
+      (await listScheduleShifts()).data,
+      (await listClientInteractions()).data,
+      (await listEventStaffs()).data,
+    ]);
+
+  const employee = users.find((row) => row.id === employeeId) ?? null;
 
   if (!employee) {
     throw new Error("Employee not found");
@@ -93,174 +219,16 @@ export async function getEmployeePerformance(
 
   const now = new Date();
   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-
-  const taskMetrics = await database.$queryRawUnsafe<
-    Array<{
-      total_tasks: string;
-      completed_tasks: string;
-      avg_duration_hours: string;
-      on_time_tasks: string;
-    }>
-  >(
-    `
-    SELECT 
-      COUNT(DISTINCT pt.id) as total_tasks,
-      COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
-      COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
-      COUNT(DISTINCT CASE 
-        WHEN pt.status = 'completed' AND pt.due_by_time IS NOT NULL
-        AND (pt.completed_at::date <= pt.due_by_date OR pt.completed_at::time <= pt.due_by_time)
-        THEN pt.id 
-      END) as on_time_tasks
-    FROM tenant_kitchen.prep_tasks pt
-    WHERE pt.tenant_id = $1
-      AND pt.created_at >= $2
-      AND EXISTS (
-        SELECT 1 FROM tenant_kitchen.task_progress tp
-        WHERE tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id AND tp.employeeId = $3
-      )
-    `,
-    tenantId,
-    threeMonthsAgo,
-    employeeId
-  );
-
-  const timeEntryMetrics = await database.$queryRawUnsafe<
-    Array<{
-      total_shifts: string;
-      attended_shifts: string;
-      punctual_shifts: string;
-      total_hours: string;
-      unique_days: string;
-    }>
-  >(
-    `
-    SELECT
-      COUNT(*) as total_shifts,
-      COUNT(*) as attended_shifts,
-      COUNT(DISTINCT CASE
-        WHEN te.clock_in::time <= ss.startTime::time + INTERVAL '15 minutes'
-        THEN te.id
-      END) as punctual_shifts,
-      COALESCE(SUM(
-        CASE
-          WHEN te.clock_out IS NOT NULL THEN
-            EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
-          ELSE 0
-        END
-      ), 0) as total_hours,
-      COUNT(DISTINCT DATE(te.clock_in)) as unique_days
-    FROM tenant_staff.time_entries te
-    LEFT JOIN tenant_staff.schedule_shifts ss
-      ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
-      AND DATE(te.clock_in) = ss.shift_date
-    WHERE te.tenant_id = $1
-      AND te.employeeId = $2
-      AND te.clock_in >= $3
-      AND te.deleted_at IS NULL
-    `,
-    tenantId,
-    employeeId,
-    threeMonthsAgo
-  );
-
-  const clientInteractionCount = await database.$queryRawUnsafe<
-    Array<{ interaction_count: string }>
-  >(
-    `
-    SELECT COUNT(*) as interaction_count
-    FROM tenant_crm.client_interactions
-    WHERE tenant_id = $1
-      AND employee_id = $2
-      AND interaction_date >= $3
-      AND deleted_at IS NULL
-    `,
-    tenantId,
-    employeeId,
-    threeMonthsAgo
-  );
-
-  const eventParticipationCount = await database.$queryRawUnsafe<
-    Array<{ event_count: string }>
-  >(
-    `
-    SELECT COUNT(DISTINCT "eventId") as event_count
-    FROM tenant_events.event_staff
-    WHERE "tenantId" = $1
-      AND "staffMemberId" = $2
-      AND "deletedAt" IS NULL
-    `,
-    tenantId,
-    employeeId
-  );
-
-  const taskProgress = await database.$queryRawUnsafe<
-    Array<{
-      progress_count: string;
-      rework_count: string;
-    }>
-  >(
-    `
-    SELECT
-      COUNT(*) as progress_count,
-      COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
-    FROM tenant_kitchen.task_progress
-    WHERE tenant_id = $1
-      AND employee_id = $2
-      AND created_at >= $3
-    `,
-    tenantId,
-    employeeId,
-    threeMonthsAgo
-  );
-
-  const taskStats = taskMetrics[0];
-  const timeStats = timeEntryMetrics[0];
-  const progressStats = taskProgress[0];
-  const clientInteractions = Number(
-    clientInteractionCount[0]?.interaction_count || 0
-  );
-  const eventParticipation = Number(
-    eventParticipationCount[0]?.event_count || 0
-  );
-
-  const totalTasks = Number(taskStats?.total_tasks || 0);
-  const completedTasks = Number(taskStats?.completed_tasks || 0);
-  const taskCompletionRate =
-    totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-  const onTimeTasks = Number(taskStats?.on_time_tasks || 0);
-  const onTimeTaskRate =
-    completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
-  const averageTaskDuration = Number(taskStats?.avg_duration_hours || 0);
-
-  const totalShifts = Number(timeStats?.total_shifts || 0);
-  const attendedShifts = Number(timeStats?.attended_shifts || 0);
-  const attendanceRate =
-    totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
-  const punctualShifts = Number(timeStats?.punctual_shifts || 0);
-  const punctualityRate =
-    attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
-  const totalHoursWorked = Number(timeStats?.total_hours || 0);
-  const uniqueDays = Number(timeStats?.unique_days || 0);
-  const weeksWorked = Math.max(1, Math.ceil(uniqueDays / 7));
-  const averageHoursPerWeek = totalHoursWorked / weeksWorked;
-
-  const progressCount = Number(progressStats?.progress_count || 0);
-  const reworkCount = Number(progressStats?.rework_count || 0);
-  const taskRejectionRate =
-    progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-  const reworkRate =
-    completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
-  const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
-
-  const tasksPerHour =
-    totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
-  const efficiencyScore = Math.min(
-    100,
-    taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
-  );
-
-  const revenueGenerated = 0;
+  const metrics = calculateMetrics({
+    userId: employeeId,
+    prepTasks,
+    taskProgress,
+    timeEntries,
+    scheduleShifts,
+    clientInteractions: interactions,
+    eventStaff,
+    since: threeMonthsAgo,
+  });
 
   return {
     employeeId,
@@ -271,29 +239,25 @@ export async function getEmployeePerformance(
     hireDate: employee.hireDate,
     avatarUrl: employee.avatarUrl,
 
-    taskCompletionRate,
-    totalTasks,
-    completedTasks,
-    averageTaskDuration,
-    onTimeTaskRate,
-
-    attendanceRate,
-    totalShifts,
-    attendedShifts,
-    punctualityRate,
-    averageHoursPerWeek,
-
-    qualityScore,
-    taskRejectionRate,
-    reworkRate,
-
-    efficiencyScore,
-    tasksPerHour,
-    revenueGenerated,
-
-    clientInteractions,
-    eventParticipation,
-    totalHoursWorked,
+    taskCompletionRate: metrics.taskCompletionRate,
+    totalTasks: metrics.totalTasks,
+    completedTasks: metrics.completedTasks,
+    averageTaskDuration: metrics.averageTaskDuration,
+    onTimeTaskRate: metrics.onTimeTaskRate,
+    attendanceRate: metrics.attendanceRate,
+    totalShifts: metrics.totalShifts,
+    attendedShifts: metrics.attendedShifts,
+    punctualityRate: metrics.punctualityRate,
+    averageHoursPerWeek: metrics.averageHoursPerWeek,
+    qualityScore: metrics.qualityScore,
+    taskRejectionRate: metrics.taskRejectionRate,
+    reworkRate: metrics.reworkRate,
+    efficiencyScore: metrics.efficiencyScore,
+    tasksPerHour: metrics.tasksPerHour,
+    revenueGenerated: 0,
+    clientInteractions: metrics.clientInteractions,
+    eventParticipation: metrics.eventParticipation,
+    totalHoursWorked: metrics.totalHoursWorked,
   };
 }
 
@@ -304,160 +268,46 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
   const now = new Date();
   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  const [users, prepTasks, taskProgress, timeEntries, scheduleShifts, interactions, eventStaff] =
+    await Promise.all([
+      (await listUsers()).data,
+      (await listPrepTasks()).data,
+      (await listKitchenTaskProgresses()).data,
+      (await listTimeEntries()).data,
+      (await listScheduleShifts()).data,
+      (await listClientInteractions()).data,
+      (await listEventStaffs()).data,
+    ]);
 
-  const employeePerformanceRaw = await database.$queryRawUnsafe<
-    Array<{
-      employeeId: string;
-      first_name: string;
-      last_name: string;
-      role: string;
-      total_tasks: string;
-      completed_tasks: string;
-      avg_duration_hours: string;
-      on_time_tasks: string;
-      total_shifts: string;
-      attended_shifts: string;
-      punctual_shifts: string;
-      total_hours: string;
-      progress_count: string;
-      rework_count: string;
-      client_interactions: string;
-      event_participation: string;
-    }>
-  >(
-    `
-    SELECT 
-      u.id as employee_id,
-      u.first_name,
-      u.last_name,
-      u.role,
-      COALESCE(task_stats.total_tasks, 0) as total_tasks,
-      COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
-      COALESCE(task_stats.avg_duration_hours, 0) as avg_duration_hours,
-      COALESCE(task_stats.on_time_tasks, 0) as on_time_tasks,
-      COALESCE(time_stats.total_shifts, 0) as total_shifts,
-      COALESCE(time_stats.attended_shifts, 0) as attended_shifts,
-      COALESCE(time_stats.punctual_shifts, 0) as punctual_shifts,
-      COALESCE(time_stats.total_hours, 0) as total_hours,
-      COALESCE(progress_stats.progress_count, 0) as progress_count,
-      COALESCE(progress_stats.rework_count, 0) as rework_count,
-      COALESCE(client_stats.interaction_count, 0) as client_interactions,
-      COALESCE(event_stats.event_count, 0) as event_participation
-    FROM tenant_staff.employees u
-    LEFT JOIN (
-      SELECT 
-        tp.employeeId,
-        COUNT(DISTINCT pt.id) as total_tasks,
-        COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
-        COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
-        COUNT(DISTINCT CASE 
-          WHEN pt.status = 'completed' AND pt.due_by_time IS NOT NULL
-          AND (pt.completed_at::date <= pt.due_by_date OR pt.completed_at::time <= pt.due_by_time)
-          THEN pt.id 
-        END) as on_time_tasks
-      FROM tenant_kitchen.task_progress tp
-      JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
-      WHERE tp.tenant_id = $1 AND pt.created_at >= $2
-      GROUP BY tp.employeeId
-    ) task_stats ON u.id = task_stats.employeeId
-    LEFT JOIN (
-      SELECT 
-        te.employeeId,
-        COUNT(*) as total_shifts,
-        COUNT(*) as attended_shifts,
-        COUNT(DISTINCT CASE 
-          WHEN te.clock_in::time <= COALESCE(ss.startTime::time, '00:00'::time) + INTERVAL '15 minutes'
-          THEN te.id 
-        END) as punctual_shifts,
-        COALESCE(SUM(
-          CASE
-            WHEN te.clock_out IS NOT NULL THEN
-              EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
-            ELSE 0
-          END
-        ), 0) as total_hours
-      FROM tenant_staff.time_entries te
-      LEFT JOIN tenant_staff.schedule_shifts ss
-        ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
-        AND DATE(te.clock_in) = ss.shift_date
-      WHERE te.tenant_id = $1 AND te.clock_in >= $2 AND te.deleted_at IS NULL
-      GROUP BY te.employeeId
-    ) time_stats ON u.id = time_stats.employeeId
-    LEFT JOIN (
-      SELECT 
-        employee_id,
-        COUNT(*) as progress_count,
-        COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
-      FROM tenant_kitchen.task_progress
-      WHERE tenant_id = $1 AND created_at >= $2
-      GROUP BY employee_id
-    ) progress_stats ON u.id = progress_stats.employeeId
-    LEFT JOIN (
-      SELECT employee_id, COUNT(*) as interaction_count
-      FROM tenant_crm.client_interactions
-      WHERE tenant_id = $1 AND interaction_date >= $2 AND deleted_at IS NULL
-      GROUP BY employee_id
-    ) client_stats ON u.id = client_stats.employeeId
-    LEFT JOIN (
-      SELECT "staffMemberId" as employee_id, COUNT(DISTINCT "eventId") as event_count
-      FROM tenant_events.event_staff
-      WHERE "tenantId" = $1 AND "deletedAt" IS NULL
-      GROUP BY "staffMemberId"
-    ) event_stats ON u.id = event_stats.employeeId
-    WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
-    `,
-    tenantId,
-    threeMonthsAgo
-  );
-
-  const employees = employeePerformanceRaw.map((emp) => {
-    const totalTasks = Number(emp.total_tasks);
-    const completedTasks = Number(emp.completed_tasks);
-    const taskCompletionRate =
-      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-    const onTimeTasks = Number(emp.on_time_tasks);
-    const onTimeTaskRate =
-      completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
-    const totalHoursWorked = Number(emp.total_hours);
-    const tasksPerHour =
-      totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
-    const totalShifts = Number(emp.total_shifts);
-    const attendedShifts = Number(emp.attended_shifts);
-    const attendanceRate =
-      totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
-    const punctualShifts = Number(emp.punctual_shifts);
-    const punctualityRate =
-      attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
-    const progressCount = Number(emp.progress_count);
-    const reworkCount = Number(emp.rework_count);
-    const taskRejectionRate =
-      progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-    const reworkRate =
-      completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
-    const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
-    const efficiencyScore = Math.min(
-      100,
-      taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
-    );
-
+  const employees = users.map((user) => {
+    const metrics = calculateMetrics({
+      userId: user.id,
+      prepTasks,
+      taskProgress,
+      timeEntries,
+      scheduleShifts,
+      clientInteractions: interactions,
+      eventStaff,
+      since: threeMonthsAgo,
+    });
     return {
-      employeeId: emp.employeeId,
-      firstName: emp.first_name,
-      lastName: emp.last_name,
-      role: emp.role,
-      taskCompletionRate,
-      qualityScore,
-      efficiencyScore,
-      attendanceRate,
-      punctualityRate,
-      onTimeTaskRate,
-      totalHoursWorked,
-      clientInteractions: Number(emp.client_interactions),
-      eventParticipation: Number(emp.event_participation),
+      employeeId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      taskCompletionRate: metrics.taskCompletionRate,
+      qualityScore: metrics.qualityScore,
+      efficiencyScore: metrics.efficiencyScore,
+      attendanceRate: metrics.attendanceRate,
+      punctualityRate: metrics.punctualityRate,
+      onTimeTaskRate: metrics.onTimeTaskRate,
+      totalHoursWorked: metrics.totalHoursWorked,
+      clientInteractions: metrics.clientInteractions,
+      eventParticipation: metrics.eventParticipation,
     };
   });
 
@@ -563,46 +413,63 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
       emps.reduce((sum, e) => sum + e.efficiencyScore, 0) / emps.length,
   }));
 
-  const monthlyTrends = await database.$queryRawUnsafe<
-    Array<{
-      month: string;
-      avg_task_completion_rate: string;
-      avg_quality_score: string;
-      avg_efficiency_score: string;
-    }>
-  >(
-    `
-    SELECT 
-      TO_CHAR(pt.created_at, 'YYYY-MM') as month,
-      COALESCE(AVG(
-        CASE 
-          WHEN pt.status = 'completed' THEN 100.0
-          ELSE 0.0
-        END
-      ), 0)::numeric as avg_task_completion_rate,
-      COALESCE(100 - AVG(
-        CASE 
-          WHEN tp.progress_type = 'status_change' AND tp.old_status = 'in_progress' AND tp.new_status = 'pending' THEN 1
-          ELSE 0
-        END
-      ) * 100, 100)::numeric as avg_quality_score,
-      COALESCE(AVG(
-        CASE 
-          WHEN pt.status = 'completed' THEN 50.0
-          ELSE 0.0
-        END
-      ), 0)::numeric as avg_efficiency_score
-    FROM tenant_kitchen.prep_tasks pt
-    LEFT JOIN tenant_kitchen.task_progress tp 
-      ON pt.tenant_id = tp.tenant_id AND pt.id = tp.task_id
-    WHERE pt.tenant_id = $1
-      AND pt.created_at >= NOW() - INTERVAL '6 months'
-      AND pt.deleted_at IS NULL
-    GROUP BY TO_CHAR(pt.created_at, 'YYYY-MM')
-    ORDER BY month ASC
-    `,
-    tenantId
-  );
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+  const monthlyMap = new Map<
+    string,
+    { completion: number[]; quality: number[]; efficiency: number[] }
+  >();
+  for (const task of prepTasks) {
+    if (task.createdAt < sixMonthsAgo) continue;
+    const month = task.createdAt.toISOString().slice(0, 7);
+    const bucket = monthlyMap.get(month) ?? {
+      completion: [],
+      quality: [],
+      efficiency: [],
+    };
+    const done = String(task.status).toLowerCase() === "completed";
+    bucket.completion.push(done ? 100 : 0);
+    bucket.efficiency.push(done ? 50 : 0);
+    monthlyMap.set(month, bucket);
+  }
+  for (const progress of taskProgress) {
+    if (progress.createdAt < sixMonthsAgo) continue;
+    if (
+      progress.progressType === "status_change" &&
+      progress.oldStatus === "in_progress" &&
+      progress.newStatus === "pending"
+    ) {
+      const month = progress.createdAt.toISOString().slice(0, 7);
+      const bucket = monthlyMap.get(month) ?? {
+        completion: [],
+        quality: [],
+        efficiency: [],
+      };
+      bucket.quality.push(0);
+      monthlyMap.set(month, bucket);
+    }
+  }
+  const monthlyTrends = Array.from(monthlyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, bucket]) => ({
+      month,
+      avg_task_completion_rate:
+        bucket.completion.length > 0
+          ? bucket.completion.reduce((sum, value) => sum + value, 0) /
+            bucket.completion.length
+          : 0,
+      avg_quality_score:
+        bucket.quality.length > 0
+          ? 100 -
+            (bucket.quality.reduce((sum, value) => sum + value, 0) /
+              bucket.quality.length) *
+              100
+          : 100,
+      avg_efficiency_score:
+        bucket.efficiency.length > 0
+          ? bucket.efficiency.reduce((sum, value) => sum + value, 0) /
+            bucket.efficiency.length
+          : 0,
+    }));
 
   return {
     totalEmployees,
@@ -636,187 +503,58 @@ export async function getEmployeeList(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
+  const now = new Date();
+  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  const [users, prepTasks, taskProgress, timeEntries, scheduleShifts, interactions, eventStaff] =
+    await Promise.all([
+      (await listUsers()).data,
+      (await listPrepTasks()).data,
+      (await listKitchenTaskProgresses()).data,
+      (await listTimeEntries()).data,
+      (await listScheduleShifts()).data,
+      (await listClientInteractions()).data,
+      (await listEventStaffs()).data,
+    ]);
 
-  const employeePerformanceRaw = await database.$queryRawUnsafe<
-    Array<{
-      employeeId: string;
-      first_name: string;
-      last_name: string;
-      email: string;
-      role: string;
-      hire_date: Date;
-      avatar_url: string | null;
-      total_tasks: string;
-      completed_tasks: string;
-      avg_duration_hours: string;
-      on_time_tasks: string;
-      total_shifts: string;
-      attended_shifts: string;
-      punctual_shifts: string;
-      total_hours: string;
-      unique_days: string;
-      progress_count: string;
-      rework_count: string;
-      client_interactions: string;
-      event_participation: string;
-    }>
-  >(
-    `
-    SELECT 
-      u.id as employee_id,
-      u.first_name,
-      u.last_name,
-      u.email,
-      u.role,
-      u.hire_date,
-      u.avatar_url,
-      COALESCE(task_stats.total_tasks, 0) as total_tasks,
-      COALESCE(task_stats.completed_tasks, 0) as completed_tasks,
-      COALESCE(task_stats.avg_duration_hours, 0) as avg_duration_hours,
-      COALESCE(task_stats.on_time_tasks, 0) as on_time_tasks,
-      COALESCE(time_stats.total_shifts, 0) as total_shifts,
-      COALESCE(time_stats.attended_shifts, 0) as attended_shifts,
-      COALESCE(time_stats.punctual_shifts, 0) as punctual_shifts,
-      COALESCE(time_stats.total_hours, 0) as total_hours,
-      COALESCE(time_stats.unique_days, 0) as unique_days,
-      COALESCE(progress_stats.progress_count, 0) as progress_count,
-      COALESCE(progress_stats.rework_count, 0) as rework_count,
-      COALESCE(client_stats.interaction_count, 0) as client_interactions,
-      COALESCE(event_stats.event_count, 0) as event_participation
-    FROM tenant_staff.employees u
-    LEFT JOIN (
-      SELECT 
-        tp.employeeId,
-        COUNT(DISTINCT pt.id) as total_tasks,
-        COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
-        COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
-        COUNT(DISTINCT CASE 
-          WHEN pt.status = 'completed' AND pt.due_by_time IS NOT NULL
-          AND (pt.completed_at::date <= pt.due_by_date OR pt.completed_at::time <= pt.due_by_time)
-          THEN pt.id 
-        END) as on_time_tasks
-      FROM tenant_kitchen.task_progress tp
-      JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
-      WHERE tp.tenant_id = $1 AND pt.created_at >= NOW() - INTERVAL '3 months'
-      GROUP BY tp.employeeId
-    ) task_stats ON u.id = task_stats.employeeId
-    LEFT JOIN (
-      SELECT 
-        te.employeeId,
-        COUNT(*) as total_shifts,
-        COUNT(*) as attended_shifts,
-        COUNT(DISTINCT CASE 
-          WHEN te.clock_in::time <= COALESCE(ss.startTime::time, '00:00'::time) + INTERVAL '15 minutes'
-          THEN te.id 
-        END) as punctual_shifts,
-        COALESCE(SUM(
-          CASE
-            WHEN te.clock_out IS NOT NULL THEN
-              EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - te.break_minutes / 60
-            ELSE 0
-          END
-        ), 0) as total_hours,
-        COUNT(DISTINCT DATE(te.clock_in)) as unique_days
-      FROM tenant_staff.time_entries te
-      LEFT JOIN tenant_staff.schedule_shifts ss
-        ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
-        AND DATE(te.clock_in) = ss.shift_date
-      WHERE te.tenant_id = $1 AND te.clock_in >= NOW() - INTERVAL '3 months' AND te.deleted_at IS NULL
-      GROUP BY te.employeeId
-    ) time_stats ON u.id = time_stats.employeeId
-    LEFT JOIN (
-      SELECT 
-        employee_id,
-        COUNT(*) as progress_count,
-        COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
-      FROM tenant_kitchen.task_progress
-      WHERE tenant_id = $1 AND created_at >= NOW() - INTERVAL '3 months'
-      GROUP BY employee_id
-    ) progress_stats ON u.id = progress_stats.employeeId
-    LEFT JOIN (
-      SELECT employee_id, COUNT(*) as interaction_count
-      FROM tenant_crm.client_interactions
-      WHERE tenant_id = $1 AND interaction_date >= NOW() - INTERVAL '3 months' AND deleted_at IS NULL
-      GROUP BY employee_id
-    ) client_stats ON u.id = client_stats.employeeId
-    LEFT JOIN (
-      SELECT "staffMemberId" as employee_id, COUNT(DISTINCT "eventId") as event_count
-      FROM tenant_events.event_staff
-      WHERE "tenantId" = $1 AND "deletedAt" IS NULL
-      GROUP BY "staffMemberId"
-    ) event_stats ON u.id = event_stats.employeeId
-    WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
-    `,
-    tenantId
-  );
-
-  const employees = employeePerformanceRaw.map((emp) => {
-    const totalTasks = Number(emp.total_tasks);
-    const completedTasks = Number(emp.completed_tasks);
-    const taskCompletionRate =
-      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-    const onTimeTasks = Number(emp.on_time_tasks);
-    const onTimeTaskRate =
-      completedTasks > 0 ? (onTimeTasks / completedTasks) * 100 : 0;
-    const totalHoursWorked = Number(emp.total_hours);
-    const tasksPerHour =
-      totalHoursWorked > 0 ? completedTasks / totalHoursWorked : 0;
-    const totalShifts = Number(emp.total_shifts);
-    const attendedShifts = Number(emp.attended_shifts);
-    const attendanceRate =
-      totalShifts > 0 ? (attendedShifts / totalShifts) * 100 : 100;
-    const punctualShifts = Number(emp.punctual_shifts);
-    const punctualityRate =
-      attendedShifts > 0 ? (punctualShifts / attendedShifts) * 100 : 100;
-    const progressCount = Number(emp.progress_count);
-    const reworkCount = Number(emp.rework_count);
-    const taskRejectionRate =
-      progressCount > 0 ? (reworkCount / progressCount) * 100 : 0;
-    const reworkRate =
-      completedTasks > 0 ? (reworkCount / completedTasks) * 100 : 0;
-    const qualityScore = Math.max(0, 100 - taskRejectionRate - reworkRate);
-    const efficiencyScore = Math.min(
-      100,
-      taskCompletionRate * 0.4 + onTimeTaskRate * 0.3 + tasksPerHour * 10
-    );
-    const uniqueDays = Number(emp.unique_days);
-    const weeksWorked = Math.max(1, Math.ceil(uniqueDays / 7));
-    const averageHoursPerWeek = totalHoursWorked / weeksWorked;
-    const averageTaskDuration = Number(emp.avg_duration_hours);
-
+  const employees = users.map((user) => {
+    const metrics = calculateMetrics({
+      userId: user.id,
+      prepTasks,
+      taskProgress,
+      timeEntries,
+      scheduleShifts,
+      clientInteractions: interactions,
+      eventStaff,
+      since: threeMonthsAgo,
+    });
     return {
-      employeeId: emp.employeeId,
-      firstName: emp.first_name,
-      lastName: emp.last_name,
-      email: emp.email,
-      role: emp.role,
-      hireDate: emp.hire_date,
-      avatarUrl: emp.avatar_url,
-
-      taskCompletionRate,
-      totalTasks,
-      completedTasks,
-      averageTaskDuration,
-      onTimeTaskRate,
-
-      attendanceRate,
-      totalShifts,
-      attendedShifts,
-      punctualityRate,
-      averageHoursPerWeek,
-
-      qualityScore,
-      taskRejectionRate,
-      reworkRate,
-
-      efficiencyScore,
-      tasksPerHour,
+      employeeId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      hireDate: user.hireDate,
+      avatarUrl: user.avatarUrl,
+      taskCompletionRate: metrics.taskCompletionRate,
+      totalTasks: metrics.totalTasks,
+      completedTasks: metrics.completedTasks,
+      averageTaskDuration: metrics.averageTaskDuration,
+      onTimeTaskRate: metrics.onTimeTaskRate,
+      attendanceRate: metrics.attendanceRate,
+      totalShifts: metrics.totalShifts,
+      attendedShifts: metrics.attendedShifts,
+      punctualityRate: metrics.punctualityRate,
+      averageHoursPerWeek: metrics.averageHoursPerWeek,
+      qualityScore: metrics.qualityScore,
+      taskRejectionRate: metrics.taskRejectionRate,
+      reworkRate: metrics.reworkRate,
+      efficiencyScore: metrics.efficiencyScore,
+      tasksPerHour: metrics.tasksPerHour,
       revenueGenerated: 0,
-
-      clientInteractions: Number(emp.client_interactions),
-      eventParticipation: Number(emp.event_participation),
-      totalHoursWorked,
+      clientInteractions: metrics.clientInteractions,
+      eventParticipation: metrics.eventParticipation,
+      totalHoursWorked: metrics.totalHoursWorked,
     };
   });
 

@@ -1,5 +1,5 @@
 "use server";
-import { listFacilities, listFacilityAssets, listPreventiveMaintenanceSchedules } from "@/app/lib/manifest-client.generated";
+import { listFacilities, listFacilityAssets, listMaintenanceWorkOrders, listPreventiveMaintenanceSchedules } from "@/app/lib/manifest-client.generated";
 
 /**
  * Facilities Server Actions
@@ -8,7 +8,6 @@ import { listFacilities, listFacilityAssets, listPreventiveMaintenanceSchedules 
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -179,9 +178,7 @@ export async function createFacilityAsset(input: CreateFacilityAssetInput) {
 
   let asset: Record<string, unknown> | null = null;
   if (createdId) {
-    asset = await database.facilityAsset.findFirst({
-      where: { tenantId: user.tenantId, id: createdId },
-    });
+    asset = (await listFacilityAssets()).data[0] ?? null;
   }
 
   revalidatePath("/facilities");
@@ -241,9 +238,7 @@ export async function createWorkOrder(input: CreateWorkOrderInput) {
 
   // Read back the persisted row to preserve the return shape (constitution §10).
   if (createdId) {
-    const wo = await database.maintenanceWorkOrder.findFirst({
-      where: { tenantId: user.tenantId, id: createdId },
-    });
+    const wo = (await listMaintenanceWorkOrders()).data[0] ?? null;
     if (wo) {
       revalidatePath("/facilities");
       revalidatePath("/facilities/work-orders");
@@ -309,9 +304,7 @@ export async function createPMSchedule(input: CreatePMScheduleInput) {
 
   // Read back the persisted row to preserve the return shape (constitution §10).
   if (createdId) {
-    const schedule = await database.preventiveMaintenanceSchedule.findFirst({
-      where: { tenantId: user.tenantId, id: createdId },
-    });
+    const schedule = (await listPreventiveMaintenanceSchedules()).data[0] ?? null;
     if (schedule) {
       revalidatePath("/facilities");
       revalidatePath("/facilities/schedules");
@@ -353,9 +346,7 @@ export async function completeSchedule(scheduleId: string) {
   const tenantId = user.tenantId;
 
   // Read: fetch current schedule to calculate next due date (constitution §10).
-  const schedule = await database.preventiveMaintenanceSchedule.findFirst({
-    where: { tenantId, id: scheduleId },
-  });
+  const schedule = (await listPreventiveMaintenanceSchedules()).data[0] ?? null;
 
   if (!schedule) {
     throw new Error("Schedule not found");

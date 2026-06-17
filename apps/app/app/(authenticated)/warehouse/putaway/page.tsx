@@ -1,5 +1,5 @@
+import { listInventoryTransactions, listStorageLocations } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,31 +32,22 @@ export default async function PutawayPage() {
   }
 
   // Fetch metrics server-side for the initial render
-  const [pendingTransactions, completedToday, activeLocations] =
-    await Promise.all([
-      database.inventoryTransaction.count({
-        where: {
-          tenantId,
-          transactionType: "purchase",
-        },
-      }),
-      database.inventoryTransaction.count({
-        where: {
-          tenantId,
-          transactionType: "purchase",
-          transaction_date: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-          },
-        },
-      }),
-      database.storage_locations.count({
-        where: {
-          tenant_id: tenantId,
-          is_active: true,
-          deleted_at: null,
-        },
-      }),
-    ]);
+  const transactions = (await listInventoryTransactions()).data;
+  const storageLocations = (await listStorageLocations()).data;
+  const pendingTransactions = transactions.filter(
+    (transaction) => transaction.status !== "completed"
+  ).length;
+  const completedToday = transactions.filter((transaction) => {
+    if (transaction.status !== "completed" || !transaction.transactionDate) {
+      return false;
+    }
+    return (
+      new Date(transaction.transactionDate).toDateString() ===
+      new Date().toDateString()
+    );
+  }).length;
+  const activeLocations = storageLocations.filter((location) => location.is_active)
+    .length;
 
   return (
     <PageCanvas>

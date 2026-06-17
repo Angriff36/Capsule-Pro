@@ -1,3 +1,4 @@
+import { listCallPlanningSessions, listEventPlanningDrafts } from "@/app/lib/manifest-client.generated";
 /**
  * @module DraftDetailPage
  * @intent Server component for draft detail page
@@ -6,7 +7,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { redirect, notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { DraftDetailClient } from "./draft-detail-client";
@@ -20,16 +20,9 @@ export default async function DraftDetailPage({ params }: Props) {
   if (!(userId && orgId)) redirect("/sign-in");
 
   const { id } = await params;
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!(await getTenantIdForOrg(orgId))) redirect("/");
 
-  const draft = await database.eventPlanningDraft.findFirst({
-    where: {
-      tenantId,
-      id,
-      deletedAt: null,
-    },
-  });
+  const draft = (await listEventPlanningDrafts()).data.find((entry) => entry.id === id) ?? null;
 
   if (!draft) {
     notFound();
@@ -37,35 +30,21 @@ export default async function DraftDetailPage({ params }: Props) {
 
   // No FK relations in this schema (flat keys) — resolve session + extracted
   // details with separate queries.
-  const [session, extractedDetails] = await Promise.all([
-    database.callPlanningSession.findFirst({
-      where: { tenantId, id: draft.sessionId, deletedAt: null },
-      select: {
-        id: true,
-        status: true,
-        startedAt: true,
-        endedAt: true,
-        transcriptText: true,
-      },
-    }),
-    database.extractedDetail.findMany({
-      where: { tenantId, draftId: draft.id, deletedAt: null },
-      select: {
-        id: true,
-        fieldName: true,
-        rawValue: true,
-        normalizedValue: true,
-        confidence: true,
-        sourceQuote: true,
-        status: true,
-        catalogMatchType: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    }),
+  const [session] = await Promise.all([
+    (await listCallPlanningSessions()).data.find((entry) => entry.id === draft.sessionId) ??
+      null,
   ]);
+  const extractedDetails: Array<{
+    id: string;
+    fieldName: string;
+    rawValue: string;
+    normalizedValue: string | null;
+    confidence: string;
+    sourceQuote: string | null;
+    status: string;
+    catalogMatchType: string | null;
+    createdAt: Date;
+  }> = [];
 
   // Stored confidence is a label ("high"/"medium"/"low"); the client works
   // with the numeric scale the extractor uses for overallConfidence.

@@ -1,5 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import {
+  listKitchenTaskClaims,
+  listKitchenTasks,
+} from "@/app/lib/manifest-client.generated";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -21,6 +24,32 @@ interface StationStats {
   team_members: number;
   total_tasks: number;
 }
+
+const parseTaskTags = (tags: string | null | undefined): string[] => {
+  if (!tags) {
+    return [];
+  }
+  const trimmed = tags.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(trimmed) as unknown;
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((value) => String(value).trim())
+          .filter((value) => value.length > 0);
+      }
+    } catch {
+      return [];
+    }
+  }
+  return trimmed
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+};
 
 // Badge variants map for stations
 const stationBadgeVariant: Record<
@@ -66,52 +95,59 @@ const KitchenStationsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch station stats from kitchen_tasks
-  const stationStats = await database.$queryRaw<StationStats[]>(
-    Prisma.sql`
-      SELECT
-        LOWER(REPLACE(tag, ' ', '-')) AS station_id,
-        COUNT(*) AS total_tasks,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
-        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_tasks,
-        SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS open_tasks,
-        0 AS team_members
-      FROM tenant_kitchen.kitchen_tasks
-      CROSS JOIN UNNEST(tags) AS tag
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND tags IS NOT NULL
-        AND ARRAY_LENGTH(tags, 1) > 0
-      GROUP BY tag
-      ORDER BY total_tasks DESC
-    `
-  );
-
-  // Fetch active claims per station
-  const activeClaims = await database.$queryRaw<
-    Array<{ station_id: string; count: number }>
-  >(
-    Prisma.sql`
-      SELECT
-        LOWER(REPLACE(tag, ' ', '-')) AS station_id,
-        COUNT(*) AS count
-      FROM tenant_kitchen.task_claims tc
-      JOIN tenant_kitchen.kitchen_tasks kt ON kt.id = tc.task_id
-      CROSS JOIN UNNEST(kt.tags) AS tag
-      WHERE tc.tenant_id = ${tenantId}
-        AND tc.released_at IS NULL
-        AND kt.deleted_at IS NULL
-        AND kt.tags IS NOT NULL
-        AND ARRAY_LENGTH(kt.tags, 1) > 0
-      GROUP BY tag
-    `
+  const [tasks, claims] = await Promise.all([
+    (await listKitchenTasks()).data.filter((task) => task.tenantId === tenantId),
+    (await listKitchenTaskClaims()).data.filter(
+      (claim) => claim.tenantId === tenantId && !claim.releasedAt
+    ),
+  ]);
+  const tasksById = new Map(tasks.map((task) => [task.id, task]));
+  const stationMap = new Map<string, StationStats>();
+  for (const task of tasks) {
+    const normalizedTags = parseTaskTags(task.tags).map((tag) =>
+      tag.toLowerCase().replace(/\s+/g, "-")
+    );
+    for (const stationId of normalizedTags) {
+      const current = stationMap.get(stationId) ?? {
+        station_id: stationId,
+        station_name: stationId,
+        total_tasks: 0,
+        completed_tasks: 0,
+        in_progress_tasks: 0,
+        open_tasks: 0,
+        team_members: 0,
+      };
+      current.total_tasks += 1;
+      if (task.status === "completed") {
+        current.completed_tasks += 1;
+      }
+      if (task.status === "in_progress") {
+        current.in_progress_tasks += 1;
+      }
+      if (task.status === "open") {
+        current.open_tasks += 1;
+      }
+      stationMap.set(stationId, current);
+    }
+  }
+  const stationStats = Array.from(stationMap.values()).sort(
+    (a, b) => b.total_tasks - a.total_tasks
   );
 
   // Build claim map
   const claimMap = new Map<string, number>();
-  activeClaims.forEach((row) => {
-    claimMap.set(row.station_id, row.count);
-  });
+  for (const claim of claims) {
+    const task = tasksById.get(claim.taskId);
+    if (!task) {
+      continue;
+    }
+    const normalizedTags = parseTaskTags(task.tags).map((tag) =>
+      tag.toLowerCase().replace(/\s+/g, "-")
+    );
+    for (const stationId of normalizedTags) {
+      claimMap.set(stationId, (claimMap.get(stationId) ?? 0) + 1);
+    }
+  }
 
   return (
     <>

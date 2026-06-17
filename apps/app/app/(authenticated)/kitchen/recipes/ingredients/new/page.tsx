@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { listIngredients } from "@/app/lib/manifest-client.generated";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,10 +27,22 @@ const NewIngredientPage = async () => {
     notFound();
   }
 
-  const units: UnitOption[] = await database.units.findMany({
-    select: { id: true, code: true, name: true },
-    orderBy: { code: "asc" },
-  });
+  const units: UnitOption[] = Array.from(
+    new Set(
+      (await listIngredients()).data
+        .map((ingredient) => ingredient.defaultUnitId)
+        .filter((unitId): unitId is number => typeof unitId === "number")
+    )
+  )
+    .sort((a, b) => a - b)
+    .map((unitId) => ({
+      id: unitId,
+      code: `unit-${unitId}`,
+      name: `Unit ${unitId}`,
+    }));
+  if (units.length === 0) {
+    units.push({ id: 1, code: "unit-1", name: "Unit 1" });
+  }
 
   return (
     <>

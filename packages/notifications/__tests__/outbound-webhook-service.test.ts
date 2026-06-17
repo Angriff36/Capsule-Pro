@@ -4,31 +4,11 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the database module to avoid server-only import issues
-vi.mock("@repo/database", () => ({
-  webhook_delivery_status: {
-    pending: "pending",
-    success: "success",
-    failed: "failed",
-    retrying: "retrying",
-  },
-  webhook_event_type: {
-    created: "created",
-    updated: "updated",
-    deleted: "deleted",
-  },
-  webhook_status: {
-    active: "active",
-    inactive: "inactive",
-    disabled: "disabled",
-  },
-}));
-
 import {
   webhook_delivery_status,
   webhook_event_type,
   webhook_status,
-} from "@repo/database";
+} from "../outbound-webhook-types";
 import {
   buildWebhookPayload,
   calculateRetryDelay,

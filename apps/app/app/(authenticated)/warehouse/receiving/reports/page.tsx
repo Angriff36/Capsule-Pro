@@ -1,5 +1,5 @@
+import { listInventorySuppliers, listPurchaseOrderItems, listPurchaseOrders } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -70,64 +70,138 @@ const ReceivingReportsPage = async () => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
+  const [purchaseOrders, purchaseOrderItems, suppliers] = await Promise.all([
+    (await listPurchaseOrders()).data,
+    (await listPurchaseOrderItems()).data,
+    (await listInventorySuppliers()).data,
+  ]);
 
-  const [supplierMetricsRows, receivingSummaryRows, discrepancyRows] =
-    await Promise.all([
-      database.$queryRaw<SupplierMetricsRow[]>(
-        Prisma.sql`
-          SELECT
-            s.name as supplier_name,
-            COUNT(DISTINCT po.id) as total_orders,
-            SUM(CASE WHEN po.actual_delivery_date <= po.expected_delivery_date THEN 1 ELSE 0 END) as on_time_deliveries,
-            COALESCE(AVG(CASE WHEN poi.quality_status = 'accepted' THEN 5.0 WHEN poi.quality_status = 'conditional' THEN 3.0 ELSE 1.0 END), 0) as quality_score,
-            COALESCE(AVG(EXTRACT(DAY FROM (po.actual_delivery_date - po.order_date))), 0) as average_lead_time,
-            COALESCE(SUM(po.total), 0) as total_spent,
-            CASE WHEN COUNT(poi.id) > 0
-              THEN (COUNT(CASE WHEN poi.discrepancy_type IS NOT NULL THEN 1 END)::float / COUNT(poi.id)::float * 100)
-              ELSE 0
-            END as discrepancy_rate
-          FROM tenant_inventory.purchase_orders po
-          JOIN tenant_inventory.inventory_suppliers s ON po.vendor_id = s.id AND po.tenant_id = s.tenant_id
-          LEFT JOIN tenant_inventory.purchase_order_items poi ON po.id = poi.purchase_order_id AND po.tenant_id = poi.tenant_id AND poi.deleted_at IS NULL
-          WHERE po.tenant_id = ${tenantId}::uuid
-            AND po.deleted_at IS NULL
-            AND po.status IN ('received', 'completed', 'ordered', 'approved')
-          GROUP BY s.name
-          ORDER BY total_orders DESC
-        `
+  const supplierNameById = new Map(
+    suppliers.map((supplier) => [supplier.id, supplier.name])
+  );
+  const itemsByOrder = new Map<string, typeof purchaseOrderItems>();
+  for (const item of purchaseOrderItems) {
+    const existing = itemsByOrder.get(item.purchaseOrderId) ?? [];
+    existing.push(item);
+    itemsByOrder.set(item.purchaseOrderId, existing);
+  }
+
+  const supplierMetricsMap = new Map<
+    string,
+    {
+      supplier_name: string;
+      total_orders: number;
+      on_time_deliveries: number;
+      quality_score_sum: number;
+      quality_score_count: number;
+      lead_time_sum: number;
+      lead_time_count: number;
+      total_spent: number;
+      discrepancy_count: number;
+      item_count: number;
+    }
+  >();
+  for (const order of purchaseOrders) {
+    const supplierName = supplierNameById.get(order.vendorId) ?? "Unknown supplier";
+    const stats =
+      supplierMetricsMap.get(order.vendorId) ??
+      {
+        supplier_name: supplierName,
+        total_orders: 0,
+        on_time_deliveries: 0,
+        quality_score_sum: 0,
+        quality_score_count: 0,
+        lead_time_sum: 0,
+        lead_time_count: 0,
+        total_spent: 0,
+        discrepancy_count: 0,
+        item_count: 0,
+      };
+
+    stats.total_orders += 1;
+    stats.total_spent += Number(order.total ?? 0);
+    if (order.actualDeliveryDate && order.expectedDeliveryDate) {
+      if (new Date(order.actualDeliveryDate) <= new Date(order.expectedDeliveryDate)) {
+        stats.on_time_deliveries += 1;
+      }
+      stats.lead_time_sum +=
+        (new Date(order.actualDeliveryDate).getTime() - new Date(order.orderDate).getTime()) /
+        (1000 * 60 * 60 * 24);
+      stats.lead_time_count += 1;
+    }
+
+    const orderItems = itemsByOrder.get(order.id) ?? [];
+    for (const item of orderItems) {
+      const qualityScore =
+        item.quality_status === "accepted" ? 5 : item.quality_status === "conditional" ? 3 : 1;
+      stats.quality_score_sum += qualityScore;
+      stats.quality_score_count += 1;
+      stats.item_count += 1;
+      if (item.discrepancy_type) {
+        stats.discrepancy_count += 1;
+      }
+    }
+    supplierMetricsMap.set(order.vendorId, stats);
+  }
+
+  const supplierMetricsRows = Array.from(supplierMetricsMap.values()).map((stats) => ({
+    supplier_name: stats.supplier_name,
+    total_orders: BigInt(stats.total_orders),
+    on_time_deliveries: BigInt(stats.on_time_deliveries),
+    quality_score:
+      stats.quality_score_count > 0
+        ? stats.quality_score_sum / stats.quality_score_count
+        : 0,
+    average_lead_time:
+      stats.lead_time_count > 0 ? stats.lead_time_sum / stats.lead_time_count : 0,
+    total_spent: stats.total_spent,
+    discrepancy_rate:
+      stats.item_count > 0 ? (stats.discrepancy_count / stats.item_count) * 100 : 0,
+  }));
+
+  const receivedOrders = purchaseOrders.filter(
+    (order) => order.status === "received" || order.status === "completed"
+  );
+  const receivedOrderIds = new Set(receivedOrders.map((order) => order.id));
+  const receivedItems = purchaseOrderItems.filter((item) =>
+    receivedOrderIds.has(item.purchaseOrderId)
+  );
+  const receivingSummaryRows: ReceivingSummaryRow[] = [
+    {
+      total_pos_received: BigInt(receivedOrders.length),
+      total_items_received: BigInt(receivedItems.length),
+      total_discrepancies: BigInt(
+        receivedItems.filter((item) => Boolean(item.discrepancy_type)).length
       ),
-      database.$queryRaw<ReceivingSummaryRow[]>(
-        Prisma.sql`
-          SELECT
-            COUNT(DISTINCT po.id) as total_pos_received,
-            COUNT(poi.id) as total_items_received,
-            COUNT(CASE WHEN poi.discrepancy_type IS NOT NULL THEN 1 END) as total_discrepancies,
-            COALESCE(AVG(CASE WHEN poi.quality_status = 'accepted' THEN 5.0 WHEN poi.quality_status = 'conditional' THEN 3.0 ELSE 1.0 END), 0) as average_quality_score,
-            COUNT(CASE WHEN poi.quality_status = 'pending' THEN 1 END) as pending_items
-          FROM tenant_inventory.purchase_orders po
-          LEFT JOIN tenant_inventory.purchase_order_items poi ON po.id = poi.purchase_order_id AND po.tenant_id = poi.tenant_id AND poi.deleted_at IS NULL
-          WHERE po.tenant_id = ${tenantId}::uuid
-            AND po.deleted_at IS NULL
-            AND po.status IN ('received', 'completed')
-        `
+      average_quality_score:
+        receivedItems.length > 0
+          ? receivedItems.reduce((sum, item) => {
+              const score =
+                item.quality_status === "accepted"
+                  ? 5
+                  : item.quality_status === "conditional"
+                    ? 3
+                    : 1;
+              return sum + score;
+            }, 0) / receivedItems.length
+          : 0,
+      pending_items: BigInt(
+        receivedItems.filter((item) => item.quality_status === "pending").length
       ),
-      database.$queryRaw<DiscrepancyBreakdownRow[]>(
-        Prisma.sql`
-          SELECT
-            COALESCE(poi.discrepancy_type, 'none') as discrepancy_type,
-            COUNT(*) as count
-          FROM tenant_inventory.purchase_order_items poi
-          JOIN tenant_inventory.purchase_orders po ON poi.purchase_order_id = po.id AND poi.tenant_id = po.tenant_id
-          WHERE poi.tenant_id = ${tenantId}::uuid
-            AND poi.deleted_at IS NULL
-            AND po.deleted_at IS NULL
-            AND poi.discrepancy_type IS NOT NULL
-          GROUP BY poi.discrepancy_type
-          ORDER BY count DESC
-        `
-      ),
-    ]);
+    },
+  ];
+
+  const discrepancyCounts = receivedItems.reduce<Record<string, number>>((acc, item) => {
+    if (!item.discrepancy_type) {
+      return acc;
+    }
+    acc[item.discrepancy_type] = (acc[item.discrepancy_type] ?? 0) + 1;
+    return acc;
+  }, {});
+  const discrepancyRows: DiscrepancyBreakdownRow[] = Object.entries(discrepancyCounts)
+    .map(([discrepancy_type, count]) => ({ discrepancy_type, count: BigInt(count) }))
+    .sort((a, b) => Number(b.count - a.count));
 
   const supplierMetrics = supplierMetricsRows.map((row) => ({
     supplier_name: row.supplier_name,

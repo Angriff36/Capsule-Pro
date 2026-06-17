@@ -1,8 +1,10 @@
 "use server";
-import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
+import {
+  listAdminTasks as queryAdminTasks,
+  listUsers as queryUsers,
+} from "@/app/lib/manifest-client.generated";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
@@ -62,7 +64,7 @@ export async function listAdminTasks(): Promise<KanbanTask[]> {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const tasks = (await listAdminTasks()).data;
+  const tasks = (await queryAdminTasks()).data;
 
   const employeeIds = Array.from(
     new Set(
@@ -72,9 +74,7 @@ export async function listAdminTasks(): Promise<KanbanTask[]> {
     )
   );
 
-  const employees = employeeIds.length
-    ? (await listUsers()).data
-    : [];
+  const employees = employeeIds.length ? (await queryUsers()).data : [];
 
   const employeeMap = new Map(
     employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`.trim()])
@@ -187,10 +187,8 @@ export async function updateAdminTaskStatus(formData: FormData): Promise<void> {
   // (which OWNS the destination state) would be rejected as an illegal no-op
   // self-transition (the runtime does NOT exempt status = status; see
   // admin-task-rules.manifest).
-  const existing = await database.adminTask.findFirst({
-    where: { tenantId: user.tenantId, id: taskId, deletedAt: null },
-    select: { status: true },
-  });
+  const existing =
+    (await queryAdminTasks()).data.find((task) => task.id === taskId) ?? null;
   invariant(existing, "Task not found");
 
   if (existing.status === status) {

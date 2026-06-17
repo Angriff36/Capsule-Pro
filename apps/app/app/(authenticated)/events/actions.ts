@@ -1,7 +1,7 @@
 "use server";
+import { getEvent, listEventDishes } from "@/app/lib/manifest-client.generated";
 
 import { randomUUID } from "node:crypto";
-import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -127,17 +127,15 @@ const hasMenuItems = async (
   tenantId: string,
   eventId: string
 ): Promise<boolean> => {
-  const [row] = await database.$queryRaw<Array<{ count: number }>>(
-    Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_events.event_dishes
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-    `
+  const links = (await listEventDishes()).data;
+  return (
+    links.filter(
+      (link) =>
+        link.tenantId === tenantId &&
+        link.eventId === eventId &&
+        !link.deletedAt
+    ).length > 0
   );
-
-  return (row?.count ?? 0) > 0;
 };
 
 const missingEventFields = async ({
@@ -306,9 +304,7 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   );
 
   // Read existing event for eventNumber (IR update requires it)
-  const existing = await database.event.findFirst({
-    where: { tenantId, id: data.eventId, deletedAt: null },
-  });
+  const existing = await getEvent(data.eventId);
 
   const ed = eventData(data, eventDate);
   const result = await runManifestCommand({
@@ -359,9 +355,7 @@ export const assignClientToEvent = async (
   const safeClientId = required(clientId, "Client id");
 
   // Read existing event to preserve required fields through the update command
-  const existing = await database.event.findFirst({
-    where: { tenantId, id: safeEventId, deletedAt: null },
-  });
+  const existing = await getEvent(safeEventId);
 
   if (!existing) {
     throw new Error("Event not found");
@@ -438,22 +432,31 @@ export const importEvent = async (formData: FormData): Promise<void> => {
 
 export const attachEventImport = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   const eventId = required(text(formData, "eventId"), "Event id");
   const file = getImportFile(formData);
   const fileName = file.name || IMPORT_FALLBACK_NAME;
   const content = Buffer.from(await file.arrayBuffer());
 
-  await database.eventImport.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "EventImport",
+    command: "create",
+    body: {
       id: randomUUID(),
       eventId,
       fileName,
       mimeType: file.type || "application/octet-stream",
       fileSize: content.byteLength,
-      content,
+      content: Array.from(content),
+      fileType: file.type || "application/octet-stream",
+      parseStatus: "uploaded",
+      parseErrors: [],
     },
+    user: { id: user.id, tenantId, role: user.role },
   });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to attach event import");
+  }
 
   revalidateEvent(eventId);
   redirect(`/events/${eventId}`);

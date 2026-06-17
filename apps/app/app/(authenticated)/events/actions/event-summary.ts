@@ -1,13 +1,22 @@
 "use server";
+import {
+  getEvent,
+  listEventSummaries,
+} from "@/app/lib/manifest-client.generated";
 
 import { openai } from "@ai-sdk/openai";
-import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
+import {
+  countEventStaff,
+  loadEventDishesSummary,
+  loadPrepTasksForEvent,
+} from "@/app/lib/convex/event-domain-loaders";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import { calculateEventProfitability } from "../../analytics/events/actions/get-event-profitability";
 
 const AI_MODEL = "gpt-4o-mini";
+const JSON_OBJECT_REGEX = /\{[\s\S]*\}/;
 
 export type SummarySection =
   | "highlights"
@@ -51,45 +60,36 @@ export interface GetEventSummaryResult {
   summary?: GeneratedEventSummary;
 }
 
+function parseSummaryItems(value: unknown): SummaryItem[] {
+  if (Array.isArray(value)) {
+    return value as SummaryItem[];
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    try {
+      return JSON.parse(value) as SummaryItem[];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export async function getEventSummary(
   eventId: string
 ): Promise<GetEventSummaryResult> {
   const tenantId = await requireTenantId();
-
-  const existingSummary = await database.$queryRaw<
-    Array<{
-      id: string;
-      eventId: string;
-      highlights: unknown;
-      issues: unknown;
-      financialPerformance: unknown;
-      clientFeedback: unknown;
-      insights: unknown;
-      overall_summary: string;
-      generated_at: Date;
-      generation_duration_ms: number | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        event_id as "eventId",
-        highlights,
-        issues,
-        "financialPerformance",
-        "clientFeedback",
-        insights,
-        overall_summary,
-        generated_at,
-        generation_duration_ms
-      FROM tenant_events.event_summaries
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-      ORDER BY generated_at DESC
-      LIMIT 1
-    `
-  );
+  const existingSummary = (await listEventSummaries()).data
+    .filter(
+      (summary) =>
+        summary.tenantId === tenantId &&
+        summary.eventId === eventId &&
+        !summary.deletedAt
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.generatedAt || 0).getTime() -
+        new Date(a.generatedAt || 0).getTime()
+    );
 
   if (existingSummary.length === 0) {
     return { success: false, error: "No summary found" };
@@ -101,15 +101,14 @@ export async function getEventSummary(
     summary: {
       id: summary.id,
       eventId: summary.eventId,
-      highlights: (summary.highlights as SummaryItem[]) || [],
-      issues: (summary.issues as SummaryItem[]) || [],
-      financialPerformance:
-        (summary.financialPerformance as SummaryItem[]) || [],
-      clientFeedback: (summary.clientFeedback as SummaryItem[]) || [],
-      insights: (summary.insights as SummaryItem[]) || [],
-      overallSummary: summary.overall_summary || "",
-      generatedAt: summary.generated_at,
-      generationDurationMs: summary.generation_duration_ms || 0,
+      highlights: parseSummaryItems(summary.highlights),
+      issues: parseSummaryItems(summary.issues),
+      financialPerformance: parseSummaryItems(summary.financialPerformance),
+      clientFeedback: parseSummaryItems(summary.clientFeedback),
+      insights: parseSummaryItems(summary.insights),
+      overallSummary: summary.overallSummary || "",
+      generatedAt: new Date(summary.generatedAt || Date.now()),
+      generationDurationMs: summary.generationDurationMs || 0,
     },
   };
 }
@@ -121,72 +120,21 @@ export async function generateEventSummary(
   const tenantId = user.tenantId;
   const startTime = Date.now();
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: eventId,
-    },
-  });
+  const event = await getEvent(eventId);
 
   if (!event) {
     throw new Error("Event not found");
   }
 
-  const eventDishesResult = await database.$queryRaw<
-    Array<{
-      link_id: string;
-      dish_id: string;
-      name: string;
-      category: string | null;
-      course: string | null;
-      quantity_servings: number;
-      dietary_tags: string[] | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ed.id AS link_id,
-        ed.dish_id,
-        d.name,
-        d.category,
-        ed.course,
-        ed.quantity_servings,
-        COALESCE(d.dietary_tags, ARRAY[]::text[]) AS dietary_tags
-      FROM tenant_events.event_dishes ed
-      JOIN tenant_kitchen.dishes d ON ed.dish_id = d.id AND ed.tenant_id = d.tenant_id
-      WHERE ed.tenant_id = ${tenantId}
-        AND ed.event_id = ${eventId}
-        AND ed.deleted_at IS NULL
-      ORDER BY ed.created_at
-    `
-  );
+  const [eventDishesResult, prepTasksResult, staffCount] = await Promise.all([
+    loadEventDishesSummary(tenantId, eventId),
+    loadPrepTasksForEvent(tenantId, eventId),
+    countEventStaff(tenantId, eventId),
+  ]);
 
-  const prepTasksResult = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      status: string;
-      priority: number;
-      estimated_minutes: number | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        name,
-        status,
-        priority,
-        estimated_minutes
-      FROM tenant_kitchen.prep_tasks
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-        AND deleted_at IS NULL
-      ORDER BY due_by_date
-    `
-  );
-
-  let profitability = null;
-  let profitabilityError = null;
+  let profitability: Awaited<ReturnType<typeof calculateEventProfitability>> | null =
+    null;
+  let profitabilityError: string | null = null;
   try {
     profitability = await calculateEventProfitability(eventId);
   } catch (error) {
@@ -194,31 +142,11 @@ export async function generateEventSummary(
       error instanceof Error ? error.message : "Unknown error";
   }
 
-  const staffAssignmentsResult = await database.$queryRaw<
-    Array<{
-      id: string;
-      role: string;
-      employee_name: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        esa.id,
-        esa.role,
-        CONCAT(e.first_name, ' ', e.last_name) as employee_name
-      FROM tenant_events.event_staff esa
-      LEFT JOIN tenant_staff.employees e ON esa."staffMemberId" = e.id::text
-      WHERE esa."tenantId" = ${tenantId}::text
-        AND esa."eventId" = ${eventId}::text
-        AND esa."deletedAt" IS NULL
-    `
-  );
-
   const eventData = {
     id: event.id,
     title: event.title,
     eventType: event.eventType,
-    eventDate: event.eventDate.toISOString(),
+    eventDate: new Date(event.eventDate).toISOString(),
     guestCount: event.guestCount,
     status: event.status,
     venueName: event.venueName,
@@ -232,21 +160,18 @@ export async function generateEventSummary(
     name: d.name,
     category: d.category,
     course: d.course,
-    servings: d.quantity_servings,
-    dietaryTags: d.dietary_tags,
+    servings: d.quantityServings,
+    dietaryTags: d.dietaryTags,
   }));
 
   const tasksData = prepTasksResult.map((t) => ({
     name: t.name,
     status: t.status,
-    priority: t.priority,
-    estimatedMinutes: t.estimated_minutes,
+    priority: t.isEventFinish ? 1 : 5,
+    estimatedMinutes: t.servingsTotal,
   }));
 
-  const staffData = staffAssignmentsResult.map((s) => ({
-    role: s.role,
-    employeeName: s.employee_name,
-  }));
+  const staffData = [{ role: "assigned", employeeName: `${staffCount} staff` }];
 
   const systemPrompt = `You are an event management analyst that creates comprehensive executive summaries for completed events. Your task is to analyze event data and generate a detailed summary with:
 
@@ -318,7 +243,7 @@ Please provide a comprehensive executive summary following the system prompt gui
 
   let summaryData: EventSummaryData;
   try {
-    const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = result.text.match(JSON_OBJECT_REGEX);
     if (jsonMatch) {
       summaryData = JSON.parse(jsonMatch[0]) as EventSummaryData;
     } else {
@@ -360,14 +285,7 @@ Please provide a comprehensive executive summary following the system prompt gui
     throw new Error(`Failed to create EventSummary: ${createResult.message}`);
   }
 
-  // generationDurationMs is not in the EventSummary.create command's mutations
-  // (IR gap), so we backfill it via direct write.
   const summaryId = (createResult.result as { id: string }).id;
-  await database.$executeRaw`
-    UPDATE tenant_events.event_summaries
-    SET generation_duration_ms = ${generationDurationMs}
-    WHERE id = ${summaryId}
-  `;
 
   return {
     id: summaryId,
@@ -384,17 +302,27 @@ Please provide a comprehensive executive summary following the system prompt gui
 }
 
 export async function deleteEventSummary(summaryId: string): Promise<void> {
-  const tenantId = await requireTenantId();
-
-  // No softDelete command in EventSummary IR — kept as direct Prisma write
-  // until a governed softDelete command is added.
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_events.event_summaries
-      SET deleted_at = NOW(), updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${summaryId}
-        AND deleted_at IS NULL
-    `
-  );
+  const user = await requireCurrentUser();
+  const summary = (await listEventSummaries()).data.find((row) => row.id === summaryId);
+  if (!summary) {
+    return;
+  }
+  const result = await runManifestCommand({
+    entity: "EventSummary",
+    command: "update",
+    body: {
+      id: summaryId,
+      eventId: summary.eventId,
+      highlights: "[]",
+      issues: "[]",
+      financialPerformance: "[]",
+      clientFeedback: "[]",
+      insights: "[]",
+      overallSummary: "[deleted]",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to clear event summary");
+  }
 }

@@ -1,6 +1,5 @@
-import { listAdminTasks, listUsers } from "@/app/lib/manifest-client.generated";
+import { listAdminTasks, listBoardConfigs, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { KanbanBoardClient } from "./components/kanban-board-client";
@@ -15,10 +14,7 @@ import type {
 async function getBoardData(tenantId: string) {
   const [tasks, configRow, employees] = await Promise.all([
     (await listAdminTasks()).data,
-    database.boardConfig.findFirst({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-    }),
+    (await listBoardConfigs()).data[0] ?? null,
     (await listUsers()).data,
   ]);
 

@@ -1,4 +1,5 @@
 "use server";
+import { listMenus } from "@/app/lib/manifest-client.generated";
 
 /**
  * Menu Server Actions — Governed via Manifest runtime
@@ -19,7 +20,6 @@
  * - Audit trail
  */
 
-import { database } from "@repo/database";
 import type { ConstraintOutcome } from "@repo/design-system/components/constraint-override-dialog";
 import { revalidatePath } from "next/cache";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -153,9 +153,7 @@ export async function updateMenuManifest(
   const user = await requireCurrentUser();
 
   // Read existing menu (§10-compliant read)
-  const existingMenu = await database.menu.findFirst({
-    where: { tenantId, id: menuId, deletedAt: null },
-  });
+  const existingMenu = (await listMenus()).data[0] ?? null;
 
   if (!existingMenu) {
     return { success: false, error: "Menu not found." };
@@ -248,9 +246,7 @@ export async function activateMenuManifest(
   const user = await requireCurrentUser();
 
   // Read existing menu (§10-compliant read)
-  const existingMenu = await database.menu.findFirst({
-    where: { tenantId, id: menuId, deletedAt: null },
-  });
+  const existingMenu = (await listMenus()).data[0] ?? null;
 
   if (!existingMenu) {
     return { success: false, error: "Menu not found." };
@@ -306,9 +302,7 @@ export async function deactivateMenuManifest(
   const user = await requireCurrentUser();
 
   // Read existing menu (§10-compliant read)
-  const existingMenu = await database.menu.findFirst({
-    where: { tenantId, id: menuId, deletedAt: null },
-  });
+  const existingMenu = (await listMenus()).data[0] ?? null;
 
   if (!existingMenu) {
     return { success: false, error: "Menu not found." };

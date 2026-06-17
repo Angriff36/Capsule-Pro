@@ -1,5 +1,9 @@
+import { listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import {
+  listClients,
+  listEventContracts,
+} from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandActions,
@@ -63,38 +67,47 @@ const EventContractsPage = async ({ params }: EventContractsPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const [event, contracts] = await Promise.all([
-    database.event.findUnique({
-      where: { tenantId_id: { tenantId, id: eventId } },
-      select: {
-        id: true,
-        title: true,
-        eventNumber: true,
-        eventDate: true,
-      },
-    }),
-    database.$queryRaw<ContractRow[]>`
-      SELECT
-        ec.id,
-        ec.title,
-        ec.status,
-        ec.contract_number,
-        ec.document_url,
-        ec.document_type,
-        ec.notes,
-        ec.expires_at,
-        ec.created_at,
-        ec.updated_at,
-        ec.client_id,
-        COALESCE(c.company_name, NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), 'Unknown') AS client_name
-      FROM tenant_events.event_contracts ec
-      LEFT JOIN tenant_crm.clients c ON c.tenant_id = ec.tenant_id AND c.id = ec.client_id
-      WHERE ec.tenant_id = ${tenantId}
-        AND ec.event_id = ${eventId}
-        AND ec.deleted_at IS NULL
-      ORDER BY ec.created_at DESC
-    `,
+  const [eventsRaw, contractsRaw, clientsRaw] = await Promise.all([
+    listEvents(),
+    listEventContracts(),
+    listClients(),
   ]);
+  const event =
+    eventsRaw.data.find(
+      (row) => row.id === eventId && row.tenantId === tenantId && !row.deletedAt
+    ) ?? null;
+  const clientById = new Map(
+    clientsRaw.data
+      .filter((client) => client.tenantId === tenantId && !client.deletedAt)
+      .map((client) => [
+        client.id,
+        client.companyName ||
+          `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() ||
+          "Unknown",
+      ])
+  );
+  const contracts: ContractRow[] = contractsRaw.data
+    .filter(
+      (contract) =>
+        contract.tenantId === tenantId &&
+        contract.eventId === eventId &&
+        !contract.deletedAt
+    )
+    .map((contract) => ({
+      id: contract.id,
+      title: contract.title ?? "",
+      status: contract.status ?? "draft",
+      contract_number: contract.contractNumber ?? null,
+      document_url: contract.documentUrl ?? null,
+      document_type: contract.documentType ?? null,
+      notes: contract.notes ?? null,
+      expires_at: contract.expiresAt ? new Date(contract.expiresAt) : null,
+      created_at: new Date(contract.createdAt),
+      updated_at: new Date(contract.updatedAt),
+      client_id: contract.clientId,
+      client_name: clientById.get(contract.clientId) ?? "Unknown",
+    }))
+    .sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
 
   if (!event) {
     notFound();

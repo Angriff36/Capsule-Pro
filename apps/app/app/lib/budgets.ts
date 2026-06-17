@@ -8,6 +8,7 @@ import {
   budgetLineItemRemove,
   budgetLineItemUpdate,
   eventBudgetCreate,
+  eventBudgetSoftDelete,
   eventBudgetUpdate,
 } from "@/app/lib/manifest-client.generated";
 import type {
@@ -179,18 +180,11 @@ export async function updateBudget(
   return result;
 }
 
-// NOTE: Keeping apiFetch for delete budget — no generated eventBudgetRemove/softDelete exists
-import { apiFetch } from "@/app/lib/api";
-
 // Delete a budget
 export async function deleteBudget(budgetId: string): Promise<void> {
-  const response = await apiFetch(`/api/events/budgets/${budgetId}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete budget");
+  const result = await eventBudgetSoftDelete({ id: budgetId });
+  if (!result) {
+    throw new Error("Failed to delete budget");
   }
 }
 

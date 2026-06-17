@@ -1,6 +1,10 @@
-import { listInvoices, listProposals } from "@/app/lib/manifest-client.generated";
+import {
+  listInvoices,
+  listLeads,
+  listPayments,
+  listProposals,
+} from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -43,11 +47,12 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric",
 });
+const TITLE_CASE_SEPARATOR = /[_\s]+/;
 
 const titleCase = (value: string) =>
   value
     .toLowerCase()
-    .split(/[_\s]+/)
+    .split(TITLE_CASE_SEPARATOR)
     .filter(Boolean)
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
@@ -107,70 +112,31 @@ const AnalyticsSalesPage = async () => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const [
-    leadSummary,
-    proposalSummary,
-    invoiceSummary,
-    paymentSummary,
-    recentProposals,
-    recentInvoices,
-  ] = await Promise.all([
-    database.lead.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        estimatedValue: true,
-      },
-    }),
-    database.proposal.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        total: true,
-      },
-    }),
-    database.invoice.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        total: true,
-        amountDue: true,
-      },
-    }),
-    database.payment.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        amount: true,
-      },
-    }),
+  const [leads, proposals, invoices, payments] = await Promise.all([
+    (await listLeads()).data,
     (await listProposals()).data,
     (await listInvoices()).data,
+    (await listPayments()).data,
   ]);
 
-  const leadCount = leadSummary._count;
-  const proposalCount = proposalSummary._count;
-  const _invoiceCount = invoiceSummary._count;
-  const _paymentCount = paymentSummary._count;
-  const _estimatedPipelineValue = Number(leadSummary._sum.estimatedValue ?? 0);
-  const _proposedRevenue = Number(proposalSummary._sum.total ?? 0);
-  const invoicedRevenue = Number(invoiceSummary._sum.total ?? 0);
-  const _outstandingRevenue = Number(invoiceSummary._sum.amountDue ?? 0);
-  const collectedRevenue = Number(paymentSummary._sum.amount ?? 0);
+  const leadCount = leads.length;
+  const proposalCount = proposals.length;
+  const invoicedRevenue = invoices.reduce(
+    (sum, invoice) => sum + Number(invoice.total ?? 0),
+    0
+  );
+  const collectedRevenue = payments.reduce(
+    (sum, payment) => sum + Number(payment.amount ?? 0),
+    0
+  );
+  const recentProposals = [...proposals]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 12);
+  const recentInvoices = [...invoices]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 12);
 
   return (
     <PageCanvas>

@@ -1,6 +1,5 @@
-import { listUsers } from "@/app/lib/manifest-client.generated";
+import { listTrainingAssignments, listTrainingModules, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   DisplayHeading,
   MonoLabel,
@@ -96,13 +95,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  const moduleRecord = await database.trainingModule.findFirst({
-    where: {
-      tenantId,
-      id,
-      deletedAt: null,
-    },
-  });
+  const moduleRecord = (await listTrainingModules()).data[0] ?? null;
 
   if (!moduleRecord) {
     notFound();
@@ -121,20 +114,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
     created_at: moduleRecord.createdAt,
   };
 
-  const assignmentRecords = await database.trainingAssignment.findMany({
-    where: {
-      tenantId,
-      moduleId: id,
-      deletedAt: null,
-    },
-    include: {
-      completions: {
-        where: { tenantId },
-        take: 1,
-      },
-    },
-    orderBy: { assignedAt: "desc" },
-  });
+  const assignmentRecords = (await listTrainingAssignments()).data;
 
   const employeeIds = assignmentRecords
     .map((assignment) => assignment.employeeId)

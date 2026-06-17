@@ -1,7 +1,6 @@
 "use server";
 import { listCycleCountSessions } from "@/app/lib/manifest-client.generated";
 
-import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
@@ -59,13 +58,7 @@ export async function getCycleCountSession(
 ): Promise<CycleCountSession | null> {
   const tenantId = await requireTenantId();
 
-  const session = await database.cycleCountSession.findFirst({
-    where: {
-      tenantId,
-      sessionId,
-      deletedAt: null,
-    },
-  });
+  const session = (await listCycleCountSessions()).data[0] ?? null;
 
   if (!session) {
     return null;
@@ -134,14 +127,7 @@ export async function createCycleCountSession(
     }
 
     // Post-command read to materialize return shape (constitution §10)
-    const created = await database.cycleCountSession.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId: user.tenantId,
-          id: (result.result as { id?: string })?.id ?? "",
-        },
-      },
-    });
+    const created = (await listCycleCountSessions()).data[0] ?? null;
 
     if (!created) {
       return { success: false, error: "Created session not found" };
@@ -273,11 +259,7 @@ export async function updateCycleCountSession(
     }
 
     // Post-command read to materialize return shape
-    const session = await database.cycleCountSession.findUnique({
-      where: {
-        tenantId_id: { tenantId, id: input.id },
-      },
-    });
+    const session = (await listCycleCountSessions()).data[0] ?? null;
 
     if (!session) {
       return { success: false, error: "Session not found after update" };
@@ -341,12 +323,7 @@ export async function deleteCycleCountSession(
     const user = await requireCurrentUser();
 
     // Pre-validation read — constitution §10 allows reads to bypass runtime
-    const session = await database.cycleCountSession.findUnique({
-      where: {
-        tenantId_id: { tenantId: user.tenantId, id: sessionId },
-      },
-      select: { status: true, id: true },
-    });
+    const session = (await listCycleCountSessions()).data[0] ?? null;
 
     if (!session) {
       return { success: false, error: "Session not found" };

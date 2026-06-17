@@ -1,3 +1,4 @@
+import { listEventContracts, listVendorContracts } from "@/app/lib/manifest-client.generated";
 /**
  * @module ContractDetailPage
  * @intent Unified contract detail page handling both EventContract and VendorContract
@@ -9,7 +10,6 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -155,47 +155,7 @@ export default async function ContractDetailPage({
 
   let contract: SerializedContract | null = null;
 
-  const ec = await database.eventContract.findFirst({
-    where: { tenantId, id: contractId, deletedAt: null },
-    select: {
-      id: true,
-      tenantId: true,
-      eventId: true,
-      clientId: true,
-      contractNumber: true,
-      title: true,
-      status: true,
-      documentUrl: true,
-      documentType: true,
-      notes: true,
-      signingToken: true,
-      expiresAt: true,
-      createdAt: true,
-      updatedAt: true,
-      event: {
-        select: { id: true, title: true, eventDate: true },
-      },
-      client: {
-        select: {
-          id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
-        },
-      },
-      signatures: {
-        where: { deletedAt: null },
-        select: {
-          id: true,
-          signedAt: true,
-          signerName: true,
-          signerEmail: true,
-          ipAddress: true,
-        },
-        orderBy: { signedAt: "desc" },
-      },
-    },
-  });
+  const ec = (await listEventContracts()).data[0] ?? null;
 
   if (ec) {
     contract = {
@@ -244,38 +204,7 @@ export default async function ContractDetailPage({
   // ---------------------------------------------------------------------------
 
   if (!contract) {
-    const vc = await database.vendorContract.findFirst({
-      where: { tenantId, id: contractId, deletedAt: null },
-      select: {
-        id: true,
-        tenantId: true,
-        contractNumber: true,
-        vendorId: true,
-        vendorName: true,
-        contractType: true,
-        status: true,
-        startDate: true,
-        endDate: true,
-        autoRenew: true,
-        renewalTermDays: true,
-        noticeDaysBeforeRenewal: true,
-        paymentTerms: true,
-        contractUrl: true,
-        notes: true,
-        complianceScore: true,
-        slaBreachCount: true,
-        onTimeDeliveryRate: true,
-        qualityRating: true,
-        lastComplianceReview: true,
-        approvedBy: true,
-        approvedAt: true,
-        terminatedBy: true,
-        terminatedAt: true,
-        terminationReason: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const vc = (await listVendorContracts()).data[0] ?? null;
 
     if (vc) {
       contract = {

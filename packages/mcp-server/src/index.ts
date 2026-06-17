@@ -1,12 +1,10 @@
 /**
  * Capsule-Pro MCP Server — Entry point.
  *
- * Initializes Sentry, resolves identity, creates the MCP server,
+ * Initializes Sentry, resolves identity from env, creates the MCP server,
  * and connects the stdio transport.
  *
- * Uses @repo/database/standalone to avoid server-only guard.
- * Requires preload.cts to run first (via tsx --require) which:
- * - Loads .env from the monorepo root for DATABASE_URL
+ * Requires preload.cts to run first (via tsx --require) which loads .env.
  *
  * Usage:
  *   pnpm --filter @repo/mcp-server start          # Tenant server
@@ -16,12 +14,11 @@
  */
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { database } from "@repo/database/standalone";
 import { consoleLoggingIntegration, init } from "@sentry/node";
 import { keys } from "./keys.js";
 import { resolveIdentity } from "./lib/auth.js";
 import { startIRWatcher } from "./lib/ir-loader.js";
-import { disconnectPrisma, setPrisma } from "./lib/runtime-factory.js";
+import { disconnectPrisma } from "./lib/runtime-factory.js";
 import {
   EXPLAIN_BRIDGE_REV,
   warmupExplainBridge,
@@ -31,27 +28,16 @@ import type { ServerMode } from "./types.js";
 
 const env = keys();
 
-// ---------------------------------------------------------------------------
-// Sentry initialization (MUST be first)
-// ---------------------------------------------------------------------------
-
-const isProd = env.NODE_ENV === "production";
-
 init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? env.SENTRY_DSN,
   environment: env.SENTRY_ENVIRONMENT ?? env.NODE_ENV,
   tracesSampleRate: 1.0,
-
-  // PII: disabled in production, enabled in dev for debugging
-  sendDefaultPii: !isProd,
-
+  sendDefaultPii: env.NODE_ENV !== "production",
   integrations: [
     consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
   ],
-
-  // Redact tool arguments in production
   beforeSendTransaction(event) {
-    if (isProd) {
+    if (env.NODE_ENV === "production") {
       for (const span of event.spans ?? []) {
         if (span.op === "mcp.server") {
           for (const key of Object.keys(span.data ?? {})) {
@@ -67,20 +53,9 @@ init({
   },
 });
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
-
 async function main() {
-  // 1. Determine server mode
   const mode: ServerMode = env.MCP_SERVER_MODE === "admin" ? "admin" : "tenant";
-
-  // 2. Initialize Prisma
-  // biome-ignore lint/suspicious/noExplicitAny: database is the full PrismaClient; PrismaLike is a structural subset
-  setPrisma(database as any);
-
-  // 3. Resolve identity (stdio = service account from env vars)
-  const identity = await resolveIdentity("stdio", database);
+  const identity = await resolveIdentity("stdio");
 
   process.stderr.write(
     `${JSON.stringify({
@@ -92,7 +67,6 @@ async function main() {
     })}\n`
   );
 
-  // 4. Eager-load upstream explain bridge (Windows path + ESM interop).
   try {
     await warmupExplainBridge();
     process.stderr.write(
@@ -113,15 +87,11 @@ async function main() {
     );
   }
 
-  // 5. Start IR file watcher for hot-reload in development
-  if (!isProd) {
+  if (env.NODE_ENV !== "production") {
     startIRWatcher();
   }
 
-  // 6. Create and configure server
   const server = await createServer({ mode, identity });
-
-  // 7. Connect stdio transport
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
@@ -134,10 +104,6 @@ async function main() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Graceful shutdown
-// ---------------------------------------------------------------------------
-
 async function shutdown() {
   process.stderr.write(
     `${JSON.stringify({ level: "info", message: "MCP server shutting down" })}\n`
@@ -148,10 +114,6 @@ async function shutdown() {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
-
-// ---------------------------------------------------------------------------
-// Start
-// ---------------------------------------------------------------------------
 
 main().catch((error) => {
   process.stderr.write(

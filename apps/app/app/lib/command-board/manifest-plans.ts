@@ -1,7 +1,11 @@
 import "server-only";
 
-import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import {
+  commandBoardCardCreate,
+  commandBoardCardUpdate,
+  listCommandBoardCards,
+} from "../../lib/manifest-client.generated";
 import {
   type ManifestPlanRecordPayload,
   planRecordPayloadSchema,
@@ -10,6 +14,7 @@ import {
 
 const PLAN_AGGREGATE_TYPE = "command_board_plan";
 const PENDING_EVENT_TYPE = "command_board.plan.pending";
+const PLAN_CARD_TYPE = "manifest_plan_pending";
 
 interface CreatePendingManifestPlanInput {
   boardId: string;
@@ -32,14 +37,20 @@ export async function createPendingManifestPlan({
     plan,
   };
 
-  await database.outboxEvent.create({
-    data: {
+  await commandBoardCardCreate({
+    boardId,
+    title: `Manifest Plan ${plan.planId}`,
+    content: "Pending manifest plan",
+    cardType: PLAN_CARD_TYPE,
+    status: "pending",
+    metadata: JSON.stringify({
       tenantId,
       aggregateType: PLAN_AGGREGATE_TYPE,
       aggregateId: plan.planId,
       eventType: PENDING_EVENT_TYPE,
-      payload: JSON.parse(JSON.stringify(payload)),
-    },
+      payload,
+      published: false,
+    }),
   });
 }
 
@@ -51,21 +62,48 @@ export async function getPendingManifestPlan(
   eventId: string;
   payload: ManifestPlanRecordPayload;
 } | null> {
-  const event = await database.outboxEvent.findFirst({
-    where: {
-      tenantId,
-      aggregateType: PLAN_AGGREGATE_TYPE,
-      aggregateId: planId,
-      eventType: PENDING_EVENT_TYPE,
-    },
-    orderBy: { createdAt: "desc" },
+  const cards = (await listCommandBoardCards()).data
+    .filter(
+      (card) =>
+        card.boardId === boardId &&
+        card.cardType === PLAN_CARD_TYPE &&
+        typeof card.metadata === "string"
+    )
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+  const card = cards.find((candidate) => {
+    try {
+      const parsed = JSON.parse(candidate.metadata ?? "{}") as {
+        tenantId?: string;
+        aggregateType?: string;
+        aggregateId?: string;
+        eventType?: string;
+      };
+      return (
+        parsed.tenantId === tenantId &&
+        parsed.aggregateType === PLAN_AGGREGATE_TYPE &&
+        parsed.aggregateId === planId &&
+        parsed.eventType === PENDING_EVENT_TYPE
+      );
+    } catch {
+      return false;
+    }
   });
 
-  if (!event) {
+  if (!card) {
     return null;
   }
 
-  const payloadResult = planRecordPayloadSchema.safeParse(event.payload);
+  const parsedMetadata = (() => {
+    try {
+      return JSON.parse(card.metadata ?? "{}") as {
+        payload?: unknown;
+      };
+    } catch {
+      return {};
+    }
+  })();
+  const payloadResult = planRecordPayloadSchema.safeParse(parsedMetadata.payload);
   if (!payloadResult.success) {
     const validationError = new Error(
       `[manifest-plans] Invalid stored plan payload for planId=${planId}`
@@ -93,7 +131,7 @@ export async function getPendingManifestPlan(
   }
 
   return {
-    eventId: event.id,
+    eventId: card.id,
     payload: payloadResult.data,
   };
 }
@@ -109,17 +147,25 @@ export async function updateManifestPlanRecord({
   payload,
   published,
 }: UpdateManifestPlanRecordInput): Promise<void> {
-  await database.outboxEvent.update({
-    where: { id: eventId },
-    data: {
-      payload: JSON.parse(JSON.stringify(payload)),
-      ...(published
-        ? {
-            status: "published",
-            publishedAt: new Date(),
-          }
-        : {}),
-    },
+  const existing = await listCommandBoardCards();
+  const card = existing.data.find((candidate) => candidate.id === eventId);
+  if (!card) {
+    return;
+  }
+  const existingMeta =
+    typeof card.metadata === "string" && card.metadata.length > 0
+      ? (JSON.parse(card.metadata) as Record<string, unknown>)
+      : {};
+
+  await commandBoardCardUpdate({
+    id: eventId,
+    newMetadata: JSON.stringify({
+      ...existingMeta,
+      payload,
+      published,
+      publishedAt: published ? new Date().toISOString() : undefined,
+    }),
+    newStatus: published ? "published" : card.status,
   });
 }
 
@@ -134,13 +180,20 @@ export async function createManifestPlanAuditEvent({
   planId,
   payload,
 }: CreateManifestPlanAuditEventInput): Promise<void> {
-  await database.outboxEvent.create({
-    data: {
+  await commandBoardCardCreate({
+    boardId: payload.boardId,
+    title: `Manifest Plan Executed ${planId}`,
+    content: "Manifest plan execution audit",
+    cardType: PLAN_CARD_TYPE,
+    status: "published",
+    metadata: JSON.stringify({
       tenantId,
       aggregateType: PLAN_AGGREGATE_TYPE,
       aggregateId: planId,
       eventType: "command_board.plan.executed",
-      payload: JSON.parse(JSON.stringify(payload)),
-    },
+      payload,
+      published: true,
+      publishedAt: new Date().toISOString(),
+    }),
   });
 }

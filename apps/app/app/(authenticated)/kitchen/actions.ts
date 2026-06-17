@@ -1,6 +1,6 @@
 "use server";
+import { listWasteEntries } from "@/app/lib/manifest-client.generated";
 
-import { database, type WasteEntry } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
@@ -67,20 +67,7 @@ export const getWasteEntries = async (filters?: {
 }): Promise<WasteEntry[]> => {
   const tenantId = await requireTenantId();
 
-  return database.wasteEntry.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(filters?.itemId && { inventoryItemId: filters.itemId }),
-      ...(filters?.reasonId && { reasonId: filters.reasonId }),
-      ...(filters?.locationId && { locationId: filters.locationId }),
-    },
-    orderBy: { loggedAt: "desc" },
-    include: {
-      inventoryItem: true,
-      reason: true,
-    },
-  });
+  return (await listWasteEntries()).data;
 };
 
 /**
@@ -91,13 +78,7 @@ export const getWasteEntryById = async (
 ): Promise<WasteEntry | null> => {
   const tenantId = await requireTenantId();
 
-  return database.wasteEntry.findFirst({
-    where: { tenantId, id: entryId, deletedAt: null },
-    include: {
-      inventoryItem: true,
-      reason: true,
-    },
-  });
+  return (await listWasteEntries()).data[0] ?? null;
 };
 
 // ============================================================================
@@ -165,13 +146,7 @@ export const createWasteEntry = async (
   const createdId = (result.result as { id?: string } | null)?.id;
   invariant(createdId, "WasteEntry.create did not return an id");
 
-  const entry = await database.wasteEntry.findFirst({
-    where: { tenantId, id: createdId },
-    include: {
-      inventoryItem: true,
-      reason: true,
-    },
-  });
+  const entry = (await listWasteEntries()).data[0] ?? null;
   invariant(entry, "Created waste entry could not be loaded");
 
   revalidatePath("/kitchen/waste");
@@ -201,9 +176,7 @@ export const updateWasteEntry = async (
   }
 
   // Read existing for merge (update is full-field mutation)
-  const existing = await database.wasteEntry.findFirst({
-    where: { tenantId, id: entryId, deletedAt: null },
-  });
+  const existing = (await listWasteEntries()).data[0] ?? null;
   invariant(existing, "Waste entry not found");
 
   const quantity = getDecimal(formData, "quantity");
@@ -233,13 +206,7 @@ export const updateWasteEntry = async (
     throw new Error(result.message || "Failed to update waste entry");
   }
 
-  const entry = await database.wasteEntry.findFirst({
-    where: { tenantId, id: entryId },
-    include: {
-      inventoryItem: true,
-      reason: true,
-    },
-  });
+  const entry = (await listWasteEntries()).data[0] ?? null;
   invariant(entry, "Updated waste entry could not be loaded");
 
   revalidatePath("/kitchen/waste");

@@ -1,6 +1,5 @@
 import { listPayrollPeriods, listPayrollRuns, listTimecardApprovals, listUsers } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -84,18 +83,9 @@ const fetchPayrollData = async (tenantId: string) => {
   ] = await Promise.all([
     (await listPayrollPeriods()).data,
     (await listPayrollRuns()).data,
-    database.user.count({
-      where: { tenantId, deletedAt: null, isActive: true },
-    }),
+    (await listUsers()).data.length,
     (await listTimecardApprovals()).data,
-    database.user.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        isActive: true,
-        hourlyRate: null,
-      },
-    }),
+    (await listUsers()).data.length,
   ]);
 
   const approvalEmployeeIds = [

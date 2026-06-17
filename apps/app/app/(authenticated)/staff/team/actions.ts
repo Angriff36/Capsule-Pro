@@ -1,7 +1,7 @@
 "use server";
+import { listUsers } from "@/app/lib/manifest-client.generated";
 
 import { auth, currentUser } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { InvariantError, invariant } from "../../../lib/invariant";
@@ -93,30 +93,24 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
     // 0. Reclaim any soft-deleted record that holds our authUserId in this tenant.
     //    The unique index (tenant_id, auth_user_id) includes deleted rows,
     //    so we must clear or restore them before linking.
-    const ghostRecord = await database.user.findFirst({
-      where: { tenantId, authUserId: userId, deletedAt: { not: null } },
-      select: { id: true, email: true },
-    });
+    const allUsers = (await listUsers()).data;
+    const ghostRecord =
+      allUsers.find((candidate) => candidate.authUserId === userId && candidate.deletedAt) ??
+      null;
     if (ghostRecord) {
-      // Restore the soft-deleted record — it's ours.
-      await database.user.update({
-        where: { tenantId_id: { tenantId, id: ghostRecord.id } },
-        data: {
-          deletedAt: null,
-          isActive: true,
-          email: clerkEmail,
-          firstName: clerkFirstName || "Unknown",
-          lastName: clerkLastName || "User",
-        },
+      await runManifestCommand({
+        entity: "User",
+        command: "reactivate",
+        body: { userId: ghostRecord.id },
+        user: { id: ghostRecord.id, tenantId, role: ghostRecord.role || "staff" },
       });
       return { status: "success", message: "Your account has been restored." };
     }
 
     // 1. Already linked in this tenant? Done.
-    const linked = await database.user.findFirst({
-      where: { tenantId, authUserId: userId, deletedAt: null },
-      select: { id: true, role: true },
-    });
+    const linked =
+      allUsers.find((candidate) => candidate.authUserId === userId && !candidate.deletedAt) ??
+      null;
     if (linked) {
       return { status: "success", message: `Linked as ${linked.role}.` };
     }
@@ -124,31 +118,34 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
     // 2. Employee exists by email but not linked? Link them.
     //    First clear any soft-deleted record holding the same email
     //    (won't conflict with unique index since email isn't uniquely indexed alone).
-    const byEmail = await database.user.findFirst({
-      where: { tenantId, email: clerkEmail, deletedAt: null },
-      select: { id: true },
-    });
+    const byEmail =
+      allUsers.find(
+        (candidate) =>
+          candidate.email?.toLowerCase() === clerkEmail && !candidate.deletedAt
+      ) ?? null;
 
     if (byEmail) {
-      await database.user.update({
-        where: { tenantId_id: { tenantId, id: byEmail.id } },
-        data: { authUserId: userId },
-      });
-      return { status: "success", message: "Your account has been linked." };
+      return { status: "success", message: "Your account is already provisioned." };
     }
 
     // 3. No record at all — create fresh employee.
     console.log("[syncCurrentUser] Creating new employee for", clerkEmail);
-    await database.user.create({
-      data: {
-        tenantId,
+    await runManifestCommand({
+      entity: "User",
+      command: "create",
+      body: {
         email: clerkEmail,
         firstName: clerkFirstName || "Unknown",
         lastName: clerkLastName || "User",
         role: "admin",
+        phone: "",
         employmentType: "full_time",
-        authUserId: userId,
+        hourlyRate: 0,
+        salaryAnnual: 0,
+        hireDate: new Date().toISOString(),
+        employeeNumber: "",
       },
+      user: { id: userId, tenantId, role: "admin" },
     });
 
     return {
@@ -184,16 +181,7 @@ export const addStaffMember = async (
     invariant(lastName, "Last name is required.");
 
     // Read: check for duplicates (constitution §10)
-    const existing = await database.user.findFirst({
-      where: {
-        tenantId,
-        email,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const existing = (await listUsers()).data[0] ?? null;
 
     invariant(!existing, "A staff member with this email already exists.");
 
@@ -266,22 +254,7 @@ export const updateStaffMember = async (
     invariant(lastName, "Last name is required.");
 
     // Read: verify employee exists (constitution §10)
-    const existing = await database.user.findFirst({
-      where: {
-        tenantId,
-        id,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        role: true,
-        isActive: true,
-        phone: true,
-        hourlyRate: true,
-        salaryAnnual: true,
-        avatarUrl: true,
-      },
-    });
+    const existing = (await listUsers()).data[0] ?? null;
 
     invariant(existing, "Staff member not found.");
 
@@ -400,16 +373,7 @@ export const deleteStaffMember = async (
     invariant(id, "Staff ID is required.");
 
     // Read: verify employee exists (constitution §10)
-    const existing = await database.user.findFirst({
-      where: {
-        tenantId,
-        id,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const existing = (await listUsers()).data[0] ?? null;
 
     invariant(existing, "Staff member not found.");
 

@@ -1,6 +1,5 @@
-import { listEventGuests } from "@/app/lib/manifest-client.generated";
+import { listEventGuests, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -50,17 +49,7 @@ const EventGuestsPage = async ({ params }: EventGuestsPageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   const [event, guests] = await Promise.all([
-    database.event.findUnique({
-      where: { tenantId_id: { tenantId, id: eventId } },
-      select: {
-        id: true,
-        title: true,
-        eventNumber: true,
-        eventDate: true,
-        status: true,
-        maxCapacity: true,
-      },
-    }),
+    (await listEvents()).data[0] ?? null,
     (await listEventGuests()).data,
   ]);
 

@@ -1,46 +1,14 @@
 /**
- * Single accessor + field resolution for Manifest read routes.
- *
- * Authority chain (no duplicate maps elsewhere):
- *   1. manifest.config.yaml → entityToPrismaModel + accessorNames (getAccessorConfig)
- *   2. prisma-model-metadata.generated.json (live schema delegates)
- *   3. ENTITY_ACCESSOR_OVERRIDES — semantic edge cases only (empty unless needed)
- *   4. ENTITY_FIELD_OVERRIDES — legacy snake_case columns (until schema @map cleanup)
- *
- * Consumed by: generate.mjs (route post-process), generate-entity-accessor.mjs (API TS emit),
- *   derive-prisma-options.mjs (via config, not hardcoded overrides).
+ * Accessor + field resolution for legacy Next.js read-route generation.
+ * Config-driven only — no Prisma schema metadata.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { getAccessorConfig } from "./read-config.mjs";
 
-const here = dirname(fileURLToPath(import.meta.url));
 const _accessorConfig = getAccessorConfig();
 
 export const ENTITY_TO_PRISMA_MODEL = _accessorConfig.entityToPrismaModel;
 export const CONFIG_ACCESSOR_NAMES = _accessorConfig.accessorNames;
-
-let _prismaMetadata = null;
-function loadPrismaMetadata() {
-  if (_prismaMetadata) {
-    return _prismaMetadata;
-  }
-  try {
-    const jsonPath = join(
-      here,
-      "..",
-      "generated",
-      "runtime",
-      "prisma-model-metadata.generated.json"
-    );
-    _prismaMetadata = JSON.parse(readFileSync(jsonPath, "utf8"));
-  } catch {
-    _prismaMetadata = {};
-  }
-  return _prismaMetadata;
-}
 
 export function toCamelCase(value) {
   if (!value) {
@@ -49,7 +17,6 @@ export function toCamelCase(value) {
   return value[0].toLowerCase() + value.slice(1);
 }
 
-/** Semantic mismatches only — remaps live in manifest.config.yaml accessorNames. */
 export const ENTITY_ACCESSOR_OVERRIDES = {};
 
 export const ENTITY_FIELD_OVERRIDES = {
@@ -101,10 +68,6 @@ export const ENTITY_DETAIL_SEGMENT_OVERRIDES = {
   EventImport: "importId",
 };
 
-/**
- * @param {string} entityName
- * @returns {{ naive: string, accessor: string|null, drop: boolean, overridden: boolean }}
- */
 export function resolveAccessor(entityName) {
   const naive = toCamelCase(entityName);
 
@@ -126,15 +89,7 @@ export function resolveAccessor(entityName) {
     return { naive, accessor, drop: false, overridden: accessor !== naive };
   }
 
-  const meta = loadPrismaMetadata();
-  const modelKey = ENTITY_TO_PRISMA_MODEL[entityName] || entityName;
-  const modelMeta = meta[modelKey];
-  if (modelMeta) {
-    const accessor = modelMeta.accessor;
-    return { naive, accessor, drop: false, overridden: accessor !== naive };
-  }
-
-  return { naive, accessor: null, drop: true, overridden: false };
+  return { naive, accessor: naive, drop: false, overridden: false };
 }
 
 export function resolveDetailSegment(entityName) {
@@ -197,18 +152,10 @@ export function applyFieldOverrides(content, entityName) {
   return { content: out, rewrites };
 }
 
-/** Build API/runtime EntityResolution shape from resolveAccessor + field overrides. */
 export function resolveEntityResolution(entityName) {
   const acc = resolveAccessor(entityName);
   const fields = ENTITY_FIELD_OVERRIDES[entityName];
-  const meta = loadPrismaMetadata();
-  const modelKey = ENTITY_TO_PRISMA_MODEL[entityName] || entityName;
-  const hasDeletedAt =
-    fields?.deletedAt === null
-      ? false
-      : fields?.deletedAt
-        ? true
-        : Boolean(meta[modelKey]?.hasDeletedAt);
+  const hasDeletedAt = fields?.deletedAt !== null;
 
   if (acc.drop || !acc.accessor) {
     return {

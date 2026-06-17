@@ -1,5 +1,5 @@
+import { listChartOfAccounts, listPayments } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -36,34 +36,12 @@ export default async function BankReconciliationPage() {
   // Fetch summary metrics server-side
   const [bankAccountCount, reconciledCount, recentReconciledPayments] =
     await Promise.all([
-      database.chartOfAccount.count({
-        where: {
-          tenantId,
-          accountType: "ASSET",
-          accountName: { contains: "bank", mode: "insensitive" },
-          isActive: true,
-        },
-      }),
+      (await listChartOfAccounts()).data.length,
       // Approximate reconciled count: bank accounts with zero difference
       // (exact reconciliation status requires the full computation in the API route)
-      database.chartOfAccount.count({
-        where: {
-          tenantId,
-          accountType: "ASSET",
-          accountName: { contains: "bank", mode: "insensitive" },
-          isActive: true,
-        },
-      }),
+      (await listChartOfAccounts()).data.length,
       // Most recent completed payment as proxy for last reconciliation date
-      database.payment.findFirst({
-        where: {
-          tenantId,
-          status: "COMPLETED",
-          deletedAt: null,
-        },
-        orderBy: { completedAt: "desc" },
-        select: { completedAt: true },
-      }),
+      (await listPayments()).data[0] ?? null,
     ]);
 
   const unreconciledCount = bankAccountCount - reconciledCount;

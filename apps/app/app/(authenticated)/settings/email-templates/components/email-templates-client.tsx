@@ -36,7 +36,7 @@ import {
   getEmailTemplates,
 } from "../actions";
 
-type EmailTemplate = import("@repo/database").EmailTemplate;
+import type { EmailTemplate } from "@/app/lib/manifest-types.generated";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
   { value: "proposal", label: "Proposal" },

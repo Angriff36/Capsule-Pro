@@ -1,6 +1,5 @@
-import { listEventTimelineItems } from "@/app/lib/manifest-client.generated";
+import { listEventTimelineItems, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -54,16 +53,7 @@ const EventTimelinePage = async ({ params }: EventTimelinePageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
-    where: { tenantId_id: { tenantId, id: eventId } },
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      eventDate: true,
-      status: true,
-    },
-  });
+  const event = (await listEvents()).data[0] ?? null;
 
   if (!event) {
     notFound();

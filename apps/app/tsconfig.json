@@ -13,12 +13,6 @@
       ],
       "@convex/*": [
         "../../convex/*"
-      ],
-      "@repo/database": [
-        "./app/lib/legacy-database-stub/index.ts"
-      ],
-      "@repo/database/*": [
-        "./app/lib/legacy-database-stub/*"
       ]
     },
     "strictNullChecks": true

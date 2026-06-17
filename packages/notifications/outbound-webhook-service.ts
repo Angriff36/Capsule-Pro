@@ -9,12 +9,13 @@
  */
 
 import { createHmac } from "node:crypto";
-import type { OutboundWebhook, WebhookDeliveryLog } from "@repo/database";
 import {
+  type OutboundWebhook,
+  type WebhookDeliveryLog,
   webhook_delivery_status,
   type webhook_event_type,
   webhook_status,
-} from "@repo/database";
+} from "./outbound-webhook-types";
 
 export interface WebhookPayload {
   data: Record<string, unknown>;

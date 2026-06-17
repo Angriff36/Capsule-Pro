@@ -1,6 +1,6 @@
 {
-  "irHash": "3dc56de61e32352d1492fe790555d7fd082bcdb019238cbcc48277d57ad12e09",
-  "compilerVersion": "2.10.5",
+  "irHash": "14b771dd16ff1ac758270b3e4e6f8e9af1a52d762914cb62356f2061dbf7da80",
+  "compilerVersion": "2.10.7",
   "entities": [
     {
       "name": "ActionMilestone",
@@ -420,6 +420,7 @@
         "open",
         "recordImport",
         "removeDish",
+        "softDelete",
         "startVoting",
         "syncFromEvent",
         "update",
@@ -1788,6 +1789,7 @@
         "approve",
         "create",
         "finalize",
+        "softDelete",
         "update"
       ],
       "properties": [
@@ -4093,6 +4095,7 @@
         "cancel",
         "create",
         "markOrdered",
+        "markPartiallyReceived",
         "markReceived",
         "reject",
         "submit",
@@ -4129,8 +4132,10 @@
       "tenantScoped": true,
       "commands": [
         "create",
+        "recordQuantityReceived",
         "remove",
-        "update"
+        "update",
+        "updateQualityStatus"
       ],
       "properties": [
         "id",
@@ -5050,6 +5055,7 @@
         "markDelivered",
         "schedule",
         "ship",
+        "softDelete",
         "startPreparing",
         "update"
       ],

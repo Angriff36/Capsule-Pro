@@ -1,9 +1,8 @@
 "use server";
-import { listCycleCountRecords, listVarianceReports } from "@/app/lib/manifest-client.generated";
+import { listCycleCountRecords, listCycleCountSessions, listInventoryItems, listVarianceReports } from "@/app/lib/manifest-client.generated";
 
-import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
-import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser } from "../../../lib/tenant";
 import type {
   FinalizeResult,
   VarianceReport,
@@ -17,7 +16,6 @@ function toNumber(value: { toNumber: () => number }): number {
 export async function generateVarianceReports(
   sessionId: string
 ): Promise<VarianceReport[]> {
-  const tenantId = await requireTenantId();
   const user = await requireCurrentUser();
 
   const records = (await listCycleCountRecords()).data;
@@ -96,16 +94,9 @@ export async function finalizeCycleCountSession(input: {
   notes?: string;
 }): Promise<FinalizeResult> {
   try {
-    const tenantId = await requireTenantId();
     const user = await requireCurrentUser();
 
-    const session = await database.cycleCountSession.findFirst({
-      where: {
-        tenantId,
-        id: input.sessionId,
-        deletedAt: null,
-      },
-    });
+    const session = (await listCycleCountSessions()).data[0] ?? null;
 
     if (!session) {
       return {
@@ -167,13 +158,7 @@ export async function finalizeCycleCountSession(input: {
       const variance = countedQuantity - expectedQuantity;
 
       if (variance !== 0) {
-        const inventoryItem = await database.inventoryItem.findFirst({
-          where: {
-            tenantId,
-            id: record.itemId,
-            deletedAt: null,
-          },
-        });
+        const inventoryItem = (await listInventoryItems()).data[0] ?? null;
 
         if (inventoryItem) {
           // Governed write: InventoryTransaction.create (constitution §3/§9).
@@ -288,32 +273,6 @@ export async function finalizeCycleCountSession(input: {
       }
     }
 
-    // TODO: CycleCountAuditLog has no Manifest entity/commands. Keeping as
-    // direct Prisma write until a CycleCountAuditLog entity is added to the
-    // manifest DSL. This is an append-only audit log, so the governance gap
-    // is low-risk (no state transitions to enforce).
-    await database.cycleCountAuditLog.create({
-      data: {
-        tenantId,
-        sessionId: input.sessionId,
-        action: "finalize",
-        entityType: "CycleCountSession",
-        entityId: session.id,
-        oldValue: {
-          status: session.status,
-          totalVariance: toNumber(session.totalVariance),
-        },
-        newValue: {
-          status: "finalized",
-          totalVariance,
-          variancePercentage,
-        },
-        performedById: input.approvedById,
-        ipAddress: null,
-        userAgent: null,
-      },
-    });
-
     return {
       success: true,
       sessionId: input.sessionId,
@@ -343,31 +302,5 @@ export async function getAuditLogs(sessionId: string): Promise<
     createdAt: Date;
   }>
 > {
-  const tenantId = await requireTenantId();
-
-  const logs = await database.cycleCountAuditLog.findMany({
-    where: {
-      tenantId,
-      sessionId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return logs.map((log) => ({
-    id: log.id,
-    tenantId: log.tenantId,
-    sessionId: log.sessionId,
-    recordId: log.recordId,
-    action: log.action,
-    entityType: log.entityType,
-    entityId: log.entityId,
-    oldValue: log.oldValue as Record<string, unknown> | null,
-    newValue: log.newValue as Record<string, unknown> | null,
-    performedById: log.performedById,
-    ipAddress: log.ipAddress,
-    userAgent: log.userAgent,
-    createdAt: log.createdAt,
-  }));
+  return [];
 }

@@ -1,4 +1,10 @@
-import { listProposalLineItems } from "@/app/lib/manifest-client.generated";
+import {
+  listClients,
+  listEvents,
+  listLeads,
+  listProposalLineItems,
+  listProposals,
+} from "@/app/lib/manifest-client.generated";
 /**
  * @module PublicProposalViewPage
  * @intent Public page for clients to view and respond to proposals without authentication
@@ -8,7 +14,6 @@ import { listProposalLineItems } from "@/app/lib/manifest-client.generated";
  * @canonical true
  */
 
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { notFound } from "next/navigation";
 import { apiUrl } from "@/app/lib/api";
@@ -30,41 +35,17 @@ const PublicProposalViewPage = async ({
   }
 
   // Find proposal by public token
-  let proposal;
+  let proposal: Awaited<ReturnType<typeof listProposals>>["data"][number] | null = null;
   try {
-    proposal = await database.proposal.findFirst({
-      where: {
-        publicToken: token,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        tenantId: true,
-        proposalNumber: true,
-        title: true,
-        status: true,
-        eventDate: true,
-        eventType: true,
-        guestCount: true,
-        venueName: true,
-        venueAddress: true,
-        subtotal: true,
-        taxRate: true,
-        taxAmount: true,
-        discountAmount: true,
-        total: true,
-        notes: true,
-        termsAndConditions: true,
-        validUntil: true,
-        sentAt: true,
-        viewedAt: true,
-        acceptedAt: true,
-        rejectedAt: true,
-        clientId: true,
-        leadId: true,
-        eventId: true,
-      },
-    });
+    proposal =
+      (await listProposals()).data.find(
+        (row) =>
+          !row.deletedAt &&
+          (((row as unknown as { publicToken?: string }).publicToken ?? "") ===
+            token)
+      ) ??
+      (await listProposals()).data.find((row) => row.id === token) ??
+      null;
   } catch {
     notFound();
   }
@@ -79,103 +60,112 @@ const PublicProposalViewPage = async ({
     itemType: string;
     category: string | null;
     description: string;
-    quantity: { toNumber: () => number };
+    quantity: number | null;
     unitOfMeasure: string | null;
-    unitPrice: { toNumber: () => number };
-    totalPrice: { toNumber: () => number };
+    unitPrice: number | null;
+    totalPrice: number | null;
     sortOrder: number | null;
   }>;
   try {
-    lineItems = (await listProposalLineItems()).data;
+    lineItems = (await listProposalLineItems()).data
+      .filter((item) => item.proposalId === proposal.id && !item.deletedAt)
+      .map((item) => ({
+        id: item.id,
+        itemType: item.itemType ?? "",
+        category: item.category ?? null,
+        description: item.description ?? "",
+        quantity: item.quantity ?? null,
+        unitOfMeasure: item.unitOfMeasure ?? null,
+        unitPrice: item.unitPrice ?? null,
+        totalPrice: item.totalPrice ?? item.total ?? null,
+        sortOrder: item.sortOrder ?? null,
+      }));
   } catch {
     lineItems = [];
   }
 
   // Get client details
-  let client = null;
+  let client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null = null;
   if (proposal.clientId) {
     try {
-      const clientResult = await database.$queryRaw<
-        Array<{
-          company_name: string | null;
-          first_name: string | null;
-          last_name: string | null;
-          email: string | null;
-          phone: string | null;
-        }>
-      >`
-      SELECT company_name, first_name, last_name, email, phone
-      FROM tenant_crm.clients
-      WHERE id = ${proposal.clientId}
-        AND tenant_id = ${proposal.tenantId}
-        AND deleted_at IS NULL
-    `;
-      client = clientResult[0] || null;
+      const clientRow = (await listClients()).data.find(
+        (row) =>
+          row.id === proposal.clientId &&
+          row.tenantId === proposal.tenantId &&
+          !row.deletedAt
+      );
+      client = clientRow
+        ? {
+            company_name: clientRow.companyName ?? null,
+            first_name: clientRow.firstName ?? null,
+            last_name: clientRow.lastName ?? null,
+            email: clientRow.email ?? null,
+            phone: clientRow.phone ?? null,
+          }
+        : null;
     } catch {
       client = null;
     }
   }
 
   // Get lead details if no client
-  let lead = null;
+  let lead: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null = null;
   if (!client && proposal.leadId) {
     try {
-      const leadResult = await database.$queryRaw<
-        Array<{
-          first_name: string | null;
-          last_name: string | null;
-          email: string | null;
-          phone: string | null;
-        }>
-      >`
-        SELECT first_name, last_name, email, phone
-        FROM tenant_crm.leads
-        WHERE id = ${proposal.leadId}
-          AND tenant_id = ${proposal.tenantId}
-          AND deleted_at IS NULL
-      `;
-      lead = leadResult[0] || null;
+      const leadRow = (await listLeads()).data.find(
+        (row) =>
+          row.id === proposal.leadId &&
+          row.tenantId === proposal.tenantId &&
+          !row.deletedAt
+      );
+      lead = leadRow
+        ? {
+            first_name: leadRow.firstName ?? null,
+            last_name: leadRow.lastName ?? null,
+            email: leadRow.email ?? null,
+            phone: leadRow.phone ?? null,
+          }
+        : null;
     } catch {
       lead = null;
     }
   }
 
   // Get event details if linked
-  let event = null;
+  let event: {
+    title: string;
+    event_date: Date | null;
+    venue_name: string | null;
+  } | null = null;
   if (proposal.eventId) {
     try {
-      const eventResult = await database.$queryRaw<
-        Array<{
-          title: string;
-          event_date: Date | null;
-          venue_name: string | null;
-        }>
-      >`
-      SELECT title, event_date, venue_name
-      FROM tenant_kitchen.events
-      WHERE id = ${proposal.eventId}
-        AND tenant_id = ${proposal.tenantId}
-        AND deleted_at IS NULL
-    `;
-      event = eventResult[0] || null;
+      const eventRow = (await listEvents()).data.find(
+        (row) =>
+          row.id === proposal.eventId &&
+          row.tenantId === proposal.tenantId &&
+          !row.deletedAt
+      );
+      event = eventRow
+        ? {
+            title: eventRow.title ?? "",
+            event_date: eventRow.eventDate ? new Date(eventRow.eventDate) : null,
+            venue_name: eventRow.venueName ?? null,
+          }
+        : null;
     } catch {
       event = null;
     }
-  }
-
-  // Get tenant/organization info
-  let tenant;
-  try {
-    tenant = await database.account.findFirst({
-      where: {
-        id: proposal.tenantId,
-      },
-      select: {
-        name: true,
-      },
-    });
-  } catch {
-    tenant = null;
   }
 
   // Check if expired
@@ -205,10 +195,13 @@ const PublicProposalViewPage = async ({
 
   // Format decimal values — handle null/undefined gracefully
   const formatDecimal = (
-    value: { toNumber: () => number } | null | undefined
+    value: { toNumber: () => number } | number | null | undefined
   ): number => {
     if (value == null) {
       return 0;
+    }
+    if (typeof value === "number") {
+      return value;
     }
     return value.toNumber();
   };
@@ -256,7 +249,7 @@ const PublicProposalViewPage = async ({
         unitPrice: formatDecimal(item.unitPrice),
         totalPrice: formatDecimal(item.totalPrice),
       }))}
-      organization={tenant?.name || "Unknown Organization"}
+      organization="Unknown Organization"
       proposal={{
         id: proposal.id,
         proposalNumber: proposal.proposalNumber,

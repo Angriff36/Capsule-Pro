@@ -22,8 +22,6 @@ const LEGACY_ALLOWLIST_PREFIXES = [
   "manifest/runtime/",
   "manifest/generated/runtime/",
   "apps/api/app/api/",
-  "packages/sentry-integration/src/prisma-store.ts",
-  "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts",
   "packages/supplier-connectors/src/sync-service.ts",
 ];
 
@@ -63,7 +61,7 @@ const FORBIDDEN = [
 ];
 
 const SCAN_DIRS = ["apps/app", "apps/api", "packages", "manifest/runtime/src", "convex"];
-const SKIP = new Set(["node_modules", ".next", "dist", "_generated", ".turbo"]);
+const SKIP = new Set(["node_modules", ".next", ".next-dev", "dist", "_generated", ".turbo"]);
 
 const args = new Set(process.argv.slice(2));
 const strict = args.has("--strict");

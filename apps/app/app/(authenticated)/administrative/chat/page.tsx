@@ -1,5 +1,5 @@
+import { listUsers } from "@/app/lib/manifest-client.generated";
 import { auth, currentUser } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   Alert,
   AlertDescription,
@@ -29,25 +29,11 @@ const AdministrativeChatPage = async () => {
   const primaryEmail = clerkUser?.emailAddresses.at(0)?.emailAddress ?? null;
 
   // 1. Try by authUserId (the correct, linked path)
-  let employee = await database.user.findFirst({
-    where: {
-      tenantId,
-      authUserId: userId,
-      deletedAt: null,
-    },
-    select: employeeSelect,
-  });
+  let employee = (await listUsers()).data[0] ?? null;
 
   // 2. If not found by authUserId, try by email (unlinked employee)
   if (!employee && primaryEmail) {
-    employee = await database.user.findFirst({
-      where: {
-        tenantId,
-        email: primaryEmail,
-        deletedAt: null,
-      },
-      select: employeeSelect,
-    });
+    employee = (await listUsers()).data[0] ?? null;
   }
 
   if (!employee) {

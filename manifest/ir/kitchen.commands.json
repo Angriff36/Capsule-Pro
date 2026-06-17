@@ -371,6 +371,11 @@
   },
   {
     "entity": "BattleBoard",
+    "command": "softDelete",
+    "commandId": "BattleBoard.softDelete"
+  },
+  {
+    "entity": "BattleBoard",
     "command": "startVoting",
     "commandId": "BattleBoard.startVoting"
   },
@@ -1583,6 +1588,11 @@
     "entity": "EventBudget",
     "command": "finalize",
     "commandId": "EventBudget.finalize"
+  },
+  {
+    "entity": "EventBudget",
+    "command": "softDelete",
+    "commandId": "EventBudget.softDelete"
   },
   {
     "entity": "EventBudget",
@@ -3731,6 +3741,11 @@
   },
   {
     "entity": "PurchaseOrder",
+    "command": "markPartiallyReceived",
+    "commandId": "PurchaseOrder.markPartiallyReceived"
+  },
+  {
+    "entity": "PurchaseOrder",
     "command": "markReceived",
     "commandId": "PurchaseOrder.markReceived"
   },
@@ -3756,6 +3771,11 @@
   },
   {
     "entity": "PurchaseOrderItem",
+    "command": "recordQuantityReceived",
+    "commandId": "PurchaseOrderItem.recordQuantityReceived"
+  },
+  {
+    "entity": "PurchaseOrderItem",
     "command": "remove",
     "commandId": "PurchaseOrderItem.remove"
   },
@@ -3763,6 +3783,11 @@
     "entity": "PurchaseOrderItem",
     "command": "update",
     "commandId": "PurchaseOrderItem.update"
+  },
+  {
+    "entity": "PurchaseOrderItem",
+    "command": "updateQualityStatus",
+    "commandId": "PurchaseOrderItem.updateQualityStatus"
   },
   {
     "entity": "PurchaseRequisition",
@@ -4353,6 +4378,11 @@
     "entity": "Shipment",
     "command": "ship",
     "commandId": "Shipment.ship"
+  },
+  {
+    "entity": "Shipment",
+    "command": "softDelete",
+    "commandId": "Shipment.softDelete"
   },
   {
     "entity": "Shipment",

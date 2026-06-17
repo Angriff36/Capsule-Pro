@@ -1,5 +1,5 @@
+import { listEventBudgets, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -87,33 +87,14 @@ const EventBudgetPage = async ({ params }: EventBudgetPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const event = await database.event.findUnique({
-    where: { tenantId_id: { tenantId, id: eventId } },
-    select: {
-      id: true,
-      title: true,
-      eventNumber: true,
-      eventDate: true,
-      status: true,
-      budget: true,
-    },
-  });
+  const event = (await listEvents()).data[0] ?? null;
 
   if (!event) {
     notFound();
   }
 
   // Most-recent non-deleted budget version for this event.
-  const budget = await database.eventBudget.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: [{ version: "desc" }, { createdAt: "desc" }],
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      },
-    },
-  });
+  const budget = (await listEventBudgets()).data[0] ?? null;
 
   const eventLabel = event.eventNumber
     ? `${event.eventNumber} — ${event.title}`

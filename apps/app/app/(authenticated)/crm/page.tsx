@@ -1,5 +1,5 @@
+import { listClientInteractions, listClients, listEvents } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -53,91 +53,66 @@ const CrmPage = async () => {
     notFound();
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
   const now = new Date();
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const [
-    proposalStats,
-    activeClients,
-    newClients,
-    topClients,
-    venuePartnerRows,
-    recentCommunications,
-  ] = await Promise.all([
+  const [proposalStats, allClients, allInteractions, allEvents, topClients] =
+    await Promise.all([
     getProposalStats(),
-    database.client.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-    }),
-    database.client.count({
-      where: {
-        tenantId,
-        deletedAt: null,
-        createdAt: {
-          gte: sevenDaysAgo,
-        },
-      },
-    }),
+    (await listClients()).data,
+    (await listClientInteractions()).data,
+    (await listEvents()).data,
     getClientList("ltv", 5),
-    database.$queryRaw<Array<{ count: bigint }>>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint AS count
-        FROM (
-          SELECT DISTINCT venue_id::text AS venue
-          FROM tenant_events.events
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND venue_id IS NOT NULL
-            AND event_date >= NOW() - INTERVAL '12 months'
-          UNION
-          SELECT DISTINCT venue_name AS venue
-          FROM tenant_events.events
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND venue_id IS NULL
-            AND venue_name IS NOT NULL
-            AND event_date >= NOW() - INTERVAL '12 months'
-        ) venues
-      `
-    ),
-    database.$queryRaw<
-      Array<{
-        id: string;
-        client_name: string;
-        interaction_type: string;
-        subject: string | null;
-        description: string | null;
-        follow_up_date: Date | null;
-        follow_up_completed: boolean;
-        interaction_date: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          ci.id,
-          COALESCE(c.company_name, CONCAT(c.first_name, ' ', c.last_name)) AS client_name,
-          ci.interaction_type,
-          ci.subject,
-          ci.description,
-          ci.follow_up_date,
-          ci.follow_up_completed,
-          ci.interaction_date
-        FROM tenant_crm.client_interactions ci
-        LEFT JOIN tenant_crm.clients c
-          ON ci.tenant_id = c.tenant_id AND ci.client_id = c.id
-        WHERE ci.tenant_id = ${tenantId}::uuid
-          AND ci.deleted_at IS NULL
-        ORDER BY ci.interaction_date DESC
-        LIMIT 5
-      `
-    ),
   ]);
 
-  const venuePartners = Number(venuePartnerRows[0]?.count ?? 0);
+  const activeClients = allClients.length;
+  const newClients = allClients.filter((client) => {
+    if (!client.createdAt) {
+      return false;
+    }
+    return new Date(client.createdAt) >= sevenDaysAgo;
+  }).length;
+
+  const venuePartners = new Set(
+    allEvents
+      .filter((event) => {
+        if (!event.eventDate) {
+          return false;
+        }
+        return new Date(event.eventDate) >= new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+      })
+      .map((event) => event.venueId || event.venueName)
+      .filter((venue): venue is string => Boolean(venue))
+  ).size;
+
+  const clientNameById = new Map(
+    allClients.map((client) => [
+      client.id,
+      client.company_name ||
+        `${client.first_name || ""} ${client.last_name || ""}`.trim() ||
+        "Unknown client",
+    ])
+  );
+  const recentCommunications = allInteractions
+    .slice()
+    .sort((a, b) => {
+      const left = a.interactionDate ? new Date(a.interactionDate).getTime() : 0;
+      const right = b.interactionDate ? new Date(b.interactionDate).getTime() : 0;
+      return right - left;
+    })
+    .slice(0, 5)
+    .map((interaction) => ({
+      id: interaction.id,
+      client_name: clientNameById.get(interaction.clientId || "") || "Unknown client",
+      interaction_type: interaction.interactionType,
+      subject: interaction.subject,
+      description: interaction.description,
+      follow_up_date: interaction.followUpDate ?? null,
+      follow_up_completed: interaction.followUpCompleted ?? false,
+      interaction_date: interaction.interactionDate ?? null,
+    }));
   const openProposals =
     proposalStats.draft + proposalStats.sent + proposalStats.viewed;
   const awaitingResponses = proposalStats.sent + proposalStats.viewed;

@@ -17,11 +17,6 @@
   },
   "main": "./dist/index.js",
   "peerDependencies": {},
-  "peerDependenciesMeta": {
-    "@repo/database": {
-      "optional": true
-    }
-  },
   "private": true,
   "scripts": {
     "build": "tsc",

@@ -1,5 +1,5 @@
+import { listCateringOrders } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -19,7 +19,6 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { CateringClient } from "./catering-client";
 
 export default async function CateringOrdersPage() {
@@ -28,41 +27,16 @@ export default async function CateringOrdersPage() {
     redirect("/sign-in");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    redirect("/");
-  }
-
-  const [total, draft, confirmed, inProgress, completed, cancelled] =
-    await Promise.all([
-      database.cateringOrder.count({
-        where: { tenantId, deletedAt: null },
-      }),
-      database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "draft" },
-      }),
-      database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "confirmed" },
-      }),
-      database.cateringOrder.count({
-        where: {
-          tenantId,
-          deletedAt: null,
-          order_status: "in_progress",
-        },
-      }),
-      database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "completed" },
-      }),
-      database.cateringOrder.count({
-        where: { tenantId, deletedAt: null, order_status: "cancelled" },
-      }),
-    ]);
-
-  const totalRevenue = await database.cateringOrder.aggregate({
-    where: { tenantId, deletedAt: null, order_status: { not: "cancelled" } },
-    _sum: { totalAmount: true },
-  });
+  const orders = (await listCateringOrders()).data;
+  const total = orders.length;
+  const draft = orders.filter((order) => order.orderStatus === "draft").length;
+  const confirmed = orders.filter((order) => order.orderStatus === "confirmed").length;
+  const inProgress = orders.filter((order) => order.orderStatus === "in_progress").length;
+  const completed = orders.filter((order) => order.orderStatus === "completed").length;
+  const cancelled = orders.filter((order) => order.orderStatus === "cancelled").length;
+  const totalRevenue = orders
+    .filter((order) => order.orderStatus !== "cancelled")
+    .reduce((sum, order) => sum + (order.totalAmount ?? 0), 0);
 
   return (
     <PageCanvas>
@@ -105,10 +79,9 @@ export default async function CateringOrdersPage() {
               <MetricLabel>Revenue</MetricLabel>
               <MetricValue>
                 $
-                {Number(totalRevenue._sum.totalAmount ?? 0).toLocaleString(
-                  "en-US",
-                  { minimumFractionDigits: 2 }
-                )}
+                {Number(totalRevenue).toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </MetricValue>
               <p className="text-sm text-white/70">
                 {completed} completed orders

@@ -1,5 +1,5 @@
+import { listVarianceReports } from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -32,25 +32,20 @@ export default async function VarianceReportsPage() {
     redirect("/");
   }
 
-  const [total, pending, reviewed, approved] = await Promise.all([
-    database.varianceReport.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.varianceReport.count({
-      where: { tenantId, deletedAt: null, status: "pending" },
-    }),
-    database.varianceReport.count({
-      where: { tenantId, deletedAt: null, status: "reviewed" },
-    }),
-    database.varianceReport.count({
-      where: { tenantId, deletedAt: null, status: "approved" },
-    }),
-  ]);
-
-  const avgAccuracy = await database.varianceReport.aggregate({
-    where: { tenantId, deletedAt: null },
-    _avg: { accuracyScore: true },
-  });
+  const varianceReports = (await listVarianceReports()).data.filter(
+    (report) => report.tenantId === tenantId && !report.deletedAt
+  );
+  const total = varianceReports.length;
+  const pending = varianceReports.filter((report) => report.status === "pending").length;
+  const reviewed = varianceReports.filter((report) => report.status === "reviewed").length;
+  const approved = varianceReports.filter((report) => report.status === "approved").length;
+  const avgAccuracy =
+    varianceReports.length > 0
+      ? varianceReports.reduce(
+          (sum, report) => sum + Number(report.accuracyScore ?? 0),
+          0
+        ) / varianceReports.length
+      : 0;
 
   return (
     <PageCanvas>
@@ -101,7 +96,7 @@ export default async function VarianceReportsPage() {
             <MetricCell>
               <MetricLabel>Avg Accuracy</MetricLabel>
               <MetricValue>
-                {Number(avgAccuracy._avg.accuracyScore ?? 0).toFixed(1)}%
+                {avgAccuracy.toFixed(1)}%
               </MetricValue>
               <p className="text-sm text-white/70">Across all reports</p>
             </MetricCell>

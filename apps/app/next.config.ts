@@ -217,7 +217,6 @@ const baseConfig: NextConfig = withToolbar(
     transpilePackages: [
       "@repo/design-system",
       "@repo/auth",
-      "@repo/database",
       "@repo/analytics",
       "@repo/observability",
       "@repo/security",
@@ -428,7 +427,6 @@ const baseConfig: NextConfig = withToolbar(
     // Externalize heavy packages with native deps / dynamic requires.
     // pdfkit: Needs access to .afm font files from node_modules
     serverExternalPackages: [
-      "@prisma/adapter-neon",
       "pdfkit",
       "vega-lite",
       "@repo/sales-reporting",

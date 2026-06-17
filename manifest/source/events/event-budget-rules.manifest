@@ -131,6 +131,14 @@ entity EventBudget mixin TenantScoped, SoftDeletable {
     emit EventBudgetFinalized
   }
 
+  command softDelete() {
+    guard self.deletedAt == null "Budget is already deleted"
+
+    mutate deletedAt = now()
+
+    emit EventBudgetDeleted
+  }
+
   store EventBudget in durable
 }
 
@@ -262,6 +270,13 @@ event EventBudgetApproved: "events.budget.approved" {
   totalBudgeted: money
   userId: string
   approvedAt: datetime
+}
+
+event EventBudgetDeleted: "events.budget.deleted" {
+  budgetId: string
+  tenantId: string
+  eventId: string
+  deletedAt: datetime
 }
 
 // Line item events

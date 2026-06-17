@@ -1,7 +1,6 @@
 "use server";
-import { getEvent, listDishes, listEventDishes } from "@/app/lib/manifest-client.generated";
+import { getEvent, listDishes, listEventDishes, listProposals } from "@/app/lib/manifest-client.generated";
 
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -40,11 +39,7 @@ export async function generateProposalFromEvent(
 
     // Generate proposal number
     const year = new Date().getFullYear();
-    const lastProposal = await database.proposal.findFirst({
-      where: { tenantId, proposalNumber: { startsWith: `PROP-${year}-` } },
-      orderBy: { proposalNumber: "desc" },
-      select: { proposalNumber: true },
-    });
+    const lastProposal = (await listProposals()).data[0] ?? null;
 
     const lastSeq = lastProposal?.proposalNumber
       ? Number.parseInt(lastProposal.proposalNumber.split("-").pop() ?? "0", 10)

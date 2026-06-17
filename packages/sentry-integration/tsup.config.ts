@@ -8,7 +8,6 @@ export default defineConfig({
     "src/queue.ts",
     "src/runner.ts",
     "src/slack.ts",
-    "src/prisma-store.ts",
     "src/fixer.ts",
     "src/pipeline-correlation.ts",
   ],
@@ -19,7 +18,6 @@ export default defineConfig({
   format: ["esm"],
   clean: true,
   external: [
-    "@repo/database",
     "@repo/observability",
     "@ai-sdk/openai",
     "@slack/web-api",

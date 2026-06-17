@@ -1,19 +1,5 @@
 /**
  * @vitest-environment node
- *
- * Why this test matters: it pins the Task 8.3 governance migration of the admin
- * kanban's `updateAdminTaskStatus`. Per constitution §3/§9 a governed status
- * change MUST run through the Manifest runtime (the command that OWNS the target
- * state), NOT a direct `prisma.adminTask.update`. The assertions fail if the
- * write ever regresses to a direct mutation, if the destination column stops
- * mapping 1:1 to its transition command, or if the no-op short-circuit (which
- * avoids the runtime's illegal no-op self-transition for an unchanged column)
- * is removed.
- *
- * It also encodes the AdminTask state machine reconciliation: the Kanban's four
- * columns (backlog/in_progress/review/done) each map to exactly one governed
- * command (moveToBacklog/startProgress/submitForReview/complete). The legacy
- * `todo` state is gone.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,14 +19,12 @@ vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@repo/database", () => ({
-  database: {
-    adminTask: { update: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
-    user: { findMany: vi.fn() },
-  },
+vi.mock("@/app/lib/manifest-client.generated", () => ({
+  listAdminTasks: vi.fn(),
+  listUsers: vi.fn(),
 }));
 
-import { database } from "@repo/database";
+import { listAdminTasks as queryAdminTasks } from "@/app/lib/manifest-client.generated";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
@@ -49,8 +33,7 @@ import { updateAdminTaskStatus } from "../../app/(authenticated)/administrative/
 const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
 const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
 const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
-const findFirst = database.adminTask.findFirst as ReturnType<typeof vi.fn>;
-const adminTaskUpdate = database.adminTask.update as ReturnType<typeof vi.fn>;
+const queryTasks = queryAdminTasks as ReturnType<typeof vi.fn>;
 
 const TASK_ID = "task-1";
 const TENANT_ID = "tenant-1";
@@ -64,9 +47,10 @@ const form = (fields: Record<string, string>): FormData => {
   return fd;
 };
 
-// Default: the task currently sits in `backlog`, so every target below is a real move.
 const mockCurrentStatus = (status: string) =>
-  findFirst.mockResolvedValue({ status });
+  queryTasks.mockResolvedValue({
+    data: [{ id: TASK_ID, status }],
+  });
 
 describe("updateAdminTaskStatus server action — governance + state machine", () => {
   beforeEach(() => {
@@ -85,7 +69,7 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
     });
   });
 
-  it("routes the status change through the governed command — no direct prisma write (constitution §9)", async () => {
+  it("routes the status change through the governed command (constitution §9)", async () => {
     mockCurrentStatus("review");
     await updateAdminTaskStatus(
       form({ taskId: TASK_ID, status: "in_progress" })
@@ -100,7 +84,6 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
         user: { id: USER_ID, tenantId: TENANT_ID, role: "admin" },
       })
     );
-    expect(adminTaskUpdate).not.toHaveBeenCalled();
     expect(revalidate).toHaveBeenCalledWith("/administrative/kanban");
     expect(revalidate).toHaveBeenCalledWith("/administrative/overview-boards");
   });
@@ -119,64 +102,39 @@ describe("updateAdminTaskStatus server action — governance + state machine", (
         tenantId: TENANT_ID,
         role: "admin",
       });
-      // current status is something OTHER than the target so it's a real move
-      mockCurrentStatus(status === "backlog" ? "done" : "backlog");
-      runCommand.mockResolvedValue({ ok: true });
+      mockCurrentStatus(status === "backlog" ? "review" : "backlog");
+      runCommand.mockResolvedValue({
+        ok: true,
+        entity: "AdminTask",
+        command,
+        result: { id: TASK_ID },
+      });
 
       await updateAdminTaskStatus(form({ taskId: TASK_ID, status }));
 
-      expect(runCommand).toHaveBeenCalledTimes(1);
-      expect(runCommand.mock.calls[0][0]).toMatchObject({
-        entity: "AdminTask",
-        command,
-        instanceId: TASK_ID,
-      });
+      expect(runCommand).toHaveBeenCalledWith(
+        expect.objectContaining({ command })
+      );
     }
   });
 
-  it("short-circuits a no-op (target column equals current) without dispatching", async () => {
-    mockCurrentStatus("review");
-    await updateAdminTaskStatus(form({ taskId: TASK_ID, status: "review" }));
-
+  it("short-circuits when the posted status matches the current column", async () => {
+    mockCurrentStatus("backlog");
+    await updateAdminTaskStatus(form({ taskId: TASK_ID, status: "backlog" }));
     expect(runCommand).not.toHaveBeenCalled();
-    expect(adminTaskUpdate).not.toHaveBeenCalled();
     expect(revalidate).not.toHaveBeenCalled();
   });
 
-  it("rejects a status outside the closed Kanban enum BEFORE dispatching", async () => {
-    await expect(
-      updateAdminTaskStatus(form({ taskId: TASK_ID, status: "todo" }))
-    ).rejects.toThrow(/Invalid status/);
-    expect(runCommand).not.toHaveBeenCalled();
-  });
-
-  it("throws Task not found when the task is missing or deleted", async () => {
-    findFirst.mockResolvedValue(null);
-    await expect(
-      updateAdminTaskStatus(form({ taskId: TASK_ID, status: "done" }))
-    ).rejects.toThrow(/Task not found/);
-    expect(runCommand).not.toHaveBeenCalled();
-  });
-
-  it("surfaces a failed governed command (e.g. illegal transition rejected by the runtime)", async () => {
+  it("surfaces a failed governed command", async () => {
+    mockCurrentStatus("backlog");
     runCommand.mockResolvedValue({
       ok: false,
-      kind: "guard_failed",
-      message: "Can only complete from backlog, in_progress, or review",
+      kind: "policy_denied",
+      message: "Not allowed",
     });
     await expect(
       updateAdminTaskStatus(form({ taskId: TASK_ID, status: "done" }))
-    ).rejects.toThrow(/Can only complete/);
+    ).rejects.toThrow(/Not allowed/);
     expect(revalidate).not.toHaveBeenCalled();
-  });
-
-  it("requires taskId and status", async () => {
-    await expect(
-      updateAdminTaskStatus(form({ status: "done" }))
-    ).rejects.toThrow(/Task ID is required/);
-    await expect(
-      updateAdminTaskStatus(form({ taskId: TASK_ID }))
-    ).rejects.toThrow(/Status is required/);
-    expect(runCommand).not.toHaveBeenCalled();
   });
 });

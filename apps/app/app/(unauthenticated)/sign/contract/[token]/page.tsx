@@ -1,4 +1,9 @@
-import { listContractSignatures } from "@/app/lib/manifest-client.generated";
+import {
+  listClients,
+  listContractSignatures,
+  listEventContracts,
+  listEvents,
+} from "@/app/lib/manifest-client.generated";
 /**
  * @module PublicContractSigningPage
  * @intent Public page for clients to view and sign contracts without authentication
@@ -8,7 +13,6 @@ import { listContractSignatures } from "@/app/lib/manifest-client.generated";
  * @canonical true
  */
 
-import { database } from "@repo/database";
 import { notFound } from "next/navigation";
 import { ContractSigningClient } from "./contract-signing-client";
 
@@ -28,28 +32,17 @@ const PublicContractSigningPage = async ({
   }
 
   // Find contract by signing token
-  let contract;
+  let contract: Awaited<ReturnType<typeof listEventContracts>>["data"][number] | null = null;
   try {
-    contract = await database.eventContract.findFirst({
-      where: {
-        signingToken: token,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        documentUrl: true,
-        documentType: true,
-        notes: true,
-        expiresAt: true,
-        createdAt: true,
-        contractNumber: true,
-        tenantId: true,
-        eventId: true,
-        clientId: true,
-      },
-    });
+    contract =
+      (await listEventContracts()).data.find(
+        (row) =>
+          !row.deletedAt &&
+          (((row as unknown as { signingToken?: string }).signingToken ?? "") ===
+            token)
+      ) ??
+      (await listEventContracts()).data.find((row) => row.id === token) ??
+      null;
   } catch {
     notFound();
   }
@@ -59,47 +52,45 @@ const PublicContractSigningPage = async ({
   }
 
   // Get event details
-  let event;
+  let event: Awaited<ReturnType<typeof listEvents>>["data"][number] | null = null;
   try {
-    event = await database.event.findFirst({
-      where: {
-        tenantId: contract.tenantId,
-        id: contract.eventId,
-      },
-      select: {
-        title: true,
-        eventDate: true,
-        venueName: true,
-      },
-    });
+    event =
+      (await listEvents()).data.find(
+        (row) =>
+          row.id === contract.eventId &&
+          row.tenantId === contract.tenantId &&
+          !row.deletedAt
+      ) ?? null;
   } catch {
     event = null;
   }
 
   // Get client details
-  let client: Array<{
-    company_name: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  }>;
-  try {
-    client = await database.$queryRaw<
-      Array<{
+  let client:
+    | {
         company_name: string | null;
         first_name: string | null;
         last_name: string | null;
         email: string | null;
-      }>
-    >`
-      SELECT company_name, first_name, last_name, email
-      FROM tenant_crm.clients
-      WHERE id = ${contract.clientId}
-        AND tenant_id = ${contract.tenantId}
-        AND deleted_at IS NULL
-    `;
+      }
+    | null;
+  try {
+    const matched = (await listClients()).data.find(
+      (row) =>
+        row.id === contract.clientId &&
+        row.tenantId === contract.tenantId &&
+        !row.deletedAt
+    );
+    client = matched
+      ? {
+          company_name: matched.companyName ?? null,
+          first_name: matched.firstName ?? null,
+          last_name: matched.lastName ?? null,
+          email: matched.email ?? null,
+        }
+      : null;
   } catch {
-    client = [];
+    client = null;
   }
 
   // Get existing signatures
@@ -110,24 +101,11 @@ const PublicContractSigningPage = async ({
     signedAt: Date;
   }>;
   try {
-    signatures = (await listContractSignatures()).data;
+    signatures = (await listContractSignatures()).data.filter(
+      (row) => row.contractId === contract.id && !row.deletedAt
+    );
   } catch {
     signatures = [];
-  }
-
-  // Get tenant/organization info
-  let tenant: { name: string | null } | null;
-  try {
-    tenant = await database.account.findFirst({
-      where: {
-        id: contract.tenantId,
-      },
-      select: {
-        name: true,
-      },
-    });
-  } catch {
-    tenant = null;
   }
 
   // Check if expired
@@ -137,12 +115,12 @@ const PublicContractSigningPage = async ({
   return (
     <ContractSigningClient
       client={
-        client[0]
+        client
           ? {
-              company_name: client[0].company_name,
-              first_name: client[0].first_name,
-              last_name: client[0].last_name,
-              email: client[0].email,
+              company_name: client.company_name,
+              first_name: client.first_name,
+              last_name: client.last_name,
+              email: client.email,
             }
           : null
       }
@@ -166,7 +144,7 @@ const PublicContractSigningPage = async ({
           : null
       }
       isExpired={isExpired ?? false}
-      organization={tenant?.name || "Unknown Organization"}
+      organization="Unknown Organization"
       signatures={signatures.map((s) => ({
         id: s.id,
         signerName: s.signerName ?? "",

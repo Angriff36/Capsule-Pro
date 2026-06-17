@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@repo/database";
+import { listBattleBoards } from "@/app/lib/manifest-client.generated";
 
 /**
  * Canonical BattleBoard surface for an event.
@@ -9,15 +9,7 @@ export async function resolveEventBattleBoardHref(
   tenantId: string,
   eventId: string
 ): Promise<string> {
-  const board = await database.battleBoard.findFirst({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true },
-  });
+  const board = (await listBattleBoards()).data[0] ?? null;
 
   if (board) {
     return `/events/battle-boards/${board.id}`;

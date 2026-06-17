@@ -2,8 +2,11 @@
 
 import "server-only";
 
+import {
+  listCateringOrders,
+  listClients,
+} from "@/app/lib/manifest-client.generated";
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 export interface ClientLTVMetrics {
@@ -81,44 +84,78 @@ export async function getClientLTVMetrics(): Promise<ClientLTVMetrics> {
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const clientLTVResult = await database.$queryRawUnsafe<ClientLTVData[]>(
-    `
-    SELECT 
-      c.id,
-      COALESCE(c.company_name, CONCAT(c.first_name, ' ', c.last_name)) as name,
-      c.email,
-      COALESCE(SUM(co.total_amount), 0)::decimal as "lifetimeValue",
-      COUNT(co.id)::int as "orderCount",
-      MAX(co.order_date) as "lastOrderDate",
-      COALESCE(AVG(co.total_amount), 0)::decimal as "averageOrderValue",
-      c.created_at as "createdAt"
-    FROM tenant_crm.clients c
-    LEFT JOIN tenant_events.catering_orders co
-      ON c.tenant_id = co.tenant_id AND c.id = co.customer_id AND co.deleted_at IS NULL
-    WHERE c.tenant_id = $1 AND c.deleted_at IS NULL
-    GROUP BY c.id, c.company_name, c.first_name, c.last_name, c.email, c.created_at
-    ORDER BY "lifetimeValue" DESC
-    `,
-    tenantId
-  );
+  const [clients, cateringOrders] = await Promise.all([
+    (await listClients()).data,
+    (await listCateringOrders()).data,
+  ]);
 
-  const revenueByMonthRaw = await database.$queryRawUnsafe<OrderMonthData[]>(
-    `
-    SELECT 
-      TO_CHAR(DATE_TRUNC('month', co.order_date), 'YYYY-MM') as month,
-      COALESCE(SUM(co.total_amount), 0)::decimal as total_revenue,
-      COUNT(co.id) as order_count,
-      COUNT(DISTINCT co.customer_id) as client_count
-    FROM tenant_events.catering_orders co
-    WHERE co.tenant_id = $1 
-      AND co.deleted_at IS NULL
-      AND co.order_date >= NOW() - INTERVAL '12 months'
-    GROUP BY DATE_TRUNC('month', co.order_date)
-    ORDER BY month ASC
-    `,
-    tenantId
+  const ordersByClient = new Map<string, typeof cateringOrders>();
+  for (const order of cateringOrders) {
+    if (!order.customerId) continue;
+    const existing = ordersByClient.get(order.customerId) ?? [];
+    existing.push(order);
+    ordersByClient.set(order.customerId, existing);
+  }
+
+  const clientLTVResult: ClientLTVData[] = clients
+    .map((client) => {
+      const clientOrders = ordersByClient.get(client.id) ?? [];
+      const lifetimeValue = clientOrders.reduce(
+        (sum, order) => sum + Number(order.totalAmount ?? 0),
+        0
+      );
+      const orderCount = clientOrders.length;
+      const lastOrderDate =
+        clientOrders.length > 0
+          ? clientOrders.reduce(
+              (latest, order) =>
+                order.orderDate > latest ? order.orderDate : latest,
+              clientOrders[0].orderDate
+            )
+          : null;
+
+      return {
+        id: client.id,
+        name:
+          client.companyName ||
+          [client.firstName, client.lastName].filter(Boolean).join(" ") ||
+          "Unnamed client",
+        email: client.email,
+        lifetimeValue,
+        orderCount,
+        lastOrderDate,
+        averageOrderValue: orderCount > 0 ? lifetimeValue / orderCount : 0,
+        createdAt: client.createdAt,
+      };
+    })
+    .sort((a, b) => b.lifetimeValue - a.lifetimeValue);
+
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const monthMap = new Map<
+    string,
+    { revenue: number; orders: number; clients: Set<string> }
+  >();
+  for (const order of cateringOrders) {
+    if (order.orderDate < twelveMonthsAgo) continue;
+    const month = order.orderDate.toISOString().slice(0, 7);
+    const existing = monthMap.get(month) ?? { revenue: 0, orders: 0, clients: new Set<string>() };
+    existing.revenue += Number(order.totalAmount ?? 0);
+    existing.orders += 1;
+    if (order.customerId) {
+      existing.clients.add(order.customerId);
+    }
+    monthMap.set(month, existing);
+  }
+  const revenueByMonthRaw: OrderMonthData[] = Array.from(monthMap.entries()).map(
+    ([month, value]) => ({
+      month,
+      total_revenue: value.revenue,
+      order_count: value.orders,
+      client_count: value.clients.size,
+    })
   );
 
   if (clientLTVResult.length === 0) {
@@ -418,12 +455,6 @@ function calculatePredictiveLTV(clientData: ClientLTVData[]): {
   };
 }
 
-const ALLOWED_ORDER_CLAUSES = {
-  ltv: '"lifetimeValue" DESC',
-  orders: '"orderCount" DESC',
-  recent: '"lastOrderDate" DESC NULLS LAST',
-} as const;
-
 export async function getClientList(
   sortBy: "ltv" | "orders" | "recent" = "ltv",
   limit = 50
@@ -434,39 +465,60 @@ export async function getClientList(
     throw new Error("Unauthorized");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const orderClause = ALLOWED_ORDER_CLAUSES[sortBy];
-  if (!orderClause) {
-    throw new Error(`Invalid sortBy value: ${sortBy}`);
+  const [clients, cateringOrders] = await Promise.all([
+    (await listClients()).data,
+    (await listCateringOrders()).data,
+  ]);
+
+  const ordersByClient = new Map<string, typeof cateringOrders>();
+  for (const order of cateringOrders) {
+    if (!order.customerId) continue;
+    const existing = ordersByClient.get(order.customerId) ?? [];
+    existing.push(order);
+    ordersByClient.set(order.customerId, existing);
   }
 
-  const result = await database.$queryRawUnsafe<ClientLTVData[]>(
-    `
-    SELECT
-      c.id,
-      COALESCE(c.company_name, CONCAT(c.first_name, ' ', c.last_name)) as name,
-      c.email,
-      COALESCE(SUM(co.total_amount), 0)::decimal as "lifetimeValue",
-      COUNT(co.id)::int as "orderCount",
-      MAX(co.order_date) as "lastOrderDate",
-      COALESCE(AVG(co.total_amount), 0)::decimal as "averageOrderValue",
-      c.created_at as "createdAt"
-    FROM tenant_crm.clients c
-    LEFT JOIN tenant_events.catering_orders co
-      ON c.tenant_id = co.tenant_id AND c.id = co.customer_id AND co.deleted_at IS NULL
-    WHERE c.tenant_id = $1 AND c.deleted_at IS NULL
-    GROUP BY c.id, c.company_name, c.first_name, c.last_name, c.email, c.created_at
-    ORDER BY ${orderClause}
-    LIMIT $2
-    `,
-    tenantId,
-    limit
-  );
+  const result: ClientLTVData[] = clients.map((client) => {
+    const clientOrders = ordersByClient.get(client.id) ?? [];
+    const lifetimeValue = clientOrders.reduce(
+      (sum, order) => sum + Number(order.totalAmount ?? 0),
+      0
+    );
+    const orderCount = clientOrders.length;
+    return {
+      id: client.id,
+      name:
+        client.companyName ||
+        [client.firstName, client.lastName].filter(Boolean).join(" ") ||
+        "Unnamed client",
+      email: client.email,
+      lifetimeValue,
+      orderCount,
+      lastOrderDate:
+        clientOrders.length > 0
+          ? clientOrders.reduce(
+              (latest, order) =>
+                order.orderDate > latest ? order.orderDate : latest,
+              clientOrders[0].orderDate
+            )
+          : null,
+      averageOrderValue: orderCount > 0 ? lifetimeValue / orderCount : 0,
+      createdAt: client.createdAt,
+    };
+  });
 
-  return result.map((client) => ({
-    ...client,
-    lifetimeValue: Number(client.lifetimeValue),
-    averageOrderValue: Number(client.averageOrderValue),
-  }));
+  const sorted = [...result];
+  if (sortBy === "orders") {
+    sorted.sort((a, b) => b.orderCount - a.orderCount);
+  } else if (sortBy === "recent") {
+    sorted.sort(
+      (a, b) =>
+        (b.lastOrderDate?.getTime() ?? 0) - (a.lastOrderDate?.getTime() ?? 0)
+    );
+  } else {
+    sorted.sort((a, b) => b.lifetimeValue - a.lifetimeValue);
+  }
+  return sorted.slice(0, limit);
 }

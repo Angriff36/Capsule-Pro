@@ -1,4 +1,5 @@
 "use server";
+import { listStorageLocations } from "@/app/lib/manifest-client.generated";
 
 /**
  * Procurement Server Actions
@@ -8,7 +9,6 @@
  * Reads remain direct Prisma (constitution §10).
  */
 
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -124,20 +124,14 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   }
   const data = parsed.data;
 
-  // Resolve locationId: prefer explicit selection, fall back to primary or first active location
+  // Resolve locationId: prefer explicit selection, fall back to first active storage location
   let locationId = data.locationId;
   if (!locationId) {
-    const fallback = await database.$queryRaw<Array<{ id: string }>>`
-      SELECT id FROM tenant.locations
-      WHERE tenant_id = ${tenantId} AND deleted_at IS NULL AND is_active = true
-      ORDER BY is_primary DESC, name ASC
-      LIMIT 1
-    `;
-    if (fallback.length > 0) {
-      locationId = fallback[0].id;
-    }
+    locationId =
+      (await listStorageLocations()).data.find((location) => location.is_active)?.id ??
+      null;
   }
-  invariant(locationId, "No location available — create a location first");
+  invariant(locationId, "No location available — select one explicitly");
 
   // Generate a unique PO number
   const year = new Date().getFullYear();

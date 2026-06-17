@@ -10,7 +10,6 @@ import { listEventContracts, listVendorContracts } from "@/app/lib/manifest-clie
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,

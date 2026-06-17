@@ -1,5 +1,11 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import {
+  listDishes,
+  listRecipes,
+  listRecipeIngredients,
+  listRecipeSteps,
+  listRecipeVersions,
+} from "@/app/lib/manifest-client.generated";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -124,50 +130,63 @@ const CleanupImportsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const candidates = await database.$queryRaw<CleanupCandidate[]>(
-    Prisma.sql`
-      SELECT
-        r.id,
-        r.name,
-        r.category,
-        r.tags,
-        COALESCE(ingredients.count, 0) AS ingredient_count,
-        COALESCE(steps.count, 0) AS step_count,
-        COALESCE(dishes.count, 0) AS dish_count
-      FROM tenant_kitchen.recipes r
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS count
-        FROM tenant_kitchen.recipe_versions rv
-        JOIN tenant_kitchen.recipe_ingredients ri
-          ON ri.tenant_id = rv.tenant_id
-          AND ri.recipe_version_id = rv.id
-          AND ri.deleted_at IS NULL
-        WHERE rv.tenant_id = r.tenant_id
-          AND rv.recipe_id = r.id
-          AND rv.deleted_at IS NULL
-      ) ingredients ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS count
-        FROM tenant_kitchen.recipe_versions rv
-        JOIN tenant_kitchen.recipe_steps rs
-          ON rs.tenant_id = rv.tenant_id
-          AND rs.recipe_version_id = rv.id
-          AND rs.deleted_at IS NULL
-        WHERE rv.tenant_id = r.tenant_id
-          AND rv.recipe_id = r.id
-          AND rv.deleted_at IS NULL
-      ) steps ON true
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*)::int AS count
-        FROM tenant_kitchen.dishes d
-        WHERE d.tenant_id = r.tenant_id
-          AND d.recipe_id = r.id
-          AND d.deleted_at IS NULL
-      ) dishes ON true
-      WHERE r.tenant_id = ${tenantId}
-        AND r.deleted_at IS NULL
-    `
-  );
+  const [recipes, recipeVersions, recipeIngredients, recipeSteps, dishes] =
+    await Promise.all([
+      (await listRecipes()).data.filter(
+        (recipe) => recipe.tenantId === tenantId && !recipe.deletedAt
+      ),
+      (await listRecipeVersions()).data.filter(
+        (version) => version.tenantId === tenantId && !version.deletedAt
+      ),
+      (await listRecipeIngredients()).data.filter(
+        (ingredient) => ingredient.tenantId === tenantId && !ingredient.deletedAt
+      ),
+      (await listRecipeSteps()).data.filter(
+        (step) => step.tenantId === tenantId && !step.deletedAt
+      ),
+      (await listDishes()).data.filter(
+        (dish) => dish.tenantId === tenantId && !dish.deletedAt
+      ),
+    ]);
+  const recipeIdByVersionId = new Map<string, string>();
+  for (const version of recipeVersions) {
+    recipeIdByVersionId.set(version.id, version.recipeId);
+  }
+  const ingredientCountByRecipeId = new Map<string, number>();
+  for (const ingredient of recipeIngredients) {
+    const recipeId = recipeIdByVersionId.get(ingredient.recipeVersionId);
+    if (!recipeId) {
+      continue;
+    }
+    ingredientCountByRecipeId.set(
+      recipeId,
+      (ingredientCountByRecipeId.get(recipeId) ?? 0) + 1
+    );
+  }
+  const stepCountByRecipeId = new Map<string, number>();
+  for (const step of recipeSteps) {
+    const recipeId = recipeIdByVersionId.get(step.recipeVersionId);
+    if (!recipeId) {
+      continue;
+    }
+    stepCountByRecipeId.set(recipeId, (stepCountByRecipeId.get(recipeId) ?? 0) + 1);
+  }
+  const dishCountByRecipeId = new Map<string, number>();
+  for (const dish of dishes) {
+    dishCountByRecipeId.set(
+      dish.recipeId,
+      (dishCountByRecipeId.get(dish.recipeId) ?? 0) + 1
+    );
+  }
+  const candidates: CleanupCandidate[] = recipes.map((recipe) => ({
+    id: recipe.id,
+    name: recipe.name,
+    category: recipe.category ?? null,
+    tags: Array.isArray(recipe.tags) ? (recipe.tags as string[]) : null,
+    ingredient_count: ingredientCountByRecipeId.get(recipe.id) ?? 0,
+    step_count: stepCountByRecipeId.get(recipe.id) ?? 0,
+    dish_count: dishCountByRecipeId.get(recipe.id) ?? 0,
+  }));
 
   const rows = candidates
     .filter((candidate) => candidate.ingredient_count === 0)

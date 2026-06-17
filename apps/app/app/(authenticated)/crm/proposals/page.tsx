@@ -10,7 +10,6 @@ import { listProposals } from "@/app/lib/manifest-client.generated";
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -53,30 +52,9 @@ export default async function ProposalsPage() {
     redirect("/sign-in");
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  await getTenantIdForOrg(orgId);
 
-  const [allProposalsRaw, acceptedCount, pendingCount, totalValueAggregate] =
-    await Promise.all([
-      (await listProposals()).data,
-      database.proposal.count({
-        where: {
-          tenantId,
-          deletedAt: null,
-          status: "accepted",
-        },
-      }),
-      database.proposal.count({
-        where: {
-          tenantId,
-          deletedAt: null,
-          status: { in: ["draft", "sent", "viewed"] },
-        },
-      }),
-      database.proposal.aggregate({
-        where: { tenantId, deletedAt: null },
-        _sum: { total: true },
-      }),
-    ]);
+  const allProposalsRaw = (await listProposals()).data;
 
   const proposals = allProposalsRaw.map((p) => {
     const serialized = serializeDecimals(p);
@@ -94,7 +72,14 @@ export default async function ProposalsPage() {
   }) as unknown as Proposal[];
 
   const totalCount = proposals.length;
-  const totalValue = Number(totalValueAggregate._sum.total ?? 0);
+  const acceptedCount = proposals.filter((proposal) => proposal.status === "accepted").length;
+  const pendingCount = proposals.filter((proposal) =>
+    proposal.status === "draft" || proposal.status === "sent" || proposal.status === "viewed"
+  ).length;
+  const totalValue = proposals.reduce(
+    (sum, proposal) => sum + Number(proposal.total ?? 0),
+    0
+  );
   const formattedTotalValue = currencyFormatter.format(totalValue);
 
   const summary = {
