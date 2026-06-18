@@ -1,6 +1,7 @@
 {
   "name": "api",
   "dependencies": {
+    "@ai-sdk/google": "^3.0.30",
     "@ai-sdk/openai": "^3.0.71",
     "@angriff36/manifest": "2.8.0",
     "@capsule-pro/sales-reporting": "workspace:*",

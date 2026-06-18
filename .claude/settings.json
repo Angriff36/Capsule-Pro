@@ -57,6 +57,12 @@
           {
             "type": "command",
             "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/post-edit-lint.sh",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "shell": "bash",
             "command": "bash .claude/hooks/guardrail/post-edit.sh",
             "timeout": 15
           }

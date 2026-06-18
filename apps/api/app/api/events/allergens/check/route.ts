@@ -329,8 +329,7 @@ async function getSpecificDishes(
     dietaryTags: d.dietary_tags ?? [],
   }));
 
-  const foundDishIds = dishes.map((d) => d.id);
-  const missingIds = dishIds.filter((id) => !foundDishIds.includes(id));
+  const missingIds = [...new Set(dishIds).difference(new Set(dishes.map((d) => d.id)))];
 
   return { dishes, missingIds };
 }

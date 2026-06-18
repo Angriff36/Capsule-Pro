@@ -1,7 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { KitchenNavigation } from "./components/kitchen-navigation";
 import { ProductionBoardClient } from "./production-board-client";
 import { ProductionBoardRealtime } from "./production-board-realtime";
 
@@ -83,7 +82,6 @@ const KitchenPage = async () => {
 
   return (
     <div data-design-system-shell="operational">
-      <KitchenNavigation />
       <ProductionBoardClient
         currentUserId={dbUser?.id}
         initialTasks={tasksWithUsers}

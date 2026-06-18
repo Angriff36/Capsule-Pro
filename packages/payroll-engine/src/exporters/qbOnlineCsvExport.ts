@@ -245,9 +245,10 @@ function buildEmployeeJournalLines(input: QBOJournalBuildInput): string[][] {
   }
 
   // Credit: Retirement
+  const retirementTypes = new Set(["retirement_401k", "retirement_ira"]);
   const retirementTotal = allDeductions
-    .filter((d) => ["retirement_401k", "retirement_ira"].includes(d.type))
-    .reduce((sum, d) => sum + d.amount, 0);
+    .filter((deduction) => retirementTypes.has(deduction.type))
+    .reduce((sum, deduction) => sum + deduction.amount, 0);
   if (retirementTotal > 0) {
     lines.push([
       journalNo,
@@ -417,8 +418,10 @@ export function exportToQBOnlineCSVAggregate(
         )
         .reduce((sum, d) => sum + d.amount, 0);
       acc.retirement += allDeductions
-        .filter((d) => ["retirement_401k", "retirement_ira"].includes(d.type))
-        .reduce((sum, d) => sum + d.amount, 0);
+        .filter((deduction) =>
+          new Set(["retirement_401k", "retirement_ira"]).has(deduction.type)
+        )
+        .reduce((sum, deduction) => sum + deduction.amount, 0);
       acc.netPay += r.netPay;
 
       return acc;

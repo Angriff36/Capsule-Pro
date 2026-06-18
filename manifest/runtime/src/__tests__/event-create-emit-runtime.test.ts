@@ -6,19 +6,15 @@
  * runManifestCommandCore must emit the semantic event so propagation can fire.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { Store } from "@angriff36/manifest";
 import { describe, expect, it } from "vitest";
+import kitchenIr from "../../../ir/kitchen.ir.json" with { type: "json" };
 import { createCustomBuiltins } from "../manifest-builtins.js";
 import { runManifestCommandCore } from "../run-manifest-command-core.js";
 import { ManifestRuntimeEngine } from "../runtime-engine.js";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON.
-const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
+const ir: any = kitchenIr;
 
 const TENANT = "t-event-create";
 const USER = { id: "u-event-create", tenantId: TENANT, role: "admin" } as const;

@@ -49,6 +49,11 @@ export const env = createEnv({
     // OpenAI
     OPENAI_API_KEY: z.string().min(1).optional(),
 
+    // Recipe PDF/OCR import (defaults to free Gemini Flash tier)
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
+    KITCHEN_IMPORT_AI_PROVIDER: z.enum(["google", "openai"]).optional(),
+    KITCHEN_IMPORT_OCR_MODEL: z.string().optional(),
+
     // GitHub for PR creation
     GITHUB_TOKEN: z.string().min(1).optional(),
     GITHUB_REPO_OWNER: z.string().min(1).optional(),
@@ -120,5 +125,10 @@ export const env = createEnv({
 
         // Sentry canary
         CAPSULE_SENTRY_CANARY_SECRET: process.env.CAPSULE_SENTRY_CANARY_SECRET,
+
+        // Recipe PDF/OCR import
+        GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+        KITCHEN_IMPORT_AI_PROVIDER: process.env.KITCHEN_IMPORT_AI_PROVIDER,
+        KITCHEN_IMPORT_OCR_MODEL: process.env.KITCHEN_IMPORT_OCR_MODEL,
       },
 });

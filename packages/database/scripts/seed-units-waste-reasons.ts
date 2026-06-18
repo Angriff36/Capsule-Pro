@@ -366,6 +366,12 @@ const WASTE_REASONS_DATA = [
 async function main() {
   console.log("Starting seed of units and waste reasons...");
 
+  await using _databaseScope = {
+    async [Symbol.asyncDispose]() {
+      await prisma.$disconnect();
+    },
+  };
+
   try {
     // Get existing units by code
     const existingUnits = await prisma.$queryRaw<
@@ -466,8 +472,6 @@ async function main() {
   } catch (error) {
     console.error("❌ Seed failed:", error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

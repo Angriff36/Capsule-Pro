@@ -30,6 +30,7 @@ import {
   useRemoveDraftCard,
 } from "../board-hooks";
 import { computeBranchStatus, resolveTemplate } from "../templates";
+import { BoardOnboardingOverlay } from "../../../components/board-onboarding-overlay";
 import { CommitDialog } from "./commit-dialog";
 import { DishDialog, type DishDialogSubmit } from "./dish-dialog";
 import { ImpactRail } from "./impact-rail";
@@ -250,6 +251,7 @@ export function BoardClient({
 
   return (
     <div className="flex h-[calc(100vh-12.5rem)] min-h-[560px] flex-col gap-3">
+      <BoardOnboardingOverlay surface="command-board" />
       {/* Top bar */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5">
         <h2 className="truncate font-semibold text-base">

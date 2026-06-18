@@ -292,6 +292,11 @@ export {
   type StaffMemberDeactivatedUnassignEventStaffMiddlewareOptions,
 } from "./staff-member-deactivated-unassign-event-staff-middleware";
 export {
+  createSampleDataSeedMiddleware,
+  type SampleDataSeedDiagnostic,
+  type SampleDataSeedMiddlewareOptions,
+} from "./sample-data-seed-middleware";
+export {
   createTimeOffApprovedShiftCleanupMiddleware,
   type TimeOffApprovedShiftCleanupDiagnostic,
   type TimeOffApprovedShiftCleanupMiddlewareOptions,

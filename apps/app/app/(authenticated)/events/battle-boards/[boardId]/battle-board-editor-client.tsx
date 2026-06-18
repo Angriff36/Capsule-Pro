@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { BattleBoardFull } from "@/lib/battle-boards/types";
+import { BoardOnboardingOverlay } from "../../components/board-onboarding-overlay";
 import { saveBoardFull } from "../actions";
 import { DocumentUpload } from "./components/DocumentUpload";
 import { LayoutsPanel } from "./components/LayoutsPanel";
@@ -88,6 +89,7 @@ export function BattleBoardEditorClient({
 
   return (
     <div className="bb-root flex min-h-screen flex-col bg-slate-50">
+      <BoardOnboardingOverlay surface="battle-board" />
       <header className="sticky top-0 z-20 border-slate-200 border-b bg-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">

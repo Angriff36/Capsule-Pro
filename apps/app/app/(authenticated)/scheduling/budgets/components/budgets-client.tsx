@@ -183,14 +183,17 @@ export function BudgetsClient() {
 
   // Calculate summary stats
   const activeBudgets = budgets.filter((b) => b.status === "active").length;
-  const totalBudgetTarget = budgets
-    .filter((b) => b.status === "active" && b.budget_unit === "cost")
-    .reduce((sum, b) => sum + b.budget_target, 0);
-  const totalActualSpend = budgets
-    .filter(
-      (b) => b.status === "active" && b.budget_unit === "cost" && b.actual_spend
-    )
-    .reduce((sum, b) => sum + (b.actual_spend || 0), 0);
+  const activeCostBudgets = budgets
+    .values()
+    .filter((budget) => budget.status === "active" && budget.budget_unit === "cost")
+    .toArray();
+  const totalBudgetTarget = activeCostBudgets
+    .map((budget) => budget.budget_target)
+    .reduce((sum, target) => sum + target, 0);
+  const totalActualSpend = activeCostBudgets
+    .filter((budget) => budget.actual_spend)
+    .map((budget) => budget.actual_spend || 0)
+    .reduce((sum, spend) => sum + spend, 0);
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">

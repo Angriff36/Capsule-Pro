@@ -87,7 +87,19 @@ export function ActivityFeedClient({
       const response = await apiFetch("/api/activity-feed/stats");
       if (response.ok) {
         const data = await response.json();
-        setStats(data.stats);
+        const raw = data.stats;
+        if (raw) {
+          // API returns `totalActivities` (locked by route tests); the shared
+          // ActivityStats component expects `totalCount`. Map at this seam so a
+          // field-name mismatch can't crash the render with `undefined.toLocaleString()`.
+          setStats({
+            totalCount: raw.totalActivities ?? 0,
+            todayCount: raw.todayCount ?? 0,
+            weekCount: raw.weekCount ?? 0,
+            byType: raw.byType ?? {},
+            byEntity: raw.byEntity ?? {},
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching stats:", error);

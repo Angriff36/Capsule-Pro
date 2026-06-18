@@ -196,13 +196,11 @@ export function createEventLocationCateringSyncMiddleware(
           });
           continue;
         }
-        const eventRow = (await eventStore.getAll())
-          .map((row) => row as EventRow)
-          .find(
-            (row) =>
-              asNonEmptyString(row.id) === eventId &&
-              asNonEmptyString(row.tenantId) === tenantId
-          );
+        const eventRow = await loadUpdatedEventRow(
+          eventStore,
+          eventId,
+          tenantId
+        );
         if (!eventRow) {
           onDiagnostic({
             stage: "load",
@@ -289,6 +287,31 @@ export function createEventLocationCateringSyncMiddleware(
 
 function asNonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+async function loadUpdatedEventRow(
+  eventStore: Store,
+  eventId: string,
+  tenantId: string
+): Promise<EventRow | undefined> {
+  const byId = await eventStore.getById(eventId);
+  if (byId) {
+    const row = byId as EventRow;
+    if (
+      asNonEmptyString(row.id) === eventId &&
+      asNonEmptyString(row.tenantId) === tenantId
+    ) {
+      return row;
+    }
+  }
+
+  return (await eventStore.getAll())
+    .map((row) => row as EventRow)
+    .find(
+      (row) =>
+        asNonEmptyString(row.id) === eventId &&
+        asNonEmptyString(row.tenantId) === tenantId
+    );
 }
 
 /** Coerce to a string, defaulting to "" (empty is a valid venue value). */

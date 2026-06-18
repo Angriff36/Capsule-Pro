@@ -27,6 +27,7 @@ import type { Store } from "@angriff36/manifest";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { beforeEach, describe, expect, it } from "vitest";
+import { Temporal } from "@js-temporal/polyfill";
 import { createCustomBuiltins } from "../manifest-builtins.js";
 import {
   refreshParentContext,
@@ -553,6 +554,41 @@ describe("R1 — boundary datetime coercion (ISO string → epoch-ms)", () => {
     const updated = rows.find((r) => r.id === "b1");
     expect(updated?.eventDate).toBeInstanceOf(Date);
     expect((updated?.eventDate as Date).getTime()).toBe(EVENT_DATE_EPOCH);
+  });
+
+  it("create coerces date-only strings for datetime properties to UTC midnight", async () => {
+    const dateOnly = "2026-06-18";
+    const expectedUtcMidnight = Temporal.PlainDate.from(dateOnly)
+      .toZonedDateTime("UTC")
+      .epochMilliseconds;
+    const engine = new RuntimeEngine(ir, {
+      user: { id: "u1", tenantId: "t1" },
+    });
+
+    const result = await runManifestCommandCore(
+      { createRuntime: async () => engine },
+      {
+        entity: "Event",
+        command: "create",
+        body: {
+          id: "e-date-only-coerce",
+          clientId: "client-date-only",
+          eventDate: dateOnly,
+        },
+        user: { id: "u1", tenantId: "t1", role: "manager" },
+      }
+    );
+
+    expect(
+      result.ok,
+      result.ok ? "" : (result as { message?: string }).message
+    ).toBe(true);
+
+    const stored = (await engine.getInstance(
+      "Event",
+      "e-date-only-coerce"
+    )) as Record<string, unknown>;
+    expect(stored?.eventDate).toBe(expectedUtcMidnight);
   });
 
   it("create coerces ISO strings for datetime PROPERTIES not declared as create params (full-body seed)", async () => {

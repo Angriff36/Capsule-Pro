@@ -67,6 +67,14 @@ const getDate = (formData: FormData, key: string): Date | undefined => {
 const getStatus = (formData: FormData): EventStatus =>
   (getString(formData, "status") as EventStatus) ?? "confirmed";
 
+/** Manifest Event.update only accepts a subset of app statuses. */
+function toManifestStatus(status: EventStatus): string {
+  if (status === "tentative" || status === "postponed") {
+    return "draft";
+  }
+  return status;
+}
+
 const getTags = (formData: FormData): string[] =>
   (getString(formData, "tags") ?? "")
     .split(",")
@@ -94,14 +102,35 @@ export async function updateEventForMutation(
   const user = await requireCurrentUser();
   const tenantId = user.tenantId;
   const eventId = getString(formData, "eventId");
-  const eventDate = getDate(formData, "eventDate");
-  const title = getString(formData, "title");
-  const eventType = getString(formData, "eventType");
-  const guestCount = getNumber(formData, "guestCount");
-
   if (!eventId) {
     throw new Error("Event id is required.");
   }
+
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: eventId, deletedAt: null },
+    select: {
+      clientId: true,
+      eventNumber: true,
+      eventType: true,
+      title: true,
+      eventDate: true,
+      guestCount: true,
+      status: true,
+    },
+  });
+
+  if (!existing) {
+    throw new Error("Event not found.");
+  }
+
+  const eventDate =
+    getDate(formData, "eventDate") ?? existing.eventDate ?? undefined;
+  const title = getString(formData, "title") ?? existing.title;
+  const eventType =
+    getString(formData, "eventType") ?? existing.eventType ?? "catering";
+  const guestCount =
+    getNumber(formData, "guestCount") ?? existing.guestCount ?? undefined;
+
   if (!eventDate) {
     throw new Error("Event date is required.");
   }
@@ -172,15 +201,6 @@ export async function updateEventForMutation(
   // The Event.update command requires clientId and eventNumber params (guards
   // check != null). The form may not always send these, so read the existing
   // event and use its values as fallbacks.
-  const existing = await database.event.findFirst({
-    where: { tenantId, id: eventId, deletedAt: null },
-    select: { clientId: true, eventNumber: true },
-  });
-
-  if (!existing) {
-    throw new Error("Event not found.");
-  }
-
   const clientId =
     getOptionalString(formData, "clientId") ?? existing.clientId ?? "";
   const eventNumberInput =
@@ -196,13 +216,13 @@ export async function updateEventForMutation(
       eventNumber: eventNumberInput,
       title,
       eventType,
-      eventDate: eventDate.toISOString(),
+      eventDate: eventDate.getTime(),
       guestCount,
       venueName: getOptionalString(formData, "venueName") ?? "",
       venueAddress: getOptionalString(formData, "venueAddress") ?? "",
       notes: getOptionalString(formData, "notes") ?? "",
       tags,
-      status,
+      status: toManifestStatus(status),
       budget: getNumberOrNull(formData, "budget") ?? 0,
       ticketPrice: getNumberOrNull(formData, "ticketPrice") ?? 0,
       ticketTier: getOptionalString(formData, "ticketTier") ?? "",

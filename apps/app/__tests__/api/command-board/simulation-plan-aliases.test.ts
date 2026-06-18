@@ -35,7 +35,7 @@ function collectStrictSchemaViolations(schema: unknown, path = "$"): string[] {
     const keys = Object.keys(node.properties as Record<string, unknown>);
     const required = node.required;
     if (Array.isArray(required)) {
-      const missing = keys.filter((key) => !required.includes(key));
+      const missing = [...new Set(keys).difference(new Set(required))];
       if (missing.length > 0) {
         violations.push(
           `${path}: required[] missing keys [${missing.join(", ")}]`

@@ -85,9 +85,12 @@ export function BulkAssignmentModal({
         // Get suggestions for specific shifts
         result = await getBulkAssignmentSuggestions();
         // Filter results to only include requested shifts
+        const matchingShiftIds = new Set(result.results.map((r) => r.shiftId)).intersection(
+          new Set(shiftIds)
+        );
         result = {
           ...result,
-          results: result.results.filter((r) => shiftIds.includes(r.shiftId)),
+          results: result.results.filter((r) => matchingShiftIds.has(r.shiftId)),
         };
       } else {
         // Get suggestions based on filters

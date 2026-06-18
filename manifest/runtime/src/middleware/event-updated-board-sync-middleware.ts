@@ -74,6 +74,11 @@ export interface EventBoardSyncDiagnostic {
 
 export interface EventUpdatedBoardSyncMiddlewareOptions {
   dispatchCommand: DispatchCommand;
+  /** Indexed lookup — avoids scanning every battle board in the tenant. */
+  findLinkedBoards?: (
+    tenantId: string,
+    eventId: string
+  ) => Promise<BoardRow[]>;
   onDiagnostic?: (diag: EventBoardSyncDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
 }
@@ -119,6 +124,7 @@ export function createEventUpdatedBoardSyncMiddleware(
   const {
     storeProvider,
     dispatchCommand,
+    findLinkedBoards,
     onDiagnostic = defaultDiagnostic,
   } = options;
 
@@ -184,13 +190,11 @@ export function createEventUpdatedBoardSyncMiddleware(
           });
           continue;
         }
-        const eventRow = (await eventStore.getAll())
-          .map((row) => row as EventRow)
-          .find(
-            (row) =>
-              asNonEmptyString(row.id) === eventId &&
-              asNonEmptyString(row.tenantId) === tenantId
-          );
+        const eventRow = await loadUpdatedEventRow(
+          eventStore,
+          eventId,
+          tenantId
+        );
         if (!eventRow) {
           onDiagnostic({
             stage: "load",
@@ -211,14 +215,16 @@ export function createEventUpdatedBoardSyncMiddleware(
           });
           continue;
         }
-        const boards = (await boardStore.getAll())
-          .map((row) => row as BoardRow)
-          .filter(
-            (row) =>
-              asNonEmptyString(row.tenantId) === tenantId &&
-              asNonEmptyString(row.eventId) === eventId &&
-              row.deletedAt == null
-          );
+        const boards = findLinkedBoards
+          ? await findLinkedBoards(tenantId, eventId)
+          : (await boardStore.getAll())
+              .map((row) => row as BoardRow)
+              .filter(
+                (row) =>
+                  asNonEmptyString(row.tenantId) === tenantId &&
+                  asNonEmptyString(row.eventId) === eventId &&
+                  row.deletedAt == null
+              );
 
         if (boards.length === 0) {
           // Common, not an error: many events have no battle board.
@@ -298,4 +304,29 @@ function asInt(value: unknown): number {
     return Number.isFinite(parsed) ? Math.trunc(parsed) : 0;
   }
   return 0;
+}
+
+async function loadUpdatedEventRow(
+  eventStore: Store,
+  eventId: string,
+  tenantId: string
+): Promise<EventRow | undefined> {
+  const byId = await eventStore.getById(eventId);
+  if (byId) {
+    const row = byId as EventRow;
+    if (
+      asNonEmptyString(row.id) === eventId &&
+      asNonEmptyString(row.tenantId) === tenantId
+    ) {
+      return row;
+    }
+  }
+
+  return (await eventStore.getAll())
+    .map((row) => row as EventRow)
+    .find(
+      (row) =>
+        asNonEmptyString(row.id) === eventId &&
+        asNonEmptyString(row.tenantId) === tenantId
+    );
 }

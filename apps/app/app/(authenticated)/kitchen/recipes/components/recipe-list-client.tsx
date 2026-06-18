@@ -34,10 +34,10 @@ export function RecipeListClient({ children, type }: RecipeListClientProps) {
 
   const selectAll = (ids: string[]) => {
     setSelectedIds((prev) => {
-      const allSelected = ids.every((id) => prev.includes(id));
+      const allSelected = new Set(ids).isSubsetOf(new Set(prev));
       return allSelected
-        ? prev.filter((id) => !ids.includes(id))
-        : [...new Set([...prev, ...ids])];
+        ? [...new Set(prev).difference(new Set(ids))]
+        : [...new Set(prev).union(new Set(ids))];
     });
   };
 

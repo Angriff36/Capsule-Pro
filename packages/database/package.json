@@ -16,6 +16,10 @@
       "import": "./keys.ts",
       "default": "./keys.ts"
     },
+    "./sample-data": {
+      "import": "./src/sample-data/index.ts",
+      "default": "./src/sample-data/index.ts"
+    },
     "./generated/client": {
       "import": "./generated/client.ts",
       "default": "./generated/client.ts"

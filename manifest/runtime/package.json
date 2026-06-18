@@ -28,6 +28,7 @@
     "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@ai-sdk/openai": "^3.0.71",
     "@angriff36/manifest": "2.8.0",
     "@repo/database": "workspace:*",

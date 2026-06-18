@@ -21,6 +21,31 @@ export { createCustomBuiltins } from "./manifest-builtins";
 // a circular dependency).
 // ---------------------------------------------------------------------------
 
+/**
+ * Information passed to the `onCommandSettled` observability hook, which fires
+ * after EVERY `runCommand` (success or failure) — unlike `onCommandExecuted`,
+ * which only fires on success with emitted events. This is the seam that feeds
+ * the append-only reaction-execution log (constitution §11 operational log).
+ */
+export interface CommandSettledInfo {
+  /** Command name (e.g. "create", "applyPayment"). */
+  commandName: string;
+  /** Entity the command targets, when known. */
+  entityName?: string;
+  /** Resolved IR command, when the lookup succeeds. */
+  irCommand?: Readonly<IRCommand>;
+  /** The command result (success flag, emitted events, error). */
+  result: Readonly<CommandResult>;
+  /** Wall-clock execution time in milliseconds. */
+  durationMs: number;
+  /** Correlation id grouping a propagation cascade. */
+  correlationId?: string;
+  /** Causation id linking this command to its trigger. */
+  causationId?: string;
+  /** Raw command input (used for payload-shape capture; keys only are logged). */
+  input: Record<string, unknown>;
+}
+
 /** @internal Subset of ManifestTelemetryHooks relevant to this module. */
 interface TelemetryHooks {
   onCommandExecuted?(
@@ -28,6 +53,7 @@ interface TelemetryHooks {
     result: Readonly<CommandResult>,
     entityName?: string
   ): void | Promise<void>;
+  onCommandSettled?(info: CommandSettledInfo): void | Promise<void>;
 }
 
 /** @internal Shape of the context keys the factory injects. */
@@ -108,7 +134,9 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
       }
     }
 
+    const startedAtMs = Date.now();
     const result = await super.runCommand(commandName, input, options);
+    const durationMs = Date.now() - startedAtMs;
 
     // R4 — Surface command failures so silently-swallowed reaction failures
     // (e.g. BattleBoard.create triggered by EventCreated reaction) appear in
@@ -145,6 +173,30 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
           await hook(irCommand, result, options.entityName);
         }
       }
+    }
+
+    // Observability: the settle hook fires for EVERY command — success OR
+    // failure — so the reaction-execution log captures silent no-ops and
+    // guard failures, not just successful emissions. Best-effort and
+    // non-throwing: observability must never break the command path.
+    try {
+      const ctx = this.getContext() as ContextWithTelemetry;
+      const settled = ctx.telemetry?.onCommandSettled;
+      if (settled) {
+        await settled({
+          commandName,
+          entityName: options.entityName,
+          irCommand:
+            this.getCommand(commandName, options.entityName) ?? undefined,
+          result,
+          durationMs,
+          correlationId: options.correlationId,
+          causationId: options.causationId,
+          input,
+        });
+      }
+    } catch {
+      // Swallow — never let the observability hook crash the call path.
     }
 
     return result;

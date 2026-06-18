@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { EmptyListState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Building2,
@@ -48,6 +49,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { SampleDataImportButton } from "../../components/sample-data-import-button";
 import {
   listVendors,
   vendorCreate,
@@ -467,16 +469,23 @@ export default function VendorsPage() {
 
       {/* Vendor List */}
       {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Building2 className="mx-auto mb-4 h-12 w-12 opacity-50" />
-            <p>
-              {vendors.length === 0
-                ? "No vendors yet. Add your first vendor to get started."
-                : "No vendors match your search."}
-            </p>
-          </CardContent>
-        </Card>
+        vendors.length === 0 ? (
+          <EmptyListState
+            createButtonText="Add vendor"
+            description="Vendors are the suppliers you buy from. Add them here to track contacts, payment terms, and catalog items, and to raise purchase orders against them."
+            itemName="vendors"
+            onCreate={() => setDialogOpen(true)}
+            secondaryAction={<SampleDataImportButton onSeeded={loadVendors} />}
+            userRole="admin"
+          />
+        ) : (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <Building2 className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <p>No vendors match your search.</p>
+            </CardContent>
+          </Card>
+        )
       ) : (
         <div className="space-y-3">
           {filtered.map((vendor) => (

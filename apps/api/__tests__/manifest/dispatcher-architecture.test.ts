@@ -17,19 +17,14 @@ import {
   CUSTOM_COMMAND_ROUTE_ALLOWLIST,
   isCustomCommandRoute,
 } from "@/lib/manifest/custom-command-routes-allowlist";
+import commandsRegistry from "../../../../manifest/ir/kitchen.commands.json" with { type: "json" };
 
 const PROJECT_ROOT = resolve(import.meta.dirname, "../../../..");
 const API_DIR = resolve(PROJECT_ROOT, "apps/api/app/api");
-const COMMANDS_JSON = resolve(
-  PROJECT_ROOT,
-  "manifest/ir/kitchen.commands.json"
-);
 const DISPATCHER = resolve(
   PROJECT_ROOT,
   "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts"
 );
-
-// ── Helpers ──
 
 interface CommandEntry {
   command: string;
@@ -41,7 +36,7 @@ let _commandsCache: CommandEntry[] | null = null;
 
 function loadCommands(): CommandEntry[] {
   if (!_commandsCache) {
-    _commandsCache = JSON.parse(readFileSync(COMMANDS_JSON, "utf-8"));
+    _commandsCache = commandsRegistry as CommandEntry[];
   }
   return _commandsCache!;
 }

@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { EmptyListState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   type ColumnDef,
@@ -39,6 +40,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { SampleDataImportButton } from "../../../components/sample-data-import-button";
 import { getEmployees, getLocations, getShifts } from "../actions";
 import { AutoAssignmentModal } from "./auto-assignment-modal";
 import { BulkAssignmentModal } from "./bulk-assignment-modal";
@@ -295,14 +297,33 @@ export function ShiftsClient() {
       </TableRow>
     );
   } else if (shifts.length === 0) {
+    const noFiltersApplied = !(
+      filters.startDate ||
+      filters.endDate ||
+      filters.employeeId ||
+      filters.locationId
+    );
     tableBody = (
       <TableRow className="hover:bg-transparent">
-        <TableCell
-          className="h-28 text-center text-muted-foreground text-sm"
-          colSpan={columns.length}
-        >
-          No shifts match these filters. Open{" "}
-          <span className="text-ink">New shift</span> or widen the date range.
+        <TableCell className="p-0" colSpan={columns.length}>
+          {noFiltersApplied ? (
+            <EmptyListState
+              createButtonText="New shift"
+              description="Shifts are the scheduled work blocks you assign to staff. Create shifts to build out the roster, then assign teammates, set call times, and publish the schedule."
+              itemName="shifts"
+              onCreate={() => setCreateModalOpen(true)}
+              secondaryAction={
+                <SampleDataImportButton onSeeded={fetchShifts} />
+              }
+              userRole="admin"
+            />
+          ) : (
+            <div className="h-28 px-6 py-10 text-center text-muted-foreground text-sm">
+              No shifts match these filters. Open{" "}
+              <span className="text-ink">New shift</span> or widen the date
+              range.
+            </div>
+          )}
         </TableCell>
       </TableRow>
     );

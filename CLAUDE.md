@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: manifest/MANIFEST-DIVERGENCES.md (edit)
+[proactive bridge @ 131% context — saved before compacting]
+Files (1):
+  tasks/todo.md (create)
 
 # === END COGNILAYER ===

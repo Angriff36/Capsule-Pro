@@ -1,7 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,6 +23,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { getKitchenTasks, getMyActiveClaims } from "./actions";
+import { KitchenTasksEmptyState } from "./components/kitchen-tasks-empty-state";
 
 const priorityLabels: Record<number, string> = {
   1: "Urgent",
@@ -142,14 +142,8 @@ const KitchenTasksPage = async () => {
           <Card tone="canvas">
             <CardContent className="p-0">
               {tasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <p className="text-muted-foreground">
-                    No kitchen tasks found. Create tasks from the Production
-                    Board.
-                  </p>
-                  <Button asChild className="mt-4">
-                    <a href="/kitchen/tasks/new">Create Task</a>
-                  </Button>
+                <div className="py-6">
+                  <KitchenTasksEmptyState />
                 </div>
               ) : (
                 <Table>

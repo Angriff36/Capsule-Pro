@@ -86,7 +86,7 @@ const navigationItems = [
     icon: FileBarChart,
   },
   {
-    title: "Import",
+    title: "Bulk Import",
     href: "/kitchen/import",
     icon: Upload,
   },

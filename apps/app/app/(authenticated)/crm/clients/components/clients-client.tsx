@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { NoClientsState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import {
   type ColumnDef,
   flexRender,
@@ -60,6 +61,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { SampleDataImportButton } from "../../../components/sample-data-import-button";
 import { getAvailableTags, getClients } from "../actions";
 
 interface Client {
@@ -479,21 +481,24 @@ export function ClientsClient() {
             <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : clients.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Building2Icon className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 font-semibold text-lg">No clients found</h3>
-            <p className="mb-4 text-muted-foreground">
-              {hasFilters
-                ? "Try adjusting your filters or search terms."
-                : "Get started by adding your first client."}
-            </p>
-            {!hasFilters && (
-              <Button onClick={() => router.push("/crm/clients/new")}>
-                <PlusIcon className="mr-2 h-4 w-4" />
-                Add Client
-              </Button>
-            )}
-          </div>
+          hasFilters ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Building2Icon className="mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 font-semibold text-lg">No clients found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your filters or search terms.
+              </p>
+            </div>
+          ) : (
+            <NoClientsState
+              description="Clients are the companies and people you cater for. Add clients to manage their contacts, track events and proposals, and build lasting relationships."
+              onCreateClient={() => router.push("/crm/clients/new")}
+              secondaryAction={
+                <SampleDataImportButton onSeeded={() => fetchClients()} />
+              }
+              userRole="admin"
+            />
+          )
         ) : (
           <>
             {/* Results count */}

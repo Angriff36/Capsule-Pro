@@ -448,7 +448,11 @@ export const BoardCanvas = ({
     ids: string[],
     updates: Record<string, string>
   ): PreviewData => {
-    const affectedCards = localCards.filter((c) => ids.includes(c.id));
+    const selectedIdSet = new Set(ids);
+    const affectedCards = localCards
+      .values()
+      .filter((card) => selectedIdSet.has(card.id))
+      .toArray();
     const summary: {
       property: string;
       from: string;
@@ -547,7 +551,11 @@ export const BoardCanvas = ({
 
     try {
       // Calculate group bounds from selected cards
-      const selectedCards = localCards.filter((c) => ids.includes(c.id));
+      const selectedIdSet = new Set(ids);
+      const selectedCards = localCards
+        .values()
+        .filter((card) => selectedIdSet.has(card.id))
+        .toArray();
       const padding = 40;
 
       const minX = Math.min(...selectedCards.map((c) => c.positionX)) - padding;

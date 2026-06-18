@@ -26,6 +26,8 @@
  *   - `f contains "a" or f contains "b"`    -> containsAny(f, ["a", "b"])
  */
 
+import { percentOf } from "./numeric-boundary.js";
+
 export type CustomBuiltin = (...args: unknown[]) => unknown;
 
 const MS_PER_DAY = 86_400_000;
@@ -63,9 +65,7 @@ export function addDays(...args: unknown[]): number {
 
 /** `(part / whole) * 100`, or 0 when `whole` is not positive (no divide-by-zero). */
 export function percent(...args: unknown[]): number {
-  const part = toNumber(args[0]);
-  const whole = toNumber(args[1]);
-  return whole > 0 ? (part / whole) * 100 : 0;
+  return percentOf(toNumber(args[0]), toNumber(args[1]));
 }
 
 /** True when `haystack` (array or string) contains at least one of `needles`. */

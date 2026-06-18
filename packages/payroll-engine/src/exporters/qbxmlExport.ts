@@ -334,11 +334,15 @@ export function exportToQBXMLAggregate(
         )
         .reduce((sum, d) => sum + d.amount, 0);
       acc.retirement += allDeductions
-        .filter((d) => ["retirement_401k", "retirement_ira"].includes(d.type))
-        .reduce((sum, d) => sum + d.amount, 0);
+        .filter((deduction) =>
+          new Set(["retirement_401k", "retirement_ira"]).has(deduction.type)
+        )
+        .reduce((sum, deduction) => sum + deduction.amount, 0);
       acc.garnishments += allDeductions
-        .filter((d) => ["garnishment", "child_support"].includes(d.type))
-        .reduce((sum, d) => sum + d.amount, 0);
+        .filter((deduction) =>
+          new Set(["garnishment", "child_support"]).has(deduction.type)
+        )
+        .reduce((sum, deduction) => sum + deduction.amount, 0);
       acc.netPay += r.netPay;
 
       return acc;

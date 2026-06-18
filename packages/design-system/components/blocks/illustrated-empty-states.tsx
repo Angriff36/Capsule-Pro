@@ -864,6 +864,11 @@ interface EmptyListStateProps {
   enableAmbientAnimation?: boolean;
   itemName?: string;
   onCreate?: () => void;
+  /**
+   * Optional secondary action rendered beneath the primary CTA (e.g. a
+   * one-click "Load sample data" button). Only shown to roles that can create.
+   */
+  secondaryAction?: React.ReactNode;
   /** User role for role-aware messaging */
   userRole?: UserRole;
   /** Custom description for viewers (non-admin/non-creator roles) */
@@ -875,6 +880,7 @@ export function EmptyListState({
   onCreate,
   createButtonText = `Add ${itemName === "items" ? "first item" : itemName.slice(0, -1)}`,
   description,
+  secondaryAction,
   userRole,
   viewerDescription,
   enableAmbientAnimation = false,
@@ -899,15 +905,17 @@ export function EmptyListState({
           {description ?? messaging.description}
         </EmptyDescription>
       </EmptyHeader>
-      {messaging.showCta && onCreate && (
+      {messaging.showCta ? (
         <EmptyContent>
-          <Button onClick={onCreate} size="sm">
-            <Plus className="size-4" />
-            {createButtonText}
-          </Button>
+          {onCreate && (
+            <Button onClick={onCreate} size="sm">
+              <Plus className="size-4" />
+              {createButtonText}
+            </Button>
+          )}
+          {secondaryAction}
         </EmptyContent>
-      )}
-      {!messaging.showCta && (
+      ) : (
         <EmptyContent>
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Info className="size-4" />
@@ -1002,6 +1010,11 @@ interface NoClientsStateProps {
   description?: string;
   onCreateClient?: () => void;
   onSuggestionClick?: (suggestion: PromptSuggestion) => void;
+  /**
+   * Optional secondary action rendered beneath the primary CTA (e.g. a
+   * one-click "Load sample data" button). Only shown to roles that can create.
+   */
+  secondaryAction?: React.ReactNode;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
@@ -1018,6 +1031,7 @@ const ADMIN_CLIENT_MESSAGE =
 export function NoClientsState({
   onCreateClient,
   description,
+  secondaryAction,
   showSuggestions = false,
   userRole,
   activityContext,
@@ -1065,6 +1079,7 @@ export function NoClientsState({
             <span>Contact an admin to add clients</span>
           </div>
         )}
+        {canCreate && secondaryAction}
       </EmptyContent>
     </Empty>
   );
@@ -1081,6 +1096,11 @@ interface NoTasksStateProps {
   onClaimTask?: () => void;
   onCreateTask?: () => void;
   onSuggestionClick?: (suggestion: PromptSuggestion) => void;
+  /**
+   * Optional secondary action rendered beneath the primary CTA (e.g. a
+   * one-click "Load sample data" button). Only shown to roles that can create.
+   */
+  secondaryAction?: React.ReactNode;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   taskType?: string;
@@ -1100,6 +1120,7 @@ export function NoTasksState({
   onClaimTask,
   onCreateTask,
   description,
+  secondaryAction,
   showSuggestions = false,
   userRole,
   activityContext,
@@ -1154,6 +1175,7 @@ export function NoTasksState({
             <span>Contact an admin to create tasks</span>
           </div>
         )}
+        {canCreate && secondaryAction}
       </EmptyContent>
     </Empty>
   );
@@ -1169,6 +1191,11 @@ interface NoInventoryStateProps {
   description?: string;
   onAddItem?: () => void;
   onSuggestionClick?: (suggestion: PromptSuggestion) => void;
+  /**
+   * Optional secondary action rendered beneath the primary CTA (e.g. a
+   * one-click "Load sample data" button). Only shown to roles that can create.
+   */
+  secondaryAction?: React.ReactNode;
   /** Enable dynamic prompt suggestions */
   showSuggestions?: boolean;
   userRole?: UserRole;
@@ -1185,6 +1212,7 @@ const ADMIN_INVENTORY_MESSAGE =
 export function NoInventoryState({
   onAddItem,
   description,
+  secondaryAction,
   showSuggestions = false,
   userRole,
   activityContext,
@@ -1229,6 +1257,7 @@ export function NoInventoryState({
             <span>Contact an admin to add inventory</span>
           </div>
         )}
+        {canCreate && secondaryAction}
       </EmptyContent>
     </Empty>
   );

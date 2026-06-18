@@ -8,6 +8,7 @@
  */
 
 import { Prisma } from "@repo/database/standalone";
+import { parseToDate } from "../datetime-boundary.js";
 
 /**
  * Manifest runtime entity shape — opaque bag of fields with a string id.
@@ -169,18 +170,7 @@ export function asNullableNumber(value: unknown): number | null {
 
 /** Coerce a manifest field to Date | null (accepts ISO string, ms epoch, or Date). */
 export function asNullableDate(value: unknown): Date | null {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-  if (value instanceof Date) {
-    return value;
-  }
-  if (typeof value === "number") {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  const d = new Date(String(value));
-  return Number.isNaN(d.getTime()) ? null : d;
+  return parseToDate(value);
 }
 
 /** Coerce a manifest field to a string array. */

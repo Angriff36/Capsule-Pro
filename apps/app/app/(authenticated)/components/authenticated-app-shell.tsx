@@ -8,12 +8,16 @@ import {
   AiAssistantProvider,
 } from "./ai-assistant";
 import { GlobalSidebar } from "./sidebar";
+import {
+  SmartImportProvider,
+} from "./smart-import/smart-import-provider";
+import { SmartImportFab } from "./smart-import/smart-import-fab";
 
-type AuthenticatedAppShellProps = {
+interface AuthenticatedAppShellProps {
   readonly userId: string;
   readonly betaFeature: boolean;
   readonly children: ReactNode;
-};
+}
 
 /**
  * Single client boundary for the authenticated layout.
@@ -27,16 +31,19 @@ export function AuthenticatedAppShell({
   return (
     <SidebarProvider>
       <AiAssistantProvider>
-        <GlobalSidebar userId={userId}>
-          {betaFeature && (
-            <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
-              Beta feature now available
-            </div>
-          )}
-          {children}
-        </GlobalSidebar>
-        <AiAssistantButton />
-        <AiAssistantPanel />
+        <SmartImportProvider>
+          <GlobalSidebar userId={userId}>
+            {betaFeature && (
+              <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
+                Beta feature now available
+              </div>
+            )}
+            {children}
+          </GlobalSidebar>
+          <SmartImportFab />
+          <AiAssistantButton />
+          <AiAssistantPanel />
+        </SmartImportProvider>
       </AiAssistantProvider>
     </SidebarProvider>
   );

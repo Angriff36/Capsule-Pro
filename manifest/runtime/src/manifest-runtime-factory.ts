@@ -85,6 +85,7 @@ import {
   createProposalLineItemCountMiddleware,
   createQaCheckFailedCorrectiveActionMiddleware,
   createRbacMiddleware,
+  createSampleDataSeedMiddleware,
   createSchedulePublishedNotifyStaffMiddleware,
   createScheduleShiftCountMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
@@ -107,6 +108,7 @@ import {
   loadPrecompiledIR,
   verifyProvenanceHash,
 } from "./runtime/loadManifests";
+import type { CommandSettledInfo } from "./runtime-engine";
 import { ManifestRuntimeEngine } from "./runtime-engine";
 
 // ---------------------------------------------------------------------------
@@ -193,6 +195,12 @@ export interface ManifestTelemetryHooks {
     result: Readonly<CommandResult>,
     entityName?: string
   ): void | Promise<void>;
+  /**
+   * Fires after EVERY command (success or failure). Used internally by the
+   * factory to feed the reaction-execution log; not part of the caller-facing
+   * telemetry surface (callers inject the sink via `deps.reactionLogSink`).
+   */
+  onCommandSettled?(info: CommandSettledInfo): void | Promise<void>;
   onConstraintEvaluated?(
     outcome: unknown,
     commandName: string,
@@ -204,6 +212,35 @@ export interface ManifestTelemetryHooks {
     outcome: unknown,
     commandName: string
   ): void;
+}
+
+/**
+ * One append-only reaction-execution log row, built by the factory from a
+ * settled command and handed to the app-injected `reactionLogSink`.
+ *
+ * This is an OPERATIONAL/observability record (constitution §11), NOT a
+ * governed mutation — the sink writes it directly to the `reaction_logs`
+ * table and fans it out over SSE for the dashboard.
+ */
+export interface ReactionLogRow {
+  tenantId: string;
+  actorId: string | null;
+  /** Triggering command's entity (null when the IR omits it). */
+  entity: string | null;
+  /** Triggering command name. */
+  command: string;
+  status: "success" | "failed";
+  /** Semantic event names emitted by the command. */
+  emittedEvents: string[];
+  /** IR reactions ("Entity.command") triggered by the emitted events. */
+  reactions: string[];
+  errorMessage: string | null;
+  /** Command input keys (shape only — no values). */
+  payloadKeys: string[];
+  durationMs: number;
+  correlationId: string | null;
+  causationId: string | null;
+  source: string | null;
 }
 
 /** Dependencies injected by the calling app. */
@@ -261,6 +298,16 @@ export interface CreateManifestRuntimeDeps {
   };
   /** Require IR provenance hash verification on first engine creation. */
   requireValidProvenance?: boolean;
+  /**
+   * Optional sink for the append-only reaction-execution log. When provided,
+   * the factory builds a {@link ReactionLogRow} for every settled command
+   * (success or failure) and hands it to this sink. The app injects an
+   * implementation that writes `reaction_logs` and fans out over SSE; the sink
+   * MUST be non-throwing and should not block (fire-and-forget I/O), since it
+   * runs inside the command execution path. Omit to disable reaction logging
+   * (e.g. in apps/test contexts without a DB / realtime bus).
+   */
+  reactionLogSink?: (row: ReactionLogRow) => void;
   /** Telemetry hooks for observability. */
   telemetry?: ManifestTelemetryHooks;
 }
@@ -462,6 +509,35 @@ export async function createManifestRuntime(
   // 2. Load precompiled IR.
   const ir = getManifestIR();
 
+  // 2a. Index IR reactions by their triggering event name so the
+  //     reaction-execution log can record WHICH reactions a command's emitted
+  //     events fired. Built once per runtime; cheap (the IR carries ~10).
+  const reactionsByEvent = new Map<string, string[]>();
+  if (deps.reactionLogSink) {
+    const declaredReactions =
+      (
+        ir as unknown as {
+          reactions?: Array<{
+            event?: string;
+            targetEntity?: string;
+            targetCommand?: string;
+          }>;
+        }
+      ).reactions ?? [];
+    for (const reaction of declaredReactions) {
+      if (!reaction?.event) {
+        continue;
+      }
+      const target = `${reaction.targetEntity ?? "?"}.${reaction.targetCommand ?? "?"}`;
+      const existing = reactionsByEvent.get(reaction.event);
+      if (existing) {
+        existing.push(target);
+      } else {
+        reactionsByEvent.set(reaction.event, [target]);
+      }
+    }
+  }
+
   // 2b. Verify IR provenance integrity (once per process lifetime).
   //    Compares a deterministic SHA-256 of the IR against the stored irHash.
   //    This detects file tampering or corruption without modifying the IR.
@@ -520,6 +596,7 @@ export async function createManifestRuntime(
   //    which runs inside the engine lifecycle at the after-emit hook instead of
   //    via post-hoc telemetry hooks. This separates observability (telemetry)
   //    from durability (outbox writes).
+  const reactionLogSink = deps.reactionLogSink;
   const telemetry: ManifestTelemetryHooks = {
     onConstraintEvaluated: deps.telemetry?.onConstraintEvaluated,
     onOverrideApplied: deps.telemetry?.onOverrideApplied,
@@ -531,6 +608,62 @@ export async function createManifestRuntime(
       // Fire caller-provided telemetry (e.g. Sentry metrics).
       deps.telemetry?.onCommandExecuted?.(command, result, entityName);
     },
+    // Reaction-execution log: build one append-only row per settled command
+    // (success OR failure) and hand it to the injected sink. Wrapped so a
+    // malformed result or sink error can never break the command path.
+    onCommandSettled: reactionLogSink
+      ? (info: CommandSettledInfo) => {
+          try {
+            const emittedEvents = (info.result.emittedEvents ?? []).map(
+              (event) => event.name
+            );
+            const reactions: string[] = [];
+            for (const eventName of emittedEvents) {
+              const targets = reactionsByEvent.get(eventName);
+              if (targets) {
+                reactions.push(...targets);
+              }
+            }
+
+            const failed = !info.result.success;
+            let errorMessage: string | null = null;
+            if (failed) {
+              const r = info.result as unknown as {
+                error?: unknown;
+                message?: unknown;
+                guardFailure?: { formatted?: string };
+              };
+              errorMessage =
+                r.guardFailure?.formatted ??
+                (r.error != null ? String(r.error) : null) ??
+                (r.message != null ? String(r.message) : null) ??
+                "command failed";
+            }
+
+            const irEntity = (
+              info.irCommand as unknown as { entity?: string } | undefined
+            )?.entity;
+
+            reactionLogSink({
+              tenantId: user.tenantId,
+              actorId: user.id ?? null,
+              entity: info.entityName ?? irEntity ?? null,
+              command: info.commandName,
+              status: failed ? "failed" : "success",
+              emittedEvents,
+              reactions,
+              errorMessage,
+              payloadKeys: Object.keys(info.input ?? {}),
+              durationMs: info.durationMs,
+              correlationId: info.correlationId ?? null,
+              causationId: info.causationId ?? null,
+              source: null,
+            });
+          } catch {
+            // Best-effort observability — never throw from the settle hook.
+          }
+        }
+      : undefined,
   };
 
   // 6. Idempotency store for command deduplication.
@@ -576,6 +709,21 @@ export async function createManifestRuntime(
       captureException: deps.captureException,
     }),
     createRbacMiddleware({ rolePolicies }),
+    // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
+    // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
+    // seedSampleData/clearSampleData helpers. The governed command only flips the
+    // SampleData tracking row + emits its event; this after-emit effect is the
+    // "store's effect handler" the source promised but never had — without it the
+    // onboarding "Load sample data" CTA marked tenants seeded without creating
+    // anything. Direct Prisma writes are §9-permissible inside the runtime
+    // effect boundary. Uses the main client (not the tx override) for the bulk
+    // multi-table seed; non-fatal on failure (sample data is expendable).
+    createSampleDataSeedMiddleware({
+      prisma:
+        asStoreClient<
+          Parameters<typeof createSampleDataSeedMiddleware>[0]["prisma"]
+        >(prismaForLookups),
+    }),
     // after-emit pair completing the declarative event chain:
     // EventConfirmed -> PrepList.create (reaction) -> seed items (below),
     // PrepListFinalized -> consolidated draft requisition (below).
@@ -1238,6 +1386,18 @@ export async function createManifestRuntime(
     // syncBattleBoardsForEvent() server-action helper.
     createEventUpdatedBoardSyncMiddleware({
       storeProvider,
+      findLinkedBoards: async (tenantId, eventId) => {
+        const rows = await prismaForWrites.battleBoard.findMany({
+          where: { tenantId, eventId, deletedAt: null },
+          select: { id: true, tenantId: true, eventId: true, deletedAt: true },
+        });
+        return rows.map((row) => ({
+          id: row.id,
+          tenantId: row.tenantId,
+          eventId: row.eventId,
+          deletedAt: row.deletedAt,
+        }));
+      },
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
     }),

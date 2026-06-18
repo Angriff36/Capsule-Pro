@@ -18,6 +18,7 @@ import {
   refreshParentContext,
   resolveParentContext,
 } from "./parent-context-resolver";
+import { parseDatetimeToEpochMs } from "./datetime-boundary.js";
 
 export {
   refreshParentContext,
@@ -65,7 +66,7 @@ function datetimeParamNames(
  *
  * Coercion rules (conservative — only fields whose IR type is `datetime`):
  *   - `value instanceof Date`             → value.getTime()
- *   - `typeof value === 'string'` and non-empty and Date.parse is finite → Date.parse(value)
+ *   - `typeof value === 'string'` and non-empty → parseDatetimeToEpochMs (UTC date-only)
  *   - number / null / undefined / ""      → unchanged
  *
  * Mutates the body in place (callers already own the body object).
@@ -82,8 +83,8 @@ function coerceBodyDatetimes(
     if (val instanceof Date) {
       body[name] = val.getTime();
     } else if (typeof val === "string" && val.length > 0) {
-      const ms = Date.parse(val);
-      if (Number.isFinite(ms)) {
+      const ms = parseDatetimeToEpochMs(val);
+      if (ms !== undefined) {
         body[name] = ms;
       }
     }

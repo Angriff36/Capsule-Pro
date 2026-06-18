@@ -172,7 +172,7 @@ async function buildDishMatrix(
         category: row.category,
         dietaryTags: row.dietary_tags || [],
         dishAllergens: row.dish_allergens || [],
-        ingredients: new Map(),
+        ingredients: new Map<string, { name: string; allergens: string[] }>(),
       });
     }
 
@@ -325,7 +325,7 @@ async function buildRecipeMatrix(
         name: row.name,
         category: row.category,
         tags: row.tags || [],
-        ingredients: new Map(),
+        ingredients: new Map<string, { name: string; allergens: string[] }>(),
       });
     }
 

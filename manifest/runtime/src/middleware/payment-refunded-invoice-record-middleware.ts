@@ -40,6 +40,7 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import { isMoneyGreaterThan } from "../numeric-boundary.js";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -203,7 +204,7 @@ export function createPaymentRefundedInvoiceRecordMiddleware(
           continue;
         }
         const amountPaid = asFiniteNumber(invoice.amountPaid) ?? 0;
-        if (refundAmount > amountPaid) {
+        if (isMoneyGreaterThan(refundAmount, amountPaid)) {
           onDiagnostic({
             stage: "overrefund",
             reason: `refund amount ${refundAmount} exceeds invoice amountPaid ${amountPaid} — skip record`,

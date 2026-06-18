@@ -20,7 +20,8 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UsersIcon } from "lucide-react";
-import { useTransition } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { toast } from "sonner";
 
 interface EventEditorModalProps {
   event?: {
@@ -64,14 +65,42 @@ export const EventEditorModal = ({
   event,
   onSave,
 }: EventEditorModalProps) => {
-  const [isPending, startTransition] = useTransition();
-  const saveButtonLabel = getSaveButtonLabel(isPending, !!event?.id);
+  const [isSaving, setIsSaving] = useState(false);
+  const [eventType, setEventType] = useState(event?.eventType ?? "catering");
+  const [status, setStatus] = useState(event?.status ?? "confirmed");
+  const [eventFormat, setEventFormat] = useState(
+    event?.eventFormat ?? "in_person"
+  );
+  const saveButtonLabel = getSaveButtonLabel(isSaving, !!event?.id);
 
-  const handleSubmit = (formData: FormData) => {
-    startTransition(async () => {
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    setEventType(event?.eventType ?? "catering");
+    setStatus(event?.status ?? "confirmed");
+    setEventFormat(event?.eventFormat ?? "in_person");
+  }, [open, event?.eventFormat, event?.eventType, event?.status]);
+
+  const handleSubmit = async (submitEvent: FormEvent<HTMLFormElement>) => {
+    submitEvent.preventDefault();
+    const formData = new FormData(submitEvent.currentTarget);
+    formData.set("eventType", eventType);
+    formData.set("status", status);
+    formData.set("eventFormat", eventFormat);
+
+    setIsSaving(true);
+    try {
       await onSave(formData);
+      toast.success(event?.id ? "Event updated" : "Event created");
       onOpenChange(false);
-    });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save event"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -85,8 +114,11 @@ export const EventEditorModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form action={handleSubmit} className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
+          <input name="eventType" type="hidden" value={eventType} />
+          <input name="status" type="hidden" value={status} />
+          <input name="eventFormat" type="hidden" value={eventFormat} />
 
           <div className="grid gap-4 md:grid-cols-2">
             {event?.id && (
@@ -131,10 +163,7 @@ export const EventEditorModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="eventType">Event Type</Label>
-              <Select
-                defaultValue={event?.eventType ?? "catering"}
-                name="eventType"
-              >
+              <Select onValueChange={setEventType} value={eventType}>
                 <SelectTrigger id="eventType">
                   <SelectValue />
                 </SelectTrigger>
@@ -188,7 +217,7 @@ export const EventEditorModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select defaultValue={event?.status ?? "confirmed"} name="status">
+              <Select onValueChange={setStatus} value={status}>
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>
@@ -245,10 +274,7 @@ export const EventEditorModal = ({
 
             <div className="space-y-2">
               <Label htmlFor="eventFormat">Format</Label>
-              <Select
-                defaultValue={event?.eventFormat ?? "in_person"}
-                name="eventFormat"
-              >
+              <Select onValueChange={setEventFormat} value={eventFormat}>
                 <SelectTrigger id="eventFormat">
                   <SelectValue />
                 </SelectTrigger>
@@ -340,14 +366,14 @@ export const EventEditorModal = ({
 
           <div className="flex justify-end gap-3">
             <Button
-              disabled={isPending}
+              disabled={isSaving}
               onClick={() => onOpenChange(false)}
               type="button"
               variant="outline"
             >
               Cancel
             </Button>
-            <Button disabled={isPending} type="submit">
+            <Button disabled={isSaving} type="submit">
               {saveButtonLabel}
             </Button>
           </div>

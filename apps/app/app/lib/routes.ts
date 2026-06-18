@@ -298,6 +298,13 @@ export const callPlannerDraftGenerateProposal = (id: string): string =>
 export const callPlannerProposalSend = (id: string): string =>
   `/api/call-planner/proposals/${encodeURIComponent(id)}/send`;
 
+// ---------------------------------------------------------------------------
+// Smart import
+// ---------------------------------------------------------------------------
+
+/** POST /api/import/smart */
+export const smartImportRoute = (): string => "/api/import/smart";
+
 /** POST /api/call-planner/proposals/:id/refresh-token */
 export const callPlannerProposalRefreshToken = (id: string): string =>
   `/api/call-planner/proposals/${encodeURIComponent(id)}/refresh-token`;

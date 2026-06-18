@@ -17,7 +17,7 @@ describe("prep inventory demand direct-write guardrail", () => {
     const offenders: string[] = [];
 
     for (const root of SCAN_ROOTS) {
-      for (const file of walk(join(process.cwd(), "../..", root))) {
+      for (const file of walk(join(process.cwd(), "../..", root)).toArray()) {
         const source = readFileSync(file, "utf-8");
         if (
           PREP_DEMAND_MARKER.test(source) &&

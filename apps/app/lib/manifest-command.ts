@@ -132,14 +132,20 @@ export async function runManifestCommand(
       body
     );
   } catch (error) {
+    const isTimeout =
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError");
     return {
       ok: false,
       entity,
       command,
       kind: "runtime_error",
       httpStatus: 500,
-      message:
-        error instanceof Error ? error.message : "Manifest API unreachable",
+      message: isTimeout
+        ? "The API server did not respond in time (port 2223). Restart apps/api and try again."
+        : error instanceof Error
+          ? error.message
+          : "Manifest API unreachable",
       error,
     };
   }

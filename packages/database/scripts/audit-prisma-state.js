@@ -89,7 +89,7 @@ function getMigrationState() {
 }
 
 function diff(label, a, b) {
-  return a.filter((x) => !b.includes(x)).map((x) => `${label}: ${x}`);
+  return [...new Set(a).difference(new Set(b))].map((x) => `${label}: ${x}`);
 }
 
 (async () => {

@@ -1,57 +1,44 @@
-# Task: EmailTemplateDeleted → deactivate dependent EmailWorkflows (P1 core orphan-event leg)
+# Feature: Contextual empty states + one-click sample-data import
 
-## Why this, not ClientArchived→withdraw Proposals (re-planned mid-task)
-ClientArchived→withdraw Proposals looked clean but is NOT: `Client.archive` is
-REVERSIBLE (`Client.reactivate` sets deletedAt=null), while `Proposal.withdraw` is
-TERMINAL (no FSM transition out of "withdrawn"). Cascading an irreversible action off a
-reversible parent state is the exact anti-pattern this codebase deliberately DEFERS
-(vendor-suspend, dish-eightySix). So that leg is left deferred + documented in
-IMPLEMENTATION_PLAN.md line 151.
+Feature ID: feature-1781371077191-uor0rsbm8
 
-EmailTemplateDeleted→EmailWorkflow.setActive(false) has NO such hazard: `setActive` is
-itself REVERSIBLE, and deactivating workflows that point at a deleted template is the
-correct protective semantic (a workflow whose template is gone would send broken/empty
-emails). It is part of IMPLEMENTATION_PLAN.md line 184's cluster ("EmailWorkflow.setActive
-already exists; only the reaction binding is missing").
+## Assumptions (interactive prompt unavailable; chose recommended defaults)
+- Scope: build reusable infra + wire the explicitly-named modules (leads, vendors, shifts,
+  prep tasks) plus clients & inventory; document 1-prop rollout for the rest.
+- Sample-data gating: show "Load sample data" when the tenant's `SampleData.isSeeded === false`,
+  to manager/admin (server `SampleData.seed` policy is the real gate). No `isSandbox` flag exists.
 
-## Problem
-`EmailTemplateDeleted` (core/email-template-rules.manifest:92, emitted by
-`EmailTemplate.softDelete`) has ZERO consumers. Soft-deleting a template leaves every
-EmailWorkflow that references it (`EmailWorkflow.emailTemplateId`) ACTIVE — the trigger
-service would keep firing those workflows against a missing template.
+## Findings
+- Contextual empty-state components already exist (`packages/design-system/.../illustrated-empty-states.tsx`)
+  but are underutilized; most list views inline generic "No results" markup.
+- `SampleData.seed/clear/reseed` governed commands + generated client (`sampleDataSeed`) + hooks exist.
+- ROOT-CAUSE GAP: `seedSampleData()`/`clearSampleData()` (packages/database/src/sample-data/seed.ts)
+  are NOT wired to the runtime — seed command flips isSeeded without populating data. Must wire.
 
-## Design decision
-- On `EmailTemplateDeleted`, deactivate (setActive false) every EmailWorkflow with
-  emailTemplateId == deleted templateId, tenantId match, deletedAt==null, isActive==true.
-  (Skip already-inactive/deleted -> no spurious EmailWorkflowUpdated events; idempotent.)
-- Reversible cascade: if the template is later recreated, an admin can re-activate the
-  workflow. No irreversibility hazard.
-- Mechanism: MIDDLEWARE (1:N fan-out by emailTemplateId; templateId reachable only as
-  event.subject?.id since softDelete takes no params; declared event fields not
-  auto-populated from self.*). NO IR/source/migration change.
+## Tasks
+- [ ] design-system: add optional `secondaryAction` slot to CTA-bearing empty states
+- [ ] apps/app: reusable `SampleDataImportButton` (governed `sampleDataSeed()`, gated on isSeeded)
+- [ ] Wire contextual empty states + sample-data button into: leads, vendors, shifts, prep tasks, clients, inventory
+- [ ] Backend root-cause: export `@repo/database/sample-data`; runtime middleware wires seed/clear effects
+- [ ] Verify: typecheck (design-system, apps/app, packages/database, runtime), build, Playwright if feasible
 
-## Plan
-- [x] Investigate feasibility (orphan confirmed, FK + setActive confirmed, policy aligned).
-- [x] New `manifest/runtime/src/middleware/email-template-deleted-deactivate-workflows-middleware.ts`
-- [x] Export from `manifest/runtime/src/middleware/index.ts` barrel (after Dish*).
-- [x] Import + register in `manifest/runtime/src/manifest-runtime-factory.ts`.
-- [x] Conformance test `email-template-deleted-deactivate-workflows-middleware.test.ts` (3 tests).
-- [x] Verify: runtime typecheck (0) + targeted test (3) + full runtime suite (388) +
-      api typecheck (0) + audit-reaction-payloads (0/0) + schema:check (no drift).
-- [x] Update IMPLEMENTATION_PLAN.md (line 184 leg done; line 151 deferral noted).
-- [ ] commit, tag, push.
-
-## Notes / known limitations
-- setActive policy = manager/admin/system; EmailTemplate.softDelete default policy =
-  manager/admin -> aligned, common path passes (documented in code + plan).
-- Reference pattern: `vendor-blacklisted-cancel-purchase-orders-middleware.ts`.
+## Tasks (done)
+- [x] design-system: `secondaryAction` slot on EmptyListState/NoTasksState/NoClientsState/NoInventoryState
+- [x] apps/app: `SampleDataImportButton` (governed `sampleDataSeed`, gated on isSeeded, manager/admin)
+- [x] Wired contextual empty states + import button: leads, vendors, shifts, prep tasks, clients, inventory
+- [x] Backend root-cause: `@repo/database/sample-data` export + `createSampleDataSeedMiddleware` (runtime)
+- [x] Verify: typechecks (design-system✓ runtime✓ database✓; app green except pre-existing generated drift)
 
 ## Review
-- Implemented `EmailTemplateDeleted → EmailWorkflow.setActive(false)` as a pure-runtime 1:N
-  middleware. ONE new middleware file + barrel export + factory import/registration + one
-  conformance test. ZERO IR/source/schema/migration change.
-- Re-planned mid-task: the originally-chosen ClientArchived→withdraw-Proposals leg was
-  rejected after read-before-write surfaced that `Client.archive` is reversible while
-  `Proposal.withdraw` is terminal (reversibility hazard) — deferred + documented in the plan
-  instead of shipped. Picked the email leg, whose cascade action (setActive) is reversible.
-- All gates green (see verify line). No pre-existing failures encountered.
+- Reused the existing (underutilized) illustrated empty-state components rather than building new ones;
+  added a backward-compatible `secondaryAction` slot (only renders for create-capable roles).
+- Wired 6 representative module list views; remaining modules adopt the same pattern (1 component swap +
+  `secondaryAction={<SampleDataImportButton onSeeded={reload} />}`).
+- Root-caused the dead sample-data seed: the governed `SampleData.seed/clear/reseed` commands only flipped
+  the tracking row; `seedSampleData`/`clearSampleData` were never wired. Added a runtime after-emit effect
+  middleware (constitution §9 — direct writes permitted inside the runtime effect boundary).
+- VERIFICATION GAP (fail-loud): authenticated Playwright run not possible here (Clerk creds for the setup
+  project unavailable; test tenant lists likely non-empty; API on 2223 down). Verified via typecheck of all
+  changed packages + confirmed the app serves/compiles with changes (redirects to Clerk as expected).
+- PRE-EXISTING (not mine): `apps/app/.../manifest-hooks.generated.ts` references `SoftDeletable`/`TenantScoped`
+  absent from `manifest-types.generated.ts` — generated-surface drift; fix is regeneration, out of scope.

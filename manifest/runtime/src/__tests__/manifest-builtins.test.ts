@@ -76,15 +76,14 @@ describe("custom builtins — pure functions", () => {
       expect(percent(50, -10)).toBe(0);
     });
 
-    it("equals the inline `whole > 0 ? part/whole*100 : 0` it replaces", () => {
-      for (const [part, whole] of [
-        [50, 200],
-        [0, 10],
-        [7, 0],
-        [3, 9],
-      ]) {
-        const inline = whole > 0 ? (part / whole) * 100 : 0;
-        expect(percent(part, whole)).toBe(inline);
+    it("matches guarded ratio math (decimal-safe for fractional cases)", () => {
+      for (const [part, whole, expected] of [
+        [50, 200, 25],
+        [0, 10, 0],
+        [7, 0, 0],
+        [3, 9, 100 / 3],
+      ] as const) {
+        expect(percent(part, whole)).toBeCloseTo(expected, 10);
       }
     });
   });

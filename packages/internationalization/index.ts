@@ -64,10 +64,12 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
     locales.map((locale) => [
       locale,
       () =>
-        import(`./dictionaries/${locale}.json`)
+        import(`./dictionaries/${locale}.json`, { with: { type: "json" } })
           .then((mod) => mod.default)
           .catch((_err) =>
-            import("./dictionaries/en.json").then((mod) => mod.default)
+            import("./dictionaries/en.json", { with: { type: "json" } }).then(
+              (mod) => mod.default
+            )
           ),
     ])
   );

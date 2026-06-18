@@ -20,6 +20,71 @@ import {
 import { updateEventForMutation } from "./event-mutation-actions";
 import { refreshEventDetailsData } from "./event-query-actions";
 
+type EventDetailData = Awaited<ReturnType<typeof refreshEventDetailsData>>;
+
+function readFormString(formData: FormData, key: string): string | undefined {
+  const value = formData.get(key);
+  if (typeof value !== "string") {
+    return;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function patchEventDetailFromFormData(
+  detail: EventDetailData,
+  formData: FormData
+): EventDetailData {
+  if (!detail.event) {
+    return detail;
+  }
+
+  const nextEvent = { ...detail.event };
+  const eventNumber = readFormString(formData, "eventNumber");
+  const title = readFormString(formData, "title");
+  const eventType = readFormString(formData, "eventType");
+  const status = readFormString(formData, "status");
+  const venueName = formData.get("venueName");
+  const venueAddress = formData.get("venueAddress");
+  const notes = formData.get("notes");
+  const clientId = formData.get("clientId");
+  const guestCount = readFormString(formData, "guestCount");
+  const eventDate = readFormString(formData, "eventDate");
+
+  if (eventNumber !== undefined) {
+    nextEvent.eventNumber = eventNumber;
+  }
+  if (title) {
+    nextEvent.title = title;
+  }
+  if (eventType) {
+    nextEvent.eventType = eventType;
+  }
+  if (status) {
+    nextEvent.status = status;
+  }
+  if (typeof venueName === "string") {
+    nextEvent.venueName = venueName.trim() || null;
+  }
+  if (typeof venueAddress === "string") {
+    nextEvent.venueAddress = venueAddress.trim() || null;
+  }
+  if (typeof notes === "string") {
+    nextEvent.notes = notes.trim() || null;
+  }
+  if (typeof clientId === "string") {
+    nextEvent.clientId = clientId.trim() || null;
+  }
+  if (guestCount) {
+    nextEvent.guestCount = Number.parseInt(guestCount, 10);
+  }
+  if (eventDate) {
+    nextEvent.eventDate = new Date(`${eventDate}T12:00:00Z`);
+  }
+
+  return { ...detail, event: nextEvent };
+}
+
 // ============================================================================
 // Query Keys
 // ============================================================================
@@ -82,15 +147,53 @@ export function useUpdateEvent() {
 
   return useMutation({
     mutationFn: (formData: FormData) => updateEventForMutation(formData),
-    onSuccess: (_data, formData) => {
+    onMutate: async (formData) => {
       const eventId = formData.get("eventId");
-      if (typeof eventId === "string" && eventId) {
-        queryClient.invalidateQueries({
-          queryKey: eventKeys.detail(eventId),
-        });
+      if (typeof eventId !== "string" || !eventId) {
+        return;
       }
-      // Also invalidate the global events list in case status/title changed
-      queryClient.invalidateQueries({ queryKey: eventKeys.all });
+
+      await queryClient.cancelQueries({ queryKey: eventKeys.detail(eventId) });
+      const previous = queryClient.getQueryData<EventDetailData>(
+        eventKeys.detail(eventId)
+      );
+
+      if (previous) {
+        queryClient.setQueryData(
+          eventKeys.detail(eventId),
+          patchEventDetailFromFormData(previous, formData)
+        );
+      }
+
+      return { previous, eventId };
+    },
+    onError: (_error, _formData, context) => {
+      if (context?.previous && context.eventId) {
+        queryClient.setQueryData(
+          eventKeys.detail(context.eventId),
+          context.previous
+        );
+      }
+    },
+    onSuccess: (_data, formData, context) => {
+      const eventId =
+        context?.eventId ??
+        (typeof formData.get("eventId") === "string"
+          ? formData.get("eventId")
+          : null);
+      if (typeof eventId !== "string" || !eventId) {
+        return;
+      }
+
+      queryClient.setQueryData<EventDetailData>(
+        eventKeys.detail(eventId),
+        (current) =>
+          current ? patchEventDetailFromFormData(current, formData) : current
+      );
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.all,
+        refetchType: "none",
+      });
     },
   });
 }

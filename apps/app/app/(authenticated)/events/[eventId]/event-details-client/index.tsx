@@ -794,7 +794,25 @@ export function EventDetailsClient({
   // TanStack Query: replaces all router.refresh() calls with granular
   // query cache invalidation via the canonical useMutation pattern.
   const queryClient = useQueryClient();
-  const { data: _eventData } = useEventDetails(event.id, allEventData);
+  const { data: eventQueryData } = useEventDetails(event.id, allEventData);
+  const liveEvent = useMemo(() => {
+    const fromQuery = eventQueryData?.event;
+    if (!fromQuery) {
+      return event;
+    }
+    return {
+      ...event,
+      ...fromQuery,
+      budget:
+        fromQuery.budget === null || fromQuery.budget === undefined
+          ? event.budget
+          : Number(fromQuery.budget),
+      ticketPrice:
+        fromQuery.ticketPrice === null || fromQuery.ticketPrice === undefined
+          ? event.ticketPrice
+          : Number(fromQuery.ticketPrice),
+    };
+  }, [event, eventQueryData?.event]);
   const updateEventMutation = useUpdateEvent();
   const addDishMutation = useAddDishToEvent();
   const removeDishMutation = useRemoveDishFromEvent();
@@ -1406,24 +1424,24 @@ export function EventDetailsClient({
   }, [event.id, router]);
 
   const editorEvent = {
-    id: event.id,
-    eventNumber: event.eventNumber ?? undefined,
-    title: event.title,
-    description: event.notes ?? undefined,
-    date: parseISODateToLocal(event.eventDate).toISOString().slice(0, 10),
-    clientId: event.clientId ?? undefined,
-    venueName: event.venueName ?? undefined,
-    venueAddress: event.venueAddress ?? undefined,
-    guestCount: event.guestCount ?? undefined,
-    eventType: event.eventType ?? undefined,
-    status: event.status ?? undefined,
-    budget: event.budget ?? null,
-    tags: event.tags ?? [],
-    ticketTier: event.ticketTier ?? null,
-    ticketPrice: event.ticketPrice ?? null,
-    eventFormat: event.eventFormat ?? null,
-    accessibilityOptions: event.accessibilityOptions ?? [],
-    featuredMediaUrl: event.featuredMediaUrl ?? null,
+    id: liveEvent.id,
+    eventNumber: liveEvent.eventNumber ?? undefined,
+    title: liveEvent.title,
+    description: liveEvent.notes ?? undefined,
+    date: parseISODateToLocal(liveEvent.eventDate).toISOString().slice(0, 10),
+    clientId: liveEvent.clientId ?? undefined,
+    venueName: liveEvent.venueName ?? undefined,
+    venueAddress: liveEvent.venueAddress ?? undefined,
+    guestCount: liveEvent.guestCount ?? undefined,
+    eventType: liveEvent.eventType ?? undefined,
+    status: liveEvent.status ?? undefined,
+    budget: liveEvent.budget ?? null,
+    tags: liveEvent.tags ?? [],
+    ticketTier: liveEvent.ticketTier ?? null,
+    ticketPrice: liveEvent.ticketPrice ?? null,
+    eventFormat: liveEvent.eventFormat ?? null,
+    accessibilityOptions: liveEvent.accessibilityOptions ?? [],
+    featuredMediaUrl: liveEvent.featuredMediaUrl ?? null,
   };
 
   const resetFilters = () => {
@@ -1614,20 +1632,20 @@ export function EventDetailsClient({
           overview={
             <div className="space-y-6">
               <EventRecordCard
-                event={event}
+                event={liveEvent}
                 onEditEvent={() => setShowEditEvent(true)}
               />
               <EventSetupChecklist
-                eventDate={event.eventDate}
-                eventId={event.id}
-                eventStatus={event.status ?? undefined}
+                eventDate={liveEvent.eventDate}
+                eventId={liveEvent.id}
+                eventStatus={liveEvent.status ?? undefined}
                 hasBudget={hasBudget ?? false}
-                hasClient={!!event.clientId}
+                hasClient={!!liveEvent.clientId}
                 hasContract={hasContract}
                 hasMenu={eventDishes.length > 0}
                 hasPrepList={prepLists.length > 0}
                 hasStaff={staffCount > 0}
-                hasVenue={!!event.venueName}
+                hasVenue={!!liveEvent.venueName}
                 onAssignClient={() => setShowAssignClient(true)}
                 onEditEvent={() => setShowEditEvent(true)}
               />
@@ -1648,7 +1666,7 @@ export function EventDetailsClient({
                 availability={availability}
                 capacity={capacity}
                 displayedTags={displayedTags}
-                event={event}
+                event={liveEvent}
                 eventDate={eventDate}
                 eventStart={eventStart}
                 eventStatusLabel={eventStatusLabel}

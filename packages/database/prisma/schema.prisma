@@ -3248,6 +3248,55 @@ model ActivityFeed {
   @@schema("tenant_admin")
 }
 
+/// Append-only observability log of Manifest runtime command/reaction executions.
+///
+/// Written directly by the runtime dispatcher (see manifest-runtime.ts
+/// `reactionLogSink`) — this is an OPERATIONAL log, NOT a governed entity
+/// (constitution §11: operational logs are not semantic events; §10: dashboards/
+/// reads are read paths; §8 classification = `infrastructure`). It mirrors the
+/// direct-write pattern of ActivityFeed / audit_log / outbox and must never route
+/// through `RuntimeEngine.runCommand`. Powers the tenant-scoped reaction-history
+/// dashboard. Append-only: rows are only ever created, never updated or deleted.
+model ReactionLog {
+  tenantId      String   @map("tenant_id") @db.Uuid
+  id            String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// Triggering command's entity (e.g. "Event"). Null when the IR omits it.
+  entity        String?
+  /// Triggering command name (e.g. "create", "applyPayment").
+  command       String
+  /// "success" | "failed" — failed captures silent no-ops / guard failures.
+  status        String
+  /// Names of the semantic events this command emitted.
+  emittedEvents String[] @map("emitted_events")
+  /// IR reactions ("Entity.command") triggered by the emitted events.
+  reactions     String[]
+  /// Guard/runtime failure detail when status = "failed".
+  errorMessage  String?  @map("error_message")
+  /// Shape of the command input (keys only — no values, to avoid leaking PII).
+  payloadKeys   String[] @map("payload_keys")
+  /// Wall-clock execution time of the command in milliseconds.
+  durationMs    Int?     @map("duration_ms")
+  /// Reserved for future retry instrumentation (runtime is fire-once today).
+  retryCount    Int      @default(0) @map("retry_count")
+  /// Correlation id grouping a whole propagation cascade.
+  correlationId String?  @map("correlation_id")
+  /// Causation id linking this command to the one that triggered it.
+  causationId   String?  @map("causation_id")
+  /// Origin surface, when supplied (route/job/cli/...).
+  source        String?
+  /// Acting user id.
+  actorId       String?  @map("actor_id")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, correlationId])
+  @@index([tenantId, entity, command, createdAt])
+  @@map("reaction_logs")
+  @@schema("tenant_admin")
+}
+
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model admin_permissions {
   tenant_id       String    @db.Uuid

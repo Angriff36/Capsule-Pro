@@ -9,6 +9,20 @@
 import { cookies } from "next/headers";
 import { apiUrl } from "./api";
 
+/** Prevent server actions from hanging indefinitely when apps/api is wedged. */
+const API_SERVER_TIMEOUT_MS = 60_000;
+
+function mergeAbortSignals(
+  userSignal: AbortSignal | null | undefined,
+  timeoutMs: number
+): AbortSignal {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  if (!userSignal) {
+    return timeoutSignal;
+  }
+  return AbortSignal.any([userSignal, timeoutSignal]);
+}
+
 export async function apiFetchServer(
   path: string,
   init?: RequestInit
@@ -18,6 +32,7 @@ export async function apiFetchServer(
   return fetch(apiUrl(path), {
     cache: "no-store",
     ...init,
+    signal: mergeAbortSignals(init?.signal, API_SERVER_TIMEOUT_MS),
     headers: {
       ...init?.headers,
       ...(cookieHeader ? { cookie: cookieHeader } : {}),

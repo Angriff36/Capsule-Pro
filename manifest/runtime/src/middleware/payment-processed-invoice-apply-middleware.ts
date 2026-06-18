@@ -46,6 +46,7 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import { isMoneyGreaterThan } from "../numeric-boundary.js";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -239,7 +240,7 @@ export function createPaymentProcessedInvoiceApplyMiddleware(
           continue;
         }
         const amountDue = asFiniteNumber(invoice.amountDue) ?? 0;
-        if (amount > amountDue) {
+        if (isMoneyGreaterThan(amount, amountDue)) {
           onDiagnostic({
             stage: "overpay",
             reason: `payment amount ${amount} exceeds amount due ${amountDue} — skip apply`,

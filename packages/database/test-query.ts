@@ -7,10 +7,21 @@ if (!DATABASE_URL) {
   throw new Error("DATABASE_URL env var is required");
 }
 
-async function test() {
-  const _neonConfig = { webSocketConstructor: ws, poolQueryViaFetch: true };
-  const adapter = new PrismaNeon({ connectionString: DATABASE_URL });
+function createDatabaseScope(connectionString: string) {
+  const adapter = new PrismaNeon({ connectionString });
   const database = new PrismaClient({ adapter });
+
+  return {
+    client: database,
+    async [Symbol.asyncDispose]() {
+      await database.$disconnect();
+    },
+  };
+}
+
+async function test() {
+  await using databaseScope = createDatabaseScope(DATABASE_URL);
+  const database = databaseScope.client;
 
   console.log("Testing...");
   try {
@@ -29,8 +40,6 @@ async function test() {
     }
   } catch (error) {
     console.error("Error:", error);
-  } finally {
-    await database.$disconnect();
   }
 }
 

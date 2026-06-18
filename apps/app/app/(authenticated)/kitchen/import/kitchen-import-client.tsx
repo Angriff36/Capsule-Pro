@@ -17,22 +17,29 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import {
   AlertCircleIcon,
+  CalendarIcon,
   CheckCircle2Icon,
   ChefHatIcon,
   FileIcon,
   FileTextIcon,
+  LeafIcon,
+  LinkIcon,
   Loader2Icon,
   UploadIcon,
   UtensilsCrossedIcon,
   XIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
-// NOTE: Keeping apiFetch for file upload (FormData POST) — generated client does not support multipart/form-data
 import { apiFetch } from "@/app/lib/api";
 
-// ─── Types ───────────────────────────────────────────────────────────
-
-type ImportType = "recipes" | "dishes" | "prep-lists";
+type ImportType =
+  | "recipes"
+  | "dishes"
+  | "prep-lists"
+  | "ingredients"
+  | "recipe-ingredients"
+  | "events";
 
 interface ImportSummary {
   created: string[];
@@ -44,19 +51,56 @@ interface ImportSummary {
 interface TabConfig {
   csvColumns: string;
   description: string;
+  formatNote?: string;
   icon: typeof ChefHatIcon;
   id: ImportType;
   label: string;
 }
 
+const RECIPE_SHEET_EXAMPLE = `section,key,value
+recipe_info,recipe_name,POMODORO SAUCE
+recipe_info,yield_total,10 GALLONS
+recipe_info,portion_size,SEE PREP BOARD
+recipe_info,servings,SEE PREP BOARD
+recipe_info,active_prep_time,20 MINUTES
+recipe_info,passive_cook_time,1 HOUR
+recipe_info,total_time,1 HOUR 20 MINUTES
+recipe_info,version,2026.01
+allergen,dairy,
+allergen,wheat_gluten,x
+equipment,,TILT SKILLET
+equipment,,IMMERSION BLENDER
+ingredient,DICED ONION,5 POUNDS
+ingredient,DICED CELERY,2.5 POUNDS
+instruction,1,IN TILT SKILLET HEAT 1/2 CUPS OF OLIVE OIL UNTIL HOT
+instruction,2,ADD ONIONS CELERY AND CARROTS AND COOK UNTIL CARROTS ARE SOFT
+packaging,drop_off,ONCE COOLED COMPLETELY PACKAGE IN PROPER SIZED BAIN MARIE CATER WRAP AND LABEL FOR EVENT`;
+
 const TABS: TabConfig[] = [
   {
     id: "recipes",
-    label: "Recipes",
-    description: "Import recipe catalog with versions and metadata",
+    label: "Recipe Sheets",
+    description:
+      "Import full kitchen recipe sheets (info, allergens, equipment, ingredients, method, packaging). One CSV file per recipe, or multiple recipes separated by recipe_start rows.",
     icon: ChefHatIcon,
+    csvColumns: "section, key, value",
+    formatNote: RECIPE_SHEET_EXAMPLE,
+  },
+  {
+    id: "ingredients",
+    label: "Ingredients",
+    description: "Import standalone ingredient catalog entries",
+    icon: LeafIcon,
     csvColumns:
-      "name, category, cuisine_type, description, tags, yield_quantity, prep_time_minutes, cook_time_minutes, instructions, notes",
+      "name, category, default_unit, shelf_life_days, storage_instructions, allergens",
+  },
+  {
+    id: "recipe-ingredients",
+    label: "Recipe Lines",
+    description: "Link ingredients to existing recipes (import ingredients and recipes first)",
+    icon: LinkIcon,
+    csvColumns:
+      "recipe_name, ingredient_name, quantity, unit, sort_order, preparation_notes, is_optional",
   },
   {
     id: "dishes",
@@ -65,6 +109,14 @@ const TABS: TabConfig[] = [
     icon: UtensilsCrossedIcon,
     csvColumns:
       "name, recipe_name, description, category, service_style, portion_size_description, dietary_tags, allergens, price_per_person, cost_per_person",
+  },
+  {
+    id: "events",
+    label: "Events",
+    description: "Import event headers (title, date, guest count, venue)",
+    icon: CalendarIcon,
+    csvColumns:
+      "title, event_date, event_type, guest_count, venue_name, venue_address, status, notes, tags",
   },
   {
     id: "prep-lists",
@@ -76,7 +128,15 @@ const TABS: TabConfig[] = [
   },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────
+const RECIPE_UPLOAD_EXTENSIONS = [
+  ".csv",
+  ".pdf",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".txt",
+];
 
 export function KitchenImportClient() {
   const [activeTab, setActiveTab] = useState<ImportType>("recipes");
@@ -86,28 +146,30 @@ export function KitchenImportClient() {
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // ── File handling ────────────────────────────────────────────────
+  const allowedExtensions =
+    activeTab === "recipes" ? RECIPE_UPLOAD_EXTENSIONS : [".csv"];
 
-  const handleFiles = useCallback((fileList: FileList | null) => {
-    if (!fileList) {
-      return;
-    }
-
-    const newFiles: File[] = [];
-    const allowedExtensions = [".csv"];
-    // Later: add .png, .jpg, .pdf when Phase 2 image/PDF processing is done
-
-    for (const file of Array.from(fileList)) {
-      const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
-      if (allowedExtensions.includes(ext)) {
-        newFiles.push(file);
+  const handleFiles = useCallback(
+    (fileList: FileList | null) => {
+      if (!fileList) {
+        return;
       }
-    }
 
-    setFiles((prev) => [...prev, ...newFiles]);
-    setError(null);
-    setResult(null);
-  }, []);
+      const newFiles: File[] = [];
+
+      for (const file of Array.from(fileList)) {
+        const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
+        if (allowedExtensions.includes(ext)) {
+          newFiles.push(file);
+        }
+      }
+
+      setFiles((prev) => [...prev, ...newFiles]);
+      setError(null);
+      setResult(null);
+    },
+    [allowedExtensions]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -135,13 +197,15 @@ export function KitchenImportClient() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  // ── Submit ────────────────────────────────────────────────────────
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (files.length === 0) {
-      setError("Please select at least one CSV file to import.");
+      setError(
+        activeTab === "recipes"
+          ? "Please select at least one CSV, PDF, or image file to import."
+          : "Please select at least one CSV file to import."
+      );
       return;
     }
 
@@ -178,8 +242,6 @@ export function KitchenImportClient() {
     }
   };
 
-  // ── Helpers ───────────────────────────────────────────────────────
-
   const formatBytes = (bytes: number) => {
     if (bytes === 0) {
       return "0 Bytes";
@@ -190,12 +252,25 @@ export function KitchenImportClient() {
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const _activeTabConfig = TABS.find((t) => t.id === activeTab)!;
-
-  // ── Render ────────────────────────────────────────────────────────
-
   return (
     <div className="flex flex-col gap-6">
+      <Card tone="canvas">
+        <CardHeader>
+          <CardTitle>Bulk Import</CardTitle>
+          <CardDescription>
+            Upload CSV files to seed ingredients, recipes, dishes, events, and
+            prep lists. Recipe sheets also accept PDF or scanned images — OCR
+            uses Gemini Flash by default (free tier; set{" "}
+            <code className="rounded bg-muted px-1">GOOGLE_GENERATIVE_AI_API_KEY</code>
+            ). For event prep-list PDFs with menu parsing, use{" "}
+            <Link className="underline" href="/events/import">
+              Event Document Import
+            </Link>
+            .
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
       <Tabs
         onValueChange={(v) => {
           setActiveTab(v as ImportType);
@@ -205,7 +280,7 @@ export function KitchenImportClient() {
         }}
         value={activeTab}
       >
-        <TabsList>
+        <TabsList className="flex h-auto flex-wrap">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -219,18 +294,16 @@ export function KitchenImportClient() {
 
         {TABS.map((tab) => (
           <TabsContent className="mt-4" key={tab.id} value={tab.id}>
-            {/* Upload Card */}
             <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Import {tab.label}</CardTitle>
                 <CardDescription>
-                  {tab.description}. Upload one or more CSV files — all rows
-                  will be processed in a single batch.
+                  {tab.description}. Upload one or more files — all rows or
+                  documents will be processed in a single batch.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-                  {/* Drop Zone */}
                   <div
                     className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
                       dragActive
@@ -243,13 +316,21 @@ export function KitchenImportClient() {
                   >
                     <UploadIcon className="mb-4 h-10 w-10 text-muted-foreground" />
                     <p className="mb-2 text-muted-foreground text-sm">
-                      Drag and drop CSV files here, or click to browse
+                      {tab.id === "recipes"
+                        ? "Drag and drop CSV, PDF, image, or text files here, or click to browse"
+                        : "Drag and drop CSV files here, or click to browse"}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      Supports .csv files (images and PDFs coming soon)
+                      {tab.id === "recipes"
+                        ? "Supports .csv, .pdf, .png, .jpg, .jpeg, .webp, .txt"
+                        : "Supports .csv files"}
                     </p>
                     <input
-                      accept=".csv"
+                      accept={
+                        tab.id === "recipes"
+                          ? ".csv,.pdf,.png,.jpg,.jpeg,.webp,.txt"
+                          : ".csv"
+                      }
                       className="mt-4 max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:font-medium file:text-sm"
                       multiple
                       onChange={(e) => handleFiles(e.target.files)}
@@ -257,7 +338,6 @@ export function KitchenImportClient() {
                     />
                   </div>
 
-                  {/* Selected Files */}
                   {files.length > 0 && (
                     <div className="flex flex-col gap-2">
                       <Label>Selected Files ({files.length})</Label>
@@ -274,7 +354,8 @@ export function KitchenImportClient() {
                                   {file.name}
                                 </p>
                                 <p className="text-muted-foreground text-xs">
-                                  {formatBytes(file.size)} • CSV
+                                  {formatBytes(file.size)} •{" "}
+                                  {file.name.split(".").pop()?.toUpperCase()}
                                 </p>
                               </div>
                             </div>
@@ -292,17 +373,36 @@ export function KitchenImportClient() {
                     </div>
                   )}
 
-                  {/* CSV Column Reference */}
                   <div className="rounded-lg border bg-muted/30 p-4">
                     <p className="mb-2 font-medium text-muted-foreground text-xs">
-                      Expected CSV columns:
+                      {tab.id === "recipes"
+                        ? "Recipe sheet CSV format (matches kitchen recipe template):"
+                        : "Expected CSV columns:"}
                     </p>
-                    <code className="break-all text-muted-foreground text-xs">
-                      {tab.csvColumns}
-                    </code>
+                    {tab.formatNote ? (
+                      <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-md bg-background p-3 text-muted-foreground text-xs">
+                        {tab.formatNote}
+                      </pre>
+                    ) : (
+                      <code className="break-all text-muted-foreground text-xs">
+                        {tab.csvColumns}
+                      </code>
+                    )}
+                    {tab.id === "recipes" && (
+                      <p className="mt-3 text-muted-foreground text-xs">
+                        Sections: <strong>recipe_info</strong>,{" "}
+                        <strong>allergen</strong> (mark checked with x),{" "}
+                        <strong>equipment</strong>, <strong>ingredient</strong>,{" "}
+                        <strong>instruction</strong>, <strong>packaging</strong>{" "}
+                        (drop_off, bring_hot, cook_on_site). Multiple recipes in
+                        one file: add{" "}
+                        <code>recipe_start,,Recipe Name</code> between sheets.
+                        PDFs and photos are parsed with Gemini OCR when a{" "}
+                        <code>GOOGLE_GENERATIVE_AI_API_KEY</code> is configured.
+                      </p>
+                    )}
                   </div>
 
-                  {/* Error Display */}
                   {error && (
                     <div className="flex items-center gap-2 rounded-lg border border-destructive bg-destructive/10 p-3 text-destructive">
                       <AlertCircleIcon className="h-5 w-5 flex-shrink-0" />
@@ -310,7 +410,6 @@ export function KitchenImportClient() {
                     </div>
                   )}
 
-                  {/* Submit */}
                   <Button
                     disabled={files.length === 0 || isLoading}
                     type="submit"
@@ -335,7 +434,6 @@ export function KitchenImportClient() {
         ))}
       </Tabs>
 
-      {/* Results */}
       {result && (
         <Card tone="canvas">
           <CardHeader>
@@ -349,7 +447,6 @@ export function KitchenImportClient() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
-            {/* Summary Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
                 <p className="font-bold text-2xl text-green-700">
@@ -371,7 +468,6 @@ export function KitchenImportClient() {
               </div>
             </div>
 
-            {/* Created Items */}
             {result.created.length > 0 && (
               <div className="flex flex-col gap-2">
                 <Label>Created ({result.created.length})</Label>
@@ -389,7 +485,6 @@ export function KitchenImportClient() {
               </div>
             )}
 
-            {/* Errors */}
             {result.errors.length > 0 && (
               <div className="flex flex-col gap-2">
                 <Label className="text-destructive">

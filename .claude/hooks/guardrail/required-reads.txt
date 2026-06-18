@@ -3,5 +3,5 @@ manifest/AGENTS.md
 manifest/IMPLEMENTATION_PROMPT.md
 manifest/notes.md
 manifest/phase-out-registry.md
-manifest/task_plan.md
+manifest/task_plan_full_official_generation.md
 IMPLEMENTATION_PLAN.md

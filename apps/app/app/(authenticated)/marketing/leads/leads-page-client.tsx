@@ -10,6 +10,7 @@
 
 "use client";
 
+import { EmptyListState } from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { MonoLabel } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -21,10 +22,11 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Input } from "@repo/design-system/components/ui/input";
-import { MoreHorizontal, Search, UserPlus } from "lucide-react";
+import { MoreHorizontal, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { SampleDataImportButton } from "../../components/sample-data-import-button";
 import {
   archiveLead,
   convertLeadToClient,
@@ -139,19 +141,20 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
     }
   };
 
-  // Empty state
+  // Empty state — contextual: explains what leads are, offers the primary action,
+  // and (for new/sandbox tenants) a one-click sample-data import.
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline border-dashed bg-soft-stone px-6 py-16 text-center">
-        <UserPlus className="mb-4 size-10 text-muted-foreground" />
-        <h3 className="font-medium text-lg">No leads yet</h3>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Start tracking potential clients by creating your first lead.
-        </p>
-        <Button asChild className="mt-4" size="sm">
-          <a href="/marketing/leads/new">Create lead</a>
-        </Button>
-      </div>
+      <EmptyListState
+        createButtonText="Create lead"
+        description="Leads are potential clients and event inquiries. Capture them here to track outreach, qualify the opportunity, and convert the best ones into booked clients."
+        itemName="leads"
+        onCreate={() => router.push("/marketing/leads/new")}
+        secondaryAction={
+          <SampleDataImportButton onSeeded={() => router.refresh()} />
+        }
+        userRole="admin"
+      />
     );
   }
 

@@ -189,11 +189,15 @@ export function BudgetsPageClient() {
   // Calculate summary stats
   const activeBudgets = budgets.filter((b) => b.status === "active").length;
   const totalBudget = budgets
-    .filter((b) => b.status === "active")
-    .reduce((sum, b) => sum + b.totalBudgetAmount, 0);
+    .values()
+    .filter((budget) => budget.status === "active")
+    .map((budget) => budget.totalBudgetAmount)
+    .reduce((sum, budget) => sum + budget, 0);
   const totalActual = budgets
-    .filter((b) => b.status === "active")
-    .reduce((sum, b) => sum + b.totalActualAmount, 0);
+    .values()
+    .filter((budget) => budget.status === "active")
+    .map((budget) => budget.totalActualAmount)
+    .reduce((sum, budget) => sum + budget, 0);
 
   return (
     <div className="space-y-8">
