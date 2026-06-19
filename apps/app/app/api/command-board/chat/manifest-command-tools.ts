@@ -671,9 +671,14 @@ export function buildSimulationPlanSchema(
                 additionalProperties: false,
               },
             },
+            targetRef: {
+              type: ["string", "null"],
+              description:
+                "For commands acting on an EXISTING record (anything except create), the name or id the user used to identify that record (e.g. an event's name 'Smith Wedding' or its id). null for create.",
+            },
             note: { type: "string" },
           },
-          required: ["entityCommand", "argsKv", "note"],
+          required: ["entityCommand", "argsKv", "targetRef", "note"],
           additionalProperties: false,
         },
       },

@@ -42,12 +42,9 @@
  * `User`/employee id). StaffMember has no `User`/`employeeId` FK; the app already
  * relies on this `staffMemberId == employeeId` convention elsewhere (the staff page
  * joins `event_staff.staffMemberId = employees.id` by convention), so this leg
- * follows it. Also, the dispatched `Notification.create` runs as the SAME actor who
- * assigned the staff and is subject to Notification's default policy
- * (`user.role in ["manager", "admin"]`); an assigner with a lower-privilege role
- * (e.g. event_coordinator) yields a policy-denied dispatch reported via
- * `onDiagnostic` rather than a created row (the runtime has no per-call identity
- * override — same class as the deal-assign / event-created-client-interaction legs).
+ * follows it. Side-effect Notification.create runs as the `system` role via
+ * `createSystemSideEffectDispatch` in the factory so coordinators who can assign
+ * staff are not blocked by Notification's default manager/admin policy.
  *
  * Every skip path reports through `onDiagnostic` (default: console.warn) instead of
  * returning silently, so "an assignment that notified no one" is visible.

@@ -26,6 +26,31 @@ export interface ManifestAgentContext {
   userId: string;
 }
 
+/**
+ * A bare id reference (uuid or cuid-style) — used to short-circuit name lookup
+ * when the user/model already supplied the target record's id.
+ */
+const ID_LIKE_REF =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|^c[a-z0-9]{24}$|^[a-z0-9]{21,}$/i;
+
+/**
+ * Fields a record can be referred to by in natural language, in priority order.
+ * Used to resolve "the Smith Wedding" → the event's id.
+ */
+const RESOLVE_NAME_FIELDS = [
+  "title",
+  "name",
+  "displayName",
+  "eventNumber",
+  "orderNumber",
+  "invoiceNumber",
+  "number",
+  "label",
+  "code",
+  "sku",
+  "email",
+] as const;
+
 /** Per-call auth headers: fresh Bearer token when available, cookie fallback. */
 async function buildAuthHeaders(
   context: ManifestAgentContext
@@ -581,6 +606,122 @@ async function detectConflictsTool(
   };
 }
 
+/**
+ * Resolves a natural-language reference to an existing record's id so that
+ * non-create commands (update/transition/delete) can target the right instance.
+ * The reference is whatever the user used to identify the record — its id, or a
+ * name like an event's title ("Smith Wedding"). The runtime targets the row via
+ * `body.id` (run-manifest-command-core `deriveInstanceIdFromBody`), so resolving
+ * here is what makes "set guest count to 175 on the Smith Wedding" work from any
+ * screen — the Event is the entity; no board is involved.
+ *
+ * Resolution: a bare id passes through; otherwise the entity's read surface
+ * (`GET /api/manifest/<entity>`, tenant-scoped) is scanned for an exact then a
+ * unique partial match across common name fields. Ambiguous/no match returns a
+ * null id with an actionable note instead of mutating the wrong record.
+ */
+/**
+ * Pure matcher: pick the single record a reference identifies, out of a fetched
+ * page of rows. A bare id passes through; otherwise an EXACT (case-insensitive)
+ * name match wins, falling back to a UNIQUE partial match. Ambiguous or no match
+ * returns a null id with an actionable note — we never guess a record to mutate.
+ * Exported for testing because picking the wrong row would edit the wrong entity.
+ */
+export function selectInstanceByRef(
+  entityName: string,
+  ref: string,
+  rows: Record<string, unknown>[]
+): { id: string | null; note: string } {
+  const trimmed = ref.trim();
+  if (trimmed.length === 0) {
+    return { id: null, note: "" };
+  }
+  if (ID_LIKE_REF.test(trimmed)) {
+    return { id: trimmed, note: "" };
+  }
+
+  const needle = trimmed.toLowerCase();
+  const namesOf = (row: Record<string, unknown>): string[] =>
+    RESOLVE_NAME_FIELDS.map((field) =>
+      typeof row[field] === "string" ? (row[field] as string) : ""
+    ).filter((value) => value.length > 0);
+
+  const byId = rows.find((row) => row.id === trimmed);
+  if (byId && typeof byId.id === "string") {
+    return { id: byId.id, note: "" };
+  }
+
+  const exact = rows.filter((row) =>
+    namesOf(row).some((value) => value.toLowerCase() === needle)
+  );
+  const partial =
+    exact.length > 0
+      ? exact
+      : rows.filter((row) =>
+          namesOf(row).some((value) => value.toLowerCase().includes(needle))
+        );
+
+  if (partial.length === 1 && typeof partial[0].id === "string") {
+    return {
+      id: partial[0].id as string,
+      note: `matched ${entityName} "${trimmed}"`,
+    };
+  }
+  if (partial.length > 1) {
+    return {
+      id: null,
+      note: `Multiple ${entityName} records match "${trimmed}" — please be more specific.`,
+    };
+  }
+  return { id: null, note: `No ${entityName} found matching "${trimmed}".` };
+}
+
+async function resolveInstanceId(
+  entityName: string,
+  ref: string,
+  context: ManifestAgentContext
+): Promise<{ id: string | null; note: string }> {
+  const trimmed = ref.trim();
+  if (trimmed.length === 0) {
+    return { id: null, note: "" };
+  }
+  // A bare id needs no lookup.
+  if (ID_LIKE_REF.test(trimmed)) {
+    return { id: trimmed, note: "" };
+  }
+
+  try {
+    const endpoint = `${getApiBaseUrl()}/api/manifest/${encodeURIComponent(entityName)}?limit=200`;
+    const dpl = getDeploymentId();
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        "x-correlation-id": context.correlationId,
+        ...(dpl ? { "x-deployment-id": dpl } : {}),
+        ...(await buildAuthHeaders(context)),
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return {
+        id: null,
+        note: `Could not look up ${entityName} to resolve "${trimmed}" (read failed ${response.status}).`,
+      };
+    }
+    const body = (await response.json()) as { data?: unknown };
+    const rows = (Array.isArray(body.data) ? body.data : []).filter(
+      (row): row is Record<string, unknown> =>
+        Boolean(row) && typeof row === "object"
+    );
+    return selectInstanceByRef(entityName, trimmed, rows);
+  } catch {
+    return {
+      id: null,
+      note: `Could not resolve which ${entityName} "${trimmed}" refers to.`,
+    };
+  }
+}
+
 async function executeManifestCommandTool(
   args: Record<string, unknown>,
   context: ManifestAgentContext,
@@ -625,6 +766,33 @@ async function executeManifestCommandTool(
             : null,
       },
     };
+  }
+
+  // Resolve which existing record a non-create command targets, from the name
+  // or id the user referenced (args.targetRef). The runtime targets via body.id
+  // (mapped from args.instanceId downstream). Create commands auto-create a new
+  // instance and must NOT receive an id, so they skip resolution.
+  const targetRef = typeof args.targetRef === "string" ? args.targetRef : "";
+  const hasExplicitTarget =
+    (typeof args.instanceId === "string" && args.instanceId.length > 0) ||
+    (typeof args.id === "string" && args.id.length > 0);
+  if (
+    commandName !== "create" &&
+    targetRef.trim().length > 0 &&
+    !hasExplicitTarget
+  ) {
+    const resolved = await resolveInstanceId(
+      commandRoute.source.entity,
+      targetRef,
+      context
+    );
+    if (!resolved.id) {
+      const message =
+        resolved.note ||
+        `Could not identify which ${commandRoute.source.entity} to ${commandName}.`;
+      return { ok: false, summary: message, error: message };
+    }
+    args.instanceId = resolved.id;
   }
 
   return executeManifestCommandRoute(
@@ -683,6 +851,18 @@ async function executeManifestCommandRoute(
     bodyArgs.userId = args.userId;
   } else if (!bodyArgs.userId) {
     bodyArgs.userId = context.userId;
+  }
+
+  // Inject the active board from session context when the caller didn't supply
+  // it. boardId is a generated/contextual id the user (and the planning model)
+  // can't know — it comes from the board the chat is open on. Commands that
+  // don't declare boardId ignore the extra body key (same as userId above).
+  if (
+    typeof context.boardId === "string" &&
+    context.boardId.length > 0 &&
+    (typeof bodyArgs.boardId !== "string" || bodyArgs.boardId.length === 0)
+  ) {
+    bodyArgs.boardId = context.boardId;
   }
 
   const endpoint = `${getApiBaseUrl()}${routePath}`;

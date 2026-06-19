@@ -27,11 +27,10 @@ entity ApiKey mixin TenantScoped, SoftDeletable {
   constraint requireCreatedBy: self.createdByUserId != null and self.createdByUserId != "" "Created by user ID is required"
 
   default policy ApiKeyDefaultAccess execute: user.role in ["manager", "admin"] "API key management"
-  command create(name: string, keyPrefix: string, hashedKey: string, scopes: array<string>, expiresAt: datetime, createdByUserId: string) {
+  command create(name: string, keyPrefix: string, hashedKey: string, scopes: array<string>, expiresAt: datetime, optional createdByUserId: string) {
     guard name != null and name != "" "API key name is required"
     guard keyPrefix != null and keyPrefix != "" "Key prefix is required"
     guard hashedKey != null and hashedKey != "" "Hashed key is required"
-    guard createdByUserId != null and createdByUserId != "" "Created by user ID is required"
 
     constraint warnNoScopes:warn length(scopes) == 0 {
       messageTemplate: "API key '{name}' has no scopes assigned"
@@ -46,7 +45,7 @@ entity ApiKey mixin TenantScoped, SoftDeletable {
     mutate hashedKey = hashedKey
     mutate scopes = scopes
     mutate expiresAt = expiresAt
-    mutate createdByUserId = createdByUserId
+    mutate createdByUserId = createdByUserId != null and createdByUserId != "" ? createdByUserId : user.id
     mutate lastUsedAt = null
     mutate revokedAt = null
 

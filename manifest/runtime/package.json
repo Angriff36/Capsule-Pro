@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "2.15.0",
+    "@angriff36/manifest": "2.16.1",
     "@js-temporal/polyfill": "^0.5.1",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",

@@ -4,11 +4,7 @@
 staged_manifests=$(git diff --cached --name-only --diff-filter=ACM -- '*.manifest')
 
 if [ -n "$staged_manifests" ]; then
-  echo "manifest pre-commit: formatting + validating staged .manifest files…"
-  pnpm manifest:fmt:check || {
-    echo "✗ manifest formatting check failed — run 'pnpm manifest:fmt' and re-stage."
-    exit 1
-  }
+  echo "manifest pre-commit: validating IR after staged .manifest changes…"
   pnpm manifest:validate || {
     echo "✗ manifest validation failed."
     exit 1

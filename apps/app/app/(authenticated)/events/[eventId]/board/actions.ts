@@ -106,7 +106,7 @@ export async function getOrCreateEventBoard(
     command: "create",
     body: {
       name: `${event.title} — Event Board`,
-      description: "Per-event command board (event tree)",
+      description: "Per-event Event-tree board",
       eventId,
       isTemplate: false,
       tags: ["event-board"],

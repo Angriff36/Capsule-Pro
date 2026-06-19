@@ -100,7 +100,7 @@ const BoardDetailPage = async ({ params }: PageProps) => {
                 className="underline-offset-4 hover:underline"
                 href="/command-board"
               >
-                Command Board
+                Event boards
               </Link>{" "}
               / {board.name}
             </MonoLabel>

@@ -748,7 +748,7 @@ interface EventDetailsClientProps {
     ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>
   >;
   battleBoardHref: string;
-  /** Server-rendered Command Board tab — passed from page.tsx to cross the server/client boundary */
+  /** Server-rendered Event tree tab — passed from page.tsx to cross the server/client boundary */
   board: import("react").ReactNode;
   budget: EventBudgetForDisplay | null;
   event: Omit<Event, "budget" | "ticketPrice"> & {

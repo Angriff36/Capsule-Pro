@@ -8,7 +8,9 @@ note: >-
 
 # Manifest reference for `apps/app/app/(authenticated)/command-board`
 
-**Why this file:** Command-board server actions write governed entities directly — route through runManifestCommand to the governed command.
+**Board taxonomy:** This route implements the **Event-tree** product surface (legacy `CommandBoard*` entities). It is **not** the global **Command Board** ops surface — see [`VISION.md`](../../../../VISION.md).
+
+**Why this file:** Event-tree server actions write governed entities via `runManifestCommand`.
 
 **Relevant divergences:** D1 — see `manifest/MANIFEST-DIVERGENCES.md` for the full remediation detail.
 

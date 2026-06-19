@@ -109,6 +109,8 @@ interface SimulationPlanStep {
   command: string;
   entity: string;
   route: string;
+  /** Name or id identifying the existing record to act on (non-create). */
+  targetRef: string | null;
 }
 
 interface SimulationUnfulfilledIntent {
@@ -574,7 +576,11 @@ export function buildPlanningInstructions(
     "Registry format: one command per line as Entity.command(param:type, ...) where '*' after a type marks a required param.",
     "Every commandSequence entry must exactly match entityCommand names from the registry.",
     "Every argsKv name must exactly match a param.name for that entityCommand in the registry.",
-    "For required params in the registry, include values of the correct type.",
+    "Provide values only for params you know or can infer from the user's request; for required params you cannot know, set the value to null.",
+    "Do NOT ask the user for, or invent, generated/contextual ids — boardId and userId are injected automatically from the session; always set them to null.",
+    "Params you leave null/blank are omitted so the server applies their declared defaults (e.g. metadata, status, positions); the runtime reports back only the values it genuinely still needs.",
+    "For any command that acts on an EXISTING record (everything except create — e.g. update, updateGuestCount, cancel, archive, delete, transitions), set targetRef to whatever the user used to identify that record: its name (e.g. an event's title 'Smith Wedding') or its id. The entity is the thing being edited (an Event), not any board — never use a board id to target it. Set targetRef to null for create.",
+    "Never put a record's own id in argsKv; use targetRef to identify which record to act on.",
     "For number params, provide numeric values (no quoted numbers).",
     "For boolean params, provide true/false booleans (no quoted booleans).",
     "For each commandSequence item, provide entityCommand using canonical 'Entity.command' and argsKv only. Do not provide route; route is derived server-side.",
@@ -696,12 +702,18 @@ export function parseSimulationPlan(
       continue;
     }
 
+    const targetRef =
+      typeof step.targetRef === "string" && step.targetRef.trim().length > 0
+        ? step.targetRef.trim()
+        : null;
+
     const [entity, command] = canonicalPair.split(".");
     commandSequence.push({
       entity: entity ?? "",
       command: command ?? "",
       route: route.path,
       args,
+      targetRef,
     });
   }
 
@@ -771,6 +783,68 @@ export function isMissingRequiredArgValue(
   return false;
 }
 
+/**
+ * Param names the runtime/dispatch layer fills from session context (see
+ * tool-registry `executeManifestCommandRoute`): boardId ← context.boardId,
+ * userId ← context.userId. The planning model must NOT be asked for these and
+ * the test filler must NOT fabricate them — real values are injected per call.
+ */
+export const CONTEXT_INJECTED_PARAM_NAMES = new Set(["boardId", "userId"]);
+
+/**
+ * Detects "does this command work / fill it with test data" intents. In this
+ * mode the agent deterministically fills otherwise-unresolved params with
+ * plausible sample values so commands actually execute end-to-end — useful for
+ * smoke-testing the command surface and for bug reports.
+ */
+const COMMAND_PROBE_INTENT =
+  /\b(smoke[ -]?tests?|test data|sample data|sample input|dummy data|fake data|placeholder data|does (?:this|it|that) (?:command )?work|verify (?:the )?command|check (?:if )?(?:the )?command works?)\b|\bfill (?:in )?(?:the )?(?:fields|inputs|args|it|them) ?(?:with )?(?:random|test|sample|dummy|fake)/i;
+
+export function isCommandProbeIntent(request: string): boolean {
+  return COMMAND_PROBE_INTENT.test(request);
+}
+
+/**
+ * Deterministic test value for a param the model left blank, keyed by type then
+ * name heuristics. Deterministic (no clock/random) so probe runs are
+ * reproducible in bug reports.
+ */
+export function buildTestArgValue(param: {
+  name: string;
+  type: "string" | "number" | "boolean";
+}): unknown {
+  if (param.type === "boolean") {
+    return true;
+  }
+  if (param.type === "number") {
+    return 1;
+  }
+  const name = param.name.toLowerCase();
+  if (name.includes("email")) {
+    return "test@example.com";
+  }
+  if (name.includes("phone")) {
+    return "+15555550100";
+  }
+  if (name.includes("url") || name.includes("link")) {
+    return "https://example.com";
+  }
+  if (name.endsWith("at") || name.includes("date") || name.includes("time")) {
+    return "2026-01-01T00:00:00.000Z";
+  }
+  if (
+    name.includes("json") ||
+    name.includes("metadata") ||
+    name.includes("payload")
+  ) {
+    return "{}";
+  }
+  if (name.includes("color")) {
+    return "#3b82f6";
+  }
+  return `test-${param.name}`;
+}
+
 function validateStepArgs(
   step: SimulationPlanStep,
   args: Record<string, unknown>,
@@ -796,24 +870,21 @@ function validateStepArgs(
     return `Unsupported args for ${canonicalPair}: ${unsupported.join(", ")}`;
   }
 
-  const missingRequired: string[] = [];
-
+  // We do NOT pre-reject "missing required" args here. The route surface marks
+  // every command-signature param required, but the runtime fills property
+  // defaults for omitted params and injects contextual ids (boardId/userId) at
+  // dispatch — so the only authority on what is genuinely required is the
+  // runtime guard/constraint set. Blank params are simply omitted (see
+  // materializeStepArgs); anything the runtime still needs comes back as a real,
+  // actionable error instead of a guess the model can't know how to satisfy.
   for (const param of route.params) {
     const value = args[param.name];
     if (isMissingRequiredArgValue(value, param.type)) {
-      if (param.required) {
-        missingRequired.push(param.name);
-      }
       continue;
     }
-
     if (!isTypedValueMatch(value, param.type)) {
       return `Invalid type for arg '${param.name}' in ${canonicalPair}; expected ${param.type}`;
     }
-  }
-
-  if (missingRequired.length > 0) {
-    return `Missing required args for ${canonicalPair}: ${missingRequired.join(", ")}`;
   }
 
   return null;
@@ -901,7 +972,8 @@ function defaultArgsForPair(
 
 function materializeStepArgs(
   step: SimulationPlanStep,
-  catalog: CommandCatalog
+  catalog: CommandCatalog,
+  options: { testMode: boolean } = { testMode: false }
 ): Record<string, unknown> {
   const pair = `${step.entity}.${step.command}`;
   const canonicalPair = resolveCanonicalEntityCommandPairFromPair(
@@ -911,24 +983,31 @@ function materializeStepArgs(
   const command = canonicalPair
     ? catalog.byEntityCommand.get(canonicalPair)
     : null;
-  const defaults = defaultArgsForPair(catalog, pair);
-  const merged = {
-    ...defaults,
-    ...step.args,
-  };
 
   if (!command) {
-    return merged;
+    return { ...step.args };
   }
 
-  const coerced: Record<string, unknown> = { ...merged };
+  // Only emit args the model actually resolved. Params left blank are OMITTED
+  // (not sent as null) so the Manifest runtime applies each property's declared
+  // default — `prepareCreateData` does `{ ...defaults, ...body }`, so a null in
+  // the body would clobber the default, while an absent key keeps it. Genuinely
+  // required params with no default surface as a real runtime error, and
+  // contextual ids (boardId/userId) are injected at the dispatch layer. In
+  // probe mode, unresolved params get a deterministic test value so the command
+  // runs end-to-end.
+  const resolved: Record<string, unknown> = {};
   for (const param of command.params) {
-    if (coerced[param.name] === undefined || coerced[param.name] === null) {
+    const value = step.args[param.name];
+    if (isMissingRequiredArgValue(value, param.type)) {
+      if (options.testMode && !CONTEXT_INJECTED_PARAM_NAMES.has(param.name)) {
+        resolved[param.name] = buildTestArgValue(param);
+      }
       continue;
     }
-    coerced[param.name] = coerceArgValue(coerced[param.name], param.type);
+    resolved[param.name] = coerceArgValue(value, param.type);
   }
-  return coerced;
+  return resolved;
 }
 
 export function buildFallbackSimulationPlan(
@@ -957,6 +1036,7 @@ export function buildFallbackSimulationPlan(
       command: command ?? "",
       route: route.path,
       args: args ?? defaultArgsForPair(catalog, pair),
+      targetRef: null,
     });
     return true;
   };
@@ -1079,6 +1159,7 @@ function ensureNonEmptyCommandSequence(
         command: command ?? "",
         route: route.path,
         args: defaultArgsForPair(catalog, selectedPair),
+        targetRef: null,
       },
     ],
   };
@@ -1354,13 +1435,16 @@ export async function runManifestActionAgent(
   }
 
   const createdEntityIds = new Map<string, string>();
+  const testMode = isCommandProbeIntent(userRequest);
 
   for (let index = 0; index < plan.commandSequence.length; index += 1) {
     const step = plan.commandSequence[index];
     const pair = `${step.entity}.${step.command}`;
     const toolName = "execute_manifest_command";
 
-    const executionArgs = materializeStepArgs(step, commandCatalog);
+    const executionArgs = materializeStepArgs(step, commandCatalog, {
+      testMode,
+    });
     const stepCanonicalPair = resolveCanonicalEntityCommandPairFromPair(
       commandCatalog,
       pair
@@ -1400,6 +1484,7 @@ export async function runManifestActionAgent(
         entityName: step.entity,
         commandName: step.command,
         args: executionArgs,
+        ...(step.targetRef ? { targetRef: step.targetRef } : {}),
       }),
       call_id: `${params.context.correlationId}:plan:${index}`,
     };

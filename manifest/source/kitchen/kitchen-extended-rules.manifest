@@ -156,6 +156,7 @@ entity TemperatureReading mixin TenantScoped {
     mutate temperature = temperature
     mutate loggedAt = loggedAt
     mutate withinRange = withinRange
+    mutate createdAt = now()
 
     emit TemperatureReadingCreated
   }
@@ -606,6 +607,7 @@ entity KitchenTaskProgress mixin TenantScoped {
     mutate progressPct = progressPct
     mutate notes = notes
     mutate recordedAt = recordedAt
+    mutate createdAt = now()
 
     emit KitchenTaskProgressRecorded
   }

@@ -35,6 +35,7 @@ import { createCustomBuiltins } from "../manifest-builtins.js";
 import { createEventStaffAssignedNotifyMiddleware } from "../middleware/event-staff-assigned-notify-middleware.js";
 import { runManifestCommandCore } from "../run-manifest-command-core.js";
 import { ManifestRuntimeEngine } from "../runtime-engine.js";
+import { createSystemSideEffectDispatch } from "../system-side-effect-dispatch.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
@@ -46,6 +47,11 @@ const TENANT = "t-event-staff-notify";
 // default policy (user.role in ["manager", "admin"]) so neither the source command
 // nor the downstream dispatch is denied.
 const USER = { id: "u-assigner", tenantId: TENANT, role: "manager" } as const;
+const COORDINATOR = {
+  id: "u-coordinator",
+  tenantId: TENANT,
+  role: "event_coordinator",
+} as const;
 
 const EVENT_ID = "event-notify-001";
 const STAFF_ID = "staff-notify-001";
@@ -99,13 +105,16 @@ function makeProvider(): (entity: string) => Store {
 }
 
 /** Build the engine with the EventStaffAssigned→Notification middleware wired. */
-function newEngine(provider: (entity: string) => Store): ManifestRuntimeEngine {
+function newEngine(
+  provider: (entity: string) => Store,
+  actor: { id: string; tenantId: string; role: string } = USER
+): ManifestRuntimeEngine {
   let engine: ManifestRuntimeEngine;
   const middleware = [
     createEventStaffAssignedNotifyMiddleware({
       storeProvider: provider,
       dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+        createSystemSideEffectDispatch(engine)(commandName, input, options),
       onDiagnostic: () => {
         /* silence console diagnostics in tests */
       },
@@ -114,8 +123,8 @@ function newEngine(provider: (entity: string) => Store): ManifestRuntimeEngine {
   engine = new ManifestRuntimeEngine(
     ir,
     {
-      tenantId: USER.tenantId,
-      user: { id: USER.id, tenantId: USER.tenantId, role: USER.role },
+      tenantId: actor.tenantId,
+      user: { id: actor.id, tenantId: actor.tenantId, role: actor.role },
     },
     {
       storeProvider: provider,
@@ -147,7 +156,8 @@ async function seedEvent(provider: (entity: string) => Store) {
 
 async function assign(
   engine: ManifestRuntimeEngine,
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
+  actor: { id: string; tenantId: string; role: string } = USER
 ) {
   return runManifestCommandCore(
     { createRuntime: async () => engine },
@@ -155,7 +165,7 @@ async function assign(
       entity: "EventStaff",
       command: "assign",
       body: { tenantId: TENANT, ...body },
-      user: { ...USER },
+      user: { ...actor },
     }
   );
 }
@@ -267,5 +277,27 @@ describe("Middleware conformance: EventStaffAssigned → Notification for the as
     expect(notifications).toHaveLength(2);
     const recipients = notifications.map((n) => n.recipientEmployeeId).sort();
     expect(recipients).toEqual(["staff-aaa", "staff-bbb"]);
+  });
+
+  it("notifies when the assigner is an event_coordinator (system side-effect dispatch)", async () => {
+    const provider = makeProvider();
+    await seedEvent(provider);
+    const engine = newEngine(provider, COORDINATOR);
+
+    const result = await assign(
+      engine,
+      {
+        id: randomUUID(),
+        eventId: EVENT_ID,
+        staffMemberId: STAFF_ID,
+        role: "Lead Server",
+      },
+      COORDINATOR
+    );
+    expect(result.ok).toBe(true);
+
+    const notifications = await notificationsOf(provider);
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]?.recipientEmployeeId).toBe(STAFF_ID);
   });
 });

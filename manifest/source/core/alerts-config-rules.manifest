@@ -2,7 +2,7 @@ use "../_base.manifest"
 // Alerts - Alerts Config Rules
 // Manifest spec for alert configuration channels and destinations
 
-entity AlertsConfig mixin TenantScoped {
+entity AlertsConfig mixin TenantScoped, SoftDeletable {
   // No relationships: channel/destination are value strings, no entity FKs
   key [tenantId, id]
   property channel: string = ""
@@ -35,6 +35,9 @@ entity AlertsConfig mixin TenantScoped {
 
   command remove(reason: string) {
     guard reason != null and reason != "" "Removal reason is required"
+    guard self.deletedAt == null "Alert configuration is already removed"
+
+    mutate deletedAt = now()
 
     emit AlertsConfigRemoved
   }

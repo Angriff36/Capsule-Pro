@@ -18,6 +18,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormLabelWithHint,
   FormMessage,
 } from "@repo/design-system/components/ui/form";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -36,6 +37,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { trainingModuleCreate } from "@/app/lib/manifest-client.generated";
+import { getFieldHint } from "@/app/lib/manifest-field-hints";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -127,7 +129,9 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabelWithHint manifestHints={getFieldHint("TrainingModule", "title")}>
+                    Title
+                  </FormLabelWithHint>
                   <FormControl>
                     <Input placeholder="e.g., Food Safety Basics" {...field} />
                   </FormControl>
@@ -160,7 +164,9 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
                 name="contentType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content Type</FormLabel>
+                    <FormLabelWithHint manifestHints={getFieldHint("TrainingModule", "contentType")}>
+                      Content Type
+                    </FormLabelWithHint>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -184,7 +190,9 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
                 name="durationMinutes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration (minutes)</FormLabel>
+                    <FormLabelWithHint manifestHints={getFieldHint("TrainingModule", "durationMinutes")}>
+                      Duration (minutes)
+                    </FormLabelWithHint>
                     <FormControl>
                       <Input placeholder="e.g., 30" type="number" {...field} />
                     </FormControl>
@@ -216,7 +224,9 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabelWithHint manifestHints={getFieldHint("TrainingModule", "category")}>
+                    Category
+                  </FormLabelWithHint>
                   <FormControl>
                     <Input
                       placeholder="e.g., Safety, Compliance, Skills"

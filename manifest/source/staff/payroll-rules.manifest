@@ -169,6 +169,7 @@ entity PayrollApprovalHistory mixin TenantScoped {
     mutate performedBy = performedBy
     mutate reason = reason
     mutate performedAt = now()
+    mutate createdAt = now()
 
     emit PayrollApprovalRequested
   }

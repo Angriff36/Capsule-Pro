@@ -69,3 +69,22 @@ NONCONFORMANCE or MISSING ENFORCEMENT:
 ```
 
 No AI assistant gets a special emergency tunnel. That is how systems become haunted houses with invoices.
+
+## Runtime is the authority on required inputs (Event-tree chat agent, 2026-06-18)
+
+The Event-tree chat agent at `apps/app/app/api/command-board/chat/` (legacy route name) lets a logged-in user invoke manifest commands via natural language on an Event-tree board (`boardId` context). It MUST defer to the runtime for what a command actually requires, never pre-guess from the route surface. See **`VISION.md`** for how this agent differs from global AI and from Battle Board execution.
+
+- The route surface (`routes.manifest.json`) marks every command-signature param `required: true`, but the runtime fills each property's declared default for omitted params (`prepareCreateData`: `{ ...defaults, ...body }`). So the agent **omits** params the model left blank (it must NOT send `null`, which clobbers the default) and lets guards/constraints be the sole authority on genuinely-required values. A missing value comes back as a real runtime error, not a fabricated "missing required args" pre-block (`agent-loop.ts` `materializeStepArgs` + `validateStepArgs`).
+- Generated/contextual ids the user can't know are injected at the dispatch chokepoint from session context — `boardId ← context.boardId`, `userId ← context.userId` (`tool-registry.ts` `executeManifestCommandRoute`). The planning model is instructed to set these to `null`.
+- Probe/test intent ("does this command work", "fill with test data") deterministically fills otherwise-unresolved params with type/name-keyed sample values so commands run end-to-end for smoke-testing and bug reports (`buildTestArgValue`). Context-injected ids are excluded from fabrication.
+
+This keeps every AI-triggered write on the canonical dispatcher → `RuntimeEngine.runCommand` path (constitution §10): the agent resolves and invokes; the runtime governs.
+
+### Targeting an existing record (instance resolution)
+
+Commands that act on an existing record (everything except `create`) target the instance via `body.id` (`run-manifest-command-core` `deriveInstanceIdFromBody`). The agent resolves which record the user meant from the **name or id they referenced** — independent of any board: the entity being edited is the Event/Invoice/etc., never a board.
+
+- The planner emits a `targetRef` (the user's reference — e.g. an event's title "Smith Wedding" or its id) per non-create step; `create` steps set it null.
+- `tool-registry` `resolveInstanceId` resolves it: a bare id passes through; otherwise the entity's tenant-scoped read surface (`GET /api/manifest/<entity>`) is scanned by `selectInstanceByRef` for an exact then a unique partial name match. Ambiguous/no match returns an actionable error rather than mutating the wrong row — it never guesses which record to edit. The resolved id is passed as `instanceId` → `body.id`.
+
+This is a read-to-resolve + governed-write pattern: the lookup is a §10 read, the mutation still flows through the dispatcher.

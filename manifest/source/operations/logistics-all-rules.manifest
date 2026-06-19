@@ -133,7 +133,7 @@ entity Driver mixin TenantScoped {
   store Driver in durable
 }
 
-entity Vehicle mixin TenantScoped {
+entity Vehicle mixin TenantScoped, SoftDeletable {
   key [tenantId, id]
   property required make: string
   property required model: string
@@ -183,9 +183,10 @@ entity Vehicle mixin TenantScoped {
   }
 
   command remove() {
+    guard self.deletedAt == null "Vehicle is already removed"
     guard self.status == "out_of_service" "Only out-of-service vehicles can be deleted"
 
-    mutate status = "out_of_service"
+    mutate deletedAt = now()
 
     emit VehicleDeleted
   }

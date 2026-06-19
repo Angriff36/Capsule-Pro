@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { FieldHint } from "@repo/design-system/components/ui/field-hint";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -13,6 +14,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { getFieldHint } from "@/app/lib/manifest-field-hints";
 import type {
   BudgetLineItem,
   BudgetLineItemCategory,
@@ -217,7 +219,9 @@ export function CreateBudgetModal({
         <div className="space-y-4">
           {/* Event ID */}
           <div>
-            <Label htmlFor="eventId">Event ID *</Label>
+            <Label htmlFor="eventId">
+              Event ID <FieldHint hints={getFieldHint("EventBudget", "eventId")} />
+            </Label>
             <Input
               className={errors.eventId ? "border-red-500" : ""}
               disabled={isEditing}
@@ -255,7 +259,9 @@ export function CreateBudgetModal({
 
           {/* Total Budget Amount */}
           <div>
-            <Label htmlFor="totalBudgetAmount">Total Budget Amount *</Label>
+            <Label htmlFor="totalBudgetAmount">
+              Total Budget Amount <FieldHint hints={getFieldHint("EventBudget", "totalBudgetAmount")} />
+            </Label>
             <Input
               className={errors.totalBudgetAmount ? "border-red-500" : ""}
               id="totalBudgetAmount"

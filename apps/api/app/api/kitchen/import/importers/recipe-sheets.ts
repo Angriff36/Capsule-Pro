@@ -3,8 +3,8 @@ import { findOrCreateIngredientId } from "../lib/ingredient-resolver";
 import { runKitchenImportCommand } from "../lib/manifest-command";
 import { emptySummary } from "../lib/parse-helpers";
 import type { RecipeSheet } from "../lib/recipe-sheet-types";
-import { resolveUnitId } from "../lib/unit-resolver";
 import type { ImportSummary, ImportUserContext } from "../lib/types";
+import { resolveUnitId } from "../lib/unit-resolver";
 
 function buildInstructions(steps: RecipeSheet["instructions"]): string {
   return steps
@@ -39,8 +39,12 @@ function buildNotes(sheet: RecipeSheet): string {
 }
 
 function buildTags(sheet: RecipeSheet): string[] {
-  return sheet.allergens.map((allergen) => `allergen:${allergen.toLowerCase()}`);
+  return sheet.allergens.map(
+    (allergen) => `allergen:${allergen.toLowerCase()}`
+  );
 }
+
+const VERSION_NUMBER_RE = /(\d+)/;
 
 function parseVersionNumber(versionLabel: string): number {
   if (!versionLabel.trim()) {
@@ -51,7 +55,7 @@ function parseVersionNumber(versionLabel: string): number {
     return 1;
   }
 
-  const match = versionLabel.match(/(\d+)/);
+  const match = versionLabel.match(VERSION_NUMBER_RE);
   return match ? Number.parseInt(match[1], 10) : 1;
 }
 
@@ -77,10 +81,12 @@ export async function importRecipeSheet(
   );
 
   if (!recipeResult.ok) {
-    throw new Error(`Failed to create Recipe via Manifest: ${recipeResult.message}`);
+    throw new Error(
+      `Failed to create Recipe via Manifest: ${recipeResult.message}`
+    );
   }
 
-  const recipeId = (recipeResult.result as { id?: string }).id!;
+  const recipeId = (recipeResult.result as { id: string }).id;
   const yieldUnitId = await resolveUnitId(sheet.yieldUnit, 1);
   const yieldDescription =
     sheet.yieldDescription ||
@@ -91,23 +97,29 @@ export async function importRecipeSheet(
     "RecipeVersion",
     "create",
     {
+      // Property seeds (bootstrapped onto the new instance by name).
       tenantId,
       recipeId,
-      name: sheet.versionLabel ? `${recipeName} ${sheet.versionLabel}` : recipeName,
+      name: sheet.versionLabel
+        ? `${recipeName} ${sheet.versionLabel}`
+        : recipeName,
       versionNumber: parseVersionNumber(sheet.versionLabel),
-      yieldQuantity: sheet.yieldQuantity,
-      yieldUnitId,
       yieldDescription,
-      prepTimeMinutes: sheet.activePrepMinutes,
-      cookTimeMinutes: sheet.passiveCookMinutes,
-      restTimeMinutes: 0,
-      difficultyLevel: 1,
-      instructions: buildInstructions(sheet.instructions),
-      notes: buildNotes(sheet),
       category: "",
       cuisineType: "",
       description: "",
-      tags: buildTags(sheet).join(";"),
+      tags: buildTags(sheet),
+      // Command params (drive RecipeVersion.create's guards + mutates). These
+      // names must match the command signature, NOT the property names —
+      // yieldQty (not yieldQuantity), yieldUnit, prepTime, etc.
+      yieldQty: sheet.yieldQuantity,
+      yieldUnit: yieldUnitId,
+      prepTime: sheet.activePrepMinutes,
+      cookTime: sheet.passiveCookMinutes,
+      restTime: 0,
+      difficulty: 1,
+      instructionsText: buildInstructions(sheet.instructions),
+      notesText: buildNotes(sheet),
     }
   );
 
@@ -117,7 +129,7 @@ export async function importRecipeSheet(
     );
   }
 
-  const recipeVersionId = (versionResult.result as { id?: string }).id!;
+  const recipeVersionId = (versionResult.result as { id: string }).id;
   let ingredientCount = 0;
 
   for (let index = 0; index < sheet.ingredients.length; index++) {
@@ -182,7 +194,9 @@ export async function importRecipeSheets(
       summary.imported++;
       summary.created.push(result.summaryLine);
     } catch (error) {
-      summary.errors.push(`"${sheet.recipeName}": ${parseErrorToMessage(error)}`);
+      summary.errors.push(
+        `"${sheet.recipeName}": ${parseErrorToMessage(error)}`
+      );
       summary.skipped++;
     }
   }

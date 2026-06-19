@@ -1,6 +1,8 @@
 use "../_base.manifest"
-// Command Board - Board Rules
-// Manifest spec for command board operations with cards, groups, layouts, and connections
+// Event-tree board entities (legacy name: CommandBoard*)
+// Product concept: Event-tree — per-event setup (staff, menu, details) with draft → commit.
+// NOT the global Command Board ops surface (see VISION.md). Propagates to BattleBoard.
+// Manifest spec for event-tree operations with cards, groups, layouts, and connections
 
 entity CommandBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]

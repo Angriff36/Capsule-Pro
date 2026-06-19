@@ -100,12 +100,12 @@ const CommandBoardPage = async () => {
       <CommandBand>
         <CommandBandHeader>
           <div className="space-y-4">
-            <MonoLabel tone="dark">Operations / Command Board</MonoLabel>
-            <DisplayHeading>The operation, on one canvas</DisplayHeading>
+            <MonoLabel tone="dark">Events / Event boards</MonoLabel>
+            <DisplayHeading>Plan events on the tree</DisplayHeading>
             <CommandBandLede>
-              Lay out an event's clients, tasks, staff and logistics in a single
-              shared workspace. Drag entities, draw connections, and run the
-              floor without context-switching across modules.
+              Each board is an Event-tree workspace: assemble staff, menu, and
+              logistics with draft → commit, then execution flows to the Battle
+              Board. (Not the global Command Board ops surface — see VISION.md.)
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -132,7 +132,7 @@ const CommandBoardPage = async () => {
             count={`${boards.length} board${boards.length === 1 ? "" : "s"}`}
             description="Sorted by most recently touched."
             eyebrow="Boards"
-            title="Your command boards"
+            title="Your event boards"
           />
 
           {boards.length === 0 ? (
@@ -142,10 +142,9 @@ const CommandBoardPage = async () => {
                   <EmptyMedia variant="icon">
                     <LayoutDashboard />
                   </EmptyMedia>
-                  <EmptyTitle>No command boards yet</EmptyTitle>
+                  <EmptyTitle>No event boards yet</EmptyTitle>
                   <EmptyDescription>
-                    Create your first board to start orchestrating an event on
-                    one canvas.
+                    Create a board to start assembling an event on the tree.
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>

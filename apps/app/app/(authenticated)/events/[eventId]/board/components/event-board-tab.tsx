@@ -2,7 +2,7 @@ import { getDishPalette, getEventBoardData, getStaffPalette } from "../actions";
 import { BoardClient } from "./board-client";
 
 /**
- * Read-only server loader for the Command Board tab. Board creation is
+ * Read-only server loader for the Event tree tab. Board creation is
  * deferred to the client (BoardClient mounts on tab activation), so viewing
  * the event page never fires a governed CommandBoard.create write.
  */

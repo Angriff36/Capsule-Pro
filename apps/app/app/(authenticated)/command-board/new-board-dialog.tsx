@@ -51,11 +51,10 @@ export const NewBoardDialog = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create a Command Board</DialogTitle>
+          <DialogTitle>Create an event board</DialogTitle>
           <DialogDescription>
-            Boards are shared canvases for laying out an event's entities —
-            clients, tasks, staff, deliveries — and the connections between
-            them.
+            Event-tree workspace for assembling staff, menu, and logistics with
+            draft → commit before execution on the Battle Board.
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={handleSubmit}>

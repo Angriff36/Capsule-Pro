@@ -14,21 +14,15 @@ import { GitBranch, Pencil, Swords } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /**
- * BoardOnboardingOverlay — one-time, per-user explainer for the two event
- * orchestration surfaces that developers (per AGENTS.md "BOARD DISAMBIGUATION")
- * and end users routinely confuse.
+ * BoardOnboardingOverlay — one-time, per-user explainer for Event-tree vs Battle Board
+ * (see VISION.md board taxonomy). Developers and end users confuse these when both
+ * are called "board".
  *
- * Shows a single-screen overlay on first visit explaining what the surface does
- * and — critically — how the Command Board's draft → commit model differs from
- * the Battle Board's live edits. Dismissal persists in localStorage keyed by
- * Clerk user id, so it is per-user (not per-session) and survives reloads.
- *
- * This is pure UI orchestration: no governed state is mutated (constitution §4
- * "UI and Command Board"). The dismissal flag is a UI preference, not a
- * semantic event.
+ * Event-tree: setup, draft → commit. Battle Board: day-of execution, live saves.
+ * Dismissal persists in localStorage keyed by Clerk user id.
  */
 
-type BoardSurface = "command-board" | "battle-board";
+type BoardSurface = "event-tree" | "battle-board";
 
 interface SurfaceCopy {
   /** Lucide icon for the header. */
@@ -43,22 +37,22 @@ interface SurfaceCopy {
 }
 
 const SURFACE_COPY: Record<BoardSurface, SurfaceCopy> = {
-  "command-board": {
+  "event-tree": {
     Icon: GitBranch,
     cta: "Start planning",
     editModelNote:
-      "Everything you add starts as a draft. Nothing touches the live event until you click Review & Commit — so plan and experiment freely.",
+      "Everything you add starts as a draft. Nothing reaches the Battle Board until you click Review & Commit — so plan and experiment freely.",
     summary:
-      "Your event's planning tree. Drag staff and dishes from the palette onto the tree to shape the event before it goes live.",
-    title: "Welcome to the Command Board",
+      "Assemble this event: staff, menu, vehicles, and details on the tree. Your commits flow automatically into the Battle Board.",
+    title: "Welcome to the Event tree",
   },
   "battle-board": {
     Icon: Swords,
     cta: "Got it",
     editModelNote:
-      "Unlike the Command Board's draft-and-commit flow, edits here go live the moment you hit Save. This is the final, on-the-ground plan for the day.",
+      "Unlike the Event tree's draft-and-commit flow, edits here go live when you save. This is how the event runs on the day.",
     summary:
-      "Your day-of execution sheet — staff assignments, timeline, and floor layouts for running the event on-site.",
+      "Day-of execution — timeline, stations, dishes, prep and service flow, and floor assignments for this event.",
     title: "Welcome to the Battle Board",
   },
 };

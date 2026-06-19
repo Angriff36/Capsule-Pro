@@ -120,6 +120,10 @@ import {
 } from "./runtime/loadManifests";
 import type { CommandSettledInfo } from "./runtime-engine";
 import { ManifestRuntimeEngine } from "./runtime-engine";
+import {
+  createSystemSideEffectDispatch,
+  type SideEffectDispatchCommand,
+} from "./system-side-effect-dispatch";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -778,6 +782,11 @@ export async function createManifestRuntime(
   //    Note: after-emit audit/outbox persistence is now handled by the engine
   //    natively via auditSink + outboxStore RuntimeOptions (step 9).
   let engine: ManifestRuntimeEngine;
+  const dispatchNotificationAsSystem: SideEffectDispatchCommand = (
+    commandName,
+    input,
+    options
+  ) => createSystemSideEffectDispatch(engine)(commandName, input, options);
   const middleware: Middleware[] = [
     createIdentityMiddleware({
       prisma: prismaForLookups,
@@ -982,8 +991,7 @@ export async function createManifestRuntime(
     // deal is loaded before dispatching the governed Notification.create.
     createDealLifecyclePropagationMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // CRM: ClientInteractionMarkedOverdue -> Notification.create for the assignee.
     // Middleware (not a reaction) because `markOverdue()` takes NO params, so the
@@ -993,8 +1001,7 @@ export async function createManifestRuntime(
     // was an orphan (no consumer), so overdue follow-ups generated zero signal.
     createClientInteractionOverdueNotifyMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // CRM: ClientInteractionEscalated -> Notification.create for the escalation
     // TARGET (escalatedTo), the sibling of the overdue leg. Middleware because the
@@ -1003,8 +1010,7 @@ export async function createManifestRuntime(
     // escalations produced zero in-app signal for the person they were handed to.
     createClientInteractionEscalatedNotifyMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // Events: ContractSigned -> Event.confirm. Middleware (not a reaction)
     // because the event to confirm is identified by EventContract.eventId — the
@@ -1332,8 +1338,7 @@ export async function createManifestRuntime(
     // no one. Guard-safe + idempotent (single-shot FSM transitions; per-cert key).
     createEmployeeCertificationLapsedNotifyMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // Compliance: EmployeeCertificationExpired/Revoked -> suspend the employee's
     // EmployeeAvailability rows (sibling of the notify leg). Middleware (not a reaction)
@@ -1374,8 +1379,7 @@ export async function createManifestRuntime(
     // scheduleId. Without this, publishing a schedule silently told no one.
     createSchedulePublishedNotifyStaffMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // Staffing: TimeOffRequestApproved -> remove the employee's conflicting shifts.
     // Middleware (not a reaction) because it is a 1:N fan-out (one approved request
@@ -1529,8 +1533,7 @@ export async function createManifestRuntime(
     // per (eventStaffId, staffMemberId) so the create/assign double-emit notifies once.
     createEventStaffAssignedNotifyMiddleware({
       storeProvider,
-      dispatchCommand: (commandName, input, options) =>
-        engine.runCommand(commandName, input, options),
+      dispatchCommand: dispatchNotificationAsSystem,
     }),
     // Events: EventCancelled -> cascade-cancel children. Middleware (not a
     // reaction) because each leg is a 1:N fan-out by eventId (EventStaff.unassign,

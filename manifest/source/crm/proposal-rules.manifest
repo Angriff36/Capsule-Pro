@@ -98,19 +98,17 @@ entity Proposal mixin TenantScoped, SoftDeletable {
   // (manifest/runtime/src/parent-context-resolver.ts). The caller supplies only
   // the eventId link + proposal-specific input, so the UI never re-asks for data
   // the Event already owns. See specs/parent-context-propagation.md.
-  command create(proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: datetime, notes: string, termsAndConditions: string) {
+  command create(optional proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: datetime, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
-    guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
 
     constraint warnNoClient:warn (self.clientId == null or self.clientId == "") and (leadId == null or leadId == "") {
-      messageTemplate: "Creating proposal '{proposalNumber}' with no client or lead attached"
+      messageTemplate: "Creating proposal with no client or lead attached"
       details: {
-        proposalNumber: proposalNumber
         title: title
       }
     }
 
-    mutate proposalNumber = proposalNumber
+    mutate proposalNumber = proposalNumber != null and proposalNumber != "" ? proposalNumber : ("PROP-" + uuid())
     mutate leadId = leadId
     mutate eventId = eventId
     mutate title = title
@@ -282,7 +280,7 @@ entity Proposal mixin TenantScoped, SoftDeletable {
     guard self.deletedAt == null "Cannot generate link for a deleted proposal"
     guard self.publicToken == "" "Public link already generated"
 
-    mutate publicToken = "placeholder"
+    mutate publicToken = uuid()
 
     emit ProposalPublicLinkGenerated
   }

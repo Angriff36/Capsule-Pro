@@ -56,7 +56,7 @@ export function BoardClient({
 }: BoardClientProps) {
   // Lazy board creation: the tab content unmounts when inactive, so mount ==
   // tab activation. The governed CommandBoard.create only fires when the user
-  // actually opens the Command Board tab (and no board exists yet).
+  // actually opens the Event tree tab (and no board exists yet).
   const [boardId, setBoardId] = useState<string | null>(initialBoardId);
   // StrictMode double-fires this effect; reusing the in-flight promise keeps
   // the governed CommandBoard.create to a single call per mount cycle.
@@ -251,7 +251,7 @@ export function BoardClient({
 
   return (
     <div className="flex h-[calc(100vh-12.5rem)] min-h-[560px] flex-col gap-3">
-      <BoardOnboardingOverlay surface="command-board" />
+      <BoardOnboardingOverlay surface="event-tree" />
       {/* Top bar */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5">
         <h2 className="truncate font-semibold text-base">

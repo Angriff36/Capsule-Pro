@@ -42,6 +42,7 @@ entity OverrideAudit mixin TenantScoped {
     mutate guardExpression = guardExpression
     mutate overriddenBy = overriddenBy
     mutate overrideReason = overrideReason
+    mutate createdAt = now()
 
     emit OverrideAuditCreated
   }

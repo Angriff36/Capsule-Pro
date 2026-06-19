@@ -10,7 +10,7 @@ export type CreateBoardResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-/** Create a Command Board and redirect to its detail page. Governed via CommandBoard.create. */
+/** Create an Event-tree board (legacy entity: CommandBoard) and redirect to its canvas. */
 export const createCommandBoard = async (formData: FormData) => {
   const user = await requireCurrentUser();
 

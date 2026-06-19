@@ -1,6 +1,8 @@
 use "../_base.manifest"
 // Events & Catering - Battle Board Rules
-// Manifest spec for battle board dish competition and voting management
+// Product concept: Battle Board — per-event EXECUTION surface (timeline, stations, dishes,
+// prep/service flow, staff assignments, execution state). Fed from Event-tree commits.
+// Every event gets a battle board. NOT global ops (Command Board) or kanban (AdminTask).
 
 entity BattleBoard mixin TenantScoped, SoftDeletable {
   key [tenantId, id]

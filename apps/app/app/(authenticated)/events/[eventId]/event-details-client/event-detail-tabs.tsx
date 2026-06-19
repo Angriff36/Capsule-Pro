@@ -75,7 +75,7 @@ interface EventDetailTabsProps {
 
 const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
-  board: "Command Board",
+  board: "Event tree",
   menu: "Menu",
   copilot: "Copilot",
   guests: "Guests",

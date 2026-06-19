@@ -1,5 +1,6 @@
 "use client";
 
+import { FieldHint } from "@repo/design-system/components/ui/field-hint";
 import { Label } from "@repo/design-system/components/ui/label";
 import { cn } from "@repo/design-system/lib/utils";
 import { type Label as LabelPrimitive, Slot as SlotPrimitive } from "radix-ui";
@@ -102,6 +103,39 @@ function FormLabel({
   );
 }
 
+/**
+ * {@link FormLabel} with an optional Manifest policy info icon. Pass `hint`
+ * (a single string), `hints` (array of strings), or `manifestHints` (the
+ * structured hint objects returned by `getFieldHint(entity, prop)`) to render
+ * an info icon next to the label text. When no hint is supplied, the component
+ * renders a plain {@link FormLabel}.
+ *
+ * @example
+ *   <FormLabelWithHint manifestHints={getFieldHint("TrainingModule", "title")}>
+ *     Title
+ *   </FormLabelWithHint>
+ */
+function FormLabelWithHint({
+  children,
+  hint,
+  hints,
+  manifestHints,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root> & {
+  hint?: string | null;
+  hints?: string[] | null;
+  manifestHints?:
+    | { message: string; severity?: "block" | "warn" | "info" }[]
+    | null;
+}) {
+  return (
+    <FormLabel {...props}>
+      {children}
+      <FieldHint hints={manifestHints ?? hints ?? hint} />
+    </FormLabel>
+  );
+}
+
 function FormControl({
   ...props
 }: React.ComponentProps<typeof SlotPrimitive.Slot>) {
@@ -159,6 +193,7 @@ export {
   Form,
   FormItem,
   FormLabel,
+  FormLabelWithHint,
   FormControl,
   FormDescription,
   FormMessage,

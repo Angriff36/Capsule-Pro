@@ -1,4 +1,6 @@
-# Event Tree Command Board — Design Spec
+# Event Tree — Design Spec
+
+> **Board taxonomy (`VISION.md`):** This spec implements the **Event-tree** (event setup: staff, menu, details, draft → commit). It uses legacy `CommandBoard*` entity names and `/command-board` routes. That is **not** the global **Command Board** (ops attention). Committed tree data propagates to each event's **Battle Board** (execution).
 
 **Date:** 2026-06-11
 **Status:** Approved by user (brainstorming session)
@@ -9,13 +11,13 @@
 Capsule-Pro's data is already connected at the schema level (Event ↔ BattleBoard snapshot propagation, Event.clientId → CRM, analytics live queries), but the product doesn't *feel* connected:
 
 - Every screen rolls its own event data fetch; nothing presents the event as one coherent whole.
-- The command board was reimplemented but is a skeleton: the entity-browser sidebar is a stub (category labels, no data), the AI chat backend (44KB agent loop, can execute manifest commands) has **no UI**, `CommandBoard.eventId` and `autoPopulate` exist but per-event boards were never finished.
+- The event-tree surface was reimplemented but is a skeleton: the entity-browser sidebar is a stub (category labels, no data), the Event-tree AI chat backend (44KB agent loop, can execute manifest commands) has **no UI**, `CommandBoard.eventId` and `autoPopulate` exist but per-event boards were never finished.
 - Designing an event means visiting many modules (staff, menu, vehicles, equipment) and manually keeping them in sync; nothing shows what an event still *needs*.
 - Manifest validation failures surface as arbitrary-feeling errors during data entry.
 
 ## Goal
 
-Each event gets its own **Command Board tab** that renders the event as a living tree: the event hub with template-driven branches (Staff, Menu, Vehicles, Equipment, Battle Board, …). Users drag real entities onto branches to **stage drafts**, see the **impact and conflicts** before anything is real, and **commit atomically** through governed Manifest commands. An AI assistant stages drafts through the same pipeline. The battle board's pickers auto-fill from the committed tree.
+Each event gets its own **Event-tree tab** that renders the event as a living tree: the event hub with template-driven branches (Staff, Menu, Vehicles, Equipment, Battle Board, …). Users drag real entities onto branches to **stage drafts**, see the **impact and conflicts** before anything is real, and **commit atomically** through governed Manifest commands. An Event-tree AI assistant stages drafts through the same pipeline. The battle board's pickers auto-fill from the committed tree.
 
 ## Approved UX (from mockups)
 

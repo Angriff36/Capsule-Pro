@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Deprecated — Command Board lives at /command-board. */
+/** Deprecated — Event-tree boards live at /command-board (legacy route name). */
 const ToolsBattleboardsPage = () => {
   redirect("/command-board");
 };

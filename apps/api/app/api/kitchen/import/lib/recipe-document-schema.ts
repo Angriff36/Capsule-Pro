@@ -42,10 +42,23 @@ export const recipeDocumentAiSchema = z.object({
 
 export type RecipeSheetAi = z.infer<typeof recipeSheetAiSchema>;
 
+// The AI-extraction contract: callers (e.g. Gemini) must hand the governed
+// RecipeVersion.create command valid params. Models routinely emit
+// yieldQuantity 0 and stuff "5 GALLONS" into the description, which the guard
+// (yieldQty > 0) rejects. This is the deterministic seam every AI sheet passes
+// through (zod .transform() is NOT reliably applied by generateObject), so the
+// repair lives here.
+function repairYieldQuantity(sheet: RecipeSheetAi): number {
+  if (sheet.yieldQuantity > 0) {
+    return sheet.yieldQuantity;
+  }
+  return Number.parseFloat(sheet.yieldDescription) || 1;
+}
+
 export function toRecipeSheet(sheet: RecipeSheetAi): RecipeSheet {
   return {
     recipeName: sheet.recipeName,
-    yieldQuantity: sheet.yieldQuantity,
+    yieldQuantity: repairYieldQuantity(sheet),
     yieldUnit: sheet.yieldUnit,
     yieldDescription: sheet.yieldDescription,
     portionSize: sheet.portionSize,

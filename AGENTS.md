@@ -1,20 +1,24 @@
 # ⚠️ "BOARD" DISAMBIGUATION — READ BEFORE TOUCHING ANYTHING WITH "BOARD" IN THE NAME
 
-Several UNRELATED features have "board" in the name. Agents repeatedly grab the WRONG
-one (lazy substring match). When the user OR code says "board", STOP and identify WHICH
-of these it is — never assume the nearest match:
+**Canonical product taxonomy:** [`VISION.md`](VISION.md) (`BOARD_TAXONOMY` block). Read it first.
 
-| User's word | What it is | Entities / source | Where |
-|---|---|---|---|
-| **event tree** | the LIVE per-event card tree | `CommandBoard`, `CommandBoardCard`/`Group`/`Connection`/`Layout` (`tenant_events`) | `/events/{id}?tab=board` · `manifest/source/events/command-board-rules.manifest` |
-| **command grid** | OLD deprecated grid + Ably realtime board, to be revived as the **global board** (future work) | (deprecated — NOT the `CommandBoard*` entities) | — |
-| **battle board** | the per-event battle board | `BattleBoard`, `BoardProjection`, `BoardAnnotation` | `/events/battle-boards/…` |
-| **kanban** | the admin task kanban | `AdminTask*`, `BoardConfig` (`tenant_admin`) | admin tasks |
+Several UNRELATED features share "board" in the name. Agents repeatedly grab the WRONG one (lazy substring match). When the user OR code says "board", STOP and classify which concept applies — never assume the nearest entity or route match.
+
+| Product concept | Question it answers | Code / routes today (legacy names in parentheses) |
+|---|---|---|
+| **Command Board** | What needs attention **right now** (global ops)? | **Not fully built.** Partially related: admin overview surfaces, future revival of deprecated command grid — **not** `CommandBoard*` entities |
+| **Event-tree** | How do we **assemble** this event (staff, menu, details)? | `CommandBoard`, `CommandBoardCard`/`Group`/`Connection`/`Layout` · `/command-board` · `/events/{id}?tab=board` · `specs/event-tree-command-board.md` |
+| **Battle Board** | How does this event **run** (execution)? | `BattleBoard`, `BoardProjection`, `BoardAnnotation` · `/events/battle-boards/…` · auto-created per event |
+| **Kanban** | What **stage** is internal work in? | `AdminTask*`, `BoardConfig` · admin tasks · columns, not a grid |
+
+**Pipeline:** Event-tree (setup, draft → commit) → propagates → Battle Board (execution). They are linked; they are not interchangeable surfaces.
 
 RULES:
-1. `CommandBoard*` = the **event tree**. It is NOT the battle board, NOT the kanban, NOT the (deprecated) command grid.
-2. Never resolve "board" by proximity. Confirm against this table first.
-3. If the user's intent is ambiguous, ASK which board — do not guess.
+1. **`CommandBoard*` entities = Event-tree**, not the global Command Board product concept. Do not use them for global ops alerts or kanban.
+2. **Global Command Board ≠ `/command-board` route.** That route lists Event-tree board instances until the global ops surface ships.
+3. **Battle Board = per-event execution**, fed from committed Event-tree data — not event assembly, not global ops.
+4. Never resolve "board" by proximity. Confirm against this table and `VISION.md`.
+5. If intent is ambiguous, ASK which concept — do not guess.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
@@ -93,7 +97,7 @@ pnpm dev
 Or with Infisical secrets (if keyring available):
 ```bash
 cd /home/oc/projects/capsule-pro
-source .env  # for INFISICAL_TOKEN
+source .env # for INFISICAL_TOKEN
 infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=/apps/capsule-pro/app -- pnpm --filter app dev
 ```
 

@@ -1,4 +1,5 @@
 import { parseError as parseErrorToMessage } from "@repo/observability/error";
+import { runKitchenImportCommand } from "../lib/manifest-command";
 import {
   emptySummary,
   mergeImportSummaries,
@@ -7,9 +8,11 @@ import {
   parseListOpt,
   trimOpt,
 } from "../lib/parse-helpers";
-import { isRecipeSheetFormat, parseRecipeSheets } from "../lib/recipe-sheet-parser";
+import {
+  isRecipeSheetFormat,
+  parseRecipeSheets,
+} from "../lib/recipe-sheet-parser";
 import type { RecipeSheet } from "../lib/recipe-sheet-types";
-import { runKitchenImportCommand } from "../lib/manifest-command";
 import type { CsvRow, ImportSummary, ImportUserContext } from "../lib/types";
 import { importRecipeSheets } from "./recipe-sheets";
 
@@ -49,7 +52,7 @@ async function importLegacyRecipeRows(
         );
       }
 
-      const recipeId = (recipeResult.result as { id?: string }).id!;
+      const recipeId = (recipeResult.result as { id: string }).id;
       const yieldQty = parseDecimalOpt(row.yield_quantity) ?? 1;
       const yieldUnitId = parseIntOpt(row.yield_unit) ?? 1;
 
@@ -58,23 +61,27 @@ async function importLegacyRecipeRows(
         "RecipeVersion",
         "create",
         {
+          // Property seeds (bootstrapped onto the new instance by name).
           tenantId,
           recipeId,
           name: row.version_name?.trim() || name,
           versionNumber: 1,
-          yieldQuantity: yieldQty,
-          yieldUnitId,
           yieldDescription: trimOpt(row.yield_description) ?? "",
-          prepTimeMinutes: parseIntOpt(row.prep_time_minutes) ?? 0,
-          cookTimeMinutes: parseIntOpt(row.cook_time_minutes) ?? 0,
-          restTimeMinutes: parseIntOpt(row.rest_time_minutes) ?? 0,
-          difficultyLevel: parseIntOpt(row.difficulty_level) ?? 1,
-          instructions: trimOpt(row.instructions) ?? "",
-          notes: trimOpt(row.notes) ?? "",
           category: trimOpt(row.category) ?? "",
           cuisineType: trimOpt(row.cuisine_type) ?? "",
           description: trimOpt(row.description) ?? "",
-          tags: parseListOpt(row.tags).join(";"),
+          tags: parseListOpt(row.tags),
+          // Command params (must match RecipeVersion.create's signature, not the
+          // property names): yieldQty/yieldUnit/prepTime/cookTime/restTime/
+          // difficulty/instructionsText/notesText.
+          yieldQty,
+          yieldUnit: yieldUnitId,
+          prepTime: parseIntOpt(row.prep_time_minutes) ?? 0,
+          cookTime: parseIntOpt(row.cook_time_minutes) ?? 0,
+          restTime: parseIntOpt(row.rest_time_minutes) ?? 0,
+          difficulty: parseIntOpt(row.difficulty_level) ?? 1,
+          instructionsText: trimOpt(row.instructions) ?? "",
+          notesText: trimOpt(row.notes) ?? "",
         }
       );
 
@@ -115,7 +122,9 @@ export async function importRecipes(
 
   if (rows.length > 0) {
     if (isRecipeSheetFormat(rows)) {
-      summaries.push(await importRecipeSheets(parseRecipeSheets(rows), context));
+      summaries.push(
+        await importRecipeSheets(parseRecipeSheets(rows), context)
+      );
     } else {
       summaries.push(await importLegacyRecipeRows(rows, context));
     }
