@@ -8,6 +8,14 @@ name: Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      resolve_migration:
+        description: >-
+          Optional: name of a FAILED migration to mark rolled-back
+          (prisma migrate resolve --rolled-back) before applying. Use only to
+          recover a deploy that failed mid-migration. Leave blank normally.
+        required: false
+        default: ""
 
 concurrency:
   group: deploy-production-manual
@@ -60,6 +68,16 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
 
+      # Snapshot production BEFORE migrating. A Neon branch is an instant
+      # copy-on-write restore point. Fail-closed: if this errors, the job stops
+      # here and `prisma migrate deploy` never runs, so prod stays untouched.
+      - name: Create pre-deploy Neon snapshot (prod restore point)
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          SNAPSHOT_TAG: ${{ github.run_id }}
+        run: node scripts/neon-snapshot-branch.mjs
+
       - name: Apply migrations (prisma migrate deploy)
         env:
           # Vercel marks DATABASE_URL as sensitive (write-only — `vercel pull`
@@ -67,6 +85,7 @@ jobs:
           # GitHub secret. The pulled env file remains a fallback for
           # non-sensitive setups.
           PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          RESOLVE_MIGRATION: ${{ inputs.resolve_migration }}
         run: |
           ENV_FILE=".vercel/.env.production.local"
           getvar() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
@@ -82,6 +101,12 @@ jobs:
             DIRECT_URL="${DATABASE_URL/-pooler./.}"
           fi
           export DATABASE_URL DIRECT_URL
+          # Recovery: mark a previously-FAILED migration rolled-back so it can be
+          # re-applied (e.g. after fixing it to be idempotent). Opt-in via input.
+          if [ -n "$RESOLVE_MIGRATION" ]; then
+            echo "Marking migration '$RESOLVE_MIGRATION' as rolled-back before deploy…"
+            pnpm --filter @repo/database exec prisma migrate resolve --rolled-back "$RESOLVE_MIGRATION"
+          fi
           pnpm db:deploy
           pnpm migrate:status
 

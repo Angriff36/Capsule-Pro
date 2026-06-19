@@ -183,5 +183,11 @@
     "manifest:fmt:check": "manifest fmt manifest/source/**/*.manifest --check",
     "cleaner": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleaner.ps1"
   },
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "overrides": {
+      "react": "19.2.7",
+      "react-dom": "19.2.7"
+    }
+  }
 }
