@@ -2170,7 +2170,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "generationOptions",
         "irName": "generationOptions",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2181,7 +2181,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "generatedTasks",
         "irName": "generatedTasks",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2192,7 +2192,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "reviewedTasks",
         "irName": "reviewedTasks",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2203,7 +2203,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "approvedTaskIds",
         "irName": "approvedTaskIds",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2214,7 +2214,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "rejectedTaskIds",
         "irName": "rejectedTaskIds",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2225,7 +2225,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "instantiatedTaskIds",
         "irName": "instantiatedTaskIds",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2236,7 +2236,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "scheduledWindows",
         "irName": "scheduledWindows",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2247,7 +2247,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "constraintOutcomes",
         "irName": "constraintOutcomes",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2258,7 +2258,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "errors",
         "irName": "errors",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -2269,7 +2269,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "warnings",
         "irName": "warnings",
-        "type": "String",
+        "type": "Json",
         "isEnum": false,
         "isList": false,
         "optional": true,
@@ -3774,8 +3774,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "EventProfitability": {
     "accessor": "eventProfitability",
@@ -11863,8 +11862,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "InventoryItem": {
     "accessor": "inventoryItem",
@@ -12130,8 +12128,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "InventoryTransaction": {
     "accessor": "inventoryTransaction",
@@ -16087,8 +16084,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "VendorContact": {
     "accessor": "vendorContact",
@@ -18645,8 +18641,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "TimeEntry": {
     "accessor": "timeEntry",
@@ -21179,6 +21174,195 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isList": false,
         "optional": false,
         "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "ReactionLog": {
+    "accessor": "reactionLog",
+    "dbName": "reaction_logs",
+    "pgSchema": "tenant_admin",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity",
+        "irName": "entity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "command",
+        "irName": "command",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "emittedEvents",
+        "irName": "emittedEvents",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reactions",
+        "irName": "reactions",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "errorMessage",
+        "irName": "errorMessage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "payloadKeys",
+        "irName": "payloadKeys",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "durationMs",
+        "irName": "durationMs",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "retryCount",
+        "irName": "retryCount",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correlationId",
+        "irName": "correlationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "causationId",
+        "irName": "causationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source",
+        "irName": "source",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actorId",
+        "irName": "actorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
       },
@@ -29034,8 +29218,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "EventContract": {
     "accessor": "eventContract",
@@ -30324,8 +30507,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "PaymentMethod": {
     "accessor": "paymentMethod",
@@ -30912,8 +31094,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ],
-    "versionProperty": "version"
+    ]
   },
   "PaymentRefundAttempt": {
     "accessor": "paymentRefundAttempt",

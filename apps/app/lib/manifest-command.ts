@@ -55,6 +55,33 @@ export type RunManifestCommandFailureKind =
   | "command_failed"
   | "runtime_error";
 
+/**
+ * Plain-language explanation of a command failure, produced server-side by
+ * the friendly-error-mapper and forwarded verbatim on the response body.
+ * Non-technical users see `title`/`message`/`suggestedFix`; the
+ * `blockingEntity.link` is a deep link to the entity that blocked the action.
+ */
+export interface FriendlyError {
+  blockingEntity?: {
+    type: string;
+    id?: string;
+    label: string;
+    link?: string;
+    reason?: string;
+  };
+  category:
+    | "wrong_status"
+    | "validation"
+    | "permission"
+    | "not_found"
+    | "conflict"
+    | "system";
+  message: string;
+  severity: "info" | "warning" | "error";
+  suggestedFix?: string;
+  title: string;
+}
+
 export interface RunManifestCommandSuccess {
   command: string;
   constraintOutcomes?: ManifestConstraintOutcome[];
@@ -70,6 +97,8 @@ export interface RunManifestCommandFailure {
   constraintOutcomes?: ManifestConstraintOutcome[];
   entity: string;
   error?: unknown;
+  /** Plain-language explanation (server-mapped). Forwarded to UI layers. */
+  friendlyError?: FriendlyError;
   guardFailure?: unknown;
   httpStatus: number;
   kind: RunManifestCommandFailureKind;
@@ -185,7 +214,12 @@ function buildFailure(
     typeof payload?.kind === "string" && KNOWN_FAILURE_KINDS.has(payload.kind)
       ? (payload.kind as RunManifestCommandFailureKind)
       : failureKindForStatus(httpStatus);
+  const friendly = payload?.friendlyError as FriendlyError | undefined;
+  // Prefer the server's plain-language explanation so server-action call sites
+  // that surface `result.message` show the friendly text without per-site
+  // changes. The full `friendlyError` object is still forwarded for richer UIs.
   const message =
+    friendly?.message ||
     (typeof payload?.error === "string" && payload.error) ||
     (typeof payload?.message === "string" && payload.message) ||
     `Manifest command failed (${httpStatus})`;
@@ -204,5 +238,6 @@ function buildFailure(
       : {}),
     ...(payload?.guardFailure ? { guardFailure: payload.guardFailure } : {}),
     ...(payload?.policyDenial ? { policyDenial: payload.policyDenial } : {}),
+    ...(friendly ? { friendlyError: friendly } : {}),
   };
 }

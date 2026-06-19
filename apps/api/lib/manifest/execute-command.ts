@@ -15,6 +15,7 @@ import {
 } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
 import {
   manifestErrorResponse,
@@ -95,6 +96,29 @@ function logCoreFailure(
   }
 }
 
+/**
+ * Extract structured diagnostics from a runtime failure for the error
+ * response body. Carries the raw guard/policy/constraint context so devtools
+ * and override dialogs can introspect the IR-level reason behind a failure.
+ */
+function extractDiagnostics(failure: RunManifestCommandCoreFailure): unknown[] {
+  const diagnostics: unknown[] = [];
+  if (failure.policyDenial) {
+    diagnostics.push({ kind: "policy_denial", ...failure.policyDenial });
+  }
+  if (failure.guardFailure) {
+    diagnostics.push({ kind: "guard_failure", ...failure.guardFailure });
+  }
+  if (failure.constraintOutcomes?.length) {
+    for (const outcome of failure.constraintOutcomes) {
+      if (!(outcome.passed || outcome.overridden)) {
+        diagnostics.push({ kind: "constraint_block", ...outcome });
+      }
+    }
+  }
+  return diagnostics;
+}
+
 export async function runManifestCommand(
   params: RunManifestCommandCoreParams
 ): Promise<Response> {
@@ -118,7 +142,24 @@ export async function runManifestCommand(
     if (result.kind === "runtime_error" && result.error) {
       captureException(result.error);
     }
-    return manifestErrorResponse(result.message, result.httpStatus);
+    // Map the technical IR-level failure into a plain-language explanation
+    // with a suggested fix and a link to the blocking entity. The friendly
+    // payload is forwarded in the response body under `friendlyError` so the
+    // UI can surface actionable guidance instead of raw guard expressions.
+    const friendlyError = mapFailureToExplanation(result, {
+      body: params.body,
+      instanceId: params.instanceId,
+    });
+    return manifestErrorResponse(
+      {
+        error: result.message,
+        message: result.message,
+        kind: result.kind,
+        friendlyError,
+        diagnostics: extractDiagnostics(result),
+      },
+      result.httpStatus
+    );
   }
 
   // Fire-and-forget webhook dispatch (matches legacy handler behavior).

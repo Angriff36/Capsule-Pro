@@ -26,7 +26,7 @@
  *   - `f contains "a" or f contains "b"`    -> containsAny(f, ["a", "b"])
  */
 
-import { percentOf } from "./numeric-boundary.js";
+import { percentOf } from "./numeric-boundary";
 
 export type CustomBuiltin = (...args: unknown[]) => unknown;
 

@@ -1,4 +1,4 @@
-// Generated from manifest/scripts/entity-domain-map.mjs - DO NOT EDIT
+// Generated from manifest.config.yaml — DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs
 // Re-run via `pnpm manifest:generate-metadata` after bridge map changes.
 /* eslint-disable */

@@ -1,44 +1,89 @@
-# Feature: Contextual empty states + one-click sample-data import
+# Feature: Async Durable Queue for Cross-Entity Reactions
 
-Feature ID: feature-1781371077191-uor0rsbm8
+Feature ID: `feature-1781435346537-93z9oyblt`
 
-## Assumptions (interactive prompt unavailable; chose recommended defaults)
-- Scope: build reusable infra + wire the explicitly-named modules (leads, vendors, shifts,
-  prep tasks) plus clients & inventory; document 1-prop rollout for the rest.
-- Sample-data gating: show "Load sample data" when the tenant's `SampleData.isSeeded === false`,
-  to manager/admin (server `SampleData.seed` policy is the real gate). No `isSandbox` flag exists.
+## Goal
+Move the slow cross-entity reactions (1:N fan-out middleware) from synchronous
+inline execution within `RuntimeEngine.runCommand` to an async durable queue with
+retry + exponential backoff + DLQ + alerting.
 
-## Findings
-- Contextual empty-state components already exist (`packages/design-system/.../illustrated-empty-states.tsx`)
-  but are underutilized; most list views inline generic "No results" markup.
-- `SampleData.seed/clear/reseed` governed commands + generated client (`sampleDataSeed`) + hooks exist.
-- ROOT-CAUSE GAP: `seedSampleData()`/`clearSampleData()` (packages/database/src/sample-data/seed.ts)
-  are NOT wired to the runtime — seed command flips isSeeded without populating data. Must wire.
+## Architecture decision (elegant path)
+- The repo already wires the official `PostgresOutboxStore` (Manifest native
+  adapter) via `manifest/runtime/src/pg-pool.ts`. Per AGENTS.md HARD RULE #2
+  ("use official methods; bias toward them"), the durable queue lives on the
+  SAME Postgres pool — no new Redis/Inngest infrastructure.
+- A NEW `async_reaction_jobs` table holds reaction jobs that a worker drains
+  with `FOR UPDATE SKIP LOCKED`. Status lifecycle: `pending → running →
+  delivered | retry | dead_letter`. Exponential backoff via `next_attempt_at`.
+- Each middleware that opts into async is wrapped so its existing dispatch
+  logic runs LATER in a worker. The middleware's `dispatchCommand` calls
+  become `asyncQueue.enqueue(...)` calls; the actual load+dispatch moves into
+  a registered `AsyncReactionHandler`.
+
+## Why not flip all middleware at once
+- Several middleware use a **before-guard + after-emit two-hook pattern**
+  (e.g. `event-guest-count-prep-rescale`, `inventory-stock-sync-item`) that
+  captures pre-mutation state. Async breaks that. Those remain synchronous.
+- Per constitution "one retirement per PR" rule, we ship the foundation +
+  pilot migrations in this increment; remaining migrations are 1-line opts-in.
+
+## Pilot migrations (named in the feature rationale)
+1. `createEventUpdatedBoardSyncMiddleware` — battle board sync (1:N by eventId)
+2. `createShipmentItemReceivedInventoryRestockMiddleware` — inventory restock
+Both are pure after-emit 1:N fan-outs — safe to defer.
 
 ## Tasks
-- [ ] design-system: add optional `secondaryAction` slot to CTA-bearing empty states
-- [ ] apps/app: reusable `SampleDataImportButton` (governed `sampleDataSeed()`, gated on isSeeded)
-- [ ] Wire contextual empty states + sample-data button into: leads, vendors, shifts, prep tasks, clients, inventory
-- [ ] Backend root-cause: export `@repo/database/sample-data`; runtime middleware wires seed/clear effects
-- [ ] Verify: typecheck (design-system, apps/app, packages/database, runtime), build, Playwright if feasible
-
-## Tasks (done)
-- [x] design-system: `secondaryAction` slot on EmptyListState/NoTasksState/NoClientsState/NoInventoryState
-- [x] apps/app: `SampleDataImportButton` (governed `sampleDataSeed`, gated on isSeeded, manager/admin)
-- [x] Wired contextual empty states + import button: leads, vendors, shifts, prep tasks, clients, inventory
-- [x] Backend root-cause: `@repo/database/sample-data` export + `createSampleDataSeedMiddleware` (runtime)
-- [x] Verify: typechecks (design-system✓ runtime✓ database✓; app green except pre-existing generated drift)
+- [x] Plan written
+- [x] async-reactions infrastructure (types, store, registry, worker)
+- [x] pg-pool.ts: bootstrap `async_reaction_jobs` + `async_reaction_dlq` tables
+- [x] Pilot handlers extracted from the 2 named middleware
+- [x] Factory wiring: opt-in async dispatch from middleware
+- [x] Worker drain route (apps/api)
+- [x] Tests
+- [x] Playwright verification
+- [x] typecheck green
 
 ## Review
-- Reused the existing (underutilized) illustrated empty-state components rather than building new ones;
-  added a backward-compatible `secondaryAction` slot (only renders for create-capable roles).
-- Wired 6 representative module list views; remaining modules adopt the same pattern (1 component swap +
-  `secondaryAction={<SampleDataImportButton onSeeded={reload} />}`).
-- Root-caused the dead sample-data seed: the governed `SampleData.seed/clear/reseed` commands only flipped
-  the tracking row; `seedSampleData`/`clearSampleData` were never wired. Added a runtime after-emit effect
-  middleware (constitution §9 — direct writes permitted inside the runtime effect boundary).
-- VERIFICATION GAP (fail-loud): authenticated Playwright run not possible here (Clerk creds for the setup
-  project unavailable; test tenant lists likely non-empty; API on 2223 down). Verified via typecheck of all
-  changed packages + confirmed the app serves/compiles with changes (redirects to Clerk as expected).
-- PRE-EXISTING (not mine): `apps/app/.../manifest-hooks.generated.ts` references `SoftDeletable`/`TenantScoped`
-  absent from `manifest-types.generated.ts` — generated-surface drift; fix is regeneration, out of scope.
+
+### Shipped
+- **Foundation**: `manifest/runtime/src/async-reactions/` — durable queue types,
+  Postgres + in-memory stores, handler registry, worker drain loop, async-
+  dispatch bridge (the opt-in seam that lets middleware convert sync→async).
+- **Schema**: `async_reaction_jobs` + `async_reaction_dlq` bootstrapped by
+  `pg-pool.ts` on the same singleton pg.Pool the official Manifest adapters
+  already use (no new infra — Redis/Inngest NOT introduced per AGENTS.md
+  HARD RULE #2).
+- **Pilot migrations (2)**: `eventUpdatedBoardSync` (battle board sync) +
+  `shipmentItemReceivedInventoryRestock` (inventory restock) — both named in
+  the feature rationale. Their middleware now ENQUEUE in production (with DB)
+  and fall back to synchronous dispatch in dev/test.
+- **Worker route**: `POST /api/async-reactions/drain` (CRON_SECRET auth),
+  `GET` for queue depth / health.
+- **Tests**: 30 unit/integration tests (async-reactions.test.ts +
+  async-reaction-handlers.test.ts), all green. Playwright verification: 4
+  end-to-end tests exercised the enqueue→drain→deliver + retry + DLQ paths
+  (deleted per spec).
+
+### Why only 2 of the 20 migrations
+Per the constitution's "one retirement per PR" rule + the two-hook capture
+pattern (before-guard + after-emit) that several middleware use and that
+CANNOT be moved to async (the pre-mutation state is gone by worker time),
+this increment ships the foundation + the 2 named pilots. The remaining 18
+migrations are each a 3-line factory edit + handler author + opt-in flag —
+no middleware code change, no test rewrite, no IR change. The factory's
+`registerAsyncReactionHandlers()` is the documented extension point.
+
+### Verification
+- `pnpm --filter @repo/manifest-runtime typecheck` → green (0 errors).
+- `pnpm --filter @repo/manifest-runtime test async-reactions` → 20/20 pass.
+- `pnpm --filter @repo/manifest-runtime test async-reaction-handlers` → 10/10 pass.
+- Playwright end-to-end verification (via minimal config; main config has
+  pre-existing broken imports) → 4/4 pass; verification files deleted.
+- 6 pre-existing test failures in `conformance-index` + `timecard-edit-approved`
+  are baseline (verified via `git stash` of my changes — failures persist).
+
+### Notes for the next increment
+- The 2-hook middleware (`event-guest-count-prep-rescale`,
+  `inventory-stock-sync-item`, `proposal-line-item-count`, etc.) STAY
+  synchronous — async breaks their state-capture contract.
+- Cron cadence recommendation: 30s drain interval; batchSize=25.

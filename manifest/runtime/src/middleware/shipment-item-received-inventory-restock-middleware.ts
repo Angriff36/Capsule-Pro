@@ -40,6 +40,8 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import { SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION } from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -71,6 +73,14 @@ export interface ShipmentItemReceivedInventoryRestockMiddlewareOptions {
   onDiagnostic?: (diag: ShipmentRestockDiagnostic) => void;
   /** Manifest store provider already bound to the runtime. */
   storeProvider: (entityName: string) => Store | undefined;
+  /**
+   * Optional async-dispatch bridge. When set (production with DB), the
+   * middleware ENQUEUES a job and returns immediately — the worker drains
+   * `shipmentItemReceivedInventoryRestock` jobs via the registered handler.
+   * When absent (tests, dev without DB), the synchronous load+dispatch runs
+   * unchanged.
+   */
+  asyncEnqueue?: AsyncDispatch;
 }
 
 interface ShipmentItemReceivedPayload {
@@ -108,8 +118,12 @@ const defaultDiagnostic = (diag: ShipmentRestockDiagnostic): void => {
 export function createShipmentItemReceivedInventoryRestockMiddleware(
   options: ShipmentItemReceivedInventoryRestockMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
-    options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -126,6 +140,42 @@ export function createShipmentItemReceivedInventoryRestockMiddleware(
           event.name === "ShipmentItemReceived" &&
           RECEIVE_COMMANDS.has(ctx.command.name)
       );
+
+      // ASYNC PATH — enqueue jobs and return immediately. The worker drains
+      // them via the registered `shipmentItemReceivedInventoryRestock` handler.
+      // Falls through to synchronous load+dispatch when no bridge is wired.
+      if (asyncEnqueue) {
+        const tenantId = resolveTenantId(ctx);
+        const triggeringEvents = [];
+        for (const event of received) {
+          const shipmentItemId =
+            asNonEmptyString(event.subject?.id) ??
+            asNonEmptyString(ctx.instanceId);
+          if (!shipmentItemId) continue;
+          triggeringEvents.push({
+            name: event.name,
+            subjectId: shipmentItemId,
+            subjectEntity: ctx.entityName,
+            payload: ((event.payload as Record<string, unknown> | undefined) ?? {}) as Record<string, unknown>,
+          });
+        }
+        if (triggeringEvents.length > 0 && tenantId) {
+          await asyncEnqueue(
+            {
+              tenantId,
+              actorId: resolveActorId(ctx),
+              triggeringEvents,
+            },
+            SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION,
+            {
+              // Per received line — re-running a job must not double-count stock.
+              // The worker is at-least-once; this key is load-bearing.
+              idempotencyKey: `shipment-restock:${tenantId}:${triggeringEvents[0]?.subjectId ?? ""}`,
+            }
+          );
+        }
+        return {};
+      }
 
       for (const event of received) {
         const payload = event.payload as ShipmentItemReceivedPayload | undefined;
@@ -284,6 +334,22 @@ export function createShipmentItemReceivedInventoryRestockMiddleware(
 
 function asNonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/** Resolve the tenant id from the runtime context (best-effort). */
+function resolveTenantId(ctx: MiddlewareContext): string | undefined {
+  const fromUser = (
+    ctx.runtimeContext.user as { tenantId?: unknown } | undefined
+  )?.tenantId;
+  return asNonEmptyString(fromUser);
+}
+
+/** Resolve the acting user id from the runtime context (best-effort). */
+function resolveActorId(ctx: MiddlewareContext): string | null {
+  const fromUser = (
+    ctx.runtimeContext.user as { id?: unknown } | undefined
+  )?.id;
+  return asNonEmptyString(fromUser) ?? null;
 }
 
 function asFiniteNumber(value: unknown): number | undefined {

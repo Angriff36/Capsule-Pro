@@ -18,11 +18,26 @@ export class EventPrismaStore implements Store<EntityInstance> {
     private readonly prisma: PrismaClient,
     private readonly tenantId: string
   ) {
+    // The package GenericPrismaStore.update builds a BROKEN optimistic-lock
+    // WHERE for compound-key entities: it inserts the version field INTO the
+    // `tenantId_id` selector (which Prisma rejects: "Unknown argument version")
+    // and then swallows the error (`catch { return undefined }`), silently
+    // dropping the write — the engine still emits the event and returns 200, so
+    // edits appear to save but never persist. Event is `@@id([tenantId,id])`
+    // (compound) + has a `version` column, so every update hit this path.
+    // Until the package fixes compound-key OCC, clear `versionProperty` for the
+    // inner store so updates use a plain, persisting write. `version` still
+    // increments because the runtime supplies it in the update `data`.
+    const eventMeta = PRISMA_MODEL_METADATA.Event;
+    const metadataWithoutBrokenOcc = {
+      ...PRISMA_MODEL_METADATA,
+      Event: { ...eventMeta, versionProperty: undefined },
+    };
     this.inner = new GenericPrismaStore(
       prisma,
       "Event",
       tenantId,
-      PRISMA_MODEL_METADATA
+      metadataWithoutBrokenOcc
     );
   }
 

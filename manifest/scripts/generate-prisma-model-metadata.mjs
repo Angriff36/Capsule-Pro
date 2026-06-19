@@ -200,11 +200,24 @@ while ((mm = modelRe.exec(schema)) !== null) {
   };
 }
 
-// Merge versionProperty from compiled IR into model metadata
+// Merge versionProperty from compiled IR into model metadata.
+//
+// COMPOUND-KEY OCC IS BROKEN in @angriff36/manifest GenericPrismaStore.update:
+// for a model whose pk is composite (e.g. @@id([tenantId, id])), it stuffs the
+// version into the `tenantId_id` compound selector — Prisma rejects the unknown
+// `version` argument, the store's `catch { return undefined }` swallows it, and
+// the write is silently dropped while the runtime still emits the event + returns
+// 200 (fake success, lost edit). So DO NOT emit versionProperty for compound-key
+// models — omission routes their updates through the plain persisting write path.
+// The version column stays in the schema and still increments (runtime supplies it
+// in the update `data`); only the broken OCC where-clause is avoided. Single-key
+// models keep versionProperty (their OCC where path is valid). Remove this guard
+// once the package fixes compound-key OCC.
 const versionMap = loadVersionProperties();
 for (const [entityName, versionProp] of versionMap) {
-  if (models[entityName]) {
-    models[entityName].versionProperty = versionProp;
+  const meta = models[entityName];
+  if (meta && meta.pkFields.length === 1) {
+    meta.versionProperty = versionProp;
   }
 }
 

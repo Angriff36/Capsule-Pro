@@ -46,7 +46,7 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
-import { isMoneyGreaterThan } from "../numeric-boundary.js";
+import { isMoneyGreaterThan } from "../numeric-boundary";
 
 interface RunCommandOptions {
   causationId?: string;

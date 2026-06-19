@@ -48,6 +48,8 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import { EVENT_UPDATED_BOARD_SYNC_REACTION } from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -73,12 +75,16 @@ export interface EventBoardSyncDiagnostic {
 }
 
 export interface EventUpdatedBoardSyncMiddlewareOptions {
+  /**
+   * Optional async-dispatch bridge. When set (production with DB), the
+   * middleware ENQUEUES a job and returns immediately — the worker drains
+   * `eventUpdatedBoardSync` jobs via the registered handler. When absent
+   * (tests, dev without DB), the synchronous load+dispatch runs unchanged.
+   */
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   /** Indexed lookup — avoids scanning every battle board in the tenant. */
-  findLinkedBoards?: (
-    tenantId: string,
-    eventId: string
-  ) => Promise<BoardRow[]>;
+  findLinkedBoards?: (tenantId: string, eventId: string) => Promise<BoardRow[]>;
   onDiagnostic?: (diag: EventBoardSyncDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
 }
@@ -126,6 +132,7 @@ export function createEventUpdatedBoardSyncMiddleware(
     dispatchCommand,
     findLinkedBoards,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -140,6 +147,44 @@ export function createEventUpdatedBoardSyncMiddleware(
         TRIGGER_EVENTS.has(event.name)
       );
       if (triggers.length === 0) {
+        return {};
+      }
+
+      // ASYNC PATH — enqueue jobs and return immediately. The worker drains
+      // them via the registered `eventUpdatedBoardSync` handler. This is the
+      // decoupling path that eliminates command latency spikes (the rationale
+      // for the async durable queue initiative). Falls through to the
+      // synchronous load+dispatch when no bridge is wired (dev/test).
+      if (asyncEnqueue) {
+        const tenantId = resolveTenantId(ctx);
+        const triggeringEvents = [];
+        const seen = new Set<string>();
+        for (const event of triggers) {
+          const eventId =
+            asNonEmptyString(event.subject?.id) ??
+            asNonEmptyString(ctx.instanceId);
+          if (!eventId || seen.has(eventId)) {
+            continue;
+          }
+          seen.add(eventId);
+          triggeringEvents.push({
+            name: event.name,
+            subjectId: eventId,
+            subjectEntity: ctx.entityName,
+            payload: ((event.payload as Record<string, unknown> | undefined) ??
+              {}) as Record<string, unknown>,
+          });
+        }
+        if (triggeringEvents.length > 0 && tenantId) {
+          await asyncEnqueue(
+            {
+              tenantId,
+              actorId: resolveActorId(ctx),
+              triggeringEvents,
+            },
+            EVENT_UPDATED_BOARD_SYNC_REACTION
+          );
+        }
         return {};
       }
 
@@ -287,6 +332,21 @@ export function createEventUpdatedBoardSyncMiddleware(
 
 function asNonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/** Resolve the tenant id from the runtime context (best-effort). */
+function resolveTenantId(ctx: MiddlewareContext): string | undefined {
+  const fromUser = (
+    ctx.runtimeContext.user as { tenantId?: unknown } | undefined
+  )?.tenantId;
+  return asNonEmptyString(fromUser);
+}
+
+/** Resolve the acting user id from the runtime context (best-effort). */
+function resolveActorId(ctx: MiddlewareContext): string | null {
+  const fromUser = (ctx.runtimeContext.user as { id?: unknown } | undefined)
+    ?.id;
+  return asNonEmptyString(fromUser) ?? null;
 }
 
 /** Coerce to a string, defaulting to "" (empty is a valid snapshot value). */

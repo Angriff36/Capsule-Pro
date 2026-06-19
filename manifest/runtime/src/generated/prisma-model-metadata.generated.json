@@ -8299,6 +8299,80 @@
       }
     ]
   },
+  "ReactionLog": {
+    "accessor": "reactionLog",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "entity",
+        "irName": "entity"
+      },
+      {
+        "name": "command",
+        "irName": "command"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "emittedEvents",
+        "irName": "emittedEvents"
+      },
+      {
+        "name": "reactions",
+        "irName": "reactions"
+      },
+      {
+        "name": "errorMessage",
+        "irName": "errorMessage"
+      },
+      {
+        "name": "payloadKeys",
+        "irName": "payloadKeys"
+      },
+      {
+        "name": "durationMs",
+        "irName": "durationMs"
+      },
+      {
+        "name": "retryCount",
+        "irName": "retryCount"
+      },
+      {
+        "name": "correlationId",
+        "irName": "correlationId"
+      },
+      {
+        "name": "causationId",
+        "irName": "causationId"
+      },
+      {
+        "name": "source",
+        "irName": "source"
+      },
+      {
+        "name": "actorId",
+        "irName": "actorId"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      }
+    ]
+  },
   "admin_permissions": {
     "accessor": "admin_permissions",
     "hasDeletedAt": false,

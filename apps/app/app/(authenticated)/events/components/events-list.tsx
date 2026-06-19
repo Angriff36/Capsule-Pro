@@ -6,20 +6,22 @@ import { Input } from "@repo/design-system/components/ui/input";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-type EventListItem = {
-  id: string;
-  title: string;
-  eventNumber: string | null;
-  status: string;
-  eventType: string;
+interface EventListItem {
+  completionPercent?: number;
   eventDate: string;
+  eventNumber: string | null;
+  eventType: string;
   guestCount: number;
-  venueName: string | null;
-  tags: string[];
   hasClient: boolean;
-};
+  id: string;
+  status: string;
+  tags: string[];
+  title: string;
+  venueName: string | null;
+}
 
 const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-blue-50 text-blue-700",
   tentative: "bg-amber-100 text-amber-700",
   confirmed: "bg-green-100 text-green-700",
   "in-progress": "bg-blue-100 text-blue-700",
@@ -53,6 +55,7 @@ function formatMono(iso: string): string {
 
 const STATUS_OPTIONS = [
   "all",
+  "draft",
   "tentative",
   "confirmed",
   "in-progress",
@@ -75,6 +78,14 @@ const DATE_OPTIONS = [
   "upcoming",
   "past",
 ] as const;
+
+const DATE_LABELS: Record<(typeof DATE_OPTIONS)[number], string> = {
+  all: "All dates",
+  past: "Past",
+  "this-month": "This month",
+  "this-week": "This week",
+  upcoming: "Upcoming",
+};
 
 function isInRange(dateStr: string, window: string): boolean {
   const d = new Date(dateStr);
@@ -139,53 +150,79 @@ export function EventsList({ events }: { events: EventListItem[] }) {
 
   const rows = useMemo(
     () =>
-      filtered.map((event) => ({
-        id: event.id,
-        title: (
-          <div className="space-y-1">
-            <div className="ds-body-large text-ink">{event.title}</div>
-            {(event.venueName || event.guestCount > 0) && (
-              <div className="ds-caption text-ink/50">
-                {[
-                  event.venueName,
-                  event.guestCount > 0
-                    ? `${event.guestCount} guests`
-                    : undefined,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </div>
-            )}
-          </div>
-        ),
-        href: `/events/${event.id}`,
-        pills: (
-          <>
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${STATUS_COLORS[event.status] ?? "bg-slate-100 text-slate-600"}`}
-            >
-              {event.status}
-            </span>
-            {event.eventType && event.eventType !== "event" && (
+      filtered.map((event) => {
+        const isDraft = event.status === "draft";
+        const completion =
+          isDraft && typeof event.completionPercent === "number"
+            ? event.completionPercent
+            : null;
+        return {
+          id: event.id,
+          title: (
+            <div className="space-y-1">
+              <div className="ds-body-large text-ink">{event.title}</div>
+              {(event.venueName || event.guestCount > 0) && (
+                <div className="ds-caption text-ink/50">
+                  {[
+                    event.venueName,
+                    event.guestCount > 0
+                      ? `${event.guestCount} guests`
+                      : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
+              )}
+            </div>
+          ),
+          href: `/events/${event.id}`,
+          pills: (
+            <>
               <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${TYPE_COLORS[event.eventType] ?? "bg-slate-50 text-slate-600"}`}
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${STATUS_COLORS[event.status] ?? "bg-slate-100 text-slate-600"}`}
               >
-                {event.eventType}
+                {event.status}
               </span>
-            )}
-          </>
-        ),
-        meta: (
-          <div className="space-y-1 text-right">
-            <div className="font-mono text-xs">
-              {formatMono(event.eventDate)}
+              {event.eventType && event.eventType !== "event" && (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${TYPE_COLORS[event.eventType] ?? "bg-slate-50 text-slate-600"}`}
+                >
+                  {event.eventType}
+                </span>
+              )}
+              {isDraft && completion !== null && (
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-24 overflow-hidden rounded-full bg-ink/10">
+                    <div
+                      className="h-full rounded-full bg-blue-500"
+                      style={{ width: `${completion}%` }}
+                    />
+                  </div>
+                  <span className="font-medium text-[11px] text-blue-700">
+                    {completion}% complete
+                  </span>
+                  <Link
+                    className="font-medium text-[11px] text-blue-700 underline-offset-2 hover:text-blue-800 hover:underline"
+                    href={`/events/new?eventId=${event.id}`}
+                  >
+                    Resume setup →
+                  </Link>
+                </div>
+              )}
+            </>
+          ),
+          meta: (
+            <div className="space-y-1 text-right">
+              <div className="font-mono text-xs">
+                {formatMono(event.eventDate)}
+              </div>
+              <div className="text-[11px] text-ink/50">
+                {formatDate(event.eventDate)}
+              </div>
             </div>
-            <div className="text-[11px] text-ink/50">
-              {formatDate(event.eventDate)}
-            </div>
-          </div>
-        ),
-      })),
+          ),
+        };
+      }),
     [filtered]
   );
 
@@ -230,15 +267,7 @@ export function EventsList({ events }: { events: EventListItem[] }) {
               selected={dateFilter === d}
               tone="ghost"
             >
-              {d === "all"
-                ? "All dates"
-                : d === "this-week"
-                  ? "This week"
-                  : d === "this-month"
-                    ? "This month"
-                    : d === "upcoming"
-                      ? "Upcoming"
-                      : "Past"}
+              {DATE_LABELS[d]}
             </BlogFilterChip>
           ))}
         </div>

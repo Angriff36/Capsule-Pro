@@ -165,5 +165,98 @@ export async function ensureManifestSchema(): Promise<void> {
       WHERE status = 'pending' AND expires_at IS NOT NULL
   `);
 
+  // -- Async reaction jobs table --------------------------------------------
+  // Capsule-owned durable queue for slow cross-entity reactions (battle board
+  // sync, inventory restock, …) deferred out of the synchronous runCommand
+  // path. Separate from manifest_outbox_entries (which carries Manifest event
+  // DELIVERY) so the two concerns — event fan-out vs Capsule reaction
+  // dispatch — stay observable independently.
+  //
+  // Lifecycle: pending → running → delivered | retry | dead_letter.
+  // Concurrency: claim() uses FOR UPDATE SKIP LOCKED; claimed_at tracks the
+  // active lease and releaseStaleClaims() resets crashed workers' rows.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS async_reaction_jobs (
+      id                  TEXT PRIMARY KEY,
+      tenant_id           TEXT NOT NULL,
+      actor_id            TEXT,
+      reaction_name       TEXT NOT NULL,
+      triggering_event    JSONB NOT NULL,
+      status              TEXT NOT NULL CHECK (status IN ('pending','running','delivered','retry','dead_letter')),
+      attempts            INTEGER NOT NULL DEFAULT 0,
+      max_attempts        INTEGER NOT NULL DEFAULT 5,
+      initial_backoff_ms  BIGINT NOT NULL DEFAULT 1000,
+      max_backoff_ms      BIGINT NOT NULL DEFAULT 60000,
+      next_attempt_at     BIGINT NOT NULL,
+      last_error          TEXT,
+      idempotency_key     TEXT,
+      correlation_id      TEXT,
+      causation_id        TEXT,
+      enqueued_at         BIGINT NOT NULL,
+      claimed_at          TIMESTAMPTZ,
+      delivered_at        TIMESTAMPTZ,
+      dead_lettered_at    TIMESTAMPTZ,
+      inserted_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // Partial index: only `pending` rows are claimable — keeps the claim scan
+  // cheap even when the table grows large with terminal-status history.
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_pending
+      ON async_reaction_jobs (next_attempt_at)
+      WHERE status = 'pending'
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_running_claimed
+      ON async_reaction_jobs (claimed_at)
+      WHERE status = 'running' AND claimed_at IS NOT NULL
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_tenant_status
+      ON async_reaction_jobs (tenant_id, status)
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_idempotency
+      ON async_reaction_jobs (idempotency_key)
+      WHERE idempotency_key IS NOT NULL
+  `);
+
+  // -- Dead-letter queue for async reactions --------------------------------
+  // Populated by markFailed() when attempts exhaust max_attempts. One row per
+  // terminal failure — kept separate so DLQ inspection does not slow down the
+  // claim scan on the live table.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS async_reaction_dlq (
+      id                  TEXT PRIMARY KEY,
+      tenant_id           TEXT NOT NULL,
+      actor_id            TEXT,
+      reaction_name       TEXT NOT NULL,
+      triggering_event    JSONB NOT NULL,
+      attempts            INTEGER NOT NULL,
+      max_attempts        INTEGER NOT NULL,
+      last_error          TEXT,
+      idempotency_key     TEXT,
+      correlation_id      TEXT,
+      causation_id        TEXT,
+      enqueued_at         BIGINT NOT NULL,
+      dead_lettered_at    BIGINT NOT NULL,
+      inserted_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_dlq_tenant
+      ON async_reaction_dlq (tenant_id, dead_lettered_at DESC)
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_async_reaction_dlq_reaction
+      ON async_reaction_dlq (reaction_name, dead_lettered_at DESC)
+  `);
+
   _schemaEnsured = true;
 }

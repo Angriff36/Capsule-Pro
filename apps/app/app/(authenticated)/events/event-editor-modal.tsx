@@ -20,8 +20,10 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UsersIcon } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { useEventEditImpactPreview } from "./[eventId]/use-event-edit-impact";
+import { WhatWillChangePanel } from "./[eventId]/what-will-change-panel";
 
 interface EventEditorModalProps {
   event?: {
@@ -71,7 +73,17 @@ export const EventEditorModal = ({
   const [eventFormat, setEventFormat] = useState(
     event?.eventFormat ?? "in_person"
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const impactPreview = useEventEditImpactPreview();
   const saveButtonLabel = getSaveButtonLabel(isSaving, !!event?.id);
+
+  // Reset preview whenever the modal re-opens or the target event changes.
+  useEffect(() => {
+    if (!open) {
+      impactPreview.reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -81,6 +93,23 @@ export const EventEditorModal = ({
     setStatus(event?.status ?? "confirmed");
     setEventFormat(event?.eventFormat ?? "in_person");
   }, [open, event?.eventFormat, event?.eventType, event?.status]);
+
+  const handlePreviewImpact = () => {
+    const form = formRef.current;
+    if (!form) {
+      return;
+    }
+    const formData = new FormData(form);
+    // Sync controlled field state into the snapshot so the preview sees what
+    // the save would actually commit.
+    formData.set("eventType", eventType);
+    formData.set("status", status);
+    formData.set("eventFormat", eventFormat);
+    if (event?.id) {
+      formData.set("eventId", event.id);
+    }
+    impactPreview.mutate(formData);
+  };
 
   const handleSubmit = async (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault();
@@ -114,7 +143,7 @@ export const EventEditorModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit} ref={formRef}>
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
           <input name="eventType" type="hidden" value={eventType} />
           <input name="status" type="hidden" value={status} />
@@ -363,6 +392,15 @@ export const EventEditorModal = ({
               type="text"
             />
           </div>
+
+          {event?.id && (
+            <WhatWillChangePanel
+              impact={impactPreview.data}
+              isIdle={impactPreview.isIdle}
+              isLoading={impactPreview.isPending}
+              onPreview={handlePreviewImpact}
+            />
+          )}
 
           <div className="flex justify-end gap-3">
             <Button

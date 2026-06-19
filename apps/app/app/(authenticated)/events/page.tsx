@@ -36,6 +36,71 @@ import { getTenantIdForOrg } from "../../lib/tenant";
 import { EventsList } from "./components/events-list";
 import { EventsPageWithSuggestions } from "./components/events-suggestions";
 import { EventsPageClient } from "./events-page-client";
+import { computeDraftCompletion } from "./lib/completion";
+
+interface EventListRow {
+  completionPercent: number;
+  eventDate: string;
+  eventNumber: string | null;
+  eventType: string;
+  guestCount: number;
+  hasClient: boolean;
+  id: string;
+  status: string;
+  tags: string[];
+  title: string;
+  venueName: string | null;
+}
+
+/** Map a persisted event row to the client roster-row shape, deriving the
+ * draft completion percent on the read path (constitution §3). */
+const toListRow = (event: {
+  accessibilityOptions: unknown;
+  budget: { toFixed?: (n: number) => string } | null;
+  clientId: string | null;
+  eventDate: Date;
+  eventNumber: string | null;
+  eventType: string | null;
+  guestCount: number | null;
+  id: string;
+  notes: string | null;
+  status: string;
+  tags: unknown;
+  ticketPrice: { toFixed?: (n: number) => string } | null;
+  title: string;
+  venueName: string | null;
+}): EventListRow => {
+  const tags = (event.tags as string[]) ?? [];
+  const completionPercent =
+    event.status === "draft"
+      ? computeDraftCompletion({
+          accessibilityOptions: (event.accessibilityOptions as string[]) ?? [],
+          budget: event.budget ? Number(event.budget) : 0,
+          eventDate: event.eventDate ? event.eventDate.toISOString() : "",
+          eventType: event.eventType ?? "",
+          guestCount: event.guestCount ?? 0,
+          notes: event.notes ?? "",
+          status: event.status,
+          tags,
+          ticketPrice: event.ticketPrice ? Number(event.ticketPrice) : 0,
+          title: event.title,
+          venueName: event.venueName ?? "",
+        })
+      : 100;
+  return {
+    completionPercent,
+    eventDate: event.eventDate.toISOString(),
+    eventNumber: event.eventNumber,
+    eventType: event.eventType ?? "event",
+    guestCount: event.guestCount ?? 0,
+    hasClient: !!event.clientId,
+    id: event.id,
+    status: event.status,
+    tags,
+    title: event.title,
+    venueName: event.venueName,
+  };
+};
 
 const EventsPage = async () => {
   const { orgId } = await auth();
@@ -64,6 +129,10 @@ const EventsPage = async () => {
       tags: true,
       createdAt: true,
       clientId: true,
+      accessibilityOptions: true,
+      budget: true,
+      ticketPrice: true,
+      notes: true,
     },
     orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
   });
@@ -195,20 +264,7 @@ const EventsPage = async () => {
                 </Empty>
               </OperationalRow>
             ) : (
-              <EventsList
-                events={events.map((event) => ({
-                  id: event.id,
-                  title: event.title,
-                  eventNumber: event.eventNumber,
-                  status: event.status,
-                  eventType: event.eventType ?? "event",
-                  eventDate: event.eventDate.toISOString(),
-                  guestCount: event.guestCount ?? 0,
-                  venueName: event.venueName,
-                  tags: event.tags ?? [],
-                  hasClient: !!event.clientId,
-                }))}
-              />
+              <EventsList events={events.map(toListRow)} />
             )}
           </section>
         </OperationalColumn>

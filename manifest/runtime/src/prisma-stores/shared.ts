@@ -8,7 +8,7 @@
  */
 
 import { Prisma } from "@repo/database/standalone";
-import { parseToDate } from "../datetime-boundary.js";
+import { parseToDate } from "../datetime-boundary";
 
 /**
  * Manifest runtime entity shape — opaque bag of fields with a string id.

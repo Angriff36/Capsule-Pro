@@ -16,6 +16,7 @@
     "./prisma-json-store": "./src/prisma-json-store.ts",
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
+    "./async-reactions": "./src/async-reactions/index.ts",
     "./middleware": "./src/middleware/index.ts",
     "./middleware/prep-inventory-demand-middleware": "./src/middleware/prep-inventory-demand-middleware.ts",
     "./commands-registry": "./src/commands-registry.ts",
@@ -28,9 +29,9 @@
     "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {
-    "@js-temporal/polyfill": "^0.5.1",
     "@ai-sdk/openai": "^3.0.71",
-    "@angriff36/manifest": "2.8.0",
+    "@angriff36/manifest": "2.15.0",
+    "@js-temporal/polyfill": "^0.5.1",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.57.0",

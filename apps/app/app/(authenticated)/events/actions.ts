@@ -16,6 +16,33 @@ type WritableEventData = CreateEventData | UpdateEventData;
 
 export type CreateEventState = { error?: string } | null;
 
+export type SaveDraftState = {
+  error?: string;
+  eventDate?: string;
+  eventId?: string;
+} | null;
+
+export interface EventDraftSnapshot {
+  accessibilityOptions: string[];
+  assignedTo: string | null;
+  budget: number;
+  eventDate: string | null;
+  eventFormat: string | null;
+  eventId: string;
+  eventNumber: string | null;
+  eventType: string;
+  featuredMediaUrl: string | null;
+  guestCount: number;
+  notes: string | null;
+  status: string;
+  tags: string[];
+  ticketPrice: number;
+  ticketTier: string | null;
+  title: string;
+  venueAddress: string | null;
+  venueName: string | null;
+}
+
 const NEEDS_TAG = "needs:";
 const IMPORT_FALLBACK_NAME = "event-import";
 
@@ -60,6 +87,15 @@ const required = (value: string | null | undefined, label: string): string => {
 
 // Noon UTC keeps @db.Date values from drifting across day boundaries.
 const dateOnly = (yyyyMmDd: string): Date => new Date(`${yyyyMmDd}T12:00:00Z`);
+
+// Inverse of dateOnly: render a stored Date back to the yyyy-mm-dd an HTML date
+// input consumes, reading local components to avoid timezone drift.
+const formatDateInput = (value: Date): string => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const validationError = (error: z.ZodError): string =>
   `Validation failed: ${z.prettifyError(error)}`;
@@ -279,6 +315,256 @@ export const createEvent = async (
 
   revalidateEvent(createdId);
   redirect(`/events/${createdId}`);
+};
+
+/**
+ * Partial event data captured by a single wizard step. Every field is optional
+ * because each step only owns a slice of the Event; the save action merges the
+ * slice onto the existing draft (or seeds a fresh one) before issuing the
+ * governed command.
+ */
+export interface DraftEventInput {
+  accessibilityOptions?: string[];
+  budget?: number;
+  eventDate?: string; // yyyy-mm-dd (HTML date input)
+  eventFormat?: string;
+  eventType?: string;
+  featuredMediaUrl?: string;
+  guestCount?: number;
+  notes?: string;
+  tags?: string[];
+  ticketPrice?: number;
+  ticketTier?: string;
+  title?: string;
+  venueAddress?: string;
+  venueName?: string;
+}
+
+interface SaveDraftInput {
+  data: DraftEventInput;
+  eventId?: string;
+}
+
+const epochFor = (
+  eventDate?: string | null,
+  existing?: Date | null
+): number => {
+  if (eventDate) {
+    return dateOnly(eventDate).getTime();
+  }
+  if (existing) {
+    return new Date(existing).getTime();
+  }
+  return Date.now();
+};
+
+/**
+ * Auto-save a wizard step as a governed Draft command.
+ *
+ * First completion (no `eventId`) issues `Event.create` with status "draft";
+ * every later step issues `Event.update`, merging the step slice onto the
+ * existing draft so the IR `update` contract (full-field) is satisfied. Never
+ * redirects — the wizard stays mounted and advances to the next step.
+ */
+/** Body for seeding a fresh draft from the first completed step. */
+const buildCreateBody = (data: DraftEventInput): Record<string, unknown> => ({
+  accessibilityOptions: data.accessibilityOptions ?? [],
+  budget: data.budget ?? 0,
+  clientId: "",
+  // Empty → GenericPrismaStore allocates EVT-YYYY-#### inside Event.create txn
+  eventDate: epochFor(data.eventDate),
+  eventFormat: data.eventFormat ?? "",
+  eventNumber: "",
+  eventType: data.eventType ?? "",
+  featuredMediaUrl: data.featuredMediaUrl ?? "",
+  guestCount: data.guestCount ?? 1,
+  notes: data.notes ?? "",
+  status: "draft",
+  tags: data.tags ?? [],
+  ticketPrice: data.ticketPrice ?? 0,
+  ticketTier: data.ticketTier ?? "",
+  title: data.title ?? "",
+  venueAddress: data.venueAddress ?? "",
+  venueName: data.venueName ?? "",
+});
+
+export const saveEventDraft = async (
+  input: SaveDraftInput
+): Promise<SaveDraftState> => {
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const data = input.data;
+
+  // CREATE — seed a fresh draft from the first completed step.
+  if (!input.eventId) {
+    const createResult = await runManifestCommand({
+      body: buildCreateBody(data),
+      command: "create",
+      entity: "Event",
+      user: { id: user.id, tenantId, role: user.role },
+    });
+
+    if (!createResult.ok) {
+      console.error("[saveEventDraft] create failed:", createResult.message);
+      return { error: createResult.message || "Failed to save draft." };
+    }
+
+    const created = createResult.result as { id?: string } | null;
+    const eventId = created?.id ?? "";
+    if (!eventId) {
+      return { error: "Failed to save draft." };
+    }
+    revalidateEvent(eventId);
+    return { eventId, eventDate: data.eventDate };
+  }
+
+  // UPDATE — read existing draft, overlay this step's slice, issue full-field
+  // update with status held at "draft".
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: input.eventId, deletedAt: null },
+  });
+  if (!existing) {
+    return { error: "Draft not found. It may have been deleted." };
+  }
+
+  const result = await runManifestCommand({
+    body: buildUpdateBody(existing, data, "draft", input.eventId),
+    command: "update",
+    entity: "Event",
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    console.error("[saveEventDraft] update failed:", result.message);
+    return { error: result.message || "Failed to save draft." };
+  }
+
+  revalidateEvent(input.eventId);
+  return { eventId: input.eventId, eventDate: data.eventDate };
+};
+
+/**
+ * Load an in-progress draft for resume. Read-only (constitution §3 read path).
+ * Returns the raw Event fields the wizard needs to rehydrate its state.
+ */
+export const loadEventDraft = async (
+  eventId: string
+): Promise<EventDraftSnapshot | null> => {
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: eventId, deletedAt: null },
+  });
+  if (!existing) {
+    return null;
+  }
+
+  // Only drafts are resumable. A confirmed/cancelled event under a stale
+  // ?eventId= or localStorage pointer should drop the user onto a fresh
+  // wizard instead of reopening the confirmed event for re-finalize.
+  if ((existing.status ?? "draft") !== "draft") {
+    return null;
+  }
+
+  return {
+    accessibilityOptions: (existing.accessibilityOptions as string[]) ?? [],
+    assignedTo: existing.assignedTo ?? null,
+    budget: existing.budget ? Number(existing.budget) : 0,
+    eventDate: existing.eventDate ? formatDateInput(existing.eventDate) : null,
+    eventFormat: existing.eventFormat ?? null,
+    eventId: existing.id,
+    eventType: existing.eventType ?? "",
+    eventNumber: existing.eventNumber ?? null,
+    featuredMediaUrl: existing.featuredMediaUrl ?? null,
+    guestCount: existing.guestCount ?? 0,
+    notes: existing.notes ?? null,
+    status: existing.status ?? "draft",
+    tags: (existing.tags as string[]) ?? [],
+    ticketPrice: existing.ticketPrice ? Number(existing.ticketPrice) : 0,
+    ticketTier: existing.ticketTier ?? null,
+    title: existing.title ?? "",
+    venueAddress: existing.venueAddress ?? null,
+    venueName: existing.venueName ?? null,
+  };
+};
+
+type EventRow = NonNullable<
+  Awaited<ReturnType<typeof database.event.findFirst>>
+>;
+
+/** Coerce a Decimal-like field to a plain number for the runtime command body. */
+const numberOrZero = (
+  value: { toFixed?: (n: number) => string } | null | undefined
+): number =>
+  value && typeof value === "object" && "toFixed" in value ? Number(value) : 0;
+
+/**
+ * Build the full-field `Event.update` body from a persisted row + an optional
+ * step slice. Used by both the wizard auto-save (status "draft") and the
+ * finalize step (status "confirmed"). Extracted so each action stays below the
+ * cognitive-complexity ceiling while honouring the IR `update` contract.
+ */
+const buildUpdateBody = (
+  existing: EventRow,
+  data: DraftEventInput | null,
+  status: "draft" | "confirmed",
+  eventId: string
+): Record<string, unknown> => ({
+  accessibilityOptions:
+    data?.accessibilityOptions ??
+    (existing.accessibilityOptions as string[]) ??
+    [],
+  budget: data?.budget ?? numberOrZero(existing.budget),
+  clientId: existing.clientId ?? "",
+  eventDate: epochFor(data?.eventDate, existing.eventDate),
+  eventFormat: data?.eventFormat ?? existing.eventFormat ?? "",
+  eventNumber: existing.eventNumber ?? "",
+  eventType: data?.eventType ?? existing.eventType ?? "",
+  featuredMediaUrl: data?.featuredMediaUrl ?? existing.featuredMediaUrl ?? "",
+  guestCount: data?.guestCount ?? existing.guestCount ?? 1,
+  id: eventId,
+  notes: data?.notes ?? existing.notes ?? "",
+  status,
+  tags: data?.tags ?? (existing.tags as string[]) ?? [],
+  ticketPrice: data?.ticketPrice ?? numberOrZero(existing.ticketPrice),
+  ticketTier: data?.ticketTier ?? existing.ticketTier ?? "",
+  title: data?.title ?? existing.title ?? "",
+  venueAddress: data?.venueAddress ?? existing.venueAddress ?? "",
+  venueName: data?.venueName ?? existing.venueName ?? "",
+});
+
+/**
+ * Finalize the wizard: flip the draft to "confirmed" via the governed `update`
+ * command, then redirect to the event detail page. The transition
+ * draft → confirmed is permitted by Event's IR state machine.
+ */
+export const finalizeEventFromWizard = async (
+  eventId: string
+): Promise<SaveDraftState> => {
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: eventId, deletedAt: null },
+  });
+  if (!existing) {
+    return { error: "Draft not found. It may have been deleted." };
+  }
+
+  const result = await runManifestCommand({
+    body: buildUpdateBody(existing, null, "confirmed", eventId),
+    command: "update",
+    entity: "Event",
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    console.error("[finalizeEventFromWizard] failed:", result.message);
+    return { error: result.message || "Failed to confirm event." };
+  }
+
+  revalidateEvent(eventId, existing.clientId ?? null);
+  redirect(`/events/${eventId}`);
 };
 
 export const updateEvent = async (formData: FormData): Promise<void> => {

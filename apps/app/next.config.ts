@@ -1,3 +1,4 @@
+import path from "node:path";
 import { withToolbar } from "@repo/feature-flags/lib/toolbar";
 import { config, withAnalyzer } from "@repo/next-config";
 import { withLogging, withSentry } from "@repo/observability/next-config";
@@ -252,6 +253,13 @@ const baseConfig: NextConfig = withToolbar(
     // canvas is a Node-native module unavailable in browser/server bundles
     turbopack: {
       ...config.turbopack,
+      // Pin the workspace root to the monorepo root. Next 16's Turbopack
+      // otherwise infers a too-narrow root for this app, then refuses to
+      // compile files outside it (workspace @repo/* packages, ../../manifest).
+      // That fails the build, `next dev` exits 1, and turbo restarts the
+      // persistent dev task on a loop — leaking a node process tree each cycle
+      // (Windows doesn't reap orphaned children). Setting root stops the loop.
+      root: path.join(__dirname, "..", ".."),
       resolveAlias: {
         // canvas is a Node-only module used by some PDF libs; stub it out for browser bundles
         // Turbopack requires a string path, not a boolean — use empty module

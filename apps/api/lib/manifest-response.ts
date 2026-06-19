@@ -10,6 +10,60 @@ import type { CommandResult } from "@angriff36/manifest";
 import { NextResponse } from "next/server";
 
 /**
+ * Failure kind surfaced on every non-success command response so the client
+ * can branch without inferring from HTTP status. Mirrors
+ * `RunManifestCommandFailureKind` from the runtime core.
+ */
+export type ManifestFailureKind =
+  | "unknown_command"
+  | "bootstrap_failed"
+  | "policy_denied"
+  | "guard_failed"
+  | "constraint_blocked"
+  | "command_failed"
+  | "runtime_error";
+
+/**
+ * Structured failure detail included in error responses so non-technical users
+ * get a plain-language explanation, a suggested fix, and (when resolvable) a
+ * direct link to the blocking entity. Produced by `friendly-error-mapper.ts`.
+ */
+export interface FriendlyErrorPayload {
+  blockingEntity?: {
+    type: string;
+    id?: string;
+    label: string;
+    link?: string;
+    reason?: string;
+  };
+  category:
+    | "wrong_status"
+    | "validation"
+    | "permission"
+    | "not_found"
+    | "conflict"
+    | "system";
+  message: string;
+  severity: "info" | "warning" | "error";
+  suggestedFix?: string;
+  title: string;
+}
+
+/** Input for the structured (object) form of `manifestErrorResponse`. */
+export interface ManifestErrorPayload {
+  /** Resolved constraint / guard diagnostics (devtools + override dialogs). */
+  diagnostics?: unknown[];
+  /** Technical/IR-level error message (kept for engineers + backwards compat). */
+  error: string;
+  /** Human-friendly explanation payload (shown prominently in the UI). */
+  friendlyError?: FriendlyErrorPayload;
+  /** Runtime failure kind (`guard_failed`, `policy_denied`, ...). */
+  kind?: string;
+  /** Original authoring message for backwards compat with the string overload. */
+  message?: string;
+}
+
+/**
  * Normalize a CommandResult into a structured shape for generated dispatcher routes.
  *
  * The Manifest projection generator emits calls to this function in universal
@@ -113,16 +167,24 @@ export function manifestSuccessResponse(data: unknown, status = 200): Response {
 }
 
 export function manifestErrorResponse(
-  message: string | { error: string; diagnostics?: unknown[] },
+  message: string | ManifestErrorPayload,
   status: number
 ): Response {
-  const body =
-    typeof message === "string"
-      ? { success: false, message }
-      : {
-          success: false,
-          error: message.error,
-          diagnostics: message.diagnostics ?? [],
-        };
+  if (typeof message === "string") {
+    return NextResponse.json({ success: false, message }, { status });
+  }
+  const body: Record<string, unknown> = {
+    success: false,
+    error: message.error,
+    // Backwards compat: many older callers read `message` rather than `error`.
+    message: message.message ?? message.error,
+    diagnostics: message.diagnostics ?? [],
+  };
+  if (message.kind) {
+    body.kind = message.kind;
+  }
+  if (message.friendlyError) {
+    body.friendlyError = message.friendlyError;
+  }
   return NextResponse.json(body, { status });
 }

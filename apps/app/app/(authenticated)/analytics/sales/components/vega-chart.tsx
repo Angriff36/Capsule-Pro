@@ -9,8 +9,22 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Copy, Download, ImageIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { TopLevelSpec } from "vega-lite";
+import {
+  buildChartAriaLabel,
+  type GenerateSummaryOptions,
+  generateChartSummary,
+  narrateSummary,
+  summarizeForScreenReader,
+} from "../lib/chart-accessibility";
 import { isFacetedSpec } from "../lib/chart-catalog";
 
 /* ------------------------------------------------------------------ */
@@ -33,6 +47,11 @@ interface EmbedResult {
 /* ------------------------------------------------------------------ */
 
 interface VegaChartProps {
+  /**
+   * Override the auto-derived accessibility summary. When omitted, the
+   * component derives min/max/average/top/trend from `data`.
+   */
+  accessibilitySummary?: string;
   /** Whether to wrap in a Card */
   asCard?: boolean;
   /** Additional CSS class */
@@ -45,8 +64,19 @@ interface VegaChartProps {
   height?: number;
   /** Whether to show export action buttons */
   showActions?: boolean;
+  /**
+   * Show the visible plain-language data-summary companion panel below the
+   * chart. Defaults to `true` when `data` is supplied so screen-reader users
+   * and sighted users both receive a narration of key data points.
+   */
+  showSummary?: boolean;
   /** Vega-Lite specification */
   spec: TopLevelSpec;
+  /**
+   * Hint used by the auto-derived summary (e.g. currency formatting, unit
+   * noun). Ignored when `accessibilitySummary` is supplied.
+   */
+  summaryOptions?: GenerateSummaryOptions & { unit?: string };
   /** Chart title shown in card header */
   title?: string;
 }
@@ -68,14 +98,80 @@ export function VegaChart({
   description,
   height = 300,
   showActions = true,
+  showSummary,
   asCard = true,
   className,
+  accessibilitySummary,
+  summaryOptions,
 }: VegaChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<EmbedResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
+
+  // Stable unique ids for ARIA attribute wiring.
+  const reactId = useId();
+  const descriptionId = `${reactId}-desc`;
+  const summaryId = `${reactId}-summary`;
+  const statusId = `${reactId}-status`;
+
+  // Derive the accessible summary once per data change.
+  const derivedSummary = useMemo(() => {
+    if (accessibilitySummary) {
+      return accessibilitySummary;
+    }
+    if (!data || data.length === 0) {
+      return null;
+    }
+    const summary = generateChartSummary(data, summaryOptions);
+    return summarizeForScreenReader(summary, summaryOptions);
+  }, [accessibilitySummary, data, summaryOptions]);
+
+  const visibleNarration = useMemo(() => {
+    if (!data || data.length === 0) {
+      return null;
+    }
+    const summary = generateChartSummary(data, summaryOptions);
+    return narrateSummary(summary, summaryOptions);
+  }, [data, summaryOptions]);
+
+  const ariaLabel = useMemo(
+    () =>
+      buildChartAriaLabel({
+        title,
+        description,
+        summaryText: derivedSummary ?? "Chart visualization.",
+      }),
+    [title, description, derivedSummary]
+  );
+
+  // Should the visible companion panel render?
+  const renderSummaryPanel =
+    (showSummary ?? Boolean(data && data.length > 0)) &&
+    Boolean(visibleNarration);
+
+  // Wire aria-describedby to the most descriptive available element.
+  const describedById = (() => {
+    if (renderSummaryPanel) {
+      return summaryId;
+    }
+    if (description) {
+      return descriptionId;
+    }
+    return;
+  })();
+
+  // Human-readable status text announced via the aria-live region.
+  const statusText = (() => {
+    if (isLoading) {
+      return "Loading chart data.";
+    }
+    if (error) {
+      return `Chart failed to load: ${error}`;
+    }
+    return "Chart ready.";
+  })();
 
   // Stabilise the spec identity so the effect only re-runs when the spec
   // actually changes (not on every parent render).
@@ -263,11 +359,35 @@ export function VegaChart({
 
   const chartContent = (
     <div className={className}>
-      {/* The container is always in the DOM so vega-embed can measure it.
-          Loading / error overlays sit on top via absolute positioning. */}
-      <div className="relative w-full" style={{ minHeight: height }}>
+      {/*
+        Accessibility:
+        - role="img" tells screen readers this is a graphic.
+        - aria-label carries the composed title + description + data summary.
+        - aria-describedby points to the long-form summary panel when present.
+      */}
+      <div
+        aria-describedby={describedById}
+        aria-label={ariaLabel}
+        className="relative w-full"
+        role="img"
+        style={{ minHeight: height }}
+      >
+        {/* Visually-hidden long description for screen readers */}
+        {(description || derivedSummary) && (
+          <span className="sr-only" id={descriptionId}>
+            {description ? `${description} ` : ""}
+            {derivedSummary}
+          </span>
+        )}
+
+        {/* Live region: announces loading / error / ready state to AT */}
+        <span aria-live="polite" className="sr-only" id={statusId}>
+          {statusText}
+        </span>
+
         {isLoading && !error && (
           <div
+            aria-hidden="true"
             className="absolute inset-0 z-10 flex animate-pulse items-center justify-center rounded-lg bg-muted/30"
             style={{ height }}
           >
@@ -278,6 +398,7 @@ export function VegaChart({
         )}
         {error && (
           <div
+            aria-hidden="true"
             className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-destructive/10"
             style={{ height }}
           >
@@ -286,6 +407,19 @@ export function VegaChart({
         )}
         <div className="w-full" ref={containerRef} />
       </div>
+
+      {/* Visible plain-language data-summary companion panel.
+          Narrates key data points for both sighted and AT users. */}
+      {renderSummaryPanel && (
+        <p
+          aria-hidden="false"
+          className="mt-3 rounded-md border border-muted bg-muted/30 p-3 text-muted-foreground text-sm leading-relaxed"
+          id={summaryId}
+        >
+          <span className="font-medium text-foreground">Data summary: </span>
+          {visibleNarration}
+        </p>
+      )}
 
       {showActions && !isLoading && !error && (
         <div className="mt-2 flex items-center gap-1">

@@ -18,7 +18,7 @@ import {
   refreshParentContext,
   resolveParentContext,
 } from "./parent-context-resolver";
-import { parseDatetimeToEpochMs } from "./datetime-boundary.js";
+import { parseDatetimeToEpochMs } from "./datetime-boundary";
 
 export {
   refreshParentContext,

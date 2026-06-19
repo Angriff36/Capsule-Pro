@@ -19,7 +19,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@angriff36/manifest": "2.8.0",
+    "@angriff36/manifest": "2.15.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-neon": "7.8.0",

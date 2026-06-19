@@ -29,6 +29,26 @@ export interface CommandError {
   constraintOutcomes?: unknown[];
   diagnostics?: unknown[];
   error?: string;
+  /**
+   * Plain-language explanation with a suggested fix and a link to the
+   * blocking entity. Produced by the API's friendly-error-mapper.
+   */
+  friendlyError?: {
+    title: string;
+    message: string;
+    suggestedFix?: string;
+    blockingEntity?: {
+      type: string;
+      id?: string;
+      label: string;
+      link?: string;
+      reason?: string;
+    };
+    category: string;
+    severity: "info" | "warning" | "error";
+  };
+  /** Failure kind (`guard_failed`, `policy_denied`, …) — server-mapped. */
+  kind?: string;
   message?: string;
   success: false;
 }
@@ -39,17 +59,23 @@ export class CommandFailedError extends Error {
   readonly status: number;
   readonly constraintOutcomes?: unknown[];
   readonly diagnostics?: unknown[];
+  readonly kind?: string;
+  readonly friendlyError?: CommandError["friendlyError"];
   constructor(
     message: string,
     status: number,
     constraintOutcomes?: unknown[],
-    diagnostics?: unknown[]
+    diagnostics?: unknown[],
+    kind?: string,
+    friendlyError?: CommandError["friendlyError"]
   ) {
     super(message);
     this.name = "CommandFailedError";
     this.status = status;
     this.constraintOutcomes = constraintOutcomes;
     this.diagnostics = diagnostics;
+    this.kind = kind;
+    this.friendlyError = friendlyError;
   }
 }
 
@@ -112,7 +138,12 @@ export async function executeCommand<T = unknown>(
 
   if (!(res.ok && json) || json.success === false) {
     const errObj = json as CommandError | null;
+    // Prefer the server's plain-language explanation so every call site that
+    // toasts `err.message` shows the friendly text without per-site changes.
+    // The raw `error`/`message` and the full `friendlyError` object are still
+    // carried on the thrown error for richer UIs / debugging.
     const message =
+      errObj?.friendlyError?.message ||
       errObj?.error ||
       errObj?.message ||
       `Command ${entity}.${command} failed (HTTP ${res.status})`;
@@ -120,7 +151,9 @@ export async function executeCommand<T = unknown>(
       message,
       res.status,
       errObj?.constraintOutcomes,
-      errObj?.diagnostics
+      errObj?.diagnostics,
+      errObj?.kind,
+      errObj?.friendlyError
     );
   }
 

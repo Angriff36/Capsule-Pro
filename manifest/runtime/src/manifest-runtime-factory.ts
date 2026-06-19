@@ -25,6 +25,16 @@ import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
+import {
+  type AsyncDispatch,
+  asyncReactionRegistry,
+  createAsyncDispatch,
+  EVENT_UPDATED_BOARD_SYNC_REACTION,
+  eventUpdatedBoardSyncHandler,
+  PostgresAsyncReactionStore,
+  SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION,
+  shipmentItemReceivedInventoryRestockHandler,
+} from "./async-reactions";
 import { createAesGcmEncryptionProvider } from "./encryption-provider";
 import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
 // LIVE schema metadata (NOT the IR-projection manifest-prisma-store-metadata):
@@ -34,10 +44,10 @@ import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.genera
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
+  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
   createClientInteractionEscalatedNotifyMiddleware,
   createClientInteractionOverdueNotifyMiddleware,
   createCollectionPaymentRecordedInvoiceApplyMiddleware,
-  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
   createContainerDeactivatedDishClearMiddleware,
   createContractSignedEventConfirmMiddleware,
@@ -89,11 +99,11 @@ import {
   createSchedulePublishedNotifyStaffMiddleware,
   createScheduleShiftCountMiddleware,
   createScheduleShiftFirstShiftDueDateMiddleware,
-  createTimeOffApprovedShiftCleanupMiddleware,
   createShipmentItemReceivedInventoryRestockMiddleware,
   createStaffMemberCreatedTrainingAssignmentMiddleware,
   createStaffMemberDeactivatedUnassignEventStaffMiddleware,
   createTimecardEditApprovedTimeEntryApplyMiddleware,
+  createTimeOffApprovedShiftCleanupMiddleware,
   createTrainingAttemptSubmittedRecordMiddleware,
   createVendorBlacklistedCancelPurchaseOrdersMiddleware,
 } from "./middleware";
@@ -223,24 +233,24 @@ export interface ManifestTelemetryHooks {
  * table and fans it out over SSE for the dashboard.
  */
 export interface ReactionLogRow {
-  tenantId: string;
   actorId: string | null;
-  /** Triggering command's entity (null when the IR omits it). */
-  entity: string | null;
+  causationId: string | null;
   /** Triggering command name. */
   command: string;
-  status: "success" | "failed";
+  correlationId: string | null;
+  durationMs: number;
   /** Semantic event names emitted by the command. */
   emittedEvents: string[];
-  /** IR reactions ("Entity.command") triggered by the emitted events. */
-  reactions: string[];
+  /** Triggering command's entity (null when the IR omits it). */
+  entity: string | null;
   errorMessage: string | null;
   /** Command input keys (shape only — no values). */
   payloadKeys: string[];
-  durationMs: number;
-  correlationId: string | null;
-  causationId: string | null;
+  /** IR reactions ("Entity.command") triggered by the emitted events. */
+  reactions: string[];
   source: string | null;
+  status: "success" | "failed";
+  tenantId: string;
 }
 
 /** Dependencies injected by the calling app. */
@@ -296,8 +306,6 @@ export interface CreateManifestRuntimeDeps {
     onProfileComplete?: (profile: unknown) => void;
     detailed?: boolean;
   };
-  /** Require IR provenance hash verification on first engine creation. */
-  requireValidProvenance?: boolean;
   /**
    * Optional sink for the append-only reaction-execution log. When provided,
    * the factory builds a {@link ReactionLogRow} for every settled command
@@ -308,6 +316,8 @@ export interface CreateManifestRuntimeDeps {
    * (e.g. in apps/test contexts without a DB / realtime bus).
    */
   reactionLogSink?: (row: ReactionLogRow) => void;
+  /** Require IR provenance hash verification on first engine creation. */
+  requireValidProvenance?: boolean;
   /** Telemetry hooks for observability. */
   telemetry?: ManifestTelemetryHooks;
 }
@@ -441,6 +451,51 @@ function hasTypedStore(entityName: string): boolean {
 // ---------------------------------------------------------------------------
 
 /**
+ * Build a tenant-scoped store provider identical to the one the factory wires
+ * into the engine. Exposed so external consumers (the async-reaction worker)
+ * can load entities by id WITHOUT going through the engine's command path —
+ * they need raw store reads for the load step of a reaction handler.
+ *
+ * Constitution §10: read-path freedom — handlers read via this provider and
+ * dispatch governed writes via `engine.runCommand` (the same pattern as the
+ * synchronous middleware).
+ *
+ * @internal — exported for the worker; not part of the stable factory API.
+ */
+export function buildStoreProvider(
+  prisma: PrismaLike | PrismaTransactionClient,
+  tenantId: string,
+  userId: string,
+  log: ManifestRuntimeLogger
+): NonNullable<RuntimeOptions["storeProvider"]> {
+  return (entityName: string) => {
+    if (hasTypedStore(entityName)) {
+      const config: PrismaStoreConfig = {
+        prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prisma),
+        entityName,
+        tenantId,
+        userId,
+      };
+      return new PrismaStore(config);
+    }
+    if (!loggedJsonStoreEntities.has(entityName)) {
+      loggedJsonStoreEntities.add(entityName);
+      log.info(
+        `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
+      );
+    }
+    return new PrismaJsonStore({
+      prisma:
+        asStoreClient<
+          ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]
+        >(prisma),
+      tenantId,
+      entityType: entityName,
+    });
+  };
+}
+
+/**
  * Load merged precompiled IR from `manifest/ir/*.ir.json` via the official
  * `@angriff36/manifest` IR types. Optional irPath loads a single file for tests.
  */
@@ -558,38 +613,12 @@ export async function createManifestRuntime(
 
   // 3. Build the store provider — entities with dedicated Prisma models use
   //    PrismaStore; everything else falls back to PrismaJsonStore.
-  const storeProvider: RuntimeOptions["storeProvider"] = (
-    entityName: string
-  ) => {
-    if (hasTypedStore(entityName)) {
-      const config: PrismaStoreConfig = {
-        prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prismaForWrites),
-        entityName,
-        tenantId: user.tenantId,
-        // userId — surfaced for entity stores that audit-derive caller
-        // identity (e.g. InventoryTransfer.requestedBy). Most stores ignore.
-        userId: user.id,
-      };
-
-      return new PrismaStore(config);
-    }
-
-    // Fall back to generic JSON store for entities without dedicated models.
-    if (!loggedJsonStoreEntities.has(entityName)) {
-      loggedJsonStoreEntities.add(entityName);
-      deps.log.info(
-        `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
-      );
-    }
-    return new PrismaJsonStore({
-      prisma:
-        asStoreClient<
-          ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]
-        >(prismaForWrites),
-      tenantId: user.tenantId,
-      entityType: entityName,
-    });
-  };
+  const storeProvider: RuntimeOptions["storeProvider"] = buildStoreProvider(
+    prismaForWrites,
+    user.tenantId,
+    user.id,
+    deps.log
+  );
 
   // 5. Build telemetry hooks — pass through caller-provided telemetry only.
   //    Outbox event persistence is now handled by the audit middleware (step 8),
@@ -635,8 +664,8 @@ export async function createManifestRuntime(
               };
               errorMessage =
                 r.guardFailure?.formatted ??
-                (r.error != null ? String(r.error) : null) ??
-                (r.message != null ? String(r.message) : null) ??
+                (r.error == null ? null : String(r.error)) ??
+                (r.message == null ? null : String(r.message)) ??
                 "command failed";
             }
 
@@ -693,6 +722,52 @@ export async function createManifestRuntime(
     asStoreClient<Parameters<typeof loadRolePolicies>[0]>(prismaForLookups),
     user.tenantId
   );
+
+  // 8a. Bootstrap upstream Manifest Postgres adapters (BEFORE the middleware
+  //     pipeline because the pilot async-reaction middleware needs the
+  //     `asyncDispatch` bridge wired into their options at construction time).
+  //     PostgresAuditSink provides durable audit records for every governed
+  //     command (constitution §12). PostgresOutboxStore provides production-
+  //     grade transactional event persistence with FOR UPDATE SKIP LOCKED
+  //     dispatch. Both share the singleton pg.Pool from pg-pool.ts.
+  //     Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
+  //     GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
+  //     CI without DB). The engine still works — just without persistent audit
+  //     or outbox delivery.
+  //
+  //     Async reaction queue — Capsule-owned durable queue for slow cross-
+  //     entity reactions (battle board sync, inventory restock, …) deferred
+  //     out of the synchronous runCommand path. Lives on the SAME pg.Pool (per
+  //     AGENTS.md HARD RULE #2 — prefer official methods; no new Redis/Inngest
+  //     infra). Two pilot reactions are registered + opted-in below; the
+  //     remaining ~18 migrations are 1-line factory edits each (no middleware
+  //     code change, see async-dispatch.ts). Skipped without DB → middleware
+  //     falls back to synchronous dispatch.
+  const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  let auditSink: PostgresAuditSink | undefined;
+  let outboxStore: PostgresOutboxStore | undefined;
+  let approvalStore: PostgresApprovalStore | undefined;
+  let asyncReactionStore: PostgresAsyncReactionStore | undefined;
+  let asyncDispatch: AsyncDispatch | undefined;
+  if (dbUrl) {
+    await ensureManifestSchema();
+    const pool = getPool();
+    auditSink = new PostgresAuditSink({ pool });
+    outboxStore = new PostgresOutboxStore({
+      pool,
+      projectSubject: true,
+    });
+    approvalStore = new PostgresApprovalStore({ pool });
+    asyncReactionStore = new PostgresAsyncReactionStore({
+      pool,
+      log: deps.log,
+    });
+    _asyncReactionStore = asyncReactionStore;
+    asyncDispatch = createAsyncDispatch(asyncReactionStore);
+    // Register pilot handlers (idempotent across multiple factory calls in
+    // the same process — `asyncReactionHandlersRegistered` guard).
+    registerAsyncReactionHandlers();
+  }
 
   // 8. Build middleware pipeline.
   //    Middleware runs INSIDE the Manifest engine lifecycle, replacing both
@@ -1111,10 +1186,18 @@ export async function createManifestRuntime(
     // mutate scalar) and hardcoded costPerUnit: 0, so it silently no-op'd and would
     // have zeroed InventoryItem.unitCost on every receipt. The nested restock emits
     // InventoryRestocked, which the inventory-movement middleware above ledgers.
+    //
+    // ASYNC PILOT: when the Postgres async-reaction queue is wired (production
+    // with DB), this middleware ENQUEUES jobs and returns immediately — the
+    // worker drains them via the registered `shipmentItemReceivedInventoryRestock`
+    // handler. Receiving a multi-line shipment no longer serially blocks on each
+    // restock. Per-received-line idempotency is preserved (the worker is
+    // at-least-once). Falls back to synchronous dispatch in test/dev without DB.
     createShipmentItemReceivedInventoryRestockMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Equipment: MaintenanceWorkOrderCompleted -> Equipment.recordMaintenance.
     // Middleware (not a reaction) because the equipment to record against
@@ -1384,10 +1467,35 @@ export async function createManifestRuntime(
     // the partial update-event payloads — so it loads the updated Event and fans
     // out BattleBoard.syncFromEvent per board. Retires the imperative
     // syncBattleBoardsForEvent() server-action helper.
+    //
+    // ASYNC PILOT: when the Postgres async-reaction queue is wired (production
+    // with DB), this middleware ENQUEUES jobs and returns immediately — the
+    // worker drains them via the registered `eventUpdatedBoardSync` handler.
+    // Slow 1:N fan-outs no longer block the original command response. Falls
+    // back to synchronous dispatch in test/dev without DB.
     createEventUpdatedBoardSyncMiddleware({
       storeProvider,
       findLinkedBoards: async (tenantId, eventId) => {
-        const rows = await prismaForWrites.battleBoard.findMany({
+        // `battleBoard` is the Prisma model delegate; `PrismaLike` only
+        // declares `$transaction` + `user` (the delegates the factory touches
+        // directly). The transaction client carries an index signature, so the
+        // access works at runtime on both — cast through `asStoreClient` to
+        // bridge the structural mismatch (same pattern the store constructors
+        // use; this is the documented Type bridge site in this module).
+        const battleBoardDelegate = asStoreClient<{
+          findMany: (args: {
+            where: { tenantId: string; eventId: string; deletedAt: null };
+            select: Record<string, boolean>;
+          }) => Promise<
+            Array<{
+              id: string;
+              tenantId: string;
+              eventId: string;
+              deletedAt: Date | null;
+            }>
+          >;
+        }>(prismaForWrites);
+        const rows = await battleBoardDelegate.findMany({
           where: { tenantId, eventId, deletedAt: null },
           select: { id: true, tenantId: true, eventId: true, deletedAt: true },
         });
@@ -1400,6 +1508,7 @@ export async function createManifestRuntime(
       },
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Events: EventLocationUpdated -> re-sync the venue on the event's ACTIVE
     // catering orders. Sibling of the board-sync leg above (split per PR):
@@ -1536,31 +1645,7 @@ export async function createManifestRuntime(
     }),
   ];
 
-  // 9. Bootstrap upstream Manifest Postgres adapters.
-  //    PostgresAuditSink provides durable audit records for every governed
-  //    command (constitution §12). PostgresOutboxStore provides production-
-  //    grade transactional event persistence with FOR UPDATE SKIP LOCKED
-  //    dispatch. Both share the singleton pg.Pool from pg-pool.ts.
-  //    Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
-  //    GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
-  //    CI without DB). The engine still works — just without persistent audit
-  //    or outbox delivery.
-  const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-  let auditSink: PostgresAuditSink | undefined;
-  let outboxStore: PostgresOutboxStore | undefined;
-  let approvalStore: PostgresApprovalStore | undefined;
-  if (dbUrl) {
-    await ensureManifestSchema();
-    const pool = getPool();
-    auditSink = new PostgresAuditSink({ pool });
-    outboxStore = new PostgresOutboxStore({
-      pool,
-      projectSubject: true,
-    });
-    approvalStore = new PostgresApprovalStore({ pool });
-  }
-
-  // 9b. Field-level encryption provider (AES-256-GCM).
+  // 9. Field-level encryption provider (AES-256-GCM).
   //    Activated when ENCRYPTION_KEY env var is set (64-char hex string).
   //    When absent, encrypted properties are stored as plaintext (dev/test safe).
   //    Supports key rotation via ENCRYPTION_KEY_PREVIOUS env var.
@@ -1608,6 +1693,65 @@ export async function createManifestRuntime(
   );
 
   return engine;
+}
+
+// ---------------------------------------------------------------------------
+// Async reaction handler registration
+// ---------------------------------------------------------------------------
+
+/**
+ * Process-singleton async reaction store, set when {@link createManifestRuntime}
+ * first wires it (production with DB). The worker route reads it via
+ * {@link getAsyncReactionStore} so it doesn't need to reconstruct the store or
+ * the pool. `undefined` in test / no-DB contexts — the worker route no-ops.
+ */
+let _asyncReactionStore: PostgresAsyncReactionStore | undefined;
+
+/**
+ * Accessor for the process-singleton async reaction store. The worker drain
+ * route uses this; tests inject their own store directly into
+ * {@link drainAsyncReactions}.
+ */
+export function getAsyncReactionStore():
+  | PostgresAsyncReactionStore
+  | undefined {
+  return _asyncReactionStore;
+}
+
+/**
+ * Tracks whether the handlers have been registered in this process. The
+ * registry throws on duplicate registration, so a second createManifestRuntime
+ * call (e.g. for a different tenant) must skip re-registering.
+ */
+let asyncReactionHandlersRegistered = false;
+
+/**
+ * Register the async reaction handlers with the singleton registry. Idempotent
+ * across multiple `createManifestRuntime` calls in the same process — the
+ * registry is shared, so handlers register ONCE.
+ *
+ * To add a new async reaction:
+ * 1. Author the handler (see `event-updated-board-sync-handler.ts`).
+ * 2. Add a `registerReaction()` line here.
+ * 3. Pass `asyncEnqueue` to the source middleware in the factory pipeline.
+ */
+function registerAsyncReactionHandlers(): void {
+  if (asyncReactionHandlersRegistered) {
+    return;
+  }
+  asyncReactionRegistry.register({
+    name: EVENT_UPDATED_BOARD_SYNC_REACTION,
+    description:
+      "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",
+    handler: eventUpdatedBoardSyncHandler,
+  });
+  asyncReactionRegistry.register({
+    name: SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION,
+    description:
+      "ShipmentItemReceived → InventoryItem.restock (load line, preserve unitCost)",
+    handler: shipmentItemReceivedInventoryRestockHandler,
+  });
+  asyncReactionHandlersRegistered = true;
 }
 
 // Re-export types that consumers may need.

@@ -2037,3 +2037,64 @@ just never wired. The snapshot columns + `syncFromEvent` + the app shim are now 
 Search: battle board untitled event, boardData meta null, syncFromEvent writes columns UI reads
 JSON, prismaToFull live event join, reactions cannot fan out 1:N, event details not propagating,
 getBoardFull database.event findFirst, MetaPanel event-owned read-only
+
+---
+
+## 25. GenericPrismaStore compound-key optimistic-lock = SILENT DATA LOSS (2026-06-18)
+
+**Symptom:** "I can't edit an event." Event update returns HTTP 200, the `EventUpdated`
+reaction fires (BattleBoard.syncFromEvent runs "for updated event"), but the row never
+changes — a fake success masking dropped writes.
+
+**Root cause (package bug, `@angriff36/manifest` 2.8.0 `dist/manifest/stores/prisma-generic/store.js:159-184`):**
+`GenericPrismaStore.update()` does optimistic concurrency when `meta.versionProperty` is set.
+For a COMPOUND key it inserts the version into the unique selector itself:
+```js
+if (this.meta.pkFields.length > 1) { const c = where[this.meta.whereAccessor]; c[fieldName] = expectedVersion; }
+const row = await this.delegate.update({ where, data });  // where = { tenantId_id: { tenantId, id, version } }
+... catch { return undefined; }   // ← swallows "Unknown argument `version`" and drops the write
+```
+Prisma rejects `version` inside the `tenantId_id` selector (it only accepts `{tenantId,id}`),
+the `catch` returns `undefined`, and the engine still emits the event + returns success.
+
+**Trigger:** entity has a composite `@@id`/`@@unique` AND a `version` column AND the runtime
+sends a new `version` in the update `data` (it always does). The `versionProperty` is merged
+into our metadata by `manifest/scripts/generate-prisma-model-metadata.mjs:203-209` from IR.
+
+**Affected entities (8, all compound-key + versioned):** Event, CateringOrder, InventoryItem,
+VendorContract, ScheduleShift, EventGuest, Invoice, Payment. All silently drop edits.
+
+**Fix applied (Event only, surgical, no regen):** `manifest/runtime/src/prisma-stores/event-prisma-store.ts`
+hands its inner `GenericPrismaStore` a metadata copy with `versionProperty: undefined`, so updates
+use a plain persisting write. `version` still increments (it's in `data`). The bespoke store is the
+only one that can be patched without touching generated code — `createGenericPrismaStore` is in the
+generated `prisma-store-registry.generated.ts`.
+
+**Systemic fix APPLIED 2026-06-18 (all 8 protected):** the package OCC is 100% broken for compound
+keys (never persisted, only silently failed), so emitting `versionProperty` only harms. The
+versionProperty-merge loop in `generate-prisma-model-metadata.mjs` now guards on key arity —
+`if (meta && meta.pkFields.length === 1) meta.versionProperty = versionProp;` — so NO compound-key
+model opts into the broken path; single-key models keep it (their OCC where path is valid). Verified:
+all 8 entities now have 0 `versionProperty`; the regen diff is exactly 8 `versionProperty` removals
+(plus pre-existing schema drift the committed metadata had accrued — independent of this fix).
+
+**Two gotchas for whoever regenerates this:**
+1. **Dual tracked copies.** `prisma-model-metadata.generated.{ts,json}` + `entity-to-prisma-model.generated.ts`
+   exist in BOTH `manifest/generated/runtime/` and `manifest/runtime/src/generated/`. On the dev box
+   these are a junction; on Windows checkouts they are SEPARATE tracked files and
+   `generate-prisma-model-metadata.mjs` only writes the first. The runtime COMPILES the
+   `runtime/src/generated/` copy (factory import `./generated/prisma-model-metadata.generated`), so
+   after regen you must `cp` the 3 files into `runtime/src/generated/` or the fix won't take effect.
+2. **Runtime authority is THIS file, not the IR projection.** `manifest-runtime-factory.ts:40-44`
+   imports `PRISMA_MODEL_METADATA` from `./generated/prisma-model-metadata.generated`; the IR-projection
+   `manifest-prisma-store-metadata.generated.ts` (also carries versionProperty) is NOT wired (its
+   delegates don't exist on the live client — see §17/§18). Fixing the schema-derived producer is
+   sufficient; do not chase the projection metadata.
+
+Engine-level OCC (version auto-increment + VERSION_MISMATCH in `updateInstance`) is UNAFFECTED — only
+the broken store-level DB-WHERE guard is removed (proven by `entity-concurrency.test.ts`). Regression
+test: `manifest/runtime/src/__tests__/prisma-metadata-compound-key-occ.test.ts`. The Event surgical
+store fix is now redundant but left in place (harmless). Proper OCC belongs upstream in the package's
+`update()` (use `updateMany({where:{...,version}})` + count check, not the compound selector).
+Search: optimistic lock, version unknown argument, silent data loss, tenantId_id,
+GenericPrismaStore update returns undefined, can't edit event.
