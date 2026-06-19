@@ -1,6 +1,6 @@
 {
   "strategy": "native-compileProjectToIR",
-  "compilerVersion": "2.7.0",
+  "compilerVersion": "2.15.0",
   "sources": [
     "_base.manifest",
     "ai/ai-event-setup-rules.manifest",

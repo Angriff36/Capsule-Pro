@@ -113,7 +113,6 @@ entity Event mixin TenantScoped, SoftDeletable {
   }
 
   command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
-    guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
     guard clientId != null "Client ID must be provided"
