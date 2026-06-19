@@ -52,6 +52,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  CONTAINER_DEACTIVATED_DISH_CLEAR_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -77,6 +82,7 @@ export interface ContainerDeactivatedDishClearDiagnostic {
 }
 
 export interface ContainerDeactivatedDishClearMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: ContainerDeactivatedDishClearDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -108,6 +114,7 @@ export function createContainerDeactivatedDishClearMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -120,6 +127,16 @@ export function createContainerDeactivatedDishClearMiddleware(
           ctx.entityName === "Container" &&
           ctx.command.name === "deactivate"
       );
+
+      if (asyncEnqueue && deactivatedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: deactivatedEvents,
+          reactionName: CONTAINER_DEACTIVATED_DISH_CLEAR_REACTION,
+        });
+        return {};
+      }
 
       for (const event of deactivatedEvents) {
         const payload = event.payload as { userId?: unknown } | undefined;

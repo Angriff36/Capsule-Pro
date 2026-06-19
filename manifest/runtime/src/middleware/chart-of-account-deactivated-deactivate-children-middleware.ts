@@ -54,6 +54,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  CHART_OF_ACCOUNT_DEACTIVATED_DEACTIVATE_CHILDREN_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -79,6 +84,7 @@ export interface ChartOfAccountDeactivatedDeactivateChildrenDiagnostic {
 }
 
 export interface ChartOfAccountDeactivatedDeactivateChildrenMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (
     diag: ChartOfAccountDeactivatedDeactivateChildrenDiagnostic
@@ -230,6 +236,7 @@ export function createChartOfAccountDeactivatedDeactivateChildrenMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -242,6 +249,17 @@ export function createChartOfAccountDeactivatedDeactivateChildrenMiddleware(
           ctx.entityName === "ChartOfAccount" &&
           ctx.command.name === "deactivate"
       );
+
+      if (asyncEnqueue && deactivatedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: deactivatedEvents,
+          reactionName:
+            CHART_OF_ACCOUNT_DEACTIVATED_DEACTIVATE_CHILDREN_REACTION,
+        });
+        return {};
+      }
 
       for (const event of deactivatedEvents) {
         await processDeactivatedAccount(event, storeProvider, {

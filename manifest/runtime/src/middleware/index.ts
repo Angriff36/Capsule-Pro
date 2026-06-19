@@ -8,6 +8,24 @@
  */
 
 export {
+  type ExecutionMode,
+  type InputMappingMode,
+  type MiddlewareCategory,
+  type MiddlewareHook,
+  type MiddlewareIdempotencyKey,
+  type MiddlewareRegistryEntry,
+  type RetryPolicy,
+  DEFAULT_REGISTRY_RETRY_POLICY,
+  MIDDLEWARE_REGISTRY,
+  diffRegistryVsWiring,
+  findReactionsTargetingEntity,
+  findReactionsTriggeredByEvent,
+  getAsyncRegistryEntries,
+  getMiddlewareRegistry,
+  getRegistryByCategory,
+  getRegistryEntry,
+} from "./middleware-registry";
+export {
   type ClientInteractionEscalatedNotifyDiagnostic,
   type ClientInteractionEscalatedNotifyMiddlewareOptions,
   createClientInteractionEscalatedNotifyMiddleware,

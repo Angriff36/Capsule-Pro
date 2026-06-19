@@ -12,6 +12,8 @@ gates (audit-governance, audit-bypasses, integration-check, enforce-surface).
 | `ai-surfaces.md` | Hand-authored governance reference. | Agent SDK/MCP/AI boundaries and forbidden bypasses. |
 | `projection-conformance.md` | Hand-authored governance reference. | Deterministic, dispatcher-aligned, non-authoritative projection proof. |
 | `audit-checklist.md` | Hand-authored review checklist. | Lightweight checks until mechanical gates exist. |
+| `schema-drift-baseline.json` | `pnpm manifest:audit-schema-drift --update-baseline` | Pre-existing entity↔Prisma drift debt. Strict gate fails only on NEW violations. |
+| `command-param-types-baseline.json` | `pnpm manifest:audit-command-param-types --update-baseline` | Pre-existing command-param type-mismatch debt (IR↔Prisma/Zod/OpenAPI). Strict gate fails only on NEW violations. |
 
 ## Rules
 

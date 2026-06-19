@@ -46,6 +46,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  PAYMENT_PROCESSED_INVOICE_APPLY_REACTION,
+} from "../async-reactions";
 import { isMoneyGreaterThan } from "../numeric-boundary";
 
 interface RunCommandOptions {
@@ -72,6 +77,7 @@ export interface PaymentInvoiceApplyDiagnostic {
 }
 
 export interface PaymentProcessedInvoiceApplyMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: PaymentInvoiceApplyDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -115,6 +121,7 @@ export function createPaymentProcessedInvoiceApplyMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -129,6 +136,16 @@ export function createPaymentProcessedInvoiceApplyMiddleware(
           ctx.entityName === "Payment" &&
           ctx.command.name === "process"
       );
+
+      if (asyncEnqueue && processedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: processedEvents,
+          reactionName: PAYMENT_PROCESSED_INVOICE_APPLY_REACTION,
+        });
+        return {};
+      }
 
       for (const event of processedEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;

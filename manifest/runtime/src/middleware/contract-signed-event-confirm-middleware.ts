@@ -39,6 +39,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  CONTRACT_SIGNED_EVENT_CONFIRM_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -64,6 +69,7 @@ export interface ContractSignedEventConfirmDiagnostic {
 }
 
 export interface ContractSignedEventConfirmMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: ContractSignedEventConfirmDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -95,6 +101,7 @@ export function createContractSignedEventConfirmMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -107,6 +114,16 @@ export function createContractSignedEventConfirmMiddleware(
           ctx.entityName === "EventContract" &&
           ctx.command.name === "sign"
       );
+
+      if (asyncEnqueue && signedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: signedEvents,
+          reactionName: CONTRACT_SIGNED_EVENT_CONFIRM_REACTION,
+        });
+        return {};
+      }
 
       for (const event of signedEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;

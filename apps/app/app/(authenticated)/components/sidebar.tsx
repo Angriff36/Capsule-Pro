@@ -30,6 +30,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { BreadcrumbBar } from "./breadcrumb-bar";
 import { ModuleHeader } from "./module-header";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 import { Search } from "./search";
@@ -257,6 +258,7 @@ export const GlobalSidebar = ({
       </Sidebar>
       <SidebarInset>
         <ModuleHeader />
+        <BreadcrumbBar />
         {children}
       </SidebarInset>
     </>

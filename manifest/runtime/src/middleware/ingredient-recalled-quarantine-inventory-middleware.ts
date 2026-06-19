@@ -52,6 +52,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  INGREDIENT_RECALLED_QUARANTINE_INVENTORY_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -77,6 +82,7 @@ export interface IngredientRecalledQuarantineDiagnostic {
 }
 
 export interface IngredientRecalledQuarantineInventoryMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: IngredientRecalledQuarantineDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -110,6 +116,7 @@ export function createIngredientRecalledQuarantineInventoryMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -122,6 +129,16 @@ export function createIngredientRecalledQuarantineInventoryMiddleware(
           ctx.entityName === "Ingredient" &&
           ctx.command.name === "flagRecall"
       );
+
+      if (asyncEnqueue && recallEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: recallEvents,
+          reactionName: INGREDIENT_RECALLED_QUARANTINE_INVENTORY_REACTION,
+        });
+        return {};
+      }
 
       for (const event of recallEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;

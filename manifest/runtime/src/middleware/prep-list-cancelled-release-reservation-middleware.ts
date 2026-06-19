@@ -35,6 +35,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  PREP_LIST_CANCELLED_RELEASE_RESERVATION_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -60,6 +65,7 @@ export interface PrepReleaseReservationDiagnostic {
 
 export interface PrepListCancelledReleaseReservationMiddlewareOptions {
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   /** Structured skip/outcome reporting. Default logs via console.warn. */
   onDiagnostic?: (diag: PrepReleaseReservationDiagnostic) => void;
@@ -110,6 +116,7 @@ export function createPrepListCancelledReleaseReservationMiddleware(
     dispatchCommand,
     systemUserId = "system:prep-release",
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -122,6 +129,16 @@ export function createPrepListCancelledReleaseReservationMiddleware(
           ctx.entityName === "PrepList" &&
           ctx.command.name === "cancel"
       );
+
+      if (asyncEnqueue && cancelledEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: cancelledEvents,
+          reactionName: PREP_LIST_CANCELLED_RELEASE_RESERVATION_REACTION,
+        });
+        return {};
+      }
 
       for (const event of cancelledEvents) {
         const payload = event.payload as EventPayload;

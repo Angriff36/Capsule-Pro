@@ -60,6 +60,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EVENT_LOCATION_CATERING_SYNC_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -85,6 +90,7 @@ export interface EventCateringVenueSyncDiagnostic {
 }
 
 export interface EventLocationCateringSyncMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: EventCateringVenueSyncDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -131,6 +137,7 @@ export function createEventLocationCateringSyncMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -145,6 +152,17 @@ export function createEventLocationCateringSyncMiddleware(
         TRIGGER_EVENTS.has(event.name)
       );
       if (triggers.length === 0) {
+        return {};
+      }
+
+      if (asyncEnqueue) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: triggers,
+          reactionName: EVENT_LOCATION_CATERING_SYNC_REACTION,
+          dedupeBySubject: true,
+        });
         return {};
       }
 

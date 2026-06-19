@@ -51,17 +51,50 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
 
-const ARTIFACT = {
-  label: "manifest-hooks.generated.ts",
-  path: resolve(PROJECT_ROOT, "apps/app/app/lib/manifest-hooks.generated.ts"),
-};
+// The generated surface is DOMAIN-PARTITIONED (feature-1781435713420-506r2pr8i):
+// the entry file is now a backward-compat shim that re-exports a barrel inside a
+// chunk directory. The drift gate must cover BOTH the shim and every chunk file —
+// otherwise entity/command drift hides behind a static 3-line shim and, worse, the
+// gate would regenerate the chunks but restore only the shim (mutating the tree).
+const SHIM_PATH = resolve(
+  PROJECT_ROOT,
+  "apps/app/app/lib/manifest-hooks.generated.ts"
+);
+const CHUNK_DIR = resolve(PROJECT_ROOT, "apps/app/app/lib/manifest-hooks");
+
+/** Snapshot every *.generated.ts file under CHUNK_DIR as {relPath: contents}. */
+function snapshotChunkDir() {
+  const out = {};
+  if (!existsSyncSafe(CHUNK_DIR)) {
+    return out;
+  }
+  for (const name of readdirSync(CHUNK_DIR)) {
+    if (!name.endsWith(".generated.ts")) {
+      continue;
+    }
+    const p = join(CHUNK_DIR, name);
+    if (!statSync(p).isFile()) {
+      continue;
+    }
+    out[name] = readFileSync(p, "utf8");
+  }
+  return out;
+}
+function existsSyncSafe(p) {
+  try {
+    statSync(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const GENERATE_SCRIPT = resolve(__dirname, "generate-react-query-hooks.mjs");
 
@@ -166,40 +199,77 @@ function runSelfTest() {
 function runGate() {
   console.log("React Query hooks drift gate -- regenerating IR-derived hooks...\n");
 
-  // Snapshot the committed artifact so we can restore it no matter what.
-  const committed = readFileSync(ARTIFACT.path, "utf8");
+  // Snapshot the committed surface (shim + every chunk file) so we can restore it
+  // no matter what. The generator writes all of these in place.
+  const committedShim = readFileSync(SHIM_PATH, "utf8");
+  const committedChunks = snapshotChunkDir();
 
   let drift = false;
 
   try {
-    // Regenerate via the production script (it writes the artifact in place).
+    // Regenerate via the production script (it writes shim + chunks in place).
     // execFileSync throws on non-zero exit -> caught below and treated as failure.
     execFileSync(process.execPath, [GENERATE_SCRIPT], {
       cwd: PROJECT_ROOT,
       stdio: ["ignore", "ignore", "inherit"],
     });
 
-    const regenerated = readFileSync(ARTIFACT.path, "utf8");
-    const result = diffText(committed, regenerated);
-    if (result.inSync) {
+    // Compare the shim.
+    const regeneratedShim = readFileSync(SHIM_PATH, "utf8");
+    const shimResult = diffText(committedShim, regeneratedShim);
+    if (shimResult.inSync) {
       console.log(
-        `  OK    ${ARTIFACT.label} (${result.committedLines} lines, in sync)`
+        `  OK    manifest-hooks.generated.ts (shim, ${shimResult.committedLines} lines, in sync)`
       );
     } else {
       drift = true;
       console.log(
-        `  DRIFT ${ARTIFACT.label} -- first diff at line ${result.firstDiffLine}; ` +
-          `${result.diffLineCount} line(s) differ ` +
-          `(committed ${result.committedLines} -> regenerated ${result.regeneratedLines})`
+        `  DRIFT manifest-hooks.generated.ts (shim) -- first diff at line ${shimResult.firstDiffLine}; ${shimResult.diffLineCount} line(s) differ`
       );
+    }
+
+    // Compare every chunk file. A new chunk (present after regen, absent before)
+    // or a removed chunk both count as drift.
+    const regeneratedChunks = snapshotChunkDir();
+    const chunkNames = new Set([
+      ...Object.keys(committedChunks),
+      ...Object.keys(regeneratedChunks),
+    ]);
+    for (const name of [...chunkNames].sort()) {
+      const before = committedChunks[name];
+      const after = regeneratedChunks[name];
+      if (before === undefined) {
+        drift = true;
+        console.log(`  DRIFT manifest-hooks/${name} -- NEW chunk (not committed)`);
+        continue;
+      }
+      if (after === undefined) {
+        drift = true;
+        console.log(`  DRIFT manifest-hooks/${name} -- chunk REMOVED by regen`);
+        continue;
+      }
+      const r = diffText(before, after);
+      if (r.inSync) {
+        console.log(
+          `  OK    manifest-hooks/${name} (${r.committedLines} lines, in sync)`
+        );
+      } else {
+        drift = true;
+        console.log(
+          `  DRIFT manifest-hooks/${name} -- first diff at line ${r.firstDiffLine}; ${r.diffLineCount} line(s) differ (committed ${r.committedLines} -> regenerated ${r.regeneratedLines})`
+        );
+      }
     }
   } catch (err) {
     console.error("\nReact Query hooks generation FAILED during drift check:");
     console.error(err.message || err);
     drift = true;
   } finally {
-    // Always restore the committed artifact -- leave the working tree untouched.
-    writeFileSync(ARTIFACT.path, committed);
+    // Always restore the committed surface -- leave the working tree untouched.
+    writeFileSync(SHIM_PATH, committedShim);
+    for (const [name, contents] of Object.entries(committedChunks)) {
+      writeFileSync(join(CHUNK_DIR, name), contents);
+    }
   }
 
   console.log("");
@@ -208,9 +278,10 @@ function runGate() {
       "DRIFT DETECTED. The committed React Query hooks are stale vs the IR."
     );
     console.error(
-      "Fix: run `pnpm manifest:generate-hooks` and commit the regenerated file:"
+      "Fix: run `pnpm manifest:generate-hooks` and commit the regenerated files:"
     );
     console.error("  - apps/app/app/lib/manifest-hooks.generated.ts");
+    console.error("  - apps/app/app/lib/manifest-hooks/*.generated.ts");
     process.exit(1);
   }
   console.log("React Query hooks are in sync with the IR. No drift.");

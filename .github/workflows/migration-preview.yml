@@ -1,0 +1,169 @@
+name: Migration Preview
+
+# Runs `prisma migrate dev --create-only` against an EPHEMERAL Neon branch that
+# is a copy-on-write snapshot of the primary (fully-migrated) branch, then
+# validates the generated migration SQL for table-name correctness (incl.
+# @@map resolution) and rejects empty/no-op migrations.
+#
+# WHY THIS EXISTS: hand-authored migration SQL and PascalCase table-name
+# mismatches (the 2026-05-02 EmployeeDeduction incident) are the leading cause
+# of failed `db:deploy` runs. Catching the drift on the PR — before it reaches
+# staging/prod — is the cheapest point to fix it.
+#
+# TRIGGER: only on PRs that touch a `.manifest` source file OR schema.prisma.
+# Manifest source changes flow through IR → schema.prisma projection → migration,
+# so either is sufficient to warrant a migration preview. Heavier than the other
+# gates (spins up a Neon branch), so it is path-filtered rather than running on
+# every PR.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "manifest/source/**/*.manifest"
+      - "packages/database/prisma/schema.prisma"
+      - "packages/database/prisma/migrations/**"
+      - ".github/workflows/migration-preview.yml"
+      - "scripts/neon-migration-branch.mjs"
+      - "scripts/validate-generated-migration.mjs"
+  workflow_dispatch:
+
+concurrency:
+  group: migration-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  NPM_TOKEN: ${{ github.token }}
+
+jobs:
+  migration-preview:
+    name: Migration Preview (Ephemeral Neon)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # pnpm/action-setup MUST come before actions/setup-node when cache: pnpm
+      # is used (matches ci.yml / manifest-ci.yml convention).
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ github.token }}
+
+      # ── Secret gate ──────────────────────────────────────────────────────
+      # Fork PRs and Dependabot do NOT receive repo secrets. Skip the Neon run
+      # with an explicit notice instead of failing — the path-filtered unit
+      # tests (db:validate-migrations:test) still run in ci.yml. The
+      # if-guard above already excludes dependabot; this guards forks.
+      - name: Check Neon secrets present
+        id: secrets
+        run: |
+          if [ -z "${{ secrets.NEON_API_KEY }}" ] || [ -z "${{ secrets.NEON_DATABASE_URL }}" ]; then
+            echo "::notice::Migration Preview skipped — NEON_API_KEY / NEON_DATABASE_URL secrets not available (typical for fork PRs). Set both secrets to enable the ephemeral-branch migration gate."
+            echo "has-secrets=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-secrets=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Static preflight ─────────────────────────────────────────────────
+      # Filesystem-only checks that don't need Neon — run always so a fork PR
+      # still gets SOME migration-history validation (the existing
+      # db:validate-migrations gate already runs in ci.yml, but this makes the
+      # dependency explicit within this workflow).
+      - name: Validate committed migration history
+        run: pnpm db:validate-migrations
+
+      - name: Validate generated-migration logic (unit tests)
+        run: pnpm db:validate-generated-migration:test
+
+      # ── Ephemeral Neon branch lifecycle ──────────────────────────────────
+      - name: Create ephemeral Neon branch
+        id: branch
+        if: steps.secrets.outputs.has-secrets == 'true'
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          BRANCH_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: node scripts/neon-migration-branch.mjs create
+
+      - name: Generate candidate migration (--create-only)
+        id: generate
+        if: steps.secrets.outputs.has-secrets == 'true'
+        # `prisma migrate dev --create-only` diffs the committed schema.prisma
+        # against the ephemeral branch (which carries the full migration
+        # history) and writes a NEW migration dir WITHOUT applying it. If
+        # schema.prisma already matches the migrated state, Prisma exits 0 and
+        # emits no migration — that is a valid, non-failing outcome.
+        #
+        # DATABASE_URL → the ephemeral branch's migrated copy.
+        # SHADOW_DATABASE_URL → the empty shadow database the script created;
+        #   prisma.config.ts picks it up when present. We pass it via env so the
+        #   same prisma.config.ts works locally (SHADOW_DATABASE_URL in
+        #   packages/database/.env.local) and in CI.
+        env:
+          DATABASE_URL: ${{ steps.branch.outputs.branch-database-url }}
+          SHADOW_DATABASE_URL: ${{ steps.branch.outputs.branch-shadow-database-url }}
+        run: |
+          set -euo pipefail
+          MIGRATION_NAME="ci_migration_preview"
+          # Count migration dirs BEFORE so the validator can find the newest.
+          BEFORE=$(find packages/database/prisma/migrations -maxdepth 1 -type d -name '[0-9]*' | wc -l)
+          echo "Migration dirs before: $BEFORE"
+
+          # --create-only: generate the migration SQL without applying it.
+          # Prisma exits non-zero if it CANNOT reconcile the schema (a conflict)
+          # — that is exactly the failure we want to surface.
+          if pnpm --filter @repo/database exec prisma migrate dev --create-only --name "$MIGRATION_NAME"; then
+            echo "migration-generated=true" >> "$GITHUB_OUTPUT"
+          else
+            # Distinguish "conflict" (non-zero, schema drift Prisma can't
+            # reconcile) from "no drift". `migrate dev` prints a clear message
+            # either way; we only need to know whether a dir was created.
+            echo "migration-generated=false" >> "$GITHUB_OUTPUT"
+            echo "::error::prisma migrate dev --create-only failed — the schema change would conflict at deploy time. See output above for the reconciliation error."
+            exit 1
+          fi
+
+          AFTER=$(find packages/database/prisma/migrations -maxdepth 1 -type d -name '[0-9]*' | wc -l)
+          echo "Migration dirs after: $AFTER"
+          if [ "$AFTER" -le "$BEFORE" ]; then
+            echo "::notice::No new migration generated — schema.prisma is already in sync with the migration history."
+          fi
+
+      - name: Validate generated migration SQL
+        if: steps.secrets.outputs.has-secrets == 'true' && steps.generate.outputs.migration-generated == 'true'
+        # --migration-name targets the dir Prisma just wrote (named ci_migration_preview),
+        # so validation is precise even if older migrations exist. Without it the
+        # validator falls back to the newest timestamped dir.
+        run: node scripts/validate-generated-migration.mjs --migration-name ci_migration_preview
+
+      # ── Cleanup ──────────────────────────────────────────────────────────
+      # ALWAYS delete the ephemeral branch — even on failure — so branches
+      # never accumulate. continue-on-error so a cleanup failure never masks
+      # the real validation result.
+      - name: Delete ephemeral Neon branch
+        if: always() && steps.secrets.outputs.has-secrets == 'true'
+        continue-on-error: true
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          NEON_BRANCH_ID: ${{ steps.branch.outputs.neon-branch-id }}
+        run: node scripts/neon-migration-branch.mjs delete

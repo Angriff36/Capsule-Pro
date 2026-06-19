@@ -27,13 +27,10 @@ import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
 import {
   type AsyncDispatch,
+  ASYNC_REACTION_HANDLER_MAP,
   asyncReactionRegistry,
   createAsyncDispatch,
-  EVENT_UPDATED_BOARD_SYNC_REACTION,
-  eventUpdatedBoardSyncHandler,
   PostgresAsyncReactionStore,
-  SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION,
-  shipmentItemReceivedInventoryRestockHandler,
 } from "./async-reactions";
 import { createAesGcmEncryptionProvider } from "./encryption-provider";
 import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
@@ -107,6 +104,10 @@ import {
   createTrainingAttemptSubmittedRecordMiddleware,
   createVendorBlacklistedCancelPurchaseOrdersMiddleware,
 } from "./middleware";
+import {
+  diffRegistryVsWiring,
+  getAsyncRegistryEntries,
+} from "./middleware/middleware-registry";
 import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
@@ -778,6 +779,80 @@ export async function createManifestRuntime(
   //    Note: after-emit audit/outbox persistence is now handled by the engine
   //    natively via auditSink + outboxStore RuntimeOptions (step 9).
   let engine: ManifestRuntimeEngine;
+  /**
+   * Ordered registry names mirroring the `middleware` array below — one entry
+   * per pipeline position, in declaration order. The source of truth for the
+   * wiring-completeness check (see {@link validateWiringCompleteness}), which
+   * catches middleware wired without a registry declaration (invisible to the
+   * audit graph) or declared but never wired (dead propagation).
+   *
+   * Keep this list in lock-step with the `middleware` array — the test suite
+   * asserts length parity so a position added to one without the other fails.
+   */
+  const MIDDLEWARE_PIPELINE_NAMES = [
+    "identity",
+    "rbac",
+    "sample-data-seed",
+    "prep-list-seed",
+    "prep-inventory-demand",
+    "prep-list-completed-consume",
+    "prep-list-cancelled-release-reservation",
+    "prep-task-station-count",
+    "event-guest-count-prep-rescale",
+    "event-dish-prep-sync",
+    "dish-deactivated-prune",
+    "chart-of-account-deactivated-deactivate-children",
+    "container-deactivated-dish-clear",
+    "ingredient-recalled-quarantine-inventory",
+    "qa-check-failed-corrective-action",
+    "lead-converted-deal-create",
+    "proposal-lifecycle-lead-status",
+    "deal-lifecycle-propagation",
+    "client-interaction-overdue-notify",
+    "client-interaction-escalated-notify",
+    "contract-signed-event-confirm",
+    "payment-processed-invoice-apply",
+    "payment-refunded-invoice-record",
+    "collection-payment-recorded-invoice-apply",
+    "collection-written-off-invoice-write-off",
+    "payment-plan-completed-collection-case-resolve",
+    "invoice-overdue-collection-case-create",
+    "invoice-fully-paid-mark-paid",
+    "invoice-written-off-revrec-cancel",
+    "labor-budget-actual-recorded-alert",
+    "inventory-movement-transaction",
+    "inventory-stock-sync-item",
+    "inventory-transfer-received-stock-movement",
+    "shipment-item-received-inventory-restock",
+    "maintenance-completed-equipment-record",
+    "maintenance-created-equipment-status",
+    "maintenance-schedule-completed-work-order-create",
+    "facility-work-order-asset-status",
+    "logistics-dispatch-driver-vehicle-status",
+    "logistics-route-driver-vehicle-status",
+    "training-attempt-submitted-record",
+    "staff-member-created-training-assignment",
+    "employee-certification-lapsed-notify",
+    "employee-certification-lapsed-suspend-availability",
+    "schedule-shift-first-shift-due-date",
+    "schedule-published-notify-staff",
+    "time-off-approved-shift-cleanup",
+    "staff-member-deactivated-unassign-event-staff",
+    "open-shift-claimed-create-schedule-shift",
+    "schedule-shift-count",
+    "proposal-line-item-count",
+    "event-created-client-interaction",
+    "event-updated-board-sync",
+    "event-location-catering-sync",
+    "event-staff-assigned-notify",
+    "event-cancelled-cascade",
+    "vendor-blacklisted-cancel-purchase-orders",
+    "email-template-deleted-deactivate-workflows",
+    "email-template-deleted-sms-rule-deactivate",
+    "timecard-edit-approved-time-entry-apply",
+    "payroll-run-paid-period-lock",
+    "payroll-run-paid-cascade",
+  ] as const;
   const middleware: Middleware[] = [
     createIdentityMiddleware({
       prisma: prismaForLookups,
@@ -837,6 +912,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Kitchen: PrepTask claim/complete/cancel/unclaim/release/reassign ->
     // reconcile Station.currentTaskCount. Middleware (not a reaction) because it
@@ -911,6 +987,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Kitchen: ContainerDeactivated -> clear the default-container reference on
     // every Dish that points at the retired container. Deactivating a container
@@ -925,6 +1002,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Kitchen/inventory: IngredientRecallFlagged -> pull the linked InventoryItem.
     // When a supplier recall flags an ingredient (flagRecall), the ingredient row
@@ -937,6 +1015,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Kitchen QA: QACheckFailed -> open a QACorrectiveAction. A failed quality
     // check (the fail command's own comment says "callers should open a
@@ -959,6 +1038,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // CRM: ProposalCreated/Sent -> Lead.status="proposal", ProposalAccepted ->
     // "won", ProposalRejected -> "lost". Middleware (not a reaction) because the
@@ -995,6 +1075,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // CRM: ClientInteractionEscalated -> Notification.create for the escalation
     // TARGET (escalatedTo), the sibling of the overdue leg. Middleware because the
@@ -1005,6 +1086,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Events: ContractSigned -> Event.confirm. Middleware (not a reaction)
     // because the event to confirm is identified by EventContract.eventId — the
@@ -1015,6 +1097,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Finance: PaymentProcessed -> Invoice.applyPayment. Middleware (not a reaction)
     // because the invoice to credit (Payment.invoiceId) and the amount
@@ -1027,6 +1110,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Finance: PaymentRefunded -> Invoice.recordRefund. Middleware (not a reaction)
     // for the same reason as the apply leg: the invoice to credit back
@@ -1108,6 +1192,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Finance: InvoiceWrittenOff -> RevenueRecognitionSchedule.cancel. When an invoice
     // is written off as uncollectable, any schedule still recognizing revenue against it
@@ -1334,6 +1419,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Compliance: EmployeeCertificationExpired/Revoked -> suspend the employee's
     // EmployeeAvailability rows (sibling of the notify leg). Middleware (not a reaction)
@@ -1403,6 +1489,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Staffing: OpenShiftClaimed -> ScheduleShift.create. Middleware (not a
     // reaction) because OpenShift.claim(claimedBy) is a MUTATE whose payload carries
@@ -1460,6 +1547,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Events: EventUpdated/EventDateUpdated/EventLocationUpdated -> re-sync the
     // event's battle boards. Middleware (not a reaction) because boards are 1:N
@@ -1520,6 +1608,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Events: EventStaffAssigned (from EventStaff.assign AND the bootstrap create)
     // -> notify the assigned staff member. Middleware (not a reaction) so it can
@@ -1531,6 +1620,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Events: EventCancelled -> cascade-cancel children. Middleware (not a
     // reaction) because each leg is a 1:N fan-out by eventId (EventStaff.unassign,
@@ -1542,6 +1632,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Procurement: VendorBlacklisted -> cancel the vendor's open PurchaseOrders.
     // Middleware (not a reaction) because it is a 1:N fan-out by vendorId (one
@@ -1562,6 +1653,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Core/collaboration: EmailTemplateDeleted -> EmailWorkflow.setActive(false).
     // Middleware (not a reaction) because it is a 1:N fan-out by emailTemplateId (one
@@ -1582,6 +1674,7 @@ export async function createManifestRuntime(
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
+      ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
     }),
     // Integrations: EmailTemplateDeleted -> SmsAutomationRule.deactivate(). The SMS
     // sibling of the EmailWorkflow leg above — SmsAutomationRule belongsTo EmailTemplate
@@ -1644,6 +1737,28 @@ export async function createManifestRuntime(
         engine.runCommand(commandName, input, options),
     }),
   ];
+
+  // 8b. Wiring-completeness check: surface any drift between the middleware
+  //     pipeline (MIDDLEWARE_PIPELINE_NAMES) and the middleware registry
+  //     (MIDDLEWARE_REGISTRY). Info-level so a pre-existing gap never blocks
+  //     engine creation; tighten to a throw once the pipeline is fully
+  //     registry-driven. The length assertion guards the names array going
+  //     stale relative to the middleware array (one position added without the
+  //     other).
+  if (middleware.length !== MIDDLEWARE_PIPELINE_NAMES.length) {
+    deps.log.info(
+      `[manifest-runtime] middleware pipeline length (${middleware.length}) != names length (${MIDDLEWARE_PIPELINE_NAMES.length}) — MIDDLEWARE_PIPELINE_NAMES is out of sync`
+    );
+  }
+  const wiringDrift = diffRegistryVsWiring([...MIDDLEWARE_PIPELINE_NAMES]);
+  if (
+    wiringDrift.wiredButNotDeclared.length > 0 ||
+    wiringDrift.declaredButNotWired.length > 0
+  ) {
+    deps.log.info(
+      `[manifest-runtime] middleware wiring drift: wiredButNotDeclared=[${wiringDrift.wiredButNotDeclared.join(",")}] declaredButNotWired=[${wiringDrift.declaredButNotWired.join(",")}]`
+    );
+  }
 
   // 9. Field-level encryption provider (AES-256-GCM).
   //    Activated when ENCRYPTION_KEY env var is set (64-char hex string).
@@ -1730,28 +1845,76 @@ let asyncReactionHandlersRegistered = false;
  * across multiple `createManifestRuntime` calls in the same process — the
  * registry is shared, so handlers register ONCE.
  *
+ * Data-driven: iterates {@link ASYNC_REACTION_HANDLER_MAP}, the single wiring
+ * site for async reactions. Each entry there corresponds to a declaration in
+ * {@link MIDDLEWARE_REGISTRY} (validated by the registry completeness test).
+ *
  * To add a new async reaction:
- * 1. Author the handler (see `event-updated-board-sync-handler.ts`).
- * 2. Add a `registerReaction()` line here.
- * 3. Pass `asyncEnqueue` to the source middleware in the factory pipeline.
+ * 1. Declare it in `middleware/middleware-registry.ts` (`executionMode: "async"`
+ *    + `asyncReactionName`).
+ * 2. Author the handler (see `event-updated-board-sync-handler.ts`).
+ * 3. Add one row to `ASYNC_REACTION_HANDLER_MAP` in
+ *    `async-reactions/handler-map.ts` (keyed by the same `asyncReactionName`).
+ * 4. Pass `asyncEnqueue` to the source middleware in the factory pipeline.
  */
 function registerAsyncReactionHandlers(): void {
   if (asyncReactionHandlersRegistered) {
     return;
   }
-  asyncReactionRegistry.register({
-    name: EVENT_UPDATED_BOARD_SYNC_REACTION,
-    description:
-      "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",
-    handler: eventUpdatedBoardSyncHandler,
-  });
-  asyncReactionRegistry.register({
-    name: SHIPMENT_ITEM_RECEIVED_INVENTORY_RESTOCK_REACTION,
-    description:
-      "ShipmentItemReceived → InventoryItem.restock (load line, preserve unitCost)",
-    handler: shipmentItemReceivedInventoryRestockHandler,
-  });
+  assertAsyncHandlerMapMatchesRegistry();
+  asyncReactionRegistry.registerAll(
+    ASYNC_REACTION_HANDLER_MAP.map(({ name, description, handler }) => ({
+      name,
+      description,
+      handler,
+    }))
+  );
   asyncReactionHandlersRegistered = true;
+}
+
+/**
+ * Verify the async handler map and the middleware registry agree on which
+ * reactions are async. Catches the two drift classes the registry exists to
+ * prevent:
+ *  - a handler registered without a declaration (invisible to the audit graph)
+ *  - a declaration without a handler (an async reaction that silently never runs)
+ *
+ * Throws on drift so a misconfigured deployment fails fast at boot.
+ */
+function assertAsyncHandlerMapMatchesRegistry(): void {
+  const handlerNames = new Set(ASYNC_REACTION_HANDLER_MAP.map((r) => r.name));
+  const declaredAsyncNames = new Set(
+    getAsyncRegistryEntries()
+      .map((e) => e.asyncReactionName)
+      .filter((n): n is string => Boolean(n))
+  );
+  const handlersWithoutDeclaration = [...handlerNames]
+    .filter((n) => !declaredAsyncNames.has(n))
+    .sort();
+  const declarationsWithoutHandler = [...declaredAsyncNames]
+    .filter((n) => !handlerNames.has(n))
+    .sort();
+  if (
+    handlersWithoutDeclaration.length === 0 &&
+    declarationsWithoutHandler.length === 0
+  ) {
+    return;
+  }
+  const parts: string[] = [];
+  if (handlersWithoutDeclaration.length > 0) {
+    parts.push(
+      `handlers without a registry declaration: ${handlersWithoutDeclaration.join(", ")}`
+    );
+  }
+  if (declarationsWithoutHandler.length > 0) {
+    parts.push(
+      `registry declarations without a handler: ${declarationsWithoutHandler.join(", ")}`
+    );
+  }
+  throw new Error(
+    `[manifest-runtime] async handler map out of sync with middleware registry — ${parts.join("; ")}. ` +
+      "Add the missing row to ASYNC_REACTION_HANDLER_MAP and/or the MIDDLEWARE_REGISTRY entry."
+  );
 }
 
 // Re-export types that consumers may need.
