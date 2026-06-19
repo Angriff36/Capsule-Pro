@@ -85,12 +85,12 @@ async function extractSheetsWithAi(
             ? {
                 type: "image" as const,
                 image: buffer,
-                mimeType,
+                mediaType: mimeType,
               }
             : {
                 type: "file" as const,
                 data: buffer,
-                mimeType,
+                mediaType: mimeType,
               },
         ];
 

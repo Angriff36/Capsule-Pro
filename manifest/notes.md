@@ -6,6 +6,26 @@
 
 ---
 
+## 0a. Deploy failure 2026-06-19 (NOT Manifest drift — modern-lib + lib-version skew)
+The `workflow_dispatch` Deploy (dpl_7jmLvC5r9KMVvtFzpLfdZ1SM6aRU, commit `67706d0`) failed both
+`turbo build --filter=app|api`. The Sentry 403 in the log is non-fatal (errorHandler in
+`packages/observability/next-config.ts`, by design); the real blocker was `next build` → "Failed to
+type check". Root causes, all from the "smart import" work (commit `43c852456`), fixed this session:
+1. `Set.prototype.difference`/`.intersection` (ES2025) used in `apps/api/.../events/allergens/check`,
+   `.../import/smart/detect.ts`, and an `apps/app` test — but `@repo/typescript-config/base.json`
+   pinned `lib: es2022`. Also `Array.fromAsync` (esnext). **Fix: base.json `lib` → `esnext`** (one
+   line; runtime-supported on Vercel Node 22+). `target` stays ES2022.
+2. ai-sdk v6 message parts use `mediaType`, not `mimeType` (`recipe-document-parser.ts`).
+3. Minor type bugs: untyped `documentSheets` array, `trimOpt(null)`, `points.at(-1)` undefined,
+   `process.env.DATABASE_URL` in `packages/database/test-query.ts`.
+4. **base.json change invalidates the turbo cache for `@repo/manifest-runtime#build`** (it's in api's
+   build graph; the failed deploy only passed that step via Vercel remote cache). Re-running it
+   surfaced 3 pre-existing version-skew errors in `manifest-runtime-perf-regression.test.ts`
+   (`Store<Record<string,unknown>>` no longer satisfies `Store<T extends EntityInstance>`) — fixed by
+   dropping the type arg (defaults to `EntityInstance`). Verified: app+api typecheck green, full
+   dep-build graph green. Final `next build` not runnable locally (needs prod env) but compiled clean
+   on Vercel before — failure was purely typecheck.
+
 ## 0. How this started
 A manually-triggered production deploy (`.github/workflows/deploy.yml`, `workflow_dispatch`, runs
 `vercel deploy --prod` → `next build` with `typescript.ignoreBuildErrors: false`) failed. The

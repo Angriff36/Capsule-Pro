@@ -1,12 +1,15 @@
-import { mergeImportSummaries } from "../../kitchen/import/lib/parse-helpers";
-import type { ImportSummary, ImportType } from "../../kitchen/import/lib/types";
+import { dispatchKitchenImport } from "../../kitchen/import/dispatch";
 import {
   ingestCsvRows,
   parseRecipeDocumentFiles,
   splitRecipeUploadFiles,
 } from "../../kitchen/import/file-ingest";
-import { dispatchKitchenImport } from "../../kitchen/import/dispatch";
-import type { ImportUserContext } from "../../kitchen/import/lib/types";
+import { mergeImportSummaries } from "../../kitchen/import/lib/parse-helpers";
+import type {
+  ImportSummary,
+  ImportType,
+  ImportUserContext,
+} from "../../kitchen/import/lib/types";
 import {
   kindToKitchenImportType,
   type SmartImportDetection,
@@ -39,7 +42,9 @@ async function runKitchenImportGroup(
   if (importType === "recipes") {
     const { csvFiles, documentFiles } = splitRecipeUploadFiles(files);
     const rows = csvFiles.length > 0 ? await ingestCsvRows(csvFiles) : [];
-    let documentSheets = [];
+    let documentSheets: Awaited<
+      ReturnType<typeof parseRecipeDocumentFiles>
+    >["sheets"] = [];
     let documentWarnings: string[] = [];
 
     if (documentFiles.length > 0) {
@@ -72,7 +77,9 @@ export async function executeKitchenImports(
       continue;
     }
 
-    summaries.push(await runKitchenImportGroup(importType, groupFiles, context));
+    summaries.push(
+      await runKitchenImportGroup(importType, groupFiles, context)
+    );
   }
 
   if (summaries.length === 0) {

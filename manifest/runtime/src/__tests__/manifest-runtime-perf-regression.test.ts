@@ -133,7 +133,7 @@ event WidgetUpdated: "widget.updated" { widgetId: string }
 function makeCountingStore() {
   const rows = new Map<string, Record<string, unknown>>();
   const counts = { getById: 0, update: 0, create: 0 };
-  const store: Store<Record<string, unknown>> = {
+  const store: Store = {
     getAll: () => Promise.resolve([...rows.values()]),
     getById: (id: string) => {
       counts.getById += 1;
@@ -159,7 +159,7 @@ function makeCountingStore() {
       rows.clear();
       return Promise.resolve();
     },
-  } as unknown as Store<Record<string, unknown>>;
+  } as unknown as Store;
   return { store, counts };
 }
 

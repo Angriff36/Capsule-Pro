@@ -1,12 +1,12 @@
 import { database } from "@repo/database";
 import { parseError as parseErrorToMessage } from "@repo/observability/error";
+import { runKitchenImportCommand } from "../lib/manifest-command";
 import {
   emptySummary,
   parseIntOpt,
   parseListOpt,
   trimOpt,
 } from "../lib/parse-helpers";
-import { runKitchenImportCommand } from "../lib/manifest-command";
 import type { CsvRow, ImportSummary, ImportUserContext } from "../lib/types";
 
 const VALID_STATUSES = new Set([
@@ -29,7 +29,7 @@ async function resolveLocationId(tenantId: string): Promise<string> {
 }
 
 function parseEventDate(raw: string | null | undefined): Date | null {
-  const value = trimOpt(raw);
+  const value = trimOpt(raw ?? undefined);
   if (!value) {
     return null;
   }
@@ -118,7 +118,9 @@ export async function importEvents(
       );
 
       if (!result.ok) {
-        throw new Error(`Failed to create Event via Manifest: ${result.message}`);
+        throw new Error(
+          `Failed to create Event via Manifest: ${result.message}`
+        );
       }
 
       summary.imported++;

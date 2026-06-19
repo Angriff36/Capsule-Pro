@@ -149,7 +149,7 @@ export function generateChartSummary(
   let trend: TrendDirection = "unknown";
   if (points.length >= 2) {
     const first = points[0].value;
-    const last = points.at(-1).value;
+    const last = points.at(-1)?.value ?? first;
     if (first === last) {
       trend = "flat";
     } else if (last > first) {
