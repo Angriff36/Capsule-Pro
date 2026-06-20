@@ -61,6 +61,12 @@ export interface ManifestErrorPayload {
   kind?: string;
   /** Original authoring message for backwards compat with the string overload. */
   message?: string;
+  /**
+   * DSL source location (`.manifest` file + line) of the rule that fired, when
+   * resolvable from the compile-time source-map. Lets the UI/devtools deep-link
+   * an IR-level failure back to its authored declaration.
+   */
+  sourceLocation?: { file: string; line: number };
 }
 
 /**
@@ -185,6 +191,9 @@ export function manifestErrorResponse(
   }
   if (message.friendlyError) {
     body.friendlyError = message.friendlyError;
+  }
+  if (message.sourceLocation) {
+    body.sourceLocation = message.sourceLocation;
   }
   return NextResponse.json(body, { status });
 }

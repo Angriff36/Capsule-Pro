@@ -20,6 +20,7 @@ import type {
   Middleware,
   RuntimeEngine,
   RuntimeOptions,
+  Store,
 } from "@angriff36/manifest";
 import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
@@ -111,8 +112,12 @@ import { loadRolePolicies } from "./permission-guard";
 import { ensureManifestSchema, getPool } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
-import type { PrismaStoreConfig } from "./prisma-store";
+import type { EntityInstance, PrismaStoreConfig } from "./prisma-store";
 import { PrismaStore } from "./prisma-store";
+import {
+  createRequestStoreReadCache,
+  wrapStoreWithRequestCache,
+} from "./request-scoped-store-cache";
 import {
   loadMergedPrecompiledIR,
   loadPrecompiledIR,
@@ -293,6 +298,15 @@ export interface CreateManifestRuntimeDeps {
   flagProvider?: (name: string) => unknown;
   /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
   idempotency?: { failureTtlMs?: number };
+  /**
+   * Precompiled IR to run, injected by the caller. When provided, the factory
+   * uses it verbatim and skips {@link getManifestIR} — i.e. no filesystem read,
+   * no repo-root walk, no JSON.parse on the cold-start path. `apps/api` passes a
+   * static, bundler-inlined snapshot (`@/lib/manifest/frozen-ir`) so V8's module
+   * cache parses the IR once. When omitted, the factory loads the merged
+   * precompiled IR from `manifest/ir/` as before.
+   */
+  ir?: IR;
   /** Structured logger. */
   log: ManifestRuntimeLogger;
   /** Prisma client instance (the app's singleton). */
@@ -472,7 +486,15 @@ export function buildStoreProvider(
   userId: string,
   log: ManifestRuntimeLogger
 ): NonNullable<RuntimeOptions["storeProvider"]> {
+  // Request-scoped read cache shared by every store this provider hands out.
+  // buildStoreProvider is called once per runCommand (and once per async-drain),
+  // so this Map lives exactly as long as one request's reaction cascade — the
+  // window in which the trigger, parent-context resolver, and fired reactions all
+  // re-load the same subjects. Without it each reload is a separate findUnique
+  // (N+1 on the reaction chain). See request-scoped-store-cache.ts.
+  const readCache = createRequestStoreReadCache();
   return (entityName: string) => {
+    let store: Store<EntityInstance>;
     if (hasTypedStore(entityName)) {
       const config: PrismaStoreConfig = {
         prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prisma),
@@ -480,22 +502,24 @@ export function buildStoreProvider(
         tenantId,
         userId,
       };
-      return new PrismaStore(config);
+      store = new PrismaStore(config);
+    } else {
+      if (!loggedJsonStoreEntities.has(entityName)) {
+        loggedJsonStoreEntities.add(entityName);
+        log.info(
+          `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
+        );
+      }
+      store = new PrismaJsonStore({
+        prisma:
+          asStoreClient<
+            ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]
+          >(prisma),
+        tenantId,
+        entityType: entityName,
+      });
     }
-    if (!loggedJsonStoreEntities.has(entityName)) {
-      loggedJsonStoreEntities.add(entityName);
-      log.info(
-        `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
-      );
-    }
-    return new PrismaJsonStore({
-      prisma:
-        asStoreClient<
-          ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]
-        >(prisma),
-      tenantId,
-      entityType: entityName,
-    });
+    return wrapStoreWithRequestCache(store, entityName, readCache);
   };
 }
 
@@ -565,8 +589,10 @@ export async function createManifestRuntime(
   //    See: manifest/runtime/src/middleware/identity-middleware.ts
   const user = ctx.user;
 
-  // 2. Load precompiled IR.
-  const ir = getManifestIR();
+  // 2. Use the caller-injected IR when provided (apps/api passes a static,
+  //    bundler-inlined snapshot — zero filesystem/repo-root/JSON.parse cost on
+  //    cold start); otherwise load the merged precompiled IR from disk.
+  const ir = deps.ir ?? getManifestIR();
 
   // 2a. Index IR reactions by their triggering event name so the
   //     reaction-execution log can record WHICH reactions a command's emitted

@@ -17,7 +17,10 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { readFile as readFileAsync, access as accessAsync } from "node:fs/promises";
+import {
+  access as accessAsync,
+  readFile as readFileAsync,
+} from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join, relative, resolve } from "node:path";
 import {
@@ -139,6 +142,87 @@ function collectSelfPropertyRefs(expr) {
   return refs;
 }
 
+/**
+ * Build a DSL source-map: for every entity, command, constraint (invariant),
+ * and state transition, record the originating `.manifest` file + 1-based line.
+ *
+ * The upstream compiler does not carry source spans into the IR (verified: no
+ * loc/line/sourceFile keys anywhere in kitchen.ir.json), so we recover them by
+ * line-scanning the source. Keys are shaped for runtime lookup from a command
+ * failure (which knows entity + command + the blocked constraint name):
+ *   entity:<Entity> · command:<Entity>.<cmd> · constraint:<Entity>.<name> ·
+ *   transition:<Entity>.<property>
+ *
+ * "Current entity" = the most recent `entity X` header; commands/constraints/
+ * transitions always appear inside their entity block after that header, so a
+ * full brace parser is unnecessary. First occurrence of a key wins.
+ */
+const SOURCE_MAP_ENTITY_RE = /^\s*(?:external\s+)?entity\s+(\w+)/;
+const SOURCE_MAP_COMMAND_RE = /^\s*(?:async\s+)?command\s+(\w+)/;
+const SOURCE_MAP_CONSTRAINT_RE = /^\s*constraint\s+(\w+)\s*[:{]/;
+const SOURCE_MAP_TRANSITION_RE = /^\s*transition\s+(\w+)\s+from\b/;
+const LINE_SPLIT_RE = /\r?\n/;
+
+/**
+ * Classify one source line → `{ entity?, key? }`. `entity` is set only on an
+ * `entity X` header (updates the caller's current-entity cursor); `key` is the
+ * `<kind>:<Entity>.<name>` map key, or absent when the line declares nothing.
+ */
+function sourceMapKeyForLine(line, currentEntity) {
+  const entityMatch = SOURCE_MAP_ENTITY_RE.exec(line);
+  if (entityMatch) {
+    return { entity: entityMatch[1], key: `entity:${entityMatch[1]}` };
+  }
+  if (!currentEntity) {
+    return {};
+  }
+  const commandMatch = SOURCE_MAP_COMMAND_RE.exec(line);
+  if (commandMatch) {
+    return { key: `command:${currentEntity}.${commandMatch[1]}` };
+  }
+  const constraintMatch = SOURCE_MAP_CONSTRAINT_RE.exec(line);
+  if (constraintMatch) {
+    return { key: `constraint:${currentEntity}.${constraintMatch[1]}` };
+  }
+  const transitionMatch = SOURCE_MAP_TRANSITION_RE.exec(line);
+  if (transitionMatch) {
+    return { key: `transition:${currentEntity}.${transitionMatch[1]}` };
+  }
+  return {};
+}
+
+function buildCommandSourceMap(manifestFiles) {
+  const entries = {};
+  const record = (key, file, line) => {
+    if (!(key in entries)) {
+      entries[key] = { file, line };
+    }
+  };
+
+  for (const file of manifestFiles) {
+    const lines = readFileSync(join(MANIFESTS_DIR, file), "utf8").split(
+      LINE_SPLIT_RE
+    );
+    let currentEntity = null;
+    for (let i = 0; i < lines.length; i++) {
+      const { entity, key } = sourceMapKeyForLine(lines[i], currentEntity);
+      if (entity) {
+        currentEntity = entity;
+      }
+      if (key) {
+        record(key, file, i + 1);
+      }
+    }
+  }
+
+  // Sort keys for deterministic output (zero git drift on re-run).
+  const sortedEntries = {};
+  for (const key of Object.keys(entries).sort()) {
+    sortedEntries[key] = entries[key];
+  }
+  return sortedEntries;
+}
+
 const {
   srcDir: MANIFESTS_DIR,
   outputDir: OUTPUT_DIR,
@@ -152,6 +236,9 @@ const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
 const SHARDS_DIR = join(OUTPUT_DIR, "shards");
 const MODULE_GRAPH_FILE = join(OUTPUT_DIR, "module-graph.json");
+// Statically importable by the runtime (sibling of commands.registry.json) so
+// the error serializer can annotate violations with their DSL source location.
+const SOURCE_MAP_FILE = join(REGISTRY_DIR, "command-source-map.json");
 
 /**
  * Recursively discover .manifest files under srcDir (supports domain subdirs).
@@ -216,7 +303,9 @@ async function compileMergedManifests() {
     // Files with `use` declarations depend on cross-file resolution — skip
     // per-file compile (compileToIR doesn't resolve `use` directives) and let
     // compileProjectToIR handle them authoritatively below.
-    const hasUseDeclarations = /^\s*use\s+"[^"]+\.manifest"/m.test(manifestSource);
+    const hasUseDeclarations = /^\s*use\s+"[^"]+\.manifest"/m.test(
+      manifestSource
+    );
     if (hasUseDeclarations) {
       compiledEntries.push({ source: manifestFile, ir: null, skipped: true });
       continue;
@@ -247,7 +336,7 @@ async function compileMergedManifests() {
     writeFileSync(shardPath, JSON.stringify(ir, null, 2));
   }
 
-  enforceNoDuplicateCommandIntent(compiledEntries.filter(e => !e.skipped));
+  enforceNoDuplicateCommandIntent(compiledEntries.filter((e) => !e.skipped));
 
   const crypto = await import("node:crypto");
 
@@ -442,6 +531,18 @@ async function compileMergedManifests() {
   writeFileSync(MODULE_GRAPH_FILE, JSON.stringify(moduleGraph, null, 2));
   console.log(
     `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`
+  );
+
+  // DSL source-map sidecar: entity/command/constraint/transition → file+line.
+  // Deterministic (derived purely from source content), statically imported by
+  // the runtime error serializer to point violations back at their .manifest.
+  const sourceMapEntries = buildCommandSourceMap(manifestFiles);
+  writeFileSync(
+    SOURCE_MAP_FILE,
+    JSON.stringify({ version: 1, entries: sourceMapEntries }, null, 2)
+  );
+  console.log(
+    `[manifest/compile] Emitted source map (${Object.keys(sourceMapEntries).length} entries) to command-source-map.json`
   );
 
   console.log("[manifest/compile] Compilation complete!");

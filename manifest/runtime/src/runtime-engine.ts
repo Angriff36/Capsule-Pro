@@ -1,6 +1,7 @@
 import type { CommandResult } from "@angriff36/manifest";
 import { RuntimeEngine } from "@angriff36/manifest";
 import type { IRCommand, OverrideRequest } from "@angriff36/manifest/ir";
+import { withManifestSpan } from "./command-tracing";
 import {
   refreshParentContext,
   resolveParentContext,
@@ -28,22 +29,22 @@ export { createCustomBuiltins } from "./manifest-builtins";
  * the append-only reaction-execution log (constitution §11 operational log).
  */
 export interface CommandSettledInfo {
+  /** Causation id linking this command to its trigger. */
+  causationId?: string;
   /** Command name (e.g. "create", "applyPayment"). */
   commandName: string;
+  /** Correlation id grouping a propagation cascade. */
+  correlationId?: string;
+  /** Wall-clock execution time in milliseconds. */
+  durationMs: number;
   /** Entity the command targets, when known. */
   entityName?: string;
+  /** Raw command input (used for payload-shape capture; keys only are logged). */
+  input: Record<string, unknown>;
   /** Resolved IR command, when the lookup succeeds. */
   irCommand?: Readonly<IRCommand>;
   /** The command result (success flag, emitted events, error). */
   result: Readonly<CommandResult>;
-  /** Wall-clock execution time in milliseconds. */
-  durationMs: number;
-  /** Correlation id grouping a propagation cascade. */
-  correlationId?: string;
-  /** Causation id linking this command to its trigger. */
-  causationId?: string;
-  /** Raw command input (used for payload-shape capture; keys only are logged). */
-  input: Record<string, unknown>;
 }
 
 /** @internal Subset of ManifestTelemetryHooks relevant to this module. */
@@ -59,6 +60,10 @@ interface TelemetryHooks {
 /** @internal Shape of the context keys the factory injects. */
 interface ContextWithTelemetry {
   telemetry?: TelemetryHooks;
+  /** Tenant id (factory injects `tenantId: user.tenantId`). */
+  tenantId?: string;
+  /** Acting user (factory injects `user: { id, tenantId, role }`). */
+  user?: { id?: string };
   [key: string]: unknown;
 }
 
@@ -92,7 +97,40 @@ interface RunCommandOptions {
 export class ManifestRuntimeEngine extends RuntimeEngine {
   // ---- runCommand override (new) -----------------------------------------
 
-  override async runCommand(
+  override runCommand(
+    commandName: string,
+    input: Record<string, unknown>,
+    options: RunCommandOptions = {}
+  ): Promise<CommandResult> {
+    // Trace every command in an OTLP-exportable span. Re-entrant dispatches
+    // from middleware (the reaction/fan-out mechanism: `dispatchCommand` ->
+    // engine.runCommand) execute inside this active span and nest automatically
+    // as child spans, turning the propagation graph into an observable timeline.
+    const traceCtx = this.getContext() as ContextWithTelemetry;
+    return withManifestSpan(
+      "manifest.command",
+      {
+        entity: options.entityName,
+        command: commandName,
+        tenantId: traceCtx.tenantId,
+        actorId: traceCtx.user?.id,
+      },
+      () => this.#runCommandTraced(commandName, input, options),
+      (span, result) => {
+        span.setAttribute("manifest.command.success", result.success);
+        const events = result.emittedEvents ?? [];
+        if (events.length > 0) {
+          span.setAttribute("manifest.events.count", events.length);
+          span.setAttribute(
+            "manifest.events",
+            events.map((event) => event.name).join(",")
+          );
+        }
+      }
+    );
+  }
+
+  async #runCommandTraced(
     commandName: string,
     input: Record<string, unknown>,
     options: RunCommandOptions = {}
