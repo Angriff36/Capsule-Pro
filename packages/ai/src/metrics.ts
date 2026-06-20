@@ -172,18 +172,6 @@ export class MetricsCollector {
   }
 
   private exportToDatadog(): Promise<string> {
-    const _series = this.entries.map((metric) => ({
-      metric: "agent.execution",
-      points: [
-        [Math.floor(metric.timestamp.getTime() / 1000), metric.duration],
-      ],
-      tags: [
-        `agent:${metric.agentId}`,
-        `status:${metric.status}`,
-        `errors:${metric.errors}`,
-      ],
-    }));
-
     return this.exportToWebhook();
   }
 

@@ -34,7 +34,6 @@ import {
   ClockIcon,
   DollarSignIcon,
   FileTextIcon,
-  MapPinIcon,
   UsersIcon,
   XCircleIcon,
   SparklesIcon,

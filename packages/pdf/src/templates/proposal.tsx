@@ -19,7 +19,6 @@ const defaultColors = {
 // Helper to create styles with branding colors
 const createStyles = (branding?: ProposalPDFData["branding"]) => {
   const primaryColor = branding?.primaryColor || defaultColors.primary;
-  const _secondaryColor = branding?.secondaryColor || defaultColors.secondary;
   const fontFamily = branding?.fontFamily || "Helvetica";
 
   return StyleSheet.create({

@@ -211,6 +211,7 @@ route accessors all derive from the same source.
 - Drift audit (read-only today): `manifest/scripts/audit-schema-drift.mjs`
 - **Try-prisma harness: `manifest/scripts/try-prisma.mjs`** (`pnpm manifest:try-prisma [Entity] [--full]`)
 - **Config reader:** `manifest/scripts/read-config.mjs` (shared YAML config parser + derived paths for generate/compile scripts)
+- **Frozen-IR embed (cold-start opt, 2026-06-20):** `manifest/scripts/embed-ir.mjs` byte-copies `manifest/ir/kitchen.ir.json` → committed `apps/api/lib/manifest/kitchen.ir.generated.json`; `apps/api/lib/manifest/frozen-ir.ts` re-exports it typed as `IR`. The apps/api shim (`apps/api/lib/manifest-runtime.ts`) passes it as `deps.ir` to the shared factory, which now uses `deps.ir ?? getManifestIR()` — so the **dispatcher path no longer hits `loadMergedPrecompiledIR()`/the filesystem on cold start** (bundler inlines the IR, V8 caches the parse). apps/app + tests still use the FS loader. Turbo: `api#build` dependsOn `manifest-embed` (api pkg script) + `manifest/ir/kitchen.ir.json` added to `globalDependencies`. Drift gate: `pnpm manifest:ir:embed:check` (`check-ir-embed-drift.mjs`, recompiles IR from DSL + byte-compares the snapshot) wired into `manifest:ci`. Regenerate after any IR change: `pnpm manifest:compile && pnpm manifest:ir:embed`.
 
 ---
 
@@ -2118,3 +2119,28 @@ store fix is now redundant but left in place (harmless). Proper OCC belongs upst
 `update()` (use `updateMany({where:{...,version}})` + count check, not the compound selector).
 Search: optimistic lock, version unknown argument, silent data loss, tenantId_id,
 GenericPrismaStore update returns undefined, can't edit event.
+
+---
+
+## 25. DSL source-map sidecar + runtime error source-location (2026-06-20)
+
+**Feature:** runtime command failures now carry the `.manifest` file+line of the rule that fired.
+
+- **Producer:** `manifest/scripts/compile.mjs` `buildCommandSourceMap()` line-scans every `.manifest`
+  source (the upstream compiler carries NO source spans into the IR — verified: zero
+  loc/line/sourceFile keys in kitchen.ir.json) and emits **`manifest/runtime/command-source-map.json`**
+  (sibling of `commands.registry.json`; committed, deterministic — derived purely from source content,
+  so re-running compile is byte-identical). Keys: `entity:<E>` · `command:<E>.<cmd>` ·
+  `constraint:<E>.<name>` · `transition:<E>.<prop>`. ~2090 entries today.
+- **Runtime loader:** `manifest/runtime/src/command-source-map.ts` (static JSON import, exported as
+  `@repo/manifest-runtime/command-source-map` → `lookupSourceLocation(key)` / `getCommandSourceMap()`).
+- **Resolver:** `apps/api/lib/manifest/source-location.ts` `resolveFailureSourceLocation(failure)` —
+  blocked-constraint-by-name → command → entity fallback.
+- **Wiring:** `apps/api/lib/manifest/execute-command.ts` annotates each diagnostic with
+  `sourceLocation` and adds a top-level `sourceLocation` to the error response;
+  `ManifestErrorPayload` (`apps/api/lib/manifest-response.ts`) gained the optional field.
+- **Gotcha:** Biome's organizeImports STRIPS a momentarily-unused import on each save — add the import
+  in the SAME edit that uses it, or it vanishes and the next save errors `Cannot find name`.
+- Verified via a temp vitest (`source-location-verify`, deleted) against the real sidecar: 5/5 — entity
+  lookup, constraint-by-name, command fallback, entity fallback, unknown-entity → undefined.
+  Search: source map, source location, manifest file line, error serializer, command-source-map.json

@@ -8,8 +8,6 @@ import {
 } from "../lib/react-pdf-primitives";
 import type { PackingListPDFData } from "../types";
 
-type PackingListItem = PackingListPDFData["items"][number];
-
 const styles = StyleSheet.create({
   page: {
     padding: 30,

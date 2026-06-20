@@ -12,17 +12,13 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import type {
   KanbanTask,
-  BoardColumn,
-  BoardSettings,
   Employee,
   BoardConfigData,
 } from "../lib/board-types";
-import { DEV_MODE_COLUMNS, COLUMN_COLORS } from "../lib/board-defaults";
+import { DEV_MODE_COLUMNS, } from "../lib/board-defaults";
 import { KanbanColumn } from "./kanban-column";
 import { KanbanCard } from "./kanban-card";
 import { KanbanCardDetail } from "./kanban-card-detail";

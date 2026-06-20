@@ -90,8 +90,6 @@ export class CharliesProduceConnector implements SupplierConnector {
   async fetchCatalog(
     config: SupplierConnectorConfig
   ): Promise<SupplierProduct[]> {
-    const { apiBaseUrl, apiKey } = config.credentials;
-
     // BLOCKER: API credentials from Charlie's Produce not yet obtained.
     // const response = await fetch(`${apiBaseUrl}/catalog`, {
     //   headers: {

@@ -55,10 +55,6 @@ export interface EntityInstance {
   [key: string]: unknown;
 }
 
-interface PrepTaskWithClaims extends PrepTask {
-  claims: KitchenTaskClaim[];
-}
-
 /**
  * Prisma-backed store for PrepTask entities
  *

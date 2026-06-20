@@ -20,7 +20,6 @@ import type {
   TaskActivity,
   DevBugMeta,
 } from "../lib/board-types";
-import { SEVERITY_OPTIONS, ENVIRONMENT_OPTIONS } from "../lib/board-defaults";
 import { apiFetch } from "@/app/lib/api";
 import * as routes from "@/app/lib/routes";
 import type { useCardMutations } from "../hooks/use-card-mutations";

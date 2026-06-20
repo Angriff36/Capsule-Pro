@@ -28,8 +28,6 @@ import {
   Copy,
   Check,
   Send,
-  Eye,
-  EyeOff,
   RefreshCw,
   FileText,
   Calendar,
@@ -37,8 +35,6 @@ import {
   Users,
   CheckCircle,
   AlertCircle,
-  DollarSign,
-  Sparkles,
   ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -186,7 +186,6 @@ export function calculateCriticalPath(
     }
     visitedBackward.add(taskId);
 
-    const _task = taskMap.get(taskId)!;
     const duration = taskDurationMinutes.get(taskId)!;
     const successors = reverseMap.get(taskId) || [];
 
@@ -230,9 +229,7 @@ export function calculateCriticalPath(
 
   for (const task of tasks) {
     const es = earliestStart.get(task.id)!;
-    const _ef = earliestFinish.get(task.id)!;
     const ls = latestStart.get(task.id)!;
-    const _lf = latestFinish.get(task.id)!;
 
     // Slack = LS - ES (or LF - EF, should be the same)
     const slackMinutesValue = Math.round(

@@ -43,7 +43,6 @@ export const ProposalTemplate = ({
   branding,
 }: ProposalTemplateProps) => {
   const primaryColor = branding?.primaryColor || defaultColors.primary;
-  const _secondaryColor = branding?.secondaryColor || defaultColors.secondary;
 
   return (
     <Tailwind>

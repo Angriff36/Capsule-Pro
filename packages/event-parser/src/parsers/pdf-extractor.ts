@@ -53,84 +53,6 @@ export interface PdfExtractionResult {
   pageCount: number;
 }
 
-function _extractMetadata(pdf: { getMetadata: () => Promise<unknown> }) {
-  return pdf
-    .getMetadata()
-    .then((metadataResult) => {
-      const info = (metadataResult as { info?: PdfMetadataInfo }).info;
-      return {
-        title: info?.Title,
-        author: info?.Author,
-        subject: info?.Subject,
-        creator: info?.Creator,
-      };
-    })
-    .catch(() => undefined);
-}
-
-/**
- * Text item from PDF parser
- */
-interface PdfTextItem {
-  str: string;
-  transform: number[];
-}
-
-/**
- * Collapse text items by Y position to preserve line structure
- */
-function _collapseTextItems(items: PdfTextItem[]): string[] {
-  const rows: string[] = [];
-  let currentLine = "";
-  let lastY: number | null = null;
-
-  for (const item of items) {
-    if (!item.str) {
-      continue;
-    }
-
-    const text = item.str.replace(/\s+/g, " ").trim();
-    if (!text) {
-      continue;
-    }
-
-    const yPosition = item.transform[5];
-    const y = Math.round(yPosition);
-
-    if (lastY !== null && Math.abs(y - lastY) > 3) {
-      pushSegments(rows, currentLine);
-      currentLine = text;
-    } else {
-      currentLine += (currentLine ? " " : "") + text;
-    }
-
-    lastY = y;
-  }
-
-  pushSegments(rows, currentLine);
-  return rows;
-}
-
-/**
- * Push line segments with label detection
- */
-function pushSegments(rows: string[], line: string) {
-  const trimmed = line.trim();
-  if (!trimmed) {
-    return;
-  }
-
-  // Split on common labels
-  const initialSegments = trimmed
-    .split(LABEL_SPLIT_PATTERN)
-    .map((segment) => segment.trim())
-    .filter(Boolean);
-
-  for (const segment of initialSegments) {
-    emitSegment(segment, rows);
-  }
-}
-
 /**
  * Extract text from a PDF buffer
  * Uses dynamic import to avoid Next.js bundling issues with pdfjs-dist workers
@@ -139,7 +61,6 @@ export async function extractPdfText(
   pdfBuffer: ArrayBuffer | Uint8Array
 ): Promise<PdfExtractionResult> {
   const errors: string[] = [];
-  const _allLines: string[] = [];
 
   // Debug logging to trace data type
   console.log("[extractPdfText] Input type:", pdfBuffer.constructor.name);
@@ -225,9 +146,6 @@ export async function extractPdfText(
     }
 
     type Pdf2JsonParserCtor = new () => Pdf2JsonParser;
-
-    const _isRecord = (value: unknown): value is Record<string, unknown> =>
-      typeof value === "object" && value !== null;
 
     const isParserCtor = (value: unknown): value is Pdf2JsonParserCtor =>
       typeof value === "function";

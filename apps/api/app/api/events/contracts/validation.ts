@@ -419,7 +419,6 @@ export function validateContractBusinessRules(
 
     default:
       invariant(false, `Unknown contract operation: ${operation}`);
-      break;
   }
 
   // Check if contract is already expired

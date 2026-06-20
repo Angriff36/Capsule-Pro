@@ -6,32 +6,35 @@
  * IR metadata and never persist data.
  */
 
-import type { Store } from "@angriff36/manifest";
+import type { EntityInstance, Store } from "@angriff36/manifest";
 
-class IntrospectionStore implements Store {
-  private readonly items = new Map<string, Record<string, unknown>>();
+class IntrospectionStore implements Store<EntityInstance> {
+  private readonly items = new Map<string, EntityInstance>();
 
-  getAll(): Promise<unknown[]> {
+  getAll(): Promise<EntityInstance[]> {
     return Promise.resolve(Array.from(this.items.values()));
   }
 
-  getById(id: string): Promise<unknown> {
+  getById(id: string): Promise<EntityInstance | undefined> {
     return Promise.resolve(this.items.get(id));
   }
 
-  create(data: Record<string, unknown>): Promise<unknown> {
+  create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string) ?? crypto.randomUUID();
-    const row = { ...data, id };
+    const row: EntityInstance = { ...data, id };
     this.items.set(id, row);
     return Promise.resolve(row);
   }
 
-  update(id: string, data: Record<string, unknown>): Promise<unknown> {
+  update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
     const existing = this.items.get(id);
     if (!existing) {
-      return Promise.resolve(null);
+      return Promise.resolve(undefined);
     }
-    const row = { ...existing, ...data, id };
+    const row: EntityInstance = { ...existing, ...data, id };
     this.items.set(id, row);
     return Promise.resolve(row);
   }

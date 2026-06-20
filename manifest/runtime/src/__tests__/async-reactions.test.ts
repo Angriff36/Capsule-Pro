@@ -3,7 +3,6 @@ import {
   computeBackoffMs,
   DEFAULT_ASYNC_REACTION_POLICY,
   type AsyncReactionHandler,
-  type AsyncReactionJob,
 } from "../async-reactions/types.js";
 import { InMemoryAsyncReactionStore } from "../async-reactions/in-memory-async-reaction-store.js";
 import {
