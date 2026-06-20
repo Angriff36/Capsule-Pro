@@ -7,16 +7,16 @@ import {
   AiAssistantPanel,
   AiAssistantProvider,
 } from "./ai-assistant";
+import { DisplayPreferencesAccountSync } from "./display-preferences-account-sync";
+import { HighContrastAccountSync } from "./high-contrast-account-sync";
 import { GlobalSidebar } from "./sidebar";
-import {
-  SmartImportProvider,
-} from "./smart-import/smart-import-provider";
 import { SmartImportFab } from "./smart-import/smart-import-fab";
+import { SmartImportProvider } from "./smart-import/smart-import-provider";
 
 interface AuthenticatedAppShellProps {
-  readonly userId: string;
   readonly betaFeature: boolean;
   readonly children: ReactNode;
+  readonly userId: string;
 }
 
 /**
@@ -30,7 +30,15 @@ export function AuthenticatedAppShell({
 }: AuthenticatedAppShellProps) {
   return (
     <SidebarProvider>
+      <a
+        className="sr-only z-50 rounded-md bg-background px-4 py-2 font-medium text-foreground shadow-md focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
+        href="#main-content"
+      >
+        Skip to main content
+      </a>
       <AiAssistantProvider>
+        <HighContrastAccountSync />
+        <DisplayPreferencesAccountSync />
         <SmartImportProvider>
           <GlobalSidebar userId={userId}>
             {betaFeature && (

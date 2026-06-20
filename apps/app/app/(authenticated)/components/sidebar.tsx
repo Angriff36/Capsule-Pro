@@ -255,7 +255,7 @@ export const GlobalSidebar = ({
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset id="main-content" tabIndex={-1}>
         <ModuleHeader />
         {children}
       </SidebarInset>

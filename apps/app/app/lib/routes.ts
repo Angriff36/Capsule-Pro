@@ -308,3 +308,52 @@ export const smartImportRoute = (): string => "/api/import/smart";
 /** POST /api/call-planner/proposals/:id/refresh-token */
 export const callPlannerProposalRefreshToken = (id: string): string =>
   `/api/call-planner/proposals/${encodeURIComponent(id)}/refresh-token`;
+
+// ---------------------------------------------------------------------------
+// CRM — Proposal automation
+// ---------------------------------------------------------------------------
+
+/** GET|POST /api/crm/proposal-automation */
+export const crmProposalAutomation = (): string =>
+  "/api/crm/proposal-automation";
+
+// ---------------------------------------------------------------------------
+// Inventory — Batch adjust
+// ---------------------------------------------------------------------------
+
+/** POST /api/inventory/batch-adjust */
+export const inventoryBatchAdjust = (): string =>
+  "/api/inventory/batch-adjust";
+
+// ---------------------------------------------------------------------------
+// Staff — Skills & overtime
+// ---------------------------------------------------------------------------
+
+/** GET|POST /api/staff/skills */
+export const staffSkills = (): string => "/api/staff/skills";
+
+/** GET|POST|DELETE /api/staff/employee-skills */
+export const staffEmployeeSkills = (
+  params?: URLSearchParams
+): string => {
+  const base = "/api/staff/employee-skills";
+  if (!params || [...params.keys()].length === 0) {
+    return base;
+  }
+  return `${base}?${params.toString()}`;
+};
+
+/** GET /api/staff/overtime-alerts */
+export const staffOvertimeAlerts = (
+  params?: URLSearchParams
+): string => {
+  const base = "/api/staff/overtime-alerts";
+  if (!params || [...params.keys()].length === 0) {
+    return base;
+  }
+  return `${base}?${params.toString()}`;
+};
+
+/** GET|POST /api/staff/training-simulations */
+export const staffTrainingSimulations = (): string =>
+  "/api/staff/training-simulations";

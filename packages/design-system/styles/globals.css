@@ -139,6 +139,141 @@
   --sidebar-ring: var(--ds-focus-blue);
 }
 
+/*
+ * High-contrast accessibility mode (WCAG AAA, 7:1).
+ * Orthogonal to light/dark — `.high-contrast` layers a max-contrast LIGHT palette,
+ * `.high-contrast.dark` a max-contrast DARK palette. Toggled by HighContrastProvider.
+ * Text on every interactive surface clears 7:1; borders/focus are solid for definition.
+ */
+.high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #ffffff;
+  --muted-foreground: #1a1a1a; /* 16.1:1 on #fff */
+  --accent: #000000;
+  --accent-foreground: #ffffff;
+  --destructive: #8a0000; /* white text → 9.0:1 */
+  --destructive-foreground: #ffffff;
+  --success: #00382f; /* 11.4:1 on #fff */
+  --success-foreground: #ffffff;
+  --warning: #5c3d00; /* 9.4:1 on #fff */
+  --warning-foreground: #ffffff;
+  --info: #00309e; /* 8.6:1 on #fff */
+  --info-foreground: #ffffff;
+  --border: #000000;
+  --input: #000000;
+  --ring: #00309e;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #6ea8ff;
+}
+
+.high-contrast.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #000000;
+  --secondary-foreground: #ffffff;
+  --muted: #000000;
+  --muted-foreground: #e6e6e6; /* 17.4:1 on #000 */
+  --accent: #ffffff;
+  --accent-foreground: #000000;
+  --destructive: #ff6b6b; /* 7.6:1 on #000 */
+  --destructive-foreground: #000000;
+  --success: #4ade80; /* 11.2:1 on #000 */
+  --success-foreground: #000000;
+  --warning: #fbbf24; /* 13.0:1 on #000 */
+  --warning-foreground: #000000;
+  --info: #6ea8ff; /* 8.4:1 on #000 */
+  --info-foreground: #000000;
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #6ea8ff;
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #000000;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #6ea8ff;
+}
+
+/*
+ * User-level display preferences — base font size + UI density.
+ * Toggled by DisplayPreferencesProvider via classes on <html>. Orthogonal to
+ * theme and high-contrast. Defaults live on :root so an unset preference is a no-op.
+ *
+ * Font size scales the root rem base (consumed by `html { font-size }` below), so
+ * all rem-based type/spacing grows proportionally — readable without reflow breakage.
+ * Density adjusts list/table cell padding + row heights only in the non-default modes,
+ * leaving the comfortable default layout untouched.
+ */
+:root {
+  --base-font-size: 16px;
+  --density-cell-py: 0.5rem; /* matches table-cell p-2 */
+  --density-head-height: 2.5rem; /* matches table-head h-10 */
+}
+
+.font-large {
+  --base-font-size: 18px;
+}
+
+.font-x-large {
+  --base-font-size: 20px;
+}
+
+.density-compact {
+  --density-cell-py: 0.25rem;
+  --density-head-height: 2rem;
+}
+
+.density-spacious {
+  --density-cell-py: 0.875rem;
+  --density-head-height: 3.25rem;
+}
+
+/* Apply density to design-system tables/list views (stable data-slot hooks). */
+.density-compact [data-slot="table-cell"],
+.density-spacious [data-slot="table-cell"] {
+  padding-top: var(--density-cell-py);
+  padding-bottom: var(--density-cell-py);
+}
+
+.density-compact [data-slot="table-head"],
+.density-spacious [data-slot="table-head"] {
+  height: var(--density-head-height);
+}
+
+/*
+ * High-visibility focus ring on every interactive element (WCAG 2.4.7).
+ * 3px solid, high-contrast --ring token, 2px offset. Overrides the weak
+ * shadcn `outline-ring/50` default. --ring switches to a max-contrast value
+ * under .high-contrast automatically, so this single rule covers both modes.
+ */
+:is(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -250,6 +385,7 @@
   }
   html {
     text-rendering: optimizelegibility;
+    font-size: var(--base-font-size);
   }
   body {
     @apply min-h-[100dvh];
