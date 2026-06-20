@@ -1,0 +1,52 @@
+/**
+ * Command Performance (developer/admin dashboard)
+ *
+ * Per-command latency percentiles (P50/P95/P99) for governed Manifest commands,
+ * ranked by P95 so the slowest commands surface first. Backed by the
+ * `duration_ms` the runtime dispatcher records for every settled command in the
+ * append-only `reaction_logs` table — aggregated on demand with Postgres'
+ * `percentile_cont`. Read-only: this surface never mutates governed state.
+ */
+
+import { auth } from "@repo/auth/server";
+import { redirect } from "next/navigation";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { CommandPerfClient } from "./command-perf-client";
+
+export const metadata = {
+  title: "Command Performance",
+  description:
+    "P50/P95/P99 latency per governed command, ranked by P95, with slow-command alerts.",
+};
+
+export default async function CommandPerfPage() {
+  const { orgId, userId } = await auth();
+
+  if (!(userId && orgId)) {
+    redirect("/login");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    redirect("/onboarding");
+  }
+
+  return (
+    <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div className="mb-8">
+        <h1 className="font-semibold text-2xl tracking-tight">
+          Command Performance
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Latency percentiles for every governed command, ranked by P95 — the
+          slowest commands rise to the top so optimization becomes a ranked list
+          instead of guesswork. A command whose P95 exceeds the threshold is
+          flagged as an alert.
+        </p>
+      </div>
+
+      <CommandPerfClient />
+    </div>
+  );
+}
