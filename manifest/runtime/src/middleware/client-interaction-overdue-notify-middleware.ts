@@ -48,6 +48,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  CLIENT_INTERACTION_OVERDUE_NOTIFY_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -73,6 +78,7 @@ export interface ClientInteractionOverdueNotifyDiagnostic {
 }
 
 export interface ClientInteractionOverdueNotifyMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: ClientInteractionOverdueNotifyDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -106,6 +112,7 @@ export function createClientInteractionOverdueNotifyMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -116,10 +123,22 @@ export function createClientInteractionOverdueNotifyMiddleware(
         return {};
       }
 
-      for (const event of ctx.emittedEvents) {
-        if (event.name === "ClientInteractionMarkedOverdue") {
-          await notifyAssignee(event, ctx);
-        }
+      const overdueEvents = ctx.emittedEvents.filter(
+        (event) => event.name === "ClientInteractionMarkedOverdue"
+      );
+
+      if (asyncEnqueue && overdueEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: overdueEvents,
+          reactionName: CLIENT_INTERACTION_OVERDUE_NOTIFY_REACTION,
+        });
+        return {};
+      }
+
+      for (const event of overdueEvents) {
+        await notifyAssignee(event, ctx);
       }
 
       return {};

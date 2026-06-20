@@ -42,10 +42,15 @@
   },
 
   "client": {
-    "$comment": "Generated typed client settings.",
+    "$comment": "Generated typed client settings. DOMAIN-PARTITIONED (feature-1781435713420-506r2pr8i): the runtime client + hooks are split into domain-scoped chunks so route-based layouts ship only their domain. Chunk assignment is CLIENT_DOMAIN_MAP (entity-domain-map.mjs); chunks = CLIENT_CHUNKS (core + events, kitchen, finance, staffing, crm, logistics). clientOutput/hooksOutput are kept as backward-compat shims re-exporting the barrels, so the 100+ existing @/app/lib/manifest-client.generated import sites need no changes. typesOutput stays monolithic — it is type-only (zero runtime payload).",
     "fetch": "apps/app/app/lib/api.ts#apiFetch",
     "commandCore": "apps/app/app/lib/manifest-client.ts#executeCommand",
     "typesOutput": "apps/app/app/lib/manifest-types.generated.ts",
-    "clientOutput": "apps/app/app/lib/manifest-client.generated.ts"
+    "clientOutput": "apps/app/app/lib/manifest-client.generated.ts",
+    "clientChunkDir": "apps/app/app/lib/manifest-client",
+    "hooksOutput": "apps/app/app/lib/manifest-hooks.generated.ts",
+    "hooksChunkDir": "apps/app/app/lib/manifest-hooks",
+    "domainSource": "manifest/scripts/entity-domain-map.mjs#CLIENT_DOMAIN_MAP",
+    "domainChunks": ["core", "events", "kitchen", "finance", "staffing", "crm", "logistics"]
   }
 }

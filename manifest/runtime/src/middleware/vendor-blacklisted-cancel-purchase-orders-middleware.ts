@@ -54,6 +54,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  VENDOR_BLACKLISTED_CANCEL_PURCHASE_ORDERS_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -79,6 +84,7 @@ export interface VendorBlacklistedCancelPurchaseOrdersDiagnostic {
 }
 
 export interface VendorBlacklistedCancelPurchaseOrdersMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: VendorBlacklistedCancelPurchaseOrdersDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -126,6 +132,7 @@ export function createVendorBlacklistedCancelPurchaseOrdersMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -138,6 +145,16 @@ export function createVendorBlacklistedCancelPurchaseOrdersMiddleware(
           ctx.entityName === "Vendor" &&
           ctx.command.name === "blacklist"
       );
+
+      if (asyncEnqueue && blacklistedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: blacklistedEvents,
+          reactionName: VENDOR_BLACKLISTED_CANCEL_PURCHASE_ORDERS_REACTION,
+        });
+        return {};
+      }
 
       for (const event of blacklistedEvents) {
         const payload = event.payload as

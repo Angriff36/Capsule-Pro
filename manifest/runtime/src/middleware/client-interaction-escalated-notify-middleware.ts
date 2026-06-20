@@ -53,6 +53,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  CLIENT_INTERACTION_ESCALATED_NOTIFY_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -78,6 +83,7 @@ export interface ClientInteractionEscalatedNotifyDiagnostic {
 }
 
 export interface ClientInteractionEscalatedNotifyMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: ClientInteractionEscalatedNotifyDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -109,6 +115,7 @@ export function createClientInteractionEscalatedNotifyMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -119,10 +126,22 @@ export function createClientInteractionEscalatedNotifyMiddleware(
         return {};
       }
 
-      for (const event of ctx.emittedEvents) {
-        if (event.name === "ClientInteractionEscalated") {
-          await notifyEscalationTarget(event, ctx);
-        }
+      const escalatedEvents = ctx.emittedEvents.filter(
+        (event) => event.name === "ClientInteractionEscalated"
+      );
+
+      if (asyncEnqueue && escalatedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: escalatedEvents,
+          reactionName: CLIENT_INTERACTION_ESCALATED_NOTIFY_REACTION,
+        });
+        return {};
+      }
+
+      for (const event of escalatedEvents) {
+        await notifyEscalationTarget(event, ctx);
       }
 
       return {};

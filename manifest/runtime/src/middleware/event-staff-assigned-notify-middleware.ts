@@ -58,6 +58,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EVENT_STAFF_ASSIGNED_NOTIFY_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -85,6 +90,7 @@ export interface EventStaffAssignedNotifyDiagnostic {
 
 export interface EventStaffAssignedNotifyMiddlewareOptions {
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   /** Structured skip/outcome reporting. Default logs via console.warn. */
   onDiagnostic?: (diag: EventStaffAssignedNotifyDiagnostic) => void;
@@ -129,8 +135,12 @@ const defaultDiagnostic = (diag: EventStaffAssignedNotifyDiagnostic): void => {
 export function createEventStaffAssignedNotifyMiddleware(
   options: EventStaffAssignedNotifyMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
-    options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -150,6 +160,16 @@ export function createEventStaffAssignedNotifyMiddleware(
       const assigned = ctx.emittedEvents.filter(
         (event) => event.name === "EventStaffAssigned"
       );
+
+      if (asyncEnqueue && assigned.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: assigned,
+          reactionName: EVENT_STAFF_ASSIGNED_NOTIFY_REACTION,
+        });
+        return {};
+      }
 
       for (const event of assigned) {
         const payload = event.payload as EventStaffAssignedPayload | undefined;

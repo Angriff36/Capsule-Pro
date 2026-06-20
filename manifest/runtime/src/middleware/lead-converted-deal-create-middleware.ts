@@ -34,6 +34,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  LEAD_CONVERTED_DEAL_CREATE_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -59,6 +64,7 @@ export interface LeadConvertedDealDiagnostic {
 }
 
 export interface LeadConvertedDealCreateMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: LeadConvertedDealDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -94,6 +100,7 @@ export function createLeadConvertedDealCreateMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -106,6 +113,16 @@ export function createLeadConvertedDealCreateMiddleware(
           ctx.entityName === "Lead" &&
           ctx.command.name === "convertToClient"
       );
+
+      if (asyncEnqueue && convertedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: convertedEvents,
+          reactionName: LEAD_CONVERTED_DEAL_CREATE_REACTION,
+        });
+        return {};
+      }
 
       for (const event of convertedEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;

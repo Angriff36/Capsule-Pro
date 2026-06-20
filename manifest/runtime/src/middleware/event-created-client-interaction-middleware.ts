@@ -49,6 +49,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EVENT_CREATED_CLIENT_INTERACTION_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -75,6 +80,7 @@ export interface EventClientInteractionDiagnostic {
 }
 
 export interface EventCreatedClientInteractionMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: EventClientInteractionDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -103,6 +109,7 @@ export function createEventCreatedClientInteractionMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -115,6 +122,16 @@ export function createEventCreatedClientInteractionMiddleware(
           ctx.entityName === "Event" &&
           ctx.command.name === "create"
       );
+
+      if (asyncEnqueue && createdEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: createdEvents,
+          reactionName: EVENT_CREATED_CLIENT_INTERACTION_REACTION,
+        });
+        return {};
+      }
 
       for (const event of createdEvents) {
         const payload = event.payload as

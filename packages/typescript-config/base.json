@@ -10,7 +10,7 @@
     "moduleDetection": "force",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noUncheckedIndexedAccess" :true,
+    "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature" :true,
     "erasableSyntaxOnly": true,
     "allowUnusedLabels": false,

@@ -65,6 +65,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EMPLOYEE_CERTIFICATION_LAPSED_NOTIFY_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -92,6 +97,7 @@ export interface EmployeeCertificationLapsedNotifyDiagnostic {
 
 export interface EmployeeCertificationLapsedNotifyMiddlewareOptions {
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   /** Structured skip/outcome reporting. Default logs via console.warn. */
   onDiagnostic?: (diag: EmployeeCertificationLapsedNotifyDiagnostic) => void;
@@ -136,8 +142,12 @@ const defaultDiagnostic = (
 export function createEmployeeCertificationLapsedNotifyMiddleware(
   options: EmployeeCertificationLapsedNotifyMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
-    options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -153,12 +163,22 @@ export function createEmployeeCertificationLapsedNotifyMiddleware(
         return {};
       }
 
-      const lapses = ctx.emittedEvents.filter(
+      const lapseEvents = ctx.emittedEvents.filter(
         (event) =>
           event.name === EXPIRED_EVENT || event.name === REVOKED_EVENT
       );
 
-      for (const event of lapses) {
+      if (asyncEnqueue && lapseEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: lapseEvents,
+          reactionName: EMPLOYEE_CERTIFICATION_LAPSED_NOTIFY_REACTION,
+        });
+        return {};
+      }
+
+      for (const event of lapseEvents) {
         const kind = event.name === REVOKED_EVENT ? "revoked" : "expired";
         const payload = event.payload as LapsePayload | undefined;
         const certificationId =

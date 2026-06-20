@@ -45,6 +45,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EMAIL_TEMPLATE_DELETED_DEACTIVATE_WORKFLOWS_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -70,6 +75,7 @@ export interface EmailTemplateDeletedDeactivateWorkflowsDiagnostic {
 }
 
 export interface EmailTemplateDeletedDeactivateWorkflowsMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: EmailTemplateDeletedDeactivateWorkflowsDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -102,6 +108,7 @@ export function createEmailTemplateDeletedDeactivateWorkflowsMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -114,6 +121,16 @@ export function createEmailTemplateDeletedDeactivateWorkflowsMiddleware(
           ctx.entityName === "EmailTemplate" &&
           ctx.command.name === "softDelete"
       );
+
+      if (asyncEnqueue && deletedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: deletedEvents,
+          reactionName: EMAIL_TEMPLATE_DELETED_DEACTIVATE_WORKFLOWS_REACTION,
+        });
+        return {};
+      }
 
       for (const event of deletedEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;

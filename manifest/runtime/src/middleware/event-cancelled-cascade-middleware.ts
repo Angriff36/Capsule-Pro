@@ -47,6 +47,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  EVENT_CANCELLED_CASCADE_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -73,6 +78,7 @@ export interface EventCancelledCascadeDiagnostic {
 }
 
 export interface EventCancelledCascadeMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: EventCancelledCascadeDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -194,6 +200,7 @@ export function createEventCancelledCascadeMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -206,6 +213,17 @@ export function createEventCancelledCascadeMiddleware(
           ctx.entityName === "Event" &&
           ctx.command.name === "cancel"
       );
+
+      if (asyncEnqueue && cancelledEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: cancelledEvents,
+          reactionName: EVENT_CANCELLED_CASCADE_REACTION,
+          dedupeBySubject: true,
+        });
+        return {};
+      }
 
       for (const event of cancelledEvents) {
         const payload = event.payload as

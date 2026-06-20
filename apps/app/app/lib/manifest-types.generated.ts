@@ -168,6 +168,7 @@ export interface AiEventSetupSession {
 export interface AlertsConfig {
   id: string;
   tenantId: string;
+  deletedAt: string;
   channel?: string;
   destination?: string;
   createdAt: string;
@@ -1512,6 +1513,17 @@ export interface FacilityWorkOrder {
   updatedAt: string;
 }
 
+export interface FeatureFlag {
+  id: string;
+  tenantId: string;
+  deletedAt: string;
+  flagKey?: string;
+  enabled?: boolean;
+  rolloutPercent?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ForecastInput {
   id: string;
   tenantId: string;
@@ -2003,6 +2015,7 @@ export interface Note {
 export interface Notification {
   id: string;
   tenantId: string;
+  deletedAt: string;
   recipientEmployeeId: string;
   notificationType?: string;
   title?: string;
@@ -3636,6 +3649,7 @@ export interface VarianceReport {
 export interface Vehicle {
   id: string;
   tenantId: string;
+  deletedAt: string;
   make: string;
   model: string;
   year?: number;

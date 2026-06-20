@@ -19,6 +19,7 @@
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
     "./async-reactions": "./src/async-reactions/index.ts",
     "./middleware": "./src/middleware/index.ts",
+    "./middleware-registry": "./src/middleware/middleware-registry.ts",
     "./middleware/prep-inventory-demand-middleware": "./src/middleware/prep-inventory-demand-middleware.ts",
     "./commands-registry": "./src/commands-registry.ts",
     "./command-source-map": "./src/command-source-map.ts",

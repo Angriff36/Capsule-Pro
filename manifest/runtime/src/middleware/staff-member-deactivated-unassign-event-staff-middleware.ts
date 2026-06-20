@@ -69,6 +69,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  STAFF_MEMBER_DEACTIVATED_UNASSIGN_EVENT_STAFF_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -95,6 +100,7 @@ export interface StaffMemberDeactivatedUnassignDiagnostic {
 
 export interface StaffMemberDeactivatedUnassignEventStaffMiddlewareOptions {
   /** Dispatches a governed Manifest command, normally engine.runCommand. */
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   /** Structured skip/outcome reporting. Default logs via console.warn. */
   onDiagnostic?: (diag: StaffMemberDeactivatedUnassignDiagnostic) => void;
@@ -138,8 +144,12 @@ const defaultDiagnostic = (
 export function createStaffMemberDeactivatedUnassignEventStaffMiddleware(
   options: StaffMemberDeactivatedUnassignEventStaffMiddlewareOptions
 ): Middleware {
-  const { storeProvider, dispatchCommand, onDiagnostic = defaultDiagnostic } =
-    options;
+  const {
+    storeProvider,
+    dispatchCommand,
+    onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
+  } = options;
 
   return {
     hooks: ["after-emit"],
@@ -155,6 +165,17 @@ export function createStaffMemberDeactivatedUnassignEventStaffMiddleware(
       const deactivatedEvents = ctx.emittedEvents.filter(
         (event) => event.name === "StaffMemberDeactivated"
       );
+
+      if (asyncEnqueue && deactivatedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: deactivatedEvents,
+          reactionName:
+            STAFF_MEMBER_DEACTIVATED_UNASSIGN_EVENT_STAFF_REACTION,
+        });
+        return {};
+      }
 
       for (const event of deactivatedEvents) {
         const payload = event.payload as

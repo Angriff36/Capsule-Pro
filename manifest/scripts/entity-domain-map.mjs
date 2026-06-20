@@ -239,3 +239,60 @@ export const FLAT_SEGMENT_TO_ENTITY = {};
 for (const entity of Object.keys(ENTITY_DOMAIN_MAP)) {
   FLAT_SEGMENT_TO_ENTITY[entity.toLowerCase()] = entity;
 }
+
+// ─── Generated-client domain partitioning ───────────────────────────────────
+//
+// The generated Capsule client (~1054 command callers + list/get reads across
+// 188 entities) is partitioned into domain-scoped chunks so route-based layouts
+// ship only their domain's code instead of the whole monolith.
+//
+// ROUTE_SEGMENT → CLIENT CHUNK consolidation. The first path segment of each
+// ENTITY_DOMAIN_MAP value is the route segment; this map folds the 19 route
+// segments into 7 client chunks (6 role-scoped domains + a shared `core` for
+// cross-domain primitives). Command-board folds into `events` because
+// CommandBoard* IS the event tree (AGENTS.md BOARD disambiguation).
+//
+// Consumed by generate-capsule-client.mjs + generate-react-query-hooks.mjs.
+// Keep ordered by (chunk, segment) for deterministic chunk iteration.
+export const CLIENT_DOMAIN_MAP = {
+  kitchen: "kitchen",
+  events: "events",
+  "command-board": "events",
+  crm: "crm",
+  accounting: "finance",
+  payroll: "finance",
+  staff: "staffing",
+  timecards: "staffing",
+  training: "staffing",
+  inventory: "logistics",
+  procurement: "logistics",
+  shipments: "logistics",
+  logistics: "logistics",
+  facilities: "logistics",
+  collaboration: "core",
+  communications: "core",
+  administrative: "core",
+  settings: "core",
+  rolepolicy: "core",
+};
+
+// Ordered list of client chunk names (deterministic generation order).
+export const CLIENT_CHUNKS = [
+  "core",
+  "events",
+  "kitchen",
+  "finance",
+  "staffing",
+  "crm",
+  "logistics",
+];
+
+// Resolve the client chunk for a given entity by looking up its route domain.
+export function resolveClientChunk(entity) {
+  const routeDomain = ENTITY_DOMAIN_MAP[entity];
+  if (!routeDomain) {
+    return "core";
+  }
+  const segment = routeDomain.split("/")[0];
+  return CLIENT_DOMAIN_MAP[segment] ?? "core";
+}

@@ -41,6 +41,11 @@ import type {
   MiddlewareResult,
   Store,
 } from "@angriff36/manifest";
+import type { AsyncDispatch } from "../async-reactions";
+import {
+  captureTriggeringEvents,
+  INVOICE_FULLY_PAID_MARK_PAID_REACTION,
+} from "../async-reactions";
 
 interface RunCommandOptions {
   causationId?: string;
@@ -66,6 +71,7 @@ export interface InvoiceFullyPaidMarkPaidDiagnostic {
 }
 
 export interface InvoiceFullyPaidMarkPaidMiddlewareOptions {
+  asyncEnqueue?: AsyncDispatch;
   dispatchCommand: DispatchCommand;
   onDiagnostic?: (diag: InvoiceFullyPaidMarkPaidDiagnostic) => void;
   storeProvider: (entityName: string) => Store | undefined;
@@ -93,6 +99,7 @@ export function createInvoiceFullyPaidMarkPaidMiddleware(
     storeProvider,
     dispatchCommand,
     onDiagnostic = defaultDiagnostic,
+    asyncEnqueue,
   } = options;
 
   return {
@@ -107,6 +114,16 @@ export function createInvoiceFullyPaidMarkPaidMiddleware(
           ctx.entityName === "Invoice" &&
           ctx.command.name === "applyPayment"
       );
+
+      if (asyncEnqueue && appliedEvents.length > 0) {
+        await captureTriggeringEvents({
+          asyncEnqueue,
+          ctx,
+          events: appliedEvents,
+          reactionName: INVOICE_FULLY_PAID_MARK_PAID_REACTION,
+        });
+        return {};
+      }
 
       for (const event of appliedEvents) {
         const payload = event.payload as { tenantId?: unknown } | undefined;
