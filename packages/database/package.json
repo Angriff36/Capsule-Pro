@@ -20,6 +20,10 @@
       "import": "./src/sample-data/index.ts",
       "default": "./src/sample-data/index.ts"
     },
+    "./feature-flags": {
+      "import": "./src/feature-flags.ts",
+      "default": "./src/feature-flags.ts"
+    },
     "./generated/client": {
       "import": "./generated/client.ts",
       "default": "./generated/client.ts"

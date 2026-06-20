@@ -1,0 +1,102 @@
+use "../_base.manifest"
+// Platform - Feature Flag Rules
+// Tenant-scoped feature flags for controlled rollout of Manifest behaviour
+// (new commands, reactions, UI surfaces) without a code deploy.
+//
+// Governed entity: all writes go through the canonical command dispatcher
+// (RuntimeEngine.runCommand). Reads are served by the flags() server function
+// in @repo/database (read-path freedom, constitution §10).
+//
+// Persistence: no dedicated Prisma model — the runtime store provider routes
+// FeatureFlag to PrismaJsonStore (the shared `manifest_entity` JSON-blob table),
+// so no migration is required. `store ... in memory` only affects the Prisma
+// projection (which is skipped); runtime persistence is unaffected.
+
+entity FeatureFlag mixin TenantScoped, SoftDeletable {
+  searchable property required flagKey: string = ""
+  property required enabled: boolean = false
+  property required rolloutPercent: int = 0
+  timestamps
+
+  constraint requireFlagKey: self.flagKey != "" "Flag key is required"
+  constraint rolloutInRange: self.rolloutPercent >= 0 and self.rolloutPercent <= 100 "Rollout percent must be between 0 and 100"
+
+  default policy FeatureFlagDefaultAccess execute: user.role in ["manager", "admin"] "Feature flag management"
+
+  command create(flagKey: string, enabled: boolean = false, rolloutPercent: number = 0) {
+    guard flagKey != "" "Flag key is required"
+    guard rolloutPercent >= 0 and rolloutPercent <= 100 "Rollout percent must be between 0 and 100"
+    mutate flagKey = flagKey
+    mutate enabled = enabled
+    mutate rolloutPercent = rolloutPercent
+    emit FeatureFlagCreated
+  }
+
+  command enable() {
+    guard self.deletedAt == null "Cannot modify a deleted feature flag"
+    mutate enabled = true
+    emit FeatureFlagEnabled
+  }
+
+  command disable() {
+    guard self.deletedAt == null "Cannot modify a deleted feature flag"
+    mutate enabled = false
+    emit FeatureFlagDisabled
+  }
+
+  command setRollout(rolloutPercent: number) {
+    guard self.deletedAt == null "Cannot modify a deleted feature flag"
+    guard rolloutPercent >= 0 and rolloutPercent <= 100 "Rollout percent must be between 0 and 100"
+    mutate rolloutPercent = rolloutPercent
+    emit FeatureFlagRolloutChanged
+  }
+
+  command softDelete(reason: string = "") {
+    guard self.deletedAt == null "Feature flag is already deleted"
+    mutate deletedAt = now()
+    emit FeatureFlagDeleted
+  }
+
+  store FeatureFlag in memory
+}
+
+policy AdminCanManageFeatureFlags execute: user.role in ["manager", "admin"] "Only managers and admins can manage feature flags"
+
+event FeatureFlagCreated: "admin.feature_flag.created" {
+  featureFlagId: string
+  tenantId: string
+  flagKey: string
+  enabled: boolean
+  rolloutPercent: number
+  createdAt: datetime
+}
+
+event FeatureFlagEnabled: "admin.feature_flag.enabled" {
+  featureFlagId: string
+  tenantId: string
+  flagKey: string
+  updatedAt: datetime
+}
+
+event FeatureFlagDisabled: "admin.feature_flag.disabled" {
+  featureFlagId: string
+  tenantId: string
+  flagKey: string
+  updatedAt: datetime
+}
+
+event FeatureFlagRolloutChanged: "admin.feature_flag.rollout_changed" {
+  featureFlagId: string
+  tenantId: string
+  flagKey: string
+  rolloutPercent: number
+  updatedAt: datetime
+}
+
+event FeatureFlagDeleted: "admin.feature_flag.deleted" {
+  featureFlagId: string
+  tenantId: string
+  flagKey: string
+  reason: string
+  deletedAt: datetime
+}

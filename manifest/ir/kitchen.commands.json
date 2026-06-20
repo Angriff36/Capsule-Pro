@@ -2205,6 +2205,31 @@
     "commandId": "FacilityWorkOrder.start"
   },
   {
+    "entity": "FeatureFlag",
+    "command": "create",
+    "commandId": "FeatureFlag.create"
+  },
+  {
+    "entity": "FeatureFlag",
+    "command": "disable",
+    "commandId": "FeatureFlag.disable"
+  },
+  {
+    "entity": "FeatureFlag",
+    "command": "enable",
+    "commandId": "FeatureFlag.enable"
+  },
+  {
+    "entity": "FeatureFlag",
+    "command": "setRollout",
+    "commandId": "FeatureFlag.setRollout"
+  },
+  {
+    "entity": "FeatureFlag",
+    "command": "softDelete",
+    "commandId": "FeatureFlag.softDelete"
+  },
+  {
     "entity": "ForecastInput",
     "command": "create",
     "commandId": "ForecastInput.create"

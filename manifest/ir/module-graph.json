@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-19T13:41:41.139Z",
-  "contentHash": "046844914eb3a0abddba4c5eb519192fc976b1e3cd8e949cfeb904a401cbc48b",
+  "compiledAt": "2026-06-20T08:15:20.426Z",
+  "contentHash": "854c175d98bfdece700230bfbaa44675b604f3416679bdcbd829025255815fb4",
   "sources": [
     {
       "path": "_base.manifest",
@@ -543,6 +543,13 @@
       "events": 0
     },
     {
+      "path": "platform/feature-flag-rules.manifest",
+      "domain": "platform",
+      "entities": 0,
+      "commands": 0,
+      "events": 0
+    },
+    {
       "path": "platform/notification-rules.manifest",
       "domain": "platform",
       "entities": 0,
@@ -727,8 +734,8 @@
   ],
   "merged": {
     "path": "kitchen.ir.json",
-    "entities": 212,
-    "commands": 1054,
-    "events": 1029
+    "entities": 213,
+    "commands": 1059,
+    "events": 1034
   }
 }

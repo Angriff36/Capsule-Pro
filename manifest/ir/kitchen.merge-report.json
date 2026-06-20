@@ -1,6 +1,6 @@
 {
   "strategy": "native-compileProjectToIR",
-  "compilerVersion": "2.16.0",
+  "compilerVersion": "2.16.1",
   "sources": [
     "_base.manifest",
     "ai/ai-event-setup-rules.manifest",
@@ -79,6 +79,7 @@
     "operations/work-order-rules.manifest",
     "operations/workforce-ai-rules.manifest",
     "platform/api-key-rules.manifest",
+    "platform/feature-flag-rules.manifest",
     "platform/notification-rules.manifest",
     "platform/override-audit-rules.manifest",
     "platform/rate-limit-rules.manifest",
@@ -107,9 +108,9 @@
     "staff/training-module-sel-rules.manifest"
   ],
   "counts": {
-    "entities": 212,
-    "commands": 1054,
-    "events": 1029,
+    "entities": 213,
+    "commands": 1059,
+    "events": 1034,
     "sagas": 2,
     "reactions": 10
   },
@@ -310,6 +311,7 @@
     "[C:\\Projects\\capsule-pro\\manifest\\source\\operations\\work-order-rules.manifest] Command 'WorkOrder.create' creates 'WorkOrder' but never sets non-null field 'completedDate' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate completedDate = ...', give 'completedDate' a default (e.g. '= now()'), or make it optional ('completedDate: datetime?').",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\operations\\workforce-ai-rules.manifest] Command 'WorkforceOptimization.create' creates 'WorkforceOptimization' but never sets non-null field 'completedAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate completedAt = ...', give 'completedAt' a default (e.g. '= now()'), or make it optional ('completedAt: datetime?').",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\platform\\api-key-rules.manifest] Command 'ApiKey.create' creates 'ApiKey' but never sets non-null field 'deletedAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate deletedAt = ...', give 'deletedAt' a default (e.g. '= now()'), or make it optional ('deletedAt: datetime?').",
+    "[C:\\Projects\\capsule-pro\\manifest\\source\\platform\\feature-flag-rules.manifest] Command 'FeatureFlag.create' creates 'FeatureFlag' but never sets non-null field 'deletedAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate deletedAt = ...', give 'deletedAt' a default (e.g. '= now()'), or make it optional ('deletedAt: datetime?').",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\platform\\notification-rules.manifest] Command 'Notification.create' creates 'Notification' but never sets non-null field 'deletedAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate deletedAt = ...', give 'deletedAt' a default (e.g. '= now()'), or make it optional ('deletedAt: datetime?').",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\platform\\notification-rules.manifest] Command 'Notification.create' creates 'Notification' but never sets non-null field 'readAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate readAt = ...', give 'readAt' a default (e.g. '= now()'), or make it optional ('readAt: datetime?').",
     "[C:\\Projects\\capsule-pro\\manifest\\source\\platform\\override-audit-rules.manifest] Command 'OverrideAudit.create' creates 'OverrideAudit' but never sets non-null field 'authorizedAt' (type 'datetime', no default). If no caller supplies it, persisting writes null and a non-null store column rejects it. Add 'mutate authorizedAt = ...', give 'authorizedAt' a default (e.g. '= now()'), or make it optional ('authorizedAt: datetime?').",
