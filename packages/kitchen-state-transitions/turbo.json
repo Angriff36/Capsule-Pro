@@ -1,4 +1,4 @@
 {
   "extends": ["//"],
-  "tags": ["layer:package", "scope:integration"]
+  "tags": ["layer:package", "scope:integration", "domain:kitchen"]
 }

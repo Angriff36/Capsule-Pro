@@ -2,7 +2,11 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "envMode": "loose",
-  "globalDependencies": ["**/.env.*local", "**/tsconfig*.json"],
+  "globalDependencies": [
+    "**/.env.*local",
+    "**/tsconfig*.json",
+    "manifest/ir/kitchen.ir.json"
+  ],
   "globalEnv": [
     "NEXT_PUBLIC_*",
     "ANALYZE",
@@ -125,10 +129,135 @@
         "dependencies": {
           "deny": ["app:api"]
         }
+      },
+      "domain:crm": {
+        "dependencies": {
+          "deny": [
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:events": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:finance": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:inventory": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:kitchen": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:operations": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:procurement",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:procurement": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:quality",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:quality": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:staff"
+          ]
+        }
+      },
+      "domain:staff": {
+        "dependencies": {
+          "deny": [
+            "domain:crm",
+            "domain:events",
+            "domain:finance",
+            "domain:inventory",
+            "domain:kitchen",
+            "domain:operations",
+            "domain:procurement",
+            "domain:quality"
+          ]
+        }
       }
     }
   },
-  "ui": "tui",
   "remoteCache": {
     "enabled": true,
     "signature": true
@@ -149,6 +278,9 @@
     },
     "generate": {
       "outputs": []
+    },
+    "manifest-embed": {
+      "outputs": ["lib/manifest/kitchen.ir.generated.json"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck", "@repo/database#generate"],
@@ -212,7 +344,7 @@
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "api#build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "manifest-embed"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
