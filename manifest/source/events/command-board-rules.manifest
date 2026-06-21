@@ -24,7 +24,7 @@ entity CommandBoard mixin TenantScoped, SoftDeletable {
   constraint validStatus: self.status in ["draft", "active", "archived"] "Status must be valid"
 
   // State transitions
-  transition status from "draft" to ["active"]
+  transition status from "draft" to ["active", "archived"]
   transition status from "active" to ["archived"]
 
   default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
