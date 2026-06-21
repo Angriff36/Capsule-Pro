@@ -39,6 +39,9 @@ entity Driver mixin TenantScoped {
   transition status from "available" to ["on_route", "off_duty", "inactive"]
   transition status from "on_route" to ["available", "off_duty", "inactive"]
   transition status from "off_duty" to ["available", "on_route", "inactive"]
+  // reactivate (guard admits "inactive") brings a removed driver back to "available";
+  // remove (guard self.status != "on_route", admits "inactive") is idempotent via the self-loop.
+  transition status from "inactive" to ["available", "inactive"]
 
   default policy DriverDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, vehicleId: string, status: string, notes: string) {
