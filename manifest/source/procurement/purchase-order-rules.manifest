@@ -40,6 +40,22 @@ entity PurchaseOrder mixin TenantScoped, SoftDeletable {
   computed hasItems: boolean = self.itemCount > 0
   computed isEditable: boolean = self.status == "draft"
 
+  // Quality-hold rollups over this PO's line-item children (the existing hasMany `items`
+  // back-relation — PurchaseOrderItem). The FILTER carries the business meaning: count and
+  // total ONLY the line items still in the "pending" qualityStatus — items received-but-not-
+  // yet-quality-cleared — NOT every line item (already-accepted/rejected items would inflate
+  // the signal into meaningless gross PO volume). Both facets filter the SAME "pending"
+  // literal so they tell one coherent story: count = how many line items are still awaiting
+  // quality acceptance, sum = the dollars tied up in that hold (each item's own totalCost,
+  // the extended line cost — NOT discrepancyAmount, which is a DIFFERENT cohort measuring only
+  // shorted/damaged value). count_of (1 arg) vs sum (2 args, value selector) = distinct facets,
+  // not a duplicate. Drop or flip the literal and the rollup silently reports a different
+  // cohort with no compile error; the purchase-order-aggregate-computeds regression test locks
+  // the shape. IR-only computeds (no stored column, no migration); request-cached like the
+  // boolean status computeds above.
+  computed pendingQualityItemCount: int = count_of(filter(self.items, (i) => i.qualityStatus == "pending")) cache request
+  computed pendingQualityValueTotal: money = sum(filter(self.items, (i) => i.qualityStatus == "pending"), (i) => i.totalCost) cache request
+
   constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "ordered", "partially_received", "received", "cancelled"] "Invalid purchase order status"
 
   // NOTE: "no header edits after submit" is expressed via the isEditable computed and
