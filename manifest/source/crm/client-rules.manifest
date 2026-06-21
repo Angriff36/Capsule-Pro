@@ -29,6 +29,12 @@ entity Client mixin TenantScoped, SoftDeletable {
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
   computed hasEmail: boolean = self.email != null and self.email != ""
   computed isArchived: boolean = self.deletedAt != null
+  // Lifetime financial rollups over the payments back-relation (LTV basis). Filter on
+  // COMPLETED only — cash actually collected, not pending/failed/refunded attempts —
+  // matching the proven Event.totalPaidAmount predicate. IR-only computeds (no stored
+  // column, no migration); request-cached like the Event/EventProfitability precedent.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed completedPaymentCount: int = count_of(filter(self.payments, (p) => p.status == "COMPLETED")) cache request
 
   // Back-relations (U11): inverse hasMany for children that belongTo Client
   relationship hasMany contacts: ClientContact
