@@ -27,8 +27,8 @@ import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
 import {
-  type AsyncDispatch,
   ASYNC_REACTION_HANDLER_MAP,
+  type AsyncDispatch,
   asyncReactionRegistry,
   createAsyncDispatch,
   PostgresAsyncReactionStore,
@@ -60,6 +60,7 @@ import {
   createEventDishPrepSyncMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
+  createEventStaffActiveGuardMiddleware,
   createEventStaffAssignedNotifyMiddleware,
   createEventUpdatedBoardSyncMiddleware,
   createFacilityWorkOrderAssetStatusMiddleware,
@@ -894,6 +895,13 @@ export async function createManifestRuntime(
       captureException: deps.captureException,
     }),
     createRbacMiddleware({ rolePolicies }),
+    // Cross-entity precondition (before-guard): block EventStaff.assign when the
+    // referenced StaffMember is deactivated/soft-deleted. A Manifest guard cannot
+    // express this — guards see only self/user/context/params, never another
+    // entity's live state — so it loads StaffMember from the store and
+    // short-circuits. Fail-open on missing store / not-found (only a positive
+    // "inactive" signal blocks). See event-staff-active-guard-middleware.ts.
+    createEventStaffActiveGuardMiddleware({ storeProvider }),
     // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
     // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
     // seedSampleData/clearSampleData helpers. The governed command only flips the

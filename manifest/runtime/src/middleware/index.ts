@@ -8,23 +8,10 @@
  */
 
 export {
-  type ExecutionMode,
-  type InputMappingMode,
-  type MiddlewareCategory,
-  type MiddlewareHook,
-  type MiddlewareIdempotencyKey,
-  type MiddlewareRegistryEntry,
-  type RetryPolicy,
-  DEFAULT_REGISTRY_RETRY_POLICY,
-  MIDDLEWARE_REGISTRY,
-  diffRegistryVsWiring,
-  findReactionsTargetingEntity,
-  findReactionsTriggeredByEvent,
-  getAsyncRegistryEntries,
-  getMiddlewareRegistry,
-  getRegistryByCategory,
-  getRegistryEntry,
-} from "./middleware-registry";
+  type ChartOfAccountDeactivatedDeactivateChildrenDiagnostic,
+  type ChartOfAccountDeactivatedDeactivateChildrenMiddlewareOptions,
+  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
+} from "./chart-of-account-deactivated-deactivate-children-middleware";
 export {
   type ClientInteractionEscalatedNotifyDiagnostic,
   type ClientInteractionEscalatedNotifyMiddlewareOptions,
@@ -46,11 +33,6 @@ export {
   createCollectionWrittenOffInvoiceWriteOffMiddleware,
 } from "./collection-written-off-invoice-write-off-middleware";
 export {
-  type ChartOfAccountDeactivatedDeactivateChildrenDiagnostic,
-  type ChartOfAccountDeactivatedDeactivateChildrenMiddlewareOptions,
-  createChartOfAccountDeactivatedDeactivateChildrenMiddleware,
-} from "./chart-of-account-deactivated-deactivate-children-middleware";
-export {
   type ContainerDeactivatedDishClearDiagnostic,
   type ContainerDeactivatedDishClearMiddlewareOptions,
   createContainerDeactivatedDishClearMiddleware,
@@ -71,15 +53,15 @@ export {
   type DishDeactivatedPruneMiddlewareOptions,
 } from "./dish-deactivated-prune-middleware";
 export {
-  createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
-  type EmailTemplateDeletedDeactivateSmsRulesDiagnostic,
-  type EmailTemplateDeletedDeactivateSmsRulesMiddlewareOptions,
-} from "./email-template-deleted-sms-rule-deactivate-middleware";
-export {
   createEmailTemplateDeletedDeactivateWorkflowsMiddleware,
   type EmailTemplateDeletedDeactivateWorkflowsDiagnostic,
   type EmailTemplateDeletedDeactivateWorkflowsMiddlewareOptions,
 } from "./email-template-deleted-deactivate-workflows-middleware";
+export {
+  createEmailTemplateDeletedDeactivateSmsRulesMiddleware,
+  type EmailTemplateDeletedDeactivateSmsRulesDiagnostic,
+  type EmailTemplateDeletedDeactivateSmsRulesMiddlewareOptions,
+} from "./email-template-deleted-sms-rule-deactivate-middleware";
 export {
   createEmployeeCertificationLapsedNotifyMiddleware,
   type EmployeeCertificationLapsedNotifyDiagnostic,
@@ -115,6 +97,11 @@ export {
   type EventCateringVenueSyncDiagnostic,
   type EventLocationCateringSyncMiddlewareOptions,
 } from "./event-location-catering-sync-middleware";
+export {
+  createEventStaffActiveGuardMiddleware,
+  type EventStaffActiveGuardDiagnostic,
+  type EventStaffActiveGuardMiddlewareOptions,
+} from "./event-staff-active-guard-middleware";
 export {
   createEventStaffAssignedNotifyMiddleware,
   type EventStaffAssignedNotifyDiagnostic,
@@ -205,20 +192,38 @@ export {
   type MaintenanceScheduleWorkOrderDiagnostic,
 } from "./maintenance-schedule-completed-work-order-create-middleware";
 export {
+  DEFAULT_REGISTRY_RETRY_POLICY,
+  diffRegistryVsWiring,
+  type ExecutionMode,
+  findReactionsTargetingEntity,
+  findReactionsTriggeredByEvent,
+  getAsyncRegistryEntries,
+  getMiddlewareRegistry,
+  getRegistryByCategory,
+  getRegistryEntry,
+  type InputMappingMode,
+  MIDDLEWARE_REGISTRY,
+  type MiddlewareCategory,
+  type MiddlewareHook,
+  type MiddlewareIdempotencyKey,
+  type MiddlewareRegistryEntry,
+  type RetryPolicy,
+} from "./middleware-registry";
+export {
   createOpenShiftClaimedCreateScheduleShiftMiddleware,
   type OpenShiftClaimedCreateScheduleShiftMiddlewareOptions,
   type OpenShiftClaimedScheduleShiftDiagnostic,
 } from "./open-shift-claimed-create-schedule-shift-middleware";
 export {
-  createPaymentProcessedInvoiceApplyMiddleware,
-  type PaymentInvoiceApplyDiagnostic,
-  type PaymentProcessedInvoiceApplyMiddlewareOptions,
-} from "./payment-processed-invoice-apply-middleware";
-export {
   createPaymentPlanCompletedCollectionCaseResolveMiddleware,
   type PaymentPlanCollectionResolveDiagnostic,
   type PaymentPlanCompletedCollectionCaseResolveMiddlewareOptions,
 } from "./payment-plan-completed-collection-case-resolve-middleware";
+export {
+  createPaymentProcessedInvoiceApplyMiddleware,
+  type PaymentInvoiceApplyDiagnostic,
+  type PaymentProcessedInvoiceApplyMiddlewareOptions,
+} from "./payment-processed-invoice-apply-middleware";
 export {
   createPaymentRefundedInvoiceRecordMiddleware,
   type PaymentInvoiceRefundDiagnostic,
@@ -280,6 +285,11 @@ export {
   type RbacMiddlewareOptions,
 } from "./rbac-middleware";
 export {
+  createSampleDataSeedMiddleware,
+  type SampleDataSeedDiagnostic,
+  type SampleDataSeedMiddlewareOptions,
+} from "./sample-data-seed-middleware";
+export {
   createSchedulePublishedNotifyStaffMiddleware,
   type SchedulePublishedNotifyStaffDiagnostic,
   type SchedulePublishedNotifyStaffMiddlewareOptions,
@@ -309,11 +319,6 @@ export {
   type StaffMemberDeactivatedUnassignDiagnostic,
   type StaffMemberDeactivatedUnassignEventStaffMiddlewareOptions,
 } from "./staff-member-deactivated-unassign-event-staff-middleware";
-export {
-  createSampleDataSeedMiddleware,
-  type SampleDataSeedDiagnostic,
-  type SampleDataSeedMiddlewareOptions,
-} from "./sample-data-seed-middleware";
 export {
   createTimeOffApprovedShiftCleanupMiddleware,
   type TimeOffApprovedShiftCleanupDiagnostic,
