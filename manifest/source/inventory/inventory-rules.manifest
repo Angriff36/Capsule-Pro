@@ -31,6 +31,15 @@ entity InventoryItem mixin TenantScoped, SoftDeletable {
   // Stock not already promised to an event/reservation.
   computed quantityAvailable: int = self.quantityOnHand - self.quantityReserved
 
+  // Acquisition rollups over this item's InventoryTransaction children (the hasMany
+  // `transactions` back-relation). Both FILTER on transactionType == "receipt" — the
+  // stock-IN ledger entries — to answer "how often is this item restocked, and what
+  // has it cost us to acquire?" Distinct from StorageLocation's waste rollups, which
+  // filter the same child type on transactionType == "waste". IR-only request-cached
+  // aggregates: they read existing children, project NO Prisma column, need NO migration.
+  computed receiptTransactionCount: int = count_of(filter(self.transactions, (t) => t.transactionType == "receipt")) cache request
+  computed receivedCostTotal: money = sum(filter(self.transactions, (t) => t.transactionType == "receipt"), (t) => t.totalCost) cache request
+
   relationship hasMany transactions: InventoryTransaction
   relationship hasMany wasteEntries: WasteEntry
   relationship hasMany stockLevels: InventoryStock
