@@ -39,6 +39,19 @@ entity Menu mixin TenantScoped {
   computed isPublished: boolean = self.status == "published"
   computed isArchived: boolean = self.status == "archived"
 
+  // Optional-add-on rollups over this menu's MenuDish children (the hasMany `dishes`
+  // back-relation). Both FILTER on isOptional == true — the dishes a client can ADD on
+  // top of the core menu — to answer "how many optional add-ons does this menu carry,
+  // and what is their combined per-menu upcharge?" The `isOptional == true` literal is
+  // load-bearing: flip it to false and the rollups report the CORE (included) dishes
+  // instead. The upcharge total sums each optional dish's priceOverride (the per-menu
+  // premium); included dishes left at their catalog price (priceOverride 0) contribute
+  // nothing. Menu carries NO stored dish counter at all, so these are purely additive.
+  // IR-only request-cached aggregates: they read existing children, project NO Prisma
+  // column, need NO migration.
+  computed optionalDishCount: int = count_of(filter(self.dishes, (d) => d.isOptional == true)) cache request
+  computed optionalDishUpchargeTotal: money = sum(filter(self.dishes, (d) => d.isOptional == true), (d) => d.priceOverride) cache request
+
   relationship hasMany dishes: MenuDish
 
   transition status from "draft" to ["published"]
