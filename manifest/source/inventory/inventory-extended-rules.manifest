@@ -18,6 +18,23 @@ entity StorageLocation mixin TenantScoped, SoftDeletable {
   timestamps
 
   computed isDeactivated: boolean = self.isActive == false
+  // Waste-burden rollups over this slot's transaction children (the hasMany
+  // transactions back-relation). Both FILTER on transactionType == "waste" to
+  // isolate spoilage/loss recorded at this physical storage location — the count
+  // answers "how many waste events happened here" (operational signal: which
+  // cooler/shelf loses product) and the money sum answers "how much value was
+  // lost to waste here" (financial impact). InventoryTransaction is an
+  // append-only ledger, so these only ever grow; that's intended (lifetime
+  // burden, not a live balance). Drop the filter and the count would tally
+  // EVERY transaction type (receipts/issues/transfers too), and the sum would
+  // add their cost — both massively overstating waste; flip the literal to any
+  // other type and the rollup silently reports an unrelated number with no
+  // compile error. The storage-location-aggregate-computeds regression test
+  // locks the predicate + shape. IR-only computeds (no stored column, no
+  // migration); request-cached like the Equipment/Vehicle/Event/Client/Invoice/
+  // Lead precedent.
+  computed wasteTransactionCount: int = count_of(filter(self.transactions, (t) => t.transactionType == "waste")) cache request
+  computed wasteCostTotal: money = sum(filter(self.transactions, (t) => t.transactionType == "waste"), (t) => t.totalCost) cache request
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
