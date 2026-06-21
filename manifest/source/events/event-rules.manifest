@@ -38,6 +38,11 @@ entity Event mixin TenantScoped, SoftDeletable {
   computed isFinalized: boolean = self.status == "completed" or self.status == "archived"
   computed isActive: boolean = self.status == "draft" or self.status == "confirmed"
   computed isLargeEvent: boolean = self.guestCount > 200
+  // Aggregate rollups over event children (runtime-only, request-cached — no stored column).
+  // Filters carry business meaning: only COMPLETED payments and confirmed staff/guests count.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed confirmedStaffCount: int = count_of(filter(self.eventStaff, (s) => s.status == "confirmed")) cache request
+  computed confirmedGuestCount: int = count_of(filter(self.eventGuests, (g) => g.rsvpStatus == "confirmed")) cache request
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
