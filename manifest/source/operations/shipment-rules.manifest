@@ -48,6 +48,19 @@ entity Shipment mixin TenantScoped, SoftDeletable {
   computed hasItems: boolean = self.totalItems > 0
   computed hasTracking: boolean = self.trackingNumber != ""
 
+  // Receipt-quality rollups over this shipment's ShipmentItem children (the hasMany
+  // `items` back-relation). Both FILTER on condition == "good" — the line items that
+  // arrived intact — to answer "how much of this shipment landed in good condition,
+  // and what is that clean stock worth?" The complement (totalItems − count,
+  // totalValue − value) is the damage/shrink exposure. The "good" literal is
+  // load-bearing: flip it to "damaged" and the rollups report the opposite population.
+  // Distinct from the stored totalItems/totalValue counters, which count EVERY line
+  // regardless of condition and can drift from the actual children. IR-only
+  // request-cached aggregates: they read existing children, project NO Prisma column,
+  // need NO migration.
+  computed goodConditionItemCount: int = count_of(filter(self.items, (i) => i.condition == "good")) cache request
+  computed goodConditionValue: money = sum(filter(self.items, (i) => i.condition == "good"), (i) => i.totalCost) cache request
+
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
