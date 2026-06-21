@@ -422,8 +422,17 @@ entity LogisticsDispatch mixin TenantScoped {
   relationship belongsTo vehicle: Vehicle fields [tenantId, vehicleId] references [tenantId, id]
 
   transition status from "pending" to ["assigned"]
-  transition status from "assigned" to ["in_transit", "pending"]
+  // "assigned" self-loop: reassign re-writes an already-assigned dispatch to a
+  // new driver/vehicle (mutate status = "assigned"). The engine validates every
+  // status mutation, incl. no-op self-transitions (notes.md §21), so without the
+  // self-loop reassign silently dropped the whole update — the driver/vehicle
+  // change was lost. Mirrors invoice PARTIALLY_PAID / equipment active precedents.
+  transition status from "assigned" to ["in_transit", "pending", "assigned"]
   transition status from "in_transit" to ["delivered", "failed"]
+  // "failed" -> "assigned": reassign recovers a failed dispatch onto a new
+  // driver/vehicle (guarded by reassign). Without this edge a failed dispatch
+  // could never be reassigned — the recovery path was dead.
+  transition status from "failed" to ["assigned"]
 
   default policy LogisticsDispatchDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: datetime, notes: string) {

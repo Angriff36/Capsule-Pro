@@ -2211,23 +2211,23 @@
     },
     "command:LogisticsDispatch.assign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 429
+      "line": 438
     },
     "command:LogisticsDispatch.deliver": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 456
+      "line": 465
     },
     "command:LogisticsDispatch.depart": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 446
+      "line": 455
     },
     "command:LogisticsDispatch.fail": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 466
+      "line": 475
     },
     "command:LogisticsDispatch.reassign": {
       "file": "operations/logistics-all-rules.manifest",
-      "line": 477
+      "line": 486
     },
     "command:LogisticsRoute.cancel": {
       "file": "operations/logistics-all-rules.manifest",
@@ -8143,7 +8143,7 @@
     },
     "transition:EventStaff.status": {
       "file": "events/event-staff-rules.manifest",
-      "line": 135
+      "line": 142
     },
     "transition:EventTimelineItem.status": {
       "file": "events/event-automation-rules.manifest",
