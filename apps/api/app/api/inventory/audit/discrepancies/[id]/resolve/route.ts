@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -276,6 +277,154 @@ function validateAndCalculateAdjustment(
 }
 
 /**
+ * Apply the governed stock correction for a resolved discrepancy.
+ *
+ * WHY: previously this route approved the variance report (status →
+ * `approved`/`adjusted`) but performed NO `InventoryItem.adjust` and NO
+ * `InventoryTransaction.create` — so resolving a discrepancy here marked the
+ * books reconciled while physical on-hand never moved, a confirmed
+ * inventory-integrity bug (IMPLEMENTATION_PLAN item 171). This mirrors the
+ * cycle-count finalize route's governed correction exactly (same commands, same
+ * delta = counted − live on-hand, same ledger row).
+ *
+ * Only `full_adjustment` is applied: on-hand is corrected to the counted
+ * quantity. `no_adjustment` skips (intentional). `partial_adjustment` /
+ * `write_off` map to a SIGNED stock delta in a way that is a domain decision
+ * (still BLOCKED, item 171) — stock is deliberately left unmoved (status quo, no
+ * regression) until those semantics are confirmed; the skip is logged.
+ *
+ * DOUBLE-APPLY GUARD: `approve` emits `VarianceReportApproved`, which has no
+ * consumer today. If a reaction/middleware on that event is ever added to apply
+ * stock, this route-local adjust MUST be removed in the same change or stock
+ * will be double-counted.
+ *
+ * Failures are logged and non-fatal (mirrors finalize) — the variance report
+ * stays resolved even if a downstream inventory command fails.
+ */
+async function applyResolutionStockMovement(
+  adjustmentType: AdjustmentType,
+  user: { id: string; role: string; tenantId: string },
+  report: {
+    countedQuantity: number;
+    id: string;
+    itemId: string;
+    variance: number;
+  },
+  resolutionNotes: string
+): Promise<void> {
+  if (adjustmentType === "no_adjustment") {
+    return;
+  }
+
+  // partial_adjustment / write_off → signed stock delta is a domain decision
+  // (BLOCKED, item 171). Leave stock unmoved (status quo) and record the skip.
+  if (
+    adjustmentType === "partial_adjustment" ||
+    adjustmentType === "write_off"
+  ) {
+    log.warn(
+      "[discrepancies/resolve] adjustmentType requires deferred stock semantics; stock NOT moved (IMPLEMENTATION_PLAN item 171)",
+      {
+        reportId: report.id,
+        itemId: report.itemId,
+        tenantId: user.tenantId,
+        adjustmentType,
+      }
+    );
+    return;
+  }
+
+  // full_adjustment → correct on-hand to the counted quantity.
+  if (report.variance === 0) {
+    return;
+  }
+
+  // Read the live inventory item — constitution §10 (reads bypass Manifest).
+  const inventoryItem = await database.inventoryItem.findFirst({
+    where: { tenantId: user.tenantId, id: report.itemId, deletedAt: null },
+  });
+
+  if (!inventoryItem) {
+    log.error(
+      "[discrepancies/resolve] inventory item not found; stock NOT adjusted",
+      { reportId: report.id, itemId: report.itemId, tenantId: user.tenantId }
+    );
+    return;
+  }
+
+  const deps = {
+    createRuntime: ({
+      user: u,
+      entityName,
+    }: {
+      entityName: string;
+      user: { id: string; role: string; tenantId: string };
+    }) =>
+      createManifestRuntime({
+        user: { id: u.id, tenantId: u.tenantId, role: u.role },
+        entityName,
+      }),
+  };
+
+  // Governed: InventoryTransaction.create — append the adjustment ledger row.
+  const txResult = await runManifestCommandCore(deps, {
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
+      itemId: report.itemId,
+      transactionType: "adjustment",
+      quantity: report.variance,
+      unitCost: toNumber(inventoryItem.unitCost),
+      referenceType: "discrepancy_resolution",
+      referenceId: report.id,
+      reason: `Discrepancy resolution for variance report ${report.id}`,
+      notes: resolutionNotes,
+      employeeId: "",
+      // VarianceReport's live Prisma model carries no storage location; the
+      // ledger row is item-scoped (matches finalize's `record.storageLocationId
+      // || ""` fallback).
+      storageLocationId: "",
+    },
+    user,
+  });
+
+  if (!txResult.ok) {
+    log.error(
+      "[discrepancies/resolve] failed to create inventory transaction",
+      {
+        reportId: report.id,
+        itemId: report.itemId,
+        error: txResult.message,
+      }
+    );
+  }
+
+  // Governed: InventoryItem.adjust — correct on-hand to the counted quantity.
+  const currentOnHand = toNumber(inventoryItem.quantityOnHand);
+  const adjustmentDelta = report.countedQuantity - currentOnHand;
+
+  const adjustResult = await runManifestCommandCore(deps, {
+    entity: "InventoryItem",
+    command: "adjust",
+    body: {
+      quantity: adjustmentDelta,
+      reason: `Discrepancy resolution for variance report ${report.id}`,
+      userId: user.id,
+    },
+    user,
+    instanceId: report.itemId,
+  });
+
+  if (!adjustResult.ok) {
+    log.error("[discrepancies/resolve] failed to adjust inventory item", {
+      reportId: report.id,
+      itemId: report.itemId,
+      error: adjustResult.message,
+    });
+  }
+}
+
+/**
  * POST /api/inventory/audit/discrepancies/[id]/resolve
  * Mark discrepancy as resolved with resolution details
  */
@@ -310,10 +459,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return manifestErrorResponse("Discrepancy not found", 404);
     }
 
-    if (
-      existingReport.status === "approved" ||
-      existingReport.status === "adjusted"
-    ) {
+    if (["approved", "adjusted"].includes(existingReport.status)) {
       return manifestErrorResponse("Discrepancy is already resolved", 400);
     }
 
@@ -343,20 +489,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return adjustmentError;
     }
 
-    // Execute approval
-    const approveError = await executeApprove(
-      runtime,
-      existingReport.id,
-      currentUser.id,
-      body.adjustmentType as string,
-      adjustmentAmount,
-      currentUser.role
-    );
-    if (approveError) {
-      return approveError;
-    }
-
-    // Record resolution metadata via Manifest governance
+    // Record resolution metadata FIRST — updateDiscrepancy guards
+    // `status in [pending, reviewed]`, so it must run before approve flips the
+    // report to `approved`. (Previously it ran AFTER approve and always failed
+    // its guard, so the route could never complete the resolution.)
     const resolveResult = await runtime.runCommand(
       "updateDiscrepancy",
       {
@@ -379,6 +515,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "UpdateDiscrepancy"
       );
     }
+
+    // Execute approval
+    const approveError = await executeApprove(
+      runtime,
+      existingReport.id,
+      currentUser.id,
+      body.adjustmentType as string,
+      adjustmentAmount,
+      currentUser.role
+    );
+    if (approveError) {
+      return approveError;
+    }
+
+    // Apply the governed stock correction now that the variance is approved
+    // (full_adjustment moves stock; no_adjustment/partial_adjustment/write_off
+    // are handled inside the helper). adjustmentType is guaranteed defined +
+    // valid by validateAndCalculateAdjustment above.
+    await applyResolutionStockMovement(
+      body.adjustmentType as AdjustmentType,
+      { id: currentUser.id, role: currentUser.role, tenantId },
+      {
+        countedQuantity: toNumber(existingReport.countedQuantity),
+        id: existingReport.id,
+        itemId: existingReport.itemId,
+        variance: toNumber(existingReport.variance),
+      },
+      body.resolutionNotes ?? ""
+    );
 
     // Read back the updated report for the response (constitution §10 — reads bypass Manifest).
     const updatedReport = await database.varianceReport.findFirst({
