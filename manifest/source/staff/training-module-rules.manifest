@@ -165,6 +165,15 @@ entity TrainingModule mixin TenantScoped, SoftDeletable {
   computed isArchived: boolean = self.status == "archived"
   computed isAssignable: boolean = self.status == "published" and self.deletedAt == null and self.isActive == true
 
+  // Rollup computeds over the already-declared hasMany attempts (IR-only, no column/migration).
+  // Two DISJOINT boolean facets over distinct TrainingAttempt properties: passedAttemptCount =
+  // total successful attempt volume across all staff for this module (training effectiveness);
+  // managerReviewAttemptCount = attempts that escalated to manager review (final failures) = a
+  // compliance-risk signal. Count-only on purpose — TrainingAttempt has no money/decimal field, and
+  // summing scorePercent (a percentage) would invent a meaningless number.
+  computed passedAttemptCount: int = count_of(filter(self.attempts, (a) => a.passed == true)) cache request
+  computed managerReviewAttemptCount: int = count_of(filter(self.attempts, (a) => a.managerReviewRequired == true)) cache request
+
   transition status from "draft" to ["published", "archived"]
   transition status from "published" to ["archived", "draft"]
   transition status from "archived" to ["draft"]
