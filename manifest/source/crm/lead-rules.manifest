@@ -24,6 +24,15 @@ entity Lead mixin TenantScoped, SoftDeletable {
   computed isHighValue: boolean = self.estimatedValue >= 10000
   computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
   computed isArchived: boolean = self.deletedAt != null
+  // Pipeline-quality rollups over the Lead's back-relations (sales-conversion basis).
+  // The FILTERS carry the business meaning — count ONLY won deals (not open/lost/
+  // abandoned) and sum ONLY accepted proposals' value (not draft/sent/rejected). Drop
+  // or flip a predicate literal and the rollup silently reports the wrong number with no
+  // compile error; the lead-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the Event/Client/
+  // Invoice precedent.
+  computed wonDealCount: int = count_of(filter(self.deals, (d) => d.status == "won")) cache request
+  computed acceptedProposalValue: money = sum(filter(self.proposals, (p) => p.status == "accepted"), (p) => p.total) cache request
 
   constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
   constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
