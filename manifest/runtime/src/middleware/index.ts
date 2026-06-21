@@ -78,6 +78,11 @@ export {
   type EventCancelledCascadeMiddlewareOptions,
 } from "./event-cancelled-cascade-middleware";
 export {
+  createEventContractEventActiveGuardMiddleware,
+  type EventContractEventActiveGuardDiagnostic,
+  type EventContractEventActiveGuardMiddlewareOptions,
+} from "./event-contract-event-active-guard-middleware";
+export {
   createEventCreatedClientInteractionMiddleware,
   type EventClientInteractionDiagnostic,
   type EventCreatedClientInteractionMiddlewareOptions,

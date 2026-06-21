@@ -56,6 +56,7 @@ import {
   createEmployeeCertificationLapsedNotifyMiddleware,
   createEmployeeCertificationLapsedSuspendAvailabilityMiddleware,
   createEventCancelledCascadeMiddleware,
+  createEventContractEventActiveGuardMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
   createEventFinalizedClientInteractionMiddleware,
@@ -917,6 +918,14 @@ export async function createManifestRuntime(
     // two-hop load (Proposal -> Client). Fail-open; only a positive "archived"
     // signal blocks. See proposal-client-active-guard-middleware.ts.
     createProposalClientActiveGuardMiddleware({ storeProvider }),
+    // Cross-entity precondition (before-guard): block EventContract.sign when the
+    // linked Event is no longer active (completed/archived/cancelled). Same
+    // rationale as the EventStaff/Proposal guards — a Manifest guard cannot read
+    // another entity's state, and `eventId` is the EventContract's own field
+    // (sign() takes no params), so it is a two-hop load (EventContract -> Event).
+    // Fail-open; only a positive inactive-status signal blocks. See
+    // event-contract-event-active-guard-middleware.ts.
+    createEventContractEventActiveGuardMiddleware({ storeProvider }),
     // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
     // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
     // seedSampleData/clearSampleData helpers. The governed command only flips the
