@@ -28,6 +28,19 @@ entity CycleCountSession mixin TenantScoped, SoftDeletable {
   computed isCancelled: boolean = self.status == "cancelled"
   computed countProgress: number = percent(self.countedItems, self.totalItems) cache request
   computed hasVariance: boolean = self.totalVariance != 0
+  // Variance-reconciliation rollups over the session's VarianceReport children (the
+  // hasMany varianceReports back-relation). The FILTERS carry the business meaning —
+  // count ONLY pending reports (not reviewed/approved/adjusted/rejected) as the
+  // unresolved reconciliation backlog for this count session, and sum ONLY adjusted
+  // reports' adjustmentAmount (not pending/approved estimates that were never booked)
+  // as the session's realized inventory-adjustment value. Drop or flip a predicate
+  // literal and the rollup silently reports the wrong number with no compile error;
+  // the cycle-count-session-aggregate-computeds regression test locks the shape.
+  // IR-only computeds (no stored column, no migration); request-cached, mirroring the
+  // Facility.openWorkOrderCount/completedWorkOrderCost precedent over its own
+  // FacilityWorkOrder children (pending=open backlog, adjusted=realized spend).
+  computed pendingVarianceReportCount: int = count_of(filter(self.varianceReports, (v) => v.status == "pending")) cache request
+  computed adjustedVarianceAmount: money = sum(filter(self.varianceReports, (v) => v.status == "adjusted"), (v) => v.adjustmentAmount) cache request
 
   belongsTo location: Facility with locationId
   belongsTo createdBy: User with createdById
