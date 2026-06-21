@@ -38,8 +38,8 @@ entity Vendor mixin TenantScoped {
   constraint validStatus: self.status in ["active", "inactive", "blacklisted"] "Invalid vendor status"
   constraint validPaymentTerms: self.paymentTerms in ["net15", "net30", "net60", "due_on_receipt", "prepaid"] "Invalid payment terms"
 
-  transition status from "active" to ["inactive", "blacklisted"]
-  transition status from "inactive" to ["active", "blacklisted"]
+  transition status from "active" to ["inactive", "blacklisted", "active"]
+  transition status from "inactive" to ["active", "blacklisted", "inactive"]
 
   // Back-relations (U11): inverse hasMany for children that belongTo Vendor
   hasMany contracts: VendorContract
