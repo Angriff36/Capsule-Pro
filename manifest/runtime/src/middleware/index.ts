@@ -255,6 +255,11 @@ export {
   type PayrollRunPaidPeriodLockMiddlewareOptions,
 } from "./payroll-run-paid-period-lock-middleware";
 export {
+  createPerformancePredictionRiskNotifyMiddleware,
+  type PerformancePredictionRiskNotifyDiagnostic,
+  type PerformancePredictionRiskNotifyMiddlewareOptions,
+} from "./performance-prediction-risk-notify-middleware";
+export {
   createPrepInventoryDemandMiddleware,
   type PrepDemandDiagnostic,
   type PrepInventoryDemandMiddlewareOptions,

@@ -1115,6 +1115,22 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     executionMode: "sync",
   },
   {
+    name: "performance-prediction-risk-notify",
+    description:
+      "PerformancePredictionCreated → Notification.create when the prediction flags risk (high overtime, low productivity)",
+    category: "staffing",
+    triggeringEvents: ["PerformancePredictionCreated"],
+    triggeringEntity: "PerformancePrediction",
+    hook: "after-emit",
+    targetEntity: "Notification",
+    targetCommand: "create",
+    inputMapping: "load-and-derive",
+    idempotencyKey: {
+      template: "prediction-risk-notify:{tenantId}:{predictionId}",
+    },
+    executionMode: "sync",
+  },
+  {
     name: "time-off-approved-shift-cleanup",
     description:
       "TimeOffRequestApproved → remove conflicting ScheduleShift rows",

@@ -88,6 +88,7 @@ import {
   createPaymentRefundedInvoiceRecordMiddleware,
   createPayrollRunPaidCascadeMiddleware,
   createPayrollRunPaidPeriodLockMiddleware,
+  createPerformancePredictionRiskNotifyMiddleware,
   createPrepInventoryDemandMiddleware,
   createPrepListCancelledReleaseReservationMiddleware,
   createPrepListCompletedConsumeMiddleware,
@@ -1504,6 +1505,17 @@ export async function createManifestRuntime(
     // employee ids live on the ScheduleShift rows and must be queried by
     // scheduleId. Without this, publishing a schedule silently told no one.
     createSchedulePublishedNotifyStaffMiddleware({
+      storeProvider,
+      dispatchCommand: dispatchNotificationAsSystem,
+    }),
+    // Workforce AI: PerformancePredictionCreated -> Notification.create for the
+    // predicted employee, but ONLY when the prediction flags a real risk (a high
+    // overtime-risk score or a low productivity score). Middleware (not a reaction)
+    // because the propagation is CONDITIONAL on a per-type threshold — a reaction is
+    // an unconditional 1:1 mapping and would alert on every prediction or none — and
+    // the authoritative tenantId is loaded from the prediction (not on the payload).
+    // The event was an orphan (no consumer), so AI predictions surfaced to no one.
+    createPerformancePredictionRiskNotifyMiddleware({
       storeProvider,
       dispatchCommand: dispatchNotificationAsSystem,
     }),
