@@ -28,6 +28,18 @@ entity Equipment mixin TenantScoped {
   computed usagePercentage: number = percent(self.usageHours, self.maxUsageHours) cache request
   computed isNearEndOfLife: boolean = self.usagePercentage >= 80
   computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
+  // Maintenance-burden rollups over the Equipment's work-order children (the
+  // hasMany workOrders back-relation). The FILTERS carry the business meaning —
+  // count ONLY open work orders (not assigned/in_progress/awaiting_parts/
+  // completed/cancelled) as the unaddressed maintenance backlog, and sum ONLY
+  // completed work orders' actual cost (not estimates on still-open ones) as
+  // lifetime maintenance spend per asset. Drop or flip a predicate literal and
+  // the rollup silently reports the wrong number with no compile error; the
+  // equipment-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the
+  // Event/Client/Invoice/Lead precedent.
+  computed openWorkOrderCount: int = count_of(filter(self.workOrders, (w) => w.status == "open")) cache request
+  computed completedWorkOrderCost: money = sum(filter(self.workOrders, (w) => w.status == "completed"), (w) => w.totalCost) cache request
 
   relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
