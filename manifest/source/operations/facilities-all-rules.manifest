@@ -235,8 +235,15 @@ entity FacilityAsset mixin TenantScoped {
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
 
   // State transitions
+  // `remove` (soft-delete) has NO guard and mutates -> "retired", so it must reach
+  // "retired" from EVERY state or the runtime FSM silently drops the mutate. Without
+  // sold->retired and the idempotent retired->retired self-loop, remove was dead for
+  // a sold asset (couldn't retire it) and for an already-retired asset (double-remove
+  // / retry threw instead of a no-op). Mirrors the Facility/FacilityArea.remove fix.
   transition status from "operational" to ["maintenance", "retired", "sold"]
   transition status from "maintenance" to ["operational", "retired", "sold"]
+  transition status from "sold" to ["retired"]
+  transition status from "retired" to ["retired"]
 
   constraint warnMaintenanceOverdue:warn (self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational") {
     messageTemplate: "Asset '{assetName}' is overdue for maintenance"
@@ -349,8 +356,15 @@ entity FacilitySchedule mixin TenantScoped {
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
 
+  // `remove` (soft-delete) has NO guard and mutates -> "cancelled", so it must reach
+  // "cancelled" from EVERY state or the runtime FSM silently drops the mutate. Without
+  // completed->cancelled and the idempotent cancelled->cancelled self-loop, remove was
+  // dead for a completed schedule (couldn't dismiss it) and for an already-cancelled
+  // one (double-remove / retry threw instead of a no-op).
   transition status from "scheduled" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["cancelled"]
+  transition status from "cancelled" to ["cancelled"]
 
   default policy FacilityScheduleDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
