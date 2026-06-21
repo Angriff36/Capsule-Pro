@@ -153,6 +153,17 @@ entity Vehicle mixin TenantScoped, SoftDeletable {
 
   computed isAvailable: boolean = self.status == "available"
   computed displayName: string = self.make + " " + self.model + (self.year > 0 ? " " + self.year : "")
+  // Fleet-utilization rollups over the Vehicle's route children (the hasMany
+  // routes back-relation). The FILTERS carry the business meaning — count ONLY
+  // in_progress routes (not planned/completed/cancelled) as the live workload on
+  // this vehicle right now, and sum ONLY completed routes' distance (not planned
+  // estimates that may still change) as lifetime distance actually driven. Drop
+  // or flip a predicate literal and the rollup silently reports the wrong number
+  // with no compile error; the vehicle-aggregate-computeds regression test locks
+  // the shape. IR-only computeds (no stored column, no migration); request-cached
+  // like the Equipment/Event/Client/Invoice/Lead precedent.
+  computed activeRouteCount: int = count_of(filter(self.routes, (r) => r.status == "in_progress")) cache request
+  computed completedRouteDistance: decimal = sum(filter(self.routes, (r) => r.status == "completed"), (r) => r.totalDistance) cache request
 
   constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service"] "Invalid vehicle status"
 
