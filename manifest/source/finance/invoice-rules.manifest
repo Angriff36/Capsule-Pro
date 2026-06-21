@@ -52,6 +52,14 @@ entity Invoice mixin TenantScoped {
   // Computed properties
   computed isPaidInFull: boolean = self.amountDue <= 0
   computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now() cache request
+  // Payment rollups over the payments back-relation. Filter on COMPLETED only — cash
+  // actually collected against this invoice, not pending/failed/refunded attempts —
+  // matching the proven Client/Event.totalPaidAmount predicate. These reconcile the
+  // authoritative Payment records against the manually-maintained `amountPaid` field
+  // (which is bumped by applyPayment mutates and can drift). IR-only computeds (no
+  // stored column, no migration); request-cached like the isOverdue precedent above.
+  computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
+  computed completedPaymentCount: int = count_of(filter(self.payments, (p) => p.status == "COMPLETED")) cache request
 
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
