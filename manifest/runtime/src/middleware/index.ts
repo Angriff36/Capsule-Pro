@@ -88,6 +88,11 @@ export {
   type EventDishPrepSyncMiddlewareOptions,
 } from "./event-dish-prep-sync-middleware";
 export {
+  createEventFinalizedClientInteractionMiddleware,
+  type EventFinalizedClientInteractionDiagnostic,
+  type EventFinalizedClientInteractionMiddlewareOptions,
+} from "./event-finalized-client-interaction-middleware";
+export {
   createEventGuestCountPrepRescaleMiddleware,
   type EventGuestCountPrepRescaleMiddlewareOptions,
   type EventGuestCountRescaleDiagnostic,

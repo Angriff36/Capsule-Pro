@@ -58,6 +58,7 @@ import {
   createEventCancelledCascadeMiddleware,
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
+  createEventFinalizedClientInteractionMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventStaffActiveGuardMiddleware,
@@ -878,6 +879,7 @@ export async function createManifestRuntime(
     "schedule-shift-count",
     "proposal-line-item-count",
     "event-created-client-interaction",
+    "event-finalized-client-interaction",
     "event-updated-board-sync",
     "event-location-catering-sync",
     "event-staff-assigned-notify",
@@ -1586,6 +1588,19 @@ export async function createManifestRuntime(
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
       ...(asyncDispatch ? { asyncEnqueue: asyncDispatch } : {}),
+    }),
+    // Event: EventFinalized -> log a post-event CRM interaction on the client's
+    // timeline (the completion bookend of the EventCreated booking interaction
+    // above). Middleware (not a reaction) because ClientInteraction.create needs
+    // the event's clientId/title, which are the Event's OWN fields and never ride
+    // the EventFinalized payload — so it loads the finalized Event via _subject.id.
+    // Attribution = the finalizing user (a real finalize param). Skips clientless
+    // events; idempotent per event (completion-subject-namespaced so it coexists
+    // with the booking interaction). Sync: a single lightweight dispatch.
+    createEventFinalizedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
     }),
     // Events: EventUpdated/EventDateUpdated/EventLocationUpdated -> re-sync the
     // event's battle boards. Middleware (not a reaction) because boards are 1:N
