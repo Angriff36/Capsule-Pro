@@ -36,6 +36,23 @@ entity Client mixin TenantScoped, SoftDeletable {
   computed totalPaidAmount: money = sum(filter(self.payments, (p) => p.status == "COMPLETED"), (p) => p.amount) cache request
   computed completedPaymentCount: int = count_of(filter(self.payments, (p) => p.status == "COMPLETED")) cache request
 
+  // Accounts-receivable delinquency rollups over this client's invoice children (the
+  // hasMany `invoices` back-relation — a DIFFERENT child than the payments rollups
+  // above). The FILTER carries the business meaning: count and total ONLY the invoices
+  // in the terminal OVERDUE status — a client's past-due exposure — NOT every invoice
+  // (drafts, paid, and current SENT/VIEWED would otherwise inflate the signal into
+  // meaningless gross billing volume). Both facets filter the SAME "OVERDUE" literal so
+  // they tell one coherent story: count = how many invoices have gone past due, sum =
+  // the dollars still owed across them (each invoice's own amountDue, the outstanding
+  // balance — NOT total, which would double-count amounts already paid). count_of (1
+  // arg) vs sum (2 args, value selector) = distinct facets, not a duplicate. Drop or
+  // flip the literal and the rollup silently reports a different cohort with no compile
+  // error; the client-invoice-aggregate-computeds regression test locks the shape.
+  // IR-only computeds (no stored column, no migration); request-cached like the
+  // payments rollups above and the Invoice.isOverdue precedent.
+  computed overdueInvoiceCount: int = count_of(filter(self.invoices, (i) => i.status == "OVERDUE")) cache request
+  computed overdueBalanceTotal: money = sum(filter(self.invoices, (i) => i.status == "OVERDUE"), (i) => i.amountDue) cache request
+
   // Back-relations (U11): inverse hasMany for children that belongTo Client
   relationship hasMany contacts: ClientContact
   relationship hasMany interactions: ClientInteraction
