@@ -93,6 +93,11 @@ export {
   type EventFinalizedClientInteractionMiddlewareOptions,
 } from "./event-finalized-client-interaction-middleware";
 export {
+  createEventFinalizedFollowupCreateMiddleware,
+  type EventFinalizedFollowupDiagnostic,
+  type EventFinalizedFollowupMiddlewareOptions,
+} from "./event-finalized-followup-create-middleware";
+export {
   createEventGuestCountPrepRescaleMiddleware,
   type EventGuestCountPrepRescaleMiddlewareOptions,
   type EventGuestCountRescaleDiagnostic,

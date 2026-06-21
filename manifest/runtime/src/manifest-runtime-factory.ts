@@ -59,6 +59,7 @@ import {
   createEventCreatedClientInteractionMiddleware,
   createEventDishPrepSyncMiddleware,
   createEventFinalizedClientInteractionMiddleware,
+  createEventFinalizedFollowupCreateMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventStaffActiveGuardMiddleware,
@@ -880,6 +881,7 @@ export async function createManifestRuntime(
     "proposal-line-item-count",
     "event-created-client-interaction",
     "event-finalized-client-interaction",
+    "event-finalized-followup",
     "event-updated-board-sync",
     "event-location-catering-sync",
     "event-staff-assigned-notify",
@@ -1598,6 +1600,19 @@ export async function createManifestRuntime(
     // events; idempotent per event (completion-subject-namespaced so it coexists
     // with the booking interaction). Sync: a single lightweight dispatch.
     createEventFinalizedClientInteractionMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Event: EventFinalized -> open an actionable post-event EventFollowup task
+    // (the action-item counterpart of the passive ClientInteraction note above).
+    // Middleware (not a reaction) because EventFollowup.create needs eventId in
+    // the body (the source event's own id, only reachable via _subject.id — not a
+    // finalize param), enriches the description with the Event's title (its OWN
+    // field), and dedups against existing follow-ups. Assigned to the finalizing
+    // user; idempotent per event (namespaced by the auto taskType). Works for
+    // clientless events too. Sync: a single lightweight dispatch.
+    createEventFinalizedFollowupCreateMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),

@@ -308,6 +308,23 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     executionMode: "sync",
   },
   {
+    name: "event-finalized-followup",
+    description:
+      "EventFinalized → EventFollowup.create (post-event action item; loads event for title, assigned to finalizer)",
+    category: "events",
+    triggeringEvents: ["EventFinalized"],
+    triggeringEntity: "Event",
+    triggeringCommand: "finalize",
+    hook: "after-emit",
+    targetEntity: "EventFollowup",
+    targetCommand: "create",
+    inputMapping: "load-and-derive",
+    idempotencyKey: {
+      template: "event-finalized-followup:{tenantId}:{eventId}",
+    },
+    executionMode: "sync",
+  },
+  {
     name: "event-updated-board-sync",
     description:
       "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",
