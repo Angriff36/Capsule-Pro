@@ -23,6 +23,16 @@ entity Recipe mixin TenantScoped {
 
   computed hasVersion: boolean = count_of(self.versions) > 0 cache request
   computed tagCount: int = count(self.tags) cache request
+  // Published-version rollups over the existing versions back-relation. Filter on
+  // "published" only — the cohort of this recipe's versions that have moved off the
+  // `draft` default into the published lifecycle state (reachable via the RecipeVersion
+  // draft->published transition; see RecipeVersion.isPublished). `totalCost` is the
+  // rolled-up ingredient cost of a version, so the sum is the total cost carried across
+  // this recipe's published versions — a catalog-header readiness/cost lens complementary
+  // to the boolean hasVersion. IR-only computeds (no stored column, no migration);
+  // request-cached like the counts above.
+  computed publishedVersionCount: int = count_of(filter(self.versions, (v) => v.status == "published")) cache request
+  computed publishedVersionCostTotal: money = sum(filter(self.versions, (v) => v.status == "published"), (v) => v.totalCost) cache request
 
   relationship hasMany versions: RecipeVersion
 
