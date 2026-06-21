@@ -98,6 +98,11 @@ export {
   type EventFinalizedFollowupMiddlewareOptions,
 } from "./event-finalized-followup-create-middleware";
 export {
+  createEventFinalizedReleaseReservationMiddleware,
+  type EventFinalizedReleaseReservationDiagnostic,
+  type EventFinalizedReleaseReservationMiddlewareOptions,
+} from "./event-finalized-release-reservation-middleware";
+export {
   createEventGuestCountPrepRescaleMiddleware,
   type EventGuestCountPrepRescaleMiddlewareOptions,
   type EventGuestCountRescaleDiagnostic,

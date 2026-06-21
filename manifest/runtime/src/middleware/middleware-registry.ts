@@ -325,6 +325,24 @@ export const MIDDLEWARE_REGISTRY: readonly MiddlewareRegistryEntry[] = [
     executionMode: "sync",
   },
   {
+    name: "event-finalized-release-reservation",
+    description:
+      "EventFinalized → fan out InventoryItem.releaseReservation per reserved PrepListItem (recovers stranded reservations of finalized-but-not-completed prep lists)",
+    category: "events",
+    triggeringEvents: ["EventFinalized"],
+    triggeringEntity: "Event",
+    triggeringCommand: "finalize",
+    hook: "after-emit",
+    targetEntity: "InventoryItem",
+    targetCommand: "releaseReservation",
+    inputMapping: "load-and-derive",
+    idempotencyKey: {
+      template:
+        "event-finalized-release:{tenantId}:{eventId}:{prepListId}:{inventoryItemId}",
+    },
+    executionMode: "sync",
+  },
+  {
     name: "event-updated-board-sync",
     description:
       "EventUpdated/DateUpdated/LocationUpdated → fan out BattleBoard.syncFromEvent per linked board",

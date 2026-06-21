@@ -60,6 +60,7 @@ import {
   createEventDishPrepSyncMiddleware,
   createEventFinalizedClientInteractionMiddleware,
   createEventFinalizedFollowupCreateMiddleware,
+  createEventFinalizedReleaseReservationMiddleware,
   createEventGuestCountPrepRescaleMiddleware,
   createEventLocationCateringSyncMiddleware,
   createEventStaffActiveGuardMiddleware,
@@ -882,6 +883,7 @@ export async function createManifestRuntime(
     "event-created-client-interaction",
     "event-finalized-client-interaction",
     "event-finalized-followup",
+    "event-finalized-release-reservation",
     "event-updated-board-sync",
     "event-location-catering-sync",
     "event-staff-assigned-notify",
@@ -1613,6 +1615,21 @@ export async function createManifestRuntime(
     // user; idempotent per event (namespaced by the auto taskType). Works for
     // clientless events too. Sync: a single lightweight dispatch.
     createEventFinalizedFollowupCreateMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+    // Event: EventFinalized -> release reserved inventory stranded by prep lists
+    // that were finalized (reserved) but never completed/cancelled before the
+    // event closed. Middleware (not a reaction) because it is a 1:N fan-out
+    // (event -> prep lists -> prep items) and the reserved quantities are only
+    // reachable via store loads keyed off the finalized event, not the finalize
+    // payload. The releaseReservation `quantityReserved > 0` precondition makes
+    // it a clean no-op for already-completed/cancelled lists, so it recovers only
+    // genuinely-stranded reservations (an event is finalized XOR cancelled, so no
+    // overlap with the EventCancelled cascade's inventory leg). Sync, like the
+    // sibling finalized legs.
+    createEventFinalizedReleaseReservationMiddleware({
       storeProvider,
       dispatchCommand: (commandName, input, options) =>
         engine.runCommand(commandName, input, options),
