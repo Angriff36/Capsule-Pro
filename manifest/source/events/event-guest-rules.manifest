@@ -38,7 +38,7 @@ entity EventGuest mixin TenantScoped, SoftDeletable {
   constraint requireGuestName: self.guestName != "" "Guest name is required"
 
   transition rsvpStatus from "pending" to ["confirmed", "declined"]
-  transition rsvpStatus from "confirmed" to ["declined"]
+  transition rsvpStatus from "confirmed" to ["confirmed", "declined"]
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
