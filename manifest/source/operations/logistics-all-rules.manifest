@@ -297,6 +297,24 @@ entity LogisticsRoute mixin TenantScoped {
   computed isActive: boolean = self.status == "in_progress"
   computed isDelayed: boolean = self.delayMinutes > 0 and self.status == "in_progress"
 
+  // Route-execution rollups over the dispatch children (the hasMany dispatches
+  // back-relation). The FILTERS carry the business meaning — count the dispatches
+  // that reached a TERMINAL outcome, split by outcome: delivered = goods that made
+  // it to the venue on this route, failed = deliveries that fell over (breakdown,
+  // wrong address, access denied). The two facets read the SAME status property but
+  // DIFFERENT terminal literals, so neither is the other's restatement (delivered
+  // and failed are mutually exclusive ends; the remaining pending/assigned/in_transit
+  // states are still in flight and counted by neither). Count-only on purpose —
+  // LogisticsDispatch has no money/decimal field, so there is nothing to sum (the
+  // route's distance/duration live on the route itself, not the dispatch; summing a
+  // status would be meaningless, the Container/TrainingModule lesson). Drop or flip a
+  // literal and the rollup silently reports the wrong number with no compile error;
+  // the logistics-route-aggregate-computeds regression test locks the shape. IR-only
+  // computeds (no stored column, no migration); request-cached like the
+  // Vehicle/Container/TrainingModule precedent.
+  computed deliveredDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "delivered")) cache request
+  computed failedDispatchCount: int = count_of(filter(self.dispatches, (d) => d.status == "failed")) cache request
+
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"
 
   transition status from "planned" to ["in_progress", "cancelled"]
