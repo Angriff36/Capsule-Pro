@@ -599,19 +599,19 @@
     },
     "command:CollectionAction.complete": {
       "file": "finance/collections-rules.manifest",
-      "line": 287
+      "line": 297
     },
     "command:CollectionAction.fail": {
       "file": "finance/collections-rules.manifest",
-      "line": 298
+      "line": 308
     },
     "command:CollectionAction.reschedule": {
       "file": "finance/collections-rules.manifest",
-      "line": 314
+      "line": 324
     },
     "command:CollectionAction.skip": {
       "file": "finance/collections-rules.manifest",
-      "line": 306
+      "line": 316
     },
     "command:CollectionCase.assignTo": {
       "file": "finance/collections-rules.manifest",
@@ -691,23 +691,23 @@
     },
     "command:CollectionPaymentPlan.cancel": {
       "file": "finance/collections-rules.manifest",
-      "line": 387
+      "line": 397
     },
     "command:CollectionPaymentPlan.markCompleted": {
       "file": "finance/collections-rules.manifest",
-      "line": 373
+      "line": 383
     },
     "command:CollectionPaymentPlan.markDefaulted": {
       "file": "finance/collections-rules.manifest",
-      "line": 380
+      "line": 390
     },
     "command:CollectionPaymentPlan.modify": {
       "file": "finance/collections-rules.manifest",
-      "line": 393
+      "line": 403
     },
     "command:CollectionPaymentPlan.recordInstallment": {
       "file": "finance/collections-rules.manifest",
-      "line": 366
+      "line": 376
     },
     "command:CommandBoard.activate": {
       "file": "events/command-board-rules.manifest",
@@ -4647,11 +4647,11 @@
     },
     "constraint:CollectionAction.valid_direction": {
       "file": "finance/collections-rules.manifest",
-      "line": 279
+      "line": 289
     },
     "constraint:CollectionAction.valid_status": {
       "file": "finance/collections-rules.manifest",
-      "line": 280
+      "line": 290
     },
     "constraint:CollectionCase.amount_positive": {
       "file": "finance/collections-rules.manifest",
@@ -4663,15 +4663,15 @@
     },
     "constraint:CollectionPaymentPlan.amount_positive": {
       "file": "finance/collections-rules.manifest",
-      "line": 357
+      "line": 367
     },
     "constraint:CollectionPaymentPlan.completed_valid": {
       "file": "finance/collections-rules.manifest",
-      "line": 359
+      "line": 369
     },
     "constraint:CollectionPaymentPlan.installments_valid": {
       "file": "finance/collections-rules.manifest",
-      "line": 358
+      "line": 368
     },
     "constraint:CommandBoard.validName": {
       "file": "events/command-board-rules.manifest",
@@ -7287,7 +7287,7 @@
     },
     "entity:CollectionAction": {
       "file": "finance/collections-rules.manifest",
-      "line": 248
+      "line": 258
     },
     "entity:CollectionCase": {
       "file": "finance/collections-rules.manifest",
@@ -7295,7 +7295,7 @@
     },
     "entity:CollectionPaymentPlan": {
       "file": "finance/collections-rules.manifest",
-      "line": 323
+      "line": 333
     },
     "entity:CommandBoard": {
       "file": "events/command-board-rules.manifest",
@@ -8051,15 +8051,15 @@
     },
     "transition:CollectionAction.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 283
+      "line": 293
     },
     "transition:CollectionCase.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 239
+      "line": 249
     },
     "transition:CollectionPaymentPlan.status": {
       "file": "finance/collections-rules.manifest",
-      "line": 362
+      "line": 372
     },
     "transition:CommandBoard.status": {
       "file": "events/command-board-rules.manifest",
