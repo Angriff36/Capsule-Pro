@@ -41,8 +41,14 @@ entity Facility mixin TenantScoped {
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
 
   // State transitions
+  // `remove` (soft-delete) guards `status != "active"` and mutates -> "inactive",
+  // so it runs from "maintenance" or "inactive". Both edges must exist or the
+  // runtime FSM silently drops the mutate (the command was fully dead: "active"
+  // is guard-blocked, and neither maintenance->inactive nor the idempotent
+  // inactive->inactive self-loop was declared, so nothing could reach "inactive").
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
+  transition status from "inactive" to ["inactive"]
 
   default policy FacilityDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   // NOTE: create does NOT `mutate status` — the entity default ("active") is seeded
@@ -135,8 +141,13 @@ entity FacilityArea mixin TenantScoped {
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
 
   // State transitions
+  // FacilityArea.remove (no guard) mutates -> "inactive" from any state; without
+  // maintenance->inactive + the idempotent inactive->inactive self-loop the
+  // runtime FSM silently drops the mutate for areas in maintenance or already
+  // inactive (only the active->inactive path worked).
   transition status from "active" to ["inactive", "maintenance"]
-  transition status from "maintenance" to ["active"]
+  transition status from "maintenance" to ["active", "inactive"]
+  transition status from "inactive" to ["inactive"]
 
   default policy FacilityAreaDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {

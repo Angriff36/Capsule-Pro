@@ -1659,111 +1659,111 @@
     },
     "command:Facility.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 53
+      "line": 59
     },
     "command:Facility.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 80
+      "line": 86
     },
     "command:Facility.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 72
+      "line": 78
     },
     "command:Facility.restoreFromMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 109
+      "line": 115
     },
     "command:Facility.sendToMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 99
+      "line": 105
     },
     "command:FacilityArea.closeForMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 176
+      "line": 187
     },
     "command:FacilityArea.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 142
+      "line": 153
     },
     "command:FacilityArea.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 162
+      "line": 173
     },
     "command:FacilityArea.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 156
+      "line": 167
     },
     "command:FacilityArea.reopen": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 185
+      "line": 196
     },
     "command:FacilityAsset.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 239
+      "line": 250
     },
     "command:FacilityAsset.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 258
+      "line": 269
     },
     "command:FacilityAsset.retire": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 296
+      "line": 307
     },
     "command:FacilityAsset.returnFromMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 285
+      "line": 296
     },
     "command:FacilityAsset.sendToMaintenance": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 275
+      "line": 286
     },
     "command:FacilityAsset.update": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 264
+      "line": 275
     },
     "command:FacilitySchedule.cancel": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 404
+      "line": 415
     },
     "command:FacilitySchedule.complete": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 394
+      "line": 405
     },
     "command:FacilitySchedule.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 345
+      "line": 356
     },
     "command:FacilitySchedule.edit": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 368
+      "line": 379
     },
     "command:FacilitySchedule.remove": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 362
+      "line": 373
     },
     "command:FacilitySchedule.start": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 384
+      "line": 395
     },
     "command:FacilityWorkOrder.assign": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 485
+      "line": 496
     },
     "command:FacilityWorkOrder.cancel": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 521
+      "line": 532
     },
     "command:FacilityWorkOrder.complete": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 509
+      "line": 520
     },
     "command:FacilityWorkOrder.create": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 467
+      "line": 478
     },
     "command:FacilityWorkOrder.start": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 498
+      "line": 509
     },
     "command:FeatureFlag.create": {
       "file": "platform/feature-flag-rules.manifest",
@@ -5411,51 +5411,51 @@
     },
     "constraint:FacilityArea.validAreaType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 132
+      "line": 138
     },
     "constraint:FacilityArea.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 135
+      "line": 141
     },
     "constraint:FacilityAsset.validAssetType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 220
+      "line": 231
     },
     "constraint:FacilityAsset.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 224
+      "line": 235
     },
     "constraint:FacilityAsset.warnMaintenanceOverdue": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 230
+      "line": 241
     },
     "constraint:FacilityAsset.warnRetireOperational": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 300
+      "line": 311
     },
     "constraint:FacilitySchedule.validScheduleType": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 335
+      "line": 346
     },
     "constraint:FacilitySchedule.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 339
+      "line": 350
     },
     "constraint:FacilityWorkOrder.validCategory": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 442
+      "line": 453
     },
     "constraint:FacilityWorkOrder.validPriority": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 440
+      "line": 451
     },
     "constraint:FacilityWorkOrder.validStatus": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 441
+      "line": 452
     },
     "constraint:FacilityWorkOrder.warnOverdue": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 448
+      "line": 459
     },
     "constraint:FeatureFlag.requireFlagKey": {
       "file": "platform/feature-flag-rules.manifest",
@@ -7467,19 +7467,19 @@
     },
     "entity:FacilityArea": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 120
+      "line": 126
     },
     "entity:FacilityAsset": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 196
+      "line": 207
     },
     "entity:FacilitySchedule": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 316
+      "line": 327
     },
     "entity:FacilityWorkOrder": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 416
+      "line": 427
     },
     "entity:FeatureFlag": {
       "file": "platform/feature-flag-rules.manifest",
@@ -8155,23 +8155,23 @@
     },
     "transition:Facility.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 44
+      "line": 49
     },
     "transition:FacilityArea.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 138
+      "line": 148
     },
     "transition:FacilityAsset.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 227
+      "line": 238
     },
     "transition:FacilitySchedule.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 341
+      "line": 352
     },
     "transition:FacilityWorkOrder.status": {
       "file": "operations/facilities-all-rules.manifest",
-      "line": 457
+      "line": 468
     },
     "transition:InventoryAlert.status": {
       "file": "inventory/inventory-extended-rules.manifest",
