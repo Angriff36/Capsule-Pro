@@ -94,6 +94,7 @@ import {
   createPrepListCompletedConsumeMiddleware,
   createPrepListSeedMiddleware,
   createPrepTaskStationCountMiddleware,
+  createProposalClientActiveGuardMiddleware,
   createProposalLifecycleLeadStatusMiddleware,
   createProposalLineItemCountMiddleware,
   createQaCheckFailedCorrectiveActionMiddleware,
@@ -909,6 +910,13 @@ export async function createManifestRuntime(
     // short-circuits. Fail-open on missing store / not-found (only a positive
     // "inactive" signal blocks). See event-staff-active-guard-middleware.ts.
     createEventStaffActiveGuardMiddleware({ storeProvider }),
+    // Cross-entity precondition (before-guard): block Proposal.send when the
+    // linked Client is archived (soft-deleted). Same rationale as the EventStaff
+    // guard above — a Manifest guard cannot read another entity's state, and
+    // `clientId` is the Proposal's own field (not a `send` param), so it is a
+    // two-hop load (Proposal -> Client). Fail-open; only a positive "archived"
+    // signal blocks. See proposal-client-active-guard-middleware.ts.
+    createProposalClientActiveGuardMiddleware({ storeProvider }),
     // Onboarding: SampleData.seed/reseed/clear -> actually populate/remove the
     // demo Event/Client/Recipe/PrepTask/Inventory rows via the existing
     // seedSampleData/clearSampleData helpers. The governed command only flips the

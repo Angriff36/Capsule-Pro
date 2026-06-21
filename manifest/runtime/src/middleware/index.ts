@@ -286,6 +286,11 @@ export {
   type PrepTaskStationCountMiddlewareOptions,
 } from "./prep-task-station-count-middleware";
 export {
+  createProposalClientActiveGuardMiddleware,
+  type ProposalClientActiveGuardDiagnostic,
+  type ProposalClientActiveGuardMiddlewareOptions,
+} from "./proposal-client-active-guard-middleware";
+export {
   createProposalLifecycleLeadStatusMiddleware,
   type ProposalLeadStatusDiagnostic,
   type ProposalLifecycleLeadStatusMiddlewareOptions,
