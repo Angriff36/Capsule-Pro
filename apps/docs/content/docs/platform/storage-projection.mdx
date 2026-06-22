@@ -1,0 +1,69 @@
+---
+title: Storage Projection
+description: How the Manifest IR maps to schema.prisma — typeMappings, tableMappings, and composite keys.
+---
+
+The **PrismaProjection** is the component that reads the Manifest IR and generates `schema.prisma`. This page documents what Manifest 1.0 built — it is not a proposal.
+
+## The Core Idea
+
+`schema.prisma` is a **derived projection** of the IR. The IR is the semantic authority. The projection is the mechanism that translates IR semantics into Prisma schema syntax.
+
+```
+IR (source of truth)
+    └── PrismaProjection
+            └── schema.prisma (derived output)
+```
+
+Never hand-edit `schema.prisma` to change a data model. Change the IR; the projection will re-derive the schema.
+
+## typeMappings
+
+`typeMappings` define how IR primitive field types translate to Prisma scalar types:
+
+| IR type | Prisma type | Notes |
+|---|---|---|
+| `string` | `String` | |
+| `int` | `Int` | |
+| `float` | `Decimal` | Use `.toFixed(2)` in application code |
+| `boolean` | `Boolean` | |
+| `datetime` | `DateTime` | |
+| `json` | `Json` | |
+| `uuid` | `String` | `@default(uuid())` |
+| `cuid` | `String` | `@default(cuid())` |
+
+## tableMappings
+
+`tableMappings` define how IR entity names resolve to Postgres tables:
+
+- If an entity has an explicit `@@map`, that value is used verbatim.
+- If no `@@map` is declared, the Prisma model name is used — which may be **PascalCase**, not snake_case.
+- Schema prefix (e.g., `tenant_staff.EmployeeDeduction`) is derived from the `@@schema` annotation.
+
+Always verify the actual table name before writing raw SQL: `grep -n "@@map\|model <Name>" packages/database/prisma/schema.prisma`.
+
+## Composite Primary Keys
+
+All tenant-scoped entities use composite primary keys: `(tenant_id, id)`. This is declared in the IR and emitted automatically into `schema.prisma` as a `@@id([tenant_id, id])` directive.
+
+This means:
+- Prisma does not generate implicit single-column `id` PKs for these models.
+- Application code must always supply `tenant_id` when querying or mutating these entities.
+- Foreign key references must use the full composite pair, not just `id`.
+
+## Relationship to Database Migrations
+
+PrismaProjection generates `schema.prisma`. From there, the normal migration workflow applies:
+
+```
+1. Modify IR
+2. Regenerate schema.prisma via PrismaProjection
+3. pnpm db:dev -- --create-only --name <name>   # generate migration SQL
+4. Review, then pnpm db:deploy
+```
+
+See [CLAUDE.md](/docs/internal/development-notes) for the full migration workflow including the hard rules around `pnpm db:dev` vs raw `prisma migrate dev`.
+
+## Conformance
+
+The Manifest conformance suite includes tests that verify PrismaProjection outputs are consistent with the IR semantics. If a conformance test for storage projection fails, the projection is broken — treat it as a blocker.
