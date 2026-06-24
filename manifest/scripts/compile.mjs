@@ -234,7 +234,6 @@ const {
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
-const SHARDS_DIR = join(OUTPUT_DIR, "shards");
 const MODULE_GRAPH_FILE = join(OUTPUT_DIR, "module-graph.json");
 // Statically importable by the runtime (sibling of commands.registry.json) so
 // the error serializer can annotate violations with their DSL source location.
@@ -321,19 +320,12 @@ async function compileMergedManifests() {
       process.exit(1);
     }
 
-    const manifestName = manifestFile
-      .replace(/\.manifest$/, "")
-      .replace(/\//g, "-");
     // Native compileToIR (2.5.1+) populates command.entity, so the old
     // enforceCommandOwnership repair is no longer applied (see U6 / D14).
     compiledEntries.push({
       source: manifestFile,
       ir,
     });
-
-    mkdirSync(SHARDS_DIR, { recursive: true });
-    const shardPath = join(SHARDS_DIR, `${manifestName}.ir.json`);
-    writeFileSync(shardPath, JSON.stringify(ir, null, 2));
   }
 
   enforceNoDuplicateCommandIntent(compiledEntries.filter((e) => !e.skipped));
@@ -530,7 +522,7 @@ async function compileMergedManifests() {
   };
   writeFileSync(MODULE_GRAPH_FILE, JSON.stringify(moduleGraph, null, 2));
   console.log(
-    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`
+    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources)`
   );
 
   // DSL source-map sidecar: entity/command/constraint/transition → file+line.

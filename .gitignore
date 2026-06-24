@@ -598,8 +598,6 @@ ir
 !manifest/ir/
 !manifest/ir/README.md
 !manifest/ir/module-graph.json
-!manifest/ir/shards/
-!manifest/ir/shards/**
 
 # Random scratch files
 WqZ9vMhG6z.png

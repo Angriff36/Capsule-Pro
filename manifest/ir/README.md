@@ -19,7 +19,6 @@ reads from `manifest/ir/`:
 Files in this directory:
 
 - `kitchen.ir.json` — full merged IR (canonical for validate/codegen; large monolith).
-- `shards/*.ir.json` — per-source IR shards (one per `.manifest`; smaller diffs).
 - `module-graph.json` — source → entity/command counts (module graph index).
 - `kitchen.commands.json` — flat command index.
 - `kitchen.merge-report.json` — per-compile merge/dedup report.

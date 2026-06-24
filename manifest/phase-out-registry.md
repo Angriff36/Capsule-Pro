@@ -29,8 +29,8 @@ Replaced by: `@angriff36/manifest/stores/prisma-generic` + `prisma-store` projec
 |---|---|
 | Two `generated/` roots | **PARTIAL** — single canonical tree; junction preserves TS imports |
 | `index.ts` god file | **DONE** — thin barrel (~220 LOC); `kitchen/` modules |
-| Flat `source/` | **DONE** — 94 files → domain subdirs; `module-graph.json` + IR shards |
-| `kitchen.ir.json` monolith | **PARTIAL** — shards + module graph; merged file still canonical |
+| Flat `source/` | **DONE** — 94 files → domain subdirs; `module-graph.json` |
+| `kitchen.ir.json` monolith | **DONE** — merged file is canonical; per-source IR shards REMOVED 2026-06-24 (write-only, zero consumers — `compile.mjs` no longer emits them) |
 | Three schemas | **DOCUMENTED** — `ir/README.md` roles table; candidate banner |
 | Root planning sprawl | **PARTIAL** — root `PROMPT_*.md` → `docs/planning/root-snapshots/` |
 | `manifest/generated/models/` naming | **DONE** — orphan tree deleted |

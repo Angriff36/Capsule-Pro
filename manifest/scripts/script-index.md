@@ -58,7 +58,7 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 |---|---|
 | **Vision (Part 1)** | Single IR everywhere; normalized case/types; no unused/unwired/slop definitions |
 | **Script** | `manifest/scripts/compile.mjs` |
-| **Steps** | (a) Glob 104 `.manifest` files; `compileToIR()` per file (not CLI `--glob` — last-file-wins bug). (b) `compileProjectToIR()` merge — topo-sort, cycles, cross-file validation. (c) `enrichComputedDependencies()` for computed→computed chains. (d) `validateCommandIntentRegistry()`. (e) Deterministic `irHash`; idempotent provenance. (f) Writes `kitchen.ir.json`, shards, `kitchen.commands.json`, `commands.registry.json`, provenance, merge-report, `module-graph.json`. |
+| **Steps** | (a) Glob 104 `.manifest` files; `compileToIR()` per file (not CLI `--glob` — last-file-wins bug). (b) `compileProjectToIR()` merge — topo-sort, cycles, cross-file validation. (c) `enrichComputedDependencies()` for computed→computed chains. (d) `validateCommandIntentRegistry()`. (e) Deterministic `irHash`; idempotent provenance. (f) Writes `kitchen.ir.json`, `kitchen.commands.json`, `commands.registry.json`, provenance, merge-report, `module-graph.json`. |
 | **Invariant** | Tenant declared exactly once in `_base.manifest`; every domain file `use`s it (`verify-invariants` enforces) |
 | **Counts** | Read from `kitchen.ir.json` after compile — do not hardcode in docs |
 
