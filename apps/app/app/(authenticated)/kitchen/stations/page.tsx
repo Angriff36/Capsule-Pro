@@ -8,7 +8,10 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
@@ -116,24 +119,13 @@ const KitchenStationsPage = async () => {
   return (
     <>
       <Header page="Kitchen Stations" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Kitchen Stations
-          </h1>
-          <p className="text-muted-foreground">
-            Monitor task progress and team activity across all kitchen stations
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Station Overview Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Station Overview
-          </h2>
+      <OperationalPageShell
+        description="Monitor task progress and team activity across all kitchen stations."
+        eyebrow="Kitchen / Stations"
+        title="Kitchen stations"
+        withCanvas={false}
+      >
+        <OperationalSection title="Station overview">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {stationStats.length === 0 ? (
               <Card className="col-span-full" tone="canvas">
@@ -227,13 +219,9 @@ const KitchenStationsPage = async () => {
               })
             )}
           </div>
-        </section>
+        </OperationalSection>
 
-        {/* Station Legend Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Station Tags Reference
-          </h2>
+        <OperationalSection title="Station tags reference">
           <Card tone="canvas">
             <CardContent className="pt-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
@@ -254,8 +242,8 @@ const KitchenStationsPage = async () => {
               </p>
             </CardContent>
           </Card>
-        </section>
-      </div>
+        </OperationalSection>
+      </OperationalPageShell>
     </>
   );
 };

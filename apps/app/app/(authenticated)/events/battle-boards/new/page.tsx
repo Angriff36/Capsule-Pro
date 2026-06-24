@@ -35,6 +35,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { battleBoardCreate } from "@/app/lib/manifest-client.generated";
 import { Header } from "../../../components/header";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 
 const BOARD_TYPES = [
   { value: "dish_ranking", label: "Dish Ranking" },
@@ -104,16 +105,19 @@ export default function NewBattleBoardPage() {
           { label: "Battle Boards", href: "/events/battle-boards" },
         ]}
       />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Navigation */}
-        <Link href="/events/battle-boards">
-          <Button size="sm" variant="ghost">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Battle Boards
-          </Button>
-        </Link>
-
-        {/* Form Card */}
+      <OperationalPageShell
+        actions={
+          <Link href="/events/battle-boards">
+            <Button size="sm" variant="ghost">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to battle boards
+            </Button>
+          </Link>
+        }
+        description="Set up a new battle board for event staff assignments and operational timelines."
+        eyebrow="Events / Battle boards"
+        title="New battle board"
+      >
         <div className="mx-auto w-full max-w-2xl">
           <Card tone="canvas">
             <CardHeader>
@@ -229,7 +233,7 @@ export default function NewBattleBoardPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </OperationalPageShell>
     </>
   );
 }

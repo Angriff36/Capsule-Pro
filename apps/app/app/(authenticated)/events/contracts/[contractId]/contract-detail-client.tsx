@@ -26,7 +26,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import {
   DropdownMenu,
@@ -68,6 +67,7 @@ import {
   eventContractSoftDelete,
 } from "@/app/lib/manifest-client.generated";
 import { SignaturePad } from "../components/signature-pad";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 
 interface ContractDetailClientProps {
   client: {
@@ -360,7 +360,7 @@ export function ContractDetailClient({
           throw new Error("Failed to upload document");
         }
 
-        const _result = await response.json();
+        await response.json();
         toast.success("Document uploaded successfully");
         router.refresh();
       } catch (error) {
@@ -434,9 +434,6 @@ export function ContractDetailClient({
     dateStyle: "medium",
     timeStyle: "short",
   });
-  const _dateOnlyFmt = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-  });
   const safeFmt = (
     fmt: Intl.DateTimeFormat,
     value: Date | string | number | null | undefined
@@ -457,29 +454,9 @@ export function ContractDetailClient({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Status and Actions Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Badge className="gap-1.5" variant={statusInfo.variant}>
-              {statusInfo.icon}
-              {statusInfo.label}
-            </Badge>
-            {isExpired && contract.status !== "expired" && (
-              <Badge className="gap-1.5" variant="destructive">
-                <AlertCircleIcon className="size-3" />
-                Expired
-              </Badge>
-            )}
-            {contract.contractNumber && (
-              <Badge className="gap-1.5" variant="outline">
-                <FileTextIcon className="size-3" />
-                {contract.contractNumber}
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
+      <OperationalPageShell
+        actions={
+          <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline">
@@ -502,69 +479,40 @@ export function ContractDetailClient({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Dialog onOpenChange={setShowSendDialog} open={showSendDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="default">
-                  <SendIcon className="mr-2 size-4" />
-                  Send to Client
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Send Contract to Client</DialogTitle>
-                  <DialogDescription>
-                    This will send the contract to {clientName} for signature.
-                    {client?.email &&
-                      ` An email will be sent to ${client.email}.`}
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button
-                    onClick={() => setShowSendDialog(false)}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSendToClient}>
-                    <SendIcon className="mr-2 size-4" />
-                    Send Contract
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <TrashIcon className="mr-2 size-4" />
-                  Delete
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Contract</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this contract? This action
-                    cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button
-                    onClick={() => setShowDeleteDialog(false)}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleDelete} variant="destructive">
-                    <TrashIcon className="mr-2 size-4" />
-                    Delete Contract
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+            <Button onClick={() => setShowSendDialog(true)} size="sm" variant="default">
+              <SendIcon className="mr-2 size-4" />
+              Send to Client
+            </Button>
+            <Button onClick={() => setShowDeleteDialog(true)} size="sm" variant="outline">
+              <TrashIcon className="mr-2 size-4" />
+              Delete
+            </Button>
+          </>
+        }
+        description={`${clientName}${event?.title ? ` · ${event.title}` : ""}`}
+        eyebrow="Events / Contracts"
+        title={
+          <span className="inline-flex flex-wrap items-center gap-3">
+            {contract.title}
+            <Badge className="gap-1.5" variant={statusInfo.variant}>
+              {statusInfo.icon}
+              {statusInfo.label}
+            </Badge>
+            {isExpired && contract.status !== "expired" && (
+              <Badge className="gap-1.5" variant="destructive">
+                <AlertCircleIcon className="size-3" />
+                Expired
+              </Badge>
+            )}
+            {contract.contractNumber && (
+              <Badge className="gap-1.5" variant="outline">
+                <FileTextIcon className="size-3" />
+                {contract.contractNumber}
+              </Badge>
+            )}
+          </span>
+        }
+      >
 
         {/* Contract Details */}
         <div className="grid gap-6 lg:grid-cols-2">
@@ -948,7 +896,49 @@ export function ContractDetailClient({
             )}
           </CardContent>
         </Card>
-      </div>
+      </OperationalPageShell>
+
+      <Dialog onOpenChange={setShowSendDialog} open={showSendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Contract to Client</DialogTitle>
+            <DialogDescription>
+              This will send the contract to {clientName} for signature.
+              {client?.email && ` An email will be sent to ${client.email}.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowSendDialog(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button onClick={handleSendToClient}>
+              <SendIcon className="mr-2 size-4" />
+              Send Contract
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Contract</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contract? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowDeleteDialog(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button onClick={handleDelete} variant="destructive">
+              <TrashIcon className="mr-2 size-4" />
+              Delete Contract
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Signature Dialog */}
       <Dialog onOpenChange={setShowSignatureDialog} open={showSignatureDialog}>

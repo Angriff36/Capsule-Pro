@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { log } from "@repo/observability/log";
 import {
   ArrowLeft,
@@ -25,6 +24,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 // NOTE: Keeping apiFetch for calendar sync OAuth endpoints (/api/calendar/sync/*) — no generated client for calendar sync operations
 import { apiFetch } from "@/app/lib/api";
 
@@ -186,25 +186,18 @@ export default function CalendarSyncPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-2">
-          <Link href="/calendar">
-            <Button size="icon" variant="ghost">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Calendar Sync
-          </h1>
-        </div>
-        <p className="text-muted-foreground">
-          Connect external calendars to import events automatically.
-        </p>
-      </div>
-      <Separator />
-
+    <OperationalPageShell
+      actions={
+        <Link href="/calendar">
+          <Button size="icon" variant="ghost">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+      }
+      description="Connect external calendars to import events automatically."
+      eyebrow="Calendar / Sync"
+      title="Calendar sync"
+    >
       {/* Success/Error Messages */}
       {connectedProvider && (
         <Card
@@ -414,6 +407,6 @@ export default function CalendarSyncPage() {
           </Button>
         </Link>
       </div>
-    </div>
+    </OperationalPageShell>
   );
 }

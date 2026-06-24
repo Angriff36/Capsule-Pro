@@ -10,6 +10,7 @@
 
 import { auth } from "@repo/auth/server";
 import { redirect } from "next/navigation";
+import { OperationalPageShell } from "@/app/(authenticated)/components/operational-page-shell";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { CommandPerfClient } from "./command-perf-client";
 
@@ -33,20 +34,12 @@ export default async function CommandPerfPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Command Performance
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Latency percentiles for every governed command, ranked by P95 — the
-          slowest commands rise to the top so optimization becomes a ranked list
-          instead of guesswork. A command whose P95 exceeds the threshold is
-          flagged as an alert.
-        </p>
-      </div>
-
+    <OperationalPageShell
+      description="Latency percentiles for every governed command, ranked by P95 — the slowest commands rise to the top so optimization becomes a ranked list instead of guesswork."
+      eyebrow="Tools / Performance"
+      title="Command performance"
+    >
       <CommandPerfClient />
-    </div>
+    </OperationalPageShell>
   );
 }

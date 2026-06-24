@@ -9,7 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import {
   Table,
   TableBody,
@@ -127,25 +130,13 @@ const KitchenInventoryPage = async () => {
   return (
     <>
       <Header page="Kitchen Inventory" pages={["Kitchen Ops"]} />
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Kitchen Inventory
-          </h1>
-          <p className="text-muted-foreground">
-            Track kitchen ingredient stock levels, par values, and low stock
-            alerts
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Performance Overview Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Performance Overview
-          </h2>
+      <OperationalPageShell
+        description="Track kitchen ingredient stock levels, par values, and low stock alerts."
+        eyebrow="Kitchen / Inventory"
+        title="Kitchen inventory"
+        withCanvas={false}
+      >
+        <OperationalSection title="Performance overview">
           <div className="grid gap-6 md:grid-cols-4">
             <Card tone="soft-stone">
               <CardHeader>
@@ -188,14 +179,12 @@ const KitchenInventoryPage = async () => {
               </CardContent>
             </Card>
           </div>
-        </section>
+        </OperationalSection>
 
-        {/* Low Stock Alerts Section */}
-        {lowStockAlerts.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="font-medium text-muted-foreground text-sm">
-              Low Stock Alerts ({lowStockAlerts.length})
-            </h2>
+        {lowStockAlerts.length > 0 ? (
+          <OperationalSection
+            title={`Low stock alerts (${lowStockAlerts.length})`}
+          >
             <Card className="border-amber-900/20 bg-amber-900/10" tone="canvas">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-800">
@@ -230,14 +219,10 @@ const KitchenInventoryPage = async () => {
                 </div>
               </CardContent>
             </Card>
-          </section>
-        )}
+          </OperationalSection>
+        ) : null}
 
-        {/* Inventory Items Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Inventory Items ({inventoryItems.length})
-          </h2>
+        <OperationalSection title={`Inventory items (${inventoryItems.length})`}>
           <Card tone="canvas">
             <CardContent className="p-0">
               {inventoryItems.length === 0 ? (
@@ -304,8 +289,8 @@ const KitchenInventoryPage = async () => {
               )}
             </CardContent>
           </Card>
-        </section>
-      </div>
+        </OperationalSection>
+      </OperationalPageShell>
     </>
   );
 };

@@ -1,6 +1,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 
 /**
  * Loading state for the recipe detail page.
@@ -20,7 +21,12 @@ export default function Loading() {
         <div className="h-9 w-20 rounded bg-muted" />
       </div>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <OperationalPageShell
+        description="Loading recipe details…"
+        eyebrow="Kitchen / Recipes"
+        title="Recipe"
+        withCanvas={false}
+      >
         {/* Recipe Header skeleton */}
         <div className="flex items-start justify-between">
           <div className="space-y-3">
@@ -102,7 +108,7 @@ export default function Loading() {
             </div>
           </div>
         </div>
-      </div>
+      </OperationalPageShell>
     </>
   );
 }

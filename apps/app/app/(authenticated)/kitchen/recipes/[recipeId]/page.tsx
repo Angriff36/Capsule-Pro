@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { invariant } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { RecipeDetailEditButton } from "./components/recipe-detail-edit-button";
 import { RecipeDetailTabs } from "./components/recipe-detail-tabs";
 
@@ -146,14 +147,15 @@ const RecipeDetailPage = async ({
     `
   );
 
-  if (recipes.length === 0) {
+  const recipeRow = recipes[0];
+  if (!recipeRow) {
     return notFound();
   }
 
   const recipe = {
-    ...recipes[0],
+    ...recipeRow,
     yield_quantity: toDecimalNumberOrNull(
-      recipes[0].yield_quantity,
+      recipeRow.yield_quantity,
       "recipe.yield_quantity"
     ),
   };
@@ -205,14 +207,13 @@ const RecipeDetailPage = async ({
     `
   );
 
-  const recipeVersionId =
-    recipeVersion.length > 0 ? recipeVersion[0].version_id : null;
+  const latestVersion = recipeVersion[0];
+  const recipeVersionId = latestVersion ? latestVersion.version_id : null;
 
   // Fetch recipe steps
-  const _steps: RecipeStepRow[] =
-    recipeVersion.length > 0
-      ? await database.$queryRaw<RecipeStepRow[]>(
-          Prisma.sql`
+  const _steps: RecipeStepRow[] = latestVersion
+    ? await database.$queryRaw<RecipeStepRow[]>(
+        Prisma.sql`
           SELECT
             step_number,
             instruction,
@@ -225,12 +226,12 @@ const RecipeDetailPage = async ({
             image_url
           FROM tenant_kitchen.recipe_steps
           WHERE tenant_id = ${tenantId}
-            AND recipe_version_id = ${recipeVersion[0].version_id}
+            AND recipe_version_id = ${latestVersion.version_id}
             AND deleted_at IS NULL
           ORDER BY step_number ASC
         `
-        )
-      : [];
+      )
+    : [];
 
   return (
     <>
@@ -243,31 +244,28 @@ const RecipeDetailPage = async ({
         </Button>
       </Header>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Recipe Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-2xl">{recipe.name}</h1>
-              <Badge variant={recipe.is_active ? "default" : "secondary"}>
-                {recipe.is_active ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-            {recipe.category && (
-              <Badge className="mt-1" variant="outline">
-                {recipe.category}
-              </Badge>
-            )}
-          </div>
+      <OperationalPageShell
+        actions={
           <RecipeDetailEditButton
             recipeId={recipeId}
             recipeName={recipe.name}
           />
-        </div>
-
-        {recipe.description && (
-          <p className="text-muted-foreground">{recipe.description}</p>
-        )}
+        }
+        description={recipe.description ?? undefined}
+        eyebrow="Kitchen / Recipes"
+        title={
+          <span className="inline-flex items-center gap-2">
+            {recipe.name}
+            <Badge variant={recipe.is_active ? "default" : "secondary"}>
+              {recipe.is_active ? "Active" : "Inactive"}
+            </Badge>
+            {recipe.category ? (
+              <Badge variant="outline">{recipe.category}</Badge>
+            ) : null}
+          </span>
+        }
+        withCanvas={false}
+      >
 
         {/* Metadata Bar */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -322,7 +320,7 @@ const RecipeDetailPage = async ({
           recipeVersionId={recipeVersionId}
           steps={_steps}
         />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

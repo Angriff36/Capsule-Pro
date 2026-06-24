@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OperationalPageShell } from "../../../../components/operational-page-shell";
 import { Header } from "../../../../components/header";
 import { NewIngredientForm } from "../../components/new-ingredient-form-client";
 
@@ -41,9 +42,14 @@ const NewIngredientPage = async () => {
           </Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+      <OperationalPageShell
+        description="Add an ingredient to your kitchen catalog."
+        eyebrow="Kitchen / Ingredients"
+        title="New ingredient"
+        withCanvas={false}
+      >
         <NewIngredientForm units={units} />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

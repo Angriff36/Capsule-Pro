@@ -7,10 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../../components/operational-page-shell";
 import { Header } from "../../../components/header";
 import { cleanupImportedItems } from "./server-actions";
 
@@ -185,25 +188,15 @@ const CleanupImportsPage = async () => {
           <Link href="/kitchen/recipes">Back to recipes</Link>
         </Button>
       </Header>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Cleanup Imports
-          </h1>
-          <p className="text-muted-foreground">
-            Review and process imported recipe items that have no ingredients or
-            steps
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Cleanup Candidates Section */}
-        <section className="space-y-4">
-          <h2 className="font-medium text-muted-foreground text-sm">
-            Cleanup Candidates {rows.length > 0 && `(${rows.length})`}
-          </h2>
+      <OperationalPageShell
+        description="Review and process imported recipe items that have no ingredients or steps."
+        eyebrow="Kitchen / Recipes"
+        title="Cleanup imports"
+        withCanvas={false}
+      >
+        <OperationalSection
+          title={`Cleanup candidates${rows.length > 0 ? ` (${rows.length})` : ""}`}
+        >
           <Card>
             <CardHeader>
               <CardTitle>Imported item cleanup</CardTitle>
@@ -256,8 +249,8 @@ const CleanupImportsPage = async () => {
               )}
             </CardContent>
           </Card>
-        </section>
-      </div>
+        </OperationalSection>
+      </OperationalPageShell>
     </>
   );
 };

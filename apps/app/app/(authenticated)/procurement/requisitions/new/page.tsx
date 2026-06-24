@@ -28,6 +28,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -184,22 +185,19 @@ export default function NewRequisitionPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center gap-4">
+    <>
+      <OperationalPageShell
+      actions={
         <Link href="/procurement/requisitions">
           <Button size="icon" variant="ghost">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div className="flex-1">
-          <h1 className="font-semibold text-2xl">New Purchase Requisition</h1>
-          <p className="text-muted-foreground">
-            Create a new purchase request for approval.
-          </p>
-        </div>
-      </div>
-
+      }
+      description="Create a new purchase request for approval."
+      eyebrow="Procurement / Requisitions"
+      title="New purchase requisition"
+    >
       <form onSubmit={handleCreate}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main form */}
@@ -404,6 +402,7 @@ export default function NewRequisitionPage() {
           </div>
         </div>
       </form>
+      </OperationalPageShell>
 
       {/* Add Item Dialog */}
       <Dialog onOpenChange={setShowItemDialog} open={showItemDialog}>
@@ -466,6 +465,6 @@ export default function NewRequisitionPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

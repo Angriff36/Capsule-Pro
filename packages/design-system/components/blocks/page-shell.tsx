@@ -11,7 +11,8 @@ import type * as React from "react";
  * Composition recipe (typical operational dashboard):
  *
  *   <PageCanvas>
- *     <CommandBand>
+ *     <PageLead eyebrow title description />   // light pages — no CommandBand
+ *     <CommandBand>                            // or deep-green hero when needed
  *       <MonoLabel tone="dark" />
  *       <DisplayHeading />        // h1
  *       <CommandBandBody>...</CommandBandBody>
@@ -357,6 +358,63 @@ function OperationalColumn({
       data-slot="operational-column"
       {...props}
     />
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Page lead — light editorial page header (no CommandBand)                     */
+/* -------------------------------------------------------------------------- */
+
+type PageLeadProps = Omit<React.ComponentProps<"header">, "title"> & {
+  /** Mono eyebrow, e.g. "Analytics / Activity" */
+  eyebrow: React.ReactNode;
+  /** Primary page title (not the HTML `title` tooltip attribute) */
+  title: React.ReactNode;
+  /** Supporting copy under the title */
+  description?: React.ReactNode;
+  /** Optional trailing actions (buttons, links) */
+  actions?: React.ReactNode;
+  /** DisplayHeading size — defaults to md for inner pages */
+  headingSize?: "lg" | "md";
+};
+
+/**
+ * Top-of-page header for operational views that skip the deep-green CommandBand.
+ * Pair with PageCanvas → PageBody → OperationalColumn.
+ */
+function PageLead({
+  className,
+  eyebrow,
+  title,
+  description,
+  actions,
+  headingSize = "md",
+  ...props
+}: PageLeadProps) {
+  return (
+    <header
+      className={cn(
+        "flex flex-wrap items-end justify-between gap-6 border-hairline border-b pb-8",
+        className
+      )}
+      data-slot="page-lead"
+      {...props}
+    >
+      <div className="space-y-3">
+        <MonoLabel>{eyebrow}</MonoLabel>
+        <DisplayHeading size={headingSize}>{title}</DisplayHeading>
+        {description ? (
+          <p className="max-w-2xl text-muted-foreground text-sm leading-relaxed">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      {actions ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {actions}
+        </div>
+      ) : null}
+    </header>
   );
 }
 
@@ -708,6 +766,7 @@ export {
   OperationalRow,
   PageBody,
   PageCanvas,
+  PageLead,
   SectionHeader,
   StatusPill,
 };

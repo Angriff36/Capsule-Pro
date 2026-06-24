@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   driverRemove,
   driverUpdate,
@@ -261,19 +262,18 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Drivers</h1>
-          <p className="text-muted-foreground">
-            Manage delivery drivers and assignments.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Driver
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Driver
+          </Button>
+        }
+        description="Manage delivery drivers and assignments."
+        eyebrow="Logistics / Drivers"
+        title="Drivers"
+      >
 
       <div className="grid gap-4 md:grid-cols-3">
         {(["available", "on_route", "off_duty"] as const).map((status) => {
@@ -399,6 +399,8 @@ export default function DriversPage() {
           })}
         </div>
       )}
+
+      </OperationalPageShell>
 
       {/* Create/Edit Dialog */}
       <Dialog onOpenChange={setShowDialog} open={showDialog}>
@@ -555,6 +557,6 @@ export default function DriversPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

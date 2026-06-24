@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { AlertCircle, TrendingUp } from "lucide-react";
 import { notFound } from "next/navigation";
+import { OperationalPageShell, OperationalSection } from "../../../components/operational-page-shell";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
 interface SupplierMetricsRow {
@@ -159,24 +159,12 @@ const ReceivingReportsPage = async () => {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Receiving Reports & Supplier Performance
-        </h1>
-        <p className="text-muted-foreground">
-          Track receiving metrics and supplier performance trends
-        </p>
-      </div>
-
-      <Separator />
-
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Performance Overview
-        </h2>
+    <OperationalPageShell
+      description="Track receiving metrics and supplier performance trends."
+      eyebrow="Warehouse / Receiving"
+      title="Receiving reports"
+    >
+      <OperationalSection title="Performance overview">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card tone="soft-stone">
             <CardHeader className="pb-2">
@@ -214,7 +202,7 @@ const ReceivingReportsPage = async () => {
             </CardHeader>
           </Card>
         </div>
-      </section>
+      </OperationalSection>
 
       {/* Supplier Performance Section */}
       <section className="space-y-4">
@@ -375,7 +363,7 @@ const ReceivingReportsPage = async () => {
           </CardContent>
         </Card>
       </section>
-    </div>
+    </OperationalPageShell>
   );
 };
 

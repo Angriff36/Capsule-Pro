@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { notFound } from "next/navigation";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { Header } from "../../components/header";
 import { KitchenImportClient } from "./kitchen-import-client";
 
@@ -16,9 +17,14 @@ const KitchenImportPage = async () => {
         page="Bulk Import"
         pages={[{ label: "Kitchen", href: "/kitchen" }]}
       />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <OperationalPageShell
+        description="Bulk import recipes, ingredients, and kitchen data."
+        eyebrow="Kitchen / Import"
+        title="Bulk import"
+        withCanvas={false}
+      >
         <KitchenImportClient />
-      </div>
+      </OperationalPageShell>
     </>
   );
 };

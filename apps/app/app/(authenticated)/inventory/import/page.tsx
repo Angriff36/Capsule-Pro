@@ -17,6 +17,7 @@ import {
   FileUp,
 } from "lucide-react";
 import Link from "next/link";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { useCallback, useState } from "react";
 // NOTE: Keeping apiFetch for file upload (FormData POST to /api/inventory/import)
 import { apiFetch } from "@/app/lib/api";
@@ -132,29 +133,24 @@ export default function InventoryImportPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <OperationalPageShell
+      actions={
+        <>
           <Link href="/inventory">
             <Button size="icon" variant="ghost">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <h1 className="font-bold text-2xl tracking-tight">
-              Import Inventory
-            </h1>
-            <p className="text-muted-foreground">
-              Bulk import inventory items from a CSV file
-            </p>
-          </div>
-        </div>
-        <Button onClick={downloadTemplate} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Download Template
-        </Button>
-      </div>
-
+          <Button onClick={downloadTemplate} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Download Template
+          </Button>
+        </>
+      }
+      description="Bulk import inventory items from a CSV file."
+      eyebrow="Inventory / Import"
+      title="Import inventory"
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -361,6 +357,6 @@ export default function InventoryImportPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </OperationalPageShell>
   );
 }

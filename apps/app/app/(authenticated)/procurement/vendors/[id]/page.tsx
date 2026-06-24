@@ -47,6 +47,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { OperationalPageShell } from "../../../components/operational-page-shell";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -241,53 +242,54 @@ export default function VendorDetailPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <OperationalPageShell
+      actions={
+        <>
           <Link href="/procurement/vendors">
             <Button size="icon" variant="ghost">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-semibold text-2xl tracking-tight">
-                {vendor.name}
-              </h1>
-              <Badge variant="secondary">{vendor.supplier_number}</Badge>
-            </div>
-            <p className="flex items-center gap-4 text-muted-foreground">
-              <RatingStars rating={vendor.performance_rating} size="md" />
-              <span>{formatPaymentTerms(vendor.payment_terms)}</span>
-              <span>{catalogItemCount} catalog items</span>
-              {vendor.tax_id && <span>Tax: {vendor.tax_id}</span>}
-            </p>
-          </div>
-        </div>
-        {editing ? (
-          <div className="flex gap-2">
-            <Button
-              onClick={() => {
-                setEditing(false);
-                loadVendor();
-              }}
-              variant="outline"
-            >
-              Cancel
+          {editing ? (
+            <>
+              <Button
+                onClick={() => {
+                  setEditing(false);
+                  loadVendor();
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={saving} onClick={handleSave}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Save className="mr-2 h-4 w-4" />
+                Save
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => setEditing(true)} variant="outline">
+              Edit Vendor
             </Button>
-            <Button disabled={saving} onClick={handleSave}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Save className="mr-2 h-4 w-4" />
-              Save
-            </Button>
-          </div>
-        ) : (
-          <Button onClick={() => setEditing(true)} variant="outline">
-            Edit Vendor
-          </Button>
-        )}
-      </div>
+          )}
+        </>
+      }
+      description={
+        <span className="flex flex-wrap items-center gap-4">
+          <RatingStars rating={vendor.performance_rating} size="md" />
+          <span>{formatPaymentTerms(vendor.payment_terms)}</span>
+          <span>{catalogItemCount} catalog items</span>
+          {vendor.tax_id ? <span>Tax: {vendor.tax_id}</span> : null}
+        </span>
+      }
+      eyebrow="Procurement / Vendors"
+      title={
+        <span className="inline-flex items-center gap-2">
+          {vendor.name}
+          <Badge variant="secondary">{vendor.supplier_number}</Badge>
+        </span>
+      }
+    >
 
       <Tabs defaultValue="details">
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
@@ -891,6 +893,6 @@ export default function VendorDetailPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </OperationalPageShell>
   );
 }

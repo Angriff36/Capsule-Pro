@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -48,6 +47,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  OperationalPageShell,
+  OperationalSection,
+} from "../../components/operational-page-shell";
 import { apiFetch } from "@/app/lib/api";
 import {
   shipmentItemCreate,
@@ -399,25 +402,14 @@ export const ShipmentsPageClient = () => {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Warehouse Shipments
-        </h1>
-        <p className="text-muted-foreground">
-          Manage warehouse shipments, tracking, and delivery status
-        </p>
-      </div>
-
-      <Separator />
-
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-muted-foreground text-sm">
-          Performance Overview
-        </h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <>
+      <OperationalPageShell
+        description="Manage warehouse shipments, tracking, and delivery status."
+        eyebrow="Warehouse / Shipments"
+        title="Warehouse shipments"
+      >
+        <OperationalSection title="Performance overview">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Total Shipments</CardDescription>
@@ -455,7 +447,7 @@ export const ShipmentsPageClient = () => {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </OperationalSection>
 
       {/* Shipments Section */}
       <section className="space-y-4">
@@ -806,6 +798,8 @@ export const ShipmentsPageClient = () => {
           </CardContent>
         </Card>
       )}
+
+      </OperationalPageShell>
 
       {/* Create Shipment Modal */}
       <Dialog onOpenChange={setIsCreateModalOpen} open={isCreateModalOpen}>
@@ -1224,6 +1218,6 @@ export const ShipmentsPageClient = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };

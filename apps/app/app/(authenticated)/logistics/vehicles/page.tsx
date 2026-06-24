@@ -57,14 +57,32 @@ import {
   Weight,
   Wrench,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import type { ComponentType, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import {
   listVehicles,
+  vehicleCreate,
   vehicleRemove,
   vehicleUpdate,
 } from "@/app/lib/manifest-client.generated";
-import { createVehicle } from "../actions";
+
+type VehicleStatus = "available" | "in_use" | "maintenance" | "out_of_service";
+
+interface VehicleForm {
+  capacityVolume: string;
+  capacityWeight: string;
+  fuelType: string;
+  make: string;
+  mileage: string;
+  model: string;
+  notes: string;
+  plateNumber: string;
+  status: VehicleStatus;
+  vin: string;
+  year: string;
+}
 
 interface Vehicle {
   assigned_drivers: number;
@@ -77,40 +95,88 @@ interface Vehicle {
   model: string;
   notes: string | null;
   plate_number: string | null;
-  status: string;
+  status: VehicleStatus | string;
   vin: string | null;
   year: number | null;
 }
 
 const STATUS_CONFIG: Record<
-  string,
+  VehicleStatus,
   {
-    label: string;
     color: string;
-    icon: React.ComponentType<{ className?: string }>;
+    icon: ComponentType<{ className?: string }>;
+    iconColor: string;
+    label: string;
   }
 > = {
   available: {
-    label: "Available",
     color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
+    iconColor: "text-green-500",
+    label: "Available",
   },
   in_use: {
-    label: "In Use",
     color: "bg-muted/50 text-foreground",
     icon: Truck,
+    iconColor: "text-blue-500",
+    label: "In Use",
   },
   maintenance: {
-    label: "Maintenance",
     color: "bg-muted/50 text-foreground",
     icon: Wrench,
+    iconColor: "text-amber-500",
+    label: "Maintenance",
   },
   out_of_service: {
-    label: "Out of Service",
     color: "bg-muted/50 text-foreground",
     icon: AlertTriangle,
+    iconColor: "text-red-500",
+    label: "Out of Service",
   },
 };
+
+const STATUS_ORDER = [
+  "available",
+  "in_use",
+  "maintenance",
+  "out_of_service",
+] as const satisfies readonly VehicleStatus[];
+
+const DEFAULT_FORM: VehicleForm = {
+  make: "",
+  model: "",
+  year: "",
+  plateNumber: "",
+  vin: "",
+  capacityWeight: "",
+  capacityVolume: "",
+  fuelType: "",
+  mileage: "",
+  status: "available",
+  notes: "",
+};
+
+const getVehicleName = (vehicle: Pick<Vehicle, "make" | "model" | "year">) =>
+  `${vehicle.year ? `${vehicle.year} ` : ""}${vehicle.make} ${vehicle.model}`;
+
+const optionalFloat = (value: string) =>
+  value ? Number.parseFloat(value) : undefined;
+
+const optionalInt = (value: string) =>
+  value ? Number.parseInt(value, 10) : undefined;
+
+const emptyToUndefined = (value: string) => value || undefined;
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
+const getStatusConfig = (status: string) =>
+  status in STATUS_CONFIG
+    ? STATUS_CONFIG[status as VehicleStatus]
+    : STATUS_CONFIG.available;
+
+const normalizeStatus = (status: string): VehicleStatus =>
+  status in STATUS_CONFIG ? (status as VehicleStatus) : "available";
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -124,51 +190,46 @@ export default function VehiclesPage() {
     id: string;
     name: string;
   } | null>(null);
-  const [form, setForm] = useState({
-    make: "",
-    model: "",
-    year: "",
-    plateNumber: "",
-    vin: "",
-    capacityWeight: "",
-    capacityVolume: "",
-    fuelType: "",
-    mileage: "",
-    status: "available",
-    notes: "",
-  });
+  const [form, setForm] = useState<VehicleForm>(DEFAULT_FORM);
 
-  useEffect(() => {
-    loadVehicles();
-  }, []);
-
-  const loadVehicles = async () => {
+  const loadVehicles = useCallback(async () => {
     setLoading(true);
     try {
       const result = await listVehicles();
       setVehicles(result.data as unknown as Vehicle[]);
     } catch (e) {
       console.error("Failed to load vehicles:", e);
+      toast.error("Failed to load vehicles", {
+        description: getErrorMessage(e),
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadVehicles().catch((error: unknown) => {
+      console.error("Failed to load vehicles:", error);
+    });
+  }, [loadVehicles]);
+
+  const statusCounts = useMemo(() => {
+    const counts = Object.fromEntries(
+      STATUS_ORDER.map((status) => [status, 0])
+    ) as Record<VehicleStatus, number>;
+
+    for (const vehicle of vehicles) {
+      if (vehicle.status in counts) {
+        counts[vehicle.status as VehicleStatus] += 1;
+      }
+    }
+
+    return counts;
+  }, [vehicles]);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({
-      make: "",
-      model: "",
-      year: "",
-      plateNumber: "",
-      vin: "",
-      capacityWeight: "",
-      capacityVolume: "",
-      fuelType: "",
-      mileage: "",
-      status: "available",
-      notes: "",
-    });
+    setForm(DEFAULT_FORM);
     setShowDialog(true);
   };
 
@@ -184,68 +245,55 @@ export default function VehiclesPage() {
       capacityVolume: vehicle.capacity_volume?.toString() || "",
       fuelType: vehicle.fuel_type || "",
       mileage: vehicle.mileage?.toString() || "",
-      status: vehicle.status,
+      status: normalizeStatus(vehicle.status),
       notes: vehicle.notes || "",
     });
     setShowDialog(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!(form.make.trim() && form.model.trim())) {
       return;
     }
+
+    const payload = {
+      make: form.make.trim(),
+      model: form.model.trim(),
+      year: optionalInt(form.year),
+      plateNumber: emptyToUndefined(form.plateNumber),
+      vin: emptyToUndefined(form.vin),
+      capacityWeight: optionalFloat(form.capacityWeight),
+      capacityVolume: optionalFloat(form.capacityVolume),
+      fuelType: emptyToUndefined(form.fuelType),
+      mileage: optionalFloat(form.mileage),
+      notes: emptyToUndefined(form.notes),
+    };
+
     setSaving(true);
     try {
       if (editing) {
         await vehicleUpdate({
           id: editing.id,
-          make: form.make,
-          model: form.model,
-          year: form.year ? Number.parseInt(form.year, 10) : undefined,
-          plateNumber: form.plateNumber || undefined,
-          vin: form.vin || undefined,
-          capacityWeight: form.capacityWeight
-            ? Number.parseFloat(form.capacityWeight)
-            : undefined,
-          capacityVolume: form.capacityVolume
-            ? Number.parseFloat(form.capacityVolume)
-            : undefined,
-          fuelType: form.fuelType || undefined,
-          mileage: form.mileage ? Number.parseFloat(form.mileage) : undefined,
-          notes: form.notes || undefined,
+          ...payload,
         });
         toast.success("Vehicle updated successfully");
-        await loadVehicles();
-        setShowDialog(false);
       } else {
-        // Use the server action for creation
-        const fd = new FormData();
-        fd.set("make", form.make);
-        fd.set("model", form.model);
-        if (form.year) {
-          fd.set("year", form.year);
-        }
-        fd.set("plateNumber", form.plateNumber);
-        fd.set("vin", form.vin);
-        if (form.capacityWeight) {
-          fd.set("capacityWeight", form.capacityWeight);
-        }
-        if (form.capacityVolume) {
-          fd.set("capacityVolume", form.capacityVolume);
-        }
-        fd.set("fuelType", form.fuelType);
-        if (form.mileage) {
-          fd.set("mileage", form.mileage);
-        }
-        fd.set("status", form.status);
-        fd.set("notes", form.notes);
-        await createVehicle(fd);
+        await vehicleCreate({
+          ...payload,
+          status: form.status,
+        });
+        toast.success("Vehicle added successfully");
       }
+
+      await loadVehicles();
+      setShowDialog(false);
+      setEditing(null);
+      setForm(DEFAULT_FORM);
     } catch (e) {
       console.error("Failed to save:", e);
       toast.error("Failed to save vehicle", {
-        description: e instanceof Error ? e.message : "Unknown error",
+        description: getErrorMessage(e),
       });
     } finally {
       setSaving(false);
@@ -262,8 +310,12 @@ export default function VehiclesPage() {
     try {
       await vehicleRemove({ id: vehicleId });
       setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
+      toast.success("Vehicle deleted successfully");
     } catch (e) {
       console.error("Failed to delete:", e);
+      toast.error("Failed to delete vehicle", {
+        description: getErrorMessage(e),
+      });
     } finally {
       setDeleting(null);
       setDeleteDialogOpen(false);
@@ -280,44 +332,31 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="font-semibold text-2xl tracking-tight">Vehicles</h1>
-          <p className="text-muted-foreground">
-            Manage fleet vehicles, capacity, and maintenance status.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Vehicle
-        </Button>
-      </div>
+    <>
+      <OperationalPageShell
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Vehicle
+          </Button>
+        }
+        description="Manage fleet vehicles, capacity, and maintenance status."
+        eyebrow="Logistics / Vehicles"
+        title="Vehicles"
+      >
 
       {/* Status Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {(
-          ["available", "in_use", "maintenance", "out_of_service"] as const
-        ).map((status) => {
+        {STATUS_ORDER.map((status) => {
           const config = STATUS_CONFIG[status];
-          const count = vehicles.filter((v) => v.status === status).length;
+          const count = statusCounts[status];
           return (
             <Card key={status} tone="soft-stone">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="font-medium text-sm">
                   {config.label}
                 </CardTitle>
-                <config.icon
-                  className={`h-4 w-4 ${
-                    status === "available"
-                      ? "text-green-500"
-                      : status === "in_use"
-                        ? "text-blue-500"
-                        : status === "maintenance"
-                          ? "text-amber-500"
-                          : "text-red-500"
-                  }`}
-                />
+                <config.icon className={`h-4 w-4 ${config.iconColor}`} />
               </CardHeader>
               <CardContent>
                 <div className="font-bold text-2xl">{count}</div>
@@ -354,8 +393,7 @@ export default function VehiclesPage() {
       ) : (
         <div className="space-y-3">
           {vehicles.map((vehicle) => {
-            const config =
-              STATUS_CONFIG[vehicle.status] || STATUS_CONFIG.available;
+            const config = getStatusConfig(vehicle.status);
             const Icon = config.icon;
             return (
               <Card
@@ -373,8 +411,7 @@ export default function VehiclesPage() {
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center gap-2">
                         <span className="font-semibold">
-                          {vehicle.year ? `${vehicle.year} ` : ""}
-                          {vehicle.make} {vehicle.model}
+                          {getVehicleName(vehicle)}
                         </span>
                         <Badge className={config.color}>{config.label}</Badge>
                         {vehicle.assigned_drivers > 0 && (
@@ -410,28 +447,35 @@ export default function VehiclesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        aria-label={`Edit ${getVehicleName(vehicle)}`}
                         onClick={() => openEdit(vehicle)}
                         size="sm"
+                        type="button"
                         variant="outline"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil aria-hidden="true" className="h-4 w-4" />
                       </Button>
                       <Button
+                        aria-label={`Delete ${getVehicleName(vehicle)}`}
                         className="text-red-500 hover:text-red-700"
                         disabled={deleting === vehicle.id}
                         onClick={() =>
                           confirmDelete({
                             id: vehicle.id,
-                            name: `${vehicle.year ? `${vehicle.year} ` : ""}${vehicle.make} ${vehicle.model}`,
+                            name: getVehicleName(vehicle),
                           })
                         }
                         size="sm"
+                        type="button"
                         variant="outline"
                       >
                         {deleting === vehicle.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2
+                            aria-hidden="true"
+                            className="h-4 w-4 animate-spin"
+                          />
                         ) : (
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 aria-hidden="true" className="h-4 w-4" />
                         )}
                       </Button>
                     </div>
@@ -442,6 +486,8 @@ export default function VehiclesPage() {
           })}
         </div>
       )}
+
+      </OperationalPageShell>
 
       {/* Create/Edit Dialog */}
       <Dialog onOpenChange={setShowDialog} open={showDialog}>
@@ -456,11 +502,7 @@ export default function VehiclesPage() {
                 : "Add a new vehicle to the fleet."}
             </DialogDescription>
           </DialogHeader>
-          <form
-            action={createVehicle}
-            className="space-y-4"
-            onSubmit={handleSave}
-          >
+          <form className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Make *</Label>
@@ -526,7 +568,9 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
-                  onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}
+                  onValueChange={(v) =>
+                    setForm((p) => ({ ...p, status: v as VehicleStatus }))
+                  }
                   value={form.status}
                 >
                   <SelectTrigger>
@@ -652,6 +696,6 @@ export default function VehiclesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

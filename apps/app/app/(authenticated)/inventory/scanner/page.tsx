@@ -32,6 +32,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import { OperationalPageShell } from "../../components/operational-page-shell";
 import { toast } from "sonner";
 // NOTE: Keeping apiFetch for barcode lookup and stock adjustment custom endpoints
 import { apiFetch } from "@/app/lib/api";
@@ -273,16 +274,11 @@ export default function ScannerPage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* Page Header */}
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Barcode Scanner
-        </h1>
-        <p className="text-muted-foreground">
-          Scan barcodes to look up inventory items or count stock.
-        </p>
-      </div>
+    <OperationalPageShell
+      description="Scan barcodes to look up inventory items or count stock."
+      eyebrow="Inventory / Scanner"
+      title="Barcode scanner"
+    >
 
       {/* Mode Tabs */}
       <Tabs onValueChange={(v) => setMode(v as ScanMode)} value={mode}>
@@ -557,6 +553,6 @@ export default function ScannerPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </OperationalPageShell>
   );
 }
