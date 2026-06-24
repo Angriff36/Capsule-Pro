@@ -7,8 +7,8 @@ import {
   runManifestCommandCore,
 } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { recordManifestCommandActivity } from "@/app/lib/activity-feed-service";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
 import {
@@ -78,6 +78,10 @@ function logCoreFailure(
           constraintOutcomes: failure.constraintOutcomes,
         },
       });
+      return;
+    case "invalid_params":
+      // Pre-flight Zod rejection: malformed client input, not a system fault.
+      logManifestIssue({ kind: "invalid_params", ...base });
       return;
     case "runtime_error":
       logManifestIssue({

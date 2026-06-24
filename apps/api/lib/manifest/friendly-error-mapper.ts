@@ -87,6 +87,7 @@ export interface FriendlyFailureInput {
     | "guard_failed"
     | "constraint_blocked"
     | "command_failed"
+    | "invalid_params"
     | "runtime_error";
   message: string;
   /**
@@ -726,6 +727,16 @@ function mapCommandFailed(
   };
 }
 
+function mapInvalidParams(failure: FriendlyFailureInput): FriendlyError {
+  return {
+    title: "Some required details are missing or invalid",
+    message: `${failure.message.replace(/\.$/, "")}.`,
+    suggestedFix: "Update the highlighted fields and try again.",
+    category: "validation",
+    severity: "warning",
+  };
+}
+
 function mapRuntimeError(failure: FriendlyFailureInput): FriendlyError {
   return {
     title: "Something went wrong on our end",
@@ -762,6 +773,8 @@ export function mapFailureToExplanation(
       case "unknown_command":
       case "bootstrap_failed":
         return mapUnknownCommand(failure);
+      case "invalid_params":
+        return mapInvalidParams(failure);
       case "runtime_error":
         return mapRuntimeError(failure);
       case "command_failed":
