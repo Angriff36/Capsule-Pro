@@ -164,6 +164,7 @@ export const database: Record<string, unknown> = {
   deliveryRoute: createMockModel(),
   // Activity feed model
   activityFeed: createMockModel(),
+  reactionLog: createMockModel(),
   // Allergen warning model
   allergenWarning: createMockModel(),
   // Accounting models

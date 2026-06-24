@@ -8,6 +8,7 @@ import {
 } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { recordManifestCommandActivity } from "@/app/lib/activity-feed-service";
 import { mapFailureToExplanation } from "@/lib/manifest/friendly-error-mapper";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
 import {
@@ -212,6 +213,18 @@ export async function runManifestCommand(
         commandName: params.command,
       },
     }).catch(() => {});
+
+    recordManifestCommandActivity(
+      params.user.tenantId,
+      params.entity,
+      entityId,
+      params.command,
+      resultData ?? {},
+      params.user.id,
+      typeof params.body?.correlationId === "string"
+        ? params.body.correlationId
+        : undefined
+    );
   }
 
   return manifestSuccessResponse({

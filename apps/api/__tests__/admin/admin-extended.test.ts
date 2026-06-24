@@ -503,14 +503,12 @@ describe("Admin Extended API", () => {
       });
 
       it("should return stats on success", async () => {
+        vi.mocked(database.activityFeed.count)
+          .mockResolvedValueOnce(100)
+          .mockResolvedValueOnce(5)
+          .mockResolvedValueOnce(25);
+
         vi.mocked(database.$queryRaw)
-          .mockResolvedValueOnce([
-            {
-              total_activities: BigInt(100),
-              today_count: BigInt(5),
-              week_count: BigInt(25),
-            },
-          ] as never)
           .mockResolvedValueOnce([
             { activity_type: "event_created", count: BigInt(50) },
             { activity_type: "task_completed", count: BigInt(30) },
@@ -538,7 +536,9 @@ describe("Admin Extended API", () => {
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
+        vi.mocked(database.activityFeed.count).mockRejectedValue(
+          new Error("DB error")
+        );
 
         const response = await getActivityFeedStats(
           makeRequest("/api/activity-feed/stats")
