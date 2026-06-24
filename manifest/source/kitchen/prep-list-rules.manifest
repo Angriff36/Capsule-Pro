@@ -341,7 +341,7 @@ entity PrepListItem mixin TenantScoped, SoftDeletable {
     emit PrepListItemUncompleted
   }
 
-  command create(prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: array<string>, dietarySubstitutions: array<string>, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
+  command create(optional prepListId: string, stationId: string, stationName: string, ingredientId: string, ingredientName: string, category: string, baseQuantity: number, baseUnit: string, scaledQuantity: number, scaledUnit: string, isOptional: boolean, preparationNotes: string, allergens: array<string>, dietarySubstitutions: array<string>, dishId: string, dishName: string, recipeVersionId: string, sortOrder: number) {
     guard prepListId != null and prepListId != "" "Prep list ID is required"
     guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
     guard ingredientName != null and ingredientName != "" "Ingredient name is required"

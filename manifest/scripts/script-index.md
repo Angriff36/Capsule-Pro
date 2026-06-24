@@ -34,41 +34,41 @@ The IR is the single semantic source of truth. Prisma models, API routes, runtim
 
 **Three Prisma artifacts (do not conflate):**
 
-| File | Role |
-|------|------|
-| `packages/database/prisma/schema.prisma` | Live DB schema — must reflect IR; migrations apply here |
-| `manifest/ir/generated-schema.prisma` | IR projection CI artifact (`pnpm manifest:schema:check`) |
-| `manifest/ir/candidate-schema.prisma` | Dev-only additive harness (`emit-full-schema.mjs`); not deployed |
+| File                                     | Role                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `packages/database/prisma/schema.prisma` | Live DB schema — must reflect IR; migrations apply here          |
+| `manifest/ir/generated-schema.prisma`    | IR projection CI artifact (`pnpm manifest:schema:check`)         |
+| `manifest/ir/candidate-schema.prisma`    | Dev-only additive harness (`emit-full-schema.mjs`); not deployed |
 
 ### Core trio — vision vs today
 
 #### `pnpm manifest:validate`
 
-| | |
-|---|---|
-| **Vision (Part 1)** | Validate every source under `manifest/source/`; no annoyance guards; no required fields Manifest can auto-generate |
-| **Today** | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` — validates **compiled IR**, not raw `.manifest` files per-file |
-| **Also** | `manifest:validate-ai` — same IR + `--min-score 100` |
-| **Gap** | Extend to glob `manifest/source/**/*.manifest` or fold source validation into `compile.mjs` pre-merge so behavior matches Part 1 |
-| **Under the hood** | `@angriff36/manifest validate` — structural IR validation (entity/command graph, types, saga/reaction wiring, stores) |
+|                     |                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Vision (Part 1)** | Validate every source under `manifest/source/`; no annoyance guards; no required fields Manifest can auto-generate               |
+| **Today**           | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` — validates **compiled IR**, not raw `.manifest` files per-file        |
+| **Also**            | `manifest:validate-ai` — same IR + `--min-score 100`                                                                             |
+| **Gap**             | Extend to glob `manifest/source/**/*.manifest` or fold source validation into `compile.mjs` pre-merge so behavior matches Part 1 |
+| **Under the hood**  | `@angriff36/manifest validate` — structural IR validation (entity/command graph, types, saga/reaction wiring, stores)            |
 
 #### `pnpm manifest:compile`
 
-| | |
-|---|---|
-| **Vision (Part 1)** | Single IR everywhere; normalized case/types; no unused/unwired/slop definitions |
-| **Script** | `manifest/scripts/compile.mjs` |
-| **Steps** | (a) Glob 104 `.manifest` files; `compileToIR()` per file (not CLI `--glob` — last-file-wins bug). (b) `compileProjectToIR()` merge — topo-sort, cycles, cross-file validation. (c) `enrichComputedDependencies()` for computed→computed chains. (d) `validateCommandIntentRegistry()`. (e) Deterministic `irHash`; idempotent provenance. (f) Writes `kitchen.ir.json`, `kitchen.commands.json`, `commands.registry.json`, provenance, merge-report, `module-graph.json`. |
-| **Invariant** | Tenant declared exactly once in `_base.manifest`; every domain file `use`s it (`verify-invariants` enforces) |
-| **Counts** | Read from `kitchen.ir.json` after compile — do not hardcode in docs |
+|                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Vision (Part 1)** | Single IR everywhere; normalized case/types; no unused/unwired/slop definitions                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Script**          | `manifest/scripts/compile.mjs`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Steps**           | (a) Glob 104 `.manifest` files; `compileToIR()` per file (not CLI `--glob` — last-file-wins bug). (b) `compileProjectToIR()` merge — topo-sort, cycles, cross-file validation. (c) `enrichComputedDependencies()` for computed→computed chains. (d) `validateCommandIntentRegistry()`. (e) Deterministic `irHash`; idempotent provenance. (f) Writes `kitchen.ir.json`, `kitchen.commands.json`, `commands.registry.json`, provenance, merge-report, `module-graph.json`. |
+| **Invariant**       | Tenant declared exactly once in `_base.manifest`; every domain file `use`s it (`verify-invariants` enforces)                                                                                                                                                                                                                                                                                                                                                              |
+| **Counts**          | Read from `kitchen.ir.json` after compile — do not hardcode in docs                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 #### `pnpm manifest:build`
 
-| | |
-|---|---|
-| **Vision (Part 1)** | Bridge code, DB, IR, API, hooks, UI into one interconnected system |
-| **Script** | `manifest/scripts/build.mjs` |
-| **Steps** | 1 → `manifest:compile`. 2 → `manifest:generate`. 3 → `manifest:routes:ir` → `manifest/runtime/routes.manifest.json`. 4 → `manifest audit-routes --strict` (ownership rules). 5 → `manifest:generate-hooks`. 6 → `cleanup-generated-orphans.mjs`. Any step failure exits non-zero. |
+|                     |                                                                                                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Vision (Part 1)** | Bridge code, DB, IR, API, hooks, UI into one interconnected system                                                                                                                                                                                                                                 |
+| **Script**          | `manifest/scripts/build.mjs`                                                                                                                                                                                                                                                                       |
+| **Steps**           | 1 → `manifest:compile`. 2 → `manifest:generate`. 3 → `manifest:routes:ir` → `manifest/runtime/routes.manifest.json`. 4 → `audit-routes-strict.mjs` (ownership rules + governance exemptions). 5 → `manifest:generate-hooks`. 6 → `cleanup-generated-orphans.mjs`. Any step failure exits non-zero. |
 
 ### Schema & DB workflow (when vision requires persisted entities)
 
@@ -101,84 +101,84 @@ Every script below must exist in FULL per Part 1. Implementation files live in `
 
 Run in order when changing domain semantics. Detailed implementation: Part 2.
 
-| Script | Entry point |
-|--------|-------------|
-| `manifest:validate` | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` |
-| `manifest:validate-ai` | above + `--min-score 100` |
-| `manifest:compile` | `manifest/scripts/compile.mjs` |
-| `manifest:build` | `manifest/scripts/build.mjs` |
+| Script                 | Entry point                                               |
+| ---------------------- | --------------------------------------------------------- |
+| `manifest:validate`    | `pnpm exec manifest validate manifest/ir/kitchen.ir.json` |
+| `manifest:validate-ai` | above + `--min-score 100`                                 |
+| `manifest:compile`     | `manifest/scripts/compile.mjs`                            |
+| `manifest:build`       | `manifest/scripts/build.mjs`                              |
 
 ### Tier 2 — Schema & database
 
-| Script | Entry point | What it does |
-|--------|-------------|--------------|
-| `manifest:generate-schema` | `generate-full-schema.mjs` | IR + `prisma-options.config.json` + live schema enums/infra → `generated-schema.prisma`; `prisma validate` |
-| `manifest:schema:full` | alias of above | |
-| `manifest:schema:check` | `check-schema-drift.mjs` | Regenerate + byte-compare committed `generated-schema.prisma` |
-| `manifest:schema:check:self-test` | same + `--self-test` | Diff-logic unit test |
-| `manifest:audit-schema-drift` | `audit-schema-drift.mjs` | Manifest ↔ Prisma required-column cross-check |
-| `manifest:audit-schema-drift:strict` | `--strict` | Exit 1 on unallowlisted violations |
-| `migrate` | chain | `db:validate-migrations` → `db:check` → `prisma:format` → `prisma:check` → `db:dev` |
-| `migrate:deploy` | chain | `db:validate-migrations` → `prisma:check` → `db:deploy` |
-| `migrate:status` | prisma | Migration status |
-| `migrate:resolve` | prisma | Resolve failed migration |
-| `migrate:baseline` | `migrate-baseline.mjs` | Baseline helper |
-| `db:check` | `scripts/db-drift-check.mjs` | Live DB vs `schema.prisma` additive diff |
-| `db:validate-migrations` | `validate-migration-table-schemas.mjs` | Migration SQL `@@schema` correctness |
-| `db:validate-generated-migration` | `validate-generated-migration.mjs` | Post-authoring gate on new migration folder |
-| `db:dev` | prisma migrate dev | Create/apply migrations |
-| `db:deploy` | prisma migrate deploy | CI/prod apply |
-| `db:repair` | `db-drift-repair.mjs` | Emergency repair migration (prefer Tier 2 workflow) |
-| `db:push` | disabled | Use `migrate` / `migrate:deploy` only |
-| `db:neon-shadow` | `neon-shadow-database-setup.mjs` | Shadow DB bootstrap fallback |
-| `db:neon-backup-schema` | `neon-schema-backup-pgdump.mjs` | pg_dump backup |
-| `db:neon-audit` | `neon-audit-readonly.mjs` | Readonly audit |
-| `db:neon-backup-and-audit` | chain | backup + audit |
-| `predev` | `db:check` | Surfaces missing migrations before dev |
+| Script                               | Entry point                            | What it does                                                                                               |
+| ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `manifest:generate-schema`           | `generate-full-schema.mjs`             | IR + `prisma-options.config.json` + live schema enums/infra → `generated-schema.prisma`; `prisma validate` |
+| `manifest:schema:full`               | alias of above                         |                                                                                                            |
+| `manifest:schema:check`              | `check-schema-drift.mjs`               | Regenerate + byte-compare committed `generated-schema.prisma`                                              |
+| `manifest:schema:check:self-test`    | same + `--self-test`                   | Diff-logic unit test                                                                                       |
+| `manifest:audit-schema-drift`        | `audit-schema-drift.mjs`               | Manifest ↔ Prisma required-column cross-check                                                              |
+| `manifest:audit-schema-drift:strict` | `--strict`                             | Exit 1 on unallowlisted violations                                                                         |
+| `migrate`                            | chain                                  | `db:validate-migrations` → `db:check` → `prisma:format` → `prisma:check` → `db:dev`                        |
+| `migrate:deploy`                     | chain                                  | `db:validate-migrations` → `prisma:check` → `db:deploy`                                                    |
+| `migrate:status`                     | prisma                                 | Migration status                                                                                           |
+| `migrate:resolve`                    | prisma                                 | Resolve failed migration                                                                                   |
+| `migrate:baseline`                   | `migrate-baseline.mjs`                 | Baseline helper                                                                                            |
+| `db:check`                           | `scripts/db-drift-check.mjs`           | Live DB vs `schema.prisma` additive diff                                                                   |
+| `db:validate-migrations`             | `validate-migration-table-schemas.mjs` | Migration SQL `@@schema` correctness                                                                       |
+| `db:validate-generated-migration`    | `validate-generated-migration.mjs`     | Post-authoring gate on new migration folder                                                                |
+| `db:dev`                             | prisma migrate dev                     | Create/apply migrations                                                                                    |
+| `db:deploy`                          | prisma migrate deploy                  | CI/prod apply                                                                                              |
+| `db:repair`                          | `db-drift-repair.mjs`                  | Emergency repair migration (prefer Tier 2 workflow)                                                        |
+| `db:push`                            | disabled                               | Use `migrate` / `migrate:deploy` only                                                                      |
+| `db:neon-shadow`                     | `neon-shadow-database-setup.mjs`       | Shadow DB bootstrap fallback                                                                               |
+| `db:neon-backup-schema`              | `neon-schema-backup-pgdump.mjs`        | pg_dump backup                                                                                             |
+| `db:neon-audit`                      | `neon-audit-readonly.mjs`              | Readonly audit                                                                                             |
+| `db:neon-backup-and-audit`           | chain                                  | backup + audit                                                                                             |
+| `predev`                             | `db:check`                             | Surfaces missing migrations before dev                                                                     |
 
 ### Tier 3 — Code generation
 
-| Script | Entry point | What it does |
-|--------|-------------|--------------|
-| `manifest:generate` | `generate.mjs` | CLI nextjs route projection + `ENTITY_DOMAIN_MAP` remapping |
-| `manifest:client` | `generate-capsule-client.mjs` | Typed fetch client |
-| `manifest:generate-metadata` | chain of 4 scripts | Prisma metadata, accessors, store options, store projection |
-| `manifest:generate-zod` | `generate-zod-schemas.mjs` | Zod schemas |
-| `manifest:generate-hooks` | `generate-react-query-hooks.mjs` | TanStack Query hooks |
-| `manifest:openapi` | `generate-openapi.mjs` | OpenAPI spec |
-| `manifest:kysely` | `generate-kysely.mjs` | Kysely types |
-| `manifest:drizzle` | `generate-drizzle.mjs` | Drizzle schema |
-| `manifest:analytics` | `generate-analytics.mjs` | Analytics projections |
-| `manifest:materialized-views` | `generate-materialized-views.mjs` | Materialized view SQL |
-| `manifest:llm-context` | `generate-llm-context.mjs` | LLM context bundle |
-| `manifest:field-hints` | `generate-field-hints.mjs` | Field hint metadata |
-| `manifest:field-hints:check` | `--check` | Drift gate |
-| `manifest:ir:embed` | `embed-ir.mjs` | Embed IR hash in runtime |
-| `manifest:registries` | `emit-registries.mjs` | `manifest/governance/{commands,entities}.json` |
-| `manifest:try-prisma` | `try-prisma.mjs` | Per-entity generated vs committed Prisma diff |
-| `manifest:routes:ir` | `generate-route-manifest.ts` | Canonical route surface index |
+| Script                        | Entry point                       | What it does                                                |
+| ----------------------------- | --------------------------------- | ----------------------------------------------------------- |
+| `manifest:generate`           | `generate.mjs`                    | CLI nextjs route projection + `ENTITY_DOMAIN_MAP` remapping |
+| `manifest:client`             | `generate-capsule-client.mjs`     | Typed fetch client                                          |
+| `manifest:generate-metadata`  | chain of 4 scripts                | Prisma metadata, accessors, store options, store projection |
+| `manifest:generate-zod`       | `generate-zod-schemas.mjs`        | Zod schemas                                                 |
+| `manifest:generate-hooks`     | `generate-react-query-hooks.mjs`  | TanStack Query hooks                                        |
+| `manifest:openapi`            | `generate-openapi.mjs`            | OpenAPI spec                                                |
+| `manifest:kysely`             | `generate-kysely.mjs`             | Kysely types                                                |
+| `manifest:drizzle`            | `generate-drizzle.mjs`            | Drizzle schema                                              |
+| `manifest:analytics`          | `generate-analytics.mjs`          | Analytics projections                                       |
+| `manifest:materialized-views` | `generate-materialized-views.mjs` | Materialized view SQL                                       |
+| `manifest:llm-context`        | `generate-llm-context.mjs`        | LLM context bundle                                          |
+| `manifest:field-hints`        | `generate-field-hints.mjs`        | Field hint metadata                                         |
+| `manifest:field-hints:check`  | `--check`                         | Drift gate                                                  |
+| `manifest:ir:embed`           | `embed-ir.mjs`                    | Embed IR hash in runtime                                    |
+| `manifest:registries`         | `emit-registries.mjs`             | `manifest/governance/{commands,entities}.json`              |
+| `manifest:try-prisma`         | `try-prisma.mjs`                  | Per-entity generated vs committed Prisma diff               |
+| `manifest:routes:ir`          | `generate-route-manifest.ts`      | Canonical route surface index                               |
 
 ### Tier 4 — CI gates & audits
 
-| Script | Entry point | What it does |
-|--------|-------------|--------------|
-| `manifest:ci` | chain | `verify-invariants` → `doctor` → `openapi:check` → `react-query:check` → `ir:embed:check` → `audit:strict` → `coverage:ci` → registries + git diff |
-| `manifest:verify-invariants` | `verify-invariants.mjs` | Tenant-once, native merge, saga/reaction floors, committed IR freshness, Manifest version |
-| `manifest:check` | `check.mjs` | Light structural sanity |
-| `manifest:audit` | chain | schema + route + parent-context + reaction-payloads (report) |
-| `manifest:audit:strict` | chain | accessor strict + all audit strict + command-param-types strict |
-| `manifest:audit-route-drift` | `audit-route-drift.mjs` | Routes vs IR command index |
-| `manifest:audit-parent-context` | `audit-parent-context.mjs` | Nested command parent context |
-| `manifest:audit-ir-drift` | `audit-ir-drift.mjs` | Source `.manifest` vs compiled IR |
-| `manifest:audit-reaction-payloads` | `check-reaction-payloads.mjs --strict` | Reaction payload shapes |
-| `manifest:audit-command-param-types` | `audit-command-param-types.mjs` | Param type baseline |
-| `manifest:lint-schema` | `lint-schema.mjs` | Prisma schema lint |
-| `manifest:openapi:check` | `check-openapi-drift.mjs` | OpenAPI drift gate |
-| `manifest:react-query:check` | `check-react-query-drift.mjs` | Hooks drift gate |
-| `manifest:ir:embed:check` | `check-ir-embed-drift.mjs` | IR embed drift gate |
-| `manifest:coverage:ci` | CLI | `--min-coverage 10 --strict` |
-| `check:manifest:structure` | `tools/manifest-structure-audit.mjs` | Repo-level structure audit |
-| `check:manifest:domain` | `tools/manifest-domain-drift-audit.mjs` | Domain drift audit |
+| Script                               | Entry point                             | What it does                                                                                                                                       |
+| ------------------------------------ | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `manifest:ci`                        | chain                                   | `verify-invariants` → `doctor` → `openapi:check` → `react-query:check` → `ir:embed:check` → `audit:strict` → `coverage:ci` → registries + git diff |
+| `manifest:verify-invariants`         | `verify-invariants.mjs`                 | Tenant-once, native merge, saga/reaction floors, committed IR freshness, Manifest version                                                          |
+| `manifest:check`                     | `check.mjs`                             | Light structural sanity                                                                                                                            |
+| `manifest:audit`                     | chain                                   | schema + route + parent-context + reaction-payloads (report)                                                                                       |
+| `manifest:audit:strict`              | chain                                   | accessor strict + all audit strict + command-param-types strict                                                                                    |
+| `manifest:audit-route-drift`         | `audit-route-drift.mjs`                 | Routes vs IR command index                                                                                                                         |
+| `manifest:audit-parent-context`      | `audit-parent-context.mjs`              | Nested command parent context                                                                                                                      |
+| `manifest:audit-ir-drift`            | `audit-ir-drift.mjs`                    | Source `.manifest` vs compiled IR                                                                                                                  |
+| `manifest:audit-reaction-payloads`   | `check-reaction-payloads.mjs --strict`  | Reaction payload shapes                                                                                                                            |
+| `manifest:audit-command-param-types` | `audit-command-param-types.mjs`         | Param type baseline                                                                                                                                |
+| `manifest:lint-schema`               | `lint-schema.mjs`                       | Prisma schema lint                                                                                                                                 |
+| `manifest:openapi:check`             | `check-openapi-drift.mjs`               | OpenAPI drift gate                                                                                                                                 |
+| `manifest:react-query:check`         | `check-react-query-drift.mjs`           | Hooks drift gate                                                                                                                                   |
+| `manifest:ir:embed:check`            | `check-ir-embed-drift.mjs`              | IR embed drift gate                                                                                                                                |
+| `manifest:coverage:ci`               | CLI                                     | `--min-coverage 10 --strict`                                                                                                                       |
+| `check:manifest:structure`           | `tools/manifest-structure-audit.mjs`    | Repo-level structure audit                                                                                                                         |
+| `check:manifest:domain`              | `tools/manifest-domain-drift-audit.mjs` | Domain drift audit                                                                                                                                 |
 
 Each drift gate (`openapi:check`, `react-query:check`, `ir:embed:check`, `schema:check`) has a `:self-test` variant.
 
@@ -186,22 +186,22 @@ Each drift gate (`openapi:check`, `react-query:check`, `ir:embed:check`, `schema
 
 Pinned paths only — no extra capability beyond `@angriff36/manifest` CLI.
 
-| Script | Command |
-|--------|---------|
-| `manifest:doctor` | `pnpm exec manifest doctor` |
-| `manifest:fmt` | `manifest fmt manifest/source -g "**/*.manifest" --write` |
-| `manifest:fmt:check` | same + `--check` |
-| `manifest:coverage` | `manifest coverage --ir manifest/ir/kitchen.ir.json --format text` |
-| `manifest:coverage:json` | `--format json` |
-| `manifest:mcp` | `manifest-mcp` |
-| `manifest:mermaid` | `generate-mermaid.mjs` |
-| `manifest:update` | `pnpm -r update @angriff36/manifest@latest` |
+| Script                   | Command                                                            |
+| ------------------------ | ------------------------------------------------------------------ |
+| `manifest:doctor`        | `pnpm exec manifest doctor`                                        |
+| `manifest:fmt`           | `manifest fmt manifest/source -g "**/*.manifest" --write`          |
+| `manifest:fmt:check`     | same + `--check`                                                   |
+| `manifest:coverage`      | `manifest coverage --ir manifest/ir/kitchen.ir.json --format text` |
+| `manifest:coverage:json` | `--format json`                                                    |
+| `manifest:mcp`           | `manifest-mcp`                                                     |
+| `manifest:mermaid`       | `generate-mermaid.mjs`                                             |
+| `manifest:update`        | `pnpm -r update @angriff36/manifest@latest`                        |
 
 ### Tier 6 — Accessor & config guardrails
 
-| Script | Entry point |
-|--------|-------------|
-| `manifest:check-accessor-config` | `check-accessor-config.mjs` |
+| Script                                  | Entry point                    |
+| --------------------------------------- | ------------------------------ |
+| `manifest:check-accessor-config`        | `check-accessor-config.mjs`    |
 | `manifest:check-accessor-config:strict` | `--strict` (in `audit:strict`) |
 
 **Committed config (hand-curated, review required):**

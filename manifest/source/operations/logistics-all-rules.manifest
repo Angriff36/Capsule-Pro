@@ -44,7 +44,7 @@ entity Driver mixin TenantScoped {
   transition status from "inactive" to ["available", "inactive"]
 
   default policy DriverDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, vehicleId: string, status: string, notes: string) {
+  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, optional vehicleId: string, status: string, notes: string) {
     guard name != null and name != "" "Name is required"
 
     mutate name = name
@@ -328,7 +328,7 @@ entity LogisticsRoute mixin TenantScoped {
   relationship hasMany dispatches: LogisticsDispatch
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, vehicleId: string, driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
+  command create(name: string, optional vehicleId: string, optional driverId: string, scheduledDate: datetime, endTime: datetime, totalDistance: number, totalDuration: number, description: string) {
     guard name != null and name != "" "Route name is required"
 
     mutate name = name

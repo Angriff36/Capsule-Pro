@@ -231,7 +231,7 @@ entity PurchaseOrderItem mixin TenantScoped, SoftDeletable {
   constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
 
   default policy PurchaseOrderItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
-  command create(purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
+  command create(optional purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
     guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"

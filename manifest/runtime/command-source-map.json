@@ -23,11 +23,11 @@
     },
     "command:AdminChatParticipant.archive": {
       "file": "core/admin-chat-participant-rules.manifest",
-      "line": 26
+      "line": 25
     },
     "command:AdminChatParticipant.clearHistory": {
       "file": "core/admin-chat-participant-rules.manifest",
-      "line": 38
+      "line": 37
     },
     "command:AdminChatParticipant.create": {
       "file": "core/admin-chat-participant-rules.manifest",
@@ -35,7 +35,7 @@
     },
     "command:AdminChatParticipant.unarchive": {
       "file": "core/admin-chat-participant-rules.manifest",
-      "line": 32
+      "line": 31
     },
     "command:AdminChatThread.create": {
       "file": "core/crm-admin-extended-rules.manifest",
@@ -451,11 +451,11 @@
     },
     "command:CallPlanningSession.abandon": {
       "file": "ai/call-planning-session-rules.manifest",
-      "line": 91
+      "line": 89
     },
     "command:CallPlanningSession.complete": {
       "file": "ai/call-planning-session-rules.manifest",
-      "line": 82
+      "line": 80
     },
     "command:CallPlanningSession.create": {
       "file": "ai/call-planning-session-rules.manifest",
@@ -463,15 +463,15 @@
     },
     "command:CallPlanningSession.finalize": {
       "file": "ai/call-planning-session-rules.manifest",
-      "line": 73
+      "line": 71
     },
     "command:CallPlanningSession.start": {
       "file": "ai/call-planning-session-rules.manifest",
-      "line": 58
+      "line": 57
     },
     "command:CallPlanningSession.updateTranscript": {
       "file": "ai/call-planning-session-rules.manifest",
-      "line": 100
+      "line": 98
     },
     "command:CateringOrder.cancel": {
       "file": "events/catering-order-rules.manifest",
@@ -515,15 +515,15 @@
     },
     "command:ChartOfAccount.create": {
       "file": "core/chart-of-account-rules.manifest",
-      "line": 26
+      "line": 29
     },
     "command:ChartOfAccount.deactivate": {
       "file": "core/chart-of-account-rules.manifest",
-      "line": 54
+      "line": 57
     },
     "command:ChartOfAccount.update": {
       "file": "core/chart-of-account-rules.manifest",
-      "line": 41
+      "line": 44
     },
     "command:Client.archive": {
       "file": "crm/client-rules.manifest",
@@ -559,7 +559,7 @@
     },
     "command:ClientInteraction.complete": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 114
+      "line": 113
     },
     "command:ClientInteraction.create": {
       "file": "crm/client-interaction-rules.manifest",
@@ -567,23 +567,23 @@
     },
     "command:ClientInteraction.escalate": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 157
+      "line": 156
     },
     "command:ClientInteraction.markOverdue": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 146
+      "line": 145
     },
     "command:ClientInteraction.schedule": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 132
+      "line": 131
     },
     "command:ClientInteraction.softDelete": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 171
+      "line": 170
     },
     "command:ClientInteraction.update": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 92
+      "line": 91
     },
     "command:ClientPreference.create": {
       "file": "crm/client-rules.manifest",
@@ -771,11 +771,11 @@
     },
     "command:CommandBoardLayout.remove": {
       "file": "events/command-board-rules.manifest",
-      "line": 340
+      "line": 346
     },
     "command:CommandBoardLayout.update": {
       "file": "events/command-board-rules.manifest",
-      "line": 327
+      "line": 333
     },
     "command:Container.create": {
       "file": "core/container-rules.manifest",
@@ -1167,7 +1167,7 @@
     },
     "command:EntityVersion.approve": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 125
+      "line": 124
     },
     "command:EntityVersion.create": {
       "file": "integrations/version-control-rules.manifest",
@@ -1175,11 +1175,11 @@
     },
     "command:EntityVersion.reject": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 136
+      "line": 135
     },
     "command:EntityVersion.restore": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 142
+      "line": 141
     },
     "command:Equipment.create": {
       "file": "operations/equipment-rules.manifest",
@@ -1463,11 +1463,11 @@
     },
     "command:EventPlanningDraft.confirmDetail": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 145
+      "line": 144
     },
     "command:EventPlanningDraft.convertToEvent": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 211
+      "line": 210
     },
     "command:EventPlanningDraft.create": {
       "file": "ai/event-planning-draft-rules.manifest",
@@ -1475,31 +1475,31 @@
     },
     "command:EventPlanningDraft.expire": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 221
+      "line": 220
     },
     "command:EventPlanningDraft.markReview": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 203
+      "line": 202
     },
     "command:EventPlanningDraft.updateBudget": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 158
+      "line": 157
     },
     "command:EventPlanningDraft.updateField": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 115
+      "line": 114
     },
     "command:EventPlanningDraft.updateGuestCount": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 175
+      "line": 174
     },
     "command:EventPlanningDraft.updateMenuPreferences": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 185
+      "line": 184
     },
     "command:EventPlanningDraft.updateVenue": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 194
+      "line": 193
     },
     "command:EventProfitability.create": {
       "file": "events/event-rules.manifest",
@@ -1951,15 +1951,15 @@
     },
     "command:InventoryTransaction.adjustCost": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 118
+      "line": 119
     },
     "command:InventoryTransaction.create": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 53
+      "line": 54
     },
     "command:InventoryTransaction.reverse": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 102
+      "line": 103
     },
     "command:InventoryTransfer.approve": {
       "file": "inventory/inventory-transfer-rules.manifest",
@@ -2363,15 +2363,15 @@
     },
     "command:Notification.markDismissed": {
       "file": "platform/notification-rules.manifest",
-      "line": 63
+      "line": 62
     },
     "command:Notification.markRead": {
       "file": "platform/notification-rules.manifest",
-      "line": 46
+      "line": 45
     },
     "command:Notification.remove": {
       "file": "platform/notification-rules.manifest",
-      "line": 72
+      "line": 71
     },
     "command:OnboardingCompletion.complete": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -2919,7 +2919,7 @@
     },
     "command:ProposalDraft.approve": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 187
+      "line": 186
     },
     "command:ProposalDraft.create": {
       "file": "ai/proposal-draft-rules.manifest",
@@ -2927,35 +2927,35 @@
     },
     "command:ProposalDraft.generateHtml": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 148
+      "line": 147
     },
     "command:ProposalDraft.markConverted": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 214
+      "line": 213
     },
     "command:ProposalDraft.markExpired": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 206
+      "line": 205
     },
     "command:ProposalDraft.recordView": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 178
+      "line": 177
     },
     "command:ProposalDraft.refreshToken": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 222
+      "line": 221
     },
     "command:ProposalDraft.requestChanges": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 196
+      "line": 195
     },
     "command:ProposalDraft.send": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 156
+      "line": 155
     },
     "command:ProposalDraft.update": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 126
+      "line": 125
     },
     "command:ProposalLineItem.create": {
       "file": "crm/proposal-rules.manifest",
@@ -4127,19 +4127,19 @@
     },
     "command:VersionApproval.approve": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 204
+      "line": 203
     },
     "command:VersionApproval.cancel": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 224
+      "line": 223
     },
     "command:VersionApproval.create": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 192
+      "line": 191
     },
     "command:VersionApproval.reject": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 214
+      "line": 213
     },
     "command:VersionedEntity.lock": {
       "file": "integrations/version-control-rules.manifest",
@@ -4623,7 +4623,7 @@
     },
     "constraint:ClientInteraction.warnNoFollowUp": {
       "file": "crm/client-interaction-rules.manifest",
-      "line": 118
+      "line": 117
     },
     "constraint:ClientInteraction.warnOverdueFollowUp": {
       "file": "crm/client-interaction-rules.manifest",
@@ -5079,7 +5079,7 @@
     },
     "constraint:EntityVersion.warnRestoreOldVersion": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 146
+      "line": 145
     },
     "constraint:Equipment.positiveMaintenanceInterval": {
       "file": "operations/equipment-rules.manifest",
@@ -5295,7 +5295,7 @@
     },
     "constraint:EventPlanningDraft.warnInvalidBudget": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 161
+      "line": 160
     },
     "constraint:EventPlanningDraft.warnLowConfidence": {
       "file": "ai/event-planning-draft-rules.manifest",
@@ -5303,7 +5303,7 @@
     },
     "constraint:EventPlanningDraft.warnLowConfidenceUpdate": {
       "file": "ai/event-planning-draft-rules.manifest",
-      "line": 119
+      "line": 118
     },
     "constraint:EventPlanningDraft.warnMissingClientName": {
       "file": "ai/event-planning-draft-rules.manifest",
@@ -5623,23 +5623,23 @@
     },
     "constraint:InventoryTransaction.nonZeroQuantity": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 44
+      "line": 45
     },
     "constraint:InventoryTransaction.validTransactionType": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 42
+      "line": 43
     },
     "constraint:InventoryTransaction.warnLargeQuantity": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 65
+      "line": 66
     },
     "constraint:InventoryTransaction.warnUnknownType": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 58
+      "line": 59
     },
     "constraint:InventoryTransaction.warnWaste": {
       "file": "inventory/inventory-transaction-rules.manifest",
-      "line": 74
+      "line": 75
     },
     "constraint:InventoryTransfer.validStatus": {
       "file": "inventory/inventory-transfer-rules.manifest",
@@ -5927,7 +5927,7 @@
     },
     "constraint:Notification.warnAlreadyRead": {
       "file": "platform/notification-rules.manifest",
-      "line": 49
+      "line": 48
     },
     "constraint:OnboardingTask.requireTitle": {
       "file": "staff/staff-logistics-extended-rules.manifest",
@@ -6363,7 +6363,7 @@
     },
     "constraint:ProposalDraft.warnNoClientEmailOnSend": {
       "file": "ai/proposal-draft-rules.manifest",
-      "line": 161
+      "line": 160
     },
     "constraint:ProposalDraft.warnTokenExpired": {
       "file": "ai/proposal-draft-rules.manifest",
@@ -7055,11 +7055,11 @@
     },
     "constraint:VersionApproval.validStatus": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 175
+      "line": 174
     },
     "constraint:VersionApproval.warnPendingTooLong": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 180
+      "line": 179
     },
     "constraint:VersionedEntity.validEntityId": {
       "file": "integrations/version-control-rules.manifest",
@@ -7987,7 +7987,7 @@
     },
     "entity:VersionApproval": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 161
+      "line": 160
     },
     "entity:VersionedEntity": {
       "file": "integrations/version-control-rules.manifest",
@@ -8379,7 +8379,7 @@
     },
     "transition:VersionApproval.status": {
       "file": "integrations/version-control-rules.manifest",
-      "line": 178
+      "line": 177
     },
     "transition:WasteEntry.status": {
       "file": "quality/waste-entry-rules.manifest",

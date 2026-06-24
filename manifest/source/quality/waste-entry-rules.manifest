@@ -188,3 +188,13 @@ event WasteEntryVoided: "kitchen.waste-entry.voided" {
   reason: string
   voidedAt: datetime
 }
+
+// Co-located with WasteEntry.create emit so per-file reaction-completeness passes.
+on WasteEntryCreated run InventoryItem.waste
+  resolve payload.inventoryItemId
+  params {
+    quantity: payload.quantity
+    reason: "waste entry"
+    lotId: ""
+    userId: payload.loggedBy
+  }

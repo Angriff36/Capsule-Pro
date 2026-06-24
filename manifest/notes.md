@@ -43,11 +43,11 @@ then surfaced **6 more errors** that are NOT staleness — they are generated-su
 > **RESOLVED 2026-05-30 (Phase 1) — see §10.** The producer now rewrites these accessors
 > automatically. The table below is the original diagnosis; corrections are inline.
 
-| Accessor used | Reality | Files | Resolution |
-|---|---|---|---|
-| `database.eventStaff` | model is `EventStaffAssignment` (`@@map("event_staff_assignments")`, schema.prisma:1394) → accessor `eventStaffAssignment`. | `apps/api/app/api/events/staff/{list,[id]}/route.ts` | REMAP via producer → `eventStaffAssignment` |
-| `database.eventImportWorkflow` | ~~no Prisma table exists at all~~ **WRONG.** Table **does** exist: `model EventImport` (`@@map("event_imports")`, schema.prisma:1437) → accessor `eventImport`. Confirmed by store header `prisma-stores/broken-read-batch08-event-guest-import.ts`. | `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | REMAP via producer → `eventImport` (NOT delete) |
-| `database.tenantAuditLog` | **hand-written route** (NOT generated); model never existed; selected columns (`operationType`, `immutableHash`, `aiConfidence`, `correlationId`…) exist on no audit table. | `apps/api/app/api/audit/logs/route.ts` | **DELETED** (unreferenced by app code; rewriting would invent semantics) |
+| Accessor used                  | Reality                                                                                                                                                                                                                                              | Files                                                           | Resolution                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `database.eventStaff`          | model is `EventStaffAssignment` (`@@map("event_staff_assignments")`, schema.prisma:1394) → accessor `eventStaffAssignment`.                                                                                                                          | `apps/api/app/api/events/staff/{list,[id]}/route.ts`            | REMAP via producer → `eventStaffAssignment`                              |
+| `database.eventImportWorkflow` | ~~no Prisma table exists at all~~ **WRONG.** Table **does** exist: `model EventImport` (`@@map("event_imports")`, schema.prisma:1437) → accessor `eventImport`. Confirmed by store header `prisma-stores/broken-read-batch08-event-guest-import.ts`. | `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | REMAP via producer → `eventImport` (NOT delete)                          |
+| `database.tenantAuditLog`      | **hand-written route** (NOT generated); model never existed; selected columns (`operationType`, `immutableHash`, `aiConfidence`, `correlationId`…) exist on no audit table.                                                                          | `apps/api/app/api/audit/logs/route.ts`                          | **DELETED** (unreferenced by app code; rewriting would invent semantics) |
 
 ~~A cross-check of all IR entity accessors vs. the 224 Prisma models found **~25 IR entities whose
 naive-camelCase accessor matches no Prisma model**…~~ **CORRECTED 2026-05-30.** The real
@@ -1687,7 +1687,7 @@ the local Manifest checkout via pnpm overrides in BOTH root package.json AND pnp
 (removing only one is a silent no-op — the workspace one also applies). This was never the
 user's workflow and broke deploys (Vercel has no ../Manifest). USER DIRECTIVE: never use file:
 overrides for @angriff36/manifest — the flow is fix in C:\Projects\Manifest → push → cut-release.yml
-workflow (gates build+typecheck+full suite, then tags/publishes to GitHub Packages) → bump the pin.
+workflow (gates build+typecheck+full suite, then tags/publishes to npm as `@angriff36/manifest`) → bump the pin.
 
 Resolution: the local checkout held the GenericPrismaStore requiresTenantConnect + snake_case
 tenant_id/deleted_at fix (uncommitted src) plus a stale-committed CLI dist (rebuild of committed

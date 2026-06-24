@@ -717,3 +717,8 @@ event AdminChatThreadLastMessageRecorded: "admin.chat_thread.last_message_record
   tenantId: string
   lastMessageAt: datetime
 }
+
+// Co-located with AdminChatMessage.create emit so per-file reaction-completeness passes.
+on AdminChatMessageSent run AdminChatThread.recordLastMessage
+  resolve payload.threadId
+  params {}

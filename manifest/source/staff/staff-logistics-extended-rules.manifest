@@ -348,7 +348,7 @@ entity ActionMilestone mixin TenantScoped {
   relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
 
   default policy ActionMilestoneDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(disciplinaryActionId: string, title: string, dueDate: datetime) {
+  command create(optional disciplinaryActionId: string, title: string, dueDate: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
     guard dueDate != null "Due date is required"

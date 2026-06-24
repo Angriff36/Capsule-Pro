@@ -163,7 +163,7 @@ entity FacilityArea mixin TenantScoped {
   transition status from "inactive" to ["inactive"]
 
   default policy FacilityAreaDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
+  command create(venueId: string, name: string, optional code: string, areaType: string, floor: string, description: string, squareFeet: number) {
     guard name != null and name != "" "Area name is required"
 
     mutate venueId = venueId
@@ -267,7 +267,7 @@ entity FacilityAsset mixin TenantScoped {
   }
 
   default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchaseCost: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
+  command create(optional facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchaseCost: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -380,7 +380,7 @@ entity FacilitySchedule mixin TenantScoped {
   transition status from "cancelled" to ["cancelled"]
 
   default policy FacilityScheduleDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
+  command create(optional facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard facilityId != null and facilityId != "" "Facility ID is required"
 

@@ -344,7 +344,7 @@ entity ProposalLineItem mixin TenantScoped, SoftDeletable {
   }
 
   default policy ProposalLineItemDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
-  command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: money, sortOrder: number, notes: string) {
+  command create(optional proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: money, sortOrder: number, notes: string) {
     guard proposalId != null and proposalId != "" "Proposal ID is required"
     guard description != null and description != "" "Description is required"
     guard quantity > 0 "Quantity must be positive"
@@ -533,3 +533,24 @@ event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
   userId: string
   removedAt: datetime
 }
+
+// Co-located with Proposal.accept emit so per-file reaction-completeness passes.
+on ProposalAccepted run Event.create
+  resolve null
+  params {
+    clientId: payload.clientId
+    eventNumber: payload.proposalNumber
+    title: payload.title
+    eventType: payload.eventType
+    eventDate: now()
+    guestCount: 1
+    venueName: ""
+    venueAddress: ""
+    notes: "Auto-created from accepted proposal"
+    tags: []
+    status: "draft"
+    budget: payload.total
+    ticketPrice: 0
+    ticketTier: ""
+    eventFormat: ""
+  }

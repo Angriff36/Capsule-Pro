@@ -313,7 +313,7 @@ entity MaintenanceWorkOrder mixin TenantScoped {
     emit MaintenanceWorkOrderStatusUpdated
   }
 
-  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
+  command create(title: string, workOrderType: string, priority: string, description: string, areaId: string, optional equipmentId: string, assignedTo: string, reportedBy: string, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
     guard workOrderType in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
     guard priority in ["low", "medium", "high", "critical"] "Invalid priority"

@@ -216,7 +216,7 @@ entity ShipmentItem mixin TenantScoped, SoftDeletable {
 
   default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Shipment management"
 
-  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
+  command create(optional shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"

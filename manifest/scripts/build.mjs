@@ -90,10 +90,11 @@ function generateRouteSurface() {
  * checks the actual output, not stale state.
  *
  * Ownership rules (WRITE_OUTSIDE_COMMANDS_NAMESPACE, COMMAND_ROUTE_MISSING_RUNTIME_CALL,
- * COMMAND_ROUTE_ORPHAN) are enabled via --commands-manifest. The --strict flag causes
- * the audit to fail the build if ANY ownership-rule finding is present. Quality/hygiene
- * warnings (WRITE_ROUTE_BYPASSES_RUNTIME, READ_MISSING_SOFT_DELETE_FILTER, etc.) are
- * reported but never block the build.
+ * COMMAND_ROUTE_ORPHAN) are enabled via --commands-manifest. Step 4 delegates to
+ * manifest/scripts/audit-routes-strict.mjs, which runs upstream audit-routes --strict
+ * and additionally honors audit-routes-exemptions.json for COMMAND_ROUTE_* findings
+ * (upstream only exempts WRITE_OUTSIDE). Legacy command routes register
+ * commandRouteExempt: true with drain reasons until migrated.
  *
  * See: docs/spec/manifest-vnext.md § "Canonical Routes (Normative)" — Enforcement
  * See: OWNERSHIP_RULE_CODES in audit-routes.ts for the canonical set of blocking rules.
@@ -103,18 +104,7 @@ function auditRouteBoundaries() {
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
   const result = spawnSync(
     bin,
-    [
-      "exec",
-      "manifest",
-      "audit-routes",
-      "--strict",
-      "--root",
-      "apps/api",
-      "--commands-manifest",
-      "manifest/ir/kitchen.commands.json",
-      "--exemptions",
-      "manifest/governance/audit-routes-exemptions.json",
-    ],
+    ["exec", "node", "manifest/scripts/audit-routes-strict.mjs"],
     {
       stdio: "inherit",
       shell: process.platform === "win32",

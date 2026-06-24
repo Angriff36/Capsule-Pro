@@ -318,7 +318,7 @@ entity TrainingQuestion mixin TenantScoped {
 
   default policy TrainingQuestionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, moduleId: string, code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
+  command create(id: string, optional moduleId: string, optional code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
     guard moduleId != ""
     guard code != ""
     guard prompt != ""
@@ -400,7 +400,7 @@ entity TrainingAssignment mixin TenantScoped {
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
+  command create(id: string, optional moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
     guard moduleId != ""
     guard staffMemberId != ""
     guard staffRole == "staff"
@@ -568,7 +568,7 @@ entity TrainingAttempt mixin TenantScoped {
 
   default policy TrainingAttemptDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(id: string, assignmentId: string, moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, managerReviewRequired: boolean, answersJson: string) {
+  command create(id: string, optional assignmentId: string, optional moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, optional managerReviewRequired: boolean, answersJson: string) {
     guard assignmentId != ""
     guard moduleId != ""
     guard staffMemberId != ""

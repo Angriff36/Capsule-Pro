@@ -121,7 +121,7 @@ entity CommandBoardCard mixin TenantScoped, SoftDeletable {
   relationship belongsTo group: CommandBoardGroup fields [tenantId, groupId] references [tenantId, id]
 
   default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
+  command create(optional boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, optional color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
 
@@ -271,7 +271,7 @@ entity CommandBoardConnection mixin TenantScoped, SoftDeletable {
   relationship belongsTo toCard: CommandBoardCard fields [tenantId, toCardId] references [tenantId, id]
 
   default policy CommandBoardConnectionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
+  command create(optional boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard fromCardId != null and fromCardId != "" "Source card ID is required"
     guard toCardId != null and toCardId != "" "Target card ID is required"
@@ -314,13 +314,19 @@ entity CommandBoardLayout mixin TenantScoped, SoftDeletable {
   relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
+  command create(boardId: string, name: string, viewport: string, visibleCards: array<string>, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
-    guard userId != null and userId != "" "User ID is required"
     guard name != null and name != "" "Layout name is required"
 
-    // Auto-create seed persists the full command body in one INSERT; per-field
-    // `mutate x = x` echoes were redundant SELECT+UPDATE round-trips.
+    mutate userId = user.id
+    mutate boardId = boardId
+    mutate name = name
+    mutate viewport = viewport
+    mutate visibleCards = visibleCards
+    mutate gridSize = gridSize
+    mutate showGrid = showGrid
+    mutate snapToGrid = snapToGrid
+
     emit CommandBoardLayoutCreated
   }
 

@@ -83,7 +83,6 @@ export interface CycleCountRecordCreateInput {
   storageLocationId?: string;
   expectedQuantity?: number;
   countedQuantity?: number;
-  userId?: string;
   barcode?: string;
   notes?: string;
 }
@@ -117,7 +116,6 @@ export interface CycleCountSessionCreateInput {
   countType?: string;
   scheduledDate?: string;
   notes?: string;
-  userId?: string;
 }
 export interface CycleCountSessionFinalizeInput {
   id?: string;

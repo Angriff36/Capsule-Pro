@@ -313,7 +313,7 @@ entity RecipeIngredient mixin TenantScoped, SoftDeletable {
     emit RecipeIngredientWasteFactorUpdated
   }
 
-  command create(recipeVersionId: string, ingredientId: string, quantity: decimal, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
+  command create(optional recipeVersionId: string, ingredientId: string, quantity: decimal, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard ingredientId != null and ingredientId != "" "Ingredient ID is required"
     guard quantity > 0 "Quantity must be positive"
@@ -359,7 +359,7 @@ entity RecipeStep mixin TenantScoped, SoftDeletable {
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
 
   default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
-  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string) {
+  command create(optional recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: int, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string[], tips: string, videoUrl: string, imageUrl: string) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard stepNumber > 0 "Step number must be positive"
     guard instruction != null and instruction != "" "Instruction is required"

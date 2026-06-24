@@ -4,12 +4,12 @@
 
 Several UNRELATED features share "board" in the name. Agents repeatedly grab the WRONG one (lazy substring match). When the user OR code says "board", STOP and classify which concept applies — never assume the nearest entity or route match.
 
-| Product concept | Question it answers | Code / routes today (legacy names in parentheses) |
-|---|---|---|
-| **Command Board** | What needs attention **right now** (global ops)? | **Not fully built.** Partially related: admin overview surfaces, future revival of deprecated command grid — **not** `CommandBoard*` entities |
-| **Event-tree** | How do we **assemble** this event (staff, menu, details)? | `CommandBoard`, `CommandBoardCard`/`Group`/`Connection`/`Layout` · `/command-board` · `/events/{id}?tab=board` · `specs/event-tree-command-board.md` |
-| **Battle Board** | How does this event **run** (execution)? | `BattleBoard`, `BoardProjection`, `BoardAnnotation` · `/events/battle-boards/…` · auto-created per event |
-| **Kanban** | What **stage** is internal work in? | `AdminTask*`, `BoardConfig` · admin tasks · columns, not a grid |
+| Product concept   | Question it answers                                       | Code / routes today (legacy names in parentheses)                                                                                                    |
+| ----------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Command Board** | What needs attention **right now** (global ops)?          | **Not fully built.** Partially related: admin overview surfaces, future revival of deprecated command grid — **not** `CommandBoard*` entities        |
+| **Event-tree**    | How do we **assemble** this event (staff, menu, details)? | `CommandBoard`, `CommandBoardCard`/`Group`/`Connection`/`Layout` · `/command-board` · `/events/{id}?tab=board` · `specs/event-tree-command-board.md` |
+| **Battle Board**  | How does this event **run** (execution)?                  | `BattleBoard`, `BoardProjection`, `BoardAnnotation` · `/events/battle-boards/…` · auto-created per event                                             |
+| **Kanban**        | What **stage** is internal work in?                       | `AdminTask*`, `BoardConfig` · admin tasks · columns, not a grid                                                                                      |
 
 **Pipeline:** Event-tree (setup, draft → commit) → propagates → Battle Board (execution). They are linked; they are not interchangeable surfaces.
 
@@ -71,11 +71,11 @@ Available tools: `get_project_metadata`, `get_errors`, `get_page_metadata`, `get
 
 Project config: `.cursor/mcp.json` registers three stdio servers:
 
-| Server | Command | Purpose |
-|--------|---------|---------|
-| `manifest` | `pnpm exec manifest-mcp` | Upstream compile / execute / validate / explain (from npm tarball) |
-| `capsule-pro` | `pnpm --filter @repo/mcp-server start` | Tenant-scoped IR introspection, route resolution, governed queries |
-| `capsule-pro-admin` | `pnpm --filter @repo/mcp-server start:admin` | Admin mode (future plugins) |
+| Server              | Command                                      | Purpose                                                            |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| `manifest`          | `pnpm exec manifest-mcp`                     | Upstream compile / execute / validate / explain (from npm tarball) |
+| `capsule-pro`       | `pnpm --filter @repo/mcp-server start`       | Tenant-scoped IR introspection, route resolution, governed queries |
+| `capsule-pro-admin` | `pnpm --filter @repo/mcp-server start:admin` | Admin mode (future plugins)                                        |
 
 Manual start (outside Cursor):
 
@@ -85,7 +85,7 @@ pnpm manifest:mcp
 # or: npx --package @angriff36/manifest manifest-mcp
 ```
 
-**Not** `npx @manifest/mcp-server` — that package was never published. Use `@angriff36/manifest` with the `manifest-mcp` bin.
+**Not** `npx @manifest/mcp-server` — use the official npm package `@angriff36/manifest` with the `manifest-mcp` bin (`npx --package @angriff36/manifest manifest-mcp`).
 
 ## Start Dev Server
 

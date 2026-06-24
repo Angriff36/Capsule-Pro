@@ -115,7 +115,7 @@ entity InventoryStock mixin TenantScoped {
   }
 
   default policy InventoryStockDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(itemId: string, storageLocationId: string, quantityOnHand: decimal, unitId: int) {
+  command create(itemId: string, optional storageLocationId: string, quantityOnHand: decimal, unitId: int) {
     guard itemId != null and itemId != "" "Inventory item ID is required"
     guard storageLocationId != null and storageLocationId != "" "Storage location ID is required"
     guard quantityOnHand >= 0 "Initial quantity cannot be negative"

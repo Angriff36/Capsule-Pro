@@ -206,25 +206,25 @@ Every governed mutation triggered by UI or Command Board workflows must invoke M
 
 ## 4a. Manifest Workspace Layout Rule
 
-Capsule-Pro-owned Manifest artifacts live under the top-level `manifest/` directory. The `@angriff36/manifest` package (v1.0.5, GitHub Packages) owns generic Manifest compiler, parser, projection, and runtime primitives. Capsule-Pro does not vendor, fork, or reimplement upstream Manifest package code. No generated Manifest artifacts may live under `packages/`. No new `packages/manifest-*` workspace packages may be created without updating this constitution.
+Capsule-Pro-owned Manifest artifacts live under the top-level `manifest/` directory. The `@angriff36/manifest` package (published on [npm](https://www.npmjs.com/package/@angriff36/manifest); workspace currently pins 2.18.x) owns generic Manifest compiler, parser, projection, and runtime primitives. Capsule-Pro does not vendor, fork, or reimplement upstream Manifest package code. No generated Manifest artifacts may live under `packages/`. No new `packages/manifest-*` workspace packages may be created without updating this constitution.
 
 The retired packages `packages/manifest-runtime`, `packages/manifest-ir`, and `packages/manifest-adapters` are forbidden resurrection paths. Agents must treat the directory paths `packages/manifest-runtime/`, `packages/manifest-ir/`, and `packages/manifest-adapters/` as non-existent for all new code, imports, and config.
 
 ### Canonical homes
 
-| Artifact | Canonical Path | Classification |
-|----------|---------------|----------------|
-| Capsule-owned .manifest source and projection config | `manifest/source/` | Capsule source |
-| Generated merged IR, commands JSON, merge report, provenance | `manifest/ir/` | Generated IR (script consumers) |
-| `@repo/manifest-runtime` workspace package (shared Capsule runtime adapter code) | `manifest/runtime/` | Shared runtime workspace package |
-| Generated runtime registry, routes manifest, route implementations | `manifest/runtime/` | Generated runtime artifacts |
-| Governance registries: commands, entities, bypasses, baselines, allowlists | `manifest/governance/` | Governance data |
-| Compile, build, audit, generation, and utility scripts | `manifest/scripts/` | Build pipeline scripts |
-| Human-readable audit and normalization reports | `manifest/reports/` | Reports |
-| API-side runtime glue: command resolver, execution wrapper, outbox, telemetry | `apps/api/lib/manifest/` | API transport glue |
-| API runtime factory (Sentry/DB injection) | `apps/api/lib/manifest-runtime.ts` | API transport glue |
-| API command handler for REST domain adapters | `apps/api/lib/manifest-command-handler.ts` | API transport glue |
-| Canonical Next.js App Router HTTP dispatcher | `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` | API dispatcher route |
+| Artifact                                                                         | Canonical Path                                                   | Classification                   |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------- |
+| Capsule-owned .manifest source and projection config                             | `manifest/source/`                                               | Capsule source                   |
+| Generated merged IR, commands JSON, merge report, provenance                     | `manifest/ir/`                                                   | Generated IR (script consumers)  |
+| `@repo/manifest-runtime` workspace package (shared Capsule runtime adapter code) | `manifest/runtime/`                                              | Shared runtime workspace package |
+| Generated runtime registry, routes manifest, route implementations               | `manifest/runtime/`                                              | Generated runtime artifacts      |
+| Governance registries: commands, entities, bypasses, baselines, allowlists       | `manifest/governance/`                                           | Governance data                  |
+| Compile, build, audit, generation, and utility scripts                           | `manifest/scripts/`                                              | Build pipeline scripts           |
+| Human-readable audit and normalization reports                                   | `manifest/reports/`                                              | Reports                          |
+| API-side runtime glue: command resolver, execution wrapper, outbox, telemetry    | `apps/api/lib/manifest/`                                         | API transport glue               |
+| API runtime factory (Sentry/DB injection)                                        | `apps/api/lib/manifest-runtime.ts`                               | API transport glue               |
+| API command handler for REST domain adapters                                     | `apps/api/lib/manifest-command-handler.ts`                       | API transport glue               |
+| Canonical Next.js App Router HTTP dispatcher                                     | `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` | API dispatcher route             |
 
 ### Dispatcher Execution Wrapper Rule
 

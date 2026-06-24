@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-21T17:35:10.000Z",
+  "generatedAt": "2026-06-24T14:17:50.091Z",
   "basePath": "/api",
   "routes": [
     {
@@ -6416,7 +6416,7 @@
           "name": "disciplinaryActionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -6543,12 +6543,6 @@
       "params": [
         {
           "name": "threadId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -9617,12 +9611,6 @@
       "method": "POST",
       "params": [
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "sourceType",
           "type": "string",
           "location": "body",
@@ -9663,12 +9651,6 @@
       "params": [
         {
           "name": "sourceType",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -10476,19 +10458,19 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "firstName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "lastName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -10500,13 +10482,13 @@
           "name": "email",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phone",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "phoneMobile",
@@ -10727,12 +10709,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "correlationId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -10880,7 +10856,7 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "preferenceType",
@@ -11742,7 +11718,7 @@
           "name": "boardId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
@@ -11796,7 +11772,7 @@
           "name": "color",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "metadata",
@@ -11974,7 +11950,7 @@
           "name": "boardId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "fromCardId",
@@ -12168,12 +12144,6 @@
       "params": [
         {
           "name": "boardId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -12932,12 +12902,6 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "barcode",
           "type": "string",
           "location": "body",
@@ -13113,12 +13077,6 @@
         },
         {
           "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -14225,12 +14183,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "createdById",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -14359,7 +14311,7 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
@@ -15323,7 +15275,7 @@
           "name": "versionedEntityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "versionNumber",
@@ -15351,12 +15303,6 @@
         },
         {
           "name": "summary",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
           "type": "string",
           "location": "body",
           "required": true
@@ -17493,12 +17439,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -17698,7 +17638,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "budgetedRevenue",
@@ -18253,7 +18193,7 @@
           "name": "eventId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "highlights",
@@ -19093,7 +19033,7 @@
           "name": "code",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaType",
@@ -19213,7 +19153,7 @@
           "name": "facilityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaId",
@@ -19462,7 +19402,7 @@
           "name": "facilityId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "areaId",
@@ -20983,7 +20923,7 @@
           "name": "storageLocationId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "quantityOnHand",
@@ -21953,7 +21893,7 @@
           "name": "severity",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "message",
@@ -23406,13 +23346,13 @@
           "name": "vehicleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "driverId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "scheduledDate",
@@ -23689,7 +23629,7 @@
           "name": "equipmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "assignedTo",
@@ -24029,7 +23969,7 @@
           "name": "menuId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "dishId",
@@ -24371,12 +24311,6 @@
         },
         {
           "name": "actionUrl",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "correlationId",
           "type": "string",
           "location": "body",
           "required": true
@@ -25278,7 +25212,7 @@
           "name": "payrollRunId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "action",
@@ -25556,7 +25490,7 @@
           "name": "payrollPeriodId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "runDate",
@@ -26233,7 +26167,7 @@
           "name": "prepListId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "stationId",
@@ -28318,12 +28252,6 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "title",
           "type": "string",
           "location": "body",
@@ -28635,7 +28563,7 @@
           "name": "proposalId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemType",
@@ -29228,7 +29156,7 @@
           "name": "purchaseOrderId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemId",
@@ -30555,7 +30483,7 @@
           "name": "recipeVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "ingredientId",
@@ -30677,7 +30605,7 @@
           "name": "recipeVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "stepNumber",
@@ -32132,7 +32060,7 @@
           "name": "scheduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "employeeId",
@@ -32670,7 +32598,7 @@
           "name": "shipmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "itemId",
@@ -34316,13 +34244,13 @@
           "name": "timeEntryId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "employeeId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "requestedClockIn",
@@ -35089,7 +35017,7 @@
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "moduleCode",
@@ -35433,13 +35361,13 @@
           "name": "assignmentId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "staffMemberId",
@@ -35475,7 +35403,7 @@
           "name": "managerReviewRequired",
           "type": "boolean",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "answersJson",
@@ -35808,13 +35736,13 @@
           "name": "moduleId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "code",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "sectionTitle",
@@ -38181,7 +38109,7 @@
           "name": "entityVersionId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "approverId",

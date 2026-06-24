@@ -275,7 +275,7 @@ entity IoTAlert mixin TenantScoped {
   relationship belongsTo rule: IotAlertRule fields [tenantId, ruleId] references [tenantId, id]
 
   default policy IoTAlertDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(probeId: string, ruleId: string, severity: string, message: string, value: decimal, triggeredAt: datetime, alertNumber: string, alertType: string, title: string, temperature: decimal) {
+  command create(probeId: string, ruleId: string, optional severity: string, message: string, value: decimal, triggeredAt: datetime, alertNumber: string, alertType: string, title: string, temperature: decimal) {
     guard probeId != null and probeId != "" "Probe ID is required"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
     guard message != null and message != "" "Alert message is required"

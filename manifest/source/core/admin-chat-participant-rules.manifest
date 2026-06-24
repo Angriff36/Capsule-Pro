@@ -13,12 +13,11 @@ entity AdminChatParticipant mixin TenantScoped, SoftDeletable {
   computed isArchived: boolean = self.archivedAt != null
 
   default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
-  command create(threadId: string, userId: string) {
+  command create(threadId: string) {
     guard threadId != null and threadId != "" "Thread ID is required"
-    guard userId != null and userId != "" "User ID is required"
 
     mutate threadId = threadId
-    mutate userId = userId
+    mutate userId = user.id
 
     emit AdminChatParticipantCreated
   }

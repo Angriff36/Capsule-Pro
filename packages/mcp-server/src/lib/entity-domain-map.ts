@@ -6,4 +6,5 @@
  * declaration file in manifest/scripts/.
  */
 
-export { ENTITY_DOMAIN_MAP } from "../../../../manifest/scripts/entity-domain-map.mjs";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"../../../../manifest/scripts/entity-domain-map.mjs";

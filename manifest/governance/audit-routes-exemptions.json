@@ -1822,5 +1822,984 @@
     "category": "manifest-runtime",
     "owner": "backend-team",
     "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/lead/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/webhooks/supplier-catalog/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inbound integration/webhook handler — verifies signatures, maps external payloads, may fan out to governed commands. Lives outside commands/ namespace by design until integration layer is unified.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/vercel/logs/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform telemetry ingest (Vercel log drain) — not domain mutation.",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/user/update-role/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/user/deactivate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staffing/recommendations/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staff/training-simulations/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staff/skills/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Legacy hand-written write route outside commands/ namespace (WRITE_OUTSIDE_COMMANDS_NAMESPACE). Predates manifest:generate command projection; performs product writes via Prisma and/or runManifestCommand orchestration. Drain: replace with generated commands/<cmd>/route.ts or manifest/[entity]/commands/[command] dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staff/predict-performance/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staff/optimize-schedule/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/staff/employee-skills/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "Legacy hand-written write route outside commands/ namespace (WRITE_OUTSIDE_COMMANDS_NAMESPACE). Predates manifest:generate command projection; performs product writes via Prisma and/or runManifestCommand orchestration. Drain: replace with generated commands/<cmd>/route.ts or manifest/[entity]/commands/[command] dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/settings/rate-limits/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/smsautomationrule/deactivate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/smsautomationrule/activate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/rolepolicy/update/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/rolepolicy/revoke/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/rolepolicy/grant/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/mobile/push-token/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Mobile client device registration / notification prefs — pre-Manifest mobile shell; uses direct Prisma until mobile surfaces use generated command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/mobile/app-settings/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Mobile client device registration / notification prefs — pre-Manifest mobile shell; uses direct Prisma until mobile surfaces use generated command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/mobile/notification-preferences/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Mobile client device registration / notification prefs — pre-Manifest mobile shell; uses direct Prisma until mobile surfaces use generated command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/manifest/batch/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Manifest runtime meta API (batch commands, saga runner) — infrastructure for governed execution, not entity-scoped command namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/import/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Bulk CSV/import orchestration — parses files, batches governed writes; namespace predates manifest:generate command paths.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/supplier-sync/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/import/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Bulk CSV/import orchestration — parses files, batches governed writes; namespace predates manifest:generate command paths.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/batch-adjust/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/batch/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/import/smart/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Bulk CSV/import orchestration — parses files, batches governed writes; namespace predates manifest:generate command paths.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/venues/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/scoring/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/proposal-automation/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/simulations/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/calendar/reschedule/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "External calendar OAuth connect/sync/reschedule — integration orchestration, not a single Manifest entity command.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/async-reactions/drain/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Infrastructure worker/cron — not a product command surface. Triggers background processing; drain only if folded into a governed saga.",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/ai-event-setup/parse/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/ai/bulk-tasks/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/payments/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/settings/rate-limits/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Platform admin / RBAC / rate-limit configuration — tenant administration, not kitchen domain commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/procurement/approvals/action/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Procurement workflow orchestration (approvals, PO receive/status) — composite steps; drain to PurchaseOrder.* commands.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/payroll/timecards/generate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/payroll/tax/brackets/route.ts",
+    "methods": [
+      "POST",
+      "PUT"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/payroll/tax/list/route.ts",
+    "methods": [
+      "POST",
+      "PUT"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/manifest/sagas/[saga]/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Manifest runtime meta API (batch commands, saga runner) — infrastructure for governed execution, not entity-scoped command namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/nutrition-labels/generate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Legacy hand-written write route outside commands/ namespace (WRITE_OUTSIDE_COMMANDS_NAMESPACE). Predates manifest:generate command projection; performs product writes via Prisma and/or runManifestCommand orchestration. Drain: replace with generated commands/<cmd>/route.ts or manifest/[entity]/commands/[command] dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/iot/readings/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "IoT ingest/alert pipeline — device readings and alert rules; batch ingest pattern not yet modeled as single command route.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/iot/probes/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "IoT ingest/alert pipeline — device readings and alert rules; batch ingest pattern not yet modeled as single command route.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/iot/alerts/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "IoT ingest/alert pipeline — device readings and alert rules; batch ingest pattern not yet modeled as single command route.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/iot/alert-rules/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "IoT ingest/alert pipeline — device readings and alert rules; batch ingest pattern not yet modeled as single command route.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/ingredients/calculate-cost/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Legacy hand-written write route outside commands/ namespace (WRITE_OUTSIDE_COMMANDS_NAMESPACE). Predates manifest:generate command projection; performs product writes via Prisma and/or runManifestCommand orchestration. Drain: replace with generated commands/<cmd>/route.ts or manifest/[entity]/commands/[command] dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/audit/schedule/route.ts",
+    "methods": [
+      "DELETE",
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/audit/reports/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/venues/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST",
+      "PUT"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/scoring/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST",
+      "PUT"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/scoring/calculate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/communications/sms/automation-rules/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/[boardId]/commit/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/templates/[shareId]/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/simulations/merge/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/calendar/sync/trigger/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "External calendar OAuth connect/sync/reschedule — integration orchestration, not a single Manifest entity command.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/calendar/sync/disconnect/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "External calendar OAuth connect/sync/reschedule — integration orchestration, not a single Manifest entity command.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/calendar/sync/connect/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "External calendar OAuth connect/sync/reschedule — integration orchestration, not a single Manifest entity command.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/ai/bulk-tasks/confirm/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/administrative/trash/restore/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "Soft-delete restore orchestration across entity types — admin utility crossing stores.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/payments/[id]/route.ts",
+    "methods": [
+      "POST",
+      "PUT"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "PATCH",
+      "POST",
+      "PUT"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "PATCH",
+      "POST",
+      "PUT"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/collections/cases/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/public/proposals/[token]/mark-viewed/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Unauthenticated public surface (magic token) — cannot use standard Clerk-protected command route; uses governed commands with system actor.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/procurement/purchase-orders/commands/update-status/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Hand-authored procurement PO status FSM using direct Prisma/SQL — predates governed PurchaseOrder commands. Custom receive/update-status logic documented in custom-command-routes-allowlist.ts. Drain: migrate to governed procurement commands or thin dispatcher forward.",
+    "category": "legacy-handwritten",
+    "commandRouteExempt": true,
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/procurement/purchase-orders/commands/receive/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Hand-authored PO receive workflow (line-item quantities, quality status) via Prisma transaction — not a thin runCommand forward. Drain: replace with governed receive command + generated route.",
+    "category": "legacy-handwritten",
+    "commandRouteExempt": true,
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/manifest/[entity]/commands/[command]/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Canonical Manifest command dispatcher (runManifestCommand/executeManifestCommand). Static audit greps for runCommand() literal only — false positive for COMMAND_ROUTE_MISSING_RUNTIME_CALL and COMMAND_ROUTE_ORPHAN. Drain: teach audit to recognize runManifestCommand wrappers; keep dispatcher as infrastructure.",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/commands/create/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Custom kitchen prep-list create orchestration: Manifest constraint evaluation plus composite persistence (see custom-command-routes-allowlist.ts). Audit greps for runCommand() literal; this route uses createPrepList helpers. Drain: collapse to generated command route or add runCommand wrapper.",
+    "category": "legacy-handwritten",
+    "commandRouteExempt": true,
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/iot/alerts/[id]/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "IoT ingest/alert pipeline — device readings and alert rules; batch ingest pattern not yet modeled as single command route.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/kitchen/dishes/commands/create/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Custom dish create orchestration: governed Dish.create constraint check, optional overrides, atomic persist + outbox (custom-command-routes-allowlist.ts). Uses createDishManifest not runCommand grep target. Drain: generated command route or audit-aware runtime wrapper.",
+    "category": "legacy-handwritten",
+    "commandRouteExempt": true,
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "Inbound integration/webhook handler — verifies signatures, maps external payloads, may fan out to governed commands. Lives outside commands/ namespace by design until integration layer is unified.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/audit/reports/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/audit/discrepancies/[id]/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/events/[eventId]/battle-board/email/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event execution orchestration (battle-board email, profitability recalc) — cross-entity event workflows.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/events/profitability/commands/recalculate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event profitability recalculate aggregates budget/actuals with direct Prisma updates — custom command route on allowlist, not a thin dispatcher forward. Drain: governed EventProfitability.recalculate command route.",
+    "category": "legacy-handwritten",
+    "commandRouteExempt": true,
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/crm/clients/interactions/attachments/route.ts",
+    "methods": [
+      "DELETE",
+      "POST"
+    ],
+    "reason": "CRM composite surface (leads, venues, scoring, proposal automation, interactions) — predates domain command routes; may mix reads and governed writes. Drain per entity to commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/communications/sms/automation-rules/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/discard/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/apply/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Event-tree (CommandBoard*) orchestration — draft/commit, simulations, templates. Multi-entity graph mutations and AI merge flows predate commands/ namespace; uses runCommand for core mutations. Drain: migrate each write to entity.commands/* or manifest dispatcher.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/templates/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/call-planner/drafts/[id]/create-event/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "AI-assisted or ML orchestration endpoint — composes LLM output with governed Manifest commands and/or read paths. Product UX requires bespoke request/response shaping not covered by a single IR command; drain by decomposing into manifest commands + thin adapter.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/accounting/collections/cases/[id]/route.ts",
+    "methods": [
+      "PATCH",
+      "POST"
+    ],
+    "reason": "Finance/payroll composite API — coordinates payments, invoices, revenue recognition, tax tables, or payroll generation across entities. Hand-written until AR/payroll modules fully on manifest command routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/retry/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inbound integration/webhook handler — verifies signatures, maps external payloads, may fan out to governed commands. Lives outside commands/ namespace by design until integration layer is unified.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/resolve/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inbound integration/webhook handler — verifies signatures, maps external payloads, may fan out to governed commands. Lives outside commands/ namespace by design until integration layer is unified.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/inventory/audit/discrepancies/[id]/resolve/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "Inventory ops orchestration (import, batch adjust, audit schedules, supplier sync) — multi-row workflows and reports; drain to governed commands + generated routes.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/templates/[id]/route.ts",
+    "methods": [
+      "DELETE",
+      "POST",
+      "PUT"
+    ],
+    "reason": "Notifications/email/SMS template and automation management — comms layer outside core entity commands namespace.",
+    "category": "legacy-handwritten",
+    "owner": "backend-team",
+    "expiresOn": "2027-06-01"
   }
 ]

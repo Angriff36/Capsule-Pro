@@ -21,15 +21,38 @@
  */
 
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
 const REPORTS_DIR = resolve(PROJECT_ROOT, "manifest/reports/route-drift");
+const API_ROUTES_ROOT = resolve(PROJECT_ROOT, "apps/api/app/api");
 
 const strict = process.argv.includes("--strict");
+
+function findGeneratedRouteFiles(rootDir) {
+  const matches = [];
+  function walk(dir) {
+    for (const ent of readdirSync(dir, { withFileTypes: true })) {
+      const abs = join(dir, ent.name);
+      if (ent.isDirectory()) {
+        walk(abs);
+        continue;
+      }
+      if (ent.name !== "route.ts") {
+        continue;
+      }
+      const content = readFileSync(abs, "utf8");
+      if (content.includes("DO NOT EDIT")) {
+        matches.push(relative(PROJECT_ROOT, abs).replace(/\\/g, "/"));
+      }
+    }
+  }
+  walk(rootDir);
+  return matches;
+}
 
 // ---------------------------------------------------------------------------
 // 1. Snapshot current generated route file hashes
@@ -39,14 +62,7 @@ console.log("Mode:", strict ? "STRICT (exit 1 on drift)" : "REPORT ONLY");
 
 console.log("\n[1/4] Snapshotting current generated route hashes...");
 
-const generatedFiles = execSync('grep -rl "DO NOT EDIT" apps/api/app/api/', {
-  cwd: PROJECT_ROOT,
-  encoding: "utf8",
-  timeout: 30_000,
-})
-  .trim()
-  .split("\n")
-  .filter(Boolean);
+const generatedFiles = findGeneratedRouteFiles(API_ROUTES_ROOT);
 
 console.log("  Found", generatedFiles.length, "generated route files");
 
@@ -116,13 +132,7 @@ for (const file of generatedFiles) {
 }
 
 // Check for newly-generated files
-const generatedAfter = execSync(
-  'grep -rl "DO NOT EDIT" apps/api/app/api/ 2>/dev/null || true',
-  { cwd: PROJECT_ROOT, encoding: "utf8", timeout: 30_000 }
-)
-  .trim()
-  .split("\n")
-  .filter(Boolean);
+const generatedAfter = findGeneratedRouteFiles(API_ROUTES_ROOT);
 
 const originalSet = new Set(generatedFiles);
 for (const file of generatedAfter) {

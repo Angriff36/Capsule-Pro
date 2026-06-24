@@ -37,7 +37,8 @@ entity InventoryTransaction mixin TenantScoped {
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
   relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
   relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
-  relationship belongsTo reverseOfTransaction: InventoryTransaction fields [tenantId, reverseOfTransactionId] references [tenantId, id]
+  // reverseOfTransactionId links reversal rows; no belongsTo self-ref — domain-completeness
+  // (Manifest ≥2.18) would treat every create param as parent-owned when parent == child.
 
   constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
 

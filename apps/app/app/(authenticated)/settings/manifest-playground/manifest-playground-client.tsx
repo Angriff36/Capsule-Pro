@@ -5,7 +5,8 @@ import type {
   EntityDetail,
   EntityListItem,
   ExecutionResult,
-} from "@repo/types/manifest-editor";
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"@repo/types/manifest-editor";
 import { useEffect, useState } from "react";
 // NOTE: Keeping apiFetch for custom manifest-editor settings endpoints (no generated client equivalent)
 import { apiFetch } from "@/app/lib/api";

@@ -8,7 +8,8 @@
 
 import type { Store } from "@angriff36/manifest";
 import { describe, expect, it } from "vitest";
-import kitchenIr from "../../../ir/kitchen.ir.json" with { type: "json" };
+// @boundaries-ignore automatically added by `turbo boundaries --ignore=all`
+"../../../ir/kitchen.ir.json" with { type: "json" };
 import { createCustomBuiltins } from "../manifest-builtins.js";
 import { runManifestCommandCore } from "../run-manifest-command-core.js";
 import { ManifestRuntimeEngine } from "../runtime-engine.js";

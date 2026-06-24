@@ -1,6 +1,6 @@
 {
-  "irHash": "854c175d98bfdece700230bfbaa44675b604f3416679bdcbd829025255815fb4",
-  "compilerVersion": "2.16.1",
+  "irHash": "748f1085a0972814ff46e949fe9bf780d9fbb82659cd3be82b23d83943cd6ab0",
+  "compilerVersion": "2.18.0",
   "commands": [
     {
       "entity": "ActionMilestone",
@@ -119,7 +119,7 @@
       "policies": [
         "AdminChatParticipantDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "AdminChatParticipantCreated"
       ],
@@ -1817,7 +1817,7 @@
       "policies": [
         "CallPlanningSessionDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "CallPlanningSessionStarted"
       ],
@@ -1849,7 +1849,7 @@
       "policies": [
         "CallPlanningSessionDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 2,
       "emits": [
         "CallPlanningSessionStarted"
       ],
@@ -3034,7 +3034,7 @@
       "policies": [
         "CommandBoardLayoutDefaultAccess"
       ],
-      "guardCount": 3,
+      "guardCount": 2,
       "emits": [
         "CommandBoardLayoutCreated"
       ],
@@ -4647,7 +4647,7 @@
       "policies": [
         "EntityVersionDefaultAccess"
       ],
-      "guardCount": 5,
+      "guardCount": 4,
       "emits": [
         "EntityVersionCreated"
       ],
@@ -5826,7 +5826,7 @@
       "policies": [
         "EventPlanningDraftDefaultAccess"
       ],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "EventPlanningDraftCreated"
       ],
@@ -11568,7 +11568,7 @@
       "policies": [
         "ProposalDraftDefaultAccess"
       ],
-      "guardCount": 4,
+      "guardCount": 3,
       "emits": [
         "ProposalDraftCreated"
       ],

@@ -333,7 +333,7 @@ entity EventProfitability mixin TenantScoped, SoftDeletable {
   }
 
   default policy EventProfitabilityDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, budgetedRevenue: money, budgetedFoodCost: money, budgetedLaborCost: money, budgetedOverhead: money, notes: string) {
+  command create(optional eventId: string, budgetedRevenue: money, budgetedFoodCost: money, budgetedLaborCost: money, budgetedOverhead: money, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate eventId = eventId
@@ -414,7 +414,7 @@ entity EventSummary mixin TenantScoped, SoftDeletable {
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
   default policy EventSummaryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
+  command create(optional eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
     mutate eventId = eventId
@@ -635,3 +635,28 @@ event EventFinalizationSagaCompleted: "events.finalization_saga.completed" {
   tenantId: string
   completedAt: datetime
 }
+
+// Co-located with Event.create/confirm emits so per-file reaction-completeness passes.
+on EventCreated run BattleBoard.create
+  resolve null
+  params {
+    boardName: payload.title + " - Battle Board"
+    boardType: "event-specific"
+    eventId: payload.result.id
+    description: ""
+    isTemplate: false
+    notes: ""
+    tags: []
+  }
+
+on EventConfirmed run PrepList.create
+  resolve null
+  params {
+    eventId: payload._subject.id
+    name: "Prep List (seeding from confirmed event)"
+    batchMultiplier: 1
+    dietaryRestrictions: ""
+    totalItems: 0
+    totalEstimatedTime: 0
+    notes: "[auto-seed:event-confirmed]"
+  }
