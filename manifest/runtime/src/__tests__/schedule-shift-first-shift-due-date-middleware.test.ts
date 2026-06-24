@@ -51,7 +51,7 @@ const irPath = join(here, "..", "..", "..", "ir", "kitchen.ir.json");
 // biome-ignore lint/suspicious/noExplicitAny: IR is structural JSON; engine accepts it.
 const ir: any = JSON.parse(readFileSync(irPath, "utf8"));
 
-const SEL_MODULE_ID = "training-module-sel-event-staff-onboarding";
+import { SEL_ONBOARDING_MODULE_ID as SEL_MODULE_ID } from "../training/sel-onboarding-ids";
 
 const TENANT = "t-first-shift";
 // admin satisfies ScheduleShift.create's policy (manager/admin) AND the

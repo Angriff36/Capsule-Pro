@@ -3447,43 +3447,43 @@
     },
     "command:SelOnboardingTrainingQuestion01Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 74
+      "line": 72
     },
     "command:SelOnboardingTrainingQuestion02Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 105
+      "line": 100
     },
     "command:SelOnboardingTrainingQuestion03Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 136
+      "line": 128
     },
     "command:SelOnboardingTrainingQuestion04Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 167
+      "line": 156
     },
     "command:SelOnboardingTrainingQuestion05Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 198
+      "line": 184
     },
     "command:SelOnboardingTrainingQuestion06Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 229
+      "line": 212
     },
     "command:SelOnboardingTrainingQuestion07Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 260
+      "line": 240
     },
     "command:SelOnboardingTrainingQuestion08Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 291
+      "line": 268
     },
     "command:SelOnboardingTrainingQuestion09Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 322
+      "line": 296
     },
     "command:SelOnboardingTrainingQuestion10Definition.create": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 353
+      "line": 324
     },
     "command:Shipment.cancel": {
       "file": "operations/shipment-rules.manifest",
@@ -7807,43 +7807,43 @@
     },
     "entity:SelOnboardingTrainingQuestion01Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 53
+      "line": 51
     },
     "entity:SelOnboardingTrainingQuestion02Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 84
+      "line": 79
     },
     "entity:SelOnboardingTrainingQuestion03Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 115
+      "line": 107
     },
     "entity:SelOnboardingTrainingQuestion04Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 146
+      "line": 135
     },
     "entity:SelOnboardingTrainingQuestion05Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 177
+      "line": 163
     },
     "entity:SelOnboardingTrainingQuestion06Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 208
+      "line": 191
     },
     "entity:SelOnboardingTrainingQuestion07Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 239
+      "line": 219
     },
     "entity:SelOnboardingTrainingQuestion08Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 270
+      "line": 247
     },
     "entity:SelOnboardingTrainingQuestion09Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 301
+      "line": 275
     },
     "entity:SelOnboardingTrainingQuestion10Definition": {
       "file": "staff/training-module-sel-rules.manifest",
-      "line": 332
+      "line": 303
     },
     "entity:Shipment": {
       "file": "operations/shipment-rules.manifest",

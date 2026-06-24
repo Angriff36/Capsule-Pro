@@ -377,7 +377,7 @@ entity TrainingAssignment mixin TenantScoped {
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
-  relationship belongsTo employee: User with employeeId
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
   relationship belongsTo lastAttempt: TrainingAttempt with lastAttemptId
 
   timestamps
@@ -635,9 +635,9 @@ entity StaffTrainingSignal mixin TenantScoped {
     emit StaffTrainingWaiverLogged
   }
 
-  relationship belongsTo staffMember: StaffMember with staffMemberId
-  relationship belongsTo module: TrainingModule with moduleId
-  relationship belongsTo assignment: TrainingAssignment with assignmentId
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
+  relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
   store StaffTrainingSignal in durable
 }

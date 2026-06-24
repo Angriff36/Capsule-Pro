@@ -42,9 +42,7 @@ import type {
   Store,
 } from "@angriff36/manifest";
 
-// Keep these in lockstep with the SEL onboarding module definition in
-// training-module-sel-rules.manifest (SelOnboardingTrainingModuleDefinition).
-const SEL_MODULE_ID = "training-module-sel-event-staff-onboarding";
+import { SEL_ONBOARDING_MODULE_ID as SEL_MODULE_ID } from "../training/sel-onboarding-ids";
 const SEL_MODULE_CODE = "sel_event_staff_onboarding";
 const SEL_MODULE_TITLE = "SEL Event Staff — Onboarding Training";
 const SEL_PASS_THRESHOLD_PERCENT = 80;

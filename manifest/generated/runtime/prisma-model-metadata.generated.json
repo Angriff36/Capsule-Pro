@@ -10656,6 +10656,192 @@
       }
     ]
   },
+  "TrainingQuestion": {
+    "accessor": "trainingQuestion",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "code",
+        "irName": "code"
+      },
+      {
+        "name": "sectionTitle",
+        "irName": "sectionTitle"
+      },
+      {
+        "name": "displayOrder",
+        "irName": "displayOrder"
+      },
+      {
+        "name": "prompt",
+        "irName": "prompt"
+      },
+      {
+        "name": "optionA",
+        "irName": "optionA"
+      },
+      {
+        "name": "optionB",
+        "irName": "optionB"
+      },
+      {
+        "name": "optionC",
+        "irName": "optionC"
+      },
+      {
+        "name": "optionD",
+        "irName": "optionD"
+      },
+      {
+        "name": "correctOptionKey",
+        "irName": "correctOptionKey"
+      },
+      {
+        "name": "explanation",
+        "irName": "explanation"
+      },
+      {
+        "name": "whyItMatters",
+        "irName": "whyItMatters"
+      },
+      {
+        "name": "isActive",
+        "irName": "isActive"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "TrainingAttempt": {
+    "accessor": "trainingAttempt",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "assignmentId",
+        "irName": "assignmentId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "staffMemberId",
+        "irName": "staffMemberId"
+      },
+      {
+        "name": "attemptNumber",
+        "irName": "attemptNumber"
+      },
+      {
+        "name": "scorePercent",
+        "irName": "scorePercent"
+      },
+      {
+        "name": "passThresholdPercent",
+        "irName": "passThresholdPercent"
+      },
+      {
+        "name": "passed",
+        "irName": "passed"
+      },
+      {
+        "name": "managerReviewRequired",
+        "irName": "managerReviewRequired"
+      },
+      {
+        "name": "answersJson",
+        "irName": "answersJson"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
+  "StaffTrainingSignal": {
+    "accessor": "staffTrainingSignal",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "staffMemberId",
+        "irName": "staffMemberId"
+      },
+      {
+        "name": "moduleId",
+        "irName": "moduleId"
+      },
+      {
+        "name": "assignmentId",
+        "irName": "assignmentId"
+      },
+      {
+        "name": "signalType",
+        "irName": "signalType"
+      },
+      {
+        "name": "reason",
+        "irName": "reason"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      }
+    ]
+  },
   "TimeOffRequest": {
     "accessor": "timeOffRequest",
     "hasDeletedAt": true,

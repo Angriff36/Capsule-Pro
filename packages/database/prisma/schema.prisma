@@ -4128,6 +4128,9 @@ model TrainingModule {
   deletedAt       DateTime?            @map("deleted_at") @db.Timestamptz(6)
   assignments     TrainingAssignment[]
   completions     TrainingCompletion[]
+  questions         TrainingQuestion[]
+  attempts          TrainingAttempt[]
+  trainingSignals   StaffTrainingSignal[]
 
   code                 String?
   passThresholdPercent Int?      @map("pass_threshold_percent")
@@ -4162,6 +4165,8 @@ model TrainingAssignment {
   deletedAt     DateTime?            @map("deleted_at") @db.Timestamptz(6)
   module        TrainingModule       @relation(fields: [tenantId, moduleId], references: [tenantId, id])
   completions   TrainingCompletion[]
+  attempts      TrainingAttempt[]
+  trainingSignals StaffTrainingSignal[]
 
   moduleCode            String?   @map("module_code")
   moduleTitle           String?   @map("module_title")
@@ -4211,6 +4216,80 @@ model TrainingCompletion {
   @@index([employeeId], map: "training_completions_employee_idx")
   @@index([moduleId], map: "training_completions_module_idx")
   @@map("training_completions")
+  @@schema("tenant_staff")
+}
+
+/// Quiz questions belonging to a training module (manifest TrainingQuestion).
+model TrainingQuestion {
+  tenantId         String         @map("tenant_id") @db.Uuid
+  id               String         @db.Uuid
+  moduleId         String         @map("module_id") @db.Uuid
+  code             String         @default("")
+  sectionTitle     String         @default("") @map("section_title")
+  displayOrder     Int            @default(0) @map("display_order")
+  prompt           String         @default("")
+  optionA          String         @default("") @map("option_a")
+  optionB          String         @default("") @map("option_b")
+  optionC          String         @default("") @map("option_c")
+  optionD          String         @default("") @map("option_d")
+  correctOptionKey String         @default("A") @map("correct_option_key")
+  explanation      String         @default("")
+  whyItMatters     String         @default("") @map("why_it_matters")
+  isActive         Boolean        @default(true) @map("is_active")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
+  module           TrainingModule @relation(fields: [tenantId, moduleId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([moduleId], map: "training_questions_module_idx")
+  @@map("training_questions")
+  @@schema("tenant_staff")
+}
+
+/// A single quiz attempt for a training assignment (manifest TrainingAttempt).
+model TrainingAttempt {
+  tenantId              String             @map("tenant_id") @db.Uuid
+  id                    String             @db.Uuid
+  assignmentId          String             @map("assignment_id") @db.Uuid
+  moduleId              String             @map("module_id") @db.Uuid
+  staffMemberId         String             @map("staff_member_id") @db.Uuid
+  attemptNumber         Int                @default(1) @map("attempt_number")
+  scorePercent          Int                @default(0) @map("score_percent")
+  passThresholdPercent  Int                @default(80) @map("pass_threshold_percent")
+  passed                Boolean            @default(false)
+  managerReviewRequired Boolean            @default(false) @map("manager_review_required")
+  answersJson           String             @default("") @map("answers_json")
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
+  assignment            TrainingAssignment @relation(fields: [tenantId, assignmentId], references: [tenantId, id], onDelete: Cascade)
+  module                TrainingModule     @relation(fields: [tenantId, moduleId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([assignmentId], map: "training_attempts_assignment_idx")
+  @@index([moduleId], map: "training_attempts_module_idx")
+  @@index([staffMemberId], map: "training_attempts_staff_member_idx")
+  @@map("training_attempts")
+  @@schema("tenant_staff")
+}
+
+/// Scheduling-eligibility and waiver signals emitted after training completion (manifest StaffTrainingSignal).
+model StaffTrainingSignal {
+  tenantId       String             @map("tenant_id") @db.Uuid
+  id             String             @db.Uuid
+  staffMemberId  String             @map("staff_member_id") @db.Uuid
+  moduleId       String             @map("module_id") @db.Uuid
+  assignmentId   String             @map("assignment_id") @db.Uuid
+  signalType     String             @default("") @map("signal_type")
+  reason         String             @default("")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
+  assignment     TrainingAssignment @relation(fields: [tenantId, assignmentId], references: [tenantId, id], onDelete: Cascade)
+  module         TrainingModule     @relation(fields: [tenantId, moduleId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([staffMemberId], map: "staff_training_signals_staff_member_idx")
+  @@index([assignmentId], map: "staff_training_signals_assignment_idx")
+  @@map("staff_training_signals")
   @@schema("tenant_staff")
 }
 

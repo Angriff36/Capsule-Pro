@@ -99,7 +99,7 @@ role System extends Admin {}
 //
 // Entities across the project repeat the same 3-4 infra lines:
 //   key [tenantId, id] + property required id + indexed property required tenantId
-//   (100/102 files) and property deletedAt (74/102).
+//   (all 103 domain files via mixin TenantScoped) and deletedAt via mixin SoftDeletable.
 //
 // These mixins flatten at compile time — the compiler inlines their properties
 // into the consuming entity (see entity-composition.js expandComposition).

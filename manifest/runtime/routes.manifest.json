@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-18T12:17:35.076Z",
+  "generatedAt": "2026-06-21T17:35:10.000Z",
   "basePath": "/api",
   "routes": [
     {
@@ -2430,6 +2430,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "FacilityWorkOrder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.get.list",
+      "path": "/api/featureflag/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "FeatureFlag"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.get.detail",
+      "path": "/api/featureflag/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "FeatureFlag"
       },
       "auth": true,
       "tenant": true
@@ -6643,7 +6673,7 @@
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "priority",
@@ -6673,7 +6703,7 @@
           "name": "createdBy",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "sourceType",
@@ -7610,7 +7640,7 @@
           "name": "createdByUserId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {
@@ -19747,6 +19777,104 @@
       "tenant": true
     },
     {
+      "id": "FeatureFlag.create",
+      "path": "/api/manifest/FeatureFlag/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "flagKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rolloutPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.disable",
+      "path": "/api/manifest/FeatureFlag/commands/disable",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "disable"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.enable",
+      "path": "/api/manifest/FeatureFlag/commands/enable",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "enable"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.setRollout",
+      "path": "/api/manifest/FeatureFlag/commands/set-rollout",
+      "method": "POST",
+      "params": [
+        {
+          "name": "rolloutPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "setRollout"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "FeatureFlag.softDelete",
+      "path": "/api/manifest/FeatureFlag/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "FeatureFlag",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "ForecastInput.create",
       "path": "/api/manifest/ForecastInput/commands/create",
       "method": "POST",
@@ -27843,7 +27971,7 @@
           "name": "proposalNumber",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "leadId",

@@ -743,6 +743,15 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "createdAtField": "createdAt",
     "softDeleteField": null
   },
+  "FeatureFlag": {
+    "accessor": "",
+    "exists": false,
+    "drop": true,
+    "hasDetail": false,
+    "tenantIdField": "tenantId",
+    "createdAtField": null,
+    "softDeleteField": null
+  },
   "ForecastInput": {
     "accessor": "forecastInput",
     "exists": true,
@@ -1580,6 +1589,15 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "createdAtField": "created_at",
     "softDeleteField": "deleted_at"
   },
+  "SoftDeletable": {
+    "accessor": "",
+    "exists": false,
+    "drop": true,
+    "hasDetail": false,
+    "tenantIdField": "tenantId",
+    "createdAtField": null,
+    "softDeleteField": null
+  },
   "StaffMember": {
     "accessor": "staffMember",
     "exists": true,
@@ -1599,12 +1617,12 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "softDeleteField": null
   },
   "StaffTrainingSignal": {
-    "accessor": "",
-    "exists": false,
-    "drop": true,
-    "hasDetail": false,
+    "accessor": "staffTrainingSignal",
+    "exists": true,
+    "drop": false,
+    "hasDetail": true,
     "tenantIdField": "tenantId",
-    "createdAtField": null,
+    "createdAtField": "createdAt",
     "softDeleteField": null
   },
   "Station": {
@@ -1668,6 +1686,15 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "hasDetail": true,
     "tenantIdField": "tenantId",
     "createdAtField": "createdAt",
+    "softDeleteField": null
+  },
+  "TenantScoped": {
+    "accessor": "",
+    "exists": false,
+    "drop": true,
+    "hasDetail": false,
+    "tenantIdField": "tenantId",
+    "createdAtField": null,
     "softDeleteField": null
   },
   "TimeEntry": {
@@ -1734,12 +1761,12 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "softDeleteField": "deletedAt"
   },
   "TrainingAttempt": {
-    "accessor": "",
-    "exists": false,
-    "drop": true,
-    "hasDetail": false,
+    "accessor": "trainingAttempt",
+    "exists": true,
+    "drop": false,
+    "hasDetail": true,
     "tenantIdField": "tenantId",
-    "createdAtField": null,
+    "createdAtField": "createdAt",
     "softDeleteField": null
   },
   "TrainingCompletion": {
@@ -1761,12 +1788,12 @@ const RESOLUTIONS: Record<string, EntityResolution> = {
     "softDeleteField": "deletedAt"
   },
   "TrainingQuestion": {
-    "accessor": "",
-    "exists": false,
-    "drop": true,
-    "hasDetail": false,
+    "accessor": "trainingQuestion",
+    "exists": true,
+    "drop": false,
+    "hasDetail": true,
     "tenantIdField": "tenantId",
-    "createdAtField": null,
+    "createdAtField": "createdAt",
     "softDeleteField": null
   },
   "User": {
