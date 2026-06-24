@@ -130,3 +130,4 @@ Pick by need: routes→nextjs/express/hono; schema→prisma/drizzle/convex; vali
 7. Schedules/webhooks are declarative; the projection emits the route, your platform must invoke it.
 8. Constraint severity `block` halts (default), `warn` logs, `ok` is info. Transitions validate before constraints.
 9. Any change that makes an invalid program succeed is a language violation, not a UX win.
+10. **Docs:** never `manifest docs manifest/source/` (per-file compile breaks mixins). Use **`pnpm manifest:docs`** → `manifest/scripts/generate-docs.mjs` reads `kitchen.ir.json`, writes gitignored `docs-site/`, and filters policies per entity (raw `manifest docs` dumps every global policy on every page).

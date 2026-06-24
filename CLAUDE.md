@@ -259,9 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 88% context — saved before compacting]
-Files (1):
-  packages/design-system/styles/globals.css (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===
 
