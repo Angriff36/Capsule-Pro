@@ -1,2 +1,2 @@
 // biome-ignore lint/performance/noBarrelFile: Convenience re-export for API routes
-export { database } from "@repo/database";
+export { analyticsDatabase, database } from "@repo/database";

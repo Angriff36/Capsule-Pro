@@ -13,6 +13,7 @@ import ws from "ws";
 import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
 import { withManifestIssueLog } from "./manifest-issue-log";
+import { createAnalyticsDatabase } from "./analytics-database";
 import { createTenantClient } from "./tenant";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -48,6 +49,8 @@ const adapter = new PrismaNeon({ connectionString });
 const baseClient = new PrismaClient({ adapter });
 export const database =
   globalForPrisma.prisma || withManifestIssueLog(baseClient);
+/** Read-replica client for analytics/reporting; falls back to `database` when unset. */
+export const analyticsDatabase = createAnalyticsDatabase(database);
 export const db = database;
 
 if (process.env.NODE_ENV !== "production") {

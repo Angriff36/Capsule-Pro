@@ -18,7 +18,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { analyticsDatabase } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     );
     const minCount = Math.max(Number(searchParams.get("minCount")) || 1, 1);
 
-    const rows = await database.$queryRaw<
+    const rows = await analyticsDatabase.$queryRaw<
       Array<{
         entity: string | null;
         command: string;

@@ -290,6 +290,8 @@ docs/
 /docs/*
 !/docs/implementation-history/
 !/docs/audits/
+!/docs/Roadmap/
+!/docs/database/
 # Manifest constitution + governance are normative repo charter — tracked.
 !/docs/manifest/
 !/docs/manifest/governance.md

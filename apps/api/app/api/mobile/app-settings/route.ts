@@ -7,12 +7,14 @@ const SETTING_KEYS = [
   "hapticFeedback",
   "autoRefresh",
   "autoRefreshInterval",
+  "highContrast",
 ] as const;
 
 const DEFAULT_SETTINGS: Record<string, boolean | number> = {
   hapticFeedback: true,
   autoRefresh: true,
   autoRefreshInterval: 30,
+  highContrast: false,
 };
 
 export async function GET() {

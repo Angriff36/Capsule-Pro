@@ -18,12 +18,14 @@ import {
   type NotificationPreferences,
   updateNotificationPreferences,
 } from "../notifications/push-handlers";
+import { useHighContrast } from "../providers/high-contrast";
 import { getAuthToken } from "../store/auth";
 
 interface AppSettings {
   autoRefresh: boolean;
   autoRefreshInterval: number;
   hapticFeedback: boolean;
+  highContrast: boolean;
 }
 
 interface SettingsResponse {
@@ -58,6 +60,8 @@ async function updateAppSettings(
 
 export default function SettingsScreen() {
   const queryClient = useQueryClient();
+  const { colors, enabled: highContrastEnabled, setEnabled: setHighContrast } =
+    useHighContrast();
 
   // Local state for immediate UI feedback
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -97,8 +101,9 @@ export default function SettingsScreen() {
     if (appSettings) {
       setHapticEnabled(appSettings.hapticFeedback);
       setAutoRefreshEnabled(appSettings.autoRefresh);
+      setHighContrast(appSettings.highContrast);
     }
-  }, [appSettings]);
+  }, [appSettings, setHighContrast]);
 
   // Check push notification permission status
   useEffect(() => {
@@ -146,6 +151,14 @@ export default function SettingsScreen() {
     [updateSettingsMutation]
   );
 
+  const handleToggleHighContrast = useCallback(
+    (value: boolean) => {
+      setHighContrast(value);
+      updateSettingsMutation.mutate({ highContrast: value });
+    },
+    [setHighContrast, updateSettingsMutation]
+  );
+
   const handleToggleNotificationType = useCallback(
     (key: keyof NotificationPreferences, value: boolean) => {
       updateNotifMutation.mutate({ [key]: value });
@@ -175,17 +188,72 @@ export default function SettingsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator color="#2563eb" size="large" />
-        <Text style={styles.loadingText}>Loading settings...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator color={colors.primary} size="large" />
+        <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+          Loading settings...
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      {/* Accessibility Section */}
+      <View
+        style={[
+          styles.section,
+          {
+            backgroundColor: colors.sectionBackground,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
+          Accessibility
+        </Text>
+
+        <View style={styles.settingRow}>
+          <View style={styles.settingInfo}>
+            <Text style={[styles.settingLabel, { color: colors.foreground }]}>
+              High Contrast
+            </Text>
+            <Text
+              style={[
+                styles.settingDescription,
+                { color: colors.mutedForeground },
+              ]}
+            >
+              WCAG AAA palette for improved readability
+            </Text>
+          </View>
+          <Switch
+            onValueChange={handleToggleHighContrast}
+            thumbColor={highContrastEnabled ? colors.primary : "#f4f3f4"}
+            trackColor={{
+              false: colors.switchTrackOff,
+              true: colors.switchTrackOn,
+            }}
+            value={highContrastEnabled}
+          />
+        </View>
+      </View>
+
       {/* Notifications Section */}
-      <View style={styles.section}>
+      <View
+        style={[
+          styles.section,
+          {
+            backgroundColor: colors.sectionBackground,
+            borderColor: colors.border,
+          },
+        ]}
+      >
         <Text style={styles.sectionTitle}>Notifications</Text>
 
         <View style={styles.settingRow}>

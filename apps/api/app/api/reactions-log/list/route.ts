@@ -11,7 +11,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { analyticsDatabase } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -83,9 +83,9 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const totalCount = await database.reactionLog.count({ where });
+    const totalCount = await analyticsDatabase.reactionLog.count({ where });
 
-    const logs = await database.reactionLog.findMany({
+    const logs = await analyticsDatabase.reactionLog.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
